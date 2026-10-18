@@ -1,4 +1,4 @@
-// The room a page's title bar takes on screen (docs/specs/007-editor/illustrate-pages.md "Beside the
+// The room a page's title bar takes on screen (docs/specs/007-editor/pages-mode.md "Beside the
 // cog", "The label fits its page"): its fixed buttons, named or as icons, and whether they can be
 // named at all, so the page's label and an empty logo page's invite share what is left.
 import { logoTitleBarRoom } from './LogoTitleBar';
@@ -11,10 +11,10 @@ import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
-export const COG_ROOM = 32;
+const COG_ROOM = 32;
 export const LABEL_MIN = 40;
 
-export type TitleBarButtons = {
+type TitleBarButtons = {
   // Someone may edit: the cog and the lock show.
   edit: boolean;
   locked: boolean;

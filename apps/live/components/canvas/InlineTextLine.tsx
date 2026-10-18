@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 
 // One line of plain text, edited in place on the canvas: a page's masthead
 // (docs/specs/009-elements/page-element.md), and every secondary line of the web components (docs/specs/009-elements/web-components-and-no-groups.md) — a
@@ -62,6 +63,8 @@ export function InlineTextLine({
     if (next !== value) onCommit(next);
     if (ref.current) ref.current.textContent = next;
   };
+  // The page going fires no blur: commit what was typed before the unload flush reads it.
+  useCommitOnLeave(editing, commit);
 
   return (
     <div className="relative min-w-0">
@@ -71,6 +74,8 @@ export function InlineTextLine({
         // arriving as markup this field has nowhere to store.
         contentEditable={editable ? 'plaintext-only' : false}
         suppressContentEditableWarning
+        // Right-to-left text reads right to left (label-bidi.css).
+        dir="auto"
         role="textbox"
         aria-label={ariaLabel}
         tabIndex={editable ? 0 : -1}

@@ -8,7 +8,7 @@ import { mixHex } from './svg-render-face-kit';
 import type { TableElement } from './index';
 
 /** The grid stroke's share of the default header band (an opaque 18% tint). */
-export const TABLE_HEADER_TINT = 0.18;
+const TABLE_HEADER_TINT = 0.18;
 
 /** What a table with no cell fill of its own sits on, per surface: white paper, or the dark-ink shape fill. */
 export const TABLE_HEADER_BASE: Record<CanvasSurface, string> = {
@@ -18,7 +18,7 @@ export const TABLE_HEADER_BASE: Record<CanvasSurface, string> = {
 
 const opaqueHex = (c: string | undefined): string | undefined => (c && hexToRgb(c) ? c : undefined);
 
-export type TableHeaderColours = {
+type TableHeaderColours = {
   /** The band's fill: a colour, or 'transparent' when the table asks for no band. */
   fill: string;
   /** The header text colour, meeting AA against what is behind it. */

@@ -23,14 +23,14 @@ import { initialsOf } from '@/lib/identity';
 import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 
-export type CommentDensity = 'compact' | 'comfortable';
+type CommentDensity = 'compact' | 'comfortable';
 
 // The tallest the composer grows before it scrolls, in px (about eight lines).
-export const COMPOSER_MAX_PX = 160;
+const COMPOSER_MAX_PX = 160;
 const COMPOSER_MAX = { px: COMPOSER_MAX_PX };
 
 // The send shortcut as this platform names it: ⌘ on Apple devices, Ctrl elsewhere.
-export function sendShortcutLabel(): string {
+function sendShortcutLabel(): string {
   const platform =
     typeof navigator === 'undefined'
       ? ''

@@ -88,14 +88,14 @@ export function slideDurationMs(config: PresentationConfig): number {
 }
 
 /** The zoom ceiling a slide may be fitted to. */
-export function slideMaxZoom(config: PresentationConfig): number {
+function slideMaxZoom(config: PresentationConfig): number {
   // 2.5 is a slide filling a projector; 1 is the editor's own "never enlarge"
   // rule, for authors whose slides are already the size they meant.
   return config.zoom === 'actual' ? 1 : 2.5;
 }
 
 /** How a slide is fitted to the screen: a page slide fills it edge to edge (its page is the
- *  slide, docs/specs/007-editor/illustrate-pages.md "Slides"); any other keeps the fit's margin. */
+ *  slide, docs/specs/007-editor/pages-mode.md "Slides"); any other keeps the fit's margin. */
 export function slideFitOptions(
   slide: { pageId?: string },
   config: PresentationConfig,
@@ -106,7 +106,7 @@ export function slideFitOptions(
 }
 
 /** A stored presenter config, trusted only once parsed: every field checked, the default where it is not valid. */
-export function parsePresentationConfig(raw: unknown): PresentationConfig {
+function parsePresentationConfig(raw: unknown): PresentationConfig {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw))
     return DEFAULT_PRESENTATION_CONFIG;
   const parsed = raw as Partial<PresentationConfig>;

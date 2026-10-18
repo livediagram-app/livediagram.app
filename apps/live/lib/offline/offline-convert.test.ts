@@ -24,6 +24,13 @@ vi.mock('@/lib/api-client', () => ({
   }),
 }));
 
+vi.mock('@/lib/api/tags', () => ({
+  fetchCloudTags: vi.fn(async () => ({ tags: [], links: [] })),
+  apiSetDocumentTag: vi.fn(async () => {
+    calls.push('apiSetDocumentTag');
+  }),
+}));
+
 vi.mock('@/lib/api/core', () => ({
   API_BASE: '/api',
   // Mirrors the real signature (action, status, code) so the type the tests
@@ -73,7 +80,7 @@ const states: unknown[] = [];
 vi.mock('./offline-store', () => ({
   offlineCreateDocument: vi.fn(),
   offlineDeleteIfUnchanged: vi.fn(async (_id: string, unchanged: (r: unknown) => boolean) => {
-    const rec = states.length
+    const rec: unknown = states.length
       ? states.shift()
       : await vi.mocked(store.offlineGetRecord).mock.results.at(-1)?.value;
     if (!unchanged(rec)) return { outcome: 'changed', rec };
@@ -95,6 +102,7 @@ const images = await import('./offline-images');
 const items = await import('../api/items');
 const sheets = await import('../api/sheets');
 const store = await import('./offline-store');
+const tagsApi = await import('@/lib/api/tags');
 const {
   ConversionInProgressError,
   conversionInProgress,
@@ -135,6 +143,21 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     await saveOfflineToCloud('d1', 'owner');
     expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'apiSetFavourite']);
     expect(apiClient.apiSetFavourite).toHaveBeenCalledWith('owner', 'd1', true);
+  });
+
+  it('puts the tags back on the server copy once the local copy is gone', async () => {
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      tagIds: ['a', 'b'],
+    } as never);
+    vi.mocked(tagsApi.apiSetDocumentTag).mockRejectedValueOnce(new Error('tag gone'));
+    await saveOfflineToCloud('d1', 'owner');
+    // One refused (a tag deleted meanwhile) leaves the sync done all the same.
+    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'apiSetDocumentTag']);
+    expect(tagsApi.apiSetDocumentTag).toHaveBeenCalledWith('owner', 'a', 'd1', true);
+    expect(tagsApi.apiSetDocumentTag).toHaveBeenCalledWith('owner', 'b', 'd1', true);
   });
 
   it('carries the deck, folder and created date, not just the tabs', async () => {
@@ -292,6 +315,28 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
   });
 
+  // docs/specs/013-workspace/tags.md "An offline document's tags live in the browser".
+  it('carries the document tags onto the offline record, and only its own', async () => {
+    vi.mocked(tagsApi.fetchCloudTags).mockResolvedValueOnce({
+      tags: [],
+      links: [
+        { tagId: 'a', documentId: 'd1' },
+        { tagId: 'b', documentId: 'other' },
+        { tagId: 'c', documentId: 'd1' },
+      ],
+    });
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
+      tagIds: ['a', 'c'],
+    });
+  });
+
+  it('aborts before writing anything when the tags could not be read', async () => {
+    vi.mocked(tagsApi.fetchCloudTags).mockRejectedValueOnce(new Error('offline'));
+    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
+    expect(calls).toEqual([]);
+  });
+
   it('aborts before writing anything when the stars could not be read', async () => {
     // Taken as "not starred", the star would go with the server row.
     vi.mocked(apiClient.fetchCloudFavouriteIds).mockRejectedValueOnce(new Error('offline'));
@@ -434,7 +479,7 @@ describe('syncFailureMessage', () => {
       /kept changing/i,
     );
     expect(syncFailureMessage(new OfflineSyncIncompleteError('stores_short'))).toMatch(
-      /local copy was kept/i,
+      /yours was kept/i,
     );
   });
 

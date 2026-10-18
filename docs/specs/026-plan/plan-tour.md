@@ -95,8 +95,7 @@ Up to six steps.
 
 1. **Your Board**: a centred card, no ring; it brings the board on screen. Columns are the stages work moves
    through, left to right.
-2. **Add Cards**: highlights the first column's Add card. Each column ends in Add card, which adds a card of any
-   type the board takes.
+2. **Add Cards**: highlights the first column's Add card. Add card at the bottom of a column adds a new one.
 3. **Move Work Along** (when the board has a card): highlights its first card. Drag a card to the next column as
    the work moves on, or Shift and an arrow key with it focused; everyone in the document sees it move.
 4. **The Card Panel** (when the board has a card): opens that card's panel and highlights it. Everything about a

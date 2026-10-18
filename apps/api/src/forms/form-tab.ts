@@ -12,7 +12,7 @@ import { documentLinksTab, getTab, liveFormLinksOf, readSheetHead, setFormLinkOp
 import type { FormSheetDestination } from '@livediagram/forms';
 import type { Env, TabDTO } from '../types';
 
-export type FormTab = { tab: TabDTO; form: FormDefinition };
+type FormTab = { tab: TabDTO; form: FormDefinition };
 
 // The document's Form tab and its form; null when the tab is gone, is no Form tab, or holds no form.
 export async function readFormTab(

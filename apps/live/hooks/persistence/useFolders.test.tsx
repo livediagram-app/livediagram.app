@@ -6,11 +6,17 @@ import { useFolders } from './useFolders';
 
 const apiListFolders = vi.fn<(ownerId: string) => Promise<Folder[]>>();
 const apiDeleteFolder = vi.fn<(ownerId: string, id: string) => Promise<void>>();
+const apiCreateFolder = vi.fn<typeof import('@/lib/api-client').apiCreateFolder>();
+const apiUpdateFolder = vi.fn<typeof import('@/lib/api-client').apiUpdateFolder>();
 vi.mock('@/lib/api-client', () => ({
   apiListFolders: (ownerId: string) => apiListFolders(ownerId),
   apiDeleteFolder: (ownerId: string, id: string) => apiDeleteFolder(ownerId, id),
+  apiCreateFolder: (...a: Parameters<typeof apiCreateFolder>) => apiCreateFolder(...a),
+  apiUpdateFolder: (...a: Parameters<typeof apiUpdateFolder>) => apiUpdateFolder(...a),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const toast = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const folder = (id: string, parentId: string | null = null) =>
   ({ id, name: id, parentId }) as unknown as Folder;
@@ -105,5 +111,48 @@ describe('useFolders deleteFolder when the api refuses', () => {
     });
     expect(deleted).toBe(true);
     expect(result.current.folders).toEqual([]);
+  });
+});
+
+// docs/specs/013-workspace/folders.md "A write that fails says so".
+describe('useFolders when the api refuses a create or a rename', () => {
+  it('makes no folder and says so', async () => {
+    apiListFolders.mockResolvedValue([]);
+    apiCreateFolder.mockRejectedValue(new Error('500'));
+    const { result } = renderHook(() => useFolders('u6'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    let created: unknown = 'unset';
+    await act(async () => {
+      created = await result.current.createFolder({ parentId: null });
+    });
+    expect(created).toBeUndefined();
+    expect(result.current.folders).toEqual([]);
+    expect(toast.error).toHaveBeenCalledWith('Could not create “New folder”. Try again.');
+  });
+
+  it('puts the old name back and says so', async () => {
+    apiListFolders.mockResolvedValue([folder('plans')]);
+    apiUpdateFolder.mockRejectedValue(new Error('500'));
+    const { result } = renderHook(() => useFolders('u7'));
+    await waitFor(() => expect(result.current.folders).toHaveLength(1));
+    act(() => result.current.renameFolder('plans', 'Roadmaps'));
+    expect(result.current.folders[0]!.name).toBe('Roadmaps');
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Could not rename “plans”. Try again.'),
+    );
+    expect(result.current.folders[0]!.name).toBe('plans');
+  });
+
+  it('says nothing when the rename lands', async () => {
+    apiListFolders.mockResolvedValue([folder('plans')]);
+    apiUpdateFolder.mockResolvedValue(folder('plans'));
+    const { result } = renderHook(() => useFolders('u8'));
+    await waitFor(() => expect(result.current.folders).toHaveLength(1));
+    await act(async () => {
+      result.current.renameFolder('plans', 'Roadmaps');
+      await Promise.resolve();
+    });
+    expect(result.current.folders[0]!.name).toBe('Roadmaps');
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });

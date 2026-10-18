@@ -25,6 +25,8 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'chair',
   // Fence (docs/specs/009-elements/fence.md): it does nothing until a character walks into it.
   'fence',
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): it does nothing until somebody enters Avatar mode.
+  'avatar-pad',
   'desk',
   'sofa',
   // The virtual office (docs/specs/009-elements/office.md): what happens is a character walking in, round
@@ -108,6 +110,7 @@ export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
     kind === 'focus-button' ||
     isSeatingShape(kind) ||
     kind === 'fence' ||
+    kind === 'avatar-pad' ||
     isOfficeShape(kind) ||
     kind === 'reveal' ||
     kind === 'comment-pin' ||

@@ -48,8 +48,10 @@ page runs, minified or not:
         return null; // the browser blocks the sink
       },
       // React DOM's scratch <script> (inert); written <\/script> so the HTML parser never ends this script early.
-      createHTML: function (html) {
+      createHTML: function (html, type, sink) {
         if (html === '<script><\/script>') return html;
+        // Called by hand (no sink): make nothing, so ProseMirror falls back to its own policy.
+        if (sink === undefined) throw new TypeError('[trusted-types] the default policy makes no HTML on request');
         console.error('[trusted-types] html-refused ' + html);
         return null;
       },
@@ -71,7 +73,9 @@ page runs, minified or not:
 5. Otherwise allowed only when its origin is in `origins`.
 
 No `createScript`, and `createHTML` passes one string alone: an HTML or script string from code without a policy is
-refused. The boot script contains no `</script` anywhere (a test holds it), since it is written into one.
+refused. Called directly (`trustedTypes.defaultPolicy.createHTML(html)`, no sink argument), `createHTML` throws and
+logs nothing: it is not a violation, and a library that probes the default policy first (ProseMirror) then makes its
+own named policy. The boot script contains no `</script` anywhere (a test holds it), since it is written into one.
 
 ### `trustedHtml` and `parseInert`
 
@@ -82,7 +86,9 @@ refused. The boot script contains no `</script` anywhere (a test holds it), sinc
 ### Third-party origins
 
 `trustedScriptOrigins(env)` returns the Clerk frontend API origin decoded from `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-(`pk_<env>_<base64 of "<host>$">`, shape checked by `clerkPublishableKeyOrNull`) when it is set, else `[]`.
+(`pk_<env>_<base64 of "<host>$">`, shape checked by `clerkPublishableKeyOrNull`) and `CLERK_CAPTCHA_ORIGIN`
+(`https://challenges.cloudflare.com`, where Clerk's sign-up bot protection loads Cloudflare Turnstile) when it is
+set, else `[]`. The sign-up form holds `<div id="clerk-captcha">` (hidden while empty) for the widget to draw into.
 
 ## Interfaces and contracts
 
@@ -114,6 +120,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 | A malformed publishable key                  | No Clerk origin; Clerk's script is refused and logged                                        |
 | A prefix or origin that is not one           | `trustedTypesBootScript` throws, so the build fails; what it embeds is JSON with `<` escaped |
 | Clerk's timer worker refused (older rule)    | Clerk falls back to page timers and warns; the blob rule prevents it                         |
+| Clerk's sign-up CAPTCHA refused (older rule) | Sign-up stops at "The CAPTCHA failed to load"; `CLERK_CAPTCHA_ORIGIN` prevents it            |
 
 ## Security and trust
 
@@ -139,7 +146,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 | Rule                                       | Test                                                                       |
 | ------------------------------------------ | -------------------------------------------------------------------------- |
 | The URL rule, prefixes and the blob worker | `packages/ui/src/trusted-types.test.ts`: `isAllowedScriptUrl` cases        |
-| Clerk origin from the key                  | `trusted-types.test.ts`: `trustedScriptOrigins`                            |
+| Clerk origin from the key, and its CAPTCHA | `trusted-types.test.ts`: `trustedScriptOrigins`                            |
 | `trustedHtml` and `parseInert`             | `trusted-types.test.ts`                                                    |
 | The boot script runs the rule and logs     | `trusted-types.test.ts`: `trustedTypesBootScript`                          |
 | Every sink uses a policy                   | `packages/ui/src/trusted-types-sinks.test.ts` (every app and package)      |

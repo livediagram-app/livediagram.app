@@ -1,22 +1,23 @@
 // @vitest-environment jsdom
 
-// A layout previewed on its page (docs/specs/007-editor/illustrate-pages.md "Hover previews the
+// A layout previewed on its page (docs/specs/007-editor/pages-mode.md "Hover previews the
 // layout on the page"): the page's own words and pictures carried in, as placing it lands them.
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { illustratePagesOf, layOutIllustratePages, type Element } from '@livediagram/document';
+import { pagesOf, layOutPages, type Element } from '@livediagram/document';
 import { buildPageLayout } from '@livediagram/templates';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { PageImageAccessProvider } from './page-image-access';
 
 const fetched = vi.hoisted(() => vi.fn(async (_owner: string, id: string) => `blob:${id}`));
-vi.mock('@/lib/api-client', () => ({ apiFetchImageBlobUrl: fetched }));
+vi.mock('@/lib/api-client', () => ({
+  apiFetchImageBlobUrl: fetched,
+  releaseImageBlobUrl: () => {},
+}));
 
 afterEach(cleanup);
 
-const pages = layOutIllustratePages(
-  illustratePagesOf({ pages: [{ id: 'p', orientation: 'portrait' }] }),
-);
+const pages = layOutPages(pagesOf({ pages: [{ id: 'p', orientation: 'portrait' }] }));
 const page = pages[0]!;
 const written = (): Element[] =>
   buildPageLayout('title', page).map((el) =>

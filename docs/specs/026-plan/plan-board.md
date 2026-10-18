@@ -371,7 +371,7 @@ In Plan mode:
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
   the **Add a Card** menu (the shared anchored menu with an option list and no header, since it opens under its
   own button; a bottom sheet titled "Add a Card" on a phone), as
-  Illustrate's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
+  Pages mode's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
@@ -542,13 +542,16 @@ A board can be maximised to work on it without the rest of the canvas around it.
   (`HeaderBand`), so the menu button, the mode menu and the palette toolbar float inside the header instead of over
   a strip of canvas above it. The palette leaves the centre for the header's right end, 12 px before its controls,
   so the middle of the header is the title's and widgets'. Its controls (the view's own, Maximise or Restore, the cog)
-  sit together in a rounded card at its right end, matching the menu box at the left: the element's
-  surface and its border, flat (no shadow), its buttons the palette's tile size (36 px) so they match the cards beside them. In the band the menu box takes the element's own surface and border too, flat (no shadow, no
-  hue), so the top row reads as part of the board, view or sheet. The bottom-right buttons (Undo, the Plan strip, Theme, Zoom) move inside its frame while it covers the canvas: 16
+  sit together at its right end straight on the header, with no card of their own, its buttons the palette's tile size
+  (36 px); the last one stands as far in from the element's right edge as the menu's first does from its left. In the
+  band the menu box and the palette (a mode's strip, or a board's cards) drop their cards too (no border, no fill, no
+  shadow, no hue), so the top row reads as the board's,
+  view's or sheet's own header: the menu and name at the left, the controls at the right, and a hairline under it all
+  (a board's header draws one there, as a Sheet's and a view's always have). The bottom-right buttons (Undo, the Plan strip, Theme, Zoom) move inside its frame while it covers the canvas: 16
   px further in and 20 px further up than on a canvas, clear of its edge and its scrollbar (not on a Dashboard's
-  page). A board's **widgets** ride in the controls card at the band's right, before the cog behind a hairline, so the right
-  of the top row is one card of widgets and controls. Every card in the band is the menu box's height on screen (46 px at a 100% toolbar UI scale, its
-  controls and inset scaling with it, its hairline not; `--plan-band-card-h`): the controls card and a Sheet's toolbar. The header's own content keeps clear of them: its title, count and widgets
+  page). A board's **widgets** ride with the controls at the band's right, before the cog behind a hairline, so the right
+  of the top row is one run of widgets and controls. The controls and a Sheet's toolbar are the menu box's height on screen (46 px at a 100% toolbar UI scale, its
+  controls and inset scaling with it, its hairline not; `--plan-band-card-h`). The header's own content keeps clear of them: its title, count and widgets
   start after the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when
   narrow). It is laid out this way only when there is room: at least 140 px between the mode menu and the palette
   with the palette at the right (a desktop or a wide tablet). On a phone (under 640 px of canvas) it still holds the
@@ -780,7 +783,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   work as they do with a mouse. Held still on a card (`LONG_PRESS_MS`), a finger opens the card's menu at the
   finger, as a right-click does, for someone who may edit; lifting it then neither opens the card nor drags it.
 - A tap on a column's header (not its cog) frames that column: the view glides to fit it, header to the board's
-  foot, below the top strip, as a tap on a page does in Illustrate (`frameBoardColumn`). Not while the board is
+  foot, below the top strip, as a tap on a page does in Pages (`frameBoardColumn`). Not while the board is
   maximised.
 - A board's header buttons (the ⋯, the settings cog, Maximise) stay on screen: when the board runs past the
   canvas's right edge (zoomed in on a phone, or panned), they slide left to stay 8 px inside it, on the board's

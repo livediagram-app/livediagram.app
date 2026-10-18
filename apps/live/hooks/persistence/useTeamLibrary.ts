@@ -16,6 +16,9 @@ import { duplicateDocument as duplicateDocumentApi } from '@/lib/duplicate-docum
 import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { useToast } from '@/hooks/ui/useToast';
+import { logMoveFailure } from '@/lib/move-failure';
+import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
 import { indexFolders, folderBreadcrumb, groupDocumentsByFolder } from '@/lib/folder-tree';
 
 // One team's shared library (docs/specs/013-workspace/team-shared-documents.md): the folder tree + documents the
@@ -32,6 +35,16 @@ export function useTeamLibrary(
   opts: { onChange?: () => void } = {},
 ) {
   const onChange = useLatest(opts.onChange);
+  const toast = useToast();
+  // A write that fails says so (docs/specs/013-workspace/folders.md "A write that fails says so"): the toast, and a
+  // log line naming what failed. The refetch after it puts the library back as the server holds it.
+  const fail = useCallback(
+    (what: string, message: string, err: unknown) => {
+      console.warn(`[team-library] ${what} failed`, { message: (err as Error).message });
+      toast.error(message);
+    },
+    [toast],
+  );
   const [folders, setFolders] = useState<Folder[]>([]);
   const [liveDocs, setDocuments] = useState<DocumentSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,43 +113,58 @@ export function useTeamLibrary(
         await refresh();
         onChange.current?.();
         return folder;
-      } catch {
+      } catch (err) {
+        fail('create-folder', FOLDER_FAILURE.create(name), err);
         return undefined;
       }
     },
-    [ownerId, teamId, refresh, onChange],
+    [ownerId, teamId, refresh, onChange, fail],
   );
 
   const renameFolder = useCallback(
     async (id: string, name: string) => {
       if (!ownerId || !name.trim()) return;
-      if (await accepted(apiUpdateFolder(ownerId, id, { name: name.trim() })))
+      try {
+        await apiUpdateFolder(ownerId, id, { name: name.trim() });
         track('Folder', 'Renamed', 'Team');
+      } catch (err) {
+        fail('rename-folder', FOLDER_FAILURE.rename(folders.find((f) => f.id === id)?.name), err);
+      }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange],
+    [ownerId, folders, refresh, onChange, fail],
   );
 
   const moveFolder = useCallback(
     async (id: string, parentId: string | null) => {
       if (!ownerId) return;
-      if (await accepted(apiUpdateFolder(ownerId, id, { parentId })))
+      try {
+        await apiUpdateFolder(ownerId, id, { parentId });
         track('Folder', 'Moved', 'Team');
+      } catch (err) {
+        logMoveFailure('folder', ` folder=${id}`, err);
+        toast.error(FOLDER_FAILURE.move(folders.find((f) => f.id === id)?.name));
+      }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange],
+    [ownerId, folders, refresh, onChange, toast],
   );
 
   const deleteFolder = useCallback(
     async (id: string) => {
       if (!ownerId) return;
-      if (await accepted(apiDeleteFolder(ownerId, id))) track('Folder', 'Deleted', 'Team');
+      try {
+        await apiDeleteFolder(ownerId, id);
+        track('Folder', 'Deleted', 'Team');
+      } catch (err) {
+        fail('delete-folder', FOLDER_FAILURE.delete(folders.find((f) => f.id === id)?.name), err);
+      }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange],
+    [ownerId, folders, refresh, onChange, fail],
   );
 
   // Re-folder a document WITHIN the team (folderId null = the team's
@@ -144,12 +172,17 @@ export function useTeamLibrary(
   const moveDocument = useCallback(
     async (documentId: string, folderId: string | null) => {
       if (!ownerId) return;
-      if (await accepted(apiSetDocumentFolder(ownerId, documentId, folderId, teamId)))
+      try {
+        await apiSetDocumentFolder(ownerId, documentId, folderId, teamId);
         track('Team', 'Moved', 'Document');
+      } catch (err) {
+        logMoveFailure('team-document', ` document=${documentId}`, err);
+        toast.error(DOCUMENT_FAILURE.move(liveDocs.find((d) => d.id === documentId)?.name));
+      }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, teamId, refresh, onChange],
+    [ownerId, teamId, liveDocs, refresh, onChange, toast],
   );
 
   // Delete a team document, to the team's Trash. Any joined member may delete it
@@ -175,12 +208,20 @@ export function useTeamLibrary(
       // docs/specs/006-document/name-length.md.
       const trimmed = truncateName(name);
       if (!trimmed) return;
-      if (await accepted(apiSaveDocumentMeta(ownerId, { id: documentId, name: trimmed })))
+      try {
+        await apiSaveDocumentMeta(ownerId, { id: documentId, name: trimmed });
         track('Document', 'Renamed');
+      } catch (err) {
+        fail(
+          'rename-document',
+          DOCUMENT_FAILURE.rename(liveDocs.find((d) => d.id === documentId)?.name),
+          err,
+        );
+      }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange],
+    [ownerId, liveDocs, refresh, onChange, fail],
   );
 
   // Duplicate a team document, keeping the copy IN the team alongside
@@ -189,17 +230,22 @@ export function useTeamLibrary(
   const duplicateDocument = useCallback(
     async (documentId: string) => {
       if (!ownerId) return;
-      const sourceFolderId = liveDocs.find((d) => d.id === documentId)?.folderId ?? null;
+      const source = liveDocs.find((d) => d.id === documentId);
+      const sourceFolderId = source?.folderId ?? null;
       const newId = await duplicateDocumentApi(ownerId, documentId, {
         teamId,
         folderId: sourceFolderId,
       });
-      if (!newId) return;
+      if (!newId) {
+        console.warn('[team-library] duplicate-document failed', { document: documentId });
+        toast.error(DOCUMENT_FAILURE.duplicate(source?.name));
+        return;
+      }
       track('Document', 'Duplicated');
       await refresh();
       onChange.current?.();
     },
-    [ownerId, teamId, liveDocs, refresh, onChange],
+    [ownerId, teamId, liveDocs, refresh, onChange, toast],
   );
 
   return {

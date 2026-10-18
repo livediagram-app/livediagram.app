@@ -12,7 +12,7 @@ import { createContext, useContext } from 'react';
 //
 // Undefined outside a provider (the share view, the embed route, exports), and
 // the editor simply doesn't offer the shortcuts there.
-export type MindGrow = {
+type MindGrow = {
   // Takes the id rather than closing over the edited element, so the provider
   // doesn't have to re-create the callback (and re-render the tree) every time
   // the edit target changes.

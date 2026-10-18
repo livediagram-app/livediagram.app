@@ -11,6 +11,7 @@ import {
   conceptAnimRepeats,
   conceptDrawsNotes,
   conceptFitPx,
+  conceptDiscInk,
   conceptRamp,
   cycleLayout,
   hubDrawsSpokes,
@@ -30,6 +31,8 @@ import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
+import { ConceptRowLayer } from './concept-row-layer';
+import { ConceptTimelineBody } from './ConceptTimelineBody';
 import { useConceptTourPreview } from '@/lib/concept-tour-preview';
 
 type Props = {
@@ -43,26 +46,7 @@ type Props = {
   onSetRows: (rows: WebRows) => void;
 };
 
-// One row as its own full-size layer, so its shape and its words animate as one; `--lvd-cg-i` is its place in
-// reading order and the transform origin its own middle, so a pulse grows it about itself.
-function Row({
-  i,
-  origin,
-  children,
-}: {
-  i: number;
-  origin: { x: number; y: number };
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className="lvd-cg-row pointer-events-none absolute inset-0"
-      style={{ '--lvd-cg-i': i, transformOrigin: `${origin.x}px ${origin.y}px` } as CSSProperties}
-    >
-      {children}
-    </div>
-  );
-}
+const Row = ConceptRowLayer;
 
 // The concept graphics (docs/specs/009-elements/concept-graphics.md): a layer stack, a pyramid (or inverted, or a
 // funnel), a cycle, a hub and spoke, onion rings and a chevron process, each row placed by the shared pure layout (the export's numbers) in the accent ramp. Rows
@@ -81,6 +65,8 @@ export function ConceptFace({
   const rows = element.conceptRows ?? [];
   const n = rows.length;
   const ramp = conceptRamp(n, accent, fill);
+  // A cycle's later stages and a hub's satellites sit on discs in the fill, not on the canvas.
+  const discInk = conceptDiscInk(ink, fill);
   const noun = CONCEPT_ROWS[element.shape].noun;
   const write = (i: number, patch: Partial<ConceptRow>) =>
     onSetRows({ conceptRows: rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
@@ -111,7 +97,8 @@ export function ConceptFace({
     value: string,
     px: number,
     colour: string,
-    opts: { note?: boolean; align?: 'left' | 'center'; bold?: boolean },
+    // A note is muted (70%) unless asked otherwise: a milestone's when is in the accent at full strength.
+    opts: { note?: boolean; align?: 'left' | 'center'; bold?: boolean; muted?: boolean },
   ) => (
     <div
       className={`absolute flex items-center ${opts.align === 'left' ? 'justify-start' : 'justify-center'} px-1`}
@@ -121,7 +108,7 @@ export function ConceptFace({
     >
       <InlineTextLine
         value={value}
-        placeholder={opts.note ? 'Note' : noun}
+        placeholder={opts.note ? (CONCEPT_ROWS[element.shape].noteNoun ?? 'Note') : noun}
         editable={editable}
         onCommit={(v) => write(i, opts.note ? { note: v || undefined } : { label: v })}
         zoom={zoom}
@@ -132,9 +119,9 @@ export function ConceptFace({
         style={{
           color: colour,
           fontSize: conceptFitPx(value, rect.width, px),
-          opacity: opts.note ? 0.7 : 1,
+          opacity: opts.note && opts.muted !== false ? 0.7 : 1,
         }}
-        ariaLabel={`${noun} ${i + 1}${opts.note ? ' note' : ''}`}
+        ariaLabel={`${noun} ${i + 1}${opts.note ? ` ${(CONCEPT_ROWS[element.shape].noteNoun ?? 'note').toLowerCase()}` : ''}`}
       />
     </div>
   );
@@ -281,7 +268,7 @@ export function ConceptFace({
                   />
                 </>,
               )}
-              {line(i, rect, row.label, l.labelPx, ink, {})}
+              {line(i, rect, row.label, l.labelPx, discInk, {})}
             </Row>
           );
         })}
@@ -297,6 +284,18 @@ export function ConceptFace({
         {line(k, l.labels[k]!, rows[k]!.label, l.labelPx, ramp[k]!.text, {})}
       </Row>
     ));
+  } else if (element.shape === 'timeline-rail') {
+    body = (
+      <ConceptTimelineBody
+        width={W}
+        height={H}
+        rows={rows}
+        accent={accent}
+        fill={fill}
+        ink={ink}
+        line={line}
+      />
+    );
   } else if (element.shape === 'chevrons') {
     const hasNotes = rows.some((r) => !!r.note);
     const l = chevronLayout(W, H, n, hasNotes);
@@ -380,7 +379,7 @@ export function ConceptFace({
                   strokeWidth={first ? undefined : 2}
                 />,
               )}
-              {line(i, rect, row.label, l.labelPx, first ? ramp[0]!.text : ink, {})}
+              {line(i, rect, row.label, l.labelPx, first ? ramp[0]!.text : discInk, {})}
             </Row>
           );
         })}

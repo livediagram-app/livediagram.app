@@ -2,9 +2,19 @@
 // box of what replaces it, so the page lands without a shift. Decorative and hidden from assistive
 // technology; the busy section says it is loading.
 
-import { GRID, GRID_THUMB, SKELETON, STRIP_HEIGHT, STRIP_THUMB, STRIP_TILE } from './home-styles';
+import {
+  COMPACT_CARD,
+  JUMP_BACK_IN_MIN_HEIGHT,
+  LARGE_CARD,
+  MOST_USED_GRID,
+  RECENT_GRID,
+  SKELETON,
+  STRIP_HEIGHT,
+  STRIP_THUMB,
+  STRIP_TILE,
+} from './home-styles';
 
-const GRID_ITEMS = 8;
+const GROUP_ITEMS = 4;
 const STRIP_ITEMS = 4;
 const ENTRY_ROWS = 3;
 
@@ -19,20 +29,31 @@ function TileSkeleton({ thumb }: { thumb: string }) {
   );
 }
 
-/** Jump back in's grid: two rows of four tiles. */
+/** Jump Back In on a wide screen: both groups' labels and cards, in their reserved height. */
 export function GridSkeleton() {
   return (
-    <div aria-hidden className={GRID}>
-      {Array.from({ length: GRID_ITEMS }, (_, i) => (
-        <div key={i} className="min-w-0">
-          <TileSkeleton thumb={GRID_THUMB} />
+    <div aria-hidden className={`flex flex-col gap-4 ${JUMP_BACK_IN_MIN_HEIGHT}`}>
+      <div>
+        <div className={`mb-2.5 h-4 w-20 ${SKELETON}`} />
+        <div className={MOST_USED_GRID}>
+          {Array.from({ length: GROUP_ITEMS }, (_, i) => (
+            <div key={i} className={`${LARGE_CARD} rounded-[18px] ${SKELETON}`} />
+          ))}
         </div>
-      ))}
+      </div>
+      <div>
+        <div className={`mb-2.5 h-4 w-16 ${SKELETON}`} />
+        <div className={RECENT_GRID}>
+          {Array.from({ length: GROUP_ITEMS }, (_, i) => (
+            <div key={i} className={`${COMPACT_CARD} rounded-[14px] ${SKELETON}`} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-/** Jump back in's phone strip. */
+/** Jump Back In's phone strip. */
 export function StripSkeleton() {
   return (
     <div aria-hidden className={`-mx-1 flex ${STRIP_HEIGHT} gap-3 overflow-hidden px-1 pb-2 pt-1`}>

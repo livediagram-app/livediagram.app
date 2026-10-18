@@ -11,7 +11,7 @@ import {
 import { CHART_PALETTES } from './chart-palettes';
 import { contrastRatio, hexToRgb } from './colors';
 import { createShape, createSticky, type Element, type ShapeElement } from './index';
-import { layOutIllustratePages, type PageFill } from './illustrate-page';
+import { layOutPages, type PageFill } from './page';
 import { worstContrast } from './page-ink-contrast';
 import { sankeyFrame } from './sankey-frame';
 import { svgBoxed } from './svg-render';
@@ -19,7 +19,7 @@ import { svgLineChart } from './svg-render-charts';
 import { themeChartPalette } from './theme-presets';
 import { THEMES } from './themes-data';
 
-// docs/specs/007-editor/illustrate-pages.md "Charts adapt as they are drawn": a chart's series
+// docs/specs/007-editor/pages-mode.md "Charts adapt as they are drawn": a chart's series
 // reach 3:1 and its text 4.5:1 against what it sits on, keeping their hue, and a colour that
 // already reads is drawn as it is.
 
@@ -159,7 +159,7 @@ describe('chartFrame and sankeyFrame with a ground', () => {
 
 describe('chartPageGrounds', () => {
   const pageWith = (fill?: PageFill) =>
-    layOutIllustratePages([
+    layOutPages([
       { id: 'p', orientation: 'portrait', ...(fill ? { background: { fill } } : {}) },
     ])[0]!;
   const chartAt = (page: ReturnType<typeof pageWith>, id = 'c'): Element => ({
@@ -262,7 +262,7 @@ describe('the export draws charts as the canvas does', () => {
 
 describe('cost', () => {
   it('finds the grounds of 40 charts among 600 elements well inside a frame budget', () => {
-    const page = layOutIllustratePages([
+    const page = layOutPages([
       { id: 'p', orientation: 'portrait', background: { fill: { kind: 'solid', color: NAVY } } },
     ])[0]!;
     const els: Element[] = [];

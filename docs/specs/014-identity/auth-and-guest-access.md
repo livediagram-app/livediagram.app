@@ -69,6 +69,47 @@ Four routes inside `apps/live/`:
 
 The shared card chrome and inputs live in `apps/live/components/chrome/auth-shared.tsx` so the two pages don't drift.
 
+### The look: Night Band
+
+Every account and connect page (`/sign-in`, `/get-started`, `/sso-callback`, the OAuth consent and device pages and
+the workbench pairing page) stands on one frame, `AuthStage` (`apps/live/components/chrome/AuthStage.tsx`), modelled on
+the marketing site's "No Catch" night section:
+
+- **Header.** The brand at the top left. On `/sign-in` and `/get-started` a **"Not now, keep going as a guest"** link
+  sits at the top right, because the canvas never needs an account. It goes back to the page's `?redirect_url` when
+  that is safe and is not itself a signed-in-only page (`/oauth/*`, `/workbench/*`), and to `/new` otherwise
+  (`guestReturnHref`). The connect pages have no guest link: they only work signed in.
+- **The card.** A near-opaque card (no backdrop blur, so the lines moving behind it never make it repaint) holding the page's title (the `h1`: "Welcome back", "Create your account", "Check your
+  email" on the code step), an optional line under it, the error or notice, the form and the cross-link footer.
+- **The pitch.** Beside the card, an eyebrow, a heading and its promise rows (four on the account pages, three on the connect pages), each a tinted icon, a coloured lead
+  and a line. The account pages say what an account adds ("No catch": every device, teams to create and join, AI tools, 0 paywalls); the connect
+  pages say what connecting means ("Connect": live, your call, revoke any time). The pitch holds no controls.
+- **Decorative lines keep drawing** behind the content on wide screens, in any direction: four slots each take a
+  random route that enters through one edge and leaves through another, bending across the stage on the way
+  (`randomTrace`, `components/chrome/auth-lines.ts`). A route draws in, holds, then trails off the far edge over 14
+  seconds, and its slot takes a fresh route the moment it ends; the first round starts the slots a quarter cycle apart,
+  so a new line is always on its way. Routes are chosen in the browser after mount. They are hidden from assistive
+  technology and absent below the `lg` breakpoint. Under reduced motion (the OS setting or the person's own preference)
+  two fixed routes through the margins stand still, fully drawn, and nothing moves.
+- **The entrance** draws the page in a beat at a time, at the marketing hero's pace
+  ([Motion](../004-interface-design/motion.md#content-pacing)): the header, eyebrow and heading rise in, the card lands
+  with a slight tilt and overshoot like a shape dropped on the canvas, the promise rows slide in like stickies being
+  placed and each row's icon pops once its row has landed. Everything has settled by about 660ms; under reduced motion
+  the page simply appears.
+- **Large screens.** From `2xl` the frame widens to 88rem, the pitch heading grows, the promise rows sit in a
+  two-by-two grid and the card gains room; from 1920px the whole frame (not the lines) is zoomed 1.2 times, and 1.35
+  times from 2400px, so a big monitor is filled at a readable size rather than left with a small island.
+- **Both themes.** Dark mode wears the Midnight palette (the root carries `data-palette="midnight"` while the frame is
+  mounted, as on the Explorer; [Colour scheme](../004-interface-design/color-scheme.md#explorer-midnight)), so the
+  page is the night section itself. Light mode is the same layout on a pale dotted ground (`slate-100`) with a white
+  card and the darker accent inks (`emerald-700`, `brand-700`, `amber-700`), all at WCAG 2.2 AA. Small text that
+  sits on the bare ground (the eyebrow, the guest link) is `brand-800`, so it holds 4.5:1 even over a grid dot.
+- **Phone first.** Below `lg` the card comes first and the pitch follows it, stacked, compact and full width with a
+  16px gutter; at `lg` and up the pitch takes the left column and the card the right. The card is first in the DOM at
+  every width, so the form is what a screen reader and the Tab key reach first.
+- **Interstitials** (the redirecting card, `/sso-callback`) use the same frame with no pitch, the card centred, so a
+  hand-off between pages never flashes a different ground.
+
 Signed-in status surfaces in the editor header via `<AuthControls>` (initial bubble + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor — they're purely informational.
 
 ## Identity display name
@@ -129,31 +170,31 @@ opposite, rows nobody can reach once the account is gone, so the server data sti
 
 ## Guest documents start local
 
-A guest's new document is **Local only** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
+A guest's new document is **This Browser** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
 
-**Why.** A guest cloud document is keyed to the browser's guest id in `localStorage`. Clearing site data loses that id, and with it every document under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A Local only document is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
+**Why.** A guest cloud document is keyed to the browser's guest id in `localStorage`. Clearing site data loses that id, and with it every document under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A document in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
 
 - **Only with sign-in enabled.** Local first applies in the hybrid mode, where a guest has an account to move to. A guest-only deployment ([Three deployment modes](#three-deployment-modes)) keeps livediagram as the default: there is no account to come to, so the server is the only place a document is kept beyond the browser, and the operator chose to run one.
 - **Signed-in people are unchanged.** Their default stays livediagram.
-- **Moving to the server is always the guest's own act**: Sync Document (from the Share dialog, which explains why first, [Offline Mode → Sharing a Local only document](../006-document/offline-mode.md#sharing-a-local-only-document), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
+- **Moving to the server is always the guest's own act**: Sync Document (from the Share dialog, which explains why first, [Offline Mode → Sharing a document in This Browser](../006-document/offline-mode.md#sharing-a-document-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
 - **Nothing is purged.** Guest cloud documents already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before Clerk answers
 
 Clerk loads deferred, so `/new` cannot wait for `useAuth` without making every create slower. It reads Clerk's own `__client_uat` cookie instead (`apps/live/lib/signed-in-hint.ts`): clerk-js writes it on the app's origin, readable from script, as `0` when signed out and the last sign-in time when signed in (checked against the dev instance on 2026-10-10: `__client_uat=0` plus a suffixed `__client_uat_<key>` twin, both `httpOnly=false`).
 
-- **No `__client_uat*` cookie, or every one is `0`**: a guest. The create goes ahead at once, Local only.
+- **No `__client_uat*` cookie, or every one is `0`**: a guest. The create goes ahead at once, This Browser.
 - **Any non-zero value**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
-- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a Local only document, the safe direction.
+- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document in This Browser, the safe direction.
 
-### Moving Local only documents after signing in
+### Moving documents in This Browser after signing in
 
-Signing in never moves a Local only document by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in (and the guest migrate above has settled), a page that shows the Explorer or the editor checks this browser's Local only documents. If there are any, it offers to move them:
+Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in (and the guest migrate above has settled), a page that shows the Explorer or the editor checks this browser's documents in This Browser. If there are any, it offers to move them:
 
-- **Move Local Documents to Your Account?** A dialog lists each Local only document (name, last edited), every one ticked, with **Move** and **Not Now**.
-- **Move** runs Sync Document ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays Local only and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`livediagram:v2:local-move-dismissed:<userId>`), with the count of Local only documents at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate Local only document is not asked again about it.
-- The same move is always reachable by hand: **Sync Document** on any Local only document.
+- **Move Local Documents to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move** runs Sync Document ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
+- **Not Now** is remembered for this account in this browser (`livediagram:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it.
+- The same move is always reachable by hand: **Sync Document** on any document in This Browser.
 
 ## Implications for how we build
 

@@ -66,5 +66,9 @@ toggle.
   modes); zen mode is an orthogonal visibility flag, so it sits beside
   the tool row rather than inside the tool group.
 
+A phone held sideways folds the header and the tab bar on its own, without zen mode, and
+shows them again from a handle ([A phone held sideways](live-app.md#a-phone-held-sideways)); in zen
+mode that handle is not drawn.
+
 See also [Live app](live-app.md) (editor chrome) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md) (palette tool row + shortcuts).

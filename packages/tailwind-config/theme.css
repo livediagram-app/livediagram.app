@@ -68,6 +68,11 @@
    * bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
   --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  /* A toast arriving and leaving (docs/specs/004-interface-design/toasts.md "Motion"): it rises 8px and fades in
+   * from 98% over short, and leaves over micro, fading and dropping 4px. `forwards` holds the last frame until the
+   * stack removes it, so it never flashes back in. */
+  --animate-toast-in: toast-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-toast-out: toast-out var(--transition-duration-micro) ease-in forwards;
   /* A drill-in view swapping in (the Tab Style dialog's panels, AnimatedHeightBox): forward slides in from the right,
    * back from the left, so moving in and out of a level reads as moving through a stack. Short motion token. */
   --animate-view-forward: view-forward var(--transition-duration-short)
@@ -118,6 +123,20 @@
   }
   to {
     transform: scale(1);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+}
+
+@keyframes toast-out {
+  to {
+    transform: translateY(4px);
+    opacity: 0;
   }
 }
 
@@ -235,6 +254,34 @@
   --color-brand-950: #142538;
 }
 
+/* Explorer: Midnight (docs/specs/004-interface-design/color-scheme.md "Explorer: Midnight"). The Explorer pages set
+ * `data-palette="midnight"` on the root while mounted; in dark mode it retargets Steel's tokens to the marketing
+ * site's night section: a deep navy ground and the sky accent. The compound selector outranks `.dark`. */
+.dark[data-palette='midnight'] {
+  --color-slate-950: #070b1a;
+  --color-slate-900: #0a0f24;
+  --color-slate-800: #111833;
+  --color-slate-700: #1f2a55;
+  --color-slate-600: #2e3b6e;
+  --color-slate-500: #56658f;
+  --color-slate-400: #8f9cc4;
+  --color-slate-300: #c3cde6;
+  --color-slate-200: #dde4f3;
+  --color-slate-100: #eef2fb;
+
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #e0f2fe;
+  --color-brand-200: #bae6fd;
+  --color-brand-300: #7dd3fc;
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+  --color-brand-600: #0369a1;
+  --color-brand-700: #075985;
+  --color-brand-800: #0c4a6e;
+  --color-brand-900: #0b3a5a;
+  --color-brand-950: #082f49;
+}
+
 @keyframes empty-float {
   0%,
   100% {
@@ -289,28 +336,6 @@
 .tl-fan-out {
   animation: tl-fan-out var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
   transform-origin: right center;
-}
-
-/* A menu's rows dealt down from its trigger one after another (the Start Blank menu): each drops a
- * few pixels into place as it fades in, its delay set per row from the shared cascade (cascadeDelayMs).
- * Replays on every open, since the menu's panel is shown by display. Settled under reduced motion. */
-@keyframes menu-fan-down {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, -8px, 0) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-.menu-fan-row {
-  animation: menu-fan-down var(--transition-duration-short) cubic-bezier(0.2, 0.85, 0.25, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .menu-fan-row {
-    animation: none;
-  }
 }
 
 /* The same motion originating from BELOW, used on the collapsed stack so

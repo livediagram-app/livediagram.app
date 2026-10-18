@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
-import { LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
+import { THIS_BROWSER_DESCRIPTION } from '@/components/primitives/ThisBrowserPill';
 import { PanelExplorerTree, type PanelTreeSection } from './PanelExplorerTree';
 import type { PanelTree } from './PanelTreeContext';
 
@@ -60,7 +60,7 @@ function Harness({
   return (
     <PanelExplorerTree
       section={section}
-      rootLabel="My documents"
+      rootLabel="My Documents"
       tree={tree}
       shared={shared}
       ownIndex={{
@@ -104,7 +104,7 @@ afterEach(() => {
 });
 
 describe('PanelExplorerTree', () => {
-  it('shows My documents as its folders, then its documents, a folder opening in place under the back bar', () => {
+  it('shows My Documents as its folders, then its documents, a folder opening in place under the back bar', () => {
     render(<Harness section={{ kind: 'mine' }} />);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(screen.queryByText('Unsorted')).toBeNull();
@@ -112,17 +112,17 @@ describe('PanelExplorerTree', () => {
     expect(rows()).toEqual(['Plan']);
     expect(row('Plan').getAttribute('aria-current')).toBe('true');
     // The import and export screens' back bar: back to the root, the folder as its chip.
-    const back = screen.getByRole('button', { name: /^My documents/ });
+    const back = screen.getByRole('button', { name: /^My Documents/ });
     expect(back.textContent).toContain('Projects');
     fireEvent.click(back);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(assign).not.toHaveBeenCalled();
   });
 
-  it('marks a document in this browser Local only, with what it means', () => {
+  it('marks a document in this browser This Browser, with what it means', () => {
     render(<Harness section={{ kind: 'browser' }} />);
-    expect(rows()).toEqual([`Workshop notes. ${LOCAL_ONLY_DESCRIPTION}`]);
-    expect(screen.getByText('Local only')).toBeTruthy();
+    expect(rows()).toEqual([`Workshop notes. ${THIS_BROWSER_DESCRIPTION}`]);
+    expect(screen.getByText('This Browser')).toBeTruthy();
   });
 
   it('lists what is shared with the reader', () => {

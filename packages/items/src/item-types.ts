@@ -223,7 +223,7 @@ export const ITEM_TYPES = BUILT_IN_TYPES.map((t) => ({
   fields: [...t.fields, 'comments'],
 })) as unknown as WithComments<typeof BUILT_IN_TYPES>;
 
-export type ItemTypeId = (typeof ITEM_TYPES)[number]['id'];
+type ItemTypeId = (typeof ITEM_TYPES)[number]['id'];
 
 export const ITEM_TYPE_IDS: readonly ItemTypeId[] = ITEM_TYPES.map((t) => t.id);
 

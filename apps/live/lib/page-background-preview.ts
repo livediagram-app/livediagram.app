@@ -1,33 +1,29 @@
 'use client';
 
-// A page background hovered in its panel (docs/specs/007-editor/illustrate-pages.md "The page
+// A page background hovered in its panel (docs/specs/007-editor/pages-mode.md "The page
 // panel", Hover previews): shown on the sheet AND on what is drawn on it, so the ink the page would
 // take (an article's writing, the elements without colours of their own) is previewed with it, not
 // only after the press. On an article page the preview covers every page of its article, as the
 // press would.
 import { useSyncExternalStore } from 'react';
 import type { LaidOutPage, PageBackground } from '@livediagram/document';
-import { withBackgroundPatch } from './illustrate-page-paint';
+import { withBackgroundPatch } from './page-paint';
+import { createListeners } from '@/lib/listeners';
 
-export type PageBackgroundPreview = { pageId: string; patch: Partial<PageBackground> } | null;
+type PageBackgroundPreview = { pageId: string; patch: Partial<PageBackground> } | null;
 
 let current: PageBackgroundPreview = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setPageBackgroundPreview(next: PageBackgroundPreview): void {
   if (current === next) return;
   current = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
-
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => listeners.delete(l);
-};
 
 export function usePageBackgroundPreview(): PageBackgroundPreview {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => current,
     () => null,
   );

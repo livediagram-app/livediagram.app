@@ -90,6 +90,10 @@ cron runs it in `waitUntil` beside the other sweeps, its failure logged as
 
 - `useExplorerViewMode` accepts the stored `'details'`; anything else unknown still falls back to
   the default (`card`).
+- On a phone (`useIsMobileViewport`, `PHONE_MEDIA_QUERY`) `useExplorerViewMode` answers `card`
+  whatever is stored, and never writes; the stored choice returns once the query stops matching.
+  `ViewToggle` carries `phone:hidden`, the CSS twin of the same query, so it takes no room there
+  and never flashes in before hydration.
 - `useDetailsSort` reads `livediagram:explorer-details-sort` (`"<column>:<asc|desc>"`); an unreadable
   value is the default `updated:desc`. `toggle(column)` returns the column's natural direction
   (`DETAILS_COLUMNS[column].natural`) when it is not the current column, else the opposite one.
@@ -152,7 +156,7 @@ CREATE TABLE tab_stats (
 | Document with no tabs                | `stats: null`, cells `–`                                  |
 | Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
 | Event-storming board                 | Mode Diagram (`opensInOf`)                                |
-| Legacy mode `infographic`            | Illustrate (`opensInOf` reads through `parseEditorMode`)  |
+| Legacy mode `infographic`            | Pages (`opensInOf` reads through `parseEditorMode`)       |
 | Corrupt tab body in the backfill     | Counted empty, warned                                     |
 | Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
 | Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
@@ -248,6 +252,7 @@ CREATE TABLE tab_stats (
 | Sort: natural direction, toggle, folders first, `–` last       | `apps/live/app/explorer/details/details-columns.test.ts`      |
 | Formats                                                        | `apps/live/app/explorer/details/details-format.test.ts`       |
 | Stored sort and mode read back, defaults                       | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`     |
+| A phone shows cards, keeps the stored mode; toggle hidden      | `useExplorerViewMode.test.tsx`, `ViewToggle.test.tsx`         |
 | Table renders columns, aria-sort, `–`, menu, drag, row preview | `apps/live/app/explorer/details/DetailsView.test.tsx`         |
 | Icon columns, the bubble and `99+`, dense rows                 | `apps/live/app/explorer/details/DetailsView.test.tsx`         |
 

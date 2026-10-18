@@ -61,7 +61,7 @@ describe('usePlanItems undo', () => {
     expect(api.writeItem.mock.calls[0]![1]).not.toHaveProperty('undo');
     expect(steps).toHaveLength(1);
     await act(async () => steps[0]!.undo());
-    const undone = api.writeItem.mock.calls[1]![1];
+    const undone: unknown = api.writeItem.mock.calls[1]![1];
     expect(undone).toMatchObject({ kind: 'move', undo: true, move: { status: 'done' } });
     await act(async () => steps[0]!.redo());
     expect(api.writeItem.mock.calls[2]![1]).toMatchObject({

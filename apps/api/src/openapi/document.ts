@@ -159,6 +159,7 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
     responses: responsesFor(route),
   };
   if (route.tokenUsable) op['x-token-usable'] = true;
+  if (route.deprecated) op.deprecated = true;
   const security = securityFor(route.auth);
   if (security) op.security = security;
   if (params.length) op.parameters = params;

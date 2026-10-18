@@ -57,7 +57,7 @@ const table: CardTable = {
 };
 
 function sheetOf(cells: Record<string, string | number> = {}): Sheet {
-  const map = new Map();
+  const map: Sheet['cells'] = new Map();
   for (const [k, v] of Object.entries(cells)) {
     const [r, c] = k.split(',').map(Number);
     map.set(cellKey(R[r!]!, C[c!]!), { input: typeof v === 'number' ? { n: v } : { s: v } });

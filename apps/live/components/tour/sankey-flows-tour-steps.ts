@@ -40,7 +40,7 @@ const step = (
 const NODES = step(
   'nodes',
   'Your Nodes',
-  'Click one to rename it everywhere. Type an existing name to merge them.',
+  'Click a node to rename it everywhere.',
   'sankey-nodes',
   null,
 );
@@ -48,7 +48,7 @@ const NODES = step(
 const ROWS = step(
   'rows',
   'Flows, Step by Step',
-  'Each node lists where it sends, and how much, one step at a time. Bands are as wide as the amount.',
+  'Each node lists where it sends, and how much.',
   'sankey-rows',
   'table',
 );
@@ -56,7 +56,7 @@ const ROWS = step(
 const ADD = step(
   'add',
   'Add a Flow',
-  'Fill in the blank line: From, To, Amount. Paste spreadsheet rows to add many.',
+  'Fill in From, To and Amount. Paste rows to add many.',
   'sankey-add-flow',
   'table',
 );
@@ -64,7 +64,7 @@ const ADD = step(
 const BALANCE = step(
   'balance',
   'In and Out Differ',
-  'These nodes send on more than they receive. Usually a typo.',
+  'These send more than they receive. Usually a typo.',
   'sankey-balance',
   'table',
 );
@@ -74,7 +74,7 @@ const TEXT: SankeyFlowsTourStep = {
   ...step(
     'text',
     'Or Type Them',
-    'One flow per line: Salary [3200] Budget. SankeyMATIC text pastes straight in.',
+    'One flow per line: Salary [3200] Budget.',
     'sankey-text',
     'text',
   ),
@@ -84,7 +84,7 @@ const TEXT: SankeyFlowsTourStep = {
 const IMPORT = step(
   'import',
   'Import a File',
-  'A CSV or TSV file replaces the flows.',
+  'Load a CSV file to replace the flows.',
   'sankey-import',
   null,
 );
@@ -101,7 +101,7 @@ const OUTRO: SankeyFlowsTourStep = {
   id: 'outro',
   card: 'outro',
   title: 'That Is the Flows Dialog',
-  body: 'Double-click a Sankey to come back. Every change is one undo step.',
+  body: 'Double-click the Sankey to come back here.',
 };
 
 // The steps for this dialog: the node strip and the steps only once there are nodes, the balance notes only while

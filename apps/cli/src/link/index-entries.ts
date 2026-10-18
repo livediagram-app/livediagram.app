@@ -15,7 +15,7 @@ import type { SyncState } from './sync-state';
 // What a document's mirror file holds after the pass, and where.
 export type MirrorHeld = { path: string; tabs: readonly Tab[]; revs: Record<string, number> };
 
-export type PassOutcome = {
+type PassOutcome = {
   level: MirrorLevel;
   coverage: Coverage;
   states: ReadonlyMap<string, SyncState | 'transient'>;

@@ -1,17 +1,21 @@
 // A sketched element in the SVG export (docs/specs/008-canvas/finish.md "Sketch"): the same drawing the canvas
 // overlay paints (sketch-element.ts), placed at the element's position. Layers bottom to top: solid fill,
-// pencil shading (the stroke colour, faint), outline, chrome.
+// pencil shading (the stroke colour, faint), outline, chrome. Marker's felt-tip body (marker-element.ts) goes the same
+// way, its ink in see-through layers.
 import { finishSplitsFace, finishWobblesArt, resolveFinish, type Finish } from './finish';
+import { handDrawnElementPaint } from './hand-drawn';
 import type { BoxedElement, Element } from './index';
+import { MARKER_DETAIL_PX, MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
+import type { MarkerDrawing } from './marker-element';
 import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
-import { SKETCH_HATCH_OPACITY, sketchElementPaint, type SketchDrawing } from './sketch-element';
+import { SKETCH_HATCH_OPACITY, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
 
-export function svgSketchDrawing(
+function svgSketchDrawing(
   at: { x: number; y: number },
   drawing: SketchDrawing,
-  paint: { fill: string; stroke: string; strokePx: number; dash: string | null },
+  paint: BodyPaint,
 ): string {
   const fill = xmlEscape(paint.fill);
   const stroke = xmlEscape(paint.stroke);
@@ -35,8 +39,40 @@ export function svgSketchDrawing(
   return parts.join('');
 }
 
-/** A boxed element's sketched body for the export, or null when it is not sketched (another finish, or a
- *  kind Sketch leaves as drawn). */
+type BodyPaint = { fill: string; stroke: string; strokePx: number; dash: string | null };
+
+// Marker's body, bottom to top: the solid fill, the colouring's two layers of streaks, the outline's two layers of
+// ink, the chrome. Each layer is its own path at the ink's opacity, so a crossing between two pools darker.
+function svgMarkerDrawing(
+  at: { x: number; y: number },
+  drawing: MarkerDrawing,
+  paint: BodyPaint,
+): string {
+  const stroke = xmlEscape(paint.stroke);
+  const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
+  const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="marker">`];
+  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"/>`);
+  for (const d of drawing.streaks)
+    if (d)
+      parts.push(
+        `<path d="${d}" stroke="${stroke}" stroke-opacity="${MARKER_STREAK_OPACITY}" stroke-width="${r2(drawing.nibPx)}"${line}/>`,
+      );
+  for (const d of drawing.ink)
+    if (d)
+      parts.push(
+        `<path d="${d}" stroke="${stroke}" stroke-opacity="${MARKER_INK_OPACITY}" stroke-width="${r2(paint.strokePx)}"${dash}${line}/>`,
+      );
+  if (drawing.details)
+    parts.push(
+      `<path d="${drawing.details}" stroke="${stroke}" stroke-opacity="${MARKER_INK_OPACITY}" stroke-width="${MARKER_DETAIL_PX}"${line}/>`,
+    );
+  parts.push('</g>');
+  return parts.join('');
+}
+
+/** A boxed element's hand-drawn body for the export (Sketch's or Marker's), or null when it is not drawn by hand
+ *  (another finish, or a kind its finish leaves as drawn). */
 export function svgSketchedBody(
   el: BoxedElement,
   shape: ExportShape,
@@ -45,14 +81,18 @@ export function svgSketchedBody(
   backdrop = false,
 ): string | null {
   if (shape.kind !== 'rect' && shape.kind !== 'ellipse' && shape.kind !== 'diamond') return null;
-  const paint = sketchElementPaint(el, finish, shape.fill, backdrop);
+  const paint = handDrawnElementPaint(el, finish, shape.fill, backdrop);
   if (!paint) return null;
-  return svgSketchDrawing({ x: el.x, y: el.y }, paint.drawing, {
+  const body = {
     fill: shape.fill,
     stroke: shape.stroke,
     strokePx: paint.strokePx,
     dash: paint.dash,
-  });
+  };
+  const at = { x: el.x, y: el.y };
+  return paint.drawing.pen === 'marker'
+    ? svgMarkerDrawing(at, paint.drawing, body)
+    : svgSketchDrawing(at, paint.drawing, body);
 }
 
 /** The id of the hand-drawn wobble icons and stickers are drawn through under Sketch, in an export. */
@@ -74,7 +114,7 @@ export const SKETCH_FACE_FILTER = {
 } as const;
 
 /** The face wobble as an SVG <filter>. */
-export function svgSketchFaceFilter(): string {
+function svgSketchFaceFilter(): string {
   const f = SKETCH_FACE_FILTER;
   return (
     `<filter id="${f.id}" x="-${f.margin}" y="-${f.margin}" width="${100 + 2 * parseFloat(f.margin)}%" height="${100 + 2 * parseFloat(f.margin)}%">` +
@@ -95,7 +135,9 @@ export function svgSketchArtDefs(elements: readonly Element[], tabFinish: unknow
   return `<defs>${art ? svgSketchArtFilter() : ''}${faces ? svgSketchFaceFilter() : ''}</defs>`;
 }
 
-function svgSketchArtFilter(): string {
+/** The icons' and stickers' two-pass wobble as an SVG <filter> (the canvas's SketchFilterDefs draws the same): in the
+ *  export, and in the still pictures WebKit's canvas draws that art into (SketchArtPicture). */
+export function svgSketchArtFilter(): string {
   return (
     `<filter id="${SKETCH_ART_FILTER_ID}" x="-15%" y="-15%" width="130%" height="130%">` +
     `<feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="2" seed="7" result="n1"/>` +

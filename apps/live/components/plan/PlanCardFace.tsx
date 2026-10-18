@@ -52,7 +52,7 @@ import {
   checklistProgress,
 } from './plan-card-parts';
 
-export type PlanCardFaceProps = {
+type PlanCardFaceProps = {
   item: Item;
   palette: PlanPalette;
   fields: readonly CardField[];

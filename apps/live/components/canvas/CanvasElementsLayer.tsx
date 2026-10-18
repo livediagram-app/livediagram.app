@@ -43,7 +43,7 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
+import { PageClip } from '@/components/canvas/PageClip';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 import {
   SheetChartsContext,
@@ -108,6 +108,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowLabelDrag,
     onBeginArrowTranslate,
     onBeginDrag,
+    onPressArmedAction,
     onBeginEdit,
     onBeginEndpointDrag,
     onCancelEdit,
@@ -115,11 +116,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign,
     onCommitTable,
     onCommitHeaderSize,
-    onAddRailPoint,
     onAddTableRow,
     onAddTableColumn,
-    onSetRailLabel,
     onToggleChecklistItem,
+    entityActions,
     onSetPageHeading,
     onSetWebRows,
     onSetPointerTip,
@@ -215,6 +215,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
     onBeginDrag,
+    onPressArmedAction,
     onShiftSelect,
     // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
     onCastVote: readOnly && !takePart ? undefined : onCastVote,
@@ -237,8 +238,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
             alignment: alignmentCoordinates(elements, axis, excludeId),
           }).value,
-    onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
+    onSetEntityFields: readOnly ? undefined : entityActions?.setFields,
+    onStartFieldArrow: readOnly ? undefined : entityActions?.startFieldArrow,
+    onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
+    onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
     onSetPointerTip: readOnly ? undefined : onSetPointerTip,
@@ -274,6 +278,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     actionConfigure: actionPanelActions?.configure,
     actionComplete: actionPanelActions?.complete,
     actionReopen: actionPanelActions?.reopen,
+    actionOpenBoard: actionPanelActions?.openBoard,
   });
   // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
@@ -303,13 +308,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     }));
   }, [h]);
   const actionActionsFor = useMemo(() => {
-    const { actionConfigure, actionComplete, actionReopen } = h;
+    const { actionConfigure, actionComplete, actionReopen, actionOpenBoard } = h;
     if (!actionConfigure || !actionComplete || !actionReopen) return null;
     return idBound((id) => ({
       add: () => actionConfigure(id, null),
       edit: (actionId: string) => actionConfigure(id, actionId),
       complete: (actionId: string) => actionComplete(id, actionId),
       reopen: (actionId: string) => actionReopen(id, actionId),
+      ...(actionOpenBoard ? { openBoard: actionOpenBoard } : {}),
     }));
   }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first
@@ -387,6 +393,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       tabSummaries,
       readOnly,
       onBeginDrag: h.onBeginDrag,
+      onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
       vote: tabVote,
       selfId,
@@ -400,8 +407,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onCommitTable: h.onCommitTable,
       onCommitHeaderSize: h.onCommitHeaderSize,
       onSnapSeam: h.onSnapSeam,
-      onSetRailLabel: h.onSetRailLabel,
       onToggleChecklistItem: h.onToggleChecklistItem,
+      onSetEntityFields: h.onSetEntityFields,
+      onStartFieldArrow: h.onStartFieldArrow,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
       onSetPointerTip: h.onSetPointerTip,
@@ -570,16 +578,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-          {/* Illustrate mode cuts elements off at the page edges (IllustratePageClip); not in the
+          {/* Pages mode cuts elements off at the page edges (PageClip); not in the
           isometric view, whose 3D stack a clip would flatten. */}
-          <IllustratePageClip
+          <PageClip
             pages={
-              props.illustratePages && props.canvasTool !== 'isometric'
-                ? props.illustratePages.pages
-                : null
+              props.pagesMode && props.canvasTool !== 'isometric' ? props.pagesMode.pages : null
             }
             // A page under a layout preview shows only the preview.
-            hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
+            hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
             elements={elements}
             layers={tabLayers}
           >
@@ -616,7 +622,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               fontEpoch={fontEpoch}
               stackedIds={stackedIds}
             />
-          </IllustratePageClip>
+          </PageClip>
 
           {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
           <GifOmit>
@@ -685,13 +691,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onSpawnConnect,
                 onStartArrow,
                 onStartPencil,
-                onAddRailPoint,
                 onAddTableRow,
                 onAddTableColumn,
                 onAppendWebRow,
+                onAddEntityField: h.onAddEntityField,
+                onAddRelatedEntity: h.onAddRelatedEntity,
               }}
               onBeginDrag={onBeginDrag}
-              pages={props.illustratePages?.pages}
+              pages={props.pagesMode?.pages}
             />
           </SelectionGripsLayer>
         </SelectionGripsContext.Provider>

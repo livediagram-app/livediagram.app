@@ -6,6 +6,8 @@
 // auto-dismissing, and gated behind the "Show notifications"
 // preference; announcements must reach assistive tech unconditionally.
 
+import { createListeners } from '@/lib/listeners';
+
 type Snapshot = {
   message: string;
   // Bumped per announce so repeating the same message still re-renders
@@ -15,17 +17,14 @@ type Snapshot = {
 };
 
 let snapshot: Snapshot = { message: '', nonce: 0 };
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function announce(message: string): void {
   snapshot = { message, nonce: snapshot.nonce + 1 };
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
-export function subscribeAnnouncements(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribeAnnouncements = listeners.subscribe;
 
 export function getAnnouncementSnapshot(): Snapshot {
   return snapshot;

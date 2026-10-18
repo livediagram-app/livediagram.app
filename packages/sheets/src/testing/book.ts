@@ -12,7 +12,7 @@ export function gridLayout(tag: string, rows = 30, cols = 12): SheetLayout {
   };
 }
 
-export type BookSpec = Record<string, Record<string, string>>;
+type BookSpec = Record<string, Record<string, string>>;
 
 export function makeSheets(spec: BookSpec, opts: { rows?: number; cols?: number } = {}): Sheet[] {
   const sheets: Sheet[] = Object.keys(spec).map((title, i) => ({

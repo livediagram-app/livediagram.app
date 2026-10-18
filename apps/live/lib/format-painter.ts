@@ -21,10 +21,12 @@
 // the field at all, so it has no opinion and the target keeps its own.
 
 import {
+  animationSectionOf,
   bodyAnimationSetOf,
   carriesWords,
   hasRichFormatting,
   normalizeRuns,
+  shapeAnimationsFor,
   supportsAccentEdge,
   type AnimationSpeed,
   type ArrowElement,
@@ -273,8 +275,8 @@ const SWATCH_BINDINGS = [
 // yield to painted text, and the colour-preset binding only survives
 // when it still describes the colours on the element (docs/specs/008-canvas/canvas-and-palette.md).
 // Animations travel only where they mean the same thing (docs/specs/028-animation/element-animations.md):
-// a body animation between members of one animation set, a Text animation to any element that
-// carries words. Everything else in the projection is left as it is.
+// a body animation between members of one animation set, a Shape motion to any element that takes it, a Text
+// animation to any element that carries words. Everything else in the projection is left as it is.
 export function fitPaintToTarget(
   source: BoxedElement,
   target: BoxedElement,
@@ -286,7 +288,13 @@ export function fitPaintToTarget(
   // menu of theirs could show or remove.
   const set = bodyAnimationSetOf(source);
   const sameSet = set !== undefined && set === bodyAnimationSetOf(target);
-  if (!sameSet && !(source.type === 'text' && target.type === 'text')) {
+  // A Shape motion travels to any element whose Shape category offers it (a square's Bounce onto a photo).
+  const motion = source.animation;
+  const sharedMotion =
+    motion !== undefined &&
+    animationSectionOf(source, motion) === 'shape' &&
+    (shapeAnimationsFor(target) as readonly string[]).includes(motion);
+  if (!sameSet && !sharedMotion && !(source.type === 'text' && target.type === 'text')) {
     delete out.animation;
     delete out.animationSpeed;
     delete out.animationRepeat;

@@ -29,11 +29,6 @@ describe('ElementTourOffer', () => {
     expect(o.dismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the word for assistive tech only on a phone', () => {
-    render(<ElementTourOffer offer={offer()} />);
-    expect(screen.getByText('Tour').className).toContain('max-sm:sr-only');
-  });
-
   it('gives its buttons the toolbar touch targets', () => {
     render(<ElementTourOffer offer={offer()} />);
     for (const name of ['Take the Tour', 'No Thanks'])
@@ -54,27 +49,28 @@ describe('SelectionPopover aside', () => {
       />,
     );
 
-  it('sits as its own toolbar after the selection toolbar, in one placed group', () => {
+  it('sits as its own toolbar before the selection toolbar, away from Delete, in one placed group', () => {
     renderWith(<ElementTourOffer offer={offer()} />);
     const toolbar = screen.getByTestId('selection-popover');
     const tour = screen.getByTestId('element-tour-offer');
     expect(toolbar.contains(tour)).toBe(false);
     expect(toolbar.parentElement).toBe(tour.parentElement);
-    expect(toolbar.compareDocumentPosition(tour) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(toolbar.compareDocumentPosition(tour) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
   it('wraps on a narrow screen to the far side from the element', () => {
     renderWith(<ElementTourOffer offer={offer()} />);
     const group = screen.getByTestId('selection-popover').parentElement!;
     expect(group.className).toContain('max-w-[calc(100vw-1rem)]');
-    // A wrapped offer goes on the far side from the element: above the toolbar when it sits above (wrap reversed),
-    // below it when it sits below. jsdom has no room above, so it sits below here, its caption under it too.
+    // A wrapped offer goes on the far side from the element: above the toolbar when it sits above, below it when it
+    // sits below (wrap reversed, as the offer comes first). jsdom has no room above, so it sits below here, its
+    // caption under it too.
     const above = screen
       .getByText('Selected Sankey')
       .closest('span.absolute')!
       .className.includes('bottom-full');
-    expect(group.classList.contains(above ? 'flex-wrap-reverse' : 'flex-wrap')).toBe(true);
-    expect(group.classList.contains(above ? 'flex-wrap' : 'flex-wrap-reverse')).toBe(false);
+    expect(group.classList.contains(above ? 'flex-wrap' : 'flex-wrap-reverse')).toBe(true);
+    expect(group.classList.contains(above ? 'flex-wrap-reverse' : 'flex-wrap')).toBe(false);
   });
 
   it('draws nothing beside the toolbar without one', () => {

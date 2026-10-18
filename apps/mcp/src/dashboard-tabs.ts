@@ -25,7 +25,7 @@ export function dashboardTabKind(
   return holds('plan-board') ? 'board' : holds('plan-sheet') ? 'sheet' : null;
 }
 
-export async function documentTabRefs(
+async function documentTabRefs(
   env: Env,
   token: string,
   documentId: string,

@@ -11,8 +11,8 @@ import { FakeGoogle } from '@livediagram/fake-google';
 import { serveFakeGoogle } from '@livediagram/fake-google/server';
 
 // The same defaults scripts/e2e-stack.mjs gives the api worker.
-export const JWKS_PORT = Number(process.env.E2E_DRIVE_JWKS_PORT ?? 8795);
-export const GOOGLE_PORT = Number(process.env.E2E_DRIVE_GOOGLE_PORT ?? 8796);
+const JWKS_PORT = Number(process.env.E2E_DRIVE_JWKS_PORT ?? 8795);
+const GOOGLE_PORT = Number(process.env.E2E_DRIVE_GOOGLE_PORT ?? 8796);
 const KID = 'e2e-drive';
 
 const b64url = (data: Buffer | string) => Buffer.from(data).toString('base64url');

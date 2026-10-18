@@ -10,32 +10,34 @@
 import type { ShapePart } from './shape-geometry';
 import { seededRandom } from './seeded-random';
 import { fnv1aString } from './string-hash';
+import { arcPoints } from './svg-path-outline';
 
 export type Pt = { x: number; y: number };
 
-export type SketchSegment =
+type SketchSegment =
   { kind: 'line'; from: Pt; to: Pt } | { kind: 'curve'; points: Pt[]; closed: boolean };
 
-/** An outline to sketch. `area` is the closed polygon hatching fills, null for an open outline. */
+/** An outline to sketch. `area` is the closed polygon hatching fills, null for an open outline. Marker draws the same
+ *  outlines with its own pen (marker.ts). */
 export type SketchOutline = { segments: SketchSegment[]; area: Pt[] | null };
 
 /** Most a line's end moves, px (rough.js roughness 1 reads at about 1 to 2 px). */
-export const SKETCH_JITTER_PX = 1.5;
+const SKETCH_JITTER_PX = 1.5;
 /** Most a line runs past its end, px: corners visibly cross without stray tails. */
-export const SKETCH_OVERSHOOT_PX = 2;
+const SKETCH_OVERSHOOT_PX = 2;
 /** A line's bow as a share of its length, capped by SKETCH_BOW_MAX_PX. */
-export const SKETCH_BOW_SHARE = 0.02;
-export const SKETCH_BOW_MAX_PX = 5;
+const SKETCH_BOW_SHARE = 0.02;
+const SKETCH_BOW_MAX_PX = 5;
 /** How far apart a curve is sampled, px, and the sample bounds per curve. */
-export const SKETCH_CURVE_STEP_PX = 20;
+const SKETCH_CURVE_STEP_PX = 20;
 const CURVE_MIN_SAMPLES = 8;
 const CURVE_MAX_SAMPLES = 64;
 /** Most a curve sample moves, px. */
-export const SKETCH_CURVE_JITTER_PX = 2;
+const SKETCH_CURVE_JITTER_PX = 2;
 /** A curve's wander is set every this many samples and eased between. */
 const CURVE_KNOT_EVERY = 4;
 /** Hatching: rough.js's default angle, the gap bounds, and the most lines one area draws. */
-export const SKETCH_HATCH_ANGLE_DEG = -41;
+const SKETCH_HATCH_ANGLE_DEG = -41;
 const HATCH_GAP_MIN_PX = 6;
 const HATCH_GAP_MAX_PX = 12;
 export const SKETCH_HATCH_MAX_LINES = 300;
@@ -51,7 +53,9 @@ function num(v: number): string {
   if (tenth === 0) return String(whole);
   return `${t < 0 && whole === 0 ? '-' : ''}${whole}.${tenth < 0 ? -tenth : tenth}`;
 }
-const fmt = (p: Pt) => `${num(p.x)} ${num(p.y)}`;
+/** A point as path text, to a tenth of a pixel (shared with marker.ts). */
+export const sketchPoint = (p: Pt) => `${num(p.x)} ${num(p.y)}`;
+const fmt = sketchPoint;
 const dist = (a: Pt, b: Pt) => Math.hypot(b.x - a.x, b.y - a.y);
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -232,57 +236,6 @@ function sampleCubic(p0: Pt, c1: Pt, c2: Pt, p1: Pt): Pt[] {
   return out;
 }
 
-// An SVG elliptical arc from its endpoint form (SVG 1.1 implementation notes, F.6.5) sampled into points.
-function sampleArc(
-  p0: Pt,
-  rxIn: number,
-  ryIn: number,
-  rotationDeg: number,
-  large: boolean,
-  sweep: boolean,
-  p1: Pt,
-): Pt[] {
-  let rx = Math.abs(rxIn);
-  let ry = Math.abs(ryIn);
-  if (rx === 0 || ry === 0 || (p0.x === p1.x && p0.y === p1.y)) return [p1];
-  const phi = (rotationDeg * Math.PI) / 180;
-  const cos = Math.cos(phi);
-  const sin = Math.sin(phi);
-  const dx = (p0.x - p1.x) / 2;
-  const dy = (p0.y - p1.y) / 2;
-  const x1 = cos * dx + sin * dy;
-  const y1 = -sin * dx + cos * dy;
-  const lambda = (x1 * x1) / (rx * rx) + (y1 * y1) / (ry * ry);
-  if (lambda > 1) {
-    rx *= Math.sqrt(lambda);
-    ry *= Math.sqrt(lambda);
-  }
-  const num = rx * rx * ry * ry - rx * rx * y1 * y1 - ry * ry * x1 * x1;
-  const den = rx * rx * y1 * y1 + ry * ry * x1 * x1;
-  const coef = (large === sweep ? -1 : 1) * Math.sqrt(Math.max(0, num / den));
-  const cx1 = (coef * rx * y1) / ry;
-  const cy1 = (-coef * ry * x1) / rx;
-  const cx = cos * cx1 - sin * cy1 + (p0.x + p1.x) / 2;
-  const cy = sin * cx1 + cos * cy1 + (p0.y + p1.y) / 2;
-  const angle = (ux: number, uy: number, vx: number, vy: number) =>
-    Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
-  const theta = angle(1, 0, (x1 - cx1) / rx, (y1 - cy1) / ry);
-  let delta = angle((x1 - cx1) / rx, (y1 - cy1) / ry, (-x1 - cx1) / rx, (-y1 - cy1) / ry);
-  if (!sweep && delta > 0) delta -= 2 * Math.PI;
-  if (sweep && delta < 0) delta += 2 * Math.PI;
-  const n = sampleCount(Math.abs(delta) * Math.max(rx, ry));
-  const out: Pt[] = [];
-  for (let i = 1; i <= n; i++) {
-    const a = theta + (delta * i) / n;
-    const ex = rx * Math.cos(a);
-    const ey = ry * Math.sin(a);
-    out.push({ x: cos * ex - sin * ey + cx, y: sin * ex + cos * ey + cy });
-  }
-  // Land exactly on the end point.
-  out[out.length - 1] = p1;
-  return out;
-}
-
 // Parses a path into subpaths of segments: straight commands stay lines, consecutive curved commands merge into
 // one curve run so a cloud's bumps flow into each other. Supports M L H V Q C A Z, absolute and relative; the
 // first other command stops the parse (logged once per letter) and the outline so far is used.
@@ -343,7 +296,16 @@ function parsePath(d: string): Subpath[] {
         return addCurve(sampleCubic(pen, at(a[0]!, a[1]!), at(a[2]!, a[3]!), at(a[4]!, a[5]!)));
       case 'A':
         return addCurve(
-          sampleArc(pen, a[0]!, a[1]!, a[2]!, a[3] !== 0, a[4] !== 0, at(a[5]!, a[6]!)),
+          arcPoints(
+            pen,
+            a[0]!,
+            a[1]!,
+            a[2]!,
+            a[3] !== 0,
+            a[4] !== 0,
+            at(a[5]!, a[6]!),
+            sampleCount,
+          ),
         );
     }
   };

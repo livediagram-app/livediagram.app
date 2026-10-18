@@ -27,7 +27,7 @@ const clampPenWidth = (px: number) => Math.min(PEN_WIDTH_MAX_PX, Math.max(PEN_WI
 export const CLOSED_END_EPSILON_PX = 1;
 // How far a curved line's handles reach: a sixth of the chord between a node's neighbours
 // (Catmull-Rom as cubic Béziers).
-export const CURVE_HANDLE_RATIO = 1 / 6;
+const CURVE_HANDLE_RATIO = 1 / 6;
 
 /** The element opacity a stroke asks for: its own times its colour's alpha. */
 export function strokeOpacity(stroke: SceneStroke, colour = stroke.colour): number {

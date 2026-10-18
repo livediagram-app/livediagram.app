@@ -10,7 +10,7 @@ import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { sheetStoreOf, type SheetStore } from '@/components/sheets/sheet-store-client';
 import type { TabsState } from './dashboard-context';
 
-export type DocumentSheet = { sheetId: string; tabId: string; tabName: string };
+type DocumentSheet = { sheetId: string; tabId: string; tabName: string };
 
 // Every Sheet the document's tabs place, in tab order.
 export function documentSheets(tabs: readonly Tab[]): DocumentSheet[] {

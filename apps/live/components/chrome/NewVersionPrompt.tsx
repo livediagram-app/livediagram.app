@@ -15,6 +15,8 @@ import {
 import { reloadWhenSaved } from '@/lib/reload-when-saved';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
+import { TOAST_SURFACE } from '@/components/toast/ToastCard';
+import { announceToastFloorChange } from '@/components/toast/toast-floor';
 
 type Phase = 'offered' | 'saving' | 'unsaved';
 
@@ -46,6 +48,10 @@ export function NewVersionPrompt({
     debugLog('[document-format] newer on the server', { editor: DOCUMENT_FORMAT, server });
     track('UI', 'Opened', 'NewVersionPrompt');
   }, [visible, server]);
+  // A toast already up stands on the prompt while it shows, and drops back when it goes.
+  useEffect(() => {
+    announceToastFloorChange();
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -60,7 +66,10 @@ export function NewVersionPrompt({
     <div
       role="status"
       data-new-version-prompt=""
-      className="fixed bottom-20 left-1/2 z-[var(--z-chrome)] flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+      // The toast's look, not its stack (docs/specs/004-interface-design/toasts.md "Out of scope"); the toasts
+      // stand on it, as on any bottom chrome.
+      data-toast-floor=""
+      className={`fixed bottom-20 left-1/2 z-[var(--z-chrome)] flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
     >
       <p className="min-w-0 flex-1">{COPY[phase]}</p>
       <Button size="sm" disabled={phase === 'saving'} onClick={() => void onReload()}>

@@ -385,7 +385,7 @@ describe('Text colour: text elements', () => {
     expect(applyQuickStrokeStyle(t, 'dashed')).toBe(t);
   });
 
-  it('Clear styles returns the text colour to the theme and drops the binding', () => {
+  it('Clear Styles returns the text colour to the theme and drops the binding', () => {
     const next = clearQuickStyle(
       text('t', { textColor: '#aa0000', textSwatch: 1 }),
       forest,
@@ -446,7 +446,7 @@ describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
 });
 
 // docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
-// name marks no theme swatch, and a choice or Clear styles replaces it.
+// name marks no theme swatch, and a choice or Clear Styles replaces it.
 describe('named stock colours', () => {
   const theme = THEMES.find((t) => t.id === 'brand')!;
   it('marks no swatch for a named stroke or text colour', () => {
@@ -494,7 +494,7 @@ describe('named stock colours', () => {
     expect((applyQuickStroke(path, theme, 1) as typeof path).penColour).toBeUndefined();
   });
 
-  it('clears names with Clear styles', () => {
+  it('clears names with Clear Styles', () => {
     const out = clearQuickStyle(
       shape('s', { penColour: 'blue', penTextColour: 'red' }),
       theme,

@@ -26,7 +26,7 @@ import { pointDistance, type Point } from './geometry-primitives';
 
 // Two candidate anchors whose distances to the other end differ by no more
 // than this are equally close; the one nearer the previous anchor wins.
-export const CLOSENESS_TIE_PX = 0.5;
+const CLOSENESS_TIE_PX = 0.5;
 
 // Pinned ends per element per anchor: what "another arrow holds it" reads.
 type HeldAnchors = Map<ElementId, Map<Anchor, number>>;
@@ -114,6 +114,14 @@ function reanchorEnd(
   if (!side) {
     console.debug(`${tag} side=none ${ep.anchor}->${ep.anchor} kept=no-side`);
     return ep;
+  }
+  // A field-pinned end (docs/specs/009-elements/entity.md "Field to field") stays on its field: it only
+  // swaps between the left and right edges, and a top or bottom facing side leaves it where it is.
+  if (ep.field !== undefined && !anchorLiesOn(ep.anchor, side)) {
+    if (side !== 'e' && side !== 'w') return ep;
+    moveHeld(held, el.id, ep.anchor, side);
+    console.debug(`${tag} side=${side} ${ep.anchor}->${side} field=${ep.field}`);
+    return { ...ep, anchor: side };
   }
   if (anchorLiesOn(ep.anchor, side)) {
     console.debug(`${tag} side=${side} ${ep.anchor}->${ep.anchor} kept=facing`);

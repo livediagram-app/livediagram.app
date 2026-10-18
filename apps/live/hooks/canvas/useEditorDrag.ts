@@ -27,6 +27,7 @@ import {
   nearestElementTowards,
   opposingAnchor,
   rebindArrowAnchorsAfterMove,
+  withRelationshipHeads,
   type ArrowElement,
   type Element,
 } from '@livediagram/document';
@@ -177,7 +178,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The canvas going away mid-gesture writes nothing.
   useEffect(() => () => cancelPreview(), []);
 
-  const { beginDrag, beginAnchorDrag } = useBoxedDragHandlers({
+  const { beginDrag, beginAnchorDrag, pressArmedAction } = useBoxedDragHandlers({
     depsRef,
     setDrag,
     checkpointPendingRef,
@@ -513,7 +514,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         shiftHeld: e.shiftKey,
         elements: activeTab.elements,
         guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
-        pages: depsRef.current.illustratePages,
+        pages: depsRef.current.pagesMode,
         tick,
         scheduleGuides,
         scheduleSnapTargets,
@@ -611,6 +612,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         previewTick((els) =>
           applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
         );
+      }
+      // An arrow a drag has joined to two entities, with no head of its own, becomes a relationship as it
+      // is released: crow's-foot ends, the many end on a foreign key (docs/specs/009-elements/entity.md
+      // "Cardinality ends"). Folded into the gesture's result like the bow above.
+      if (drag?.kind === 'arrow-endpoint' && !tapStill) {
+        const arrowId = drag.arrowId;
+        previewTick((els) => withRelationshipHeads(els, arrowId));
       }
       // The gesture's result, as the release logic below reads it, then written in one change before
       // anything else writes (docs/specs/008-canvas/drag-preview.md).
@@ -827,6 +835,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
         );
       }
+      // Joined to two entities: a relationship, as in onUp above (docs/specs/009-elements/entity.md).
+      {
+        const arrowId = drag.arrowId;
+        previewTick((els) => withRelationshipHeads(els, arrowId));
+      }
       commitPreview();
       // The endpoint already tracks the cursor (last pointermove); this
       // click just lands it. Shift chains straight into the next arrow
@@ -957,6 +970,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     snapGuideStore,
     beginDrag,
     beginAnchorDrag,
+    pressArmedAction,
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,

@@ -14,7 +14,7 @@ export function normaliseRotation(deg: number | undefined): number | undefined {
   return turned === 0 ? undefined : turned;
 }
 
-export type CommonFields = {
+type CommonFields = {
   rotation?: number;
   locked?: true;
   link?: ElementLink;

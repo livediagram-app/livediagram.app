@@ -28,7 +28,7 @@ export const PATH_TOUCH_HIT_PX = 16;
 // Screen px within which a dragged node lines up with another node or its own start.
 export const PATH_SNAP_PX = 8;
 
-export type PathEditHit =
+type PathEditHit =
   | { kind: 'handle'; node: number; side: HandleSide }
   | { kind: 'node'; node: number }
   | { kind: 'segment'; segment: number; t: number }

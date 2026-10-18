@@ -36,7 +36,7 @@ export type BoardColourSection = {
 };
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
-export type QuickSectionId =
+type QuickSectionId =
   'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
 // Ink, the eighth choice of the Stroke and Text colour rows (docs/specs/007-editor/editor-modes.md
@@ -402,7 +402,7 @@ export function applyQuickIconAlign(el: Element, align: QuickIconAlign): Element
   return { ...el, iconPosition: align };
 }
 
-// Clear styles: the quick-style fields back to the theme's default.
+// Clear Styles: the quick-style fields back to the theme's default.
 export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
   if (!isQuickStyleTarget(el)) return el;
   if (el.type === 'text') {

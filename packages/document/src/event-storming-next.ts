@@ -5,11 +5,12 @@
 
 import { eventStormingNoteSize, type EventStormingNoteKind } from './event-storming';
 import { ES_NOTE_GAP } from './event-storming-lanes';
+import type { Rect } from './geometry-primitives';
 
 // Which side of a note, along the board's own left-to-right time axis.
 export type EsSide = 'before' | 'after';
 
-export type EsNextNote = {
+type EsNextNote = {
   kind: EventStormingNoteKind;
   side: EsSide;
   next: EventStormingNoteKind;
@@ -37,11 +38,9 @@ export function nextNoteSides(
   return ES_NEXT_NOTES.filter((n) => n.kind === kind).map(({ side, next }) => ({ side, next }));
 }
 
-type Bounds = { x: number; y: number; width: number; height: number };
-
 // One gutter beside the note, CENTRED on it vertically, so the 180-tall prose
 // kinds sit against a 200-tall square and still read as one row.
-export function nextNoteBounds(from: Bounds, side: EsSide, kind: EventStormingNoteKind): Bounds {
+export function nextNoteBounds(from: Rect, side: EsSide, kind: EventStormingNoteKind): Rect {
   const size = eventStormingNoteSize(kind);
   return {
     x: side === 'before' ? from.x - ES_NOTE_GAP - size.width : from.x + from.width + ES_NOTE_GAP,

@@ -25,9 +25,9 @@ export const DRAWIO_MAX_PAGE_SCALE = 1.6;
 /** draw.io's default stylesheet font size. */
 export const DRAWIO_DEFAULT_FONT_PX = 12;
 /** draw.io's default vertex width, the reference box when a page has no labelled vertex (D42). */
-export const DRAWIO_DEFAULT_BOX_PX = 120;
+const DRAWIO_DEFAULT_BOX_PX = 120;
 /** draw.io's default label `spacing`, on each side. */
-export const DRAWIO_LABEL_SPACING = 2;
+const DRAWIO_LABEL_SPACING = 2;
 
 const commonest = (values: number[]): number => {
   const counts = new Map<number, number>();

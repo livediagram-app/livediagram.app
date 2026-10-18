@@ -60,7 +60,7 @@ export type DashboardSpec = {
 };
 
 // A plan view element at the origin: the Dashboard's layout places it.
-export function planViewElement(
+function planViewElement(
   viewId: PlanViewId,
   width: number,
   height: number,

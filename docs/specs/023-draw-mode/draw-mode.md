@@ -49,8 +49,8 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
-- **Any tab:** the mode switch (beside the menu button) turns any general
-  tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
+- **Any empty tab:** the mode switch on its start turns a general tab into a whiteboard before anything is on it,
+  and a new tab made from a Draw tab opens in Draw ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
@@ -216,7 +216,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
 
 The shapes group learns and keeps the shapes a user reaches for. Its six slots are a
 [Within reach](../004-interface-design/within-reach.md) set (N = 3, a use is a pick), the same rule as
-Explorer Home's Jump back in.
+Explorer Home's Jump Back In.
 
 - **The six slots** live in the **Shapes** flyout, not on the bar, in two
   rows of three with **no labels**: they are meant to become obvious after a
@@ -494,7 +494,8 @@ Explorer Home's Jump back in.
   double-click inside the topmost outline-picked shape there (by its drawn
   outline, following its rotation) opens that shape's label editor, unless
   the shape is locked, on a hidden or locked layer, or has no label to edit.
-  Beside every shape, a double-click makes a text box as on any canvas. (A
+  Beside every shape, a double-click makes a text box as on any canvas (a finger's
+  double-tap zooms instead, [Double-tap to zoom](../008-canvas/canvas-and-palette.md#double-tap-to-zoom)). (A
   selected shape's first click puts it down, so its second reaches the board:
   the same rule edits it.)
 - The **outline is the one drawn**, not the box: an ellipse by its curve, a
@@ -860,7 +861,7 @@ through the ordinary `Element` / `Added` events.
 ## Help centre ([Help app](../018-help/help-app.md))
 
 One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
-redirects to it): switching modes (the switch beside the tabs, Shift+D, Opens in), starting a
+redirects to it): choosing the mode on an empty tab's start (or Shift+D there), starting a
 drawing, the dock, pens, pen versus touch, the two erasers, shape recognition, backgrounds, light
 and dark and snapping custom colours. Registered per
 [Register a help article](../../instructions/register-a-help-article.md).

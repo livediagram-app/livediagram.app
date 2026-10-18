@@ -164,7 +164,7 @@ SheetWrite; cells?: CellDto[]; created?: true; deleted?: true; refetch?: true }`
   drawn. `hasPlanContent` (`apps/live/hooks/plan/usePlanNeeded.ts`) counts `plan-sheet`, so a tab with a Sheet loads
   the document's items once, for the card functions.
 - **Bridge** (`apps/live/hooks/sheets/useSheetsBridge.ts`, tiny, in the main bundle): `{ scope, activeTabId, self,
-canEdit, locale, peers, pushUndo, toast, notify, sendPresence, commitElements, undo, redo, switchToPlan,
+canEdit, locale, peers, pushUndo, toast, notify, sendPresence, commitElements, undo, redo,
 selectElement, attach }`, made in `useEditorState` and provided by `EditorView` (`SheetsBridgeContext`). The room
   hands it `sheets` system ops and `sheet-presence` ops (`useRoomConnection`); the sheet chunk `attach`es its
   handlers, and before it has, every op is dropped (the first load reads the sheets fresh). A rejoin resyncs.
@@ -227,7 +227,7 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
   inserted with `insertSheetStatements` unless it exists, the tab is full (`DOCUMENT_SHEETS_MAX`,
   `DOCUMENT_CELLS_MAX`: log `[changeset] template sheet skipped`) or it does not validate; only the Sheets made lose
   the mark; never a refusal.
-- The wizard's Local only create (`apps/live/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
+- The wizard's This Browser create (`apps/live/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
   only when `hasTemplateSheets`), stored as the record's `sheets` by `offlineCreateDocument`.
 - The editor (`useSheetModel`): a Sheet still carrying a known `start`, its sheet absent once the tab is `ready`, for
   someone who may edit: `templateSheetWithCharts` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
@@ -361,6 +361,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 | A sheet whose element never reached the api                    | Noted at create (`sheetNoteUnreferencedStatement`), so it expires                                                                             |
 | Agent change past a sheet or document cap                      | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                                                               |
 | Agent change whose later part the api refuses                  | The landed parts kept and reported as a `partly` line, then the refusal                                                                       |
+| add_sheet onto a tab not in Plan                               | `tab_not_plan` after one tab read (`tabTakesPlanOnly`), before any sheet is made; the read also tints a design                                |
 | add_sheet fill or placing refused                              | The made sheet deleted, so a retry does not spend the document's cells again                                                                  |
 | Design on a sheet with cells                                   | `sheet_not_empty`, naming clear and add_sheet                                                                                                 |
 | Charts' changeset refused after the writes                     | The writes stand; the answer carries their lines and the refusal                                                                              |

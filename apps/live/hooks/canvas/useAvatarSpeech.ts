@@ -13,7 +13,7 @@ import { anyModalOpen } from '@/lib/modal-guard';
 import { track } from '@/lib/telemetry';
 import { isEnterActivatedTarget, isTypingTarget } from '@/lib/typing-target';
 
-export type SpeechSource = 'composer' | 'panel';
+type SpeechSource = 'composer' | 'panel';
 
 export function useAvatarSpeech({
   active,

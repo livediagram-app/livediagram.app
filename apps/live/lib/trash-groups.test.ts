@@ -40,7 +40,7 @@ describe('trashGroups', () => {
       ['Your documents', { kind: 'personal' }, ['p1']],
       ['Alpha', { kind: 'team', teamId: 'a' }, ['t1']],
       ['Beta', { kind: 'team', teamId: 'b' }, ['t2', 't3']],
-      ['This browser only', { kind: 'local' }, ['l1']],
+      ['This Browser only', { kind: 'local' }, ['l1']],
     ]);
   });
 

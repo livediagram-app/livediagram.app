@@ -14,7 +14,7 @@ import { DEFAULT_FLOORS, VALUE_FLOOR, type PaperFloors } from './floors';
 // The BANDS and floors are not derivable: they are calibrated tolerances for
 // paper under room light, and they live here as named constants.
 
-export type PixelClass = EventStormingNoteKind | 'wall' | 'ink' | 'unknown';
+type PixelClass = EventStormingNoteKind | 'wall' | 'ink' | 'unknown';
 
 // The hue BANDS, per kind.
 //
@@ -63,7 +63,7 @@ const YELLOW_KINDS = new Set<EventStormingNoteKind>(['actor', 'aggregate']);
 // The catalogue's own fills, as HSV. Kept because the bands above are a
 // widening OF these — a test asserts every catalogue fill still lands on its
 // own kind, so a change to a hex that walks out of its band is caught.
-export type PaperClass = {
+type PaperClass = {
   kind: EventStormingNoteKind;
   hue: number;
   saturation: number;
@@ -162,8 +162,6 @@ export function classifyHsv(hsv: Hsv, floors: PaperFloors = DEFAULT_FLOORS): Pix
   if (band.kind === 'policy' && hsv.v < DIM_HUE_MAX_VALUE) return 'hotspot';
   return band.kind;
 }
-
-export { HUE_BANDS };
 
 export function classifyRgb(
   r: number,

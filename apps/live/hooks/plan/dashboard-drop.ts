@@ -41,7 +41,7 @@ export type DashboardZone =
   | { kind: 'row-gap'; index: number }
   | { kind: 'slot-gap'; rowId: string; index: number };
 
-export type DashboardPlacer = (item: DashboardItem, zone: DashboardZone | null) => void;
+type DashboardPlacer = (item: DashboardItem, zone: DashboardZone | null) => void;
 
 let placer: DashboardPlacer | null = null;
 
@@ -66,7 +66,7 @@ export function dashboardOpen(): boolean {
 }
 
 // The Layout tiles' rows (palette-dashboard-tiles): their height and how many slots they bring.
-export const DASHBOARD_LAYOUT_ROWS: Readonly<Record<string, { height: number; slots: number }>> = {
+const DASHBOARD_LAYOUT_ROWS: Readonly<Record<string, { height: number; slots: number }>> = {
   'row-metrics': { height: 160, slots: 4 },
   'row-charts': { height: 360, slots: 2 },
   'row-board': { height: 560, slots: 1 },
@@ -85,7 +85,7 @@ function tabItemOf(rest: string): DashboardItem | null {
 // The cards a slot takes that are written on the page, and a Cards tile's choice (`card:<kind>`).
 export const DASHBOARD_CARD_KINDS = ['title', ...DASHBOARD_CARD_TYPES] as const;
 export type DashboardCardKind = (typeof DASHBOARD_CARD_KINDS)[number];
-export const isDashboardCardKind = (v: string): v is DashboardCardKind =>
+const isDashboardCardKind = (v: string): v is DashboardCardKind =>
   (DASHBOARD_CARD_KINDS as readonly string[]).includes(v);
 export const dashboardCardChoice = (card: DashboardCardKind) => `card:${card}`;
 export const sheetMetricChoice = (metric: SheetMetricKind) => `sheet:${metric}`;
@@ -200,8 +200,8 @@ export function readDashboardGeometry(root: ParentNode): DashboardGeometry {
 
 // How near a slot's side counts as its side (a gap) rather than the slot itself (a swap), and a row's top or bottom
 // as the gap above or below it.
-export const MOVE_SIDE_PX = 72;
-export const MOVE_EDGE_PX = 24;
+const MOVE_SIDE_PX = 72;
+const MOVE_EDGE_PX = 24;
 
 // Where the slot `fromId` being moved would go at (x, y): onto another slot's middle (a swap), into the gap at a
 // slot's side or between two slots, or between rows (near a row's top or bottom, or off every row). Null over itself.

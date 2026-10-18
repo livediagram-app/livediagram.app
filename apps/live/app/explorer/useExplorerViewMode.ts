@@ -1,5 +1,6 @@
 'use client';
 
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
 // List, card or details layout for the Explorer browse views (docs/specs/006-document/document-snapshots.md,
@@ -25,9 +26,14 @@ export function useExplorerViewMode(): [ExplorerViewMode, (mode: ExplorerViewMod
   // prerenders with the default (no window at build), and the hydrating
   // render matches it; the saved choice lands on the render after.
   const saved = useLocalStorageValue(STORAGE_KEY);
-  const mode: ExplorerViewMode = MODES.includes(saved as ExplorerViewMode)
-    ? (saved as ExplorerViewMode)
-    : DEFAULT_MODE;
+  // List and Details are for larger screens: a phone always shows cards, and the
+  // toggle is hidden there. The saved choice is kept for when the window widens.
+  const isPhone = useIsMobileViewport();
+  const mode: ExplorerViewMode = isPhone
+    ? 'card'
+    : MODES.includes(saved as ExplorerViewMode)
+      ? (saved as ExplorerViewMode)
+      : DEFAULT_MODE;
 
   const update = (next: ExplorerViewMode) => writeLocalStorageValue(STORAGE_KEY, next);
 

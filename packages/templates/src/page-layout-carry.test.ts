@@ -1,4 +1,4 @@
-// A page's content carried into a new layout (docs/specs/007-editor/illustrate-pages.md "Content
+// A page's content carried into a new layout (docs/specs/007-editor/pages-mode.md "Content
 // carries over").
 import { describe, expect, it } from 'vitest';
 import {

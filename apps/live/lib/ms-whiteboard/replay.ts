@@ -42,7 +42,7 @@ export function orderChanges(changes: Rec[]): Rec[] {
 }
 
 /** The ids of the changes undo has taken out (and redo has not put back), walking in order. */
-export function undoneChanges(ordered: Rec[]): Set<string> {
+function undoneChanges(ordered: Rec[]): Set<string> {
   const byId = new Map<string, Rec>();
   for (const c of ordered) if (str(c.fuid)) byId.set(c.fuid as string, c);
   const targets = (c: Rec) =>

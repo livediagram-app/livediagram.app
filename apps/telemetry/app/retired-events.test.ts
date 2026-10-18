@@ -40,7 +40,7 @@ describe('isRetiredEvent', () => {
       'TemplateModeDiagram',
       'TemplateModeDraw',
       'TemplateModeFacilitate',
-      'TemplateModeIllustrate',
+      'TemplateModePages',
       'TemplateModePlan',
     ])
       expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
@@ -51,8 +51,8 @@ describe('isRetiredEvent', () => {
 
   it('retires Settings › Experimental and its mode switches, not the modes', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsExperimental')).toBe(true);
-    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOn')).toBe(true);
-    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
     expect(isRetiredEvent('Editor', 'Changed', 'ModePlan')).toBe(false);
@@ -108,5 +108,15 @@ describe('dropRetiredEvents', () => {
     expect(Object.keys(daily.byMetric)).toEqual([undone]);
     expect(daily.byCategory.Document).toEqual([3, 4]);
     expect(daily.totals).toEqual([3, 4]);
+  });
+});
+
+// docs/specs/017-telemetry/telemetry.md: a deployment with telemetry off answers `{ enabled: false }` alone, and the
+// dashboard shows that it is off. Dropping retired events from it threw, which read as a failed request.
+describe('dropRetiredEvents on a deployment with telemetry off', () => {
+  it('hands the summary back as it came', () => {
+    const off = { enabled: false } as unknown as TelemetrySummary;
+    expect(() => dropRetiredEvents(off)).not.toThrow();
+    expect(dropRetiredEvents(off)).toBe(off);
   });
 });

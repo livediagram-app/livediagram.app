@@ -92,7 +92,7 @@ test.describe('Optical alignment audit', () => {
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share this document' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share This Document' }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);
   });
@@ -109,7 +109,7 @@ test.describe('Optical alignment audit', () => {
     await visitor.context().close();
   });
 
-  // Home as a returning owner meets it (the document they opened in Jump back in), then My
+  // Home as a returning owner meets it (the document they opened in Jump Back In), then My
   // documents, which lists it as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     // Signed, so the identity holds across the two page loads.
@@ -122,7 +122,7 @@ test.describe('Optical alignment audit', () => {
 
     await page.goto('/explorer/all');
     await documentRow(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer, My documents');
+    await expectCentred(page, 'Explorer, My Documents');
     expectNoPageErrors(pageErrors);
   });
 });

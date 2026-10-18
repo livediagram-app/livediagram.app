@@ -65,7 +65,7 @@ function roleAttrs(
 }
 
 // One table part as markup, in its viewBox space.
-export function svgShapePart(
+function svgShapePart(
   part: ShapePart,
   fill: string,
   stroke: string,

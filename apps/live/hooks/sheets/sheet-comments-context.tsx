@@ -19,9 +19,9 @@ export function cellCommentAnchorSelector(elementId: string, cell: string): stri
   return `[${CELL_COMMENT_ANCHOR_ATTR}="${cellCommentAnchor(elementId, cell)}"]`;
 }
 
-export type SheetComments = {
+type SheetComments = {
   // Opens (or, pressed again, closes) the thread of `cell` on Sheet `elementId`.
-  open(elementId: string, cell: string): void;
+  open: (elementId: string, cell: string) => void;
   // The thread open now, when it is a cell's.
   openCell: { elementId: string; cell: string } | null;
   // An Editor or a Participant (docs/specs/013-workspace/share-roles.md): may start a thread. A Viewer reads.
@@ -68,7 +68,7 @@ export function useSheetComments(): SheetComments | null {
 }
 
 // One Sheet element's cell threads, for its grid.
-export type SheetCellThreads = { elementId: string; threads: CellCommentThreads | undefined };
+type SheetCellThreads = { elementId: string; threads: CellCommentThreads | undefined };
 
 const SheetCellThreadsContext = createContext<SheetCellThreads | null>(null);
 

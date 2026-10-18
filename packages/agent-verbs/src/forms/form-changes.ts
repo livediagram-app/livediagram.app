@@ -97,9 +97,6 @@ export type FormChange =
     }
   | ({ op: 'responds_to' } & RespondsToInput);
 
-// The changes a form taking responses still takes.
-export const SETTINGS_OPS: ReadonlySet<FormChange['op']> = new Set(['settings']);
-
 const tooLong = (what: string, max: number) =>
   refuse('too_long', `${what} holds at most ${max} characters.`);
 

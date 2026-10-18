@@ -1,9 +1,10 @@
 import { crc32 as nodeCrc32 } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { ByteBudget, listZip, readZipEntry } from './zip-reader';
+import { ByteBudget } from './inflate';
+import { listZip, readZipEntry } from './zip-reader';
 import { crc32, writeZip } from './zip-writer';
 
-// docs/specs/007-editor/illustrate-pages.md "Export": every page as images in one .zip.
+// docs/specs/007-editor/pages-mode.md "Export": every page as images in one .zip.
 describe('writeZip', () => {
   it('computes the standard CRC-32', () => {
     const data = new TextEncoder().encode('The quick brown fox');

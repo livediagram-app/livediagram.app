@@ -29,7 +29,7 @@ export async function seedDocument(page: Page, owner: string, origin: string): P
 }
 
 // The seeded diagram as a returning owner left it: opened once, as the editor opens it, so it is
-// in Home's Jump back in (docs/specs/013-workspace/explorer-home.md: a document made but never
+// in Home's Jump Back In (docs/specs/013-workspace/explorer-home.md: a document made but never
 // opened is not, D133).
 export async function seedOpenedDocument(
   page: Page,
@@ -41,9 +41,9 @@ export async function seedOpenedDocument(
   return doc.id;
 }
 
-// The opened document's thumbnail in Home's Jump back in, and its row on a listing view.
+// The opened document's thumbnail in Home's Jump Back In, and its row on a listing view.
 export const jumpBackIn = (page: Page, name: string) =>
-  page.getByRole('list', { name: 'Jump back in' }).getByRole('link', { name });
+  page.getByRole('region', { name: 'Jump Back In' }).getByRole('link', { name });
 export const documentRow = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });
 

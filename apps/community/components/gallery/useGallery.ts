@@ -34,7 +34,7 @@ import {
 // dropped. With `is:mine` in the search (My Shares) the posts come from the signed-in author's own list
 // instead, once `session` says who that is; signed out, the status is `signed-out` and nothing loads.
 
-export type GalleryStatus = 'loading' | 'ready' | 'error' | 'signed-out';
+type GalleryStatus = 'loading' | 'ready' | 'error' | 'signed-out';
 
 type Result = {
   key: string;

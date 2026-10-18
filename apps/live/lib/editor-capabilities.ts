@@ -88,3 +88,17 @@ export function resolveEditorCapabilities(input: {
     sheetCells: true,
   };
 }
+
+/**
+ * The guard a content-adding hook takes (images, mind and flowchart growth, the placement helpers a dragged palette
+ * tile lands through): a Participant that may add content is held only by the session's own guard (`blocked`: a
+ * locked tab or layer, a tab still loading); every other read-only session stays shut (`structureBlocked`).
+ */
+export function contentAddBlocked(input: {
+  participating: boolean;
+  canAddContent: boolean;
+  blocked: boolean;
+  structureBlocked: boolean;
+}): boolean {
+  return input.participating ? input.blocked || !input.canAddContent : input.structureBlocked;
+}

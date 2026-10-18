@@ -28,13 +28,13 @@ export * from './feature-art/embeds-timeline';
 export * from './feature-art/present';
 export * from './feature-art/room';
 export * from './feature-art/facilitate';
-// Infographic pages (docs/specs/007-editor/illustrate-pages.md): pages, layouts, backgrounds, export.
+// Infographic pages (docs/specs/007-editor/pages-mode.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';
 export * from './feature-art/infographics-export';
 export * from './feature-art/logo';
 export * from './feature-art/article';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
-// erasers, Plan's boards, and the writing and slides of Illustrate's articles and slide pages.
+// erasers, Plan's boards, and the writing and slides of Pages mode's articles and slide pages.
 export * from './feature-art/whiteboard';
 export * from './feature-art/whiteboard-pen';
 export * from './feature-art/plan';
@@ -49,3 +49,15 @@ export * from './feature-art/sheet';
 export * from './feature-art/forms';
 export * from './feature-art/side-by-side';
 export * from './feature-art/imports';
+// Event storming boards and their photo import; the sequence diagram, charts and code blocks; search,
+// follow along and live images.
+export * from './feature-art/storming';
+export * from './feature-art/canvas-data';
+export * from './feature-art/reach';
+// Plan cards beyond the board, Sheets beyond formulas, Forms beyond the build, pages beyond
+// layouts, and Draw's dock.
+export * from './feature-art/plan-more';
+export * from './feature-art/sheet-more';
+export * from './feature-art/forms-more';
+export * from './feature-art/pages-more';
+export * from './feature-art/whiteboard-dock';

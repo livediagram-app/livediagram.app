@@ -8,11 +8,17 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/document';
+import {
+  canvasSurface,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_BUTTON_MODE,
+  PEN_INK,
+} from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
-import { isVoteHost } from '@livediagram/document';
+import { isBoxed, isVoteHost, threadAt } from '@livediagram/document';
+import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -20,15 +26,17 @@ import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
-import { answeringKeys, participantKey } from '@/lib/identity';
+import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
+import { labelsFollowCanvas } from '@/lib/tab-theme-apply';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -47,6 +55,7 @@ import {
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
 import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -120,7 +129,6 @@ export function EditorCanvasHost() {
     addVideo,
     addProcess,
     addFlowchart,
-    addRailPointSelected,
     addShape,
     addStatRow,
     addSticky,
@@ -151,6 +159,7 @@ export function EditorCanvasHost() {
     beginArrowLabelDrag,
     beginArrowTranslate,
     beginDrag,
+    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
     beginErase,
@@ -256,6 +265,7 @@ export function EditorCanvasHost() {
     openAssignActionDialog,
     completeAction,
     reopenAction,
+    linkedActions,
     openCellLinkPicker,
     openComments,
     openDocument,
@@ -281,6 +291,7 @@ export function EditorCanvasHost() {
     selectMarquee,
     confirm,
     selfParticipant,
+    sessionShareCode,
     setAiPanelPosition,
     exitAvatarTool,
     pressModeButton,
@@ -316,7 +327,6 @@ export function EditorCanvasHost() {
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
-    setRailLabelSelected,
     setSelectedId,
     toggleChecklistItem,
     setPageHeading,
@@ -325,6 +335,7 @@ export function EditorCanvasHost() {
     setHeroCaptionLine,
     growMindNode,
     flowchartActions,
+    entityActions,
     mindOutline,
     tidyMindMap,
     abandonMindNode,
@@ -353,7 +364,7 @@ export function EditorCanvasHost() {
     whiteboardDock,
     drag,
     editorMode,
-    illustratePages,
+    pagesMode,
     presentArticles,
     loadedTabIds,
     autoAlignTab,
@@ -436,6 +447,7 @@ export function EditorCanvasHost() {
   // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
+  const landscapePhone = useIsLandscapePhone();
   // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
   // true when the row's element is that kind of card, now centred in view.
   const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
@@ -453,6 +465,18 @@ export function EditorCanvasHost() {
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
     else if (el.shape === 'sequence' && canEditSequence(can, el)) setSequenceOpenForId(id);
   };
+  // How a comment change made on a Comment panel is kept: shared with the anchored popover.
+  const commentPersist = commentPersisters({
+    readOnly: isReadOnly,
+    documentId,
+    tabId: activeTab.id,
+    selfId: selfParticipant.id,
+    shareCode: sessionShareCode,
+  });
+  const threadOn = (elementId: string) => {
+    const el = activeTab.elements.find((e) => e.id === elementId);
+    return el && isBoxed(el) ? threadAt(el) : undefined;
+  };
   const backdrop = resolveViewBackdrop(
     activeTab,
     { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
@@ -469,6 +493,12 @@ export function EditorCanvasHost() {
     presentingElements ?? activeTab.elements,
     surface,
     themeViewMap(activeTab.theme, appearance),
+    labelsFollowCanvas(activeTab)
+      ? {
+          stored: activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+          drawn: backdrop.backgroundColor,
+        }
+      : undefined,
   );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
@@ -510,11 +540,11 @@ export function EditorCanvasHost() {
   // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
   // preview. Resolved here rather than in the panel so the panel stays a
   // renderer and never reaches into the tab.
-  // A page's background in the brush (docs/specs/007-editor/illustrate-pages.md "Copying a background").
-  const brushedPage = illustratePages?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
+  // A page's background in the brush (docs/specs/007-editor/pages-mode.md "Copying a background").
+  const brushedPage = pagesMode?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
   useDeadPageBrush(
     formatSourceId,
-    illustratePages?.pages.map((pg) => pg.id),
+    pagesMode?.pages.map((pg) => pg.id),
     setFormatSourceId,
   );
   const formatSource = formatSourceId
@@ -529,8 +559,9 @@ export function EditorCanvasHost() {
     // The document-write key, not the owner id — see CollabApi.selfKey.
     selfKey: participantKey(selfParticipant),
     // Ourselves first: livePresence is the REMOTE roster, and an estimate
-    // card that can't show your own avatar is showing the wrong room.
-    participants: [selfParticipant, ...livePresence],
+    // card that can't show your own avatar is showing the wrong room. Our row carries our own level, as a peer's
+    // does, so a Viewer's screen never waits on the Viewer.
+    participants: [selfInRoom(selfParticipant, can.level), ...livePresence],
     tabTimer: activeTab.timer,
     canArrange: !isReadOnly,
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
@@ -630,7 +661,9 @@ export function EditorCanvasHost() {
               isPinchingRef={isPinchingRef}
               setViewportZoom={setViewportZoom}
               onFitToScreen={() => {
-                fitToScreen();
+                // In Pages, Fit frames the page you are nearest, not the whole tab.
+                if (pagesMode) pagesMode.fitPageInView();
+                else fitToScreen();
                 track('Canvas', 'Zoomed', 'Fit');
               }}
               setViewportOffset={setViewportOffset}
@@ -642,12 +675,12 @@ export function EditorCanvasHost() {
               tabLayers={activeTab.layers}
               tabKind={activeTab.kind}
               editorMode={editorMode.mode}
-              // No page while Start Illustrating is open (docs/specs/007-editor/start-diagramming.md "Start Illustrating"):
+              // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
               // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-              illustratePages={
-                startPanelOpen && editorMode.mode === 'illustrate'
+              pagesMode={
+                startPanelOpen && editorMode.mode === 'pages'
                   ? null
-                  : presentedPages(illustratePages, activeTab, presentingPageId, presentArticles)
+                  : presentedPages(pagesMode, activeTab, presentingPageId, presentArticles)
               }
               whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
               whiteboardInk={PEN_INK[surface]}
@@ -735,7 +768,7 @@ export function EditorCanvasHost() {
                 isReadOnly
                   ? undefined
                   : (elementId) => {
-                      const node = document.querySelector(`[data-element-id="${elementId}"]`);
+                      const node = document.querySelector(elementSelector(elementId));
                       if (!(node instanceof HTMLElement)) return;
                       const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
                       setContextMenu({ mode: 'element', elementId, x, y });
@@ -749,10 +782,15 @@ export function EditorCanvasHost() {
                 !can.takePart
                   ? undefined
                   : {
-                      add: (id, text, mentions) => addComment(id, text, undefined, mentions),
-                      remove: deleteComment,
-                      resolve: resolveThread,
-                      unresolve: unresolveThread,
+                      // A Participant has no autosave: its panel changes go through the comment endpoints, as the
+                      // popover's do (lib/comment-persistence.ts); an Editor's ride the room and its save.
+                      add: (id, text, mentions) =>
+                        addComment(id, text, commentPersist.add(id, text, mentions), mentions),
+                      remove: (id, cid) => deleteComment(id, cid, commentPersist.remove(cid)),
+                      resolve: (id) =>
+                        resolveThread(id, commentPersist.threadState(threadOn(id), true)),
+                      unresolve: (id) =>
+                        unresolveThread(id, commentPersist.threadState(threadOn(id), false)),
                     }
               }
               // Action panels (docs/specs/012-collaboration/action-panel.md) drive the SAME action machinery the popover
@@ -766,6 +804,9 @@ export function EditorCanvasHost() {
                       configure: openAssignActionDialog,
                       complete: completeAction,
                       reopen: reopenAction,
+                      ...(linkedActions.openOnBoard
+                        ? { openBoard: () => linkedActions.openOnBoard?.() }
+                        : {}),
                     }
               }
               // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).
@@ -794,10 +835,10 @@ export function EditorCanvasHost() {
               editCursorAtEnd={editCursorAtEnd}
               formatSourceId={formatSourceId}
               onFormatPagePress={
-                canvasTool === 'format' && illustratePages?.edit
+                canvasTool === 'format' && pagesMode?.edit
                   ? (pageId) => {
                       // A page's background as the brush, painted page to page (docs/specs/007-editor/
-                      // illustrate-pages.md "Copying a background").
+                      // pages-mode.md "Copying a background").
                       // A brush whose page has gone is emptied as the page goes (useDeadPageBrush), so this
                       // press arms the pressed page at once.
                       const press = pagePaintPress(
@@ -809,7 +850,7 @@ export function EditorCanvasHost() {
                       // only a paint empties a Paint once brush.
                       if (
                         press.paint &&
-                        !illustratePages.edit?.copyBackground(press.paint.from, press.paint.to)
+                        !pagesMode.edit?.copyBackground(press.paint.from, press.paint.to)
                       )
                         return;
                       if (press.next !== formatSourceId) setFormatSourceId(press.next);
@@ -959,7 +1000,9 @@ export function EditorCanvasHost() {
               }
               // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
               // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
-              participantCount={answeringKeys([selfParticipant, ...livePresence]).length}
+              participantCount={
+                answeringKeys([selfInRoom(selfParticipant, can.level), ...livePresence]).length
+              }
               // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
               // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
               onOpenCanvasTheme={
@@ -1177,14 +1220,13 @@ export function EditorCanvasHost() {
                       })
               }
               onBeginDrag={beginDrag}
+              onPressArmedAction={pressArmedAction}
               onBeginEdit={beginEdit}
               onCommitLabel={commitLabel}
               onCommitTable={commitTable}
               onCommitHeaderSize={commitHeaderSize}
-              onAddRailPoint={addRailPointSelected}
               onAddTableRow={appendTableRowSelected}
               onAddTableColumn={appendTableColumnSelected}
-              onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
               onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
               onSetPageHeading={setPageHeading}
               onSetWebRows={isReadOnly ? undefined : setWebRows}
@@ -1193,6 +1235,7 @@ export function EditorCanvasHost() {
               onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
               onGrowMindNode={growMindNode}
               flowchartActions={isReadOnly ? undefined : flowchartActions}
+              entityActions={isReadOnly ? undefined : entityActions}
               canEditMindOutline={mindOutline.canEdit}
               onEditMindOutline={mindOutline.open}
               onTidyMindMap={tidyMindMap}
@@ -1271,7 +1314,9 @@ export function EditorCanvasHost() {
               // withheld so the ZoomControls dock doesn't offer an exit
               // from a mode the embed can't actually leave.
               zenMode={zenMode || embedMode}
-              explorerHidden={workbenchMode}
+              // A phone held sideways has no Explorer at all (docs/specs/007-editor/live-app.md "A phone
+              // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
+              explorerHidden={workbenchMode || landscapePhone}
               onToggleZen={embedMode ? undefined : toggleZenMode}
               aiPanel={
                 aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly

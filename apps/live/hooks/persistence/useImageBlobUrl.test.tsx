@@ -4,14 +4,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useImageBlobUrl } from './useImageBlobUrl';
 
 const apiFetchImageBlobUrl = vi.fn<(ownerId: string, imageId: string) => Promise<string | null>>();
+// The URLs handed out are given back, never revoked directly: one is shared by every view of a
+// picture (lib/image-display.ts).
+const revoked: string[] = [];
 vi.mock('@/lib/api-client', () => ({
   apiFetchImageBlobUrl: (ownerId: string, imageId: string) =>
     apiFetchImageBlobUrl(ownerId, imageId),
+  releaseImageBlobUrl: (url: string) => void revoked.push(url),
 }));
 
-const revoked: string[] = [];
 beforeEach(() => {
-  URL.revokeObjectURL = (url: string) => void revoked.push(url);
+  URL.revokeObjectURL = () => {
+    throw new Error('a shared picture URL is released, not revoked');
+  };
 });
 afterEach(() => {
   vi.clearAllMocks();

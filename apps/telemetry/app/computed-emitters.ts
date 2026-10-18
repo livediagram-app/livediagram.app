@@ -31,7 +31,7 @@ import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
-export type ComputedValues = {
+type ComputedValues = {
   values: readonly (string | null)[];
   // Why the list is samples rather than the whole set. Unset: it is the set.
   open?: string;
@@ -178,7 +178,7 @@ export const TOUR_STEP_SOURCE: string[] = [
 
 // The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
-export const PLAN_TOUR_STEP_SOURCE: string[] = [
+const PLAN_TOUR_STEP_SOURCE: string[] = [
   ...new Set(
     [...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
       (m) => m[1]!,
@@ -196,7 +196,7 @@ export const PLAN_TOUR_STEP_SOURCE: string[] = [
 
 // The Facilitate tour's steps, as facilitateTourStepTelemetryType makes them (apps/live
 // facilitate-tour-steps.ts, docs/specs/012-collaboration/facilitate-tour.md). The welcome card sends no step view.
-export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
+const FACILITATE_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/facilitate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -218,7 +218,7 @@ const pascal = (id: string) =>
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-export const SANKEY_TOUR_STEP_SOURCE: string[] = [
+const SANKEY_TOUR_STEP_SOURCE: string[] = [
   ...[
     ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
       /canvasStep\(\s*'([a-z-]+)'/g,
@@ -255,6 +255,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
   ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
   ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
+  ...conceptTourSteps('TimelineTour', 'timeline-tour-steps.ts'),
   ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
   ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
   ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
@@ -270,7 +271,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
-export const DRAW_TOUR_STEP_SOURCE: string[] = [
+const DRAW_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -286,7 +287,7 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
-export const FORM_TOUR_STEP_SOURCE: string[] = [
+const FORM_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -301,7 +302,7 @@ export const FORM_TOUR_STEP_SOURCE: string[] = [
 
 // The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
 // docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-export const AVATAR_TOUR_STEP_SOURCE: string[] = [
+const AVATAR_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -314,21 +315,21 @@ export const AVATAR_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live IllustrateTourHost.tsx,
-// docs/specs/007-editor/illustrate-tour.md): each page kind's track names its kind before the step. The welcome card
+// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
+// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
 // sends no step view.
 const camel = (id: string) =>
   id
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
+const PAGES_TOUR_STEP_SOURCE: string[] = (
   ['slide', 'infographic', 'article', 'logo'] as const
 ).flatMap((kind) =>
   [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
     .map((m) => m[1]!)
     .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `IllustrateTourStep${camel(`${kind}-${id}`)}`),
+    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
 );
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
@@ -431,7 +432,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The help centre.
-  'apps/help/components/ArticleLayout.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
+  'apps/help/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
   'apps/help/components/useArticleVote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'apps/help/components/useArticleVote.ts Help·Unhelpful': { values: SLUGS, open: SLUG_WHY },
 
@@ -540,6 +541,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
     values: Object.values(QUESTION_TYPE_TELEMETRY),
   },
+  // Not Taking Responses pressed names its reason (apps/live/components/forms/form-not-taking.ts FORM_NOT_TAKING).
+  'apps/live/components/forms/FormNotTakingWarning.tsx Form·Opened': {
+    values: [
+      'NotTakingSuspended',
+      'NotTakingPaused',
+      'NotTakingSwitchedOff',
+      'NotTakingClosesAt',
+      'NotTakingLimit',
+      'NotTakingFull',
+    ],
+  },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
   'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
     values: [...SHEET_CHANGE_KINDS],
@@ -556,6 +568,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ExpenseReport',
       'SalesPipeline',
       'Inventory',
+      'ThreatRegister',
+      'DriverModel',
+      'ValueStream',
       'GuestList',
       'GradeBook',
       'HabitTracker',
@@ -673,8 +688,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
-    values: ILLUSTRATE_TOUR_STEP_SOURCE,
+  'apps/live/components/tour/PagesTourHost.tsx UI·View': {
+    values: PAGES_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {

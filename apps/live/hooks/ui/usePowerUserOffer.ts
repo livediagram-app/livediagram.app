@@ -29,9 +29,9 @@ export type PowerUserOfferDeps = {
 };
 
 const OFFER_COPY = {
-  message: 'Power user mode: fewer labels and a few faster defaults.',
-  confirmLabel: 'Try power user mode',
-  declineLabel: 'No thanks',
+  message: 'Power user mode: fewer labels, faster defaults.',
+  confirmLabel: 'Try It',
+  declineLabel: 'No Thanks',
 };
 
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md): records editing

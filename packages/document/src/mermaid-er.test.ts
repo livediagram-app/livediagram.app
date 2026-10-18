@@ -96,9 +96,9 @@ describe('parseMermaid: ER diagrams', () => {
     const customer = r.graph.nodes.find((n) => n.id === 'CUSTOMER')!;
     expect(customer.label).toBe('CUSTOMER');
     expect(customer.fields).toEqual([
-      { name: 'name', type: 'string PK' },
+      { name: 'name', type: 'string', key: 'pk' },
       { name: 'age', type: 'int' },
-      { name: 'org_id', type: 'string FK,UK' },
+      { name: 'org_id', type: 'string', key: 'fk' },
     ]);
   });
 
@@ -113,7 +113,7 @@ describe('parseMermaid: ER diagrams', () => {
       textAlignY: 'top',
       height: entityHeight(2, 'sm'),
       entityFields: [
-        { name: 'id', type: 'int PK' },
+        { name: 'id', type: 'int', key: 'pk' },
         { name: 'name', type: 'text' },
       ],
     });
@@ -208,5 +208,70 @@ describe('ER hub first', () => {
       to: 'AUTHOR',
       er: { from: 'zero-or-many', to: 'one' },
     });
+  });
+});
+
+// docs/specs/020-import-export/mermaid.md "Every way Mermaid's own docs write them".
+describe('parseMermaid: ER syntax from Mermaid’s own examples', () => {
+  const read = (text: string) => {
+    const r = parseMermaid(text);
+    if (!r.ok) throw new Error(r.error);
+    return r.graph;
+  };
+
+  it('reads an operator against its names', () => {
+    const g = read('erDiagram\n  id1||--||id2 : label');
+    expect(g.nodes.map((n) => n.id)).toEqual(['id1', 'id2']);
+    expect(g.edges[0]).toMatchObject({ label: 'label', er: { from: 'one', to: 'one' } });
+  });
+
+  it('reads cardinalities in words, to as solid and optionally to as dashed', () => {
+    const g = read(`erDiagram
+  CAR 1 to zero or more NAMED-DRIVER : allows
+  PERSON many(0) optionally to 0+ NAMED-DRIVER : is
+  TEAM only one to one or many MEMBER : has
+  BADGE zero or one optionally to 1+ PERSON : names`);
+    // The ends at each named table: the layout may turn a relationship round (hub first), never its ends.
+    const ends = Object.fromEntries(
+      g.edges.map((e) => [
+        e.label,
+        { [e.from]: e.er?.from, [e.to]: e.er?.to, line: e.line ?? 'solid' },
+      ]),
+    );
+    expect(ends).toEqual({
+      allows: { CAR: 'one', 'NAMED-DRIVER': 'zero-or-many', line: 'solid' },
+      is: { PERSON: 'zero-or-many', 'NAMED-DRIVER': 'zero-or-many', line: 'dashed' },
+      has: { TEAM: 'one', MEMBER: 'one-or-many', line: 'solid' },
+      names: { BADGE: 'zero-or-one', PERSON: 'one-or-many', line: 'dashed' },
+    });
+  });
+
+  it('names an entity by its quoted words, alone or in a relationship', () => {
+    const g = read('erDiagram\n  "This ❤ Unicode"\n  "Order line" }o--|| PRODUCT : lists');
+    expect(g.nodes.map((n) => [n.id, n.label])).toEqual([
+      ['This ❤ Unicode', 'This ❤ Unicode'],
+      ['Order line', 'Order line'],
+      ['PRODUCT', 'PRODUCT'],
+    ]);
+  });
+
+  it('skips a :::class, keeping the entity and its attributes', () => {
+    const g = read(`erDiagram
+  direction TB
+  CAR:::someclass {
+    string registrationNumber
+  }
+  PERSON[Driver]:::other`);
+    expect(g.nodes.map((n) => [n.id, n.label, n.fields?.length ?? 0])).toEqual([
+      ['CAR', 'CAR', 1],
+      ['PERSON', 'Driver', 0],
+    ]);
+  });
+
+  it('fails a long line that is no relationship quickly', () => {
+    const hostile = 'erDiagram\n  A' + ' to'.repeat(4000) + ' x';
+    const t0 = performance.now();
+    parseMermaid(hostile);
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 });

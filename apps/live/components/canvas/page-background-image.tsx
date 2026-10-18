@@ -1,6 +1,6 @@
 'use client';
 
-// The Background section's Image category (docs/specs/007-editor/illustrate-pages.md "Image
+// The Background section's Image category (docs/specs/007-editor/pages-mode.md "Image
 // backgrounds"): the page's picture with its credit, its Overlay, Strength and Position, then the
 // image search (asking for the page's shape), Choose From My Images and Upload an Image to pick or replace it. A
 // hovered result, overlay or position previews on the page; a pick, an upload or a press commits
@@ -10,7 +10,7 @@ import {
   defaultPageImageOverlay,
   pageDimensions,
   PAGE_IMAGE_OVERLAY_MAX,
-  type IllustratePage,
+  type Page,
   type PageFill,
   type PageImageFill,
   type PageImageOverlay,
@@ -23,7 +23,8 @@ import { PageGalleryPicker } from './PageGalleryPicker';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
-import { apiFetchImageBlobUrl } from '@/lib/api-client';
+import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
+import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
 import type { OpenverseFilters } from '@/lib/image-search/openverse';
 import { pageImageCssUrl, pageImageOverlayCss } from '@/lib/page-image-paint';
 import { sampleImageTone } from '@/lib/page-image-tone';
@@ -36,7 +37,7 @@ import {
 } from '@/lib/upload-image';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 import { usePageImageAccess } from './page-image-access';
-import { tileClass } from './illustrate-page-panel-sections';
+import { tileClass } from './page-panel-sections';
 
 // The Strength slider's step: 5%.
 const STRENGTH_STEP = 5;
@@ -60,7 +61,7 @@ const SAMPLE = 'linear-gradient(180deg, #7dd3fc 0%, #fde68a 55%, #4d7c0f 56%, #3
 
 /** The Openverse filters a page's picture is searched with: its shape. Not `size: 'large'`: Openverse cannot
  *  render thumbnails for most of those (its thumbnail service answers 424), so every result drew broken. */
-export function pageImageFilters(page: IllustratePage): OpenverseFilters {
+export function pageImageFilters(page: Page): OpenverseFilters {
   const { width, height } = pageDimensions(page);
   const aspectRatio = width === height ? 'square' : width > height ? 'wide' : 'tall';
   return { aspectRatio };
@@ -80,7 +81,7 @@ export function ImageBackgroundChoices({
   onPick,
   onPreview,
 }: {
-  page: IllustratePage;
+  page: Page;
   // The tab theme's accent: a Tint's colour.
   accent: string;
   onPick: (fill: PageFill | undefined) => void;
@@ -125,15 +126,17 @@ export function ImageBackgroundChoices({
   // A thumbnail that would not load: the tone from the stored picture instead.
   const storedTone = async (imageId: string): Promise<string | undefined> => {
     if (imageId.startsWith('data:')) return sampleImageTone(imageId);
+    // A tile's copy is plenty for an average colour.
     const url = await apiFetchImageBlobUrl(access.ownerId, imageId, {
       documentId: access.documentId,
       shareCode: access.shareCode,
+      maxEdge: DISPLAY_EDGE_TILE,
     }).catch(() => null);
     if (!url) return undefined;
     try {
       return await sampleImageTone(url);
     } finally {
-      URL.revokeObjectURL(url);
+      releaseImageBlobUrl(url);
     }
   };
 
@@ -145,7 +148,7 @@ export function ImageBackgroundChoices({
       const { image } = await addImageFileForDocument(access.ownerId, access.documentId, file);
       await land(image, local);
     } catch (e) {
-      console.warn('[illustrate-page] background upload failed');
+      console.warn('[page] background upload failed');
       setError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
     } finally {
       URL.revokeObjectURL(local);

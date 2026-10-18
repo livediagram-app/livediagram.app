@@ -14,7 +14,7 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { openerById } from './palette-openers';
 
-export type PaletteLayoutEntry = {
+type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
   id: string;
   label?: string;
@@ -34,7 +34,7 @@ export type PaletteLayoutEntry = {
 // dividers").
 export const DIVIDE = '|';
 
-export type PaletteLayout = {
+type PaletteLayout = {
   // The category the palette opens on (an event-storming board opens on its notation instead).
   landing: string;
   categories: readonly PaletteLayoutEntry[];
@@ -70,28 +70,54 @@ const EMBED_TILES = [
 ];
 
 // Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
-// panel and the Action card: comments and assigned actions belong to every mode, so Diagram keeps them
-// though their Collaborate category is Facilitate's.
+// panel and the Action card as their own group: comments and assigned actions belong to every mode, so Diagram
+// keeps them though their Collaborate category is Facilitate's.
 const WRITE_WITH_COMMENTS = [
   ...tilesForCategory('write').map((t) => t.id),
   'components:callout',
+  DIVIDE,
   'collab:comment-pin',
   'collab:action-card',
 ];
 
-// The diagram-building elements Diagram's Build adds to the category's own tiles, the Entity (a class or table, a
-// data model's node) among them: it was Popular's alone, and the category bar has no Popular.
-const DIAGRAM_BUILD_EXTRAS = [
-  'components:card',
-  'components:badge',
-  'components:step',
+// Diagram's Build as two categories (docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout").
+// Diagrams: the structures that grow as you type, the Entity (a class or table, a data model's node) last; it was
+// Popular's alone, and the category bar has no Popular.
+const DIAGRAM_DIAGRAMS = [
+  'tools:mind-node',
+  'tools:org-chart',
+  'tools:flowchart',
+  'tools:sequence',
+  'tools:table',
   'tools:entity',
 ];
 
-// The concept graphics, then the Sankey (Diagram's and Illustrate's Concepts).
+// Layout (Diagram and Facilitate): the containers a diagram or a board is arranged in, then the parts that label
+// it, the Card, Badge and Step number borrowed from Components.
+const LAYOUT_TILES = [
+  'tools:lane',
+  'tools:frame',
+  'tools:stack',
+  'tools:boundary',
+  DIVIDE,
+  'tools:diagram-key',
+  'components:card',
+  'components:badge',
+  'components:step',
+];
+
+// Facilitate's Layout: the same, with the Timeline after the containers, as Facilitate has no Concepts (where the
+// Timeline lives, docs/specs/009-elements/concept-graphics.md "Timeline") and a session plans along one as often.
+const FACILITATE_LAYOUT_TILES = [
+  ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
+  'tools:timeline',
+  ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
+];
+
+// The concept graphics, then the Sankey (Diagram's and Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-// Image and Avatar; no embedded pages, and no Tab Window (an Illustrate element, docs/specs/009-elements/tab-window.md).
+// Image and Avatar; no embedded pages, and no Tab Window (a Pages element, docs/specs/009-elements/tab-window.md).
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
 
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
@@ -125,14 +151,14 @@ const DIAGRAM: PaletteLayout = {
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
-    // The diagram-building elements join Build here (docs/specs/009-elements/card.md and its siblings).
-    {
-      id: 'build',
-      tiles: [...tilesExcept('build', 'tools:sankey'), ...DIAGRAM_BUILD_EXTRAS],
-    },
+    // Build as Diagrams and Layout, with the diagram-building elements from Components (docs/specs/009-elements/card.md
+    // and its siblings).
+    { id: 'diagrams', tiles: DIAGRAM_DIAGRAMS },
     // Concept graphics (docs/specs/009-elements/concept-graphics.md), and the Sankey: a flow drawn as wide as what it
     // carries explains an idea the way a funnel or a cycle does, so it sits with them rather than with the builders.
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
+    // Layout after Concepts: what is built, then the ideas laid out beside it, then what it is all arranged in.
+    { id: 'layout', tiles: LAYOUT_TILES },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
@@ -140,9 +166,9 @@ const DIAGRAM: PaletteLayout = {
   ],
 };
 
-// Illustrate mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
+// Pages mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
 // icons, behaviours or workshop notation.
-const ILLUSTRATE: PaletteLayout = {
+const PAGES: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
@@ -183,36 +209,30 @@ const ILLUSTRATE: PaletteLayout = {
     { id: 'my-shapes' },
     // The page is the canvas here, so no Page element; and no Annotation, a diagram's marker.
     { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
-    // Mind maps, flowcharts, lanes and frames organise a diagram, not a visual page.
-    {
-      id: 'build',
-      tiles: tilesExcept(
-        'build',
-        'tools:mind-node',
-        'tools:org-chart',
-        'tools:flowchart',
-        'tools:sequence',
-        'tools:lane',
-        'tools:frame',
-        'tools:boundary',
-        'tools:diagram-key',
-        'tools:sankey',
-      ),
-    },
+    // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): mind maps, flowcharts, lanes and
+    // frames organise a diagram, not a visual page, and the Build tiles a page uses join the categories they sit
+    // beside: the Stack in Components and the Table in Data. The Timeline is in Concepts, as everywhere.
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
-    // The web blocks, without the data-model Entity.
-    { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
+    // The web blocks, without the data-model Entity, then the Stack that lines them up.
+    {
+      id: 'components',
+      tiles: [...tilesExcept('components', 'tools:entity'), DIVIDE, 'tools:stack'],
+    },
     { id: 'devices' },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media' },
-    { id: 'data' },
+    // The charts and meters, then the Table: a page reports in rows as often as in a chart.
+    {
+      id: 'data',
+      tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
+    },
   ],
 };
 
 // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
-// Polygon, no Lane or Timeline), the decorations a room reaches for, and the Collaborate elements as
+// Polygon), Diagram's Layout, the decorations a room reaches for, and the Collaborate elements as
 // six categories, one per group, plus the charts; no tech icons, mock-up kit or workshop notation.
 const FACILITATE: PaletteLayout = {
   landing: 'popular',
@@ -238,22 +258,22 @@ const FACILITATE: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    // Write and Build as one, "Write & Build": words and notes, then a table and a frame to hold them. No Page or
-    // Annotation; and a Sankey reports on a flow, mind maps and flowcharts build a diagram, lanes and timelines lay
-    // one out: a session does not stop for them.
+    // Words and notes, then a table and a checklist to keep them in. No Page or Annotation; and a Sankey reports on a
+    // flow, mind maps and flowcharts build a diagram: a session does not stop for them.
     {
       id: 'write',
-      label: 'Write & Build',
-      description: 'Text, sticky notes, tables, checklists and frames.',
+      description: 'Text, sticky notes, tables and checklists.',
       tiles: [
         ...tilesExcept('write', 'tools:page', 'tools:annotation'),
         DIVIDE,
         'tools:table',
         'tools:checklist',
-        'tools:frame',
       ],
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
+    // Diagram's Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its
+    // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Facilitate has no Concepts).
+    { id: 'layout', tiles: FACILITATE_LAYOUT_TILES },
     // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
     // which a session does not stop to draw.
     { id: 'icons' },
@@ -300,13 +320,13 @@ const PLAN: PaletteLayout = {
 
 export const PALETTE_LAYOUTS = {
   diagram: DIAGRAM,
-  illustrate: ILLUSTRATE,
+  pages: PAGES,
   plan: PLAN,
   facilitate: FACILITATE,
 } as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
-export function paletteLayoutFor(mode: EditorMode): PaletteLayout {
+function paletteLayoutFor(mode: EditorMode): PaletteLayout {
   return mode === 'draw' ? DIAGRAM : PALETTE_LAYOUTS[mode];
 }
 
@@ -432,7 +452,7 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
 
 // Plan's landing while its tab has no board (docs/specs/026-plan/plan-mode.md "The palette"): a card lands on a
 // board, so a tab without one opens on Boards.
-export const PLAN_NO_BOARD_LANDING = 'plan-boards';
+const PLAN_NO_BOARD_LANDING = 'plan-boards';
 
 /**
  * The category the palette opens on: an event-storming board's notation, or the mode's own (Plan's Boards while
@@ -482,6 +502,7 @@ export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'pan',
   'laser',
   'spotlight',
+  // Avatar is listed by the picker only while in force (canvas-tool-options), for every role alike.
   'avatar',
   'isometric',
   'zen',

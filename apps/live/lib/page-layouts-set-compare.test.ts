@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement } from '@livediagram/document';
 import { PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the Compare set beyond the core four.
+// docs/specs/007-editor/pages-mode.md "Layouts": the Compare set beyond the core four.
 const IDS = [
   'versus',
   'pricing-tiers',

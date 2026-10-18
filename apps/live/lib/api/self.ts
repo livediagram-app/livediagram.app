@@ -176,7 +176,7 @@ export async function apiMintGuestId(): Promise<{
 // token is registered for a guest); the NEW id is proven by its
 // signature. 'moved' on success; 'refused' when the worker says no for good (403: under enforcement
 // only a pre-signing id may upgrade unsigned); 'failed' for anything worth trying again (network, 5xx).
-export type GuestUpgradeResult = 'moved' | 'refused' | 'failed';
+type GuestUpgradeResult = 'moved' | 'refused' | 'failed';
 export async function apiUpgradeGuestId(
   fromOwnerId: string,
   toOwnerId: string,

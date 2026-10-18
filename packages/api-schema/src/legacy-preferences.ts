@@ -4,6 +4,10 @@
 // during the deploy). An opt-out must never be lost on the way.
 const RENAMED: Readonly<Record<string, string>> = {
   notifyDiagramJoin: 'notifyDocumentJoin',
+  // Illustrate mode became Pages mode (docs/specs/007-editor/editor-modes.md "Naming in the interface";
+  // migration 0097): a lost seen-guard would offer the tour again.
+  illustrateTourSeen: 'pagesTourSeen',
+  illustrateTourKinds: 'pagesTourKinds',
 };
 
 // Preference keys whose feature is gone (docs/specs/007-editor/user-preferences.md "Retired keys"):
@@ -12,9 +16,9 @@ const RETIRED: ReadonlySet<string> = new Set([
   // The Activity panel (docs/specs/012-collaboration/README.md "Removed: the Activity panel").
   'activityPanelEnabled',
   'activityRevertHoverPreview',
-  // The Settings › Experimental switches for Illustrate and Plan modes: every mode is always
-  // offered now (docs/specs/007-editor/editor-modes.md). `infographicModeEnabled` is Illustrate's
-  // older name.
+  // The Settings › Experimental switches for Pages and Plan modes: every mode is always
+  // offered now (docs/specs/007-editor/editor-modes.md). Pages mode was Illustrate mode, and
+  // Infographic mode before that.
   'illustrateModeEnabled',
   'infographicModeEnabled',
   'planModeEnabled',

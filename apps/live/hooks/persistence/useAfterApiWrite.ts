@@ -26,7 +26,7 @@ import { useEffect, useRef } from 'react';
 import { subscribeApiWrites, type ApiWriteSignal } from '@/lib/api/write-signal';
 
 export const AFTER_WRITE_DELAY_MS = 1_000;
-export const AFTER_WRITE_MIN_INTERVAL_MS = 5_000;
+const AFTER_WRITE_MIN_INTERVAL_MS = 5_000;
 
 export function useAfterApiWrite(
   onWrite: (signal: ApiWriteSignal) => void,

@@ -21,7 +21,7 @@ import type { Env } from '../types';
 // A cap rather than the whole library because this runs in one
 // request's tail. Logged when hit: a reader with more should not be
 // told silently that their older actions do not exist.
-export const COLLAB_BACKFILL_TAB_LIMIT = 300;
+const COLLAB_BACKFILL_TAB_LIMIT = 300;
 
 // D1 batch size per round trip. The index statements per tab are small
 // (2 + rows), so this keeps a batch well under any bind/statement cap

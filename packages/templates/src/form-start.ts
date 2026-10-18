@@ -32,7 +32,7 @@ import {
   type PlanColumn,
 } from '@livediagram/items';
 
-export type FormStartPlan = {
+type FormStartPlan = {
   form: FormDefinition;
   // The card type responses are made as, with the fields the starter maps to; `saveType` when the catalogue needs it
   // written (new, or fields added).

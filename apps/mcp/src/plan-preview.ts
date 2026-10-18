@@ -33,7 +33,7 @@ export const PLAN_PREVIEW_TABS_MAX = 20;
 const EXPORT_BG = '#ffffff';
 
 // The tab as laid out, and its pictures once the cards it shows are read (`content`, for the laid-out tab).
-export type PlanPreview = {
+type PlanPreview = {
   tab: Tab;
   artWith: (content: {
     items?: ReadonlyMap<string, Item>;

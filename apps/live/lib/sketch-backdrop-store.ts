@@ -7,9 +7,10 @@
 // canvases side by side each publish their own.
 import { useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 import { sketchBackdropIds, type Element, type Finish } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 const byTab = new Map<string, ReadonlySet<string>>();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 const sameSet = (a: ReadonlySet<string> | undefined, b: ReadonlySet<string>) =>
   (a?.size ?? 0) === b.size && [...b].every((id) => a?.has(id));
@@ -18,15 +19,8 @@ function publish(tabId: string, ids: ReadonlySet<string>): void {
   if (sameSet(byTab.get(tabId), ids)) return;
   if (ids.size === 0) byTab.delete(tabId);
   else byTab.set(tabId, ids);
-  for (const l of listeners) l();
+  listeners.notify();
 }
-
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => {
-    listeners.delete(l);
-  };
-};
 
 const isBackdrop = (id: string) => {
   for (const ids of byTab.values()) if (ids.has(id)) return true;
@@ -47,7 +41,7 @@ export function usePublishSketchBackdrops(
 /** Whether something sits on this element, so under Sketch it keeps a solid fill. */
 export function useIsSketchBackdrop(id: string): boolean {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => isBackdrop(id),
     () => false,
   );

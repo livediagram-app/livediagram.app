@@ -65,6 +65,9 @@ export interface RouteSpec {
    *  first-party-only / internal endpoint). Surfaced in the doc so integrators
    *  can see the supported surface at a glance. */
   tokenUsable?: boolean;
+  /** An old address still served for clients that predate a rename; documented so they are not
+   *  surprised, marked so nobody new calls it. */
+  deprecated?: boolean;
   query?: QueryParam[];
   requestSchema?: BodySchema;
   responseSchema?: BodySchema;
@@ -581,15 +584,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/pages',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: ref('PagesRequest'),
+    responseSchema: 'PagesAnswer',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/illustrate',
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Change the Illustrate pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Illustrate and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+      'The address of the pages call before Illustrate mode became Pages mode, kept for older clients. Use /documents/{id}/tabs/{tabId}/pages.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    requestSchema: ref('IllustrateRequest'),
-    responseSchema: 'IllustrateAnswer',
+    deprecated: true,
+    requestSchema: ref('PagesRequest'),
+    responseSchema: 'PagesAnswer',
     statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   {
@@ -1796,6 +1813,33 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseMediaType: 'image/svg+xml',
     statuses: [200, 404, 410],
   },
+  {
+    method: 'GET',
+    path: '/share/{code}/card',
+    segment: 'share',
+    tag: 'Sharing',
+    summary:
+      "A link preview's text: the shared document's name. 404 wherever the live image is (a dead code, a share password, a Community post that is not public).",
+    auth: 'public',
+    responseSchema: {
+      type: 'object',
+      properties: { name: { type: 'string' } },
+      required: ['name'],
+    },
+    statuses: [200, 404],
+  },
+  {
+    method: 'GET',
+    path: '/share/{code}/image.png',
+    segment: 'share',
+    tag: 'Sharing',
+    summary:
+      "A link preview's picture: the live image's drawing on a 1200 x 630 PNG card. Redirects to the brand card when there is nothing to draw.",
+    auth: 'public',
+    responseSchema: { type: 'string' },
+    responseMediaType: 'image/png',
+    statuses: [200, 302, 404],
+  },
 
   // ---- Participants ----
   {
@@ -1905,6 +1949,98 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Un-star a document for the caller.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
+  },
+
+  // ---- Tags (docs/specs/013-workspace/tags.md) ----
+  {
+    method: 'GET',
+    path: '/tags',
+    segment: 'tags',
+    tag: 'Account',
+    summary: "The caller's tags, alphabetical, and which live documents each is on.",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: {
+        tags: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              colour: { type: 'string' },
+              createdAt: { type: 'integer' },
+            },
+          },
+        },
+        links: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { tagId: { type: 'string' }, documentId: { type: 'string' } },
+          },
+        },
+      },
+    },
+    statuses: [200, 401],
+  },
+  {
+    method: 'POST',
+    path: '/tags',
+    segment: 'tags',
+    tag: 'Account',
+    summary:
+      'Make a tag: a client-minted id, a name (1 to 32 characters, one per person ignoring case) and a colour ' +
+      '(a standard colour name or #rrggbb). 409 tag_name_taken or tag_limit (100).',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { id: { type: 'string' }, name: { type: 'string' }, colour: { type: 'string' } },
+      required: ['id', 'name', 'colour'],
+    },
+    statuses: [201, 400, 401, 409],
+  },
+  {
+    method: 'PUT',
+    path: '/tags/{tagId}',
+    segment: 'tags',
+    tag: 'Account',
+    summary: "Rename and / or recolour one of the caller's tags.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { name: { type: 'string' }, colour: { type: 'string' } },
+    },
+    statuses: [200, 400, 401, 404, 409],
+  },
+  {
+    method: 'DELETE',
+    path: '/tags/{tagId}',
+    segment: 'tags',
+    tag: 'Account',
+    summary: "Delete one of the caller's tags; it comes off every document.",
+    auth: 'guest-or-clerk',
+    statuses: [204, 401, 404],
+  },
+  {
+    method: 'PUT',
+    path: '/tags/{tagId}/documents/{documentId}',
+    segment: 'tags',
+    tag: 'Account',
+    summary:
+      "Put a tag on a document. Idempotent; 404 when the tag is not the caller's or there is no such document.",
+    auth: 'guest-or-clerk',
+    statuses: [204, 401, 404],
+  },
+  {
+    method: 'DELETE',
+    path: '/tags/{tagId}/documents/{documentId}',
+    segment: 'tags',
+    tag: 'Account',
+    summary: 'Take a tag off a document.',
+    auth: 'guest-or-clerk',
+    statuses: [204, 401, 404],
   },
 
   // ---- Default folders (docs/specs/013-workspace/default-folders.md) ----
@@ -2206,6 +2342,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'public',
     responseSchema: 'TeamInviteLinkInfo',
     statuses: [200, 404],
+  },
+  {
+    method: 'GET',
+    path: '/teams/invite-decline/{token}',
+    segment: 'teams',
+    tag: 'Teams',
+    summary: "Read the invite an email's decline token names: its team name and status.",
+    auth: 'public',
+    responseSchema: 'TeamInviteDecline',
+    statuses: [200, 404, 429],
+  },
+  {
+    method: 'POST',
+    path: '/teams/invite-decline/{token}',
+    segment: 'teams',
+    tag: 'Teams',
+    summary: "Decline the invite an email's decline token names. No sign-in; idempotent.",
+    auth: 'public',
+    responseSchema: 'TeamInviteDecline',
+    statuses: [200, 404, 409, 429],
   },
   {
     method: 'POST',

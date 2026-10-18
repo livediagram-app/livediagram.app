@@ -8,6 +8,7 @@
 
 import { fetchItems } from '../api/items';
 import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
+import { fetchCloudTags } from '@/lib/api/tags';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
@@ -119,19 +120,25 @@ async function downloadAndRemoveCloudCopy(
   // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
   // read aborts here, before anything is written: taken as "not starred" it would drop the star.
   const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
+  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), read the same
+  // way: a failed read aborts rather than dropping them with the server row.
+  const tagIds = (await fetchCloudTags(ownerId)).links
+    .filter((l) => l.documentId === liveDoc.id)
+    .map((l) => l.tagId);
   const now = Date.now();
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,
     name: liveDoc.name,
     // Keep its place and its deck: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
-    // offline record lives in, so a team document lands at the root of My documents.
+    // offline record lives in, so a team document lands at the root of My Documents.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
+    ...(tagIds.length ? { tagIds } : {}),
     ...(liveDoc.itemTypes ? { itemTypes: liveDoc.itemTypes } : {}),
     ...(itemStore.items.length
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }
@@ -179,10 +186,10 @@ export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
     return e.reason === 'kept_changing'
-      ? 'This document kept changing while it synced. Your local copy is safe; try again when you finish editing.'
-      : 'The cloud copy came up short of cards or sheets, so your local copy was kept. Try again.';
+      ? 'This document kept changing while syncing. Your copy is safe: try again soon.'
+      : 'The cloud copy was missing cards or sheets, so yours was kept. Try again.';
   return e instanceof ApiError && e.status === 413
-    ? 'This document is too large to sync: a tab exceeds the server size limit, usually a big embedded image. Remove or shrink it and try again.'
+    ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
     : 'Could not sync this document. Check your connection and try again.';
 }
 

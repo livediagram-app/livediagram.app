@@ -92,7 +92,7 @@ editor that was offline when it landed.
 ## Rooms for personal documents
 
 An editor connects to its document's room for every server-stored document it has open, personal ones included.
-A document in Offline Mode or This browser has no room and no agent can reach it. On a personal document that is
+A document in Offline Mode or This Browser has no room and no agent can reach it. On a personal document that is
 neither shared nor in a team the editor sends only its selection and its tab focus; cursors, laser, viewport and
 drag previews stay for documents with an audience.
 
@@ -147,6 +147,15 @@ A changeset on a tab bound to a source in strict compatibility
 capabilities before the write; a result holding residue is refused `422 not_expressible`, naming each element and
 field, and nothing is applied. A relaxed tab is never refused for residue.
 
+## Boards and Sheets only in Plan
+
+A Plan board or a Sheet goes only on a tab in Plan ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). A changeset,
+operations or replace, whose result holds a board or Sheet the tab did not hold before, on a tab not in Plan, is
+refused `422 invalid_value`, naming each such element, with the hint to add a Board or Sheet tab with `add_tab`
+instead; nothing is applied. So is a Plan template replaced over an existing tab not in Plan. Boards and Sheets a tab
+already holds are left alone, and a replace that makes a new tab from a Plan template passes, the template making it a
+Plan tab.
+
 ## Revert
 
 - `POST /api/documents/:id/changesets/:changesetId/revert` applies the changeset's inverse as a new changeset by the
@@ -175,7 +184,8 @@ field, and nothing is applied. A relaxed tab is never refused for residue.
   touched elements into view; **Undo** reverts. Changesets from one token within `CHANGESET_TOAST_COALESCE_MS`
   share a toast, and Undo on it reverts each, newest first. After Undo it reads "Undone", or "Undone, 2 kept
   because they changed since".
-- The toast stays until dismissed; a newer burst from the same token replaces it. It is an information toast, so
+- The toast stays up for the answer time ([Toasts](../004-interface-design/toasts.md#timing), 10 seconds, paused
+  while hovered or focused), or until dismissed; a newer burst from the same token replaces it. It is an information toast, so
   the "Show notifications" preference silences it; the outline still shows.
 
 ## The MCP server

@@ -1,7 +1,7 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Facilitate**, **Illustrate** or **Plan**. The New Document wizard asks for the mode itself
+**Facilitate**, **Pages** or **Plan**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
 its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to make a poster sees only
 what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
@@ -14,9 +14,9 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Illustrate templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
+- Pages templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
   Slide deck, Logo design, Group card and the
-  eight [Illustrate templates](#illustrate-templates) below.
+  eight [Pages templates](#pages-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
@@ -43,7 +43,7 @@ start ([Template starts](start-diagramming.md)), and is what the New Document wi
 | Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                                          |
 | Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                                  |
 | Blank Session      | `blank-session`      | Facilitate | An empty tab in Facilitate, named "Untitled Session".                          |
-| Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
+| Blank Illustration | `blank-illustration` | Pages      | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
 | Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
 
 **Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
@@ -56,7 +56,7 @@ shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-sit
 
 ### Blanks of a page kind
 
-Blank Illustration's one page asks what it is for. Four more Illustrate blanks have already answered, for someone
+Blank Illustration's one page asks what it is for. Four more Pages blanks have already answered, for someone
 who knows they are making a deck, an article, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
 Spreadsheet):
 
@@ -70,17 +70,17 @@ Spreadsheet):
 - **Exactly one page and nothing else**: no elements, the page's kind already chosen. The page is made the way the
   first page's **What Is This Page For?** makes it (`withPageKindChosen` on an unchosen page, through
   `blankPageTemplateOverrides`), so a blank of a kind and a chosen Blank Illustration are the same page.
-- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Illustrating does not
+- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Making Pages does not
   show over it ([Template starts](start-diagramming.md) "When it shows").
 - **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
   Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
-  page of that kind does ([Illustrate pages](illustrate-pages.md)); an article page never shows one.
+  page of that kind does ([Pages](pages-mode.md)); an article page never shows one.
 - **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
   `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
-  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Illustrate's
-  Popular (so in Start Illustrating's Recommended, after Blank Illustration and Article), since a deck is most often
+  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Pages mode's
+  Popular (so in Start Making Pages' Recommended, after Blank Illustration and Article), since a deck is most often
   built from its own slides; the others are found in their groups or by search.
-- **Each leads its group in Start Illustrating**: Blank Slide Deck first in **Slides**, Blank Infographic in
+- **Each leads its group in Start Making Pages**: Blank Slide Deck first in **Slides**, Blank Infographic in
   **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
   **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
   (posters, cards and social posts to print, pin up or share).
@@ -122,7 +122,7 @@ draw over, not an empty frame.
 - **Idea Garden** _(Brainstorm)_: ideas grown as a drawn tree: the question at the roots, themes as
   branches, ideas as leaves, the best ones as fruit, and a legend.
 
-## Illustrate templates
+## Pages templates
 
 Each opens on pages of its own ([Templates on pages](../008-canvas/canvas-and-palette.md#templates-on-pages)),
 already infographic pages, built with the page layouts' kit.
@@ -144,13 +144,17 @@ already infographic pages, built with the page layouts' kit.
   matched rows of pros and cons, and a verdict at the foot.
 - **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
+- **Working Backwards** _(Strategy)_: Amazon's PR/FAQ on article pages (Report look): the press release for a launch
+  that is not built yet, then the Customer FAQ and, after a page break, the Internal FAQ, closing on a to-do list
+  for the review ([Templates](../008-canvas/canvas-and-palette.md#templates)). It is an article, not infographic
+  pages, as the Project Brief template is.
 
 ### Design templates
 
-Five templates for showing a design open in Illustrate, each on one infographic page sized for what it is
+Five templates for showing a design open in Pages, each on one infographic page sized for what it is
 (`template-design-pages.ts`). Their drawings are the ones they had as Diagram templates, built by the same builders
 at the same size (the Floor plan is drawn to a captioned metric scale, so none is scaled) and centred on the page.
-Start Illustrating lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
+Start Making Pages lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
 show."), after Logos; their catalogue category stays Design.
 
 | Template           | Kind id             | Page                                                         |
@@ -177,16 +181,20 @@ unchanged; only the mode they open in moved from Diagram.
 - **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
   (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
   **Brainstorm Board** (`brainstorm`).
-- The boards that ship a dot vote: **Affinity map** (`affinity-map`), **Prioritization matrix**
-  (`prioritization-matrix`) and **Risk matrix** (`risk-matrix`). Diagram has no Session strip, so a
+- The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
+  (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`). Diagram has no Session strip, so a
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
   session tool opens in Facilitate.
 - The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
-  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User persona** (`user-persona`, under
-  Workshops), the **Planning** group's **Objectives planner** (`objectives-planner`), **Roadmap** (`roadmap`),
-  **RACI matrix** (`raci-matrix`) and **User story map** (`user-story-map`), and the **Strategy** group's **Business
-  Model Canvas** (`business-model-canvas`), **Stakeholder map** (`stakeholder-map`) and **Opportunity solution
-  tree** (`opportunity-solution-tree`). Their catalogue categories are unchanged.
+  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User Persona** (`user-persona`),
+  **Empathy Map** (`empathy-map`) and **User Journey** (`journey`), under Workshops, the **Planning** group's **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`),
+  **RACI Matrix** (`raci-matrix`) and **User Story Map** (`user-story-map`), and the **Strategy** group's **SWOT** (`swot`), **Business
+  Model Canvas** (`business-model-canvas`), **Value Proposition Canvas** (`value-proposition-canvas`), **Stakeholder
+  map** (`stakeholder-map`) and **Opportunity Solution Tree** (`opportunity-solution-tree`). Their catalogue
+  categories are unchanged. **A board built from sticky notes for a group to add theirs to is a Facilitate
+  template**: a note per voice is the room's work. SWOT, Empathy Map and User Journey moved from Diagram for it; a
+  Diagram template may still carry a sticky or two as an annotation (Family Tree, Flywheel, Sequence Diagram) and
+  stays a diagram. Event Storming is its own kind of tab and keeps its own mode.
 - The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
   (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
   round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
@@ -219,6 +227,12 @@ unchanged; only the mode they open in moved from Diagram.
   template's, or the legacy "Untitled diagram"). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.
 - Only for the document's **first** tab: a template filling a later tab names that tab, not the document.
+- **Start Planning's own picks name it too**: a board preset, a sheet start, a form, a dashboard layout or a
+  visualisation picked for the first tab names a still-untitled document after the title that tab takes ("Untitled
+  Bug Tracker", "Untitled Gantt Chart"), read once the tab has changed (`usePlanStartDocumentName`). Before, only
+  Start Planning's template cards did, so most new Plan documents stayed "Untitled Plan". Only a change seen in the
+  session counts (opening a document on a Plan tab is not a start), only for someone who can edit, and a name the
+  start gave the document itself (a template's) is kept.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
   by renaming. No telemetry: it is not a person's rename.
 
@@ -239,6 +253,6 @@ change) and sets the slides between on a soft still gradient, so they read and p
 - **Workshop Kickoff** (Waves): a design workshop's opening: Keynote Title, Objectives, Agenda Grid,
   Process Flow (how each round runs), Key Takeaway (the one rule), Call to Action.
 
-They sit in Start Illustrating's **Slides** group after the Slide Deck, and in the Presentations
+They sit in Start Making Pages' **Slides** group after the Slide Deck, and in the Presentations
 category. A test pins each slide's text to its layout one for one, so a layout change that adds or
 drops a line fails until the deck follows.

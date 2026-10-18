@@ -13,7 +13,6 @@ import {
 } from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
-  ARROW_THICKNESS_PX,
   arrowheadShapeOf,
   arrowheadStartShapeOf,
   arrowheadSizeOf,
@@ -31,15 +30,15 @@ import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
-import { elementFontId, resolveFinish, type Finish } from './finish';
+import { elementFontId, finishArrowWidthPx, resolveFinish, type Finish } from './finish';
 import { finishArrowEnds } from './mind-connector-route';
-import { sketchArrow } from './sketch-element';
+import { handDrawnArrow } from './hand-drawn';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
 
 // Arrowhead reference points (where each head should aim from), honouring
 // curve / elbow handles so heads sit tangent to the rendered path.
-export function arrowHeadRefs(
+function arrowHeadRefs(
   arrow: ArrowElement,
   from: { x: number; y: number },
   to: { x: number; y: number },
@@ -155,6 +154,17 @@ export function svgArrowhead(
   }
 }
 
+// A flow drawn moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): the line's class,
+// its own dash pattern in place of the stroke style's, an optional path length (a 'draw' reveal measures in
+// 0..1), and the inline custom properties the class reads. The caller (the editor) builds it from its flow
+// tables; every value is our own, never user text.
+export type ArrowLineMotion = {
+  className: string;
+  dash?: string;
+  pathLength?: number;
+  style: string;
+};
+
 export function svgArrow(
   source: ArrowElement,
   elements: Element[],
@@ -179,17 +189,19 @@ export function svgArrow(
   paper: string = surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR,
   // The tab's finish (docs/specs/008-canvas/finish.md), for an arrow without its own.
   tabFinish?: Finish,
+  // Its flow, drawn moving (a tab window); absent, the line is a still, as every export draws it.
+  lineMotion?: ArrowLineMotion,
 ): string {
   // A stock colour stored by name is drawn in its version for this page.
   const stocked = resolveStockColours(source, surface);
-  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch
-  // draws it by hand (docs/specs/008-canvas/finish.md).
+  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch and
+  // Marker draw it by hand (docs/specs/008-canvas/finish.md).
   const finish = resolveFinish(stocked.finish, tabFinish);
   // The same ends the live canvas resolves (the converging-fan offset of arrow-endpoint-spread.ts, or a
   // finish's exact route), so exports match what's on screen.
   const { arrow, from, to } = finishArrowEnds(stocked, elements, finish);
   const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
-  const lw = arrow.strokeWidth ?? (finish === 'professional' ? ARROW_THICKNESS_PX.thin : 2);
+  const lw = finishArrowWidthPx(arrow.strokeWidth, finish);
   const op = arrow.opacity ?? 1;
   const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
   const style = arrowStyleOf(arrow);
@@ -207,8 +219,16 @@ export function svgArrow(
   const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
   // A shared end's pattern is anchored there, so every arrow into it runs in step (arrow-dash.ts).
   const dashOffset = arrowDashOffset(arrow, from, to);
-  const dashAttr = dash
-    ? ` stroke-dasharray="${dash}"${dashOffset ? ` stroke-dashoffset="${dashOffset}"` : ''}`
+  // A moving flow marches its own pattern, as ArrowView draws it.
+  const dashAttr = lineMotion?.dash
+    ? ` stroke-dasharray="${xmlEscape(lineMotion.dash)}"`
+    : dash
+      ? ` stroke-dasharray="${dash}"${dashOffset ? ` stroke-dashoffset="${dashOffset}"` : ''}`
+      : '';
+  const motionAttr = lineMotion
+    ? ` class="${xmlEscape(lineMotion.className)}"` +
+      (lineMotion.pathLength ? ` pathLength="${lineMotion.pathLength}"` : '') +
+      (lineMotion.style ? ` style="${xmlEscape(lineMotion.style)}"` : '')
     : '';
   // The line breaks around unrelated boxes it crosses, as on the canvas
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
@@ -231,21 +251,30 @@ export function svgArrow(
   // heads are drawn exactly.
   const mixed = startShape !== headShape;
   const headPreset = arrowheadSizeOf(arrow);
-  const sketched =
-    finish === 'sketch'
-      ? sketchArrow(arrow.id, d, {
-          strokePx: lw,
-          headSize: headPreset,
-          headShape,
-          startHead: !mixed && (ends === 'from' || ends === 'both'),
-          endHead: !mixed && (ends === 'to' || ends === 'both'),
-          // The export is a still: no flow runs, so both passes.
-          passes: 2,
-        })
-      : null;
-  const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"`;
-  parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${maskAttr}/>`);
-  if (sketched?.heads) parts.push(`<path d="${sketched.heads}"${lineAttrs}/>`);
+  const sketched = handDrawnArrow(finish, arrow.id, d, {
+    strokePx: lw,
+    headSize: headPreset,
+    headShape,
+    startHead: !mixed && (ends === 'from' || ends === 'both'),
+    endHead: !mixed && (ends === 'to' || ends === 'both'),
+    // The export is a still: no flow runs, so every pass.
+    flowing: false,
+  });
+  // Marker's ink is see-through, each layer its own path, so where strokes cross it pools darker.
+  const ink = sketched && sketched.inkOpacity < 1 ? ` stroke-opacity="${sketched.inkOpacity}"` : '';
+  const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${ink}`;
+  parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${motionAttr}${maskAttr}/>`);
+  if (sketched?.lineOver)
+    parts.push(`<path d="${sketched.lineOver}"${lineAttrs}${dashAttr}${maskAttr}/>`);
+  if (sketched?.heads) {
+    const headAttrs = sketched.headFill
+      ? lineAttrs.replace(
+          ' fill="none"',
+          ` fill="${xmlEscape(stroke)}" fill-opacity="${sketched.inkOpacity}"`,
+        )
+      : lineAttrs;
+    parts.push(`<path d="${sketched.heads}"${headAttrs}/>`);
+  }
   if (!sketched?.sketchedHeads || mixed) {
     const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
     const headSize = ARROWHEAD_SIZE_PX[headPreset];

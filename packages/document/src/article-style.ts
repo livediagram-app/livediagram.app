@@ -4,7 +4,7 @@
 // the exports read the same numbers.
 import { articlesOf } from './article-flow';
 import { withArticleFlow } from './article-pages';
-import { illustratePagesOf, withIllustratePages } from './illustrate-page';
+import { pagesOf, withPages } from './page';
 import type { Tab } from './index';
 import type {
   ArticleLineSpacing,
@@ -32,13 +32,13 @@ export const ARTICLE_PARAGRAPH_SPACE: Readonly<Record<ArticleParagraphSpacing, n
   normal: 0.75,
   wide: 1.5,
 };
-export const ARTICLE_MARGIN_PX: Readonly<Record<ArticleMargins, number>> = {
+const ARTICLE_MARGIN_PX: Readonly<Record<ArticleMargins, number>> = {
   narrow: 48,
   normal: 96,
   wide: 144,
 };
 
-export type ResolvedArticleStyle = {
+type ResolvedArticleStyle = {
   headingFont: string;
   bodyFont: string;
   // Null: the tab theme's accent.
@@ -137,10 +137,7 @@ export function resolveArticleStyle(style: ArticleStyle | undefined): ResolvedAr
 }
 
 /** A look applied: every field it sets, keeping the article's accent, margins and page numbers. */
-export function withArticleLook(
-  style: ArticleStyle | undefined,
-  look: ArticleLookId,
-): ArticleStyle {
+function withArticleLook(style: ArticleStyle | undefined, look: ArticleLookId): ArticleStyle {
   const { label: _label, ruled: _ruled, ...fields } = ARTICLE_LOOKS[look];
   void _label;
   void _ruled;
@@ -206,7 +203,7 @@ export function withArticleStyleChanged<
   const ruledBefore = was?.look === 'notebook';
   const ruledNow = 'look' in change && ARTICLE_LOOKS[change.look].ruled;
   if (ruledNow !== ruledBefore && 'look' in change) {
-    const pages = illustratePagesOf(next).map((p) => {
+    const pages = pagesOf(next).map((p) => {
       if (p.flow !== flow) return p;
       const background = { ...p.background };
       if (ruledNow) background.pattern = 'lines';
@@ -215,7 +212,7 @@ export function withArticleStyleChanged<
       void _b;
       return background.fill || background.pattern ? { ...own, background } : own;
     });
-    next = withIllustratePages(next, pages);
+    next = withPages(next, pages);
   }
   return next;
 }

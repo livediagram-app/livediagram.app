@@ -63,6 +63,27 @@ This is **render-on-read**, not render-on-save, on purpose:
 - **Cheap steady state.** Once cached, reads are a straight R2 stream
   until the next save.
 
+### Pages tabs
+
+A first tab in Pages (pages: infographics, slides, logos, articles)
+snapshots as **its first page alone**, drawn as the page export draws it
+(`renderPageToSvg`, [Pages](../007-editor/pages-mode.md) "Export"): the page's sheet and
+background, an article page's estimated writing, and the elements reaching
+onto it, cut at its edges, at the page's own size. Drawing the whole canvas
+instead put every page side by side, which at thumbnail size shrank to a
+row of slivers nobody could recognise; a deck is recognised by its cover.
+The same rule holds wherever this renderer serves a preview: the Explorer
+thumbnail, the default live image, a `?tab=` live image of a Pages
+tab, and the Community snapshot. Only the first page's images are read for
+it (its elements' images and its picture background), so a long deck of
+photos costs one page's R2 reads.
+
+Measured on the renderer alone (Node, warm): a 12-slide deck of 10 shapes
+a slide drew in 1.33 ms as a 42 KB whole canvas and draws in 0.14 ms as a
+4 KB first page; a worst case of 60 slides of 25 shapes plus a 30-page,
+600-paragraph article drew in 6.5 ms at 528 KB and draws in 5.6 ms at
+9 KB (the article's writing estimate dominates either way).
+
 An empty / unparseable first tab yields no snapshot (the endpoints 404
 and the row shows its generic icon). Deleting a document clears its R2
 object. The freshness column needs no backfill: the first read of each
@@ -170,6 +191,14 @@ document renders lazily.
   embed stays close to live without hammering the origin (the bytes come
   from R2; the worker only re-renders when the document was saved since).
 
+## Delivery path 3: Share card (public, share-code-scoped)
+
+`GET /api/share/:code/image.png`, the picture a pasted share link previews with
+([Share-link previews](../013-workspace/share-link-previews.md)): the same drawing,
+behind the same gate, fitted onto a 1200 x 630 PNG. The PNG is cached in R2 beside
+the snapshots (`og/<documentId>`, `og-community/<documentId>`), stamped with its
+own render time, and deleted with them.
+
 ### Share dialog
 
 A per-active-link **Live image** control (non-password links only) opens
@@ -187,8 +216,8 @@ choice is document-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 The thumbnail shows on **every** Explorer surface that lists a document:
-the full-page `/explorer` rows (Recent / My documents / folders / Search results /
-This browser), the team library page, the "Shared with me" list, and the
+the full-page `/explorer` rows (Recent / My Documents / folders / Search results /
+This Browser), the team library page, the "Shared With Me" list, and the
 in-editor Explorer. A single shared `DocumentThumbnail`
 component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the document's) plus, for a shared row,
@@ -198,9 +227,10 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My documents / folders / Search results / This browser)
-have a **List / Card / Details** toggle at the far right of the header (device-
-local preference, `livediagram:explorer-view`). **Card is the default**:
+The browse views (Recent / My Documents / folders / Search results / This Browser)
+have a **List / Card / Details** toggle in the header's actions, left of Help and
+Create, which always sit further right (device-local preference,
+`livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read
 every line to find the one you would have recognised on sight. Somebody who
 prefers the density of rows knows where the toggle is; somebody opening the
@@ -212,6 +242,11 @@ by width), each with a large snapshot and every column the list shows
 card share one badge module (`document-badges.tsx`) and one actions-menu
 module (`document-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard | ExplorerViewDetails` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The Details view, a sortable table with a snapshot preview on a resting hover, is [Explorer Details view](../013-workspace/explorer-details-view.md).
+
+**On a phone** (the `phone:` breakpoint: narrower than `sm`, or a touch screen under 500px tall)
+List and Details are not offered: they are for larger screens. The browse views and the team
+library always show cards, and the toggle is hidden so it takes no room in the header. The saved
+choice is left alone, so the same device shows it again once the window is wide enough.
 
 **The actions menu** (the ⋯ on a row or card, and on a Timeline document
 card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**
@@ -268,7 +303,7 @@ document, so a per-card badge is noise — the team list omits it as well).
 - **No PNG.** SVG only — vector, tiny, headless-renderable. A rasterised
   variant is out of scope.
 - The List/Card toggle covers the main browse views and the team
-  library; the "Shared with me" page keeps its fixed layout (it already
+  library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
 ## Self-hosting

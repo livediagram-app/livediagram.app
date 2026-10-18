@@ -15,17 +15,16 @@ import { threadResolved, threadWithComment, threadWithoutComment } from './comme
 import { withoutCommentAuthorId, type Comment, type CommentThread } from './comments';
 import { isComment } from './element-deltas';
 
-export const ITEM_COMMENTS_FIELD = 'comments';
+const ITEM_COMMENTS_FIELD = 'comments';
 
 export type ItemCommentChange =
   | { kind: 'add'; comment: Comment }
   | { kind: 'remove'; commentId: string }
   | { kind: 'resolve'; resolved: boolean };
 
-export type ItemCommentRefusal = 'unchanged' | 'comments_full' | 'comment_not_found';
+type ItemCommentRefusal = 'unchanged' | 'comments_full' | 'comment_not_found';
 
-export type ItemCommentResult =
-  { ok: true; item: Item } | { ok: false; reason: ItemCommentRefusal };
+type ItemCommentResult = { ok: true; item: Item } | { ok: false; reason: ItemCommentRefusal };
 
 function isThread(value: unknown): value is CommentThread {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;

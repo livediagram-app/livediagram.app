@@ -17,14 +17,14 @@ export type KeyRow = {
   color?: string;
 };
 
-export const KEY_ROWS_MAX = 12;
+const KEY_ROWS_MAX = 12;
 export const KEY_ROW_H = 28;
-export const KEY_TITLE_H = 32;
+const KEY_TITLE_H = 32;
 export const KEY_PAD = 8;
 export const KEY_MEANING_MAX = 60;
 export const KEY_MEANINGS_MAX = 24;
 
-export function isDiagramKey(el: Element): el is ShapeElement & { shape: 'diagram-key' } {
+function isDiagramKey(el: Element): el is ShapeElement & { shape: 'diagram-key' } {
   return el.type === 'shape' && el.shape === 'diagram-key';
 }
 
@@ -125,7 +125,7 @@ export function withKeyMeaning<T extends Element>(el: T, rowId: string, text: st
   return { ...el, keyMeanings: next };
 }
 
-export type DiagramKeyLayout = {
+type DiagramKeyLayout = {
   title: LayoutRect;
   rows: { swatch: LayoutRect; meaning: LayoutRect }[];
 };

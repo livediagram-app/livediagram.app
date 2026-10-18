@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { PAGE_TIDY_UP_TOOLTIP, PageTidyUpButton, pageTidyUpRoom } from './PageTidyUpButton';
 
-// docs/specs/007-editor/illustrate-pages.md "Tidy": an infographic or slide page's title-bar button.
+// docs/specs/007-editor/pages-mode.md "Tidy": an infographic or slide page's title-bar button.
 afterEach(() => cleanup());
 
 const as = (level: 'edit' | 'participate' | 'view', ui: ReactNode) => (

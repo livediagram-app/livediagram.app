@@ -1,4 +1,4 @@
-// Every word Home says (docs/specs/013-workspace/explorer-home.md "Jump back in", "What happened",
+// Every word Home says (docs/specs/013-workspace/explorer-home.md "Jump Back In", "What Happened",
 // "States"; blueprint docs/specs/013-workspace/blueprints/explorer-home-view.md). Pure, so the
 // sentences are tested once and every part of Home reads alike.
 
@@ -13,14 +13,12 @@ import type {
 import { timeLabel } from '@livediagram/ui';
 
 export const HOME_COPY = {
-  jumpBackIn: 'Jump back in',
-  whatHappened: 'What happened',
-  seeMore: 'See more',
-  seeTimeline: 'See timeline',
+  jumpBackIn: 'Jump Back In',
+  whatHappened: 'What Happened',
+  seeMore: 'See More',
+  seeTimeline: 'See Timeline',
   jumpBackInEmptyTitle: 'No documents yet',
   jumpBackInEmpty: 'The documents you use most and last will gather here.',
-  whatHappenedEmptyTitle: 'No updates yet',
-  whatHappenedEmpty: 'What others do in your documents over the last 14 days shows here.',
   readFailed: 'Home could not load. Check your connection and try again.',
   tryAgain: 'Try again',
 } as const;
@@ -123,7 +121,7 @@ export function locationLabel(
 ): string {
   if (doc.via === 'shared') return doc.ownerName ? `Shared by ${doc.ownerName}` : 'Shared with you';
   // A team document lives in its team whoever reaches it: its owner reads it as `own`.
-  const space = doc.teamName ?? 'My documents';
+  const space = doc.teamName ?? 'My Documents';
   return doc.folderName ? `${space} › ${doc.folderName}` : space;
 }
 

@@ -7,6 +7,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
 import { hasTourPending, markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourHost } from './TourHost';
@@ -22,6 +23,13 @@ const popover = vi.hoisted(() => ({
 }));
 vi.mock('./TourPopover', () => ({
   TourPopover: (props: NonNullable<typeof popover.props>) => {
+    popover.props = props;
+    return null;
+  },
+}));
+// The offer and the last card are the banner's (TourBanner): read the same way.
+vi.mock('./TourBanner', () => ({
+  TourBanner: (props: NonNullable<typeof popover.props>) => {
     popover.props = props;
     return null;
   },
@@ -70,6 +78,7 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   setActiveTour('plan', false);
+  while (anyModalOpen()) modalClosed();
 });
 
 describe('TourHost offer', () => {
@@ -109,7 +118,7 @@ describe('TourHost offer', () => {
   });
 
   // docs/specs/007-editor/editor-tour.md "Where it appears": Diagram mode only.
-  it.each(['draw', 'illustrate', 'plan', 'facilitate'])(
+  it.each(['draw', 'pages', 'plan', 'facilitate'])(
     'makes no offer on a tab in %s, and keeps it owed for a Diagram tab',
     (mode) => {
       markTourPending();
@@ -153,6 +162,48 @@ describe('TourHost offer', () => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
+  });
+});
+
+// docs/specs/007-editor/editor-tour.md "Dialogs come first".
+describe('TourHost with a dialog open', () => {
+  it('holds the offer until the last dialog closes, then offers', () => {
+    markTourPending();
+    editor();
+    act(() => {
+      modalOpened();
+      modalOpened();
+    });
+    render(<TourHost />);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(offered()).toBe(false);
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(offered()).toBe(false);
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
+    // Waiting was not an answer: the handoff stays owed until the offer is.
+    expect(hasTourPending()).toBe(true);
+  });
+
+  it('holds a Settings rerun while a dialog is still open', () => {
+    editor();
+    act(() => modalOpened());
+    render(<TourHost />);
+    act(() => requestTourRelaunch());
+    expect(offered()).toBe(false);
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
   });
 });
 

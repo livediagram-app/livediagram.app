@@ -1,6 +1,8 @@
 'use client';
 
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
+import { contentAddBlocked } from '@/lib/editor-capabilities';
+import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
@@ -20,6 +22,8 @@ import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
+import { actionsBoardIn } from '@/hooks/plan/linked-actions';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
@@ -51,8 +55,8 @@ import {
   useEffectEvent,
 } from 'react';
 import {
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
@@ -91,25 +95,25 @@ import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
-import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
+import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { useTabModeMenu } from '@/hooks/editor/useTabModeMenu';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
-import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
+import { useLeavePages } from '@/hooks/editor/useLeavePages';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
-import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
+import { FOCUS_PRESS_MESSAGE, focusPageAt, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -121,7 +125,7 @@ import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
-import { useViewPreview } from './useViewPreview';
+import { previewAdderKey, useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
 import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
@@ -205,6 +209,8 @@ import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useTemplateFlow } from './useTemplateFlow';
+import { createOwnElementWrites, type OwnElementWrites } from './own-element-writes';
+import { usePlanStartDocumentName } from './usePlanStartDocumentName';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
@@ -216,6 +222,7 @@ import { useMindGrowth } from './useMindGrowth';
 import { useFlowchartGrowth } from './useFlowchartGrowth';
 import { routeGrowth } from './growth-routing';
 import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
+import { useEntityActions } from '@/hooks/canvas/useEntityActions';
 import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
@@ -303,7 +310,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
   // take in what was just added to a page (useArticleIntake) without taking a peer's.
   const localEditSeqRef = useRef(0);
-  // Set once Illustrate mode's pages are known (below): the tab the lock guard applies to, and how
+  // Set once Pages mode's pages are known (below): the tab the lock guard applies to, and how
   // it says something was held back.
   const pageLockGuardRef = useRef<PageLockGuard | null>(null);
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
@@ -345,7 +352,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
           : t.elements;
         return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
       });
-      // Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): in Illustrate
+      // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
       // their hosts.
@@ -631,6 +638,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const mentionNotifyRef = useRef<
     (text: string, mentions: CommentMention[], itemId?: string, commentId?: string) => void
   >(() => {});
+  // The Actions board (useLinkedActionCards, below): declared first because the item store and the actions hook
+  // report to it before it exists.
+  const linkedActionsRef = useRef<LinkedActions | null>(null);
   // Comment-thread state + handlers. The open-id drives the
   // dynamic <CommentThreadPopover> JSX gate further down; the
   // action callbacks bind to the selection popover + the popover
@@ -854,7 +864,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/live-app.md#role-pill).
   // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
-  const { viewPreview, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
+  const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
     workbench?.ended ? 'view' : sessionRole,
     () => {
       setSelectedId(null);
@@ -865,9 +875,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const isReadOnly = !canEdit;
   // A Participant's adder key, what it may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md).
   // `isReadOnly` stays true for a Participant: its content gestures open through `participant.can` alone.
+  // Previewing as a Participant, an Editor has no adder key of its own (a room ticket carries one only for a
+  // participate session), so the preview stamps what it adds with a local one and handles it as a Participant would.
   const participant = useParticipantSession(
-    viewPreview || workbench?.ended ? 'view' : sessionRole,
+    workbench?.ended ? 'view' : previewLevel,
     toast.info,
+    previewLevel === 'participate' && canToggleRole ? previewAdderKey(selfParticipant.id) : null,
   );
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
@@ -898,6 +911,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const lastSavedNameRef = useRef<string>('');
   // Peer ops that land while a save is in flight (docs/specs/012-collaboration/collab-race-hardening.md); see save-baseline.
   const remoteOpJournalRef = useRef<RemoteOpJournal>(createRemoteOpJournal());
+  // This editor's element writes the room has not sequenced yet (own-element-writes.ts): one stable object.
+  const [ownWrites] = useState<OwnElementWrites>(createOwnElementWrites);
   // Peer ops applied to `tabs`, as state: the journal's count as of this render, for the autosave.
   const [opsApplied, setOpsApplied] = useState(0);
   const countAppliedOp = useCallback(() => setOpsApplied((n) => n + 1), []);
@@ -940,6 +955,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    ownWrites,
     opsApplied,
     previewingRef,
     roomRef,
@@ -1028,7 +1044,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useEffect(() => {
     // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
-    // a Local only document opens before the reader is known (docs/specs/006-document/offline-mode.md
+    // a document in This Browser opens before the reader is known (docs/specs/006-document/offline-mode.md
     // "Instant open"), and 'self' is nobody's row.
     if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;
@@ -1165,10 +1181,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw.
   // Items load only for a document with Plan content (docs/specs/026-plan/plan-mode.md "Cost").
   const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
+  // A document with an Actions board keeps its cards with its actions from any tab
+  // (docs/specs/026-plan/linked-boards.md), so it reads its items wherever it is open.
+  const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);
   const planNeeded = usePlanNeeded(
     planOpenTab?.elements ?? NO_ELEMENTS,
     documentPresentation,
-    opensInOf(planOpenTab) === 'plan',
+    opensInOf(planOpenTab) === 'plan' || actionsBoard !== null,
   );
   const planItems = usePlanItems({
     documentId,
@@ -1183,6 +1202,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A card comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
     onMentioned: (text, mentions, itemId, commentId) =>
       mentionNotifyRef.current(text, mentions, itemId, commentId),
+    onOwnWrite: (write, before) => linkedActionsRef.current?.noteOwnWrite(write, before),
   });
 
   // The document's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
@@ -1208,7 +1228,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // the lazily loaded sheet chunk through it, once a Sheet is drawn.
   const sheetsCommitRef = useRef<((map: (els: Element[]) => Element[]) => void) | null>(null);
   const sheetsPlaceRef = useRef<SheetsBridge['placeElement'] | null>(null);
-  const sheetsModeRef = useRef<((mode: 'plan') => void) | null>(null);
   const sheets = useSheetsBridge({
     documentId: documentId ?? '',
     ownerId: selfParticipant.id,
@@ -1231,7 +1250,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       tickTabs((ts) =>
         ts.map((t) => (t.id === activeId ? { ...t, elements: map(t.elements) } : t)),
       ),
-    switchToPlan: () => sheetsModeRef.current?.('plan'),
     selectElement: (id) => setSelectedId(id),
     // Quietly (the sheet's own undo holds the rename): a Sheet tab follows its sheet's title.
     sheetRetitled: (sheetId, title) =>
@@ -1242,7 +1260,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   useRoomConnection({
-    participant: participant.participating,
     onAdderKey: participant.setAdderKey,
     hydrated,
     documentId,
@@ -1257,6 +1274,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     markSeen,
     selfParticipantRef,
     saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    ownWrites,
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
@@ -1392,15 +1410,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Only a session that may add tabs is offered one (a tab-scoped link edits its one tab).
     ...(isStructureReadOnly ? {} : { newTabIn: (mode: EditorMode) => newTabInRef.current?.(mode) }),
   });
-  useAssignRef(sheetsModeRef, rawEditorMode.setMode);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
+  // Leaving Pages on a tab with articles asks first (turn them into Page elements, or keep).
   // Plan asks nothing: a board outside Plan is an element like any other
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(rawEditorMode, {
+  const { editorMode, leave: leavePages } = useLeavePages(rawEditorMode, {
     tab: activeTab,
     canEdit,
   });
@@ -1551,12 +1568,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
             viewports: remoteViewports,
             tabId: activeId,
             at,
+            page: focusPageAt(activeTab, at)?.rect,
           })
         ],
       );
       track('Element', 'Used', 'BringFocus');
     },
-    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, toast],
+    [broadcastFocusHere, livePresence, remoteViewports, activeId, activeTab, zoomRef, toast],
   );
 
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
@@ -1575,6 +1593,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
     tabs,
     framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
+    movePage: (tabId, pageId, unitIndex) =>
+      commitTabs((ts) => tabsWithPageMoved(ts, tabId, pageId, unitIndex)),
     plan: slideThumbnailPlan,
     activeTabId: activeId,
     setActiveId,
@@ -1604,6 +1624,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(() => {
     hydrateStoredDeck();
   }, [hasStoredDeck, documentId]);
+  // After the hydration above, so the stored deck is what the deck's follow pass builds on.
+  useDeckFollowsPages({
+    tabs,
+    ready: hydrated,
+    hasStoredDeck,
+    documentId,
+    followPages: slideDeck.followPages,
+  });
 
   // What the presentation is showing right now, if anything.
   const presentingStep =
@@ -1716,18 +1744,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // so an idle participant sends nothing at all.
   // `broadcastViewport` is re-created every render, so it is called through an effect event. It follows
   // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
-  const publishViewport = useEffectEvent(() => {
+  const publishViewNow = () => {
     const view = viewport.get();
     const node = canvasMainRef.current;
     broadcastViewport(view.offset, view.zoom, {
       width: node?.offsetWidth ?? 0,
       height: node?.offsetHeight ?? 0,
     });
-  });
+  };
+  const publishViewport = useEffectEvent(publishViewNow);
   useEffect(() => {
     publishViewport();
     return viewport.subscribe(publishViewport);
   }, [viewport, activeId]);
+  // A new follower is shown our view at once, not at our next pan.
+  useShowFollowersMyView(followerIds, publishViewNow);
 
   // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
   // we take the canvas back. View-role visitors can both follow and be
@@ -1754,11 +1785,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
-  const focusLanding = useFocusLanding({ activeId, setActiveId, centreOn });
+  // On a Pages tab a point on a page lands on that page, framed whole like its label's press frames
+  // it (docs/specs/012-collaboration/bring-focus.md "On a page"); anywhere else the point is centred.
+  const landFocus = useCallback(
+    (tabId: string, at: { x: number; y: number }) => {
+      const page = focusPageAt(
+        tabsRef.current.find((t) => t.id === tabId),
+        at,
+      );
+      if (page && framePageRef.current) framePageRef.current(page.id);
+      else centreOn(at);
+    },
+    [centreOn, tabsRef],
+  );
+  const focusLanding = useFocusLanding({ activeId, setActiveId, land: landFocus });
   const focusInvite = useFocusInvite({
     onFollowTab: focusLanding.onFollowTab,
     onCentreOn: focusLanding.onCentreOn,
-    isAlreadyThere: (tabId, at) => tabId === activeId && isCentredOn(at),
+    isAlreadyThere: (tabId, at) =>
+      tabId === activeId && isCentredOn(at, focusPageAt(activeTab, at)?.rect),
   });
   // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
   // every element the changeset touched that is still there, framed no closer than 100%.
@@ -1796,7 +1841,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects. A tab showing pages frames the page you were
-  // last on (else its first) instead (set by useIllustratePages below), never the whole row.
+  // last on (else its first) instead (set by usePagesMode below), never the whole row.
   const frameFirstPageRef = useRef<(() => void) | null>(null);
   const { requestFit } = useTabEntryEffects({
     hydrated,
@@ -1894,10 +1939,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     saveAction,
     completeAction,
     reopenAction,
+    wontDoAction,
     deleteAction,
   } = useEditorActions({
     activeId,
     tickTabs,
+    onCreated: () => linkedActionsRef.current?.noteActionAdded(activeId),
     getAction: (elementId, actionId) => {
       const el = activeTab.elements.find((e) => e.id === elementId);
       if (!el || !isBoxed(el)) return undefined;
@@ -1975,19 +2022,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // The tab menu's Mode (docs/specs/007-editor/editor-modes.md): the tab's mode, switched as the
-  // mode switch switches it (the active tab through the same questions on leaving Illustrate).
-  const tabModeMenu = useTabModeMenu({
-    canEdit: !isReadOnly,
-    commitTabs,
-    activeId,
-    switchActive: editorMode.setMode,
-    newTabIn: isStructureReadOnly ? undefined : (mode) => newTabInRef.current?.(mode),
-  });
-  // Illustrate mode's pages: their edits, and the view centred on them.
+  // Pages mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
   const articleFocusRef = useRef<((flow: string) => void) | null>(null);
-  const illustratePages = useIllustratePages({
+  const pagesMode = usePagesMode({
     activeTab,
     mode: editorMode.mode,
     canEdit: !isReadOnly,
@@ -2008,15 +2046,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId: documentId ?? undefined,
     viewport,
   });
-  // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
-  const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
+  // What a locked page holds is inert, as on a locked layer (Pages mode only).
+  const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode?.pages ?? null);
   const { inertIds: canvasInertIds, chartIds: sheetChartIds } = useSheetChartInertIds(
     activeTab.elements,
     pageLockedIds,
   );
   useAssignRef(
     pageLockGuardRef,
-    illustratePages
+    pagesMode
       ? {
           tabId: activeId,
           // Said after the commit: the guard runs inside a state update, where no toast may be set.
@@ -2069,7 +2107,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // An Inbox row opened this document at one element (docs/specs/013-workspace/inbox.md
   // §1): once the pinned tab is ready, select it, bring it into view and
   // open its popover (or a Plan card's item panel). See useCollabDeepLink.
-  useCollabDeepLink({
+  const arriveAtLink = useCollabDeepLink({
     link: collabDeepLink,
     hydrated,
     activeId,
@@ -2265,6 +2303,37 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     catalogue: itemTypes.catalogue,
     saveCatalogue: itemTypes.saveCatalogue,
   });
+  // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
+  const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
+  const linkedActions = useLinkedActionCards({
+    tabs,
+    loadedTabIds,
+    board: actionsBoard,
+    items: planItems,
+    canHeal: editorLevel,
+    canMakeBoard: editorLevel && !isStructureReadOnly,
+    statusNames: planStatusNames,
+    commitTabs,
+    tickTabs,
+    markTabLoaded,
+    bringCardTypes: presetCardTypes.bring,
+    loadTabs: loadAllTabs,
+    arrive: (link) => {
+      if (link.at) setActiveId(link.at.tabId);
+      arriveAtLink(link);
+    },
+    announceBoard: (message, open) =>
+      toast.action({
+        key: 'actions-board',
+        message,
+        actions: [{ label: 'Open Board', onSelect: open }],
+      }),
+  });
+  useAssignRef(linkedActionsRef, linkedActions);
+  const linkedPlan = useMemo(
+    () => ({ placeOf: linkedActions.placeOf, showOnCanvas: linkedActions.showOnCanvas }),
+    [linkedActions.placeOf, linkedActions.showOnCanvas],
+  );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded && !workbenchMode, !!clerkUserId);
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
@@ -2321,6 +2390,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     notify: toast.info,
     // A form is an Editor's to make (docs/specs/030-forms/forms.md "Who may do what").
     newFormFor: participant.can.level === 'edit' ? forms.newFormFor : undefined,
+    linkedActions: linkedPlan,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });
@@ -2346,20 +2416,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
   // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
-  // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
+  // Pages mode, and while a page slide presents in any mode (read only, then: nothing is
   // edited while presenting).
   const presentingPage = presentingStep?.slide.pageId ?? null;
   const presentPages = useMemo(
-    () =>
-      !illustratePages && presentingPage
-        ? layOutIllustratePages(illustratePagesOf(activeTab))
-        : null,
-    [illustratePages, presentingPage, activeTab],
+    () => (!pagesMode && presentingPage ? layOutPages(pagesOf(activeTab)) : null),
+    [pagesMode, presentingPage, activeTab],
   );
   const articles = useArticles({
     activeTab,
-    on: illustratePages !== null || presentingPage !== null,
-    pages: illustratePages?.pages ?? presentPages,
+    on: pagesMode !== null || presentingPage !== null,
+    pages: pagesMode?.pages ?? presentPages,
     localEditSeq: localEditSeqRef,
     placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
     canEdit: !isReadOnly,
@@ -2396,12 +2463,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }),
     [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
   );
-  const illustrateView = useMemo(
+  const pagesModeView = useMemo(
     () =>
-      illustratePages
-        ? { ...illustratePages, ...(articles ? { articles } : {}), deck: pageDeck }
-        : illustratePages,
-    [illustratePages, articles, pageDeck],
+      pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck } : pagesMode,
+    [pagesMode, articles, pageDeck],
   );
   // --- Placement helpers ---------------------------------------------------
 
@@ -2414,8 +2479,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       activeId,
       activeTab,
       // Creation-only helpers: additionally blocked while the active layer
-      // is hidden / locked (docs/specs/006-document/layers.md).
-      editsBlocked: structureCreateBlocked,
+      // is hidden / locked (docs/specs/006-document/layers.md). Open to a Participant that may add content
+      // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
+      // addBoxedAt, and every commit it makes still passes participant.guardCommit.
+      editsBlocked: contentAddBlocked({
+        participating: participant.participating,
+        canAddContent: participant.can.addContent,
+        blocked: createBlocked,
+        structureBlocked: structureCreateBlocked,
+      }),
       formatSourceId,
       formatConfig: formatSettings.config,
       getViewportCenter,
@@ -2646,6 +2718,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setDocumentList((prev) => prev.map((d) => (d.id === documentId ? { ...d, name } : d)));
   };
 
+  // A Plan start on the first tab names a still-untitled document after what it made (usePlanStartDocumentName).
+  usePlanStartDocumentName({
+    firstTab: tabs[0],
+    firstTabLoaded: tabs[0] ? loadedTabIds.has(tabs[0].id) : false,
+    documentName,
+    nameDocument,
+    canEdit,
+  });
+
   // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.
   const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
@@ -2829,9 +2910,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     closeImagePicker,
   } = useEditorImages({
     // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
-    editsBlocked: participant.participating
-      ? editsBlocked || !participant.can.addContent
-      : structureBlocked,
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: editsBlocked,
+      structureBlocked,
+    }),
     isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
     embedMode,
     // Upload only in a workbench: no gallery read.
@@ -2858,8 +2942,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Logo pages (docs/specs/007-editor/logo-pages.md): the mirror-aware draw commit, the logo tools,
   // previews, Combine and the keyline snaps. See useLogoEditor.
   const logo = useLogoEditor({
-    illustrateView,
-    pages: illustratePages?.pages ?? null,
+    pagesModeView,
+    pages: pagesMode?.pages ?? null,
     activeTab,
     commit,
     currentSelectionIds,
@@ -2917,9 +3001,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const growthOpts = {
     // A Participant grows a mind map or a flowchart (docs/specs/013-workspace/share-roles.md): branches
     // and steps are content.
-    editsBlocked: participant.participating
-      ? createBlocked || !participant.can.addContent
-      : structureCreateBlocked,
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: createBlocked,
+      structureBlocked: structureCreateBlocked,
+    }),
     participating: participant.participating,
     activeId,
     activeTab,
@@ -2984,7 +3071,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
-    pages: illustratePages?.pages ?? null,
+    pages: pagesMode?.pages ?? null,
   });
   useAssignRef(placeIntentAtRef, placeIntentAt);
 
@@ -3175,11 +3262,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBorderRadiusSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
-    setRailCountSelected,
-    addRailPointSelected,
     appendTableRowSelected,
     appendTableColumnSelected,
-    setRailLabelSelected,
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,
@@ -3449,6 +3533,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeTab,
     drawMode,
     commit,
+    discardLastStep: cancelToCheckpoint,
     tickTabs,
     applyFormatFromSource,
     lockedByOther,
@@ -3536,6 +3621,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     snapGuideStore,
     beginDrag,
     beginAnchorDrag,
+    pressArmedAction,
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,
@@ -3573,7 +3659,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     alignmentGuidesRef,
     // Every page's edges and margin, and a logo page's keylines (useLogoEditor).
     pageSnapBoxes: logo.snapBoxes,
-    illustratePages: illustratePages?.pages ?? null,
+    pagesMode: pagesMode?.pages ?? null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -3584,6 +3670,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       tabLocked: activeTabLocked,
       createBlocked,
     },
+  });
+
+  // The entity's verbs (docs/specs/009-elements/entity.md): fields saved from the canvas, relationships drawn
+  // from a field, the ring's Add Field and Add Related Entity, and the Cardinality presets.
+  const entityActions = useEntityActions({
+    activeTab,
+    readSelection,
+    commit,
+    styleNewElement: styleMemory.styleNewElement,
+    setSelectedId,
+    setEditingId,
+    beginAnchorDrag,
+    editsBlocked,
   });
 
   // Copy / paste (in-app element clipboard + OS-clipboard image
@@ -3729,9 +3828,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
-    onFitToScreen: fitToScreen,
+    // In Pages, Fit frames the page you are nearest, not the whole tab.
+    onFitToScreen: pagesMode ? pagesMode.fitPageInView : fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
-    facilitateMode: editorMode.mode === 'facilitate',
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -3819,18 +3918,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    leaveIllustrate,
-    illustratePages: logo.view,
+    leavePages,
+    pagesMode: logo.view,
     canCombine,
     combineSelected,
     canTidyUp,
     tidyUpSelected,
     // Arms a draw tool: the Logo palette's markers, from the live pen (PaletteLogoTab).
     beginDraw,
-    // A page slide presenting outside Illustrate draws its article's writing from these.
+    // A page slide presenting outside Pages draws its article's writing from these.
     presentArticles: articles,
-    // The tab menu's Opens in choice for a tab, absent where it is not offered.
-    modeChoiceFor: tabModeMenu.choiceFor,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
@@ -3989,6 +4086,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     drag,
     beginArrowTranslate,
     beginDrag,
+    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
     beginFreehand,
@@ -4104,7 +4202,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
-    // The page a page slide is presenting (docs/specs/007-editor/illustrate-pages.md "Slides"):
+    // The page a page slide is presenting (docs/specs/007-editor/pages-mode.md "Slides"):
     // the canvas then shows that sheet alone, as it shows the slide's elements alone.
     presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
@@ -4254,11 +4352,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBorderStyleSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
-    setRailCountSelected,
-    addRailPointSelected,
     appendTableRowSelected,
     appendTableColumnSelected,
-    setRailLabelSelected,
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,
@@ -4276,6 +4371,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     growMindNode,
     abandonMindNode,
     flowchartActions,
+    entityActions,
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
@@ -4397,6 +4493,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openAssignAction,
     openAssignActionDialog,
     reopenAction,
+    wontDoAction,
+    linkedActions,
     saveAction,
     teamFolders,
     teamDocuments,

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// A list row of a document saved only in this browser carries the Local only pill beside its
-// name (docs/specs/006-document/offline-mode.md#local-only-pill).
+// A list row of a document saved only in this browser carries the This Browser pill beside its
+// name (docs/specs/006-document/offline-mode.md#this-browser-pill).
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -32,13 +32,13 @@ const entry = (ownerId: string): DocumentEntryProps => ({
 });
 
 describe('DocumentRow', () => {
-  it('shows the Local only pill for a document in this browser', () => {
+  it('shows the This Browser pill for a document in this browser', () => {
     render(<DocumentRow {...entry('offline')} />);
-    expect(screen.getByRole('link', { name: /Local only/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /This Browser/ })).toBeTruthy();
   });
 
   it('shows no pill for a cloud document', () => {
     render(<DocumentRow {...entry('me')} />);
-    expect(screen.queryByRole('link', { name: /Local only/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /This Browser/ })).toBeNull();
   });
 });

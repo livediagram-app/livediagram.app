@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import type { CommunityPostState } from '@livediagram/api-schema';
+import { createListeners } from '@/lib/listeners';
 
 // Whether each open document has a Community post, and in which state (docs/specs/025-community/community.md),
 // as an external store (docs/specs/003-system-architecture/react-state-and-effects.md): seeded from the
@@ -8,26 +9,21 @@ import type { CommunityPostState } from '@livediagram/api-schema';
 // publish without threading it through the editor's state slices.
 
 const states = new Map<string, CommunityPostState | null>();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setCommunityState(documentId: string, state: CommunityPostState | null): void {
   if (states.get(documentId) === state) return;
   states.set(documentId, state);
-  listeners.forEach((fn) => fn());
+  listeners.notify();
 }
 
 export function getCommunityState(documentId: string | null): CommunityPostState | null {
   return documentId ? (states.get(documentId) ?? null) : null;
 }
 
-function subscribe(onChange: () => void): () => void {
-  listeners.add(onChange);
-  return () => listeners.delete(onChange);
-}
-
 export function useCommunityState(documentId: string | null): CommunityPostState | null {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => getCommunityState(documentId),
     () => null,
   );

@@ -89,7 +89,7 @@ export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): 
 }
 
 // A set of fields placed where a board drew them, in its order.
-export function cardLayoutFrom(size: CardSize, fields: readonly CardField[]): CardLayout {
+function cardLayoutFrom(size: CardSize, fields: readonly CardField[]): CardLayout {
   const out: Partial<Record<CardSlot, CardField[]>> = {};
   for (const slot of CARD_SLOTS[size]) {
     const placed = (DRAWN[size][slot] ?? []).filter((f) => fields.includes(f));

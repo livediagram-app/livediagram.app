@@ -1,12 +1,12 @@
 'use client';
 
-// What happened (docs/specs/013-workspace/explorer-home.md "What happened"): what other people did
+// What Happened (docs/specs/013-workspace/explorer-home.md "What Happened"): what other people did
 // to documents the person can open, under day headings, with no filter controls. A quiet See
 // timeline link at the end of the section's heading row opens the Timeline; it
 // sits there so it never moves when the entries land.
 
 import { useMemo } from 'react';
-import { CompactEmptyState, isNewEvent } from '@livediagram/ui';
+import { isNewEvent } from '@livediagram/ui';
 import type { HomeGroup } from '@livediagram/api-schema';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useNow } from '@/hooks/ui/useNow';
@@ -14,8 +14,7 @@ import { groupsByDay } from '@/app/explorer/home/home-model';
 import { WhatHappenedSkeleton } from './HomeSkeletons';
 import { ActionEntry, SummaryEntry } from './WhatHappenedEntry';
 import { HomeSection } from './HomeSection';
-import { MUTED } from './home-styles';
-import { WhatHappenedEmptyIcon } from './home-icons';
+import { WHAT_HAPPENED_PANEL } from './home-styles';
 
 export function WhatHappened({
   groups,
@@ -35,27 +34,31 @@ export function WhatHappened({
 }) {
   const now = useNow(false);
   const days = useMemo(() => groupsByDay(groups, now), [groups, now]);
+  // Nothing from anyone: Home leaves the section out rather than show a second empty state
+  // (explorer-home.md "What Happened"). It is the page's last section, so nothing moves when it goes.
+  if (!loading && days.length === 0) return null;
   return (
     <HomeSection
       id="what-happened"
       title={HOME_COPY.whatHappened}
       busy={loading}
-      link={{ href: timelineHref, label: HOME_COPY.seeTimeline, onNavigate: onSeeTimeline }}
+      // See Timeline once the entries are in: an empty section is not drawn at all.
+      link={
+        loading
+          ? undefined
+          : { href: timelineHref, label: HOME_COPY.seeTimeline, onNavigate: onSeeTimeline }
+      }
     >
       {loading ? (
         <WhatHappenedSkeleton />
-      ) : days.length === 0 ? (
-        <CompactEmptyState
-          className="py-8"
-          icon={<WhatHappenedEmptyIcon />}
-          title={HOME_COPY.whatHappenedEmptyTitle}
-          description={HOME_COPY.whatHappenedEmpty}
-        />
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className={`flex flex-col gap-3 ${WHAT_HAPPENED_PANEL}`}>
           {days.map((day) => (
             <div key={day.day}>
-              <h3 id={`home-day-${day.day}`} className={`mb-1 px-2 text-xs font-medium ${MUTED}`}>
+              <h3
+                id={`home-day-${day.day}`}
+                className="mb-1 px-2 pt-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400"
+              >
                 {day.label}
               </h3>
               <ul className="flex flex-col gap-1">

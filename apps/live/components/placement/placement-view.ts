@@ -18,13 +18,13 @@ export type PlacementSpaces = {
   teamFolders: Record<string, PickerFolder[]>;
 };
 
-/** Whether the surface opens on the space overview: wherever My documents or two spaces are on offer. */
+/** Whether the surface opens on the space overview: wherever My Documents or two spaces are on offer. */
 export function hasSpaceOverview({ showPersonal, teams }: PlacementSpaces): boolean {
   return showPersonal || teams.length > 1;
 }
 
 /** The view a surface shows with nothing more specific to open: the overview, else its one space. */
-export function spaceRootView(spaces: PlacementSpaces): PlacementView {
+function spaceRootView(spaces: PlacementSpaces): PlacementView {
   if (hasSpaceOverview(spaces)) return { space: null, stack: [] };
   return {
     space: spaces.showPersonal ? PERSONAL_SPACE : (spaces.teams[0]?.id ?? PERSONAL_SPACE),

@@ -143,7 +143,7 @@ Never the query, a title, a creator or a URL.
   the element and in the Image panel.
 - **Filters.** No licence, colour, orientation or source pickers; the commercial-and-modification
   filter is fixed. The one exception is a page's Image background
-  ([Illustrate pages](../007-editor/illustrate-pages.md) "Image backgrounds"), whose search passes
+  ([Pages](../007-editor/pages-mode.md) "Image backgrounds"), whose search passes
   the page's shape (`aspect_ratio`); the picker never does. Never `size=large`: Openverse cannot
   render thumbnails for most of those (its thumbnail service answers 424), so every tile drew broken.
 - **Other providers.** Openverse only. A keyed provider (Unsplash, Pexels) would need the api worker

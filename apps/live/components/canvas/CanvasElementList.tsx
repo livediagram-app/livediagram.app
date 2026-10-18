@@ -37,7 +37,7 @@ const EMPTY_REMOTE_SELECTORS: RemoteSelector[] = [];
 type P = CanvasElementsLayerProps;
 
 // The layer's identity-stable handler bag (useStableHandlers), as much of it as an element uses.
-export type ElementListHandlers = Pick<
+type ElementListHandlers = Pick<
   P,
   | 'handleArrowSelect'
   | 'handleElementContextSelect'
@@ -55,7 +55,7 @@ export type ElementListHandlers = Pick<
   | 'onBeginArrowScale'
 >;
 
-export type CanvasElementListProps = Pick<
+type CanvasElementListProps = Pick<
   P,
   | 'elements'
   | 'editingId'

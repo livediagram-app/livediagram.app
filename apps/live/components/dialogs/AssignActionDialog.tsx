@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, TextInput } from '@livediagram/ui';
-import type { ElementAction } from '@livediagram/document';
+import {
+  ACTION_STATUSES,
+  ACTION_STATUS_LABELS,
+  type ElementAction,
+  type ElementActionStatus,
+} from '@livediagram/document';
+import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { TeamListItem } from '@/lib/api-client';
@@ -92,6 +98,8 @@ export function AssignActionDialog({
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  // Editing: Open, Done or Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"), saved with the rest.
+  const [status, setStatus] = useState<ElementActionStatus>('open');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -139,6 +147,7 @@ export function AssignActionDialog({
     setConfirmingDelete(false);
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
+    setStatus(existing?.status ?? 'open');
     setAssignee(existing ? null : selfRow);
     setNotifyEmail(true);
   }
@@ -197,6 +206,7 @@ export function AssignActionDialog({
       },
       teamId: assignee.teamId,
       notifyEmail: showEmailControl && notifyEmail,
+      ...(editing && status !== existing.status ? { status } : {}),
     });
   };
 
@@ -262,6 +272,18 @@ export function AssignActionDialog({
               className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
             />
           </label>
+
+          {editing ? (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">Status</span>
+              <SegmentedRadio
+                label="Status"
+                options={ACTION_STATUSES.map((id) => ({ id, label: ACTION_STATUS_LABELS[id] }))}
+                value={status}
+                onChange={setStatus}
+              />
+            </div>
+          ) : null}
 
           <AssigneePicker
             signedIn={signedIn}
@@ -340,6 +362,7 @@ export function AssignActionDialog({
               {confirmingDelete ? 'Confirm Delete' : 'Delete Action'}
             </Button>
           ) : null}
+
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>

@@ -106,8 +106,8 @@ folder you can move things into), so like Recent its header offers no
   revisit, where a favourite is a positive you actively scan for.
 
 - **The empty state has no CTA.** Creating a document doesn't land it here,
-  starring an existing one does, so the generic "New document" button would be
-  a dead end, the same reason Shared with me carries none.
+  starring an existing one does, so the generic "New Document" button would be
+  a dead end, the same reason Shared With Me carries none.
 - **Shared-with-you documents can't be starred.** They're not in your library —
   they live in the sharer's — and the existing **Dismiss** already covers
   "stop showing me this".

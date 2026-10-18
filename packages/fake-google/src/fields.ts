@@ -2,7 +2,7 @@
 // honours it, so code that forgets to ask for a field (md5Checksum, parents,
 // appProperties) gets the same hole it would get from Google.
 
-export type FieldTree = Map<string, FieldTree | true>;
+type FieldTree = Map<string, FieldTree | true>;
 
 export function parseFields(spec: string): FieldTree {
   let i = 0;

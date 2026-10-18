@@ -32,7 +32,7 @@ export const elementOf = (tab: Tab, id: string): Element | undefined =>
 
 // A box's x, y, width and height (NaN for what has none).
 export function boxIn(tab: Tab, id: string): [number, number, number, number] {
-  const el: object = Object(elementOf(tab, id));
-  const read = (key: string) => Number(Reflect.get(el, key));
+  const el = elementOf(tab, id);
+  const read = (key: string) => Number(el === undefined ? NaN : Reflect.get(el, key));
   return [read('x'), read('y'), read('width'), read('height')];
 }

@@ -11,7 +11,7 @@
 export const HTML_CACHE_CONTROL = 'no-store';
 export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
-export type CacheRule = 'no-store' | 'immutable' | 'missing-asset' | 'unchanged';
+type CacheRule = 'no-store' | 'immutable' | 'missing-asset' | 'unchanged';
 
 /** A hashed build asset of any of the five sites (`/_next/static/…`, under its prefix or not). */
 export function isBuildAsset(pathname: string): boolean {
@@ -21,7 +21,7 @@ export function isBuildAsset(pathname: string): boolean {
 // Whether build assets are content-hashed. Not under `next dev` (local development), whose chunks keep
 // their names while their content changes with every edit and come marked `no-cache` for it: marked
 // immutable, a reload would run the code from before the edit until the browser cache was cleared.
-export type CacheOptions = { hashedAssets: boolean };
+type CacheOptions = { hashedAssets: boolean };
 const PRODUCTION: CacheOptions = { hashedAssets: true };
 
 /** Which rule a response falls under. */

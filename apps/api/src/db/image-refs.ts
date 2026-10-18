@@ -58,7 +58,7 @@ export function imageRefPruneTabStatement(env: Env, tabId: string): D1PreparedSt
 // valid JSON with an `elements` ARRAY, so a corrupt tab can't fail the
 // statement (in whatever order SQLite evaluates the join) and an object
 // isn't walked.
-// The pages' pictures (docs/specs/007-editor/illustrate-pages.md "Image backgrounds") are walked
+// The pages' pictures (docs/specs/007-editor/pages-mode.md "Image backgrounds") are walked
 // the same way over `$.pages`, the id at `$.background.fill.imageId` of a `kind: 'image'` fill.
 function walkSql(
   tabWhere: string,
@@ -119,7 +119,7 @@ export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1
 
 // ---------- Backfill state --------------------------------------------
 
-export type ImageRefsBackfillRow = {
+type ImageRefsBackfillRow = {
   created_at: number;
   cursor: number;
   completed_at: number | null;

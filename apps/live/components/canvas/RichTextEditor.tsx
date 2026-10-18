@@ -123,6 +123,8 @@ export function RichTextEditor({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
+        // Right-to-left text reads right to left (label-bidi.css).
+        dir="auto"
         role="textbox"
         aria-multiline={multiline}
         aria-label="Edit text"

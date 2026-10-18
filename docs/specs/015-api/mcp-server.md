@@ -176,7 +176,7 @@ browser. A token minted for the CLI is named "livediagram CLI".
 ## 4. Tools
 
 Twenty-eight tools: thirteen for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
-([§4.9c](#49c-the-sheet-tools)), two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)) and four
+([§4.9c](#49c-the-sheet-tools)), two for pages and articles ([§4.9d](#49d-the-pages-tools)) and four
 for forms ([§4.9e](#49e-the-form-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
@@ -257,7 +257,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    Explorer's **Made by AI** filter (`made-by:ai`,
    [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's
    own work and AI-made documents can be told apart wherever either is filed.
-   Unfiled, it sits at the root of My documents like any other document,
+   Unfiled, it sits at the root of My Documents like any other document,
    with its **Made by AI** badge. (Earlier this find-or-created a real
    "Generated" folder, then the Explorer showed a Generated view;
    provenance is a filter, not a place.)
@@ -271,12 +271,12 @@ canvas overrides; the model then personalises labels via `update_document`'s
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
    [CLI](cli.md) build documents alike.
    Making a document is a use of it, so it joins the user's
-   Jump back in at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-document));
+   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-document));
    `markUsed: false` is passed through to the create
    ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
    create counts.
-5. **Returns** the new `id`, tab count + ids, the folder ("My documents" for the root,
+5. **Returns** the new `id`, tab count + ids, the folder ("My Documents" for the root,
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
@@ -353,12 +353,17 @@ template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md))
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
 `kind` and pass it as `template` on `create_document` / `add_tab` (a template of several tabs, such as the
-Plan templates, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
+Plan templates and the three with a companion Sheet, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
 [Plan templates](../026-plan/plan-templates.md)). Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
+
+A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
+those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
+`CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "retro". Closest: retrospective, team-retro, four-ls,
+sailboat. Valid kinds: ...`. The CLI's and api's template bodies refuse with the same hint.
 
 ### 4.5a `search_icons`
 
@@ -376,9 +381,8 @@ size, uploadedAt }], more }`, newest first, `query` matching the name, `limit` 2
 in bytes. An id is what an `image` element's `imageId` takes. Names are often a camera's or a screenshot tool's
 ("Screenshot 2026-10-12 at 14.03.png"), so `image: true` adds a **contact sheet**: one PNG of the listed images (the
 first 12), each drawn to fit a cell above its place in the list and its name, through the same image embedding as
-the preview ([§5](#5-visualise--inline-image-render)). The renderer decodes each picture at full size, about 0.65 s a
-megapixel (a 2880x1800 screenshot took 3.4 s, twelve of them 14.9 s), so the sheet draws pictures in order only
-while they stay within 16 megapixels (`CONTACT_SHEET_MAX_PIXELS`: three full-screen retina screenshots); each one past
+the preview ([§5](#5-visualise--inline-image-render)). The sheet spends the preview's picture budget itself, from the
+sizes and dimensions the gallery lists: it draws pictures in order only while they stay within it, and each one past
 that keeps a placeholder captioned "too large to draw here", and its bytes are not fetched. The gallery is the caller's own (`GET /api/images`, owner
 only): a teammate's uploads are not in it. Read-only, so a read-only token may call it. A deployment without image
 storage answers that images are not available here.
@@ -502,6 +506,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
+  An exit back to a step the flow reaches before the decision (a retry to the start, entered by nothing else) is a
+  loop, never a side step: laid level, it was drawn straight over the line into the decision.
 - **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
   away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
   crosses the spine. Several loops take separate tracks. On a drawing of up to 120 boxes a loop or a detour is first
@@ -655,7 +661,7 @@ These kinds hold content of their own, and the element format documents their
 fields so a model can fill them rather than guess: **sticky**, **table**,
 **code block**, **entity**, **lane**, the three **charts** (bar, line, pie), the
 **Sankey**, and the diagram-building kinds: **card**, **badge**, **step**,
-**boundary**, the concept graphics (**layer stack**, **pyramid**, **cycle**, **hub**, **onion**, **chevrons**),
+**boundary**, the concept graphics (**layer stack**, **pyramid**, **cycle**, **hub**, **onion**, **chevrons**, **timeline**),
 **pointer note**, **diagram key**, **stack**, the org chart's **person node**, the **sequence diagram** and the
 **image**.
 Every other kind stays listed by name only. The field notes are facts about what
@@ -668,7 +674,7 @@ schema resource (§4.6), short enough not to bloat every tool definition.
 | `image` (type)                              | `imageId`, `alt`, `objectFit`                                                                                                               | `imageId` is an id from `list_images`; one not in the caller's gallery is refused, naming `list_images`. Without `imageId` the element is a placeholder the user fills in the editor. `objectFit` `contain` (the default) shows the whole picture, `cover` fills the box and crops; `alt` describes the picture. A box of the picture's own proportions (`width` and `height` from `list_images`) shows it uncropped. |
 | `table` (type)                              | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`                                                                             | The first row is the header when `headerRow` is set.                                                                                                                                                                                                                                                                                                                                                                  |
 | `code-block` (shape)                        | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap`                                                                          | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                                                                                                                                                                                                                 |
-| `entity` (shape)                            | `label` (the title), `entityFields` `[{ name, type? }]` (up to 40)                                                                          | Keys go in the type text (`uuid PK`).                                                                                                                                                                                                                                                                                                                                                                                 |
+| `entity` (shape)                            | `label` (the title), `entityFields` `[{ name, type?, key? }]` (up to 40)                                                                    | `key` is `pk`, `fk`, `pk-fk` or `uk` ([The entity](../009-elements/entity.md) "Keys"); a legacy `uuid PK` type still reads as a key. A pinned arrow end may carry `field` (a field index, anchor `w` or `e`) to join that field.                                                                                                                                                                                      |
 | `lane` (shape)                              | `label` (the title), `headerFill`                                                                                                           | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                                                                                                                                                                                                               |
 | `bar-chart` / `pie-chart` (shape)           | `pieSlices` `[{ label, value }]`                                                                                                            | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                                                                                                                                                                                                        |
 | `line-chart` (shape)                        | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`                                                                              | The same, with one value per category.                                                                                                                                                                                                                                                                                                                                                                                |
@@ -679,6 +685,7 @@ schema resource (§4.6), short enough not to bloat every tool definition.
 | `boundary` (shape)                          | `label` (the title), `pageSubtitle`, `iconId`, `boundaryStyle`                                                                              | A container: elements whose centre is inside it belong to it. Nest boundaries for edge, region, VPC, subnet; Inset suits a nested one, C4 a C4 diagram.                                                                                                                                                                                                                                                               |
 | `layer-stack` / `pyramid` / `cycle` (shape) | `conceptRows` `[{ label, note? }]`, `pyramidVariant`, `label` (a cycle's centre)                                                            | Rows: stack 2 to 8 (note = side note), pyramid 2 to 6 (first row the apex; note = a funnel's value), cycle 3 to 8 (clockwise from the top).                                                                                                                                                                                                                                                                           |
 | `hub` / `onion` / `chevrons` (shape)        | `conceptRows` `[{ label }]`, `hubSpokes`, `label` (a hub's centre)                                                                          | Hub 3 to 8 satellites, onion 2 to 6 rings from the core out, chevrons 2 to 8 stages left to right.                                                                                                                                                                                                                                                                                                                    |
+| `timeline-rail` (shape)                     | `conceptRows` `[{ label, note }]`                                                                                                           | A Timeline: 2 to 8 milestones left to right, `label` what happens, `note` when (a date, a quarter).                                                                                                                                                                                                                                                                                                                   |
 | `pointer-note` (shape)                      | `label`, `pointerTip` `{ x, y }`, `attachedTo`, `attachAt`                                                                                  | The tip is relative to the note's top-left, or pinned to a point of a node.                                                                                                                                                                                                                                                                                                                                           |
 | `diagram-key` (shape)                       | `label` (the title), `keyMeanings`                                                                                                          | Its rows fill in from the tab's line styles and tag colours; meanings are keyed by row id (`line:dashed`).                                                                                                                                                                                                                                                                                                            |
 | `stack` (shape)                             | `stackDirection`, `stackColumns`, `stackGap`, `stackPadding`, `stackAlign`                                                                  | Children are the elements whose centre is inside; the editor lays them out.                                                                                                                                                                                                                                                                                                                                           |
@@ -832,7 +839,8 @@ unknown name with the ones there are.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
-- **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset.
+- **`add_board`** (write): a Plan board on a tab in Plan, from a preset or columns by name, as one changeset; any
+  other tab is refused `tab_not_plan` ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 - **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
   changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
@@ -872,19 +880,20 @@ scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation]
   its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
   validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
   answers what was applied before it.
-- **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
+- **`add_sheet`** (write): a new sheet on a tab in Plan (the tab named, else the first with a sheet, else the first;
+  any other tab is refused `tab_not_plan` before a sheet is made, [Plan tabs](../026-plan/plan-tabs.md#only-in-plan)), titled
   uniquely on the tab, blank or filled from A1 with `rows`, `csv` or a `design` (one of them), then a Sheet element
   framing it placed beside what the tab holds, as `add_board` places a board, in one changeset with a design's charts.
   The element is 960 x 560, grown to show every filled cell (up to 1,800 x 1,400).
 - **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
   to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
 
-### 4.9d The Illustrate tools
+### 4.9d The Pages tools
 
-The pages of a tab in Illustrate mode and the articles written on them ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).
+The pages of a tab in Pages mode and the articles written on them ([Pages for agents](../024-agents/pages-for-agents.md)).
 Pages are named by id, place (`2`) or name; articles by flow id or title. Both tools go through one api route
-(`POST /api/documents/:id/tabs/:tabId/illustrate`, `apps/mcp/src/illustrate-tools.ts` over
-`packages/agent-verbs/src/illustrate/`) and the editor's own page edits, switch the tab into Illustrate when it is
+(`POST /api/documents/:id/tabs/:tabId/pages`, `apps/mcp/src/pages-tools.ts` over
+`packages/agent-verbs/src/pages/`) and the editor's own page edits, switch the tab into Pages when it is
 not, and reach open editors at once.
 
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
@@ -920,6 +929,10 @@ built with the editor's own edits (`@livediagram/forms`) and started as Start Pl
   `settings` changes go through.
 - **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
   them; a form not ready answers every problem.
+- **`try_form`** (write): fills the form in as the builder's Preview does, answers by question id or prompt checked
+  first (a wrong one refused with why, nothing sent), then the "Preview: ..." card or row a response makes: through
+  `.../form-preview` for a published or sheet form (a published form counts it), else the card through the items
+  route. Answers what it made, where, and its number.
 - `read_document` lists a Form tab as `kind=form` with a line naming `read_form`; its `image` draws the form as
   `read_form` does.
 
@@ -1008,11 +1021,11 @@ which is how the gap was found.
 Three behaviours cover the twenty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                     |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                 |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                 |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                 |
+| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                             |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                             |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -1151,15 +1164,22 @@ descriptions.
 
 The tools named for the container were `*_diagram` / `find_diagrams` before it became a document ([Document](../006-document/document.md)). Each `*_document` tool is also registered under its old name until **30 April 2027** (`apps/mcp/src/legacy-tool-names.ts`, wired in `registerTool`):
 
-- The alias is the same tool: the same handler, input and output schemas and behaviour annotations.
-- Its title ends in "(deprecated)" and its description opens with "Deprecated: use `<new name>` instead; this name is removed on 2027-04-30.", so a model reading the tool list prefers the new name.
+- The alias is the same tool: the same handler, behaviour annotations and output schema, and its input checked
+  against the same schema, refused in the SDK's own words (`Input validation error: Invalid arguments for tool <old
+name>: ...`).
+- Its title ends in "(deprecated)" and its description is one line: "Deprecated: use `<new name>` instead; this name
+  is removed on 2027-04-30. It takes the same input as `<new name>`.", so a model reading the tool list prefers the
+  new name.
+- It lists an open input (any object), so the tool list carries each input schema once. The element format inside
+  `create_document` and `update_document` is most of the list: listing it again under the old names made them 22% of
+  every tool list (67,937 of 308,741 characters); without it they are 4% (10,733 of 251,537).
 - A call logs `[mcp] deprecated tool name <old> -> <new>` and counts as `Mcp·Used·<NewName>`, so the feature's history stays one line.
 
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
 <!-- /legacy-names -->
 
-- **Previews**: `read_document` with `image` draws an Illustrate tab as its pages, each as the editor exports it
-  (`svg-render-pages.ts` over `illustrate-page-frame.ts`): its background, gradient, pattern or picture, the elements
+- **Previews**: `read_document` with `image` draws a Pages tab as its pages, each as the editor exports it
+  (`svg-render-pages.ts` over `page-frame.ts`): its background, gradient, pattern or picture, the elements
   reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
   under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
   estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
@@ -1225,13 +1245,21 @@ Worker (no DOM, no React).
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
   `GET /api/images/:id`) and inlines them as base64 data URIs through the
   renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
-  must be inline. Each image is capped (2 MB) so a large upload doesn't bloat the
-  preview's own base64 payload; over the cap, or on any fetch failure, it falls
-  back to the placeholder rectangle (the structured elements still carry the id).
-  A tab with no images does no extra work. The fetch-and-inline core is
+  must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livediagram/api-schema`, shared with the api worker's
-  snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source (R2) and a total
-  budget instead of this per-image cap. The data URL takes the image's stored
+  snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source
+  (R2) and a total byte budget.
+- **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
+  pixel on top of about 28 MB for a 2048 px preview, in wasm memory that never shrinks. Measured: one 2880x1800
+  screenshot 49 MB, four 112 MB, and a flat 8000x8000 PNG of 0.19 MB 461 MB, against a Worker's 128 MB in all. Time
+  is the smaller cost (0.02 to 0.15 s a megapixel). So one preview draws pictures in document order while they stay
+  within 8 million pixels together (`PREVIEW_IMAGE_BUDGET_PIXELS`, one full-screen retina screenshot or several
+  ordinary ones) and 6 MB together (`PREVIEW_IMAGE_BUDGET_BYTES`, carried inline as base64), each at most 2 MB
+  (`PREVIEW_IMAGE_MAX_BYTES`), all in `apps/mcp/src/preview-budget.ts`. A picture's pixels are read from its header
+  (`imagePixelSize`), never decoded; one whose header cannot be read is not drawn. A picture past a limit, or that
+  fails to fetch, keeps the placeholder rectangle (the structured elements still carry its id), and a preview that
+  left any out for a limit says so in a line before the picture ("2 pictures are drawn as a placeholder in this
+  preview, which draws only so many pixels; ..."), so the model does not take one for a failed placement. The data URL takes the image's stored
   type; one stored without an image type (`application/octet-stream`) is
   labelled by sniffing its bytes, and bytes that match no accepted format keep
   the placeholder.
@@ -1285,7 +1313,7 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_document files new documents at the root of the user's My documents, or their default folder);
+  move folders (create_document files new documents at the root of the user's My Documents, or their default folder);
   more `/api` surface can be wrapped later if demand appears. (Share-link
   creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
   folders/teams themselves stays out.)

@@ -2,12 +2,12 @@
 
 import { useDocumentDropTarget } from '@/components/panels/useDocumentDropTarget';
 import { debugLog } from '@/lib/debug-log';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 import { useOptionalExplorer } from './ExplorerContext';
 import { planDocumentDrop, type DropPlace } from './document-drop';
 
 // A place on the Explorer page that takes a dragged document (docs/specs/013-workspace/folders.md
-// "Drag-and-drop"): a sidebar folder, My documents, a team or team folder, a folder row or card in
+// "Drag-and-drop"): a sidebar folder, My Documents, a team or team folder, a folder row or card in
 // the pane. The move goes through the move picker's own path (`moveDocumentTo`), so a drop and a
 // pick land identically: optimistic update, rollback and telemetry (`Document·Moved`, `Team·…`).
 // `onLongHover` opens or closes an expandable row while a drag rests on it. Outside the Explorer
@@ -28,7 +28,7 @@ export function useExplorerDropTarget(to: DropPlace, opts: { onLongHover?: () =>
     const from: DropPlace = team
       ? { teamId: team.team.id, folderId: team.folderId }
       : { teamId: null, folderId: own!.folderId };
-    const plan = planDocumentDrop({ from, to, localOnly: own ? isLocalOnly(own) : false });
+    const plan = planDocumentDrop({ from, to, localOnly: own ? isInThisBrowser(own) : false });
     debugLog(
       `[explorer-drop] ${plan} document=${id} to=${to.teamId ? 'team' : 'personal'}:${to.folderId ? 'folder' : 'root'}`,
     );

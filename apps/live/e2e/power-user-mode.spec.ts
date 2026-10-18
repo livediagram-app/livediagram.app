@@ -66,7 +66,13 @@ test.describe('Role pill', () => {
     await pill.hover();
     await expect(page.locator(TOOLTIP)).toHaveText('Owned by you', { timeout: 2_000 });
 
+    // Each click steps the preview: Editing, Participating, Viewing, back to Editing (live-app.md "Role pill").
     await pill.click();
+    const participating = header(page).getByRole('button', {
+      name: 'Participating. Owned by you',
+    });
+    await expect(participating).toBeVisible();
+    await participating.click();
     const viewing = header(page).getByRole('button', { name: 'Viewing. Owned by you' });
     await expect(viewing).toBeVisible();
     // Read-only: the palette's categories are gone.
@@ -115,6 +121,7 @@ test.describe('Power user mode', () => {
     await expect(page.locator(TOOLTIP)).toHaveCount(0);
     await expect(page.locator(TOOLTIP)).toHaveText('Editing', { timeout: 1_500 });
     await roleIcon.click();
+    await tabBar(page).getByRole('button', { name: 'Participating', exact: true }).click();
     await expect(
       tabBar(page).getByRole('button', { name: 'Viewing (read-only)', exact: true }),
     ).toBeVisible();

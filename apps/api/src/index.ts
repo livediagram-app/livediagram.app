@@ -9,6 +9,7 @@ import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
+import { runTeamInviteSweep } from './email/team-invite-reminders';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
@@ -70,12 +71,14 @@ import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
+import { handleTags } from './routes/tags';
 import { handlePlacementDefaults } from './routes/placement-defaults';
 import { handleTimeline } from './routes/timeline';
 import { handleActivity } from './routes/activity';
 import { handleHome } from './routes/home';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
+import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
@@ -352,6 +355,15 @@ async function routeApiRequest(
     });
     if (!ok.success) return rateLimited();
   }
+  // An invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"): open, so
+  // limited per network, reads and declines on one key, apart from everyone's document writes.
+  const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
+  if (isInviteDecline && env.TEAM_INVITE_RATE_LIMITER) {
+    const ok = await env.TEAM_INVITE_RATE_LIMITER.limit({
+      key: `invite-decline:${communityNetwork(clientIp(request))}`,
+    });
+    if (!ok.success) return rateLimited();
+  }
   if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
     // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
     const ok = await env.COMMUNITY_RATE_LIMITER.limit({
@@ -364,7 +376,8 @@ async function routeApiRequest(
     url.pathname !== '/api/events' &&
     !isRoomTicketMint &&
     !isCommunityWrite &&
-    !isFormRequest
+    !isFormRequest &&
+    !isInviteDecline
   ) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
@@ -399,9 +412,12 @@ async function routeApiRequest(
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow (self-host).
+  // A link preview's two reads (docs/specs/013-workspace/share-link-previews.md) take their own bucket, so a room
+  // of people opening one link together never spends the editor's share resolve on previews.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
     const ip = clientRateKey(request);
-    if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
+    const key = isSharePreviewPath(segments) ? `share-preview:${ip}` : ip;
+    if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();
   }
 
   // Dispatch on the resource segment to its route module. Each
@@ -474,6 +490,9 @@ async function routeApiRequest(
         return await handleAccount(ctx);
       case 'favourites':
         return await handleFavourites(ctx);
+      // Per-person document tags (docs/specs/013-workspace/tags.md).
+      case 'tags':
+        return await handleTags(ctx);
       case 'placement-defaults':
         return await handlePlacementDefaults(ctx);
       case 'trash':
@@ -602,6 +621,13 @@ const worker = {
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
       ctx.waitUntil(runLifecycleSweep(env));
+      // docs/specs/013-workspace/teams.md "Reminders and expiry": expire invites nobody answered in 28 days
+      // (always), then send the 1 / 7 / 21-day reminders (email only). Logs its own outcome.
+      ctx.waitUntil(
+        runTeamInviteSweep(env, now)
+          .then(() => undefined)
+          .catch((err) => console.error('[team-invites] sweep failed', err)),
+      );
       // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
       ctx.waitUntil(runTokenExpirySweep(env));
       // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from

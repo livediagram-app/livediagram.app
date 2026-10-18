@@ -32,15 +32,15 @@ export type StandardColourName = (typeof STANDARD_COLOUR_NAMES)[number];
 /** Which version of the standard colours a picker offers: lines and text, or fills. */
 export type StandardTone = 'strong' | 'soft';
 
-export type StandardColour = { name: StandardColourName; label: string; hex: string };
+type StandardColour = { name: StandardColourName; label: string; hex: string };
 
 // The soft tone's lightness per surface: Tailwind 100-200 on light paper, 800-900 on dark.
 // Safe ranges 0.88 to 0.96 (light) and 0.28 to 0.4 (dark).
-export const SOFT_LIGHTNESS: Readonly<Record<Appearance, number>> = { light: 0.93, dark: 0.34 };
+const SOFT_LIGHTNESS: Readonly<Record<Appearance, number>> = { light: 0.93, dark: 0.34 };
 // How much of the strong chroma a wash keeps, and its ceiling: Tailwind 200's chroma, so a wash
 // stays pastel. Safe ranges 0.3 to 0.6 and 0.05 to 0.1.
-export const SOFT_CHROMA_SCALE = 0.45;
-export const SOFT_MAX_CHROMA = 0.08;
+const SOFT_CHROMA_SCALE = 0.45;
+const SOFT_MAX_CHROMA = 0.08;
 // Ink's soft counterpart: a white wash is a real fill; an ink-coloured one is not.
 export const SOFT_WHITE = '#ffffff';
 
@@ -74,7 +74,7 @@ export function standardColours(
   return TABLES[tone][appearance];
 }
 
-export type StandardColourHit = {
+type StandardColourHit = {
   name: StandardColourName;
   label: string;
   tone: StandardTone;

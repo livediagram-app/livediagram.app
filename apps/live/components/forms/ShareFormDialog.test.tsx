@@ -1,13 +1,22 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
+
+const toast = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+const track = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/telemetry', () => ({ track }));
+
 import { ShareFormDialog } from './ShareFormDialog';
 
 // Share Form before publishing (docs/specs/030-forms/forms.md "Publishing and the form link"): Publish Form held back
 // while responses have nowhere to go or the form is not ready, each problem said.
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 const link = (over: Partial<FormLinkState> = {}): FormLinkState => ({
   link: { link: null, responses: 0, unseen: 0, suspendedAt: null, canPublish: true },
@@ -123,5 +132,82 @@ describe('Share Form, published and closed (forms.md "A live form is locked")', 
     );
     fireEvent.click(accepting());
     expect(l.setOpen).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('Share Form on a document in This Browser (forms.md "Publishing and the form link")', () => {
+  const offline = () => link({ link: null, status: 'offline' });
+
+  it("offers Sync Document, the Share dialog's move, and syncs nothing by itself", () => {
+    const sync = vi.fn(async () => {});
+    render(
+      <ShareFormDialog
+        open
+        onClose={() => {}}
+        link={offline()}
+        problem={null}
+        onFixDestination={() => {}}
+        onSyncToCloud={sync}
+      />,
+    );
+    expect(screen.getByText('This Document Is Offline')).toBeTruthy();
+    expect(screen.getByText(/this form can’t be published yet/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Publish Form' })).toBeNull();
+    expect(sync).not.toHaveBeenCalled();
+  });
+
+  it('syncs, then carries straight on to Publish Form in the same dialog', async () => {
+    const sync = vi.fn(async () => {});
+    const props = {
+      open: true,
+      onClose: () => {},
+      problem: null,
+      onFixDestination: () => {},
+      onSyncToCloud: sync,
+    };
+    const { rerender } = render(<ShareFormDialog {...props} link={offline()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
+    await act(async () => {});
+    expect(sync).toHaveBeenCalledOnce();
+    expect(track).toHaveBeenCalledWith('Form', 'Moved', 'SyncedToShare');
+    expect(toast.success).toHaveBeenCalledOnce();
+    // The document is on livediagram: the link is read first (Publish Form held), then ready.
+    rerender(<ShareFormDialog {...props} link={link({ link: null, status: 'loading' })} />);
+    expect(publishButton().disabled).toBe(true);
+    const l = link();
+    rerender(<ShareFormDialog {...props} link={l} />);
+    fireEvent.click(publishButton());
+    expect(l.publish).toHaveBeenCalled();
+  });
+
+  it('waits for the reader before syncing', () => {
+    const sync = vi.fn(async () => {});
+    render(
+      <ShareFormDialog
+        open
+        onClose={() => {}}
+        link={offline()}
+        problem={null}
+        onFixDestination={() => {}}
+        onSyncToCloud={sync}
+        syncReady={false}
+      />,
+    );
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Document' });
+    expect(button.disabled).toBe(true);
+  });
+
+  it('only explains when there is no way to sync', () => {
+    render(
+      <ShareFormDialog
+        open
+        onClose={() => {}}
+        link={offline()}
+        problem={null}
+        onFixDestination={() => {}}
+      />,
+    );
+    expect(screen.getByText(/kept on this device/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Sync Document' })).toBeNull();
   });
 });

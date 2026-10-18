@@ -1,13 +1,13 @@
 // A tab's articles' writing as `article` room ops (docs/specs/007-editor/article-pages.md
 // "Collaboration"): per article, its block ops in frames the room will carry, or that it is gone.
 // Shared by the editor's broadcast and the api's relay of an agent's write
-// (docs/specs/024-agents/illustrate-for-agents.md "The route"), so both send the same frames.
+// (docs/specs/024-agents/pages-for-agents.md "The route"), so both send the same frames.
 import { articlesOf, diffArticleFlow, type ArticleOp, type Tab } from '@livediagram/document';
 import type { RoomOp } from './room-messages';
 
 // The most characters of block ops one `article` frame carries: well inside the room's 256K cap on a
 // message (apps/api/src/document-room.ts MAX_MESSAGE_CHARS), with room for the envelope.
-export const ARTICLE_FRAME_CHARS = 200_000;
+const ARTICLE_FRAME_CHARS = 200_000;
 
 type ArticlesTab = Pick<Tab, 'id'> & { articles?: unknown };
 

@@ -189,7 +189,7 @@ export function useExplorerState() {
       setSettingsOpen(true);
     }
   }
-  // Which sidebar rows are open: folders, teams, My documents and Library
+  // Which sidebar rows are open: folders, teams, My Documents and Library
   // (docs/specs/013-workspace/explorer-structure.md#expansion).
   const { expanded, expand, toggleExpand } = useSidebarExpansion(selected);
   // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
@@ -257,7 +257,7 @@ export function useExplorerState() {
         if (sharedList === null) console.warn('[explorer] list read failed list=shared');
         // Only the shared read failed: the other views still list their rows, so say what is missing.
         if (list !== null && sharedList === null) {
-          toast.error('Couldn’t load the documents shared with you. Try again in a moment.');
+          toast.error('Couldn’t load documents shared with you. Try again soon.');
         }
         setLoading(false);
       }),
@@ -338,7 +338,7 @@ export function useExplorerState() {
     const created = await hookCreateFolder({ parentId });
     if (created) {
       setRenamingFolderId(created.id);
-      // Reveal the new row so its rename field shows: its parent, or My documents for a root folder.
+      // Reveal the new row so its rename field shows: its parent, or My Documents for a root folder.
       expand(parentId ?? MY_DOCUMENTS_EXPAND_KEY);
     }
   };
@@ -397,9 +397,11 @@ export function useExplorerState() {
   const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { onRestored?: () => void },
+    opts?: { onRestored?: () => void; name?: string },
   ) => {
-    await listDeleteDocument(id, beforeRemove, opts);
+    // A team document is not in the personal list, so its name for the toast comes from the team sweep.
+    const name = opts?.name ?? teamDocuments.find((d) => d.id === id)?.name;
+    await listDeleteDocument(id, beforeRemove, { ...opts, name });
     refreshIfTeamDocument(id);
   };
 
@@ -520,10 +522,12 @@ export function useExplorerState() {
       // itself was focused: descendants survive the delete (they're
       // now root folders), so a B-was-selected, delete-A flow should
       // keep B selected.
+      // Answers whether it went, so the Trash's drop target bounces only for a confirmed delete.
       const deleted = await deleteFolderWithCascade(f.id, f.name || 'folder');
       if (deleted && selected.kind === 'folder' && selected.id === f.id) {
         go({ kind: 'all' });
       }
+      return deleted;
     },
   });
 
@@ -544,7 +548,7 @@ export function useExplorerState() {
     teams,
     teamFolders,
     teamDocuments,
-    // My documents' own menu: "Use as default for" only.
+    // My Documents' own menu: "Use as default for" only.
     rootDefaults: defaultFolders.forRoot,
     invites,
     tokens,
@@ -628,7 +632,7 @@ export function useExplorerState() {
       refreshTeamLibraries();
     },
     // A team page changed a library (docs/specs/013-workspace/team-shared-documents.md): its own team's, or, from its
-    // move picker, My documents' folders or another team's. The sidebar, the search panel and every move picker read
+    // move picker, My Documents' folders or another team's. The sidebar, the search panel and every move picker read
     // the Explorer's lists, which never heard of it until a reload.
     refreshAfterTeamPage: (teamId: string | null) => {
       if (teamId) refreshTeamLibraries();

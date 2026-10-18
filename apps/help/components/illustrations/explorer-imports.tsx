@@ -262,7 +262,7 @@ export function ShapeLibraryCards() {
   return (
     <Scene w={420} h={220} bg="plain">
       <Label x={24} y={22} size={14} weight={700} tone="strong">
-        Shape libraries
+        Shape Libraries
       </Label>
       {libraries.map((lib, i) => {
         const cy = 40 + i * 88;

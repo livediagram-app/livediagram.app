@@ -22,7 +22,7 @@ import {
 import type { Rect } from './geometry-primitives';
 import { buildEdges, type Edge } from './auto-layout-shared';
 
-export type TidyGraph = {
+type TidyGraph = {
   /** Node id → its box now. A unit's id is its container's. */
   rects: Map<ElementId, Rect>;
   /** Directed node edges that shape the layout (solid arrows), deduplicated, with no self-loops. */

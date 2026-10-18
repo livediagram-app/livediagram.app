@@ -11,7 +11,7 @@ import {
   verbList,
 } from './home-copy';
 
-// Every word Home says (docs/specs/013-workspace/explorer-home.md "What happened").
+// Every word Home says (docs/specs/013-workspace/explorer-home.md "What Happened").
 
 const person = (name: string | null): HomePerson => ({
   id: name ?? 'x',
@@ -134,7 +134,7 @@ describe('locationLabel', () => {
       'Platform team › Architecture',
     );
     expect(locationLabel({ ...doc, via: 'own', teamName: null, folderName: 'Specs' })).toBe(
-      'My documents › Specs',
+      'My Documents › Specs',
     );
   });
 

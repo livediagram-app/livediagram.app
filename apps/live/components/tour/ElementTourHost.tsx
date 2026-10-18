@@ -5,6 +5,7 @@ import type { Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { setElementTourOffer, type ElementTourOffer } from '@/lib/element-tour-offer';
@@ -26,6 +27,7 @@ import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import type { ElementTourApi } from './element-tour-api';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import { TourStage } from './TourStage';
@@ -42,6 +44,8 @@ export function ElementTourHost() {
   const ctx = useEditorContext();
   const selectedId = useSelectionOf(singleOf);
   const touch = useCoarsePointer();
+  // Never offered on a phone (docs/specs/007-editor/element-tours.md "On a phone"): the selection toolbar has no room.
+  const phone = useIsMobileViewport();
   const element = useMemo(
     () => (selectedId ? (ctx.activeTab.elements.find((e) => e.id === selectedId) ?? null) : null),
     [ctx.activeTab.elements, selectedId],
@@ -159,6 +163,8 @@ export function ElementTourHost() {
   const dismissRef = useLatest(dismiss);
 
   const startPanelOpen = useStartPanelOpen();
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer goes while one is open and comes back after.
+  const modalOpen = useAnyModalOpen();
   const usable =
     ctx.hydrated &&
     // The synced preferences are in, so an answer given on another device holds here too.
@@ -168,8 +174,10 @@ export function ElementTourHost() {
     !ctx.embedMode;
   const offered =
     usable &&
+    !phone &&
     !active &&
     shown === null &&
+    !modalOpen &&
     element !== null &&
     kind !== null &&
     canTourElement(ctx.can, element, kind) &&

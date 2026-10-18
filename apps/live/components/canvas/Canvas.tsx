@@ -4,6 +4,8 @@ import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
+import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
@@ -50,6 +52,7 @@ import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { AvatarPadArrivals } from '@/components/canvas/AvatarPadArrivals';
 import { parseAvatarStatus } from '@/lib/avatar-status';
 import { headPoint } from '@/lib/avatar-speech';
 import { avatarScale } from '@/lib/avatar-config';
@@ -81,14 +84,15 @@ import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import {
   loadArticleFlows,
   loadAvatarSpeechLayer,
-  loadIllustratePages,
+  loadCanvasPages,
 } from '@/lib/editor-deferred-code';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
+import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
-// Illustrate's pages and their writing draw only on a tab that has pages, so their code loads on demand
+// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
-const IllustratePages = dynamic(loadIllustratePages, { ssr: false });
+const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
 const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
@@ -163,7 +167,7 @@ function CanvasView(props: CanvasProps) {
     viewportOffset,
     viewportZoom,
     mainRef,
-    props.illustratePages?.pages,
+    props.pagesMode?.pages,
   );
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
@@ -259,7 +263,7 @@ function CanvasView(props: CanvasProps) {
   // An object in an article's writing (a chart, an image, a table) connects to nothing: no
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
   // selection derivation applies, so the canvas itself still doesn't read the selection.
-  const articlePages = props.illustratePages?.pages;
+  const articlePages = props.pagesMode?.pages;
   const plusBlocked = useMemo(
     () => articlePlusBlocked(articlePages, elements),
     [articlePages, elements],
@@ -311,6 +315,7 @@ function CanvasView(props: CanvasProps) {
     avatarLook,
     avatarStandingOn,
     avatarStatus,
+    padArrivals,
     playAvatarBurst,
     pressModeButton,
     resolvePortal,
@@ -393,6 +398,9 @@ function CanvasView(props: CanvasProps) {
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
+  const doubleTap = useDoubleTapZoom(mainRef, viewportStore, { id: props.activeTabId, elements });
+  const smallElementTap = useSmallElementDoubleTap(doubleTap.onElement);
+  const stickyPeel = useStickyPeelVars();
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -415,8 +423,10 @@ function CanvasView(props: CanvasProps) {
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
-    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target).
-    onCanvasDoubleClick: (x, y) =>
+    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target). On the bare board a
+    // finger's double-tap zooms in on the spot, a mouse's double-click drops text
+    // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
+    onCanvasDoubleClick: (x, y, byFinger) =>
       routeBoardDoubleClick(
         {
           whiteboard: props.editorMode === 'draw',
@@ -425,7 +435,10 @@ function CanvasView(props: CanvasProps) {
           inertIds: props.layerInertIds,
         },
         { x, y },
-        { edit: props.onBeginEdit, board: onCanvasDoubleClick },
+        {
+          edit: props.onBeginEdit,
+          board: byFinger ? (bx, by) => doubleTap.onCanvas({ x: bx, y: by }) : onCanvasDoubleClick,
+        },
       ),
   });
 
@@ -470,12 +483,16 @@ function CanvasView(props: CanvasProps) {
             // panels render inside it and must keep normal SR navigation.
             tabIndex={0}
             aria-label="Canvas"
+            data-region="canvas"
             data-canvas-a11y-root=""
             onPointerMove={handlePointerMoveCanvas}
             onPointerLeave={handlePointerLeaveCanvas}
             onDragOver={paletteDrop.onDragOver}
             onDrop={paletteDrop.onDrop}
-            onPointerDownCapture={surface.onPointerDownCapture}
+            onPointerDownCapture={(e) => {
+              surface.onPointerDownCapture(e);
+              if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
+            }}
             // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
             // ink is tuned for light paper and vanishes on a dark wall. Flagged
             // here so the peel's CSS can respond without knowing about themes.
@@ -486,6 +503,13 @@ function CanvasView(props: CanvasProps) {
             onContextMenu={surface.onContextMenu}
             onPointerUp={surface.onContextMenuPointerUp}
             onPointerDown={surface.onPointerDown}
+            onDoubleClick={(e) => {
+              if (e.target !== e.currentTarget) return;
+              if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+              surface.onSurfaceDoubleClick(e);
+            }}
+            // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
+            onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
             // focus-visible ring only: pointer focus stays outline-free, but a
             // keyboard user Tabbing to the canvas sees where they landed.
             // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
@@ -498,6 +522,8 @@ function CanvasView(props: CanvasProps) {
             style={{
               // The paper hollow arrowheads fill with (arrow-defs.tsx).
               ['--lvd-canvas-paper' as string]: tabBackgroundColor,
+              // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
+              ...stickyPeel,
               // In world space: the pattern pans and zooms with the elements, so
               // they stay on the same dots at any zoom (worldPatternOrigin).
               ...tabBackgroundStyle(
@@ -546,7 +572,8 @@ function CanvasView(props: CanvasProps) {
                 // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
                 // add-text double-click while the intent is armed.
                 if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-                if (offPage(e)) return;
+                // Off a page nothing is made, but a finger's double-tap still zooms there.
+                if (offPage(e) && !surface.pressedByFinger()) return;
                 surface.onWrapperDoubleClick(e);
               }}
               // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
@@ -611,15 +638,15 @@ function CanvasView(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
               {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-              {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
-              {props.illustratePages ? (
+              {/* Pages mode's A4 pages, under every element (CanvasPages). */}
+              {props.pagesMode ? (
                 // The image store's access, for the pages' pictures (page-image-access).
                 <PageImageAccessProvider access={props.imageContext}>
-                  <IllustratePages
+                  <CanvasPages
                     // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
                     // tab's own: page ids repeat across tabs.
                     key={props.activeTabId}
-                    view={props.illustratePages}
+                    view={props.pagesMode}
                     zoom={viewportZoom}
                     // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
                     // layout invites or add button.
@@ -630,9 +657,9 @@ function CanvasView(props: CanvasProps) {
               ) : null}
               {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}
-              {props.illustratePages?.articles && canvasTool !== 'isometric' ? (
+              {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
                 <ArticleFlows
-                  view={props.illustratePages}
+                  view={props.pagesMode}
                   zoom={viewportZoom}
                   interactive={
                     !pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'
@@ -705,9 +732,9 @@ function CanvasView(props: CanvasProps) {
                 {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
                 {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
                 {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
-                {props.illustratePages ? (
+                {props.pagesMode ? (
                   <LogoCanvasOverlays
-                    view={props.illustratePages}
+                    view={props.pagesMode}
                     bare={props.zenMode === true || canvasTool === 'isometric'}
                     pendingDraw={pendingDraw}
                     penStroke={penStroke}
@@ -794,6 +821,8 @@ function CanvasView(props: CanvasProps) {
                     onStand={avatar.standUp}
                   />
                 ) : null}
+                {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
+                <AvatarPadArrivals arrivals={padArrivals} />
                 {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
               own head while you type. */}
                 {speechBubbles.length > 0 || speech.composerOpen ? (

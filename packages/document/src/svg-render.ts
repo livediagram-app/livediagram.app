@@ -10,7 +10,7 @@
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
-import { PAGE_EXPORT_PAPER, type PageExportFrame } from './illustrate-page-frame';
+import { PAGE_EXPORT_PAPER, type PageExportFrame } from './page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
@@ -30,6 +30,7 @@ import {
   finishCornerFallbackPx,
   finishSplitsFace,
   finishWobblesArt,
+  isHandDrawn,
   resolveFinish,
   type Finish,
 } from './finish';
@@ -82,7 +83,8 @@ export {
 import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
 import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
-export { arrowHeadRefs, arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
+export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
+export type { ArrowLineMotion } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
@@ -98,12 +100,10 @@ export {
   selfLabelled,
   EXPORT_BG,
   EXPORT_IMAGE_FILL,
-  EXPORT_IMAGE_LABEL,
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
   exportFontFamily,
   exportFontIds,
-  type BoxedExport,
   type BoxedExportOptions,
   type ExportIconArt,
   type ExportShape,
@@ -218,11 +218,12 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   // other label on the canvas.
   const labelColor = label?.color ?? defaultTextColor(el, surface);
   const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont, opts.tabFinish);
-  // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's
-  // hand-drawn body. Null when this element is not sketched.
+  // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's or Marker's
+  // hand-drawn body. Null when this element is not drawn by hand.
   const finish = resolveFinish(finishOf(el), opts.tabFinish);
-  const sketch =
-    finish === 'sketch' ? svgSketchedBody(el, shape, finish, !!opts.sketchBackdrop) : null;
+  const sketch = isHandDrawn(finish)
+    ? svgSketchedBody(el, shape, finish, !!opts.sketchBackdrop)
+    : null;
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -606,7 +607,7 @@ export function renderElementsToSvg(
     resolvePlanArt?: ResolvePlanArt;
     // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
     resolveTabWindow?: ResolveTabWindow;
-    // One Illustrate page as an export draws it (illustrate-page-frame.ts, svg-render-pages.ts): the drawing is the
+    // One page as an export draws it (page-frame.ts, svg-render-pages.ts): the drawing is the
     // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
     // `writingSvg` goes over the page and under every element (an article's writing).
     frame?: PageExportFrame & { writingSvg?: string };

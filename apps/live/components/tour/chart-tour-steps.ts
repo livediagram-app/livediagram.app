@@ -1,12 +1,13 @@
 import { CHART_TYPE_LABELS, type ChartType } from '@livediagram/document';
-import { conceptOutro, inElement, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Chart tour (docs/specs/007-editor/element-tours.md "The Chart tour"), on a selected data chart of any of the
 // seven types: how it reads, a mark's readout, Grow previewed on it, its menu, and for a line, area or scatter chart its
-// Chart data dialog, opened by the tour, where each step rings a real control. Done closes the dialog with the tour.
+// Chart Data dialog, opened by the tour, where each step rings a real control. Done closes the dialog with the tour.
 
 type Step = TourStepOf<ElementTourApi>;
 
@@ -27,11 +28,11 @@ const MARKS: Record<ChartType, [one: string, many: string]> = {
   doughnut: ['slice', 'slices'],
 };
 
-// A line, area or scatter chart's numbers are a grid, edited in the Chart data dialog.
+// A line, area or scatter chart's numbers are a grid, edited in the Chart Data dialog.
 const editsInDialog = (ctx: ChartTourContext) =>
   !ctx.fromSheet && (ctx.type === 'line' || ctx.type === 'area' || ctx.type === 'scatter');
 
-// A step inside the Chart data dialog: opens it (again, if it was closed); the engine waits for its control and
+// A step inside the Chart Data dialog: opens it (again, if it was closed); the engine waits for its control and
 // scrolls it in.
 function inDialog(id: string, title: string, body: string, target: string): Step {
   return {
@@ -60,8 +61,7 @@ function onCanvas(step: Step): Step {
 
 function dataInMenu(ctx: ChartTourContext): string {
   const [one] = MARKS[ctx.type];
-  if (ctx.fromSheet)
-    return 'Data reads its numbers from the Sheet it was drawn from; Unlink From Sheet keeps them as its own.';
+  if (ctx.fromSheet) return 'Its numbers come from a Sheet. Unlink From Sheet makes them its own.';
   if (editsInDialog(ctx)) return 'Data opens its numbers as a grid, which the tour opens next.';
   return `Data is a row per ${one}: a colour, a label and a value.`;
 }
@@ -76,8 +76,8 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
       onGraphic(
         'chart',
         'Sized by Value',
-        `Every ${one} is drawn from a number: change the number and the chart redraws. This is a ${typeName} chart, one of seven it can be.`,
-        inElement(id),
+        `Each ${one} is a number: change it and the chart redraws. This is a ${typeName} chart.`,
+        elementSelector(id),
       ),
     ),
     ...(ctx.touch
@@ -87,8 +87,8 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
             onGraphic(
               'readout',
               'Point for the Number',
-              `Point at a ${one} to read its label and value, with the legend on or off.`,
-              inElement(id),
+              `Point at a ${one} to read its value.`,
+              elementSelector(id),
             ),
           ),
         ]),
@@ -96,8 +96,8 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
       onGraphic(
         'animate',
         'Make It Grow',
-        `Under Animation: Grow and Pop play once as it appears, Spin and Pulse loop. Grow brings the ${many} in, as here.`,
-        inElement(id),
+        `Animation makes it grow, pop, spin or pulse. Grow brings the ${many} in, as here.`,
+        elementSelector(id),
         'grow',
       ),
     ),
@@ -106,7 +106,7 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
         ctx,
         'menu',
         "The Chart's Own Menu",
-        `Tools. Chart Type turns it into any of the seven, keeping its data. ${dataInMenu(ctx)} Chart places the legend and adds Show Values and Show Axis.`,
+        `Tools › Chart Type switches the kind of chart and keeps the data. ${dataInMenu(ctx)}`,
       ),
     ),
     ...(dialog
@@ -114,25 +114,20 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
           inDialog(
             'data',
             'A Row per Category',
-            'Categories down the side, a column per series. Type over any number and the chart behind redraws.',
+            'Type over any number and the chart redraws.',
             'chart-data-table',
           ),
           inDialog(
             'series',
             'Series Across the Top',
-            `Rename a series in its header or remove it with its cross. + adds another, a new ${ctx.type === 'scatter' ? 'set of points' : 'line'} on the chart.`,
+            `Rename a series in its header, or remove it. + adds a new ${ctx.type === 'scatter' ? 'set of points' : 'line'}.`,
             'chart-data-series',
           ),
-          inDialog(
-            'add-row',
-            'Add a Row',
-            'Puts a category at the end, every series at 0.',
-            'chart-data-add-row',
-          ),
+          inDialog('add-row', 'Add a Row', 'Adds a row at the end.', 'chart-data-add-row'),
           inDialog(
             'import',
             'Or Import a CSV',
-            'The header row names the series, the first column the categories. It replaces the grid.',
+            'Paste a table to replace the data. The first row names the series.',
             'chart-data-import',
           ),
         ]
@@ -140,8 +135,8 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
     conceptOutro(
       'That Is a Chart',
       dialog
-        ? 'Every change is one undo step. Done closes the data with the tour.'
-        : 'It exports exactly as drawn, and every change is one undo step.',
+        ? 'Undo takes back any change. Done closes the data.'
+        : 'It exports as you see it. Undo takes back any change.',
     ),
   ];
 }

@@ -5,6 +5,7 @@
 // not this: it is the board's own setting.
 import { useSyncExternalStore } from 'react';
 import { track } from '@/lib/telemetry';
+import { createListeners } from '@/lib/listeners';
 
 // What is maximised, which names its telemetry (BoardMaximised, ViewRestored...).
 export type MaximisedKind = 'Board' | 'View' | 'Sheet';
@@ -12,10 +13,10 @@ export type MaximisedKind = 'Board' | 'View' | 'Sheet';
 let current: { id: string; kind: MaximisedKind } | null = null;
 // Restoring: the element shrinks back to its place (MaximisedPlanLayer) before it stops being maximised.
 let closing = false;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function notify(): void {
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 function set(next: { id: string; kind: MaximisedKind } | null): void {
@@ -38,10 +39,7 @@ export function getMaximisedPlanKind(): MaximisedKind | null {
   return current?.kind ?? null;
 }
 
-export function subscribeMaximisedPlan(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribeMaximisedPlan = listeners.subscribe;
 
 // The person maximises a board or a view (its header's Maximise button).
 export function maximisePlanElement(id: string, kind: MaximisedKind = 'Board'): void {

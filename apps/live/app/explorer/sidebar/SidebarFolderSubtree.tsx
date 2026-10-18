@@ -11,6 +11,7 @@ import { FolderActionsMenu } from '../folder-actions-menu';
 import { SidebarRow } from './SidebarRow';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
 import { trackSidebar } from './sidebar-telemetry';
+import { folderDragProps } from '@/components/panels/explorer-drag-mime';
 import {
   DefaultFolderMarker,
   useDefaultFolderDescription,
@@ -85,7 +86,8 @@ export function SidebarFolderSubtree({
       onToggleExpand={() => onToggleExpand(folder.id)}
       renaming={renaming}
       onContextMenu={menu.onContextMenu}
-      rowProps={renaming ? undefined : drop.handlers}
+      // A drop target for documents, and a drag source itself, for the sidebar's Trash.
+      rowProps={renaming ? undefined : { ...drop.handlers, ...folderDragProps(folder, renaming) }}
       highlighted={drop.isDragOver}
       trailing={
         renaming ? null : (

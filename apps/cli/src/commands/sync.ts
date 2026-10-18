@@ -12,7 +12,7 @@ import type { LinkFile } from '../link/link-file';
 import { runSyncPass } from '../link/sync-run';
 import { watchLink } from '../link/sync-watch';
 
-export type SyncInput = { watch?: boolean; relocate?: boolean; dryRun?: boolean; all?: boolean };
+type SyncInput = { watch?: boolean; relocate?: boolean; dryRun?: boolean; all?: boolean };
 
 export async function syncLinks(
   io: CliIo,

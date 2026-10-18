@@ -51,13 +51,13 @@ export type DrawioGraph = {
 };
 
 /** draw.io's default grid size (`mxGraph.gridSize`). */
-export const DRAWIO_DEFAULT_GRID_SIZE = 10;
+const DRAWIO_DEFAULT_GRID_SIZE = 10;
 
 // Wrapper attributes that are not custom properties.
 const WRAPPER_KEYS = new Set(['id', 'label', 'link', 'tooltip', 'placeholders']);
 // Ids other tools write to trace their own objects through a conversion into draw.io: not the
 // author's properties, so they fill placeholders but never become note lines.
-export const DRAWIO_PROVENANCE_ATTRIBUTES: ReadonlySet<string> = new Set([
+const DRAWIO_PROVENANCE_ATTRIBUTES: ReadonlySet<string> = new Set([
   'lucidchartObjectId',
   'visioObjectId',
   'gliffyId',

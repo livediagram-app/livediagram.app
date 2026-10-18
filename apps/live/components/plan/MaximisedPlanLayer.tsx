@@ -38,6 +38,7 @@ import { announceHeaderBand } from './menu-name-slot';
 import { BAND_CARD_PX } from './band-controls';
 import { useUiScale } from '@/components/providers/ui-scale';
 import type { PlanPalette } from './plan-palette';
+import { CANVAS_ROOT_SELECTOR, elementSelector } from '@/lib/canvas-selectors';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -45,7 +46,7 @@ const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 // clear of the chrome laid over the canvas (the Toolbar layout's top row, side panels, the zoom controls:
 // useCanvasLayerInsets), with the header, tab bar and footer outside `main`: docs/specs/026-plan/plan-board.md
 // "Maximised board", "Fill Tab". Under the panels too, should one be dragged over it.
-export const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
+const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
 
 // The cover over the whole canvas area while a Plan element is maximised or fills its tab: painted with the canvas's
 // background so nothing under it shows, and it takes every press,
@@ -152,34 +153,36 @@ export function CanvasCover({
 
 // The strip's place in a header band, as the properties its root reads (ToolbarPalette): pressed to the right,
 // `stripEnd` screen px from the canvas's right edge, written in the strip's own px (its UI scale zooms it).
-export function setStripEnd(main: HTMLElement, stripEnd: number): void {
+function setStripEnd(main: HTMLElement, stripEnd: number): void {
   const strip = main.querySelector<HTMLElement>('[data-toolbar-palette]');
   const zoom = strip ? parseFloat(getComputedStyle(strip).zoom) || 1 : 1;
+  main.setAttribute('data-strip-in-band', '');
   main.style.setProperty('--plan-strip-align', 'flex-end');
   main.style.setProperty('--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
 }
 
 // An element's own surface and border, for the chrome in its band to take (toolbar-surface BAND_BLEND).
-export type BandBlend = { surface: string; line: string };
+type BandBlend = { surface: string; line: string };
 
 // The element's hue on the chrome in its band (toolbar-surface BAND_TINT), set on the canvas they sit in.
-export function setBandTint(main: HTMLElement, tint: string): void {
+function setBandTint(main: HTMLElement, tint: string): void {
   main.setAttribute('data-band-tint', '');
   main.style.setProperty('--band-tint', tint);
 }
 
-export function clearBandTint(main: HTMLElement): void {
+function clearBandTint(main: HTMLElement): void {
   main.removeAttribute('data-band-tint');
   main.style.removeProperty('--band-tint');
 }
 
-export function clearStripEnd(main: HTMLElement): void {
+function clearStripEnd(main: HTMLElement): void {
+  main.removeAttribute('data-strip-in-band');
   main.style.removeProperty('--plan-strip-align');
   main.style.removeProperty('--plan-strip-end');
 }
 
 // The header band as the CSS properties a maximised element's header reads (PLAN_BAND_*).
-export function bandVars(
+function bandVars(
   band: NonNullable<CanvasLayout['band']>,
   toolbarScale = 1,
 ): Record<string, string> {
@@ -194,16 +197,16 @@ export function bandVars(
 }
 
 // A phone's shared top row as the properties the element's header reads: its height and where its content starts.
-export function rowVars(row: PhoneRow): Record<string, string> {
+function rowVars(row: PhoneRow): Record<string, string> {
   return { '--plan-band-h': `${row.height}px`, '--plan-band-left': `${row.left}px` };
 }
 
 // The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref
 // callback, and the element once found (null until then).
-export function useCanvasRoot(): [(node: HTMLElement | null) => void, HTMLElement | null] {
+function useCanvasRoot(): [(node: HTMLElement | null) => void, HTMLElement | null] {
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(node.closest<HTMLElement>('[data-canvas-a11y-root]') ?? document.body);
+    if (node) setCanvas(node.closest<HTMLElement>(CANVAS_ROOT_SELECTOR) ?? document.body);
   }, []);
   return [mark, canvas];
 }
@@ -263,7 +266,7 @@ export function flipTransform(from: DOMRect, to: DOMRect): string {
 // so growing from or shrinking to the canvas node would fly to a place the element is not.
 export function originOf(id: string): DOMRect | null {
   const key = CSS.escape(id);
-  for (const selector of [`[data-plan-slot="${key}"]`, `[data-element-id="${key}"]`]) {
+  for (const selector of [`[data-plan-slot="${key}"]`, elementSelector(key)]) {
     const box = document.querySelector(selector)?.getBoundingClientRect();
     if (box && box.width > 0 && box.height > 0) return box;
   }
@@ -462,7 +465,7 @@ export function openBox(box: HTMLElement, id: string, host: HTMLElement): () => 
 // Restoring (a container transform): the host goes straight back to its slot on the canvas, sharp in its own
 // place, while an empty frame shrinks from the screen into that place and fades; then the restore finishes (at
 // once without motion). Returns the cancel (maximising again while it shrinks back).
-export function closeBox(box: HTMLElement, id: string, host: HTMLElement): () => void {
+function closeBox(box: HTMLElement, id: string, host: HTMLElement): () => void {
   const slot = document.querySelector(`[data-plan-slot="${CSS.escape(id)}"]`);
   if (slot && host.parentElement !== slot) {
     slot.appendChild(host);
@@ -552,7 +555,7 @@ export function MaximisedPlanLayer({
 
 // The layer a board filling its tab moves its host into: the canvas area, as a maximised element's, at once (no
 // grow). Presses stop here, as on a maximised board.
-export function FilledTabLayer({
+function FilledTabLayer({
   host,
   tint,
   blend,

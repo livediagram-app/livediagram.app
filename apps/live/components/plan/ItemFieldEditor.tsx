@@ -36,7 +36,7 @@ import { ItemDescription } from './ItemDescription';
 import { ItemComments, type ItemCommentsContext } from './ItemComments';
 import type { ItemOpenVia } from './item-trail';
 
-export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
+const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   status: 'Status',
   assignee: 'Assignee',
   priority: 'Priority',

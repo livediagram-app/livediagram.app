@@ -8,9 +8,9 @@ import type { PaneDocument } from './views';
 
 // Four tiles: a 2x2 mosaic is the most a card-sized preview can show
 // before each snapshot is too small to recognise.
-export const FOLDER_PREVIEW_TILES = 4;
+const FOLDER_PREVIEW_TILES = 4;
 
-export type FolderPreviewTile =
+type FolderPreviewTile =
   { kind: 'document'; document: PaneDocument } | { kind: 'folder'; folder: Folder };
 
 export type FolderPreviewContents = { folders: Folder[]; documents: PaneDocument[] };

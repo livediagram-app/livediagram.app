@@ -1,11 +1,10 @@
-// The self-drawing "data" shape family (progress docs/specs/009-elements/progress.md, timeline rail
-// docs/specs/009-elements/timeline-rail.md, rating docs/specs/009-elements/rating.md, pie / bar / line charts docs/specs/009-elements/pie-chart.md): kind
+// The self-drawing "data" shape family (progress docs/specs/009-elements/progress.md, rating docs/specs/009-elements/rating.md, pie / bar / line charts docs/specs/009-elements/pie-chart.md): kind
 // predicates, bounds, default data, animation sets, and the shared
 // clamps. Split out of index.ts as a LEAF module (it imports only types)
 // because factories.ts needs these constants at module-init time —
 // importing them from './index' put a runtime read inside the
 // index ⇄ factories cycle, which crashes plain-Node ESM consumers with
-// "Cannot access 'RAIL_DEFAULT_POINTS' before initialization" (the
+// "Cannot access 'RATING_DEFAULT' before initialization" (the
 // product bundlers happen to evaluate the cycle in a survivable order;
 // a self-hoster's script doesn't). Everything here is re-exported from
 // './index', so the public package surface is unchanged.
@@ -19,15 +18,8 @@ export function isProgressShape(kind: ShapeKind): boolean {
   return kind === 'progress-bar' || kind === 'progress-ring';
 }
 
-// Timeline-rail bounds: a rail always has at least 2 points, and the canvas
-// affordance caps additions so the element stays legible (docs/specs/009-elements/timeline-rail.md).
-export const RAIL_MIN_POINTS = 2;
-export const RAIL_MAX_POINTS = 12;
-export const RAIL_DEFAULT_POINTS = 3;
-// Canvas px the rail widens by per added point, so spacing stays constant as
-// points are appended at the right end.
-export const RAIL_POINT_STEP_PX = 120;
-
+// The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"), a concept graphic since it outgrew the rail;
+// it keeps the kind, so every saved one opens.
 export function isRailShape(kind: ShapeKind): boolean {
   return kind === 'timeline-rail';
 }
@@ -136,10 +128,16 @@ export const PAGE_HEADING_MAX = 200;
 export const ENTITY_MAX_FIELDS = 40;
 export const ENTITY_MAX_TEXT = 80;
 
+// A field's role in a data model (docs/specs/009-elements/entity.md "Keys"): primary, foreign, both (a
+// join table's composite key) or unique. One value, not a set: these four are the combinations a schema
+// uses, and one value is one press to cycle.
+export const ENTITY_KEYS = ['pk', 'fk', 'pk-fk', 'uk'] as const;
+export type EntityKey = (typeof ENTITY_KEYS)[number];
+
 // A row in a record box. `type` is optional because half the uses (an ER
 // entity's attribute list, a rough class sketch) don't carry one, and an empty
-// column reads better than a placeholder.
-export type EntityField = { name: string; type?: string };
+// column reads better than a placeholder. `key` is absent for a field with no key.
+export type EntityField = { name: string; type?: string; key?: EntityKey };
 export const CHECKLIST_MAX_TEXT = 200;
 // All three seed rows are unchecked, per docs/specs/009-elements/checklist.md. A seeded `done: true` made
 // a freshly-dropped checklist render its first row ticked and struck through,
@@ -223,6 +221,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'sticker' ||
     // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
     kind === 'fence' ||
+    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is pixels, with nothing to write on.
+    kind === 'avatar-pad' ||
     // The office's scenery and machines (docs/specs/009-elements/office.md) have nothing to write on; a room
     // keeps its label (its name plate) and a meeting table and the furniture theirs (under them).
     kind === 'plant' ||

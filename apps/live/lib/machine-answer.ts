@@ -4,27 +4,21 @@
 // for each drink.
 
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 const answered = new Map<string, number>();
-const listeners = new Set<() => void>();
-
-const subscribe = (listener: () => void) => {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-};
+const listeners = createListeners();
 
 /** The machine answers: its count goes up by one. */
 export function answerMachine(elementId: string): void {
   answered.set(elementId, (answered.get(elementId) ?? 0) + 1);
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 /** How many times this machine has answered, 0 when it never has; changes only for this machine. */
 export function useMachineAnswered(elementId: string): number {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => answered.get(elementId) ?? 0,
     () => 0,
   );

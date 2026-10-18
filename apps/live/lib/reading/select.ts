@@ -59,7 +59,7 @@ function serverReader(ownerId: string): CropReader {
 
 // The server first; the crops it did not read because its budget is spent go
 // to the device reader, whose progress carries on from the server's count.
-export function withBudgetFailover(server: CropReader, device: CropReader): CropReader {
+function withBudgetFailover(server: CropReader, device: CropReader): CropReader {
   return async (crops: NoteCrop[], opts: ReadOptions): Promise<ReadResult> => {
     let served: ReadResult;
     try {

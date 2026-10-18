@@ -10,6 +10,7 @@
 import { useEffect, useRef } from 'react';
 import type { LaidOutPage } from '@livediagram/document';
 import { requestPaletteCategory } from '@/lib/palette-category-request';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 // After the current event (React has rendered the add by then); a timeout, not a frame, so a tab in
 // the background still answers.
@@ -17,12 +18,10 @@ const ask = (category: 'logo' | 'popular') =>
   window.setTimeout(() => requestPaletteCategory(category), 0);
 const askForLogo = () => ask('logo');
 // On opening, asked again a little later too: the palette may mount after the pages.
-export const LOGO_PALETTE_OPEN_RETRY_MS = 400;
+const LOGO_PALETTE_OPEN_RETRY_MS = 400;
 
 const sheetRect = (pageId: string) =>
-  document
-    .querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`)
-    ?.getBoundingClientRect();
+  document.querySelector(`[data-page-id="${CSS.escape(pageId)}"]`)?.getBoundingClientRect();
 
 // A press target on the canvas: inside its content layer, or the bare canvas itself.
 function onCanvas(target: EventTarget | null): boolean {
@@ -42,7 +41,7 @@ function pageAtPoint(pages: readonly LaidOutPage[], x: number, y: number): LaidO
 
 // The page in view: the one under the canvas's centre, else the first.
 function pageInView(pages: readonly LaidOutPage[]): LaidOutPage | null {
-  const canvas = document.querySelector('[data-canvas-a11y-root]')?.getBoundingClientRect();
+  const canvas = document.querySelector(CANVAS_ROOT_SELECTOR)?.getBoundingClientRect();
   const centred = canvas
     ? pageAtPoint(pages, canvas.left + canvas.width / 2, canvas.top + canvas.height / 2)
     : null;

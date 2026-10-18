@@ -6,7 +6,7 @@ export type CellPos = { r: number; c: number };
 export type GridRange = { r1: number; c1: number; r2: number; c2: number };
 
 // Which parts of a reference are absolute ($).
-export type AbsFlags = { row: boolean; col: boolean };
+type AbsFlags = { row: boolean; col: boolean };
 
 export function columnLetters(c: number): string {
   let n = c + 1;
@@ -31,7 +31,7 @@ export function formatA1(r: number, c: number, abs: AbsFlags = { row: false, col
   return `${abs.col ? '$' : ''}${columnLetters(c)}${abs.row ? '$' : ''}${r + 1}`;
 }
 
-export type ParsedCell = CellPos & { abs: AbsFlags };
+type ParsedCell = CellPos & { abs: AbsFlags };
 
 const CELL_RE = /^(\$?)([A-Za-z]{1,4})(\$?)([0-9]{1,7})$/;
 

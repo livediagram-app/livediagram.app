@@ -12,7 +12,7 @@ export const DASHBOARD_CHECKLIST_ITEMS_MAX = 30;
 export const DASHBOARD_CHECKLIST_ITEM_MAX = 200;
 export const DASHBOARD_LINKS_MAX = 12;
 export const DASHBOARD_LINK_LABEL_MAX = 80;
-export const DASHBOARD_LINK_URL_MAX = 2000;
+const DASHBOARD_LINK_URL_MAX = 2000;
 
 export const DASHBOARD_STATUSES = ['on-track', 'at-risk', 'off-track'] as const;
 export type DashboardStatus = (typeof DASHBOARD_STATUSES)[number];
@@ -37,7 +37,7 @@ export type DashboardLink = { id: string; label: string } & (
 // id is one not set up yet.
 export const SHEET_METRICS = ['figure', 'summary', 'trend'] as const;
 export type SheetMetricKind = (typeof SHEET_METRICS)[number];
-export const SHEET_METRIC_STATS = ['sum', 'average', 'min', 'max', 'count'] as const;
+const SHEET_METRIC_STATS = ['sum', 'average', 'min', 'max', 'count'] as const;
 export type SheetMetricStat = (typeof SHEET_METRIC_STATS)[number];
 export type SheetMetricCell = { r: string; c: string };
 export type SheetMetricContent = {
@@ -66,7 +66,7 @@ export type DashboardCardContent =
   | SheetMetricContent
   | FormMetricContent;
 
-export type DashboardCardType = DashboardCardContent['type'];
+type DashboardCardType = DashboardCardContent['type'];
 // The cards written on the page (a sheet metric is filled from a Sheet instead).
 export const DASHBOARD_CARD_TYPES = [
   'status',

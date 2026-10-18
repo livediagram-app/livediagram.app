@@ -1,6 +1,7 @@
 // One action on an Action panel (docs/specs/012-collaboration/action-panel.md "The card"): a round check that
 // completes or reopens it, its name (struck through once done), and who it is
-// for. Pressing the rest of the row edits it. The check pops green on done.
+// for. Pressing the rest of the row edits it. The check pops green on done. A Won't Do action
+// (docs/specs/026-plan/linked-boards.md "On the canvas") wears a grey slashed circle that reopens it.
 
 import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livediagram/document';
 import { GlyphDisc } from '@livediagram/ui';
@@ -8,6 +9,7 @@ import { initialsOf } from '@/lib/identity';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { CheckGlyph, QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
+import { SlashGlyph } from './action-parts';
 
 export function ActionRow({
   action,
@@ -27,31 +29,39 @@ export function ActionRow({
   onEdit?: () => void;
 }) {
   const done = action.status === 'done';
+  const wontDo = action.status === 'wont-do';
+  const closed = done || wontDo;
   const toggle = usePressWithoutDrag(() => onToggle?.());
   const edit = usePressWithoutDrag(() => onEdit?.());
   const who = action.assignee.name?.trim() || 'Teammate';
   return (
     <li
       className={`flex items-start gap-2.5 rounded-xl px-2 py-2 transition-colors ${fresh ? 'qa-enter' : ''}`}
-      style={{ backgroundColor: tint(textColor, mine && !done ? 0.07 : 0.04) }}
+      style={{ backgroundColor: tint(textColor, mine && !closed ? 0.07 : 0.04) }}
     >
       <button
         type="button"
         {...toggle}
         {...stopPointer}
         disabled={!onToggle}
-        aria-pressed={done}
-        aria-label={done ? `Reopen ${action.name}` : `Complete ${action.name}`}
+        aria-pressed={closed}
+        aria-label={closed ? `Reopen ${action.name}` : `Complete ${action.name}`}
         className="pointer-events-auto mt-px flex h-[22px] w-[22px] shrink-0 cursor-pointer items-center justify-center rounded-full border-2 transition hover:scale-110 disabled:cursor-default disabled:hover:scale-100"
         style={
           done
             ? { borderColor: ACTION_DONE, backgroundColor: ACTION_DONE, color: '#ffffff' }
-            : { borderColor: tint(QA_ACCENT, 0.6), color: QA_ACCENT }
+            : wontDo
+              ? { borderColor: tint(textColor, 0.35), color: tint(textColor, 0.5) }
+              : { borderColor: tint(QA_ACCENT, 0.6), color: QA_ACCENT }
         }
       >
         {done ? (
           <span key="done" className="qa-pop inline-flex">
             <CheckGlyph size={12} />
+          </span>
+        ) : wontDo ? (
+          <span key="wont-do" className="qa-pop inline-flex" data-testid="action-wont-do-mark">
+            <SlashGlyph size={12} />
           </span>
         ) : null}
       </button>
@@ -66,8 +76,8 @@ export function ActionRow({
           className="text-[12.5px] font-semibold leading-snug"
           style={{
             color: textColor,
-            opacity: done ? 0.5 : 1,
-            textDecoration: done ? 'line-through' : undefined,
+            opacity: closed ? 0.5 : 1,
+            textDecoration: closed ? 'line-through' : undefined,
             display: '-webkit-box',
             WebkitBoxOrient: 'vertical',
             WebkitLineClamp: 2,
@@ -84,12 +94,17 @@ export function ActionRow({
             style={
               done
                 ? { color: '#ffffff', backgroundColor: ACTION_DONE }
-                : { color: QA_ON_ACCENT, backgroundColor: QA_ACCENT }
+                : wontDo
+                  ? { color: '#ffffff', backgroundColor: tint(textColor, 0.45) }
+                  : { color: QA_ON_ACCENT, backgroundColor: QA_ACCENT }
             }
           >
             {initialsOf(who)}
           </GlyphDisc>
-          <span className="truncate text-[10.5px] opacity-65">{mine ? 'You' : who}</span>
+          <span className="truncate text-[10.5px] opacity-65">
+            {wontDo ? 'Won’t Do · ' : ''}
+            {mine ? 'You' : who}
+          </span>
         </span>
       </button>
     </li>

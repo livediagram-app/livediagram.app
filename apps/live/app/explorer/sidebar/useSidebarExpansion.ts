@@ -4,7 +4,7 @@ import { initialExpanded, isLibraryView, LIBRARY_EXPAND_KEY } from './sidebar-st
 
 // Which sidebar rows are open (docs/specs/013-workspace/explorer-structure.md#expansion): one
 // session-local set of folder ids, team ids and the two fixed keys, shared by
-// the desktop sidebar and the mobile drawer. My documents starts open; Library
+// the desktop sidebar and the mobile drawer. My Documents starts open; Library
 // starts open on a Library page and opens whenever one becomes current.
 export function useSidebarExpansion(selected: SelectedNode) {
   const [expanded, setExpanded] = useState<Set<string>>(() => initialExpanded(selected));

@@ -25,12 +25,12 @@ Switching the mode **on** writes these values, once:
 | Draw tour            | `drawTourSeen`       | seen  |
 | Forms tour           | `formTourSeen`       | seen  |
 | Avatar tour          | `avatarTourSeen`     | seen  |
-| Illustrate tour      | `illustrateTourSeen` | seen  |
+| Pages tour           | `pagesTourSeen`      | seen  |
 | Element tours        | `elementToursSeen`   | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
-The Plan and Illustrate tours offer each of their tracks once (`planTourTracks`, `illustrateTourKinds`), and the
+The Plan and Pages tours offer each of their tracks once (`planTourTracks`, `pagesTourKinds`), and the
 [element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet answered.
 
@@ -171,10 +171,10 @@ The mode is offered **once**, ever, to people whose use suggests they would want
 - **Where the counting lives.** The counts are device-local and never synced: they describe how this device is used,
   and syncing a keystroke counter would cost a write per shortcut. Whether the offer has been made is synced, so it is
   made once per account, not once per device.
-- **What.** A toast, in the editor's toast stack: "Try power user mode" and "No thanks", with a short line saying what
+- **What.** A toast, in the editor's toast stack: "Try It" and "No Thanks", with a short line saying what
   it does. It stays until answered: it does not time out.
 - **Never again, either way.** The offer is marked as made the moment it shows. Accepting switches the mode on (the
-  preset applies). "No thanks", and closing it, change nothing else.
+  preset applies). "No Thanks", and closing it, change nothing else.
 - **Not offered** when the mode is already on, in a view-only or embedded session, in Zen mode, or when in-editor
   notifications are off ([User preferences](user-preferences.md)): the offer is an in-editor notification, and "a
   quieter editor" includes it.
@@ -189,7 +189,7 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md):
 | Minimal chrome switched on / off       | `UI` / `Toggled` / `MinimalChromeOn`/`Off` |
 | Offer shown                            | `UI` / `Opened` / `PowerUserOffer`         |
 | Offer accepted                         | `UI` / `Used` / `PowerUserOffer`           |
-| Offer dismissed ("No thanks" or close) | `UI` / `Declined` / `PowerUserOffer`       |
+| Offer dismissed ("No Thanks" or close) | `UI` / `Declined` / `PowerUserOffer`       |
 
 Accepting the offer also emits `PowerUserModeOn`, so the mode's series counts every switch-on and the offer's series is
 the funnel.

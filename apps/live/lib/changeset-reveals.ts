@@ -1,4 +1,5 @@
 import { elementBounds, type Element } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 // The outlines a relayed changeset draws around what it touched, in its author's colour, for
 // CHANGESET_REVEAL_MS (docs/specs/024-agents/agent-changesets.md "In the editor"). A small external
@@ -25,10 +26,10 @@ const NONE: readonly ChangesetReveal[] = Object.freeze([]);
 
 export function createRevealStore(now: () => number = Date.now): RevealStore {
   let reveals: readonly ChangesetReveal[] = NONE;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
   const timers = new Set<ReturnType<typeof setTimeout>>();
   const emit = () => {
-    for (const listener of listeners) listener();
+    listeners.notify();
   };
   const set = (next: readonly ChangesetReveal[]) => {
     reveals = next.length === 0 ? NONE : next;
@@ -51,10 +52,7 @@ export function createRevealStore(now: () => number = Date.now): RevealStore {
       timers.clear();
       if (reveals !== NONE) set(NONE);
     },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    subscribe: listeners.subscribe,
     getSnapshot: () => reveals,
   };
 }

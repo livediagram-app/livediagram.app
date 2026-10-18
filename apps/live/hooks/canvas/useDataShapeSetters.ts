@@ -6,8 +6,9 @@ import {
   LEGEND_MAX_TEXT,
   type LegendItem,
   CHECKLIST_MAX_TEXT,
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
+  isEntity,
+  withEntityFields,
+  type FieldRemap,
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
   DECISION_MAX_DRIVERS,
@@ -20,10 +21,6 @@ import {
   clampPercent,
   CODE_MAX_LENGTH,
   isProgressShape,
-  RAIL_DEFAULT_POINTS,
-  RAIL_MAX_POINTS,
-  RAIL_MIN_POINTS,
-  RAIL_POINT_STEP_PX,
   type AnimationSpeed,
   type ChecklistItem,
   type SelectionMode,
@@ -90,37 +87,6 @@ export function useDataShapeSetters({
   const setProgressAnimRepeatSelected = (value: boolean) =>
     setProgressFieldSelected({ progressAnimRepeat: value }, 'ProgressAnim');
 
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md). Setting the point count also resizes the element
-  // so the per-point spacing stays constant (count × step), keeping the rail
-  // neat as points are added / removed. Applies to selected rail shapes.
-  const setRailCountSelected = (count: number) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const n = Math.max(RAIL_MIN_POINTS, Math.min(RAIL_MAX_POINTS, Math.round(count)));
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'timeline-rail'
-          ? { ...el, railCount: n, width: n * RAIL_POINT_STEP_PX }
-          : el,
-      ),
-    );
-    track('Element', 'Changed', 'TimelineRail');
-  };
-  // Append a point to each selected rail (the canvas "+" affordance), capped at
-  // RAIL_MAX_POINTS; widens each by one step so spacing holds.
-  const addRailPointSelected = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => {
-        if (!(ids.has(el.id) && el.type === 'shape' && el.shape === 'timeline-rail')) return el;
-        const n = Math.min(RAIL_MAX_POINTS, (el.railCount ?? RAIL_DEFAULT_POINTS) + 1);
-        return { ...el, railCount: n, width: n * RAIL_POINT_STEP_PX };
-      }),
-    );
-    track('Element', 'Changed', 'TimelineRail');
-  };
-
   // Append a row / column to each selected table — the table quick-connect
   // ring's structural adds (docs/specs/008-canvas/canvas-and-palette.md). The helper returns the spliced cells
   // PLUS the realigned side arrays; apply them together so pinned sizes and
@@ -158,21 +124,6 @@ export function useDataShapeSetters({
         };
       }),
     );
-  };
-  // Edit one rail point's label (docs/specs/009-elements/timeline-rail.md). Keyed by element id (the inline
-  // editor lives on the element itself), committed on blur so it's one undo
-  // step. Grows the labels array as needed; trailing empties are harmless.
-  const setRailLabelSelected = (elementId: string, index: number, text: string) => {
-    commit((els) =>
-      els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape' || el.shape !== 'timeline-rail') return el;
-        const labels = [...(el.railLabels ?? [])];
-        while (labels.length <= index) labels.push('');
-        labels[index] = text;
-        return { ...el, railLabels: labels };
-      }),
-    );
-    track('Element', 'Changed', 'TimelineRail');
   };
 
   // Code block (docs/specs/009-elements/code-block.md): replace the snippet + language together (the edit
@@ -249,20 +200,17 @@ export function useDataShapeSetters({
 
   // Entity fields (docs/specs/009-elements/entity.md). Bounded on write like the checklist's rows, so
   // a paste into the menu can't produce an element nobody can read.
-  const setEntityFieldsSelected = (fields: EntityField[]) => {
+  // Entity fields (docs/specs/009-elements/entity.md "The Fields menu"): cleaned and bounded, each box refitted
+  // to its fields, and ends pinned to a removed field let go (withEntityFields).
+  const setEntityFieldsSelected = (fields: EntityField[], remap?: FieldRemap) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    const bounded = fields.slice(0, ENTITY_MAX_FIELDS).map((f) => ({
-      name: f.name.slice(0, ENTITY_MAX_TEXT),
-      ...(f.type ? { type: f.type.slice(0, ENTITY_MAX_TEXT) } : {}),
-    }));
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'entity'
-          ? { ...el, entityFields: bounded }
-          : el,
-      ),
-    );
+    commit((els) => {
+      let next = els;
+      for (const el of els)
+        if (ids.has(el.id) && isEntity(el)) next = withEntityFields(next, el.id, fields, remap);
+      return next;
+    });
     track('Element', 'Changed', 'Entity');
   };
 
@@ -411,11 +359,8 @@ export function useDataShapeSetters({
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
     setProgressAnimRepeatSelected,
-    setRailCountSelected,
-    addRailPointSelected,
     appendTableRowSelected,
     appendTableColumnSelected,
-    setRailLabelSelected,
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,

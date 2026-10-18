@@ -3,7 +3,7 @@ import type { Deck } from '@livediagram/document';
 import { slideFitOptions } from './presentation-config';
 import { pageDeckControls } from './page-deck-controls';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": a slide page's deck button, and a page slide
+// docs/specs/007-editor/pages-mode.md "Slides": a slide page's deck button, and a page slide
 // presenting full screen.
 const deck: Deck = {
   slides: [

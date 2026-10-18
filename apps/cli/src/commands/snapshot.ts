@@ -9,7 +9,7 @@ import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { tabHashes, type PulledTab } from '../sync/pull-file';
 
-export type DocumentSnapshot = {
+type DocumentSnapshot = {
   document: { id: string; name: string; presentation: string | null };
   // Each with its per-document folder when it has one.
   tabs: Tab[];

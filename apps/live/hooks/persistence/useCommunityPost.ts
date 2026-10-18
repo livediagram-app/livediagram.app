@@ -15,7 +15,7 @@ import { setCommunityState } from '@/lib/community-state-store';
 // (likes and copies move while the dialog is closed). `publish` covers both Share to Community and
 // Edit Listing (the same PUT); both it and `remove` throw on failure so the caller can word the
 // refusal where the person is looking.
-export type UseCommunityPost = {
+type UseCommunityPost = {
   post: CommunityOwnPost | null;
   loading: boolean;
   // Why the post couldn't be read, worded for the section; null when it could.

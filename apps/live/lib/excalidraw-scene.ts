@@ -17,11 +17,11 @@ import { fillOf, headOf, readColour, sceneTextOf, strokeOf } from './excalidraw-
 import type { ExcalidrawElement, ExcalidrawEnvelope } from './excalidraw-types';
 
 /** Excalidraw's `DEFAULT_STROKE_STREAMLINE`. */
-export const EXCALIDRAW_DEFAULT_STREAMLINE = 0.5;
+const EXCALIDRAW_DEFAULT_STREAMLINE = 0.5;
 /** Excalidraw's default `labelPosition`: the middle of the arrow. */
-export const EXCALIDRAW_LABEL_POSITION_MIDDLE = 0.5;
+const EXCALIDRAW_LABEL_POSITION_MIDDLE = 0.5;
 /** Excalidraw's sticky-note yellow, for a note whose fill can't be read. */
-export const EXCALIDRAW_STICKY_FILL = '#ffdf6b';
+const EXCALIDRAW_STICKY_FILL = '#ffdf6b';
 
 const SHAPES: Record<string, SceneShape['shape']> = {
   rectangle: 'rectangle',

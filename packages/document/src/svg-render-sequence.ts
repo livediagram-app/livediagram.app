@@ -41,6 +41,11 @@ function inked(elements: Element[], look: SequenceLook, paper: string): Element[
       const v = value[field];
       if (v && (el as Record<string, unknown>)[field] === undefined) patch[field] = v;
     }
+    // A message's words are words like the rest (docs/specs/009-elements/sequence-diagram.md "Colours"): an arrow
+    // themes only its line, and a caption with no colour of its own takes the line's, the pale accent.
+    if (el.type === 'arrow' && el.label && look.ink && el.textColor === undefined) {
+      patch.textColor = look.ink;
+    }
     return Object.keys(patch).length ? { ...el, ...patch } : el;
   });
 }
@@ -68,7 +73,7 @@ export function sequenceDrawing(el: ShapeElement, look: SequenceLook = {}): stri
     paper,
   );
   // Rendered on the paper so its ink reads on it, then the paper rect (the first child) taken out: the element's
-  // own box is the paper. The finish draws its lines (Sketch's hand-drawn boxes, Professional's square corners).
+  // own box is the paper. The finish draws its lines (Sketch's and Marker's hand-drawn boxes, Professional's square corners).
   let svg = renderElementsToSvg(
     {
       id: 'seq',

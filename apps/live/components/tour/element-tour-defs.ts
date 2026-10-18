@@ -18,6 +18,7 @@ import { funnelTourSteps } from './funnel-tour-steps';
 import { cycleTourSteps } from './cycle-tour-steps';
 import { hubTourSteps } from './hub-tour-steps';
 import { onionTourSteps } from './onion-tour-steps';
+import { timelineTourSteps } from './timeline-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
 import { mindNodeTourSteps } from './mind-node-tour-steps';
 import { flowchartTourSteps } from './flowchart-tour-steps';
@@ -31,7 +32,6 @@ import { laneTourSteps } from './lane-tour-steps';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
 import { portalTourSteps } from './portal-tour-steps';
-import { inElement } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -39,9 +39,10 @@ import {
   sankeyTourParts,
 } from './sankey-element-tour-steps';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // What the steps may know about where the tour runs, read when Play is pressed.
-export type ElementTourEnv = {
+type ElementTourEnv = {
   // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
   hasMore: boolean;
   // A touch screen: taps where a mouse clicks.
@@ -50,7 +51,7 @@ export type ElementTourEnv = {
   elements: readonly Element[];
 };
 
-export type ElementTourDef = {
+type ElementTourDef = {
   // The telemetry token, `<Kind>Tour` (docs/specs/017-telemetry/telemetry.md): Started, Ended …Completed / …Skipped,
   // the offer's Opened / Closed …Offer, and each step's View …Step<Id>.
   token: string;
@@ -139,6 +140,13 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     helpLabel: 'Concept Graphics Help',
     steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  timeline: {
+    token: 'TimelineTour',
+    eyebrow: 'Timeline tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => timelineTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   'mind-node': {
     token: 'MindMapTour',
@@ -248,7 +256,7 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     steps: (el, env) =>
       tabWindowTourSteps({
         elementId: el.id,
-        chosen: inDom(inElement(el.id, '[data-tab-window-open]')),
+        chosen: inDom(elementSelector(el.id, '[data-tab-window-open]')),
         hasMore: env.hasMore,
         touch: env.touch,
       }),
@@ -294,7 +302,7 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     steps: (el, env) =>
       portalTourSteps({
         elementId: el.id,
-        linked: inDom(inElement(el.id, 'button[aria-label*=": go to"]')),
+        linked: inDom(elementSelector(el.id, 'button[aria-label*=": go to"]')),
         hasMore: env.hasMore,
         touch: env.touch,
       }),

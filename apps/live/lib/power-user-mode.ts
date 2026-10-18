@@ -13,7 +13,7 @@ export const POWER_USER_PRESET = {
   drawTourSeen: { drawTourSeen: true },
   formTourSeen: { formTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
-  illustrateTourSeen: { illustrateTourSeen: true },
+  pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
@@ -21,7 +21,7 @@ export const POWER_USER_PRESET = {
 
 export type PowerUserPresetSetting = keyof typeof POWER_USER_PRESET;
 
-export type PowerUserBaselineEntry = {
+type PowerUserBaselineEntry = {
   before: Partial<UserPreferences>;
   applied: Partial<UserPreferences>;
 };

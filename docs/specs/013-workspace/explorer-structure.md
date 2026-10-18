@@ -7,29 +7,50 @@ Status: shipped
 The Explorer's sidebar is one navigation tree in three **groups**. It answers two questions at once: where a
 document **lives**, and which **views** compute lists of documents from wherever they live.
 
-- **Places.** A document lives in exactly one place: **My documents**, a **team**, or **this browser**
+- **Places.** A document lives in exactly one place: **My Documents**, a **team**, or **this browser**
   ([Offline Mode](../006-document/offline-mode.md)). Moving a document changes its place.
-- **Views.** Everything else (Home, Inbox, Timeline, Shared with me, Recent, Favourites, Search results, the Library pages,
+- **Views.** Everything else (Home, Inbox, Timeline, Shared With Me, Recent, Favourites, Search results, the Library pages,
   Trash) is a computed view. A view never owns a document; it lists documents that live somewhere else.
 - **A space's root holds documents.** A document filed in no folder sits at the root of its space, listed beside the
   root folders: there is no Unsorted bucket and no Generated bucket. What an AI made is found with the **Made by AI**
   filter ([Explorer filters](explorer-filters.md)), wherever it is filed.
-- **Spaces are root folders.** My documents and each team are root-level folder rows in one tree, with their folders
-  beneath them. My documents maps one to one onto the [Google Drive mirror](../022-drive-mirror/drive-mirror.md)'s root
+- **Spaces are root folders.** My Documents and each team are root-level folder rows in one tree, with their folders
+  beneath them. My Documents maps one to one onto the [Google Drive mirror](../022-drive-mirror/drive-mirror.md)'s root
   folder.
 
 The sidebar holds navigation only. It carries no greeting, no search field, no New button and no pins:
 
 - **Search** lives in the top bar: the lens field of [Explorer filters](explorer-filters.md#the-field), left of the
-  account control, searches and filters the documents of the current view. The bottom bar's Search opens the
-  app-wide search panel.
-- **New folder** and **New document** live in the page header of the view they create in.
+  account control, searches and filters the documents of the current view. On Home it sits in the
+  [hero](explorer-home.md#the-hero) instead. The bottom bar's Search opens the app-wide search panel.
+- **New folder** and **New Document** live in the page header of the view they create in (Home's hero on Home).
 - The account is reached from the header's account menu.
+
+## Look
+
+The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#layout)).
+
+- **No box.** The tree sits directly on the page, beside the content: no card, border or shadow round it.
+- **Rows** are about 36 px high (44 px on a touch screen), their labels 14 px, rounded 12 px. A row hovers to a soft
+  slate wash.
+- **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
+  8 px) tinted in the row's **tone**: Home and My Documents sky, Inbox violet, Timeline amber, Shared With Me emerald,
+  a team indigo, Invites rose. New Team and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
+  icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
+  pages, tags) keep a bare icon too.
+- **The current row** is a raised pill: white, a hairline sky edge and a soft sky shadow, its label in semibold deep
+  sky, and its tile filled solid sky with a white icon (a bare icon turns sky). In dark mode it is a glass pill: a
+  faint sky wash fading to the right with a sky hairline inside its edge, its label white.
+- **Group titles** are 11 px, semibold, uppercase, widely tracked, slate-500 (4.5:1 on the page; slate-400 in dark).
+- **The sign-in nudge** is a deep navy card in both appearances, the brand prism and a soft sky glow in its corner,
+  its title white and its line a pale slate.
+
+The editor's Explorer panel ([below](#the-editors-explorer)) keeps its own look.
 
 ## Groups and rows
 
 Top to bottom. "Opens" names the view a row selects; every view keeps its own route
-([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are sentence case.
+([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are Title Case (My Documents, Shared With Me, New Team), and every place a row's name appears (page titles, breadcrumbs, folder chips, help articles) uses the same casing. The command-line tool keeps "My Documents" in the folder paths it writes to disk, so existing synced folders keep their names.
 
 ### Overview
 
@@ -38,56 +59,90 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Home           | `/explorer/home` ([Explorer Home](explorer-home.md)) | Other people's events since the reader last looked ([Timeline](timeline.md) §2.5) |
 | Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions and Plan cards assigned to the reader, always shown, 0 included      |
 | Timeline       | `/explorer/timeline` ([Timeline](timeline.md))       | None: the unread count sits on Home                                               |
-| Shared with me | `/explorer/shared`                                   | Documents shared with the reader                                                  |
+| Shared With Me | `/explorer/shared`                                   | Documents shared with the reader                                                  |
 
 Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; the **Timeline** is the
 record of what happened. Recent and Favourites have no sidebar row; their routes (`/explorer/recent`,
-`/explorer/favourites`) keep working. Recent is reached from Home's Jump back in (**See more**); the Timeline is also
-reached from Home's What happened (**See timeline**). The retired `/explorer/activity` opens the Inbox
+`/explorer/favourites`) keep working. Recent is reached from Home's Jump Back In (**See More**); the Timeline is also
+reached from Home's What Happened (**See Timeline**). The retired `/explorer/activity` opens the Inbox
 ([Folders: Explorer routes](folders.md#explorer-routes)).
 
 ### Spaces
 
 | Row          | Opens                                  | Children                | Badge                      |
 | ------------ | -------------------------------------- | ----------------------- | -------------------------- |
-| My documents | `/explorer/all`, the My documents root | The root folders        | None                       |
+| My Documents | `/explorer/all`, the My Documents root | The root folders        | None                       |
 | Each team    | `/explorer/team?id=<id>`               | The team's root folders | Member count, when above 1 |
 | Invites      | `/explorer/invites`                    | None                    | Pending invites            |
-| New team     | The New team form (a dialog)           | None                    | None                       |
+| New Team     | The New Team form (a dialog)           | None                    | None                       |
 
-- **The My documents root** lists its root folders, then its root documents, newest first. A team's root does the
+- **The My Documents root** lists its root folders, then its root documents, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
-  `/explorer/dynamic` open the My documents root, `/explorer/generated` opens Search results filtered by
+  `/explorer/dynamic` open the My Documents root, `/explorer/generated` opens Search results filtered by
   `made-by:ai`.
 - A folder row opens its folder, expands to its subfolders, and carries the folder menu (Rename, New subfolder,
   Change folder, Use as default for, Delete). A team folder row opens the team page at that folder and carries no menu.
-- **My documents** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
+- **My Documents** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
   default for** ([Default folders](default-folders.md#use-as-default-for)).
-- **The `⋯` shows on hover.** A folder row's and My documents' `⋯` stays hidden until the row is hovered or has
+- **The `⋯` shows on hover.** A folder row's and My Documents' `⋯` stays hidden until the row is hovered or has
   keyboard focus, and stays while its menu is open. On a touch screen (a coarse pointer), where nothing hovers, it
   always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
   reader through Home and email.
-- **New team** is the group's last row, for signed-in readers only.
+- **New Team** is the group's last row, for signed-in readers only.
 - A **guest**, on a deployment with sign-in configured, sees the sign-in nudge ("Sign in to access Teams") as the
-  group's last item instead of New team. A deployment without sign-in shows neither.
+  group's last item instead of New Team. A deployment without sign-in shows neither.
 
 ### More
 
-| Row          | Opens                                  | Children                               | Badge                     |
-| ------------ | -------------------------------------- | -------------------------------------- | ------------------------- |
-| This browser | `/explorer/offline`                    | None                                   | Documents in this browser |
-| Library      | Nothing: the row expands and collapses | Image gallery, Themes, Shape libraries | None                      |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                   | None                      |
+| Row          | Opens                                  | Children                                     | Badge                     |
+| ------------ | -------------------------------------- | -------------------------------------------- | ------------------------- |
+| This Browser | `/explorer/offline`                    | None                                         | Documents in this browser |
+| Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Themes, Shape Libraries | None                      |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                         | None                      |
 
-- **This browser** shows only while this browser holds at least one offline document, or while its view is the current
+- **This Browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
-  ([Local only documents](#local-only-documents)).
-- **Library** has no view of its own: activating it expands or collapses it.
+  ([documents in This Browser](#documents-in-this-browser)).
+- **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
+  pages is the current view, the Tags pages included.
+- **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
+  expands to one row per tag, each carrying its colour, its document count as its badge and its menu
+  ([Tags: The sidebar](tags.md#the-sidebar)). The editor's Explorer panel keeps Tags as its own rail entry.
 
 The group's title is **More**.
+
+## Dragging to the Trash
+
+The sidebar's **Trash** row takes a document or a folder dragged onto it, the way Plan mode's Trash takes a card
+([Plan items: Trash](../026-plan/items.md)).
+
+- **What drags.** Every document that drags to a folder today (its own, a team's, one in this browser; never one shared
+  with the reader, nor one being renamed), and the reader's own folders: a folder card or folder row in the pane, and
+  a folder row in the sidebar. A folder carries its own drag type, so a folder dropped on a folder is no drop: folders
+  are not moved by dragging.
+- **The Trash wakes while anything drags.** As soon as a document or folder is picked up, the Trash row becomes a
+  target: a dashed sky edge round the row and its label reads **Drop to Trash**, so it can be found mid-drag.
+- **Over it, it opens up.** With the drag over it, the row fills with the solid brand colour, its label turns white
+  and reads **Let go to trash it**, and its bin tips its lid (a small turn and grow). Never red: putting something in
+  the Trash is undoable, not a warning.
+- **Let go, it swallows.** The drop goes through the same action as the item's own Delete, and the bin gives one short
+  bounce once the item is gone: a document moves to the Trash at once, with the **Document deleted** toast and its
+  **Undo** ([Trash](trash.md)); a folder goes through **Delete Folder**, with its confirmation, and its contents move up
+  to its parent ([Folders](folders.md)). Cancelling that confirmation keeps the folder, and the bin does not bounce.
+- **Leaving it, or letting go elsewhere**, puts the row back as it was. A drag of anything else (text, a file from the
+  desktop) never wakes it.
+- **Motion** stays inside the budget: each change settles within 250 ms; under reduced motion the colours and words
+  change but nothing turns, grows or bounces.
+- **Assistive technology** hears the target's words through a polite status line as they change; the row keeps its
+  name, **Trash**, and its keyboard behaviour (dragging is a pointer gesture; the menus' Delete stays the keyboard
+  path).
+- **Phone**: the drawer's Trash row takes no drops (touch has no HTML drag).
+- The editor's Explorer panel is unchanged.
+- **Telemetry**: `UI·Selected·Sidebar.TrashDropDocument` / `Sidebar.TrashDropFolder` on a drop, beside the delete's own
+  `Document·Deleted` / `Folder·Deleted`.
 
 ## Page titles follow the rows
 
@@ -97,9 +152,9 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Row             | Route                       | Page title      |
 | --------------- | --------------------------- | --------------- |
 | Home            | `/explorer/home`            | Home            |
-| Shared with me  | `/explorer/shared`          | Shared with me  |
-| My documents    | `/explorer/all`             | My documents    |
-| This browser    | `/explorer/offline`         | This browser    |
+| Shared With Me  | `/explorer/shared`          | Shared With Me  |
+| My Documents    | `/explorer/all`             | My Documents    |
+| This Browser    | `/explorer/offline`         | This Browser    |
 | Image gallery   | `/explorer/images`          | Image gallery   |
 | Shape libraries | `/explorer/shape-libraries` | Shape libraries |
 
@@ -113,21 +168,21 @@ its own (**Timeline**).
 | Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in                |
 | ------------- | -------------------------- | ----------------------------- | ------------------------ |
 | Overview      | All four                   | All four                      | All four                 |
-| My documents  | Yes                        | Yes                           | Yes                      |
+| My Documents  | Yes                        | Yes                           | Yes                      |
 | Teams         | None                       | None                          | One row per team         |
 | Invites       | No                         | No                            | While one is pending     |
-| New team      | No                         | No                            | Yes                      |
+| New Team      | No                         | No                            | Yes                      |
 | Sign-in nudge | Yes                        | No                            | No                       |
-| This browser  | While it holds documents   | While it holds documents      | While it holds documents |
+| This Browser  | While it holds documents   | While it holds documents      | While it holds documents |
 | Library       | Yes                        | Yes                           | Yes                      |
 | Trash         | Yes                        | Yes                           | Yes                      |
 
 ## Expansion
 
-- **My documents** starts expanded, so its root folders stay one click away.
+- **My Documents** starts expanded, so its root folders stay one click away.
 - **Library** starts collapsed, and expands by itself when one of its pages is the current view (on arrival and on
   navigating to one), so the highlighted row is always visible.
-- **Teams and folders** start collapsed. My documents, a team or a folder with no subfolders shows no chevron.
+- **Teams and folders** start collapsed. My Documents, a team or a folder with no subfolders shows no chevron.
 - Expansion is session-local (a reload starts afresh) and shared between the desktop sidebar and the mobile drawer.
 
 ## Group titles and separators
@@ -149,8 +204,8 @@ nothing moves on its own.
 ## Alignment
 
 Every row reserves a fixed **chevron gutter** before its icon, whether or not it can expand. So every top-level row's
-icon sits on one column, and an expandable row (My documents, a team, Library) lines up with a plain one (Home, Trash,
-New team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
+icon sits on one column, and an expandable row (My Documents, a team, Library) lines up with a plain one (Home, Trash,
+New Team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
 
 On a touch screen the chevron moves to the row's far end instead, after any trailing action, as a disclosure the full
 row's height and 44 px wide, and no row reserves a gutter. Every icon at a level then sits on the column of its
@@ -170,9 +225,9 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Right** expands a collapsed row; on an expanded row it moves to the first child.
 - **Left** collapses an expanded row; on a collapsed or plain row it moves to the parent row.
 - **Home / End** move to the first / last visible row.
-- **Enter** and **Space** activate the row: open its view, toggle Library, or open the New team form.
+- **Enter** and **Space** activate the row: open its view, toggle Library, or open the New Team form.
 - **Typing a character** moves to the next row whose label starts with it.
-- **Shift+F10** or the **Menu** key opens a folder row's (or My documents') menu, the same menu as its `⋯` button and a
+- **Shift+F10** or the **Menu** key opens a folder row's (or My Documents') menu, the same menu as its `⋯` button and a
   right-click.
 - Keys typed into a folder's inline rename field are the field's, never the tree's.
 - Focus is shown with a visible ring on the row (WCAG 2.2 AA focus appearance); mouse clicks show none.
@@ -180,7 +235,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 ## Mobile drawer
 
 Below the `sm` breakpoint the sidebar is hidden and the pane header's menu button opens it as a drawer from the left:
-the same groups, rows, rules and keyboard model. Picking a view, or New team, closes the drawer; so do its Close button
+the same groups, rows, rules and keyboard model. Picking a view, or New Team, closes the drawer; so do its Close button
 and the backdrop.
 
 ## The editor's Explorer
@@ -197,7 +252,7 @@ Top to bottom:
    a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
    document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
-   Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
+   Private, Shared, Team, Public or This Browser, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
    at the right of the label's row and its `⋯` (the document menu) at the right of the date's, so the name has the
    card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
    by the panel.
@@ -222,9 +277,9 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Document** (one click to a new document; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared with me; My documents and each team; This browser, Library and Trash. Shared with me and This browser carry
+Shared With Me; My Documents and each team; This Browser, Tags, Library and Trash. Shared With Me and This Browser carry
 their counts (the panel reads no other feed until its section is shown). No
-Invites, New team or sign-in nudge: those are the Explorer page's.
+Invites, New Team or sign-in nudge: those are the Explorer page's.
 
 - **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
   marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.
@@ -244,27 +299,28 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 
 | Section        | The pane shows                                                                                                                                                                                                                                                                                                         | Action     |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Home           | **Jump back in**: up to six documents (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent). **What happened**, only when someone else did something: each document's summary sentence under its day, with **See timeline** (the Timeline in the pane)                | None       |
+| Home           | **Jump Back In**: up to six documents (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent). **What Happened**, only when someone else did something: each document's summary sentence under its day, with **See Timeline** (the Timeline in the pane)                | None       |
 | Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                     | None       |
 | Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                          | None       |
-| Shared with me | The documents shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
-| My documents   | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
+| Shared With Me | The documents shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
+| My Documents   | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
 | A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                                                                   | New Folder |
-| This browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                               | None       |
+| Tags           | Each tag as a heading (its chip and count) over its documents as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                     | None       |
+| This Browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                               | None       |
 | Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                             | None       |
 | Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                | None       |
 
-- **Every document the pane shows** (a place's rows, Home's cards and What happened, the Timeline's document events)
+- **Every document the pane shows** (a place's rows, Home's cards and What Happened, the Timeline's document events)
   carries the Explorer page's document menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The
   `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with documents**: a document row shows its thumbnail and "Updated <relative time>"; activating it opens the
   document; it carries the document menu, its favourite star and, for an offline
-  document, the Local only pill; the open document's row is the current one. A folder row shows its counts ("2
+  document, the This Browser pill; the open document's row is the current one. A folder row shows its counts ("2
   folders · 5 documents") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row (resting on it opens it), or onto
-  the My documents rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
+  the My Documents rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
   A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
-  the session may use; My documents carries its Use as default for menu.
+  the session may use; My Documents carries its Use as default for menu.
 - **An empty place** says so in the Explorer's empty state: "Nothing shared with you yet", "Nothing in this browser",
   "No documents yet", "This folder is empty", "Nothing waiting on you", "No activity yet", "Nothing in the Trash right
   now".
@@ -294,16 +350,16 @@ opens its menu. A folder's breadcrumb is a `nav` named "Folder path". The footer
 The panel is the reader's own: it lists their documents and views whatever the open document's share role. Renaming
 from the card follows the editor's rename (an Editor only); a Participant or Viewer sees the name as text.
 
-## Local only documents
+## documents in This Browser
 
 A document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)) is the reader's own: it counts
-wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My documents. Every
-row and card of one, wherever it is listed (folders, This browser, Recent and Favourites, Search results, the
-editor's Explorer, the Trash), carries the **Local only** pill
-([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
+wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My Documents. Every
+row and card of one, wherever it is listed (folders, This Browser, Recent and Favourites, Search results, the
+editor's Explorer, the Trash), carries the **This Browser** pill
+([Offline Mode: This Browser pill](../006-document/offline-mode.md#this-browser-pill)).
 
-The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" carries the
-same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
+The editor header names such a document with the matching **This Browser** badge. Home's "Jump Back In" carries the
+same pill (`ThisBrowserPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
 
 ## Telemetry
 

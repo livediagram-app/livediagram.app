@@ -16,9 +16,9 @@ export type PngLoaders = {
   bold: () => Promise<Uint8Array | ArrayBuffer>;
 };
 
-export type RenderedPng = { png: Uint8Array; width: number; height: number };
+type RenderedPng = { png: Uint8Array; width: number; height: number };
 
-export const PNG_FONT_FAMILY = 'Inter';
+const PNG_FONT_FAMILY = 'Inter';
 
 // resvg's wasm initialises once per process, whichever renderer asks first; asking twice throws.
 let wasmReady: Promise<void> | null = null;

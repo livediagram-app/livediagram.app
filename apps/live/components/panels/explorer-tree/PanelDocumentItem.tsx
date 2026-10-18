@@ -1,21 +1,23 @@
 'use client';
 
-import { LocalOnlyPill, LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill, THIS_BROWSER_DESCRIPTION } from '@/components/primitives/ThisBrowserPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { FavouriteMarker } from '@/app/explorer/document-badges';
+import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
+import { DocumentTagDots } from '@/components/tags/TagChip';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { PaneRow, PANE_THUMB_BOX } from '../explorer-panel/pane-parts';
 import type { PaneDocument } from '@/app/explorer/views';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 import { startDocumentDrag } from '../explorer-drag-mime';
 import { usePanelTree } from './PanelTreeContext';
 import { usePaneDocumentMenu } from './usePaneDocumentMenu';
 
 // A document row of the editor's Explorer pane (docs/specs/013-workspace/explorer-structure.md "The pane"): its
 // thumbnail, name and last save; activating it opens the document; it carries the one document menu (⋯,
-// right-click, Shift+F10), its star and, saved only in this browser, the Local only pill. The open document's row
+// right-click, Shift+F10), its star and, saved only in this browser, the This Browser pill. The open document's row
 // is the current one.
 export function PanelDocumentItem({
   document: doc,
@@ -29,9 +31,11 @@ export function PanelDocumentItem({
   const tree = usePanelTree();
   const menu = usePaneDocumentMenu(doc);
   const name = doc.name || 'Untitled document';
-  const local = isLocalOnly(doc);
+  const local = isInThisBrowser(doc);
   const shareCode = doc.shared?.shareCode;
   const favourite = tree.favouriteIds?.has(doc.id) === true;
+  // The reader's tags as dots (docs/specs/013-workspace/tags.md "Where tags show"): the row is too narrow for chips.
+  const tags = useDocumentTags().tagsFor(doc.id);
   const open = () => tree.onOpenDocument(doc.id, shareCode);
   const now = useRelativeNow();
   const current = doc.id === tree.currentDocumentId;
@@ -52,9 +56,10 @@ export function PanelDocumentItem({
         <span className="flex min-w-0 items-center gap-1">
           {favourite ? <FavouriteMarker /> : null}
           <span className="min-w-0 truncate">{name}</span>
+          <DocumentTagDots tags={tags} />
         </span>
       }
-      label={local ? `${name}. ${LOCAL_ONLY_DESCRIPTION}` : name}
+      label={local ? `${name}. ${THIS_BROWSER_DESCRIPTION}` : name}
       meta={`Updated ${relativeSince(doc.savedAt, now)}`}
       current={current}
       onActivate={open}
@@ -71,7 +76,7 @@ export function PanelDocumentItem({
       }}
       trailing={
         <>
-          {local ? <LocalOnlyPill tabbable={false} /> : null}
+          {local ? <ThisBrowserPill tabbable={false} /> : null}
           {isMadeByAi(doc) ? <MadeByAiPill compact /> : null}
           {menu.trailing}
         </>

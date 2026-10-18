@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Chart tour (docs/specs/007-editor/element-tours.md "The Chart tour"): the chart read in its own words, Grow
-// previewed on it, its menu, and a line chart's Chart data dialog, opened by the tour, step by step.
+// previewed on it, its menu, and a line chart's Chart Data dialog, opened by the tour, step by step.
 
 import { describe, expect, it, vi } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
@@ -26,7 +26,7 @@ const api = () =>
   }) as unknown as ElementTourApi;
 
 describe('chartTourSteps', () => {
-  it('reads a line chart, then walks its Chart data dialog', () => {
+  it('reads a line chart, then walks its Chart Data dialog', () => {
     expect(chartTourSteps(ctxOf()).map((s) => s.id)).toEqual([
       'chart',
       'readout',
@@ -57,8 +57,8 @@ describe('chartTourSteps', () => {
 
   it('names its own type and marks', () => {
     const first = (ctx: ChartTourContext) => chartTourSteps(ctx)[0]!.body;
-    expect(first(ctxOf({ type: 'doughnut' }))).toMatch(/Every slice .* a Doughnut chart/);
-    expect(first(ctxOf({ type: 'bar' }))).toMatch(/Every bar .* a Bar chart/);
+    expect(first(ctxOf({ type: 'doughnut' }))).toMatch(/Each slice .* a Doughnut chart/);
+    expect(first(ctxOf({ type: 'bar' }))).toMatch(/Each bar .* a Bar chart/);
     expect(
       chartTourSteps(ctxOf({ type: 'scatter' })).find((s) => s.id === 'series')!.body,
     ).toContain('a new set of points');

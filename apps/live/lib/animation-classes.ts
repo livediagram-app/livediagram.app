@@ -28,7 +28,7 @@ const DRAWN_AS_SHAPE: Partial<Record<BodyAnimationSet, ReadonlySet<string>>> = {
 };
 
 /** The marker a reveal carries when Repeat is off: its keyframes play once and stay revealed. */
-export const ONCE_CLASS = 'lvd-once';
+const ONCE_CLASS = 'lvd-once';
 
 /** A set class, plus the play-once marker for a reveal that does not repeat. */
 export function setAnimationClass(

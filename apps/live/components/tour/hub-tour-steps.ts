@@ -2,12 +2,12 @@ import type { ElementTourApi } from './element-tour-api';
 import {
   addRowStep,
   conceptOutro,
-  inElement,
   inTheMenu,
   onGraphic,
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Hub and Spoke tour (docs/specs/007-editor/element-tours.md "The Hub and Spoke tour"): the hub everything
 // touches, its satellites round it from twelve o'clock, the spokes that can go, and Pulse travelling round.
@@ -18,46 +18,35 @@ export function hubTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourApi
     onGraphic(
       'hub',
       'One Thing in the Middle',
-      `The hub is what everything touches: a service, a team, a product. ${ctx.touch ? 'Double-tap' : 'Double-click'} it to name it.`,
-      inElement(id, '[data-tour-part="concept-centre"]'),
+      `The hub is what everything connects to. ${ctx.touch ? 'Double-tap' : 'Double-click'} it to name it.`,
+      elementSelector(id, '[data-tour-part="concept-centre"]'),
     ),
     onGraphic(
       'satellites',
       'Round It, Clockwise',
-      `Its ${ctx.rows.length} satellites sit evenly round the hub, the first at twelve o'clock and the rest clockwise, each on its spoke.`,
-      inElement(id),
+      `Its ${ctx.rows.length} satellites sit evenly round the hub, clockwise from the top.`,
+      elementSelector(id),
     ),
     onGraphic(
       'edit',
       'Type Over a Satellite',
       `${click} a satellite's name to type over it. Enter keeps it, Escape puts it back.`,
-      inElement(id, '[data-concept-row="0"]'),
+      elementSelector(id, '[data-concept-row="0"]'),
     ),
-    addRowStep(
-      'add',
-      'Add a Satellite',
-      'Add Satellite puts a new one on the ring, up to eight. The rest spread out evenly again.',
-      'Add Satellite',
-    ),
+    addRowStep('add', 'Add a Satellite', 'Add Satellite adds one, up to eight.', 'Add Satellite'),
     ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'spokes',
-            'Spokes or None',
-            'In the menu, Spokes turns the lines off, leaving the satellites floating round the hub; Rows reorders them.',
-          ),
-        ]
+      ? [inTheMenu('spokes', 'Spokes or None', 'In its menu, Spokes turns the lines on or off.')]
       : []),
     onGraphic(
       'animate',
       'Light Them Up',
-      'Animation, then Concept: Pulse travels round the satellites, as here. Build brings in the hub, then each satellite with its spoke.',
-      inElement(id),
+      'Animation › Concept pulses round the satellites or builds them in.',
+      elementSelector(id),
       'pulse',
     ),
     conceptOutro(
       'That Is a Hub and Spoke',
-      'It exports exactly as drawn, and every change is one undo step.',
+      'It exports as you see it. Undo takes back any change.',
     ),
   ];
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   answeringKeys,
+  selfInRoom,
   AWAY_AFTER_MS,
   OFFLINE_AFTER_MS,
   initialsOf,
@@ -174,5 +175,13 @@ describe('uniqueParticipants / answeringKeys', () => {
         p('agent', { key: 'k-bot', agent: true }),
       ]),
     ).toEqual(['k-me', 'k-ed']);
+  });
+
+  it("leaves a Viewer's own row out on the Viewer's own screen, as everyone else's screen does", () => {
+    const me = p('owner', { key: 'k-me' });
+    const editor = p('socket-ed', { key: 'k-ed', role: 'edit' });
+    expect(answeringKeys([selfInRoom(me, 'view'), editor])).toEqual(['k-ed']);
+    expect(answeringKeys([selfInRoom(me, 'participate'), editor])).toEqual(['k-me', 'k-ed']);
+    expect(selfInRoom(me, 'edit')).toEqual({ ...me, role: 'edit' });
   });
 });

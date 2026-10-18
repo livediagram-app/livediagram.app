@@ -38,12 +38,12 @@ const PALETTE_FAVOURITES_UI = new Set([
 const PALETTE_FAVOURITES_HELP_ID = 'favourites';
 
 // Settings › Experimental (removed 2026-10-06, docs/specs/007-editor/editor-modes.md "Every mode,
-// always offered"): the category opening and its Illustrate Mode and Plan Mode switches. Every mode
+// always offered"): the category opening and its Pages Mode and Plan Mode switches. Every mode
 // is always offered now; the modes themselves, and their own events, carry on.
 const EXPERIMENTAL_SETTINGS_UI = new Set([
   'Opened|SettingsExperimental',
-  'Toggled|IllustrateModeOn',
-  'Toggled|IllustrateModeOff',
+  'Toggled|PagesModeOn',
+  'Toggled|PagesModeOff',
   'Toggled|PlanModeOn',
   'Toggled|PlanModeOff',
 ]);
@@ -61,7 +61,7 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModeDiagram',
   'Toggled|TemplateModeDraw',
   'Toggled|TemplateModeFacilitate',
-  'Toggled|TemplateModeIllustrate',
+  'Toggled|TemplateModePages',
   'Toggled|TemplateModePlan',
 ]);
 
@@ -103,6 +103,10 @@ const splitKey = (key: string): [string, string, string | null] => {
 // previous windows behind the trend arrows, and the daily series (each
 // retired series also comes off its category's line and the day totals).
 export function dropRetiredEvents(summary: TelemetrySummary): TelemetrySummary {
+  // A deployment with telemetry off answers `{ enabled: false }` and nothing else: there is nothing to drop, and
+  // reading its absent windows threw, which the dashboard took for a failed request ("Couldn't load the
+  // numbers") instead of showing that telemetry is off here.
+  if (!summary.enabled || !summary.windows) return summary;
   const windows = Object.fromEntries(
     Object.entries(summary.windows).map(([k, w]) => [k, dropFromWindow(w)]),
   ) as TelemetrySummary['windows'];

@@ -3,7 +3,7 @@ import { apiBase, darkVisitor } from './audit-screens';
 import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
 
 // The Explorer's filters for a guest (docs/specs/013-workspace/explorer-filters.md), in dark mode:
-// the My documents root lists its documents directly, the chips and the field write one lens into
+// the My Documents root lists its documents directly, the chips and the field write one lens into
 // `q`, a scoped lens reaches subfolders, typing on Home opens Search results, the lens rides
 // between aggregate views, and the retired Unsorted and Generated addresses still answer. The
 // signed-in team library is e2e/clerk-stub/explorer-filters.spec.ts.
@@ -54,7 +54,7 @@ test.describe('explorer filters', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('My documents lists root folders and root documents, AI-made ones badged', async ({
+  test('My Documents lists root folders and root documents, AI-made ones badged', async ({
     page,
     pageErrors,
     baseURL,
@@ -193,7 +193,7 @@ test.describe('explorer filters', () => {
     await expect(filters(page).getByRole('button', { name: 'Space, any' })).toBeVisible();
 
     const nav = page.getByRole('navigation', { name: 'Explorer' }).first();
-    await nav.getByRole('treeitem', { name: /^Shared with me/ }).click();
+    await nav.getByRole('treeitem', { name: /^Shared With Me/ }).click();
     await expect(page).toHaveURL(/\/explorer\/shared\?q=payment$/);
     await nav.getByRole('treeitem', { name: /^Home/ }).click();
     await expect(page).toHaveURL(/\/explorer\/home$/);
@@ -207,11 +207,11 @@ test.describe('explorer filters', () => {
 
   // Each retired address is its own test: two full page loads and a seeded library share one
   // test's time budget badly on a busy runner.
-  test('the retired Unsorted address opens the My documents root', async ({ page, pageErrors }) => {
+  test('the retired Unsorted address opens the My Documents root', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintSignedGuest(page.request));
     await page.goto('/explorer/unsorted');
     await expect(page).toHaveURL(/\/explorer\/all$/);
-    await expect(page.getByRole('heading', { name: 'My documents', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Documents', level: 1 })).toBeVisible();
     expectNoPageErrors(pageErrors);
   });
 
@@ -237,7 +237,7 @@ test.describe('explorer filters', () => {
     await seed(page, owner, new URL(baseURL!).origin);
     await page.setViewportSize({ width: 390, height: 844 });
     await arrive(page, '/explorer/all');
-    await expect(page.getByRole('heading', { name: 'My documents', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Documents', level: 1 })).toBeVisible();
     const box = await field(page).boundingBox();
     expect(box!.width).toBeGreaterThan(250);
     await filters(page).getByRole('button', { name: 'Made by AI' }).click();

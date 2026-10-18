@@ -20,7 +20,7 @@ export const SEQ_PARTICIPANTS_MAX = 12;
 export const SEQ_MESSAGES_MAX = 60;
 export const SEQ_PARTICIPANT_LABEL_MAX = 40;
 export const SEQ_MESSAGE_LABEL_MAX = 80;
-export const SEQ_ID_MAX = 24;
+const SEQ_ID_MAX = 24;
 export const SEQUENCE_KINDS: readonly SequenceMessageKindName[] = ['call', 'async', 'reply'];
 
 export function isSequenceElement(el: Element): boolean {

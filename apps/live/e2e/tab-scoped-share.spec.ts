@@ -58,7 +58,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   );
   await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Share this document' });
+  const dialog = page.getByRole('dialog', { name: 'Share This Document' });
   await dialog
     .getByRole('combobox', { name: 'Tabs this link opens' })
     .selectOption({ label: 'Roadmap' });

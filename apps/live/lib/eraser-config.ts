@@ -5,7 +5,12 @@
 // the job in front of you, not stored on the document. Never sent to the api.
 
 import type { Element } from '@livediagram/document';
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  pickOption,
+  storedRecord,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 
 export type EraserMode = 'sweep' | 'tap';
 export type EraserSize = 'point' | 'small' | 'medium' | 'large';
@@ -92,18 +97,13 @@ export function eraserAllows(element: Element, target: EraserTarget): boolean {
 
 // --- Parsing ----------------------------------------------------------------
 
-function pick<T extends string>(value: unknown, options: readonly { id: T }[], fallback: T): T {
-  return options.some((option) => option.id === value) ? (value as T) : fallback;
-}
-
 export function parseEraserConfig(raw: unknown): EraserConfig {
-  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
-  if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_ERASER_CONFIG };
-  const o = parsed as Record<string, unknown>;
+  const o = storedRecord(raw);
+  if (!o) return { ...DEFAULT_ERASER_CONFIG };
   return {
-    mode: pick(o.mode, ERASER_MODES, DEFAULT_ERASER_CONFIG.mode),
-    size: pick(o.size, ERASER_SIZES, DEFAULT_ERASER_CONFIG.size),
-    target: pick(o.target, ERASER_TARGETS, DEFAULT_ERASER_CONFIG.target),
+    mode: pickOption(o.mode, ERASER_MODES, DEFAULT_ERASER_CONFIG.mode),
+    size: pickOption(o.size, ERASER_SIZES, DEFAULT_ERASER_CONFIG.size),
+    target: pickOption(o.target, ERASER_TARGETS, DEFAULT_ERASER_CONFIG.target),
   };
 }
 

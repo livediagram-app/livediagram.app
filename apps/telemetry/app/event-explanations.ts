@@ -29,13 +29,13 @@ const perReportReason = Object.fromEntries(
 );
 
 export const EXACT: Readonly<Record<string, string>> = {
-  'Editor|Changed|LeaveIllustrateConfirmed':
-    'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
+  'Editor|Changed|LeavePagesConfirmed':
+    'Someone confirmed leaving Pages on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
-  'Editor|Changed|ModeIllustrate':
-    'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
+  'Editor|Changed|ModePages':
+    'Someone switched a tab to Pages mode, to lay out a page of icons, stickers, components and media.',
   'Editor|Changed|ModePlan':
     'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
   'Editor|Changed|ModeFacilitate':
@@ -105,8 +105,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Deleted|': 'Someone removed an assigned action from an element.',
   'Action|Moved|DocumentToTeam':
     "While assigning an action to someone, the document was moved into that person's team so they'd have access to it.",
+  'Action|Linked|Board':
+    "Someone added a document's first action, which made its Actions board: a board tab where every action in the document has a card, kept in step with the canvas.",
   'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
+  'Action|Opened|Board':
+    "Someone went from an action on the canvas to the document's Actions board, from the action's popover or an Action panel's Board chip.",
+  'Action|Opened|Canvas':
+    "Someone went from a card on the Actions board to its action on the canvas, with the card's Show on Canvas.",
   'Action|Resolved|': 'Someone marked an assigned action as done.',
+  'Action|Resolved|WontDo':
+    "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
   'Activity|Loaded|Retry':
     'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
@@ -130,6 +138,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
   'Canvas|Used|AvatarMessagePanel':
     "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
+  'Canvas|Used|AvatarPadArrival':
+    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|ChangeNoteKind':
@@ -162,6 +172,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned timeline lanes on for an event-storming board. No longer recorded: lanes are always on now.',
   'Canvas|Used|Undock':
     'Someone pulled a docked note away from its host on an event-storming board. No longer recorded.',
+  'Canvas|Zoomed|DoubleTap':
+    'Someone double-tapped the canvas with a finger to zoom in on that spot.',
   'Canvas|Zoomed|Fit': 'Someone tapped "Fit to screen".',
   'Canvas|Zoomed|In': 'Someone tapped the zoom-in button.',
   'Canvas|Zoomed|Out': 'Someone tapped the zoom-out button.',
@@ -384,7 +396,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|QuickBackground':
     'Someone picked a background colour for the selected shapes from the quick style panel beside the selection.',
   'Element|Changed|QuickClearStyles':
-    'Someone pressed Clear styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
+    'Someone pressed Clear Styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
   'Element|Changed|QuickIconAlign':
     'Someone moved the icon before, above, or after the label of the selected shapes from the quick style panel.',
   'Element|Changed|QuickCorners':
@@ -414,7 +426,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|SessionButton':
     'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
   'Element|Changed|Finish':
-    "Someone set a selected element's own finish (Flexible, Professional or Sketch), or set it back to follow its tab.",
+    "Someone set a selected element's own finish (Flexible, Professional, Sketch or Marker), or set it back to follow its tab.",
   'Element|Changed|SankeyAnim':
     'Someone set or cleared the animation on a selected Sankey diagram (Grow, Flow, Cascade, Pulse or Rise), or its speed or repeat.',
   'Element|Changed|SankeyFlows':
@@ -447,8 +459,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextFormat':
     "Someone applied rich-text formatting, such as bold, a colour, a list, a heading, or a link, to part of an element's label.",
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
-  'Tab|Changed|LogoPageAdded': 'Someone added a logo page to an Illustrate tab.',
-  'Tab|Changed|PageKindLogo': "Someone chose Logo for a new Illustrate tab's first page.",
+  'Tab|Changed|LogoPageAdded': 'Someone added a logo page to a Pages tab.',
+  'Tab|Changed|PageKindLogo': "Someone chose Logo for a new Pages tab's first page.",
   'Element|Changed|ShapesUnited': 'Someone united shapes on a logo page into one.',
   'Element|Changed|StrokesTidiedUp':
     'Someone tidied up hand-drawn lines on a logo page, making them straight.',
@@ -465,6 +477,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextCase':
     'Someone set a text on a logo page in capitals, lower case or as typed.',
   'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
+  'Element|Created|RelatedEntity':
+    "Someone added an entity from another entity's ring, already joined to it by a foreign key.",
+  'Element|Added|EntityField':
+    "Someone started a new field on an entity from its ring's Add Field.",
+  'Element|Changed|Cardinality': "Someone picked a relationship's cardinality from its toolbar.",
   'Element|Created|MirrorTwin':
     'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
   'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
@@ -561,6 +578,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a document.",
   'Email|Sent|Milestone':
     'An email went out congratulating someone on reaching a document-count milestone.',
+  'Email|Sent|TeamInviteReminder1':
+    'A reminder went out about a team invite nobody had answered, a day after it was sent.',
+  'Email|Sent|TeamInviteReminder2':
+    'A reminder went out about a team invite nobody had answered, a week after it was sent.',
+  'Email|Sent|TeamInviteReminder3':
+    'The last reminder went out about a team invite nobody had answered, three weeks after it was sent.',
   'Email|Sent|Week1': 'The one-week onboarding email went out.',
   'Email|Sent|Week2': 'The two-week onboarding email went out.',
   'Email|Sent|Welcome': 'The welcome email went out just after someone signed up.',
@@ -613,18 +636,41 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
   'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
   'Home|Opened|Group':
-    "Someone expanded a summary of several people's work on one document in Home's What happened, to see every action.",
+    "Someone expanded a summary of several people's work on one document in Home's What Happened, to see every action.",
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'UI|Selected|Sidebar.TrashDropDocument':
+    "Someone dragged a document onto the Trash row in the Explorer's sidebar, moving it to the Trash.",
+  'UI|Selected|Sidebar.TrashDropFolder':
+    "Someone dragged one of their folders onto the Trash row in the Explorer's sidebar to delete it.",
+  'Home|Opened|Welcome':
+    'Someone with no documents yet saw the first-run Home, with its blanks and popular templates to start from.',
+  'Home|Selected|Welcome.AllTemplates':
+    'Someone with no documents yet followed Browse All Templates from the first-run Home.',
+  'Home|Selected|Welcome.Blank':
+    'Someone with no documents yet started a blank from the first-run Home.',
+  'Home|Selected|Welcome.Search':
+    'Someone with no documents yet searched the templates from the field at the top of the first-run Home.',
+  'Home|Selected|Welcome.SignIn':
+    'Someone signed out with no documents followed Sign In from the first-run Home, to find their work.',
+  'Home|Selected|Welcome.StartBlank':
+    'Someone with no documents yet started a blank diagram from the field at the top of the first-run Home.',
+  'Home|Selected|Welcome.Template':
+    'Someone with no documents yet started a popular template from the first-run Home.',
+  'Home|Selected|Hero.Documents':
+    'Someone followed the documents pill at the top of Home to My Documents.',
+  'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
+  'Home|Selected|Hero.NewDocument':
+    'Someone started a new document from the New document button in the search field at the top of Home.',
   'Home|Selected|JumpBackIn.MostUsed':
-    "Someone opened a document from Home's Jump back in that was among the ones they used on the most days.",
+    "Someone opened a document from Home's Jump Back In that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':
-    "Someone opened a document from Home's Jump back in that was among the ones they used most recently.",
+    "Someone opened a document from Home's Jump Back In that was among the ones they used most recently.",
   'Home|Selected|JumpBackIn.SeeMore':
-    "Someone followed See more from Home's Jump back in to the Recent page.",
+    "Someone followed See More from Home's Jump Back In to the Recent page.",
   'Home|Selected|WhatHappened':
-    "Someone opened a document from Home's What happened, which lists what other people did to their documents.",
+    "Someone opened a document from Home's What Happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -742,6 +788,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Toggled|Open': 'Someone switched Accepting Responses on for a published form.',
   'Form|Toggled|Closed':
     'Someone switched Accepting Responses off: the link stays, showing the closed message.',
+  'Form|Opened|NotTakingSuspended':
+    "Someone pressed a form's Not Taking Responses warning: its link was suspended after reports.",
+  'Form|Opened|NotTakingPaused':
+    "Someone pressed a form's Not Taking Responses warning: its responses had nowhere to go.",
+  'Form|Opened|NotTakingSwitchedOff':
+    "Someone pressed a form's Not Taking Responses warning: Accepting Responses was off.",
+  'Form|Opened|NotTakingClosesAt':
+    "Someone pressed a form's Not Taking Responses warning: its Close On time had passed.",
+  'Form|Opened|NotTakingLimit':
+    "Someone pressed a form's Not Taking Responses warning: it had reached its Response Limit.",
+  'Form|Opened|NotTakingFull':
+    "Someone pressed a form's Not Taking Responses warning: its document held as many cards as it can.",
+  'Form|Moved|SyncedToShare':
+    'Someone synced a document in This Browser from Share Form, so its form could be published.',
   'Form|Sent|Response':
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
@@ -788,6 +848,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Sheet|Created|ExpenseReport': 'Someone set up a new Sheet from the Expense Report template.',
   'Sheet|Created|SalesPipeline': 'Someone set up a new Sheet from the Sales Pipeline template.',
   'Sheet|Created|Inventory': 'Someone set up a new Sheet from the Inventory template.',
+  'Sheet|Created|ThreatRegister': 'Someone set up a new Sheet from the Threat Register template.',
+  'Sheet|Created|DriverModel': 'Someone set up a new Sheet from the Driver Model template.',
+  'Sheet|Created|ValueStream': 'Someone set up a new Sheet from the Value Stream template.',
   'Sheet|Created|GuestList': 'Someone set up a new Sheet from the Guest List template.',
   'Sheet|Created|GradeBook': 'Someone set up a new Sheet from the Grade Book template.',
   'Sheet|Created|HabitTracker': 'Someone set up a new Sheet from the Habit Tracker template.',
@@ -841,15 +904,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInDraw':
     "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
-  'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
-  'Tab|Changed|ArticleAdded': 'Someone added a new article to an Illustrate tab.',
-  'Tab|Changed|SlidePageAdded': 'Someone added a slide page to an Illustrate tab.',
-  'Tab|Changed|PageKindInfographic':
-    "Someone chose Infographic for a new Illustrate tab's first page.",
-  'Tab|Changed|PageKindArticle': "Someone chose Article for a new Illustrate tab's first page.",
-  'Tab|Changed|PageKindSlide': "Someone chose Slide for a new Illustrate tab's first page.",
+  'Tab|Changed|PageAdded': 'Someone added an infographic page to a Pages tab.',
+  'Tab|Changed|ArticleAdded': 'Someone added a new article to a Pages tab.',
+  'Tab|Changed|SlidePageAdded': 'Someone added a slide page to a Pages tab.',
+  'Tab|Changed|PageKindInfographic': "Someone chose Infographic for a new Pages tab's first page.",
+  'Tab|Changed|PageKindArticle': "Someone chose Article for a new Pages tab's first page.",
+  'Tab|Changed|PageKindSlide': "Someone chose Slide for a new Pages tab's first page.",
   'Tab|Changed|ArticlesToPages':
-    "Someone left Illustrate mode and turned a tab's articles into Page elements.",
+    "Someone left Pages mode and turned a tab's articles into Page elements.",
   'Tab|Changed|ArticleLookClean': 'Someone gave an article the Clean look.',
   'Tab|Changed|ArticleLookClassic': 'Someone gave an article the Classic look.',
   'Tab|Changed|ArticleLookReport': 'Someone gave an article the Report look.',
@@ -893,35 +955,34 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dragged a picture or drawing to a new place in an article's writing.",
   'Element|Changed|ArticleZoneRemoved':
     "Someone deleted a picture or drawing from an article's writing.",
-  'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',
-  'Tab|Changed|PagePortrait': 'Someone turned an Illustrate page to portrait.',
-  'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
-  'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
-  'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PageRemoved': 'Someone deleted a page from a Pages tab.',
+  'Tab|Changed|PagePortrait': 'Someone turned a page to portrait.',
+  'Tab|Changed|PageLandscape': 'Someone turned a page to landscape.',
+  'Tab|Changed|PageSize': 'Someone changed a page to another size.',
+  'Tab|Changed|PageBackground': "Someone changed a page's background colour.",
   'Tab|Changed|PageBackgroundAnimated':
     'Someone gave a slide an animated background (aurora, starfield, waves and the like).',
   'Tab|Changed|PageBackgroundAnimatedSpeed':
     "Someone changed how fast a slide's animated background moves.",
   'Tab|Changed|PageBackgroundImage':
-    'Someone put a picture behind an Illustrate page, searched or uploaded, under an overlay.',
-  'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+    'Someone put a picture behind a page, searched or uploaded, under an overlay.',
+  'Tab|Changed|PagePattern': "Someone changed a page's background pattern.",
   'Tab|Changed|PageBackgroundAppliedToAll':
     "Someone gave every other page of a kind (every slide, say) one page's background at once.",
   'Tab|Changed|PageBackgroundPainted':
-    "Someone painted one Illustrate page's background onto another with the Format tool.",
-  'Tab|Changed|PageLocked':
-    'Someone locked an Illustrate page, so it and what is on it stay as they are.',
-  'Tab|Changed|PageUnlocked': 'Someone unlocked an Illustrate page.',
-  'Tab|Changed|PageRenamed': 'Someone renamed an Illustrate page.',
-  'Tab|Changed|PageDuplicated': 'Someone duplicated an Illustrate page with its content.',
-  'Tab|Changed|PageMoved': 'Someone moved an Illustrate page left or right in its row.',
+    "Someone painted one page's background onto another with the Format tool.",
+  'Tab|Changed|PageLocked': 'Someone locked a page, so it and what is on it stay as they are.',
+  'Tab|Changed|PageUnlocked': 'Someone unlocked a page.',
+  'Tab|Changed|PageRenamed': 'Someone renamed a page.',
+  'Tab|Changed|PageDuplicated': 'Someone duplicated a page with its content.',
+  'Tab|Changed|PageMoved': 'Someone moved a page left or right in its row.',
   'Tab|Changed|PagesLaidOut':
-    'Someone split a Fit to Content Illustrate page into one page per group of its content.',
+    'Someone split a Fit to Content page into one page per group of its content.',
   'Tab|Changed|PageFitToContent':
-    "A tab's board was put onto an Illustrate page made around it, nothing moved, as it entered Illustrate mode.",
-  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
-  'Tab|Changed|OpensInIllustrate':
-    "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
+    "A tab's board was put onto a page made around it, nothing moved, as it entered Pages mode.",
+  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto a page.',
+  'Tab|Changed|OpensInPages':
+    "Someone set a tab to open in Pages mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
     "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|Look':
@@ -929,7 +990,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|SeasonalLook':
     "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|Finish':
-    "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
+    "Someone changed a tab's finish (Flexible, Professional, Sketch or Marker) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -997,12 +1058,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Team|Created|': 'Someone created a new team.',
   'Team|Declined|Invite':
     'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.',
+  'Team|Declined|Email':
+    "Someone turned down a team invite from the email's Decline link, without signing in.",
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
   'Team|Moved|Document':
     "A document already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
   'Team|Removed|Document': 'An admin removed a member who had joined the team.',
   'Team|Removed|Link': "A team's shareable invite link was turned off.",
+  'Team|Removed|Rejected':
+    'An admin cleared a declined or expired team invite from the member list.',
   'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
@@ -1021,7 +1086,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Opened|Menu':
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav':
-    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See timeline link.",
+    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -1045,8 +1110,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone filtered an Explorer list by when documents were last edited.',
   'Explorer|Selected|People':
     'Someone filtered an Explorer list by who owns the documents (Me or Others).',
+  'Explorer|Created|Tag':
+    'Someone made a tag, a coloured label for grouping their documents, from the tag picker or the Tags page.',
+  'Explorer|Added|Tag': 'Someone put one of their tags on a document.',
+  'Explorer|Removed|Tag': 'Someone took one of their tags off a document.',
+  'Explorer|Renamed|Tag': 'Someone renamed one of their tags.',
+  'Explorer|Changed|TagColour': 'Someone changed the colour of one of their tags.',
+  'Explorer|Deleted|Tag':
+    'Someone deleted one of their tags, which takes it off every document it was on.',
   'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where documents live (My documents, Shared with me, a team).',
+    'Someone filtered an aggregate Explorer list by where documents live (My Documents, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -1132,11 +1205,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightShape': "Someone changed the Spotlight's shape, in the Spotlight panel.",
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
-    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Facilitate, Illustrate), or a switch in Plan's category picker.",
+    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Facilitate, Pages), or a switch in Plan's category picker.",
   'UI|Changed|ContentsPlacementButton':
-    "Someone minimised Illustrate's Contents sidebar to its button, from the sidebar or in Settings > Editor.",
+    "Someone minimised Pages mode's Contents sidebar to its button, from the sidebar or in Settings > Editor.",
+  'UI|Changed|ContentsSideLeft':
+    "Someone dragged Pages mode's Contents sidebar to the canvas's left edge.",
+  'UI|Changed|ContentsSideRight':
+    "Someone dragged Pages mode's Contents sidebar to the canvas's right edge.",
   'UI|Changed|ContentsPlacementSidebar':
-    "Someone docked Illustrate's Contents as a sidebar down the canvas's left, from its popover or in Settings > Editor.",
+    "Someone docked Pages mode's Contents as a sidebar down the canvas's left, from its popover or in Settings > Editor.",
   'UI|Changed|WhiteboardDockPositionBottom':
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
@@ -1155,8 +1232,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer':
     "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
-  'UI|Closed|IllustrateTourOffer':
-    'Someone turned the Illustrate tour down with No on its own card.',
+  'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
   'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
@@ -1230,6 +1306,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Onion tour, offered beside a selected onion.',
   'UI|Ended|OnionTourSkipped':
     'Someone left the Onion tour before its end, or the onion it was on went away.',
+  'UI|Ended|TimelineTourCompleted':
+    'Someone reached the end of the Timeline tour, offered beside a selected timeline.',
+  'UI|Ended|TimelineTourSkipped':
+    'Someone left the Timeline tour before its end, or the timeline it was on went away.',
   'UI|Ended|ChevronsTourCompleted':
     'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
   'UI|Ended|ChevronsTourSkipped':
@@ -1294,9 +1374,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the photo import review's Show Me tour.",
   'UI|Ended|PhotoReviewTourSkipped':
     "Someone left the photo import review's Show Me tour before its end.",
-  'UI|Ended|IllustrateTourCompleted':
-    "Someone reached the end of the Illustrate tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|IllustrateTourSkipped': 'Someone closed the Illustrate tour before its end.',
+  'UI|Ended|PagesTourCompleted':
+    "Someone reached the end of the Pages tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
   'UI|Ended|AvatarTourCompleted':
     "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
@@ -1369,14 +1449,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
   'UI|Opened|PageContents':
-    "Someone opened Illustrate's Contents: every page of the tab in a list.",
-  'UI|Used|PageContentsJump': "Someone went to a page from Illustrate's Contents list.",
+    "Someone opened Pages mode's Contents: every page of the tab in a list.",
+  'UI|Used|PageContentsJump': "Someone went to a page from Pages mode's Contents list.",
   'UI|Used|PageContentsReorder':
-    "Someone dragged a page to a new place in Illustrate's Contents list.",
+    "Someone dragged a page to a new place in Pages mode's Contents list.",
   'UI|Added|AllPageSlides':
     "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
   'UI|Opened|SlideDeck':
-    "Someone opened the deck-building panel: the Slide Deck tool, or an Illustrate tab's Slides button.",
+    "Someone opened the deck-building panel: the Slide Deck tool, or a Pages tab's Slides button.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
@@ -1402,8 +1482,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
-  'UI|Opened|IllustrateTourOffer':
-    'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Tours › "Illustrate Tour".',
+  'UI|Opened|PagesTourOffer':
+    'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
   'UI|Opened|AvatarTourOffer':
     'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
   'UI|Opened|AvatarPanel':
@@ -1420,6 +1500,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
   'UI|Opened|OnionTourOffer':
     'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
+  'UI|Opened|TimelineTourOffer':
+    'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit).',
   'UI|Opened|ChevronsTourOffer':
     'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
   'UI|Opened|MindMapTourOffer':
@@ -1538,6 +1620,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected hub and spoke, starting its tour.',
   'UI|Started|OnionTour':
     'Someone pressed Play on the Tour toolbar beside a selected onion, starting its tour.',
+  'UI|Started|TimelineTour':
+    'Someone pressed Play on the Tour toolbar beside a selected timeline, starting its tour.',
   'UI|Started|ChevronsTour':
     'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
   'UI|Started|MindMapTour':
@@ -1570,8 +1654,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
-  'UI|Started|IllustrateTour':
-    "Someone pressed Yes on the Illustrate tour's first card, beginning its walkthrough of the pages.",
+  'UI|Started|PagesTour':
+    "Someone pressed Yes on the Pages tour's first card, beginning its walkthrough of the pages.",
   'UI|Started|AvatarTour':
     "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
   'UI|Started|DrawTour':
@@ -1682,10 +1766,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|QuickAddHoverOn':
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
-  'UI|Toggled|IllustrateModeOff':
-    'Someone turned off Illustrate mode, in Settings > Experimental. No longer recorded: Illustrate mode is always offered.',
-  'UI|Toggled|IllustrateModeOn':
-    'Someone turned on Illustrate mode, in Settings > Experimental. No longer recorded: Illustrate mode is always offered.',
+  'UI|Toggled|PagesModeOff':
+    'Someone turned off Pages mode, in Settings > Experimental. No longer recorded: Pages mode is always offered.',
+  'UI|Toggled|PagesModeOn':
+    'Someone turned on Pages mode, in Settings > Experimental. No longer recorded: Pages mode is always offered.',
   'UI|Toggled|PlanModeOff':
     'Someone turned off Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|PlanModeOn':
@@ -1709,8 +1793,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Diagram mode.',
   'UI|Toggled|TemplateModeDraw':
     'Someone narrowed the New Document templates to the ones that open in Draw mode.',
-  'UI|Toggled|TemplateModeIllustrate':
-    'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
+  'UI|Toggled|TemplateModePages':
+    'Someone narrowed the New Document templates to the ones that open in Pages mode.',
   'UI|Toggled|TemplateModePlan':
     'Someone narrowed the New Document templates to the ones that open in Plan mode.',
   'UI|Toggled|TemplateModeFacilitate':
@@ -1727,10 +1811,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
   'UI|Toggled|TourSeenOn':
     'Someone switched off Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
-  'UI|Toggled|IllustrateTourSeenOff':
-    'Someone switched on Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as not yet seen.',
-  'UI|Toggled|IllustrateTourSeenOn':
-    'Someone switched off Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as seen.',
+  'UI|Toggled|PagesTourSeenOff':
+    'Someone switched on Tours › "Pages Tour" in Settings, marking the Pages tour as not yet seen.',
+  'UI|Toggled|PagesTourSeenOn':
+    'Someone switched off Tours › "Pages Tour" in Settings, marking the Pages tour as seen.',
   'UI|Toggled|AvatarTourSeenOff':
     'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
   'UI|Toggled|AvatarTourSeenOn':
@@ -1763,6 +1847,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Onion Tour" in Settings, so it is offered again.',
   'UI|Toggled|OnionTourSeenOn':
     'Someone switched off Tours › Element Tours › "Onion Tour" in Settings, so it is not offered.',
+  'UI|Toggled|TimelineTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Timeline Tour" in Settings, so it is offered again.',
+  'UI|Toggled|TimelineTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Timeline Tour" in Settings, so it is not offered.',
   'UI|Toggled|ChevronsTourSeenOff':
     'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChevronsTourSeenOn':
@@ -1835,6 +1923,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
     'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+  'UI|Toggled|LandscapeBarsOff':
+    'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
+  'UI|Toggled|LandscapeBarsOn':
+    'Someone showed the header and the tab bar from the handle on a phone held sideways, where they fold away so the canvas fills the screen.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -1844,62 +1936,62 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone searching an empty tab's start chose a template the search found in another mode, which switched the tab to that mode.",
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
-  'UI|View|IllustrateTourStepPageName':
-    'The Illustrate tour reached its "Your Pages" step, on the first page\'s name.',
-  'UI|View|IllustrateTourStepPageSettings':
-    'The Illustrate tour reached its "Page Settings" step, on the first page\'s cog.',
-  'UI|View|IllustrateTourStepAddPage':
-    'The Illustrate tour reached its "Add a Page" step, on the + after the last page.',
-  'UI|View|IllustrateTourStepSlides':
-    'The Illustrate tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
-  'UI|View|IllustrateTourStepOutro':
-    'The Illustrate tour reached its closing "You\'re ready to illustrate" card.',
-  'UI|View|IllustrateTourStepSlideLayouts':
-    'The Illustrate tour\'s slides track reached its "Choose a Layout" step, with the slide\'s Layout popover open.',
-  'UI|View|IllustrateTourStepSlideBackground':
-    'The Illustrate tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
-  'UI|View|IllustrateTourStepSlideDeck':
-    'The Illustrate tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button.',
-  'UI|View|IllustrateTourStepSlideAddPage':
-    'The Illustrate tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
-  'UI|View|IllustrateTourStepSlidePresent':
-    'The Illustrate tour\'s slides track reached its "Present" step, with the Slide Deck open.',
-  'UI|View|IllustrateTourStepSlideOutro':
-    'The Illustrate tour\'s slides track reached its closing "You\'re ready to present" card.',
-  'UI|View|IllustrateTourStepInfographicPageName':
-    'The Illustrate tour\'s infographic track reached its "Your Page" step, on the page\'s name.',
-  'UI|View|IllustrateTourStepInfographicLayouts':
-    'The Illustrate tour\'s infographic track reached its "Start From a Layout" step, with the page\'s Layout popover open.',
-  'UI|View|IllustrateTourStepInfographicBackground':
-    'The Illustrate tour\'s infographic track reached its "Change the Background" step, with the page\'s Background popover open.',
-  'UI|View|IllustrateTourStepInfographicPageSize':
-    'The Illustrate tour\'s infographic track reached its "Page Size" step, with the page\'s settings open.',
-  'UI|View|IllustrateTourStepInfographicAddPage':
-    'The Illustrate tour\'s infographic track reached its "Add a Page" step, on the + after the last page.',
-  'UI|View|IllustrateTourStepInfographicPresent':
-    'The Illustrate tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
-  'UI|View|IllustrateTourStepInfographicOutro':
-    'The Illustrate tour\'s infographic track reached its closing "You\'re ready to illustrate" card.',
-  'UI|View|IllustrateTourStepArticleWrite':
-    'The Illustrate tour\'s article track reached its "Write on the Page" step, on the article page.',
-  'UI|View|IllustrateTourStepArticleToolbar':
-    'The Illustrate tour\'s article track reached its "The Page Toolbar" step.',
-  'UI|View|IllustrateTourStepArticleStyle':
-    'The Illustrate tour\'s article track reached its "Article Style" step, with the page\'s Style settings open.',
-  'UI|View|IllustrateTourStepArticleText':
-    'The Illustrate tour\'s article track reached its "Fonts and Spacing" step, with the page\'s Text settings open.',
-  'UI|View|IllustrateTourStepArticleOutro':
-    'The Illustrate tour\'s article track reached its closing "You\'re ready to write" card.',
-  'UI|View|IllustrateTourStepLogoLayouts':
-    'The Illustrate tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
-  'UI|View|IllustrateTourStepLogoGuides':
-    'The Illustrate tour\'s logo track reached its "Draw on Guides" step, on the Guides button.',
-  'UI|View|IllustrateTourStepLogoMirror':
-    'The Illustrate tour\'s logo track reached its "Mirror As You Draw" step, on the Mirror button.',
-  'UI|View|IllustrateTourStepLogoCombine':
-    'The Illustrate tour\'s logo track reached its "Combine Shapes" step.',
-  'UI|View|IllustrateTourStepLogoOutro':
-    'The Illustrate tour\'s logo track reached its closing "That Is a Logo Page" card.',
+  'UI|View|PagesTourStepPageName':
+    'The Pages tour reached its "Your Pages" step, on the first page\'s name.',
+  'UI|View|PagesTourStepPageSettings':
+    'The Pages tour reached its "Page Settings" step, on the first page\'s cog.',
+  'UI|View|PagesTourStepAddPage':
+    'The Pages tour reached its "Add a Page" step, on the + after the last page.',
+  'UI|View|PagesTourStepSlides':
+    'The Pages tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
+  'UI|View|PagesTourStepOutro':
+    'The Pages tour reached its closing "You\'re ready to make pages" card.',
+  'UI|View|PagesTourStepSlideLayouts':
+    'The Pages tour\'s slides track reached its "Choose a Layout" step, with the slide\'s Layout popover open.',
+  'UI|View|PagesTourStepSlideBackground':
+    'The Pages tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
+  'UI|View|PagesTourStepSlideDeck':
+    'The Pages tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button.',
+  'UI|View|PagesTourStepSlideAddPage':
+    'The Pages tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
+  'UI|View|PagesTourStepSlidePresent':
+    'The Pages tour\'s slides track reached its "Present" step, with the Slide Deck open.',
+  'UI|View|PagesTourStepSlideOutro':
+    'The Pages tour\'s slides track reached its closing "You\'re ready to present" card.',
+  'UI|View|PagesTourStepInfographicPageName':
+    'The Pages tour\'s infographic track reached its "Your Page" step, on the page\'s name.',
+  'UI|View|PagesTourStepInfographicLayouts':
+    'The Pages tour\'s infographic track reached its "Start From a Layout" step, with the page\'s Layout popover open.',
+  'UI|View|PagesTourStepInfographicBackground':
+    'The Pages tour\'s infographic track reached its "Change the Background" step, with the page\'s Background popover open.',
+  'UI|View|PagesTourStepInfographicPageSize':
+    'The Pages tour\'s infographic track reached its "Page Size" step, with the page\'s settings open.',
+  'UI|View|PagesTourStepInfographicAddPage':
+    'The Pages tour\'s infographic track reached its "Add a Page" step, on the + after the last page.',
+  'UI|View|PagesTourStepInfographicPresent':
+    'The Pages tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
+  'UI|View|PagesTourStepInfographicOutro':
+    'The Pages tour\'s infographic track reached its closing "You\'re ready to make pages" card.',
+  'UI|View|PagesTourStepArticleWrite':
+    'The Pages tour\'s article track reached its "Write on the Page" step, on the article page.',
+  'UI|View|PagesTourStepArticleToolbar':
+    'The Pages tour\'s article track reached its "The Page Toolbar" step.',
+  'UI|View|PagesTourStepArticleStyle':
+    'The Pages tour\'s article track reached its "Article Style" step, with the page\'s Style settings open.',
+  'UI|View|PagesTourStepArticleText':
+    'The Pages tour\'s article track reached its "Fonts and Spacing" step, with the page\'s Text settings open.',
+  'UI|View|PagesTourStepArticleOutro':
+    'The Pages tour\'s article track reached its closing "You\'re ready to write" card.',
+  'UI|View|PagesTourStepLogoLayouts':
+    'The Pages tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
+  'UI|View|PagesTourStepLogoGuides':
+    'The Pages tour\'s logo track reached its "Draw on Guides" step, on the Guides button.',
+  'UI|View|PagesTourStepLogoMirror':
+    'The Pages tour\'s logo track reached its "Mirror As You Draw" step, on the Mirror button.',
+  'UI|View|PagesTourStepLogoCombine':
+    'The Pages tour\'s logo track reached its "Combine Shapes" step.',
+  'UI|View|PagesTourStepLogoOutro':
+    'The Pages tour\'s logo track reached its closing "That Is a Logo Page" card.',
   'UI|View|AvatarTourStepAvatarButton':
     'The Avatar tour reached its "Your Avatar" step, on the Avatar button.',
   'UI|View|AvatarTourStepCharacter':
@@ -1994,6 +2086,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|OnionTourStepAnimate':
     'The Onion tour reached its "Ripple Outward" step, playing the Pulse animation on the onion.',
   'UI|View|OnionTourStepOutro': 'The Onion tour reached its closing "That Is an Onion" card.',
+  'UI|View|TimelineTourStepLine':
+    'The Timeline tour reached its "Along One Line" step, on the whole timeline.',
+  'UI|View|TimelineTourStepName':
+    'The Timeline tour reached its "What Happens" step, on the first milestone\'s name.',
+  'UI|View|TimelineTourStepWhen':
+    'The Timeline tour reached its "And When" step, on the first milestone\'s when.',
+  'UI|View|TimelineTourStepAdd':
+    'The Timeline tour reached its "Add a Milestone" step, the "+" ring open on Add Milestone.',
+  'UI|View|TimelineTourStepRows':
+    'The Timeline tour reached its "Reorder in the Menu" step, on More.',
+  'UI|View|TimelineTourStepAnimate':
+    'The Timeline tour reached its "Play It in Order" step, previewing Build.',
+  'UI|View|TimelineTourStepOutro':
+    'The Timeline tour reached its closing "That Is a Timeline" card.',
   'UI|View|ChevronsTourStepStages':
     'The Chevrons tour reached its "Stages, Left to Right" step, on the whole process.',
   'UI|View|ChevronsTourStepEdit':
@@ -2079,11 +2185,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|ChartTourStepAnimate': 'The Chart tour reached its step previewing Grow on the chart.',
   'UI|View|ChartTourStepMenu':
     "The Chart tour reached its step on the chart's menu (Chart Type, Data, Chart).",
-  'UI|View|ChartTourStepData': 'The Chart tour reached its step on the Chart data grid.',
+  'UI|View|ChartTourStepData': 'The Chart tour reached its step on the Chart Data grid.',
   'UI|View|ChartTourStepSeries':
-    'The Chart tour reached its step on the series across the top of Chart data.',
-  'UI|View|ChartTourStepAddRow': 'The Chart tour reached its step on Add Row in Chart data.',
-  'UI|View|ChartTourStepImport': 'The Chart tour reached its step on Import CSV in Chart data.',
+    'The Chart tour reached its step on the series across the top of Chart Data.',
+  'UI|View|ChartTourStepAddRow': 'The Chart tour reached its step on Add Row in Chart Data.',
+  'UI|View|ChartTourStepImport': 'The Chart tour reached its step on Import CSV in Chart Data.',
   'UI|View|ChartTourStepOutro': 'The Chart tour reached its closing card.',
   'UI|View|StackTourStepStack':
     'The Stack tour reached its first step, how a stack lays itself out.',
@@ -2260,6 +2366,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',
+  'Action|Linked': "Someone added a document's first action, which made its Actions board.",
   'Action|Moved': "A document was moved into a teammate's team while assigning them an action.",
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
@@ -2273,6 +2380,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone connected a form to where its responses go, from the box above its title.',
   'Form|Shared': 'Someone published a form, making its public link.',
   'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
+  'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
+  'Form|Moved':
+    'Someone synced a document in This Browser from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
@@ -2461,13 +2571,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Drive|Linked':
-    'Someone connected Google Drive, so My documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
+    'Someone connected Google Drive, so My Documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
   'Drive|Unlinked':
     'Someone disconnected Google Drive. livediagram stops updating it, and the files stay in their Drive.',
   'Drive|Changed':
     "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
   'Drive|Created':
-    'A newly connected mirror finished copying every document in My documents into Google Drive for the first time.',
+    'A newly connected mirror finished copying every document in My Documents into Google Drive for the first time.',
   'Drive|Applied':
     'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
   'Drive|Opened':
@@ -2475,8 +2585,14 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Changed':
     'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
-    'Someone cleared a default folder, so new documents of that kind land in My documents again.',
+    'Someone cleared a default folder, so new documents of that kind land in My Documents again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
+  'Explorer|Created': 'Someone made something in the Explorer (a tag).',
+  'Explorer|Added': 'Someone put one of their tags on a document.',
+  'Explorer|Removed': 'Someone took one of their tags off a document.',
+  'Explorer|Renamed': 'Someone renamed one of their tags.',
+  'Explorer|Changed': 'Someone changed one of their tags (its colour).',
+  'Explorer|Deleted': 'Someone deleted one of their tags.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
   'Plan|Added':
@@ -2557,6 +2673,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
+  DeclineTeamInvite: "declining a team invite from the email's Decline link",
   DeleteChangeLog: "clearing a document's since-removed change history",
   DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
   DeleteComment: 'deleting a comment',
@@ -2594,6 +2711,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   NotifyAssignedAction: 'emailing someone about an action assigned to them',
   OauthExchange: 'connecting an AI tool over MCP',
   ReadDocument: 'reading a document, from an AI tool connected over MCP',
+  ReadTeamInviteDecline: "opening a team invite email's Decline link",
   RenameDocument: 'renaming a document, from an AI tool connected over MCP',
   ResolveTeamInviteLink: "opening a team's invite link",
   RevokeTeamInviteLink: "turning off a team's invite link",

@@ -1,3 +1,4 @@
+import type { EntityCanvasActions } from '@/components/canvas/entity/entity-actions';
 import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -37,6 +38,8 @@ export type BoxedElementViewProps = {
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // The armed action a tap takes instead of selecting (Canvas.types.ts): true when it took it.
+  onPressArmedAction?: (id: string) => boolean;
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
@@ -90,8 +93,6 @@ export type BoxedElementViewProps = {
       >
     >,
   ) => void;
-  // Edit a timeline-rail point's label (docs/specs/009-elements/timeline-rail.md). Omitted in read-only mode.
-  onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
   chartPalette?: readonly string[];
   onCancelEdit: () => void;
@@ -139,6 +140,8 @@ export type BoxedElementViewProps = {
     edit: (actionId: string) => void;
     complete: (actionId: string) => void;
     reopen: (actionId: string) => void;
+    // Opens the Actions board (docs/specs/026-plan/linked-boards.md "On the canvas").
+    openBoard?: () => void;
   };
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md).
   onSetSessionConfig?: (
@@ -223,6 +226,10 @@ export type BoxedElementViewProps = {
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md), from the on-canvas
   // checkbox. Omitted for read-only viewers.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // An entity's canvas verbs (docs/specs/009-elements/entity.md): save its fields, draw a relationship from
+  // a field. Omitted for read-only viewers; offered by the view only on a selected, unlocked entity.
+  onSetEntityFields?: EntityCanvasActions['setFields'];
+  onStartFieldArrow?: EntityCanvasActions['startFieldArrow'];
   // Paint index within the elements layer. Isometric mode only: it stops
   // overlapping elements sharing a z-plane (docs/specs/008-canvas/isometric-view.md).
   isoDepth: number;

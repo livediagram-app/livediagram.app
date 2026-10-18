@@ -117,7 +117,7 @@ async function encode(
   });
 }
 
-export const browserImageCodec: ImageCodec = {
+const browserImageCodec: ImageCodec = {
   decode: (blob, mimeType) => (mimeType === 'image/svg+xml' ? decodeSvg(blob) : decodeRaster(blob)),
   encode,
 };

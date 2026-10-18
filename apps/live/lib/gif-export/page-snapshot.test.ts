@@ -21,8 +21,8 @@ function canvas() {
   document.body.innerHTML = `
     <main data-canvas-root>
       <div data-canvas-content>
-        <div data-illustrate-page-id="p1"><span class="spin">on p1</span></div>
-        <div data-illustrate-page-id="p2"><span class="spin">on p2</span></div>
+        <div data-page-id="p1"><span class="spin">on p1</span></div>
+        <div data-page-id="p2"><span class="spin">on p2</span></div>
         <div data-element-id="near">near</div>
         <div data-element-id="far">far<div data-element-id="inner">inner</div></div>
         <div data-gif-omit><span class="spin">cursor</span></div>
@@ -38,7 +38,7 @@ function canvas() {
   };
   for (const el of document.querySelectorAll<HTMLElement>('*')) {
     const key =
-      el.getAttribute('data-illustrate-page-id') ??
+      el.getAttribute('data-page-id') ??
       el.getAttribute('data-element-id') ??
       (el.hasAttribute('data-canvas-root') ? 'root' : null);
     el.getBoundingClientRect = () => (key && boxes[key]) || rect(0, 0, 0, 0);
@@ -114,7 +114,7 @@ describe('a page snapshot', () => {
 
   it('is still when nothing on the page moves', async () => {
     canvas();
-    document.querySelector('[data-illustrate-page-id="p1"] .spin')!.classList.remove('spin');
+    document.querySelector('[data-page-id="p1"] .spin')!.classList.remove('spin');
     expect((await snapshotPage('p1', options)).animated).toBe(false);
   });
 

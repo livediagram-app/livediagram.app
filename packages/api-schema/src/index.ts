@@ -308,10 +308,17 @@ export type TeamListItem = Team & {
   memberCount: number;
 };
 
-// The accept/decline handshake state (docs/specs/013-workspace/teams.md). An 'invited' row
-// grants no membership: it waits in the invitee's Invites section
-// until they accept ('joined') or decline (row deleted).
-export type TeamMemberStatus = 'invited' | 'joined';
+// The invite's state (docs/specs/013-workspace/teams.md). An 'invited' row grants no membership: it
+// waits in the invitee's Invites section until they accept ('joined'). The two rejected states are
+// records, not memberships: 'declined' (they said no, in the app or from the email) and 'expired'
+// (nobody answered within 28 days). Both stay on the list, as Rejected, until an Admin removes them.
+export type TeamMemberStatus = 'invited' | 'joined' | 'declined' | 'expired';
+
+// True for a row that is (or may become) a membership. A rejected row ('declined' / 'expired') is only a
+// record for the admins' list: never a mention, an assignee, or anyone to email.
+export function isOpenTeamMember(member: { status: TeamMemberStatus }): boolean {
+  return member.status === 'invited' || member.status === 'joined';
+}
 
 // One member link row. `userId` is the Clerk user id, null while the
 // invite hasn't connected yet (docs/specs/013-workspace/teams.md's lazy claim fills it in —
@@ -368,6 +375,13 @@ export type TeamInviteLinkInfo = {
 export type TeamInviteLinkJoin = {
   teamId: string;
   alreadyMember: boolean;
+};
+
+// What a decline token names (docs/specs/013-workspace/teams.md "Declining from the email"): the invite's team
+// name and where the invite stands, read and returned by the open `/api/teams/invite-decline/:token` doors.
+export type TeamInviteDecline = {
+  teamName: string;
+  status: TeamMemberStatus;
 };
 
 // ---------------------------------------------------------------------
@@ -519,14 +533,11 @@ export { pkceChallenge, sha256Hex } from './sha256';
 export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
-// workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
+// workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
+// ./image-size.ts).
 export { sniffImageType } from './image-sniff';
-export {
-  embedTabImages,
-  tabImageIds,
-  type EmbedImageLimits,
-  type EmbedImageSource,
-} from './embed-images';
+export { imagePixelSize } from './image-size';
+export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
@@ -642,6 +653,7 @@ export * from './document-dates';
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
 export * from './shape-libraries';
+export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
 export {
@@ -691,14 +703,16 @@ export * from './community-authors';
 export * from './community-paths';
 export * from './community-query';
 export * from './document-paths';
+// Share-link previews (docs/specs/013-workspace/share-link-previews.md).
+export * from './share-preview';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
 export * from './workbench-messages';
-export * from './illustrate';
+export * from './pages';
 export * from './article-frames';
-export * from './illustrate-summary';
+export * from './pages-summary';
 export * from './mcp-origin';
 // Forms (docs/specs/030-forms/forms.md).
 export * from './forms';

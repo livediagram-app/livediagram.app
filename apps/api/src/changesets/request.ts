@@ -163,7 +163,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   if (raw.theme !== undefined && typeof raw.theme !== 'string')
     return bad('"replace.theme" must be a string');
   if (raw.finish !== undefined && !isFinish(raw.finish))
-    return bad('"replace.finish" is "flexible", "professional" or "sketch"');
+    return bad('"replace.finish" is "flexible", "professional", "sketch" or "marker"');
   if (raw.name !== undefined && typeof raw.name !== 'string')
     return bad('"replace.name" must be a string');
   const kind = raw.kind === 'board' || raw.kind === 'sheet' ? raw.kind : undefined;

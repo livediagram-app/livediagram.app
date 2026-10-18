@@ -3,7 +3,7 @@
 // The GIF panel (docs/specs/020-import-export/animated-gif-export.md "The options", "Errors", "Telemetry").
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { illustratePagesOf, layOutIllustratePages, type Tab } from '@livediagram/document';
+import { pagesOf, layOutPages, type Tab } from '@livediagram/document';
 import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
 import { GifExportError } from '@/lib/gif-export/gif-export-error';
 import type { PageSnapshot } from '@/lib/gif-export/page-snapshot';
@@ -46,7 +46,7 @@ const tab = {
     size: 'slide',
   })),
 } as unknown as Tab;
-const pages = layOutIllustratePages(illustratePagesOf(tab));
+const pages = layOutPages(pagesOf(tab));
 const still: PageSnapshot = {
   animated: false,
   width: 960,
@@ -144,16 +144,17 @@ describe('the GIF panel', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
       });
       await waitFor(() => expect(onDone).toHaveBeenCalled(), MAKE_WAIT);
-      const [blob, name] = h.download.mock.calls[0]!;
+      const download: unknown[] = h.download.mock.calls[0]!;
+      const [blob, name] = download;
       expect(name).toBe('Doc - Deck.gif');
       expect((blob as Blob).type).toBe('image/gif');
-      expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIFPages');
+      expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'PagesGIFPages');
     },
     MAKE_TEST_MS,
   );
 
   it(
-    'counts one page as IllustrateGIF, named for the page',
+    'counts one page as PagesGIF, named for the page',
     async () => {
       open();
       fireEvent.click(screen.getByRole('button', { name: 'One page' }));
@@ -162,7 +163,7 @@ describe('the GIF panel', () => {
       });
       await waitFor(() => expect(h.download).toHaveBeenCalled(), MAKE_WAIT);
       expect(h.download.mock.calls[0]![1]).toMatch(/^Doc - Deck - .+\.gif$/);
-      expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIF');
+      expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'PagesGIF');
     },
     MAKE_TEST_MS,
   );

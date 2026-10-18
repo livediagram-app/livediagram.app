@@ -20,6 +20,17 @@ import {
 import { sheetTemplate } from './template-design';
 import { mixHex, templateTints, SHEET_ACCENTS } from './accents';
 import { mondayOf } from './work';
+import {
+  DRIVER_BASELINE,
+  DRIVER_LEVERS,
+  DRIVER_WHAT_IF,
+  STRIDE_CATEGORIES,
+  THREAT_EXAMPLES,
+  driverTree,
+  leverGain,
+  threatRating,
+  valueStreamTotals,
+} from './analysis-data';
 import { localMs, serialFromDate } from '../dates';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
@@ -255,5 +266,65 @@ describe('the Habit Tracker’s checkboxes (data-validation.md)', () => {
     expect(v('B5')).toBe(true);
     expect(v('D5')).toBe(false);
     expect(v('I5')).toBe(5);
+  });
+});
+
+// The analysis sheets work their examples out to the very figures their drawings show (analysis-data.ts): the Threat
+// model's markers, the Metric tree's cards and the Value stream map's ladder read the same rows.
+describe('the analysis sheets agree with the drawings they sit beside', () => {
+  it('Threat Register: every score and rating, the summary and the STRIDE counts', () => {
+    const { v } = make('threats');
+    THREAT_EXAMPLES.forEach((t, i) => {
+      const score = t.likelihood * t.impact;
+      expect(v(`G${i + 5}`), t.id).toBe(score);
+      expect(v(`H${i + 5}`), t.id).toBe(threatRating(score));
+    });
+    expect([v('N5'), v('N6'), v('N7'), v('N8')]).toEqual([10, 3, 7, 16]);
+    near(v('N9'), 0.3);
+    expect(STRIDE_CATEGORIES.map((_, i) => v(`C${18 + i}`))).toEqual([2, 2, 1, 2, 1, 2]);
+  });
+
+  it('Driver Model: the baseline and what-if trees, the uplift and each lever', () => {
+    const { v } = make('drivers');
+    const base = driverTree(DRIVER_BASELINE);
+    const what = driverTree(DRIVER_WHAT_IF);
+    near(v('H5'), base.newCustomers);
+    near(v('H7'), base.actives);
+    near(v('H9'), base.onTimeRate);
+    near(v('H10'), base.northStar);
+    near(v('K10'), what.northStar);
+    near(v('K11'), what.northStar - base.northStar);
+    expect(Math.round(base.northStar)).toBe(48_591);
+    expect(Math.round(what.northStar)).toBe(50_228);
+    DRIVER_LEVERS.forEach((l, i) => expect(v(`C${15 + i}`)).toBe(Math.round(leverGain(l))));
+    // Frequency is the biggest lever, visitors the smallest.
+    const gains = DRIVER_LEVERS.map(leverGain);
+    expect(DRIVER_LEVERS[gains.indexOf(Math.max(...gains))]!.key).toBe('ordersPerCustomer');
+    expect(DRIVER_LEVERS[gains.indexOf(Math.min(...gains))]!.key).toBe('visitors');
+    // Typed rates keep their percent; typed counts their thousands.
+    near(v('C6'), 0.02);
+    expect(v('C5')).toBe(205_000);
+  });
+
+  it('Value Stream: totals, lead time, flow efficiency, rolled %C&A and the longest wait', () => {
+    const { v } = make('value-stream');
+    const totals = valueStreamTotals();
+    expect([v('C11'), v('D11'), v('F11')]).toEqual([28, 23.5, 8]);
+    near(v('I6'), totals.leadDays);
+    near(v('I7'), totals.processDays);
+    near(v('I8'), totals.flowEfficiency);
+    near(v('I9'), totals.rolledCompleteAccurate);
+    expect(totals.leadDays).toBe(27);
+    expect(v('I10')).toBe('Refine');
+    expect([v('A14'), v('B14'), v('C14')]).toEqual(['Refine', 8, 0.25]);
+  });
+});
+
+describe('a body cell’s own format (design.ts cellFormats)', () => {
+  it('reads each Driver Model input in its own format: whole counts, rates to one place', () => {
+    const { at } = make('drivers');
+    expect(at(4, 2)?.format).toMatchObject({ nf: 'number', dp: 0 });
+    expect(at(5, 2)?.format).toMatchObject({ nf: 'percent', dp: 1 });
+    expect(at(8, 3)?.format).toMatchObject({ nf: 'number', dp: 2 });
   });
 });

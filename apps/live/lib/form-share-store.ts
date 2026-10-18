@@ -2,28 +2,24 @@
 // a Form tab open, the header's Share button is the form's Share Form, so the page never shows two share buttons. The
 // Form page says it is there (and whether its link is published); the header asks it to open its dialog.
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
-export type FormShareHost = { published: boolean; open: () => void };
+type FormShareHost = { published: boolean; open: () => void };
 
 let host: FormShareHost | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 /** The open Form page takes the header's Share (null when it goes, or may not share). */
 export function setFormShareHost(next: FormShareHost | null): void {
   if (next === host) return;
   host = next;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.notify();
 }
 
 /** The Form page holding the header's Share, or null. */
 export function useFormShareHost(): FormShareHost | null {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => host,
     () => null,
   );

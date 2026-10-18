@@ -47,7 +47,7 @@ export function useLayersState(opts: {
   // hidden / locked — the block itself is silent by design.
   toastInfo: (message: string) => void;
   // Elements inert for another reason than their layer: those on a locked page
-  // (docs/specs/007-editor/illustrate-pages.md "Locking a page").
+  // (docs/specs/007-editor/pages-mode.md "Locking a page").
   extraInertIds?: ReadonlySet<string>;
 }) {
   const {
@@ -309,6 +309,6 @@ export function useLayersState(opts: {
 // "Blocked-creation notice").
 export function blockedLayerMessage(hidden: boolean): string {
   return hidden
-    ? 'The active layer is hidden, so adding elements is paused. Show it or switch layers.'
-    : 'The active layer is locked, so adding elements is paused. Unlock it or switch layers.';
+    ? 'The active layer is hidden. Show it, or switch layers to add.'
+    : 'The active layer is locked. Unlock it, or switch layers to add.';
 }

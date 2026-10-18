@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useCallback, useMemo } from 'react';
 import { useExplorer } from './ExplorerContext';
+import { useDocumentEntryFor } from './useDocumentEntryFor';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
@@ -19,8 +20,9 @@ import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
-import { VIEW_TITLES } from './view-titles';
+import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
+import { useTagsPage } from './tags/useTagsPage';
 
 // The three layouts of a browse section, by the toggle.
 const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
@@ -28,7 +30,15 @@ const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView }
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
 // profile, team, invites, shared) have their own fixed layout.
-const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'search', 'favourites', 'offline']);
+const BROWSE_KINDS = new Set([
+  'recent',
+  'all',
+  'folder',
+  'search',
+  'favourites',
+  'offline',
+  'tags',
+]);
 
 // Each Explorer section deep-links its matching help-centre article from a
 // Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's hover card copy comes
@@ -48,6 +58,7 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   folder: 'folders',
   all: 'folders',
   search: 'explorerFilters',
+  tags: 'tags',
 };
 
 // Lazy-load the heavier panes — each is only mounted on its own
@@ -89,6 +100,10 @@ const HomePane = dynamic(
   () => import('@/components/panels/home/HomePane').then((m) => m.HomePane),
   { ssr: false },
 );
+// The Tags page (docs/specs/013-workspace/tags.md), lazy like every pane.
+const TagsPane = dynamic(() => import('./tags/TagsPane').then((m) => m.TagsPane), {
+  ssr: false,
+});
 const ActivityPane = dynamic(
   () => import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
   { ssr: false },
@@ -102,6 +117,8 @@ const ActivityPane = dynamic(
 export function ExplorerPane() {
   const {
     prefs,
+    documents: liveDocs,
+    teamDocuments,
     folderById,
     favouriteIds,
     toggleFavourite,
@@ -159,37 +176,29 @@ export function ExplorerPane() {
   // real team's title is never suppressed by a stale 404 from the last one.
   const [notFoundIn, setNotFoundIn] = useState<typeof selected | null>(null);
   const teamNotFound = notFoundIn === selected;
-  // Where each row lives (docs/specs/013-workspace/recent-folder-chip.md), on the views that list
-  // more than one place: Recent, Favourites and Search results, and a scoped view whose lens
-  // reaches into its subfolders (explorer-filters.md "Views"). Elsewhere every row sits in the
-  // view's own folder, where the chip would only repeat its title.
-  //
-  // Rows shared WITH you carry no folderId at all (they live in the sharer's
-  // library, not yours), so they get no chip rather than a misleading one.
+  // Where each row lives (docs/specs/013-workspace/recent-folder-chip.md), on the views that list more than one place
+  // (row-location.ts).
   const folderChipFor = useCallback(
     (d: PaneDocument): { label: string; onOpen: () => void } | null => {
-      if (d.shared) return null;
-      const aggregates =
-        selected.kind === 'recent' || selected.kind === 'favourites' || selected.kind === 'search';
-      const reaching = lensResult.active && (selected.kind === 'all' || selected.kind === 'folder');
-      if (!aggregates && !reaching) return null;
-      // A row in the folder the reader is in needs no chip.
-      const here = selected.kind === 'folder' ? selected.id : null;
-      if (reaching && d.folderId === here) return null;
-      // A team document's folder belongs to the team's library, which `folderById` (your
-      // personal folders) doesn't index: the chip names the TEAM and opens its library.
-      if (d.team) {
-        return { label: d.team.name, onOpen: () => go({ kind: 'team', id: d.team!.id }) };
-      }
-      if (!d.folderId) {
-        // The root is a location too: My documents.
-        return { label: VIEW_TITLES.all, onOpen: () => go({ kind: 'all' }) };
-      }
-      const folder = folderById.get(d.folderId);
-      if (!folder) return null;
-      return { label: folder.name, onOpen: () => go({ kind: 'folder', id: folder.id }) };
+      const where = rowLocation(d, {
+        selected,
+        lensActive: lensResult.active,
+        folderById,
+      });
+      return where ? { label: where.label, onOpen: () => go(where.opens) } : null;
     },
     [selected, folderById, go, lensResult.active],
+  );
+
+  // The Tags page (docs/specs/013-workspace/tags.md): a tag's name as the title, New Tag, and the documents its tags
+  // can sit on (the reader's own and their teams'), newest first.
+  const tagsPage = useTagsPage(selected, go);
+  const taggable = useMemo(
+    () =>
+      selected.kind === 'tags'
+        ? [...liveDocs, ...teamDocuments].sort((a, b) => b.savedAt - a.savedAt)
+        : [],
+    [selected.kind, liveDocs, teamDocuments],
   );
 
   const hideTeamTitle = selected.kind === 'team' && teamNotFound;
@@ -205,6 +214,9 @@ export function ExplorerPane() {
   const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
   // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
+  // Home's Jump Back In cards carry each document's Explorer menu (docs/specs/013-workspace/explorer-home.md).
+  const showHistory = useCallback((id: string, name: string) => setHistoryFor({ id, name }), []);
+  const homeDocumentMenus = useDocumentEntryFor({ onShowHistory: showHistory });
 
   // Which of New document, New folder and Import from this section offers (pane-header-actions.ts).
   const offers = paneHeaderActions(selected.kind);
@@ -221,34 +233,80 @@ export function ExplorerPane() {
     },
   });
 
+  // List, Card and Details take the SAME props (docs/specs/006-document/document-snapshots.md,
+  // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component by the toggle. The
+  // Tags page draws each tag's documents with them too.
+  const ViewComponent = VIEW_COMPONENTS[viewMode];
+  const documentViewProps = {
+    ownerId,
+    onOpenFolder: (id: string) => go({ kind: 'folder', id }),
+    onCommitRenameFolder: commitRenameFolder,
+    onCancelRenameFolder: () => setRenamingFolderId(null),
+    renamingFolderId,
+    renamingDocumentId,
+    onCommitRenameDocument: renameDocument,
+    onCancelRenameDocument: () => setRenamingDocumentId(null),
+    folderActions,
+    onStartRenameDocument: (id: string) => setRenamingDocumentId(id),
+    onDuplicateDocument: (id: string) => void duplicateDocument(id),
+    onDeleteDocument: (id: string) => void deleteDocument(id),
+    onMoveDocument: openMovePickerForDocument,
+    onDismissShared: (id: string) => void dismissShared(id),
+    recentExcludedIds: prefs.recentExcludedIds ?? [],
+    onToggleRecentExclusion: toggleRecentExclusion,
+    onShowHistory: (id: string) => {
+      const row =
+        paneContent.documents.find((d) => d.id === id) ?? taggable.find((d) => d.id === id);
+      // Offline documents never reach the worker, so they have
+      // no server history to show (docs/specs/006-document/offline-mode.md).
+      if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
+    },
+    favouriteIds,
+    onToggleFavourite: toggleFavourite,
+    folderChipFor,
+    childrenCount: (id: string) => childrenByParent.get(id)?.length ?? 0,
+    documentsCount: (id: string) => documentsByFolder.get(id)?.length ?? 0,
+    // What each folder card previews (docs/specs/013-workspace/folder-content-previews.md) — the same
+    // client-side indexes the counts come from, so no extra fetch.
+    folderContents: (id: string) => ({
+      folders: childrenByParent.get(id) ?? [],
+      documents: documentsByFolder.get(id) ?? [],
+    }),
+  };
+
   return (
     <>
       {imports.dialogs}
-      <PaneHeader
-        title={hideTeamTitle ? '' : paneTitle}
-        crumbs={hideTeamTitle ? [] : paneCrumbs}
-        onOpenNav={() => setMobileNavOpen(true)}
-        helpArticle={sectionHelp}
-        headerActions={
-          selected.kind === 'timeline' || offers.importFrom ? (
-            <>
-              {selected.kind === 'timeline' ? (
-                <TimelineControls controls={timeline.controls} />
-              ) : null}
-              {offers.importFrom ? imports.toolbar : null}
-            </>
-          ) : undefined
-        }
-        viewMode={isBrowse ? viewMode : undefined}
-        onSetViewMode={isBrowse ? setViewMode : undefined}
-        onCreateDocument={newDocument}
-        onCreateFolder={
-          offers.newFolder
-            ? () => void createFolder(selected.kind === 'folder' ? selected.id : null)
-            : undefined
-        }
-        folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
-      />
+      {tagsPage.dialog}
+      {/* Home's hero is its page header (docs/specs/013-workspace/explorer-home.md "The hero"). */}
+      {selected.kind === 'home' ? null : (
+        <PaneHeader
+          title={hideTeamTitle ? '' : (tagsPage.title ?? paneTitle)}
+          crumbs={hideTeamTitle ? [] : (tagsPage.crumbs ?? paneCrumbs)}
+          onOpenNav={() => setMobileNavOpen(true)}
+          helpArticle={sectionHelp}
+          headerActions={
+            selected.kind === 'timeline' || offers.importFrom || tagsPage.headerActions ? (
+              <>
+                {selected.kind === 'timeline' ? (
+                  <TimelineControls controls={timeline.controls} />
+                ) : null}
+                {offers.importFrom ? imports.toolbar : null}
+                {tagsPage.headerActions}
+              </>
+            ) : undefined
+          }
+          viewMode={isBrowse ? viewMode : undefined}
+          onSetViewMode={isBrowse ? setViewMode : undefined}
+          onCreateDocument={newDocument}
+          onCreateFolder={
+            offers.newFolder
+              ? () => void createFolder(selected.kind === 'folder' ? selected.id : null)
+              : undefined
+          }
+          folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
+        />
+      )}
 
       {/* A view the app gathers explains itself under the breadcrumb. */}
       <ViewInfo selected={selected} />
@@ -273,6 +331,8 @@ export function ExplorerPane() {
             onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
+            importToolbar={imports.toolbar}
+            documentMenus={homeDocumentMenus}
           />
         ) : null
       ) : selected.kind === 'timeline' ? (
@@ -336,6 +396,17 @@ export function ExplorerPane() {
         <ShapeLibrariesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
+      ) : selected.kind === 'tags' ? (
+        <TagsPane
+          documents={taggable}
+          tagId={selected.id}
+          onOpenTag={tagsPage.openTag}
+          onNewTag={tagsPage.newTag}
+          renderDocuments={(documents) => (
+            // A tag gathers personal and team documents, so whose each is varies (the Owner column).
+            <ViewComponent {...documentViewProps} folders={[]} documents={documents} showOwner />
+          )}
+        />
       ) : (selected.kind === 'shared' ? failedReads.shared : failedReads.documents) ? (
         // A failed read never reads as an empty account (explorer-filters.md "States").
         <LoadFailed onRetry={() => (ownerId ? void refreshPersonal(ownerId) : undefined)} />
@@ -350,54 +421,14 @@ export function ExplorerPane() {
           onDismiss={(id) => void dismissShared(id)}
         />
       ) : (
-        (() => {
-          // List, Card and Details take the SAME props (docs/specs/006-document/document-snapshots.md,
-          // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component
-          // by the toggle.
-          const ViewComponent = VIEW_COMPONENTS[viewMode];
-          return (
-            <ViewComponent
-              folders={paneContent.folders}
-              documents={paneContent.documents}
-              ownerId={ownerId}
-              onOpenFolder={(id) => go({ kind: 'folder', id })}
-              onCommitRenameFolder={commitRenameFolder}
-              onCancelRenameFolder={() => setRenamingFolderId(null)}
-              renamingFolderId={renamingFolderId}
-              renamingDocumentId={renamingDocumentId}
-              onCommitRenameDocument={renameDocument}
-              onCancelRenameDocument={() => setRenamingDocumentId(null)}
-              folderActions={folderActions}
-              onStartRenameDocument={(id) => setRenamingDocumentId(id)}
-              onDuplicateDocument={(id) => void duplicateDocument(id)}
-              onDeleteDocument={(id) => void deleteDocument(id)}
-              onMoveDocument={openMovePickerForDocument}
-              onDismissShared={(id) => void dismissShared(id)}
-              recentExcludedIds={prefs.recentExcludedIds ?? []}
-              onToggleRecentExclusion={toggleRecentExclusion}
-              onShowHistory={(id) => {
-                const row = paneContent.documents.find((d) => d.id === id);
-                // Offline documents never reach the worker, so they have
-                // no server history to show (docs/specs/006-document/offline-mode.md).
-                if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
-              }}
-              favouriteIds={favouriteIds}
-              onToggleFavourite={toggleFavourite}
-              folderChipFor={folderChipFor}
-              childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
-              documentsCount={(id) => documentsByFolder.get(id)?.length ?? 0}
-              // What each folder card previews (docs/specs/013-workspace/folder-content-previews.md) — the same
-              // client-side indexes the counts come from, so no extra fetch.
-              folderContents={(id) => ({
-                folders: childrenByParent.get(id) ?? [],
-                documents: documentsByFolder.get(id) ?? [],
-              })}
-              // Owner column (desktop): the views that mix personal, team and shared rows
-              // (docs/specs/013-workspace/team-shared-documents.md) are the ones where ownership varies.
-              showOwner={selected.kind === 'recent' || selected.kind === 'search'}
-            />
-          );
-        })()
+        <ViewComponent
+          {...documentViewProps}
+          folders={paneContent.folders}
+          documents={paneContent.documents}
+          // Owner column (desktop): the views that mix personal, team and shared rows
+          // (docs/specs/013-workspace/team-shared-documents.md) are the ones where ownership varies.
+          showOwner={selected.kind === 'recent' || selected.kind === 'search'}
+        />
       )}
 
       {/* One document's own history (docs/specs/013-workspace/timeline.md §3.4), opened from a row's

@@ -103,6 +103,12 @@ A blue-slate, one hue with the canvas (`#0d121a`) so chrome and paper read as on
 
 The lighter stops (`slate-50`…`slate-700`) keep Tailwind's values: they carry dark-mode text and borders.
 
+**slate-800 is a surface, not an edge.** It sits one step off slate-900, so a slate-900 card outlined in
+slate-800 shows no edge in dark. A card on a slate-900 or slate-950 band takes a **slate-700** border; slate-800 stays
+for hover surfaces, inputs and rules inside a card. On the marketing site `apps/marketing/lib/dark-card-borders.test.ts`
+fails on a rounded, bordered slate-900 card outlined in slate-800 (the hero's editor mocks and the feature-card art are
+exempt: they draw the editor's own chrome).
+
 ### Accent: the Steel ramp
 
 In dark mode the brand ramp is **Steel**, an accent drawn from the surface hue itself, so a filled button reads as
@@ -158,6 +164,39 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
   not a literal, so it follows the dark palette and a themed tab's tint.
 - **Light mode is untouched.** No light token, class or colour changes with the dark palette.
 
+### Explorer: Midnight
+
+In dark mode the Explorer pages (`/explorer/*`) wear **Midnight**, the marketing site's night section, instead of
+Steel: a deep navy ground and the vivid sky accent, so the Explorer reads as the front of the product. The account and
+connect pages wear it too ([Night Band](../014-identity/auth-and-guest-access.md#the-look-night-band)). The editor, its
+Explorer panel and every other page keep Steel.
+
+- **How.** While the Explorer (or an account or connect page) is mounted, the document root carries `data-palette="midnight"`; under `.dark` that
+  attribute retargets the same tokens Steel does (selector `.dark[data-palette='midnight']`, which outranks `.dark`).
+  Menus, dialogs and tooltips opened from the Explorer portal to the body and so follow it too. The attribute is set
+  before the first paint and removed when the page unmounts (`useMidnightPalette`, `apps/live/hooks/ui/`).
+- **Surfaces**
+
+  | Token       | Midnight  | Usage                                              |
+  | ----------- | --------- | -------------------------------------------------- |
+  | `slate-950` | `#070b1a` | Deepest wells, segment tracks                      |
+  | `slate-900` | `#0a0f24` | The page, header, bottom bar                       |
+  | `slate-800` | `#111833` | Cards, panels, inputs, the sidebar's current pill  |
+  | `slate-700` | `#1f2a55` | Edges of cards on the page, hover surfaces         |
+  | `slate-600` | `#2e3b6e` | Stronger edges                                     |
+  | `slate-500` | `#56658f` | Non-text only, as in Steel                         |
+  | `slate-400` | `#8f9cc4` | Secondary text: 7.0:1 on the page, 6.4:1 on a card |
+  | `slate-300` | `#c3cde6` | Body text on cards                                 |
+  | `slate-200` | `#dde4f3` | Emphasised text                                    |
+  | `slate-100` | `#eef2fb` | Headings                                           |
+
+- **Accent.** The brand ramp is Tailwind's sky, as in light mode (`brand-50` `#f0f9ff` to `brand-950` `#082f49`),
+  except `brand-600` `#0369a1`, `brand-700` `#075985`, `brand-800` `#0c4a6e` and `brand-900` `#0b3a5a`, so the
+  Steel rules hold with their own numbers: a solid fill under white text is `brand-600` (5.9:1), it hovers to
+  `brand-700`; brand text is `brand-400` (8.9:1 on the page) or lighter; a selected segment on the `slate-950` track
+  is 3.3:1.
+- Every Steel rule above applies unchanged; only the values differ.
+
 ## Accessibility
 
 - All text/background pairings must meet **WCAG AA** contrast (4.5:1 for body, 3:1 for large text and UI controls).
@@ -165,8 +204,12 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
   ([Usage rules](#usage-rules)).
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
-  (marketing, help, community, telemetry) and the New Document wizard follow it; the editor's own chrome is still being
-  brought in line.
+  (marketing, help, community, telemetry), the New Document wizard and the editor's small and uppercase labels follow
+  it ([#863](https://github.com/livediagram-app/livediagram.app/issues/863)), held by
+  `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
+  `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
+- **The active tab's label** is its tab's accent, nudged (hue kept, 10% at a time toward black, or white in dark) until
+  it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/live/lib/tab-accent.ts`).
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
   text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites

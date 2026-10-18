@@ -76,9 +76,14 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
   threaded at every call site (the document read/write/log routes + the image
   route). Owner-id and Clerk paths short-circuit before the password check.
 - `GET /api/documents/:id/ws` (realtime upgrade): browsers can't set headers on a
-  WS upgrade, so the password rides as the `p` query param next to `s` / `o`. A
-  password-protected document refuses the upgrade (403) unless `p` matches; the
-  owner (`o` matches) bypasses.
+  WS upgrade, so the editor never sends the password there. It sends the password
+  as `X-Share-Password` to `POST /api/documents/:id/room-ticket`, whose gate checks
+  it like any other door, and joins with the ticket alone (`?t=`;
+  [API](../015-api/api.md) "Realtime model"), so the password never rides a URL.
+  The upgrade still accepts the legacy `p` query param beside `s` / `o` from an
+  editor older than 2026-10-17, until those legs are retired: a password-protected
+  document refuses that upgrade (403) unless `p` matches; the owner (`o` matches)
+  bypasses.
 
 Helpers in `src/db/documents.ts` (the db.ts split moved them out of the
 old monolithic module): `getDocumentSharePassword(env, id)` returns the stored
@@ -161,7 +166,7 @@ moving piece while it is up.
 
 ## Share dialog (owner)
 
-The "Share this document" dialog carries a **Password Protection** switch
+The "Share This Document" dialog carries a **Password Protection** switch
 beneath the passes (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
 it applies to all links), hinting that everyone opening a pass must enter it,
 embeds included ([Read-only embeds (`/embed`)](embeds.md)). Switched on with no

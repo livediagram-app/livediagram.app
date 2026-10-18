@@ -169,7 +169,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Menu                  | Opens from                                                               | Holds                                                                    | Keyboard before                                     |
 | --------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------- |
 | Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10           | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
-| Folder menu           | Same, on a folder; My documents in the sidebar and panel                 | Name header, verbs, **Use as default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
+| Folder menu           | Same, on a folder; My Documents in the sidebar and panel                 | Name header, verbs, **Use as default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
 | Timeline card menu    | ⋯ on a Timeline card                                                     | Verbs                                                                    | Tab only                                            |
 | Explorer More menu    | More in the Explorer panel header                                        | Verbs in bands                                                           | Tab only                                            |
 | New menus             | + in the Explorer pane header and a team library header                  | Document, Folder tiles                                                   | Tab only                                            |
@@ -194,7 +194,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Element menu          | Right-click, long press or Shift+F10 on an element; an element's ⋯       | Accordions, tiles, sliders, colour rows, fields, flyouts, session panes |
 | Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts                        |
 | Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                        |
-| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, Opens in, canvas sections                     |
+| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                               |
 | Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
 | Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The session pane for that tool                                          |
 | Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |

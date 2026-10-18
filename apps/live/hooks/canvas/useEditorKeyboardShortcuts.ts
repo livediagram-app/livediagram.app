@@ -30,7 +30,7 @@ import {
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 
 // Re-exported so existing importers (the unit test) keep resolving.
@@ -282,7 +282,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // ones. A modified key returns either way: one we don't handle must
       // not fall through to the plain-key table and drop a shape.
       if (mod) {
-        if (inText) return;
+        // An empty start search hands undo and redo on (start-diagramming.md): it has no typing of its own to undo.
+        const historyChord = lower === 'z' || lower === 'y';
+        if (inText && !(historyChord && passesHistoryChords(target))) return;
         runModShortcut(e, live);
         return;
       }

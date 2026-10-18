@@ -29,9 +29,7 @@ export function createTabSaveQueue(): TabSaveQueue {
 }
 
 function startNow<T>(task: () => Promise<T>): Promise<T> {
-  try {
-    return Promise.resolve(task());
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  // An executor that throws rejects its promise, so a task that throws before its first await
+  // still settles as a rejection.
+  return new Promise<T>((resolve) => resolve(task()));
 }

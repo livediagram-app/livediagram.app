@@ -26,6 +26,8 @@ import {
   GlyphDisc,
 } from '@livediagram/ui';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
+import type { Located } from '@/app/explorer/useActivityFeed';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { cardDeepLinkHref, collabDeepLinkHref, formResponsesHref } from '@/lib/collab-deep-link';
 import { lucideGlyph } from '@livediagram/ui';
@@ -68,7 +70,7 @@ export function ActivityActionRow({
   action,
   onOpen,
 }: {
-  action: ActivityAction;
+  action: Located<ActivityAction>;
   onOpen: () => void;
 }) {
   const assignee = action.assignedToMe ? 'You' : action.assignee.name?.trim() || 'Teammate';
@@ -121,7 +123,7 @@ export function ActivityThreadRow({
   thread,
   onOpen,
 }: {
-  thread: ActivityThread;
+  thread: Located<ActivityThread>;
   onOpen: () => void;
 }) {
   return (
@@ -142,7 +144,13 @@ export function ActivityThreadRow({
 // A Plan card on the reader (docs/specs/013-workspace/inbox.md §1, §2.4): its type's glyph, its
 // number and title, where it sits, and the reader as its assignee. A custom type, whose name lives in its
 // document's catalogue, reads as a plain card.
-export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: () => void }) {
+export function ActivityCardRow({
+  card,
+  onOpen,
+}: {
+  card: Located<ActivityCard>;
+  onOpen: () => void;
+}) {
   const type = ITEM_TYPES.find((t) => t.id === card.type);
   return (
     <ActivityRowShell
@@ -170,7 +178,7 @@ export function ActivityCardThreadRow({
   thread,
   onOpen,
 }: {
-  thread: ActivityCardThread;
+  thread: Located<ActivityCardThread>;
   onOpen: () => void;
 }) {
   const type = ITEM_TYPES.find((t) => t.id === thread.type);
@@ -296,12 +304,25 @@ function ActivityRowShell({
   );
 }
 
-// What every row knows of its document: an element's full place, or a card's.
-type DocumentPlace = ActivityPlace | ActivityCard | ActivityCardThread | ActivityFormResponses;
+// What every row knows of its document: an element's full place, or a card's; `local` when the document is
+// saved only in this browser (docs/specs/013-workspace/inbox.md §2.6).
+type DocumentPlace = Located<
+  ActivityPlace | ActivityCard | ActivityCardThread | ActivityFormResponses
+>;
 
 // Which document the row is from; a team document's chip leads with the
-// team glyph so the source of the work reads at a glance.
+// team glyph so the source of the work reads at a glance. When the document is in This Browser, the chip is followed by
+// the This Browser pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#this-browser-pill).
 function PlaceChip({ place }: { place: DocumentPlace }) {
+  return (
+    <>
+      <DocumentChip place={place} />
+      {place.local ? <ThisBrowserPill asLabel /> : null}
+    </>
+  );
+}
+
+function DocumentChip({ place }: { place: DocumentPlace }) {
   return (
     <span className="inline-flex max-w-[14rem] shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
       {place.via === 'team' ? (
@@ -343,7 +364,9 @@ export function ActivityFailedState({ onRetry }: { onRetry: () => void }) {
       <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
         Couldn&apos;t load your activity
       </p>
-      <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        Check your connection and try again.
+      </p>
       <button
         type="button"
         onClick={onRetry}

@@ -6,14 +6,14 @@ import type { GifEncodeRequest, GifEncodeResponse } from './gif-encode-protocol'
 
 export type GifEncoderSession = {
   /** A page's palette from sample frames across its hold, kept under `key` (the buffers are transferred). */
-  palette(key: number, samples: Uint8ClampedArray[]): void;
+  palette: (key: number, samples: Uint8ClampedArray[]) => void;
   /** Hand a frame over (its buffer is transferred, so the caller must not reuse it), in the palette under `palette`
    *  (its own when absent). */
-  add(rgba: Uint8ClampedArray, delayCs: number, palette?: number): void;
+  add: (rgba: Uint8ClampedArray, delayCs: number, palette?: number) => void;
   /** Every frame added: the file. */
-  finish(): Promise<{ bytes: Uint8Array; written: number }>;
+  finish: () => Promise<{ bytes: Uint8Array; written: number }>;
   /** Stop and discard. */
-  cancel(): void;
+  cancel: () => void;
 };
 
 type WorkerLike = {

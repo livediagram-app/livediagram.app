@@ -44,6 +44,10 @@ type PanState = {
   startOffsetX: number;
   startOffsetY: number;
   movedRef: { current: boolean };
+  // What a press that never moved does instead of deselecting: a tap that walks the Avatar
+  // (docs/specs/008-canvas/avatar-mode.md "Walking"), or selects an element too big to drag on a phone
+  // (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
+  onTap?: () => void;
 };
 
 type MarqueeState = {
@@ -170,7 +174,11 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
     const onMove = (e: PointerEvent) => {
       const d = depsRef.current;
       // Pinch zoom is active — let the pinch hook own viewportOffset.
-      if (d.isPinchingRef?.current) return;
+      // A second finger turned the press into a pinch, so its release is never a tap.
+      if (d.isPinchingRef?.current) {
+        pan.movedRef.current = true;
+        return;
+      }
       // The click-vs-pan judgment is a HAND-motion question, so it uses
       // raw screen px (like the marquee's click test below) — judging
       // the zoom-divided delta made jitter read as a pan at low zoom
@@ -191,7 +199,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       // Land on the final pointer position even if it arrived in the
       // same frame as a pending rAF (which the cleanup cancels).
       if (pending) depsRef.current.setViewportOffset(pending);
-      if (!pan.movedRef.current) depsRef.current.onDeselect();
+      if (!pan.movedRef.current) (pan.onTap ?? depsRef.current.onDeselect)();
       setPan(null);
     };
     window.addEventListener('pointermove', onMove);

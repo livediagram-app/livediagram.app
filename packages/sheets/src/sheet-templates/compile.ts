@@ -146,6 +146,7 @@ function draftCells(d: SheetDesign, look: SheetLook, t: TemplateTints): Map<stri
       for (let j = 0; j < width; j++)
         put(r0 + 1 + i, c0 + j, row[j] ?? null, {
           ...fmt(j),
+          ...(b.cellFormats?.find((x) => x.row === i && x.col === j)?.f ?? {}),
           ...(banded ? { bg: t.band } : {}),
           ...(b.inputs?.includes(j) && !plain ? { bg: t.input } : {}),
           ...boxed,

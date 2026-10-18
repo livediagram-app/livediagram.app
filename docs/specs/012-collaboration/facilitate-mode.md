@@ -1,7 +1,7 @@
 # Facilitate mode
 
 **Facilitate** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
-Illustrate and Plan: how a general tab is worked on while a team runs a session on it, a
+Pages and Plan: how a general tab is worked on while a team runs a session on it, a
 retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
 Diagram, so Diagram is about diagrams.
@@ -40,7 +40,7 @@ boards.
 - **The Session strip with all three tools**, Timer, Vote and Poll, with their set-up panes
   ([Session tools](session-tools.md#the-session-strip)).
 - **It starts on Select** (Hand on a phone), like Diagram.
-- **Its mark** is a flipchart on an easel, on the switch, the tab menu's Mode, the tab pill, the
+- **Its mark** is a flipchart on an easel, on a start's mode switch, the tab pill, the
   template picker's mode filter, the Explorer's Opens in and the help article.
 
 ## What Diagram gives up
@@ -81,21 +81,26 @@ mode as today:
 Facilitate's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
 stop to draw):
 
-| Band        | Categories                                                    |
-| ----------- | ------------------------------------------------------------- |
-| _(none)_    | Popular                                                       |
-| Common      | Shapes, My shapes (with a shape library), Write & Build, Draw |
-| Decorate    | Icons, Stickers, Media                                        |
-| Dynamic     | Data                                                          |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate           |
+| Band        | Categories                                            |
+| ----------- | ----------------------------------------------------- |
+| _(none)_    | Popular                                               |
+| Common      | Shapes, My shapes (with a shape library), Write, Draw |
+| Structure   | Layout                                                |
+| Decorate    | Icons, Stickers, Media                                |
+| Dynamic     | Data                                                  |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
   **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
   with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
-- **Write & Build and Draw hold what a session uses, not what a diagram or a page does.** Write & Build is Write
-  and Build as one category (Write's place and glyph): Text and Sticky note, then behind a divider Table, Checklist and Frame
-  (no Page, no Annotation, no Mind node, no Flowchart, no Lane, no Timeline, no Sankey); Draw is Pencil,
-  Highlighter, Arrow and Line (no Shape Pen, no Polygon). Search still finds those left out and places them, as it
+- **Write and Draw hold what a session uses, not what a diagram or a page does.** Write is Text, Sticky note and
+  Pointer note, then behind a divider Table and Checklist (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow
+  and Line (no Shape Pen, no Polygon).
+- **Layout is Diagram's** ([The Build palette category](../010-palette/build-category.md)): Lane, Frame, Stack,
+  Boundary, the Timeline (Facilitate has no Concepts, where it otherwise lives), then Diagram key, Card, Badge and
+  Step number. A board is laid out in frames and lanes, and its
+  notes labelled, as a diagram is. No Diagrams: mind maps and flowcharts build a diagram, which a session does not
+  stop for. Search still finds those left out and places them, as it
   does any other mode's tile.
 - **The Collaborate elements are six categories, not one.** Each group of
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
@@ -108,8 +113,7 @@ stop to draw):
   - **Selection Mode**: one button per selection mode.
   - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
-  layout as **Shapes, Draw · Icons, Stickers, Media · Data · Ask, Session**: no Popular; Write & Build and Draw as
-  one category, **Draw**, its flyout a Write section then a Draw section; and Tools, Record, React, Selection Mode
+  layout as **Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session**: no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
   them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
@@ -132,7 +136,7 @@ stop to draw):
 | Plan       | Timer, Vote              |
 | Diagram    | none                     |
 | Draw       | none (as today)          |
-| Illustrate | Vote, Poll while running |
+| Pages      | Vote, Poll while running |
 
 - **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
   switch, so it could never reach Facilitate's strip; the tab kind brings the strip itself.
@@ -142,7 +146,7 @@ stop to draw):
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
   poll or keeping its results is done from Facilitate (or Plan for a timer or vote). This is the
   same rule Draw already follows, and the price of a Diagram mode with no session chrome.
-- **Illustrate shows a running Vote or Poll only.** Nothing is started from its strip (the session
+- **Pages shows a running Vote or Poll only.** Nothing is started from its strip (the session
   buttons on a page do that), but once a vote or poll runs, its button and popover appear for
   everyone so it can be watched and ended, and go again when it ends. It never shows a Timer.
 - A popover whose button leaves (a mode switch, the tool ending) closes, as today.
@@ -157,9 +161,9 @@ Session templates open in Facilitate, as the Draw templates open in Draw
 - `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
   only a mode with a Session strip can watch, end and keep that vote;
-- the boards a team fills in together: `incident-postmortem`, `user-persona`, `objectives-planner`,
-  `roadmap`, `raci-matrix`, `user-story-map`, `business-model-canvas`, `stakeholder-map` and
-  `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
+- the boards a team fills in together: `incident-postmortem`, `user-persona`, `empathy-map`, `journey`,
+  `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
+  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
   and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates));
 - the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
   `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
@@ -171,8 +175,8 @@ Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `p
 
 **Blank Session** (kind `blank-session`) is Facilitate's blank: a general tab that opens in
 Facilitate with nothing on it, the document named "Untitled Session". It joins the blanks
-leading Popular in the marketing gallery and the starts, which become five, and is the fifth row of the
-sites' Start Blank menu (funnel slot `HeaderSession`, [Landing funnel](../019-marketing/landing-funnel.md)).
+leading Popular in the marketing gallery and the starts, which become five. It was the fifth row of the
+sites' Start Blank menu (funnel slot `HeaderSession`, retired with the menu, [Landing funnel](../019-marketing/landing-funnel.md)).
 
 ## Share roles
 

@@ -74,9 +74,9 @@ export const SUB_OPPORTUNITIES: [Opportunity, Opportunity, Opportunity] = [
 ];
 export const TARGET_INDEX = 1;
 
-export type TestStatus = 'running' | 'validated' | 'invalidated';
+type TestStatus = 'running' | 'validated' | 'invalidated';
 
-export type AssumptionTest = {
+type AssumptionTest = {
   assumption: string;
   test: string;
   result: string;

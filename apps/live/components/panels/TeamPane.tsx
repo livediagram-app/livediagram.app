@@ -56,7 +56,7 @@ export function TeamPane({
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-documents
   // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
-  // so a team document can be re-homed to My documents / another team.
+  // so a team document can be re-homed to My Documents / another team.
   moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
@@ -188,7 +188,8 @@ export function TeamPane({
   const canLeave = selfRow !== null && !isLastAdmin(selfRow);
 
   const joinedCount = members.filter((m) => m.status === 'joined').length;
-  const invitedCount = members.length - joinedCount;
+  // Pending only: a rejected row is a record of an answer, not an invitation still out.
+  const invitedCount = members.filter((m) => m.status === 'invited').length;
   const headline = [
     team.organisation,
     `${joinedCount} ${joinedCount === 1 ? 'member' : 'members'}`,
@@ -208,11 +209,11 @@ export function TeamPane({
               <button
                 type="button"
                 onClick={() => setLinkOpen(true)}
-                aria-label="Invite by link"
+                aria-label="Invite by Link"
                 className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
               >
                 <LinkIcon />
-                <span className="hidden sm:inline">Invite by link</span>
+                <span className="hidden sm:inline">Invite by Link</span>
               </button>
             ) : null}
             <EllipsisTriggerButton

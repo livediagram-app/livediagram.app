@@ -33,7 +33,7 @@ import { DocumentActionsMenu } from '../document-row-shared';
 import { FolderActionsMenu } from '../folder-actions-menu';
 import type { PaneDocument } from '../views';
 
-export type TimelineDocumentMenuHandlers = {
+type TimelineDocumentMenuHandlers = {
   ownerId: string | null;
   onStartRename: () => void;
   onDuplicate: () => void;
@@ -50,7 +50,7 @@ export type TimelineDocumentMenuHandlers = {
 
 // The folder verbs, built against the menu's own trigger: Change
 // Folder anchors its picker to whatever opened the menu.
-export type TimelineFolderMenuHandlers = (anchor: HTMLElement | null) => {
+type TimelineFolderMenuHandlers = (anchor: HTMLElement | null) => {
   onRename: () => void;
   onNewSubfolder: () => void;
   onMove: () => void;

@@ -3,30 +3,27 @@
 // figure has to agree on, so it lives in one file rather than being threaded
 // between them or duplicated per view.
 
-import { shade as shadeHex } from '@livediagram/document';
+import { AVATAR_PALETTE, shade as shadeHex } from '@livediagram/document';
 
-// Sprite palette. Warm skin + brown hair, with one darker tone per material
-// for the shaded edge that gives pixel art its volume. The shirt is the
-// participant's presence colour (brand cyan when there isn't one).
-export const SKIN = '#f4c99b';
-export const SKIN_DARK = '#d9a674';
-export const HAIR = '#6b4423';
-export const HAIR_DARK = '#4a2e17';
-const DEFAULT_SHIRT = '#0ea5e9';
-export const TROUSERS = '#3f4c63';
-export const TROUSERS_DARK = '#2c3648';
-export const SHOE = '#1e293b';
-export const EYE = '#243044';
-export const SHIRT_WHITE = '#f8fafc';
-export const FLAG_POLE = '#b8845a';
-export const FLAG_CLOTH = '#f43f5e';
-// Tones the later outfits need beyond the shirt colour: denim for overalls, a
-// clinical white-coat body, and a leather-ish apron.
-export const DENIM = '#41597f';
-export const DENIM_DARK = '#2f4260';
-export const COAT = '#eef2f6';
-export const COAT_DARK = '#cfd8e3';
-export const APRON = '#8b5e34';
+// The tones themselves live in @livediagram/document (AVATAR_PALETTE), shared with the Avatar Pad
+// (docs/specs/009-elements/avatar-pad.md) so the pad is drawn in the characters' own palette.
+export const SKIN = AVATAR_PALETTE.skin;
+export const SKIN_DARK = AVATAR_PALETTE.skinDark;
+export const HAIR = AVATAR_PALETTE.hair;
+export const HAIR_DARK = AVATAR_PALETTE.hairDark;
+const DEFAULT_SHIRT = AVATAR_PALETTE.shirt;
+export const TROUSERS = AVATAR_PALETTE.trousers;
+export const TROUSERS_DARK = AVATAR_PALETTE.trousersDark;
+export const SHOE = AVATAR_PALETTE.shoe;
+export const EYE = AVATAR_PALETTE.eye;
+export const SHIRT_WHITE = AVATAR_PALETTE.shirtWhite;
+export const FLAG_POLE = AVATAR_PALETTE.flagPole;
+export const FLAG_CLOTH = AVATAR_PALETTE.flagCloth;
+export const DENIM = AVATAR_PALETTE.denim;
+export const DENIM_DARK = AVATAR_PALETTE.denimDark;
+export const COAT = AVATAR_PALETTE.coat;
+export const COAT_DARK = AVATAR_PALETTE.coatDark;
+export const APRON = AVATAR_PALETTE.apron;
 
 // A darker companion to an arbitrary shirt colour, for the shaded side. Mixes
 // the hex 22% toward black (the document package's `shade`); falls back to the

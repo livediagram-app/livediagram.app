@@ -43,7 +43,7 @@ function parseFields(text: string): Item['fields'] {
   }
 }
 
-export function itemFromRow(row: ItemRow): Item {
+function itemFromRow(row: ItemRow): Item {
   return {
     id: row.id,
     type: row.type,
@@ -58,7 +58,7 @@ export function itemFromRow(row: ItemRow): Item {
   };
 }
 
-export type ItemStoreHead = { rev: number; nextKey: number; count: number };
+type ItemStoreHead = { rev: number; nextKey: number; count: number };
 
 export async function getItemStoreHead(env: Env, documentId: string): Promise<ItemStoreHead> {
   const row = await env.DB.prepare(

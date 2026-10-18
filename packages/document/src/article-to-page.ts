@@ -1,4 +1,4 @@
-// Articles turned into Page elements (docs/specs/007-editor/article-pages.md "Leaving Illustrate"):
+// Articles turned into Page elements (docs/specs/007-editor/article-pages.md "Leaving Pages"):
 // what an editor may choose when switching a tab with articles to Diagram or Draw, where pages and
 // their writing are not drawn. Each article page becomes a Page element (`shape: 'page'`) covering
 // its sheet and holding that page's writing as rich text (the article's title and subtitle as the
@@ -14,12 +14,7 @@ import {
 import { articleNoteIds } from './article-notes';
 import { createShape } from './shape-factory';
 import { PAGE_HEADING_MAX } from './data-shapes';
-import {
-  illustratePagesOf,
-  layOutIllustratePages,
-  withIllustratePages,
-  type IllustratePage,
-} from './illustrate-page';
+import { pagesOf, layOutPages, withPages, type Page } from './page';
 import type { Element, ShapeElement, Tab } from './index';
 import { runsPlainText, type RunHeading, type TextRun } from './rich-text';
 
@@ -79,7 +74,7 @@ export function articleBlocksAsRuns(
 
 /** One article's Page elements, a page each: `split` lists each page's block ids in order (what the
  *  editor measured); without it, the whole writing goes on the first page. */
-export function articleAsPages(
+function articleAsPages(
   doc: ArticleFlow,
   pages: readonly { rect: { x: number; y: number; width: number; height: number } }[],
   split: readonly (readonly string[])[] | null,
@@ -119,7 +114,7 @@ export function articleAsPages(
  * else (they are the paper the rest was drawn on), the article pages become infographic pages, the
  * writing goes, and margin-note markers become ordinary annotations. `splits` holds, per article,
  * each page's block ids as laid out. An article with a locked page is held as it is
- * (docs/specs/007-editor/illustrate-pages.md "Locking a page"): it stays an article, its pages,
+ * (docs/specs/007-editor/pages-mode.md "Locking a page"): it stays an article, its pages,
  * writing and margin notes untouched. The same tab back when no article can be turned.
  */
 export function withArticlesAsPages<T extends ArticlesTab>(
@@ -127,21 +122,19 @@ export function withArticlesAsPages<T extends ArticlesTab>(
   splits: ReadonlyMap<string, readonly (readonly string[])[]>,
 ): T {
   const all = articlesOf(tab);
-  const held = new Set(
-    illustratePagesOf(tab).flatMap((p) => (p.flow && p.locked === true ? [p.flow] : [])),
-  );
+  const held = new Set(pagesOf(tab).flatMap((p) => (p.flow && p.locked === true ? [p.flow] : [])));
   const docs = Object.fromEntries(Object.entries(all).filter(([flow]) => !held.has(flow)));
   if (Object.keys(docs).length === 0) return tab;
   const kept = Object.fromEntries(Object.entries(all).filter(([flow]) => held.has(flow)));
   // The margin notes of a held article stay notes: their markers keep their link to its writing.
   const keptNotes = articleNoteIds(kept);
-  const laid = layOutIllustratePages(illustratePagesOf(tab));
+  const laid = layOutPages(pagesOf(tab));
   const made: Element[] = [];
   for (const [flow, doc] of Object.entries(docs)) {
     const own = laid.filter((p) => p.flow === flow);
     if (own.length) made.push(...articleAsPages(doc, own, splits.get(flow) ?? null));
   }
-  const pages: IllustratePage[] = illustratePagesOf(tab).map((p) => {
+  const pages: Page[] = pagesOf(tab).map((p) => {
     if (p.kind !== 'article' || (p.flow && held.has(p.flow))) return p;
     const { kind: _k, flow: _f, ...rest } = p;
     void _k;
@@ -154,7 +147,7 @@ export function withArticlesAsPages<T extends ArticlesTab>(
     void _n;
     return rest;
   });
-  const repaged = withIllustratePages({ ...tab, elements: [...made, ...elements] }, pages);
+  const repaged = withPages({ ...tab, elements: [...made, ...elements] }, pages);
   const { articles: _a, ...rest } = repaged as typeof repaged & { articles?: unknown };
   void _a;
   if (Object.keys(kept).length === 0) return rest as T;

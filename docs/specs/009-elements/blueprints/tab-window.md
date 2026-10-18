@@ -39,6 +39,15 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 - **Drawing**: `TabWindowDrawing` → `useTabSvg(tab)` (deferred, the export renderer, appearance, photos, cards) →
   inline `<svg width=100% height=100% viewBox="0 0 w h" preserveAspectRatio="xMidYMid meet">` wrapping the markup with
   `prefixSvgIds(markup, 'tw-<elementId>-')`, on a div painted `svg.background`, `pointer-events: none`.
+- **Motion**: `TabWindowDrawing` passes `windowMotion` (`tab-window-motion.ts`) to `useTabSvg`, which hands
+  `renderTabToSvg` an `SvgMotion` for the shown tab's surface. A boxed element that plays (`windowBoxedMotion`:
+  `WINDOW_SHAPE_PLAYS` through `wrapperShapeAnimation`, else `WINDOW_BODY_PLAYS` through `setAnimationClass`) is wrapped
+  in `<g class="lvd-svg-motion <set class>" style="--lvd-anim-*">`; an arrow's flow (`windowArrowLine`, from
+  `FLOW_PATH_CLASS` / `FLOW_PATH_DASH`) reaches `svgArrow`'s `lineMotion` as the line's class, dash, path length and
+  `--lvd-flow-*`. `:where(.lvd-svg-motion)` sets `transform-box: fill-box` and a centre origin (zero specificity, so a
+  set's own origin wins). After each redraw `pinLoops` sets every infinite animation's `startTime` to 0.
+  `useHoldOffscreen` toggles `data-held` on the frame from an `IntersectionObserver`, and
+  `[data-tab-window-drawing][data-held] *` pauses every animation. File exports never pass `motion`.
 - **Nesting**: the tab's drawing is rendered without a window resolver (canvas) or with a names-only resolver (export),
   so a window inside it is `svgTabWindow` without a drawing: its named frame.
 
@@ -95,6 +104,9 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
   unchanged tab is never re-rendered. The drawing and the picker are `next/dynamic` chunks: the renderer and the menu
   load only once a window draws or its list opens.
 - The inline SVG's node count is the shown tab's.
+- The frame is `contain: strict`, so a moving element repaints inside the window and never lays out the canvas.
+  Measured (six moving elements, Chromium, 1280x800): about 58 ms of main-thread work a second in the window, against
+  about 47 ms for the same six on their own canvas; 115 ms before containment. Off screen: about 0.2 ms a second.
 - An export renders each target tab once (`tabWindowArts`), however many windows show it.
 
 ## Presentation and UX
@@ -122,7 +134,8 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
 | States, Choose a Tab, Open, Retry, unavailable                  | `apps/live/components/canvas/tab-window/TabWindowFace.test.tsx`                                   |
 | Status, one fetch per tab, retry, choose, open, gate            | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx`                              |
 | Export targets, arts, nesting, drawing in the tab SVG           | `apps/live/components/dialogs/useTabWindowExport.test.ts`                                         |
-| Palette tile in Illustrate's Media only, not a whiteboard shape | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
+| What plays in a window, its classes and style, stills elsewhere | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`                                |
+| Palette tile in Pages mode's Media only, not a whiteboard shape | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
 
 ## Constants and configuration
 

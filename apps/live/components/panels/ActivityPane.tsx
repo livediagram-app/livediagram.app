@@ -77,7 +77,7 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
         <ActivitySection title="You Assigned" count={feed.youAssigned.length}>
           {feed.youAssigned.map((a) => (
             <ActivityActionRow
-              key={`${a.tabId}:${a.elementId}`}
+              key={`${a.tabId}:${a.elementId}:${a.id}`}
               action={a}
               onOpen={() => track('Activity', 'Selected', 'Action')}
             />

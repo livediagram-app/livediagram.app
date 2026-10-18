@@ -21,6 +21,7 @@ import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
 import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, type EntityField } from './data-shapes';
 import { entityHeight } from './entity-geometry';
+import { ENTITY_KEY_LABELS } from './entity-fields';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
@@ -124,8 +125,8 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // layout's peer sizing then gives a whole tier the size its longest label
 // needs. A diamond's text only fits its inner half, so it gets more room.
 // The side of an unlabelled circle node (see graphToElements).
-export const DOT_SIZE = 28;
-export const FINAL_STATE_SIZE = 34;
+const DOT_SIZE = 28;
+const FINAL_STATE_SIZE = 34;
 const CHAR_PX = 7.4;
 // Capitals set about 30% wider than the average glyph CHAR_PX assumes, so an
 // all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped
@@ -238,12 +239,22 @@ function lookBoxSize(
 function entityNode(n: GraphNode, raw: EntityField[]): Element {
   // Within the validator's budget (UTF-16 units), never ending on half an emoji.
   const clip = (t: string) => t.slice(0, ENTITY_MAX_TEXT).replace(/[\uD800-\uDBFF]$/, '');
-  const fields = raw
-    .slice(0, ENTITY_MAX_FIELDS)
-    .map((f) => ({ name: clip(f.name), ...(f.type ? { type: clip(f.type) } : {}) }));
+  const fields = raw.slice(0, ENTITY_MAX_FIELDS).map((f) => ({
+    name: clip(f.name),
+    ...(f.type ? { type: clip(f.type) } : {}),
+    ...(f.key ? { key: f.key } : {}),
+  }));
+  // A key takes the room its words took when they were written into the type (`uuid PK`): the gutter's
+  // glyphs are about as wide, and the layout keeps the widths it was tuned on.
   const widest = Math.max(
     glyphUnits(n.label ?? ''),
-    ...fields.map((f) => glyphUnits(f.name) + glyphUnits(f.type ?? '') + 2),
+    ...fields.map(
+      (f) =>
+        glyphUnits(f.name) +
+        glyphUnits(f.type ?? '') +
+        (f.key ? glyphUnits(` ${ENTITY_KEY_LABELS[f.key]}`) : 0) +
+        2,
+    ),
   );
   return {
     id: n.id,

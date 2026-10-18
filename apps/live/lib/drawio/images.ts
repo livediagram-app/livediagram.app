@@ -7,7 +7,7 @@ import type { Element } from '@livediagram/document';
 import type { ImportImageReport, ImportImageRequest } from '@/lib/import-images';
 
 /** `attachImportImages` with its session and progress listener already bound. */
-export type AttachImages = (
+type AttachImages = (
   elements: Element[],
   requests: ImportImageRequest[],
 ) => Promise<{ elements: Element[]; report: ImportImageReport }>;
@@ -34,7 +34,7 @@ export async function attachDrawioImages<P extends { elements: Element[] }>(
 // draw.io writes an embedded image as `data:<type>,<base64>` (the `;` of
 // `;base64` would end the style pair), so restore the standard form when the
 // payload is base64; a percent-encoded or raw payload stays as it is.
-export function normaliseDataUrl(url: string): string {
+function normaliseDataUrl(url: string): string {
   const m = /^data:([^,;]+),(.*)$/s.exec(url);
   return m && /^[A-Za-z0-9+/]+=*$/.test(m[2]!) ? `data:${m[1]};base64,${m[2]}` : url;
 }

@@ -20,16 +20,18 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'trash',
   'team',
   'invites',
-  // This browser is a read-through view; offline documents come from the /new wizard.
+  // This Browser is a read-through view; offline documents come from the /new wizard.
   'offline',
+  // Tags gather documents from every place; a new one lands in none of them (docs/specs/013-workspace/tags.md).
+  'tags',
 ]);
 
-// Sections with New folder: only the places folders live, the My documents root and a folder.
+// Sections with New folder: only the places folders live, the My Documents root and a folder.
 // Every view (Recent, Favourites, Search results, ...) is computed, so a folder made there
 // would not appear where it was made (docs/specs/013-workspace/favourites.md "The view").
 const NEW_FOLDER: ReadonlySet<Kind> = new Set<Kind>(['all', 'folder']);
 
-export type PaneHeaderActions = {
+type PaneHeaderActions = {
   newDocument: boolean;
   newFolder: boolean;
   /** The "Import from" toolbar. */

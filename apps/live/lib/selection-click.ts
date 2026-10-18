@@ -14,7 +14,7 @@ export type SelectionSnapshot = {
   multiSelectedIds: ReadonlySet<string>;
 };
 
-export type PlainClickOutcome = 'select-alone' | 'deselect';
+type PlainClickOutcome = 'select-alone' | 'deselect';
 
 /** The element is the whole selection: the single selection, or a multi-selection of one. */
 export function isOnlySelected(sel: SelectionSnapshot, id: string): boolean {
@@ -28,7 +28,7 @@ export function plainClickOutcome(sel: SelectionSnapshot, id: string): PlainClic
   return isOnlySelected(sel, id) ? 'deselect' : 'select-alone';
 }
 
-export type ClickPointer = {
+type ClickPointer = {
   clientX: number;
   clientY: number;
   timeStamp: number;

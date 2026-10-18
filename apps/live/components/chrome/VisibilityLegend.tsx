@@ -3,7 +3,7 @@
 // The visibility pill's legend (docs/specs/006-document/offline-mode.md "The visibility legend"): who can see
 // this document. A hero in the current state's tone draws its reach as rings around you, lit out to how far
 // the document goes; under it the audiences sit on one scale from Just You to Everyone, the current stop
-// filled to, and hovering a stop shows that audience in the hero. Local only stands apart below, the
+// filled to, and hovering a stop shows that audience in the hero. This Browser stands apart below, the
 // deliberate opt-out; then, for someone who may share, Change Who Can See This opens Share. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
@@ -17,8 +17,8 @@ const LinkGlyph = lucideGlyph(lucideLink, 14);
 const TeamGlyph = lucideGlyph(lucideUsers, 14);
 const GlobeGlyph = lucideGlyph(lucideGlobe, 14);
 
-// The audiences from narrowest to widest; Local only is the opt-out beside them.
-export const LADDER: readonly ShareState[] = ['private', 'shared', 'team', 'community'];
+// The audiences from narrowest to widest; This Browser is the opt-out beside them.
+const LADDER: readonly ShareState[] = ['private', 'shared', 'team', 'community'];
 
 // Each state's look: its glyph, its stop on the scale, the hero's wash, and its ink for the rings.
 const LOOK: Record<
@@ -59,7 +59,7 @@ const LOOK: Record<
   },
   offline: {
     icon: <ThisBrowserIcon size={14} />,
-    reach: 'This browser',
+    reach: 'This Browser',
     stop: 'bg-amber-500 text-white ring-amber-200 dark:bg-amber-400 dark:text-amber-950 dark:ring-amber-500/40',
     hero: 'from-amber-50 to-white dark:from-amber-500/15 dark:to-slate-900',
     ink: 'text-amber-600 dark:text-amber-300',
@@ -67,8 +67,8 @@ const LOOK: Record<
   },
 };
 
-// The reach picture: you at the centre and a ring per wider audience, lit out to the state's own. Local
-// only has no reach past you: the browser window holds you, the rings all dark.
+// The reach picture: you at the centre and a ring per wider audience, lit out to the state's own. This
+// Browser has no reach past you: the browser window holds you, the rings all dark.
 function ReachRings({ state }: { state: ShareState }) {
   const lit = LADDER.indexOf(state);
   const look = LOOK[state];
@@ -236,8 +236,8 @@ function ReachScale({
   );
 }
 
-// Local only, apart from the scale: the document never leaves this browser.
-function LocalOnlyRow({
+// This Browser, apart from the scale: the document never leaves this browser.
+function ThisBrowserRow({
   current,
   onPeek,
 }: {
@@ -303,7 +303,7 @@ export function VisibilityLegend({
       <div className="animate-dialog-in overflow-hidden rounded-xl border border-slate-200 bg-white pb-3 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50">
         <Hero state={shown} current={shown === current} />
         <ReachScale current={current} peek={peek} onPeek={setPeek} />
-        <LocalOnlyRow current={current === 'offline'} onPeek={setPeek} />
+        <ThisBrowserRow current={current === 'offline'} onPeek={setPeek} />
         {onManage ? (
           <div className="px-3 pt-3">
             <button

@@ -21,7 +21,7 @@ const AFTER_SELECT_MS = 400;
 
 type Cells = Extract<Hit, { kind: 'cell' | 'col' | 'row' }>;
 
-export type SheetTouchDeps = {
+type SheetTouchDeps = {
   interactive: boolean;
   maximised: boolean;
   pan: SheetPan;

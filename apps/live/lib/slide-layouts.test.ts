@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  layOutIllustratePages,
+  layOutPages,
   newSlidePage,
   pageMargin,
   SLIDE_PAGE_SIZE_IDS,
@@ -17,7 +17,7 @@ import {
 import { buildPageLayout } from '@livediagram/templates';
 import { isIconId } from '@livediagram/icons/search';
 
-// docs/specs/007-editor/illustrate-pages.md "Slide layouts": a slide page's own catalogue, every
+// docs/specs/007-editor/pages-mode.md "Slide layouts": a slide page's own catalogue, every
 // layout fitting a 16:9 and a 4:3 slide inside its margins.
 describe('slide layouts', () => {
   it('are the forty-six of the spec, at least nine to a category, each unique', () => {
@@ -67,7 +67,7 @@ describe('slide layouts', () => {
       el.type === 'arrow' ? [] : [{ x: el.x, y: el.y, r: el.x + el.width, b: el.y + el.height }],
     );
   for (const size of SLIDE_PAGE_SIZE_IDS) {
-    const [page] = layOutIllustratePages([newSlidePage('s', size)]);
+    const [page] = layOutPages([newSlidePage('s', size)]);
     const m = pageMargin(page!);
     const box = {
       x: page!.rect.x + m,

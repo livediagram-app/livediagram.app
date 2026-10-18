@@ -28,7 +28,8 @@ The detail in `full` is under a pixel wide at header size, so `compact` drops it
 The mark has a light and a dark palette. Dark is brighter in its mid stops and darker at its deepest stop, so the cube
 holds its edges on a dark surface. The mark follows the page's scheme wherever it is drawn live. Favicons follow the
 browser's `prefers-color-scheme`. Static rasters (PNG icons, the Apple icon, social cards) are drawn on white and use
-the light palette.
+the light palette. The one exception is the email mark (`apps/marketing/public/email/livediagram-mark-64.png`), a
+transparent light-palette PNG so it sits cleanly on the tinted page behind each email ([Transactional email](../014-identity/transactional-email.md)).
 
 ## Theme accent
 
@@ -84,12 +85,14 @@ Its pace is listed in [Motion](./motion.md) beside the other hover stories.
 
 ## Links
 
-The header and footer logos link to the homepage. A logo link to the page already open (the footer
+The header and footer logos link to the homepage, except in the editor app, where each logo goes up
+one level: the editor header's logo opens the Explorer home (`/explorer/home`), and the Explorer
+header's logo opens the homepage. A logo link to the page already open (the footer
 on the homepage, either logo there) scrolls back to the top, smoothly unless reduced motion is on,
 rather than reloading. A modified click (new tab or window) keeps the browser's behaviour.
 
 ## One source
 
 Every copy of the mark (the React component, the favicons, the logo files in `marketing/media/logo/`, the PNG icons, the
-Apple icon and the social card) is drawn from one geometry and palette module in `@livediagram/ui`. Static files are
+email mark, the Apple icon and the social card) is drawn from one geometry and palette module in `@livediagram/ui`. Static files are
 regenerated from it and a test fails if one drifts.

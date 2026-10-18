@@ -7,7 +7,7 @@ import { COMMUNITY_TAGS_MAX, normaliseCommunityTag } from '@livediagram/api-sche
 // Why a draft did not become a chip, for the hint under the field.
 export type TagRejection = 'invalid' | 'duplicate' | 'full';
 
-export type TagCommit = { tags: string[]; rejected: TagRejection | null };
+type TagCommit = { tags: string[]; rejected: TagRejection | null };
 
 // Add one typed tag. Blank drafts are ignored silently (Enter on an empty field is not a mistake).
 export function commitTag(tags: string[], draft: string): TagCommit {

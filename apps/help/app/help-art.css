@@ -1,5 +1,5 @@
 /* Dark appearance for the help centre's SVG art: the in-article scenes (`Scene`) and the category
- * banners (`CategoryIllustration`), both of which carry `help-art` on their root <svg>.
+ * scenes (`components/category-art`, on `Stage`), both of which carry `help-art` on their root <svg>.
  *
  * The art is drawn once, in the light ramp (white panels, slate ink, brand accents). In dark mode the
  * art scope re-points each light token at its partner in the editor's dark chrome, so a scene shows

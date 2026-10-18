@@ -227,12 +227,17 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'comparison-table': 'strategy',
   'stakeholder-map': 'strategy',
   'rich-picture': 'strategy',
+  'wardley-map': 'strategy',
+  'value-proposition-canvas': 'strategy',
+  'working-backwards': 'strategy',
   // Org and Structure: top-down structure.
   orgchart: 'hierarchies',
   pyramid: 'hierarchies',
   'okr-tree': 'hierarchies',
   sitemap: 'hierarchies',
   'opportunity-solution-tree': 'hierarchies',
+  'metric-tree': 'hierarchies',
+  'family-tree': 'hierarchies',
   // Design and UX: screens, research and the spaces people move through.
   'mobile-wireframe': 'design',
   'laptop-wireframe': 'design',
@@ -245,6 +250,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'empathy-map': 'design',
   'user-story-map': 'design',
   'floor-plan': 'design',
+  'service-blueprint': 'design',
   // Presentations and Content: pages made to be read or shared.
   'slide-deck': 'presentations',
   article: 'presentations',
@@ -272,6 +278,8 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'state-machine': 'technical',
   'event-storming': 'technical',
   'incident-postmortem': 'technical',
+  'threat-model': 'technical',
+  'value-stream-map': 'technical',
   // Quizzes and Games: the lighter end of running a room.
   'pub-quiz': 'games',
   'icebreaker-questions': 'games',
@@ -321,6 +329,14 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'raci-matrix': ['hierarchies'],
   // A data-flow diagram is a developer's diagram.
   'data-flow': ['technical'],
+  // A north star is a goal, like the OKR tree's.
+  'metric-tree': ['strategy'],
+  // A blueprint and a value stream are processes across lanes and steps.
+  'service-blueprint': ['flowcharts'],
+  'value-stream-map': ['flowcharts'],
+  // A value proposition is product design; a PR/FAQ is a document to share.
+  'value-proposition-canvas': ['design'],
+  'working-backwards': ['presentations'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

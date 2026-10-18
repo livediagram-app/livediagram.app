@@ -255,7 +255,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
 - `useQuickStyle` on a whiteboard maps its view through `onWhiteboard(view, selected, ink)`
   (`apps/live/lib/quick-style-whiteboard.ts`): slot 0 of stroke and text shows the board ink, slot 0
   of background shows `transparent`, and an unfilled shape reads as background slot 0. Edits and
-  Clear styles skip `memory.recordEdit` / `memory.forget`.
+  Clear Styles skip `memory.recordEdit` / `memory.forget`.
 - Marker rows (`apps/live/lib/quick-style-pen.ts`, `QuickPenRows.tsx`), titled **Marker colour** and
   **Marker width**, quick choices first, then More colours (`QuickMoreColours`, the full colour
   picker, `docs/specs/004-interface-design/colour-picker.md`): `view.pen` is
@@ -279,7 +279,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
     clearing both, a name as `penColour` (clearing `strokeColor`), a hex as `strokeColor` (clearing
     `penColour`). For the held pen Ink is `colour: null`.
     `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
-    / `QuickStrokeWidth`), or call `updatePen` for the held pen (its own `Draw·Changed` tokens). Clear styles shows only when `targetIds` is non-empty. `QuickPenRows`
+    / `QuickStrokeWidth`), or call `updatePen` for the held pen (its own `Draw·Changed` tokens). Clear Styles shows only when `targetIds` is non-empty. `QuickPenRows`
     shows `subject.name` as a caption unless `QuickStylePanel` has `powerUser` (from `isPowerUserMode`).
     Choosing the held pen's current value is a no-op.
 
@@ -359,7 +359,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `buildDrawnArrow(..., { ends, unpainted: true })`; text: `createText`; else null) and `toolCaption`.
   `useQuickStyle({ toolIntent: pendingDraw })`: on a whiteboard with nothing selected, the view is
   `quickStyleView([styleNewElement(phantom)])` through `onWhiteboard`, with `caption`; a choice runs
-  `memory.recordEdit([phantom], [applied])` and bumps a version; Clear styles forgets `board:<kind>`.
+  `memory.recordEdit([phantom], [applied])` and bumps a version; Clear Styles forgets `board:<kind>`.
 - The panel shows `view.caption ?? view.pen.subject.name` above the rows unless `powerUser`.
 - `useStyleMemory` returns `scope` (`<documentId>:board` or `<documentId>:diagram`); `useQuickStyle`'s
   phantom memo keys on it, so a document or editor mode switch with a tool still in hand re-dresses the

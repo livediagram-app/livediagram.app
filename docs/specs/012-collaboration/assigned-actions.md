@@ -2,10 +2,8 @@
 
 **Status: implemented.** Assign a piece of work to a teammate directly from an
 element on the canvas: a new **Assign Action** tile attaches a named, described,
-assigned action to the element, optionally emailing the assignee. To make
-room for it the context menu's collaboration band splits in two:
-**Collaborate** (Assign Action + Comments, the people tiles) and
-**Resources** (Link + Note, the attached-material tiles). The floating
+assigned action to the element, optionally emailing the assignee. It sits on the element menu's
+[quick bar](../008-canvas/element-menu-quick-bar.md) with Add Comment, Add Link and Add Note, above every category. The floating
 **Collaborate Panel** (§5 — the merged Comments + Actions surface,
 [Panel corner docking](../007-editor/panel-docking.md) docking) lists the tab's actions and comment threads and jumps
 to them. Builds on teams ([Teams](../013-workspace/teams.md)) for the assignee picker, the
@@ -54,7 +52,8 @@ interface ElementAction {
   teamId: string | null;
   assignerId: string; // Clerk user id of who assigned it
   assignerName: string | null;
-  status: 'open' | 'done';
+  // 'wont-do': closed without being done (docs/specs/026-plan/linked-boards.md "On the canvas").
+  status: 'open' | 'done' | 'wont-do';
   createdAt: number;
   updatedAt: number;
 }
@@ -74,6 +73,11 @@ shows), never the full address.
 Assignee/assigner identity here is informational (who to render), not a
 permission: anyone with edit access can complete, edit, or delete an action,
 the same way they can edit any element content.
+
+**Won't Do** is a third status beside open and done ([Linked boards](../026-plan/linked-boards.md) "On the
+canvas"): decided against, closed without being done. It counts as closed wherever open and closed are counted. Every
+action in a document also has a card on its **Actions board**, kept in step both ways
+([Linked boards](../026-plan/linked-boards.md)).
 
 **A copy doesn't carry the action.** Copy / paste (both the OS clipboard and
 the in-app fallback buffer) and every Duplicate (`freshCopyFields`, one list,

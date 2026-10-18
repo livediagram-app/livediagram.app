@@ -1,4 +1,4 @@
-// Test fixtures for Home's components: one document, a person, an action, a group, a Jump back in
+// Test fixtures for Home's components: one document, a person, an action, a group, a Jump Back In
 // document.
 import type {
   HomeAction,

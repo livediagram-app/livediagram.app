@@ -79,7 +79,7 @@ const TAB = {
   id: 't1',
   name: 'Tab 1',
   rev: 3,
-  opensIn: 'illustrate',
+  opensIn: 'pages',
   elements: [BOARD_ELEMENT, SHEET_ELEMENT],
 };
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
@@ -91,9 +91,9 @@ const CHANGESET = {
   warnings: [],
   lint: null,
 };
-// What the illustrate route answers (docs/specs/024-agents/illustrate-for-agents.md "The route").
+// What the pages route answers (docs/specs/024-agents/pages-for-agents.md "The route").
 const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [2], blocks: 3, words: 9, look: null };
-const ILLUSTRATE = {
+const PAGES = {
   tab: { id: 't1', rev: 4 },
   switched: false,
   lines: ['Added page 1 (slide, Slide (16:9)).'],
@@ -271,10 +271,11 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
-  if (path.endsWith('/illustrate')) return json(ILLUSTRATE);
+  if (path.endsWith('/pages')) return json(PAGES);
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (path.endsWith('/form-link')) return json(FORM_LINK);
+  if (path.endsWith('/form-preview')) return json({ number: 4 });
   if (path.endsWith('/tabs/f1/form')) return json({ tabId: 'f1', rev: 3, name: 'Bug Report' });
   if (path.endsWith('/tabs/f1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
@@ -311,6 +312,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     },
   },
   { tool: 'share_form', output: 'shareFormOutput', args: { documentId: 'd1', action: 'close' } },
+  {
+    tool: 'try_form',
+    output: 'tryFormOutput',
+    args: { documentId: 'd1', answers: { Summary: 'Login fails', Severity: 'S1', 'How bad?': 4 } },
+  },
   { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
   { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
   {
@@ -372,7 +378,8 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   {
     tool: 'add_board',
     output: 'addBoardOutput',
-    args: { documentId: 'd1', columns: ['Ideas', 'Done'], types: ['Task'] },
+    // A board goes only on a tab in Plan: the Form tab is one.
+    args: { documentId: 'd1', tabId: 'f1', columns: ['Ideas', 'Done'], types: ['Task'] },
   },
   {
     tool: 'change_board',
@@ -414,7 +421,8 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   {
     tool: 'add_sheet',
     output: 'addSheetOutput',
-    args: { documentId: 'd1', title: 'Costs', csv: 'a,b\n1,2' },
+    // A Sheet goes only on a tab in Plan: the Form tab is one.
+    args: { documentId: 'd1', tabId: 'f1', title: 'Costs', csv: 'a,b\n1,2' },
   },
   {
     tool: 'change_pages',

@@ -61,9 +61,10 @@ export function sameActiveFormat(a: ActiveFormat, b: ActiveFormat): boolean {
 }
 
 export function applyCss(target: CSSStyleDeclaration, props: React.CSSProperties): void {
-  for (const [k, v] of Object.entries(props)) {
-    if (v == null) continue;
-    (target as unknown as Record<string, string>)[k] = typeof v === 'number' ? String(v) : v;
+  const declared: [string, unknown][] = Object.entries(props);
+  for (const [k, v] of declared) {
+    if (typeof v !== 'string' && typeof v !== 'number') continue;
+    (target as unknown as Record<string, string>)[k] = String(v);
   }
 }
 

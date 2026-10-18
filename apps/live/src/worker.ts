@@ -7,7 +7,9 @@
 import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
-type Env = { ASSETS: AssetsBinding };
+// API is optional: the share page's link preview (./share-page.ts) asks it for the document's name, and without it
+// the page is served as built.
+type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 
 // Defense-in-depth response headers. None of these block existing
 // functionality; they shut down whole classes of attack surface that
@@ -88,9 +90,12 @@ export default {
       if (url.pathname !== '/document/placeholder') {
         const rewritten = new URL(request.url);
         rewritten.pathname = '/document/placeholder';
-        return withSecurityHeaders(
-          await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
-        );
+        const shell = () => env.ASSETS.fetch(new Request(rewritten.toString(), request));
+        // A share link's page names its document for link previews (docs/specs/013-workspace/share-link-previews.md).
+        if (isSharePagePath(url.pathname)) {
+          return withSecurityHeaders(await sharePage(request, env.API, shell));
+        }
+        return withSecurityHeaders(await shell());
       }
     }
     // A form link's page (docs/specs/030-forms/forms.md): one placeholder file backs every /form/<code>, as
@@ -108,3 +113,4 @@ export default {
 import { isEditorPath } from '../lib/legacy-editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';
+import { isSharePagePath, sharePage, type Fetcher } from './share-page';

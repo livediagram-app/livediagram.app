@@ -9,7 +9,7 @@ import {
 } from './constants';
 import type { DisplayHint } from './types';
 
-export type EncodingPlan =
+type EncodingPlan =
   { action: 'keep' } | { action: 'encode'; width: number; height: number; keepIfSmaller: boolean };
 
 type PlanInput = {

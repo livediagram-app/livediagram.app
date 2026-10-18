@@ -38,7 +38,7 @@ import { sheetPresenceFor } from './sheet-presence-store';
 import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
 
-export type SheetModel = {
+type SheetModel = {
   store: SheetStore;
   sheet: Sheet | undefined;
   workbook: Workbook;
@@ -95,7 +95,7 @@ function setUpNow(
 }
 
 export const SHEET_TOO_BIG_TO_PASTE =
-  'This sheet is too big to paste into another document; download it as CSV instead';
+  'Too big to paste into another document. Download it as CSV instead.';
 
 export function useSheetModel(
   element: ShapeElement,

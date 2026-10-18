@@ -13,6 +13,7 @@ export type PanelSection =
   | { kind: 'mine' }
   | { kind: 'team'; id: string }
   | { kind: 'browser' }
+  | { kind: 'tags' }
   | { kind: 'library' }
   | { kind: 'trash' };
 
@@ -24,11 +25,21 @@ export const sectionKey = (s: PanelSection): string =>
 export function sectionFromKey(key: string | null | undefined): PanelSection | null {
   if (!key) return null;
   if (key.startsWith('team:')) return key.length > 5 ? { kind: 'team', id: key.slice(5) } : null;
-  const simple = ['home', 'inbox', 'timeline', 'shared', 'mine', 'browser', 'library', 'trash'];
+  const simple = [
+    'home',
+    'inbox',
+    'timeline',
+    'shared',
+    'mine',
+    'browser',
+    'tags',
+    'library',
+    'trash',
+  ];
   return simple.includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
-// The rail's entries: the sidebar's three groups, without Invites, New team or the sign-in nudge. This browser only
+// The rail's entries: the sidebar's three groups, without Invites, New Team or the sign-in nudge. This Browser only
 // while it holds a document.
 export function panelSectionGroups({
   teams,
@@ -50,6 +61,8 @@ export function panelSectionGroups({
       id: 'more',
       sections: [
         ...(hasBrowserDocuments ? [{ kind: 'browser' as const }] : []),
+        // The reader's tags (docs/specs/013-workspace/tags.md "The editor's Explorer panel").
+        { kind: 'tags' },
         { kind: 'library' },
         { kind: 'trash' },
       ],
@@ -76,6 +89,8 @@ export function sectionLabel(
       return teamName?.(s.id) ?? 'Team';
     case 'browser':
       return SIDEBAR_LABELS.thisBrowser;
+    case 'tags':
+      return SIDEBAR_LABELS.tags;
     case 'library':
       return SIDEBAR_LABELS.library;
     case 'trash':
@@ -109,6 +124,7 @@ export function sectionTelemetryRow(s: PanelSection): SidebarTelemetryRow {
     mine: 'MyDocuments',
     team: 'Team',
     browser: 'ThisBrowser',
+    tags: 'Tags',
     library: 'Library',
     trash: 'Trash',
   };

@@ -68,22 +68,25 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                    | Slots                                                                                                                                                                                                                                                                                                                                |
-| ----------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Home`      | `/`                                | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `HeroSearch`, `HeroBlankDraw`, `HeroBlankWhiteboard`, `HeroBlankSession`, `HeroBlankIllustration`, `HeroBlankPlan`, `HeroFan`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Hero`, `Closing`                                                                                                                                                                                                                   |
-| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Card`                                                                                                                                                                                                                              |
-| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Card`                                                                                                                                                                                                                              |
-| `Ai`        | `/ai`                              | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                      |
-| `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                      |
-| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                      |
-| `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                      |
-| `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                      |
+| Surface     | Pages it covers                    | Slots                                                                                                                                                                                                                                                                                                                                                            |
+| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Home`      | `/`                                | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `HeroSearch`, `HeroBlank`, `HeroBlankDraw`, `HeroBlankWhiteboard`, `HeroBlankSession`, `HeroBlankIllustration`, `HeroBlankPlan`, `HeroFan`, `Gallery`, `GalleryDraw`, `Closing` |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Hero`, `Templates`, `Closing`                                                                                                                                                                                                                   |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Card`                                                                                                                                                                                                                                           |
+| `Faq`       | `/faq`                             | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`, `Card`                                                                                                                                                                                                                                           |
+| `Ai`        | `/ai`                              | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
+| `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
+| `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
+| `Community` | `/community`, `/community/*`       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
 
 The slots:
 
-- `Header` / `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan` / `HeaderSession`: the shared `SiteHeader`
-  pair, Choose Template (`/new`) and the Start Blank menu's five rows: Blank Diagram
+- `Header` / `HeaderBlank`: the shared `SiteHeader` pair, Choose Template (`/new`) and Start Blank
+  (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)).
+- `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan` / `HeaderSession` (**retired** in
+  October 2026 with the Start Blank menu, [Start Blank](marketing-site.md#start-blank); the slots
+  stay so their stored history still reads): the menu's five rows beside Choose Template: Blank Diagram
   (`/new?blank=1`, keeping `HeaderDraw` so the old Start Blank series carries on), Blank
   Whiteboard (`/new?template=whiteboard`), Blank Illustration
   (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Session
@@ -102,8 +105,10 @@ The slots:
   reads): the **Build yours** button on each of the hero's mode windows, opening the template
   step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
 - `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
-- `HeroBlank<Blank>`: a row of the **Start Blank** menu inside the hero's search bar, one slot per
-  blank as the header's `Header<Blank>` (`HeroBlankDraw` is Blank Diagram, `/new?blank=1`).
+- `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).
+- `HeroBlank<Blank>` (**retired** with the Start Blank menu in October 2026; the slots stay so their history
+  still reads): a row of the menu the hero's search bar held before its Start Blank link, one slot per blank as the
+  header's `Header<Blank>` (`HeroBlankDraw` is Blank Diagram, `/new?blank=1`).
 - `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
 - `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
   into the editor.
@@ -112,6 +117,8 @@ The slots:
   `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**
   when the gallery's search moved to the hero in October 2026) was the blank-canvas link shown when a
   gallery search matched nothing.
+- `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
+  the category's own pick of up to nine templates.
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).
 - `Card`: the Start drawing card at the foot of the comparison and FAQ pages.
 

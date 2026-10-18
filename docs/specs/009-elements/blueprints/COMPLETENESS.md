@@ -47,6 +47,24 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
+## avatar-pad
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Web Experience
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [x] Assets and external resources
+- [x] Defaults ledger
+
 ## fence
 
 - [x] Domain and naming
@@ -145,7 +163,7 @@
 - [x] Presentation and UX
 - [ ] Accessibility
 - [ ] Observability
-- [ ] Testing
+- [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
 
@@ -376,23 +394,6 @@
 - [x] Data and persistence
 - [ ] Errors and edge cases
 - [ ] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## timeline-rail
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
 - [x] Performance and limits
 - [x] Presentation and UX
 - [ ] Accessibility

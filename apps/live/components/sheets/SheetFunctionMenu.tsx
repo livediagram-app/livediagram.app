@@ -23,7 +23,7 @@ export const FUNCTION_FAMILY_LABELS: Record<FunctionFamily, string> = {
   'Plan cards': 'Plan Cards',
 };
 
-export const functionsOf = (family: FunctionFamily): string[] =>
+const functionsOf = (family: FunctionFamily): string[] =>
   Object.keys(FUNCTION_FAMILIES.find(([f]) => f === family)?.[1] ?? {}).sort();
 
 // How long a function found by Search stays highlighted in its menu.

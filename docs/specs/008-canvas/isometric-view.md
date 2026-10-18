@@ -81,7 +81,7 @@ Available to everyone, including view-only visitors (looking is read-only).
   Eraser / Format), then presenter tools (Laser / Spotlight / Avatar / Slide
   Deck), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
   Hand / Laser do.
-- **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` / `W` are the
+- **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` are the
   other view tools, `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
   text-input / label-edit bailouts so typing `i` into a label never flips the
   mode. Listed under Tools in the shortcut catalogue (Settings' Keyboard

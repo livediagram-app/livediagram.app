@@ -1,7 +1,7 @@
 // Why a draw.io import was refused, and what the person importing is told
 // (docs/specs/020-import-export/blueprints/drawio-import.md "Refusals").
 
-export type DrawioRefusalReason =
+type DrawioRefusalReason =
   | 'too-large'
   | 'not-xml'
   | 'not-drawio'

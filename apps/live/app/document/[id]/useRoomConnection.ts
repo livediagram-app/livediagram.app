@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import { noteAccessEnded } from '@/lib/access-notice';
 import type { EditorMode, QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
@@ -21,7 +22,6 @@ import {
   type LivePoll,
 } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
@@ -38,6 +38,8 @@ import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
+import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
+import { debugLog } from '@/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
   endPeerDragPreview,
@@ -87,6 +89,9 @@ export function useRoomConnection(opts: {
   // folded into it as well as into the tabs on screen, so the next local save
   // neither mistakes it for ours nor ships it back out.
   saveBaseline: SaveBaselineRefs;
+  // This editor's element writes the room has not sequenced yet: a peer's update of one was ordered first, and
+  // ours replaces it everywhere, so it is not shown here (own-element-writes.ts).
+  ownWrites?: OwnElementWrites;
   // Counts a peer op applied to `tabs` (useEditorState's opsApplied, read by the autosave).
   countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
@@ -185,9 +190,8 @@ export function useRoomConnection(opts: {
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
-  // A Participant session (docs/specs/013-workspace/share-roles.md): it always joins with a ticket, which
-  // carries the adder key the room stamps on what it adds, and the key comes back for `onAdderKey`.
-  participant?: boolean;
+  // A Participant session's ticket (docs/specs/013-workspace/share-roles.md) carries the adder key the room
+  // stamps on what it adds, and the key comes back for `onAdderKey`.
   onAdderKey?: (key: string | null) => void;
 }) {
   const {
@@ -203,6 +207,7 @@ export function useRoomConnection(opts: {
     markSeen,
     selfParticipantRef,
     saveBaseline,
+    ownWrites,
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
@@ -242,17 +247,15 @@ export function useRoomConnection(opts: {
     receiveSheetPresence,
     receivePeerModeSwitch,
     onRoomJoined,
-    participant = false,
     onAdderKey,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
   //
-  // A signed-in session joins with a room ticket so the room knows it is an account (the only kind
-  // that may publish a profile picture or see others'), and says hello with its published picture
+  // A signed-in session's ticket tells the room it is an account (the only kind that may publish a
+  // profile picture or see others'), and it says hello with its published picture
   // (docs/specs/014-identity/profile-picture.md §6).
-  const { isSignedIn } = useDeferredAuth();
   const picture = usePublishedPicture();
   const selfForRoom = () => ({
     id: selfParticipant.id,
@@ -264,8 +267,6 @@ export function useRoomConnection(opts: {
   const connectAs = useEffectEvent(() => ({
     self: selfForRoom(),
     shareCode: sessionShareCode,
-    signedIn: isSignedIn,
-    participant,
   }));
   const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // The switch flipped, or the picture changed: tell the open room, which updates the roster in
@@ -434,6 +435,13 @@ export function useRoomConnection(opts: {
         if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
+        // Ordered before our own pending write of the same element, which replaces it on every screen: showing it
+        // here alone would leave this screen on the peer's copy (realtime-conflict-resolution.md "Same-element
+        // edits converge").
+        if (ownWrites && isSupersededByOwnWrite(ownWrites, op)) {
+          debugLog('[room] peer update superseded by our pending write');
+          return;
+        }
         // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
         // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
         const savedBefore = saveBaseline.tabs.current;
@@ -554,8 +562,11 @@ export function useRoomConnection(opts: {
         // revoke and reloads into the new scope on a rescope; the room
         // closes its socket either way. Everyone else keeps their session.
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
-        if (effect === 'leave') window.location.assign('/explorer');
-        else if (effect === 'reload') window.location.reload();
+        if (effect === 'leave') {
+          // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
+          noteAccessEnded(documentId, 'revoked');
+          window.location.assign('/explorer');
+        } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
@@ -594,9 +605,12 @@ export function useRoomConnection(opts: {
 
   const roomDocumentTrashed = useEffectEvent(() => receiveDocumentTrashed());
   // A workbench frame cannot reload into another access path: an access change ends its session.
-  const roomAccessChanged = useEffectEvent(() =>
-    onWorkbenchEnded ? onWorkbenchEnded() : window.location.reload(),
-  );
+  const roomAccessChanged = useEffectEvent(() => {
+    if (onWorkbenchEnded) return onWorkbenchEnded();
+    // Whatever the reload's access check answers, a refusal says why (lib/access-notice.ts).
+    noteAccessEnded(documentId, 'changed');
+    window.location.reload();
+  });
   const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
@@ -667,62 +681,42 @@ export function useRoomConnection(opts: {
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };
-    // Team documents need a one-time room ticket (docs/specs/015-api/api.md): membership is
-    // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
-    // the ticket is minted over authenticated REST first. A signed-in
-    // session mints one too, because only a ticket can tell the room it is an
-    // account (docs/specs/014-identity/profile-picture.md §6). Guest personal /
-    // share-code sessions skip the extra round trip — their legacy query
-    // params (`o` exact-owner match, `s` share code) still resolve the
-    // role. Connect is async only for the ticket fetch; `cancelled`
-    // covers an unmount (or dep change) racing it.
-    let cancelled = false;
-    let openedRoom: ReturnType<typeof connectRoom> | null = null;
-    void (async () => {
-      const { self, shareCode, signedIn, participant: asParticipant } = connectAs();
-      const minted =
-        documentTeamId || signedIn || asParticipant
-          ? await apiCreateRoomTicket(self.id, documentId, shareCode)
-          : null;
-      if (cancelled) return;
-      const ticket = minted?.ticket ?? null;
-      announceAdderKey(minted?.adderKey ?? null);
-      openedRoom = connectRoom(
-        documentId,
-        self,
-        handlers,
-        {
-          // The api worker resolves role from these on WS upgrade and
-          // stamps it into the participant row via X-Verified-Role so
-          // peers see a trustworthy Viewer / Editor badge.
-          ticket,
-          shareCode,
-          // Always send our own id as `o`: the worker checks it against
-          // the document's owner to resolve the edit role (team membership
-          // rides the ticket above instead — a bare id isn't trusted for
-          // it). A share-link visitor's id just won't match, and their
-          // role comes from the code.
-          ownerId: self.id,
-          // Each reconnect needs its own ticket: the upgrade spends the one it admits.
-          mintTicket: async () => {
-            const again = await apiCreateRoomTicket(self.id, documentId, shareCode);
-            // A Participant's key comes back with every ticket (the same key, derived per document).
-            if (again?.adderKey) announceAdderKey(again.adderKey);
-            return again?.ticket ?? null;
-          },
-          readFollowing: roomReadFollowing,
+    // Every session joins through a one-time room ticket (docs/specs/015-api/api.md "Realtime model"),
+    // minted over REST, where the access gates already read the guest signature, the share code and its
+    // password, and team membership as headers. The WS upgrade can't carry headers, so before tickets
+    // those rode the upgrade URL, which is logged; now only the spent-on-use ticket does. The connector
+    // mints its first ticket itself, so it exists while that request runs and keeps what the editor
+    // says meanwhile (its selection, its tab) for the room.
+    const { self, shareCode } = connectAs();
+    let firstMint = true;
+    const openedRoom = connectRoom(
+      documentId,
+      self,
+      handlers,
+      {
+        // The api worker resolves the role the mint stored on the ticket and
+        // stamps it into the participant row via X-Verified-Role so
+        // peers see a trustworthy Viewer / Editor badge. Each connect needs its
+        // own ticket: the upgrade spends the one it admits.
+        mintTicket: async () => {
+          const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
+          // A Participant's key comes back with every ticket (the same key, derived per document); the
+          // first answer also says when there is none.
+          if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
+          firstMint = false;
+          return minted?.ticket ?? null;
         },
-        roomReadFacilitatorToken,
-      );
-      roomRef.current = openedRoom;
-    })();
+        readFollowing: roomReadFollowing,
+      },
+      roomReadFacilitatorToken,
+    );
+    roomRef.current = openedRoom;
     return () => {
-      cancelled = true;
       presence.cancel();
       resetArticlePeers();
       // Nobody's words outlive the room they were said in.
       resetSpeechBubbles();
-      openedRoom?.close();
+      openedRoom.close();
       roomRef.current = null;
     };
   }, [

@@ -11,7 +11,7 @@ import type {
   TemplateValue,
 } from './dimensions';
 
-/** A space as the lens names it: My documents, Shared with me, or one team by id. */
+/** A space as the lens names it: My Documents, Shared With Me, or one team by id. */
 export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 
 /** The value type of each dimension. */
@@ -67,7 +67,7 @@ export const LENS_ISSUE_REASONS = [
   'space_not_here',
   'too_long',
 ] as const;
-export type LensIssueReason = (typeof LENS_ISSUE_REASONS)[number];
+type LensIssueReason = (typeof LENS_ISSUE_REASONS)[number];
 
 /** The reasons that concern one dimension, and so name it. */
 export type DimensionIssueReason = Exclude<LensIssueReason, 'unknown_dimension' | 'too_long'>;

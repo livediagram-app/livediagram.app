@@ -47,7 +47,7 @@ throws. Only the parse stage has to be pure.
      14 Aug 2020", its created date) and **dated as the board** (its created
      and last-modified dates, see [Document dates](../015-api/api.md#document-dates)),
      filed in the folder the import was started from (the Explorer's), else
-     the root of My documents (the Microsoft Whiteboard import). A board that cannot land is
+     the root of My Documents (the Microsoft Whiteboard import). A board that cannot land is
      named in the report with its reason (a board over the api's tab cap,
      [Tab size](../015-api/api.md#tab-size), checked before the create and again
      by the server: "This board is too big for one document") and the rest still
@@ -59,7 +59,7 @@ throws. Only the parse stage has to be pure.
      is left out and named ("Page 'Network' is too large to store") while the
      document's other tabs land, and a document left with no tab fails as above.
      An import of **one** document counts as a use of it, so it is in Explorer
-     Home's Jump back in at once; an import of **more than one** in one go
+     Home's Jump Back In at once; an import of **more than one** in one go
      marks none of them used (`markUsed: false`, in this browser's record too
      for Offline Mode documents), so it never pushes everything else out
      ([Explorer Home: Making a document](../013-workspace/explorer-home.md#making-a-document));

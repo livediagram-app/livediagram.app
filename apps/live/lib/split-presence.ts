@@ -14,12 +14,12 @@ function createStore<T>(initial: T) {
   const listeners = new Set<Listener>();
   return {
     get: () => value,
-    set(next: T) {
+    set: (next: T) => {
       if (Object.is(next, value)) return;
       value = next;
       for (const l of listeners) l();
     },
-    subscribe(l: Listener) {
+    subscribe: (l: Listener) => {
       listeners.add(l);
       return () => listeners.delete(l);
     },
@@ -29,7 +29,7 @@ function createStore<T>(initial: T) {
 const local = createStore<string | null>(null);
 const remote = createStore<ReadonlyMap<string, string>>(new Map());
 
-// This browser's other pane, or null with no split showing.
+// This Browser's other pane, or null with no split showing.
 export const setLocalBesideTab = (tabId: string | null) => local.set(tabId);
 
 export function useLocalBesideTab(): string | null {

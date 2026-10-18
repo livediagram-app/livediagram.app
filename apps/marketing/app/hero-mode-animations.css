@@ -1,5 +1,5 @@
 /* The hero's mode windows (components/hero-diagram-board.tsx, hero-draw-board.tsx,
-   hero-mindmap-board.tsx, hero-illustrate-page.tsx, hero-article-page.tsx;
+   hero-mindmap-board.tsx, hero-page.tsx, hero-article-page.tsx;
    docs/specs/019-marketing/marketing-site.md "Hero"). Every mark plays once at its own delay (--d): the
    window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
    last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced
@@ -77,41 +77,6 @@
   }
 }
 
-/* The teammate's pen on the whiteboard: it rides the ring as the ring is drawn, glides to the
-   arrow's start and rides the arrow, timed to the two strokes (3.4s to 5.4s), then lifts away.
-   The path (the ring, a glide, then the arrow) and the stops (--p1, --p2, each leg's share of its
-   length) come from the layout (components/hero-draw-board.tsx). */
-.hm-pen {
-  transform-box: view-box;
-  transform-origin: 0 0;
-  offset-rotate: 0deg;
-  opacity: 0;
-  animation:
-    hm-pen 2s linear 3.4s both,
-    hm-lift 0.4s ease-out 5.8s forwards;
-}
-@keyframes hm-pen {
-  0% {
-    offset-distance: 0%;
-    opacity: 1;
-  }
-  60% {
-    offset-distance: var(--p1);
-  }
-  70% {
-    offset-distance: var(--p2);
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-}
-@keyframes hm-lift {
-  to {
-    opacity: 0;
-  }
-}
-
 /* The teammate's cursor on the page: it comes in from the right, settles on the chart, and stays. */
 .hm-cursor {
   opacity: 0;
@@ -140,7 +105,6 @@
   transform: none;
   stroke-dashoffset: var(--to, 0);
 }
-.hero-static .hm-pen,
 .hero-static .hm-cursor {
   display: none;
 }
@@ -153,9 +117,6 @@
     opacity: 1;
     transform: none;
     stroke-dashoffset: var(--to, 0);
-  }
-  .hm-pen {
-    display: none;
   }
   .hm-cursor {
     animation: none;
@@ -360,31 +321,6 @@
   .hm-you,
   .hm-teammate {
     display: none;
-  }
-}
-
-/* --- The Article window (components/hero-article-page.tsx) --- */
-
-/* Where you are writing: a caret that blinks once it arrives. */
-.hm-caret {
-  opacity: 0;
-  animation: hm-caret 1s steps(1, end) var(--d, 0s) infinite;
-}
-@keyframes hm-caret {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-.hero-static .hm-caret {
-  display: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .hm-caret {
-    animation: none;
-    opacity: 1;
   }
 }
 

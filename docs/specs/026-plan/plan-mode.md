@@ -19,8 +19,8 @@ item store.
 
 ## Offering the mode
 
-- Plan is the fifth mode, after Illustrate: the mode switch, the tab menu's mode rows, **Shift+D** and the template picker's
-  mode filter list it in that order.
+- Plan is the fifth mode, after Pages: a start's mode switch, **Shift+D** on an empty tab and the template
+  picker's mode filter list it in that order.
 - It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
   Its Settings › Experimental switch went when it graduated.
 - Its mark is a board: three columns, the middle one holding a raised card.
@@ -141,7 +141,8 @@ Plan must cost nothing to a document that does not use it:
     `templateKeywords`, the words every template search reads: what
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
-    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**; the rail shows no choice while a search is typed, and
+    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
+    with what was typed ([Template starts → A title match leads](../007-editor/start-diagramming.md#the-panel)); the rail shows no choice while a search is typed, and
     Escape clears it. Templates of the other modes that match follow, under **In Other Modes**, and choosing one switches the
     tab to its mode ([Template starts → Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). Nothing
     found anywhere: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
@@ -159,16 +160,17 @@ Plan must cost nothing to a document that does not use it:
 
 ## Switching modes keeps the tab
 
-- **A tab switches into and out of Plan freely, whatever it holds, and nothing on it is lost.** Plan mode is how
-  a person works on the tab, never what the tab is: its boards, cards and views are elements every mode keeps,
-  and their work is items in the document, which no mode touches.
-- **In another mode a board is an element like any other**: it is drawn with its columns and cards, live as
-  items change, and is selected, moved, resized, copied, styled and deleted as any element is. Its cards do not
-  take the pointer or the keyboard there; switching back to Plan makes them work again.
+- **A tab keeps its mode once it has content** ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), so
+  boards and Sheets go only on tabs in Plan ([Plan tabs](plan-tabs.md#only-in-plan)): a paste or an agent never puts
+  one on a tab in another mode. Their work is items in the document, which no mode touches.
+- **A board a tab in another mode already holds** (from before) is drawn with its columns and cards, live as items
+  change, and is selected, moved, resized, copied, styled and deleted as any element is. Its cards do not take the
+  pointer or the keyboard there.
 - **A diagram is welcome in Plan**: a tab's shapes, ink, arrows and pages stay on it in Plan mode, worked the Diagram
   way (Plan's palette offers fewer of them, nothing more).
-- The mode switch and **Shift+D** switch at once, with no question, as between any two modes; Shift+D announces
-  the mode it reached.
+- A start's mode switch and **Shift+D** switch an empty tab at once, with no question, as between any two modes;
+  Shift+D announces the mode it reached. A tab with content keeps its mode
+  ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)).
 - A tab with Plan content is never added to another document: the tab menu's **Add to Document** is off for it,
   as its cards are this document's items.
 - Telemetry: a switch is the existing mode event (`Editor` · `Changed` · `ModePlan`, ...), nothing more.
@@ -232,7 +234,7 @@ with a Board**.
   rejoined connection a new presence id, which carries no hold until it is said). Nobody else sends anything: a
   person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
   drawn only for people in the presence list.
-- Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
+- Everyone on a tab works in its one mode, and sees the boards move as items change.
 - Facilitation on a board (hide writing and reveal) lives in the board's set-up, and voting is the tab's session
   vote on the cards, so a retro needs nothing
   beyond the board and the tab's Vote.
@@ -272,7 +274,7 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
   `OpensInPlan` and `TemplateModePlan`.
 - The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
-- The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
+- The header's Start Blank menu offered Blank Plan until it was retired, its funnel slot (`HeaderPlan`) kept for history.
 
 ## The Plan tour
 

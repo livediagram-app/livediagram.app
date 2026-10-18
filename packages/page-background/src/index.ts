@@ -1,9 +1,9 @@
-// A page background's colours (docs/specs/007-editor/illustrate-pages.md "Backgrounds"): a solid colour or a
+// A page background's colours (docs/specs/007-editor/pages-mode.md "Backgrounds"): a solid colour or a
 // two-stop gradient (a slide's moving one included, "Animated backgrounds"), and a pattern over it. Shared by a slide
 // page (@livediagram/document, which adds pictures) and a form's cover (@livediagram/forms), so both read and paint
 // the same backgrounds. Pure, no dependencies.
 
-// A slide's animated background (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds"):
+// A slide's animated background (docs/specs/007-editor/pages-mode.md "Animated backgrounds"):
 // a gradient with a motion drawn over it, moving on screen and while presenting, still in exports
 // (which draw its first frame) and under reduced motion. The first five are the animated canvas
 // styles'; the rest are the slide's own.

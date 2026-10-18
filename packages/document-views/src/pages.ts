@@ -1,5 +1,5 @@
-// The `pages` view (docs/specs/024-agents/illustrate-for-agents.md "Reading: the pages view"): an
-// Illustrate tab's pages in row order, each with its rectangle and the refs of what is on it; each
+// The `pages` view (docs/specs/024-agents/pages-for-agents.md "Reading: the pages view"): an
+// Pages tab's pages in row order, each with its rectangle and the refs of what is on it; each
 // article with its writing as the Markdown write_article takes, so read, edit, write back
 // round-trips; and the layouts each kind on the tab offers. A tab in another mode says how to
 // switch it. Kept to the budget like every view: whole lines in order, then what was left out.
@@ -13,8 +13,8 @@ import {
   articlesOf,
   articleToMarkdown,
   elementIdsOnPage,
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   opensInOf,
   PAGE_SIZES,
   type Element,
@@ -30,7 +30,7 @@ import { shownFields } from './show';
 import { jsonString } from './text';
 import { depthFirst } from './tree';
 
-export type PagesOptions = { budget?: number; door?: ViewDoor };
+type PagesOptions = { budget?: number; door?: ViewDoor };
 
 const PAGE = { one: 'page line', many: 'page lines' };
 const WRITING = { one: 'line of writing', many: 'lines of writing' };
@@ -79,23 +79,23 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   const tab = model.tab;
   const header = viewHeader('pages', model.facts);
   const door = options.door ?? 'cli';
-  if (opensInOf(tab) !== 'illustrate') {
+  if (opensInOf(tab) !== 'pages') {
     const how =
       door === 'mcp'
         ? 'change_pages adds pages and switches it; write_article starts an article.'
         : 'page set adds pages and switches it; article set starts an article.';
     const fitted = fitLines({
       header: headerLine(model.facts),
-      lines: [{ text: `This tab is not in Illustrate mode: ${how}` }],
+      lines: [{ text: `This tab is not in Pages mode: ${how}` }],
       door,
     });
     return {
       text: fitted.text,
-      json: { header, illustrate: false, pages: [], articles: [], layouts: [], elision: null },
+      json: { header, pagesMode: false, pages: [], articles: [], layouts: [], elision: null },
       fit: fitOf(fitted),
     };
   }
-  const laid = layOutIllustratePages(illustratePagesOf(tab));
+  const laid = layOutPages(pagesOf(tab));
   const printed = new Set(model.printed.map((el) => el.id));
   const pages = pageSummaries(tab).map((p) => ({
     ...p,
@@ -144,7 +144,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       for (const text of itemLines(node.el)) lines.push({ text, noun: ELEMENT });
     }
   }
-  // An Illustrate tab always has a page (illustratePagesOf), so the note always applies.
+  // A Pages tab always has a page (pagesOf), so the note always applies.
   lines.push({
     text: "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
   });
@@ -175,7 +175,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   });
   return {
     text: fitted.text,
-    json: { header, illustrate: true, pages, articles, layouts, elision: fitted.elision },
+    json: { header, pagesMode: true, pages, articles, layouts, elision: fitted.elision },
     fit: fitOf(fitted),
   };
 }

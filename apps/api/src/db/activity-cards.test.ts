@@ -154,6 +154,13 @@ describe('Activity: Plan cards assigned to the reader', () => {
     expect((await read()).map((c) => c.id)).toEqual(['live']);
   });
 
+  it('drops a linked card, whose action the Inbox lists already', async () => {
+    const { card, read } = await setUp();
+    await card('linked', { linked: 'actions/t-notes/e1/a1' });
+    await card('plain', {});
+    expect((await read()).map((c) => c.id)).toEqual(['plain']);
+  });
+
   it('drops a card whose status is the done column or after it', async () => {
     const { card, read } = await setUp();
     await card('doing', { status: 'doing' });

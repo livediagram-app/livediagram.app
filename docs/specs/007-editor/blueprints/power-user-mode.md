@@ -92,7 +92,7 @@ const POWER_USER_PRESET = {
   drawTourSeen: { drawTourSeen: true },
   formTourSeen: { formTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
-  illustrateTourSeen: { illustrateTourSeen: true },
+  pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
@@ -136,8 +136,8 @@ provider, so the Explorer page and `/new` are unaffected.
 | O1  | preferences settled, document editable | once per page load                                                    | `recordEditingSession(c, localDayKey(now))`; persist; evaluate             |
 | O2  | `onShortcutUsed`                       |                                                                       | `recordShortcut(c)`; persist; evaluate                                     |
 | O3  | evaluate                               | `offerDue(c)` and `offerEligible(prefs, ctx)` and not shown this page | show the toast; write `powerUserOfferShown: true` (synced); `Opened`       |
-| O4  | "Try power user mode"                  |                                                                       | `setPowerUserMode(prefs, true)`; write; `Used` + `Toggled PowerUserModeOn` |
-| O5  | "No thanks" or close                   |                                                                       | `Declined`; nothing else                                                   |
+| O4  | "Try It"                               |                                                                       | `setPowerUserMode(prefs, true)`; write; `Used` + `Toggled PowerUserModeOn` |
+| O5  | "No Thanks" or close                   |                                                                       | `Declined`; nothing else                                                   |
 
 - `recordEditingSession`: if `day === lastDay`, unchanged; else `days + 1`, `lastDay = day`.
 - `offerDue(c) = c.days >= POWER_USER_OFFER_DAYS || c.shortcuts >= POWER_USER_OFFER_SHORTCUTS`.
@@ -321,8 +321,8 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 - Panel headers: the button cluster carries `ml-auto`, so it stays at the right when the title is hidden.
 - Palette tiles under the flag: `h-9 w-full`, so the icon stays centred in the cell the captioned tile filled; the
   Toolbar strip's fixed tiles and its always-visible shortcut letters are unchanged.
-- Offer copy: message "Power user mode: fewer labels and a few faster defaults.", actions "Try power
-  user mode" (primary) and "No thanks".
+- Offer copy: message "Power user mode: fewer labels, faster defaults.", actions "No Thanks" and
+  "Try It" (primary, last).
 - Settings copy:
   - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Facilitate tours marked as seen, and AI suggested prompts off.
     Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change."

@@ -12,6 +12,7 @@
 // reworded request cannot email anyone again. A canvas comment reaches D1 only with the next tab save,
 // so its request carries the text and mentions.
 
+import { isOpenTeamMember } from '@livediagram/api-schema';
 import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livediagram/api-schema';
 import { MENTIONS_MAX, itemThread, type Comment } from '@livediagram/document';
@@ -97,7 +98,8 @@ export async function handleTeamMentionRoutes(
 
   // Each target resolves to a member of this team other than the caller;
   // anything else is skipped silently. Once each.
-  const members = await listTeamMembers(env, teamId);
+  // A rejected invite is no one to mention (docs/specs/013-workspace/teams.md).
+  const members = (await listTeamMembers(env, teamId)).filter(isOpenTeamMember);
   const recipients = new Map<string, TeamMember>();
   for (const t of targets!) {
     const byMember = typeof t?.memberId === 'string' ? t.memberId : null;

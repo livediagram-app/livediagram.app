@@ -15,6 +15,7 @@ export default function FeaturesPage() {
   return (
     <BrowsePage
       title="Features"
+      eyebrow="Editor Guides"
       lede="In-depth guides for everything in the editor, grouped by area."
     >
       {featureCategories.map((category) => (

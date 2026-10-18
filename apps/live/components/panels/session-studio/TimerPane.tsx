@@ -126,7 +126,7 @@ function LiveTimer({
         >
           {formatTimerClock(ms)}
         </span>
-        <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-slate-400">
+        <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {countdown ? 'left' : 'elapsed'}
         </span>
       </TimerDial>

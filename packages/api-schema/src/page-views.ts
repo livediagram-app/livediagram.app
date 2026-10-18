@@ -36,7 +36,7 @@ const MAX_LENGTH = 120;
 // What the ingest accepts as a `Page·View` type: `/`, or up to six
 // `/`-separated segments of safe characters. There is no id placeholder:
 // an id is dropped, never stood in for, so nothing id-shaped is stored.
-export const PAGE_VIEW_PATH_PATTERN = /^\/$|^(?:\/[a-z0-9._-]{1,60}){1,6}$/;
+const PAGE_VIEW_PATH_PATTERN = /^\/$|^(?:\/[a-z0-9._-]{1,60}){1,6}$/;
 
 export function isValidPageViewPath(value: string): boolean {
   return value.length <= MAX_LENGTH && PAGE_VIEW_PATH_PATTERN.test(value);

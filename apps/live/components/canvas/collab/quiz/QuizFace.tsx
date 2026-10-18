@@ -42,7 +42,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 // How far inside the disc's top edge its `…` sits.
 const ELLIPSIS_INSET = 6;
 
-export type QuizActions = {
+type QuizActions = {
   answer?: (index: number) => void;
   start?: () => void;
   lock?: () => void;

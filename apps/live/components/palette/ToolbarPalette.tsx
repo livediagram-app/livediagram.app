@@ -12,11 +12,18 @@ import {
   type RefObject,
 } from 'react';
 import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
-import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
+import {
+  ChevronDownIcon,
+  EllipsisIcon,
+  HoverCard,
+  atLeastInset,
+  safeInlinePadding,
+} from '@livediagram/ui';
+import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { BAND_STRIP_FLUSH, BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
@@ -56,6 +63,7 @@ import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { useBarLabels } from './useBarLabels';
+import { useStripCrowded } from './useStripCrowded';
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
@@ -88,7 +96,9 @@ type Props = Pick<
     hidden?: boolean;
     // Its own card at the far left of the strip's row, the strip beside it: the
     // Explorer menu button and mode switch on a phone, which has no room for
-    // them in a corner card above the strip.
+    // them in a corner card above the strip. Given at all (null included), the
+    // strip takes the phone's row; null is that row with no menu card (a phone
+    // held sideways, docs/specs/007-editor/live-app.md "A phone held sideways").
     leading?: ReactNode;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
@@ -97,11 +107,12 @@ type Props = Pick<
     participant?: boolean;
   };
 // The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${PHONE_TOOLBAR_ITEMS}`;
+const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${BAND_STRIP_FLUSH} ${PHONE_TOOLBAR_ITEMS}`;
 
-// With a leading card (a phone), the menu card sits at the left gutter and the
-// strip beside it rather than centred (docs/specs/007-editor/toolbar-layout.md
-// "On a phone"). Without one, the strip alone, centred by its parent.
+// On a phone's row, the menu card sits at the left gutter and the strip beside
+// it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
+// held sideways there is no menu card and the strip starts at the gutter. Off a
+// phone, the strip alone, centred by its parent.
 function StripRow({
   leading,
   leadingRef,
@@ -111,16 +122,23 @@ function StripRow({
   leadingRef: RefObject<HTMLDivElement | null>;
   children: ReactNode;
 }) {
-  if (!leading) return <>{children}</>;
+  if (leading === undefined) return <>{children}</>;
   return (
     <div
-      // 12px gutters, or a landscape notch's inset where that is bigger (lib/safe-area).
-      style={safeInlinePadding('0.75rem')}
-      className="pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto"
+      // 12px gutters, or a landscape notch's inset where that is bigger (lib/safe-area). Held
+      // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
+      // (LandscapeBarsHandle), so a long strip's rail scrolls short of it rather than under it.
+      style={{
+        ...safeInlinePadding('0.75rem'),
+        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
+      }}
+      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
-      <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
-        {leading}
-      </div>
+      {leading == null ? null : (
+        <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
+          {leading}
+        </div>
+      )}
       {children}
     </div>
   );
@@ -136,6 +154,8 @@ function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode })
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, leading } = props;
+  // The phone's row: the strip at the left gutter, beside the menu card when there is one.
+  const phoneRow = leading !== undefined;
   // A Sheet covering the canvas, maximised or filling its tab, hides the palette (docs/specs/026-plan/plan-board.md
   // "The palette follows what fills the screen"): nothing it offers lands in a Sheet. The whole strip, or on a phone
   // only its card, the menu beside it staying. A board keeps it (its cards land there).
@@ -143,8 +163,8 @@ export function ToolbarPalette(props: Props) {
   // A board covering the canvas gives the strip to its own cards (BoardCardsStrip), apart from its controls; on a
   // phone, where the menu shares the strip, the strip stays and narrows to Cards (coveredPaletteCategories).
   const coveringBoard = useCoveringBoardId();
-  const boardCards = !!coveringBoard && !leading;
-  const hidden = props.hidden || (sheetFilling && !leading);
+  const boardCards = !!coveringBoard && !phoneRow;
+  const hidden = props.hidden || (sheetFilling && !phoneRow);
   const participant = !!props.participant;
   // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
   // inside, so pressing anything else on the strip closes it.
@@ -214,7 +234,7 @@ export function ToolbarPalette(props: Props) {
     [tabs],
   );
   // The bar has no Popular: with every category one press away, a pick from across them adds nothing.
-  // The bar's categories (bar-categories): no Popular, one-word names, Write and Draw as one, Session.
+  // The bar's categories (bar-categories): no Popular, one-word names, Session.
   const barCategories = useMemo(
     () =>
       barCategoriesFor(tabs, (groups) => (
@@ -244,6 +264,8 @@ export function ToolbarPalette(props: Props) {
     scale,
   });
   const leadingRef = useRef<HTMLDivElement>(null);
+  // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
+  const crowded = useStripCrowded(cardRef, leading == null);
   const stripLimit = useStripTileLimit(cardRef, {
     leadingRef,
     isMobile,
@@ -255,7 +277,7 @@ export function ToolbarPalette(props: Props) {
   // On a phone the strip holds the WHOLE category and swipes sideways
   // (docs/specs/007-editor/toolbar-layout.md "On a phone"); the fitted count
   // still decides whether More is needed for what is out of view.
-  const swipe = leading != null;
+  const swipe = phoneRow;
   const tileLimit = swipe ? Infinity : stripLimit;
   // Plan mode's Cards follow the document's item types (docs/specs/026-plan/item-types.md).
   const plan = usePlan();
@@ -389,6 +411,7 @@ export function ToolbarPalette(props: Props) {
     <div
       ref={rootRef}
       data-toolbar-palette=""
+      data-region="palette"
       // The strip is the Palette in this layout, so the panel-opacity
       // preference (docs/specs/007-editor/user-preferences.md) fades it and its More popover
       // like every other panel; hovering either restores it.
@@ -406,8 +429,10 @@ export function ToolbarPalette(props: Props) {
       // sets the two properties on the canvas; centred otherwise, docs/specs/026-plan/plan-board.md).
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-        alignItems: 'var(--plan-strip-align, center)',
-        paddingRight: 'var(--plan-strip-end, 0px)',
+        alignItems: crowded ? 'flex-end' : 'var(--plan-strip-align, center)',
+        paddingRight: crowded
+          ? 'max(0.75rem, var(--plan-strip-end, 0px))'
+          : 'var(--plan-strip-end, 0px)',
       }}
       // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.

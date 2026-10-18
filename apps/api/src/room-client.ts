@@ -94,23 +94,14 @@ async function broadcastOp(
 //
 // Also returns who posted each comment the room has seen, so the save can
 // credit a comment that is new to D1 to its author rather than to the saver.
-export type RoomMerge = {
+type RoomMerge = {
   tab: Tab;
   commentAuthors: Map<string, { authorName: string; authorColor: string }>;
 };
 
-export async function mergeRoomLedger(
-  env: Env,
-  documentId: string,
-  tab: Tab,
-  cursorHeader: string | null,
-): Promise<RoomMerge> {
-  return applyRoomLedger(tab, await fetchRoomLedger(env, documentId, tab.id, cursorHeader));
-}
-
-// The ledger fetch alone: it needs only the tab's id and the cursor, so a save asks for it alongside
-// its own reads instead of after them (applyRoomLedger merges it once the tab is ready).
-export type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
+// The ledger fetch needs only the tab's id and the cursor, so a save asks for it alongside its own
+// reads instead of after them (applyRoomLedger merges it once the tab is ready).
+type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
 
 export async function fetchRoomLedger(
   env: Env,
@@ -293,15 +284,15 @@ export async function relayTabRename(
   return false;
 }
 
-// An agent's Illustrate edit (docs/specs/024-agents/illustrate-for-agents.md "The route"), as the ops an
+// An agent's Pages edit (docs/specs/024-agents/pages-for-agents.md "The route"), as the ops an
 // editor's own edit sends: a `tab-meta` patch of the pages and mode, then each article's frames, in
 // order; and an agent's form write (docs/specs/030-forms/forms.md "Agents"), its form and name as one
 // `tab-meta`. Best-effort and logged under `tag`, like the tab rename relay; answers how many reached the room.
-export async function relayIllustrate(
+export async function relayPages(
   env: Env,
   documentId: string,
   ops: readonly RoomOp[],
-  tag = '[illustrate-agent]',
+  tag = '[pages-agent]',
 ): Promise<number> {
   let reached = 0;
   for (const op of ops) {
@@ -390,7 +381,7 @@ export async function broadcastDocumentTrashed(env: Env, documentId: string): Pr
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
 // so a set or clear that cannot reach it throws `RoomUnavailableError` (the route answers 503, PR11).
-export const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;
+const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;
 
 export class RoomUnavailableError extends Error {
   constructor(cause: unknown) {
@@ -399,7 +390,7 @@ export class RoomUnavailableError extends Error {
   }
 }
 
-export type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
+type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
 
 export async function putAgentPresence(
   env: Env,

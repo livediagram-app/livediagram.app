@@ -4,7 +4,7 @@
 // that streams past the cap (no length, or a lying one) is cancelled the moment
 // it does, so a hostile or huge host costs at most `maxBytes` plus one chunk.
 
-export type CappedRead = { ok: true; blob: Blob } | { ok: false; reason: 'too-large' };
+type CappedRead = { ok: true; blob: Blob } | { ok: false; reason: 'too-large' };
 
 const TOO_LARGE: CappedRead = { ok: false, reason: 'too-large' };
 

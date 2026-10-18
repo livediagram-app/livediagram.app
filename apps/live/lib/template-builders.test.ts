@@ -3,7 +3,7 @@ import {
   ES_LANES,
   laneIndexAt,
   laneCentre,
-  layOutIllustratePages,
+  layOutPages,
   type Element,
 } from '@livediagram/document';
 import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
@@ -106,6 +106,14 @@ const ALL_KINDS = [
   'crazy-eights',
   'stakeholder-map',
   'risk-matrix',
+  'wardley-map',
+  'threat-model',
+  'service-blueprint',
+  'metric-tree',
+  'value-proposition-canvas',
+  'working-backwards',
+  'family-tree',
+  'value-stream-map',
   'user-persona',
   'meeting-agenda',
   'objectives-planner',
@@ -194,7 +202,7 @@ function coordsOf(el: Element): { x: number; y: number }[] {
   return [{ x: el.x, y: el.y }];
 }
 
-// The templates that open in Illustrate on pages of their own (canvas-and-palette.md "Templates
+// The templates that open in Pages on pages of their own (canvas-and-palette.md "Templates
 // on pages").
 const PAGED_KINDS = [
   'slide-deck',
@@ -245,9 +253,9 @@ describe('templates on pages', () => {
     'team-welcome',
     'workshop-kickoff',
   ]);
-  it.each(PAGED_KINDS)('%s: opens in Illustrate on pages of its kind', (kind) => {
+  it.each(PAGED_KINDS)('%s: opens in Pages on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
-    expect(o.opensIn).toBe('illustrate');
+    expect(o.opensIn).toBe('pages');
     expect(o.pages?.length).toBeGreaterThan(0);
     const want = (i: number) =>
       SLIDE_DECK_KINDS.has(kind)
@@ -262,7 +270,7 @@ describe('templates on pages', () => {
   it.each(PAGED_KINDS)(
     '%s: puts every element centre on one of its pages, and every page gets content',
     (kind) => {
-      const rects = layOutIllustratePages(templateCanvasOverrides(kind).pages!).map((p) => p.rect);
+      const rects = layOutPages(templateCanvasOverrides(kind).pages!).map((p) => p.rect);
       // Wherever the caller centres it: the elements are built in page coordinates.
       for (const [cx, cy] of [
         [0, 0],
@@ -346,6 +354,7 @@ describe('buildTemplate translation invariance', () => {
         k !== 'blank' &&
         k !== 'whiteboard' &&
         k !== 'article' &&
+        k !== 'working-backwards' &&
         k !== 'blank-illustration' &&
         // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
         k !== 'blank-slide-deck' &&

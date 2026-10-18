@@ -1,5 +1,5 @@
 // Which colours of an element re-inking measures, and how (docs/specs/007-editor/
-// illustrate-pages.md "Re-inking"): the floors and targets of text, lines, marks and cards, the
+// pages-mode.md "Re-inking"): the floors and targets of text, lines, marks and cards, the
 // shape kinds each rule reaches, and the elements left as they are. Pure.
 import { isLegacyEmojiIconId, isTechIconId } from '@livediagram/icons';
 import { defaultFillColor, defaultStrokeColor, type CanvasSurface } from './colors';
@@ -22,8 +22,8 @@ export const PAGE_LINE_CONTRAST = 3;
 // A card's fill against its ground: below the floor a white card on a near-white page stops
 // reading as a card; re-inked, it reaches the target, a step past the floor so it reads plainly.
 // Safe range 1.1 to 1.5: lower lets cards vanish, higher greys out every pale card on a pale page.
-export const PAGE_CARD_FLOOR = 1.25;
-export const PAGE_CARD_TARGET = 1.4;
+const PAGE_CARD_FLOOR = 1.25;
+const PAGE_CARD_TARGET = 1.4;
 
 export type InkRole = 'text' | 'line' | 'mark' | 'card';
 
@@ -82,7 +82,7 @@ const CHART_KINDS = new Set<string>(['pie-chart', 'bar-chart', 'line-chart', 'sa
  *  - `ink`: lines and text straight on its ground (text, arrows, open paths, icons, charts);
  *  - `table`: its grid and text;
  *  - `keep`: left as it is (its colours are what it is, its text on its own surface). */
-export type InkKind = 'box' | 'ink' | 'table' | 'keep';
+type InkKind = 'box' | 'ink' | 'table' | 'keep';
 
 export function inkKindOf(el: Element): InkKind {
   switch (el.type) {

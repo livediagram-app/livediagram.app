@@ -7,7 +7,7 @@ import { Prims } from '../icons/Prims';
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
 
-// Popular (Illustrate mode): sparkles, for the picks most reached for.
+// Popular (Pages mode): sparkles, for the picks most reached for.
 export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>
@@ -39,7 +39,8 @@ export function ShapesTabIcon() {
 }
 
 // Build (docs/specs/010-palette/build-category.md): a frame with a band across its top and a node hanging off
-// it — scaffolding rather than content, which is what this category holds.
+// it — scaffolding rather than content, which is what this category holds. Diagram's Layout wears it too: its
+// lanes and frames are that scaffolding.
 export function BuildTabIcon() {
   return (
     <Glyph size={18} units={18} strokeLinecap="butt">
@@ -47,6 +48,19 @@ export function BuildTabIcon() {
       <path d="M1.6 6.6h9.4" />
       <path d="M11 10.8h2.2" />
       <rect x="13.2" y="8.6" width="3.2" height="4.4" rx="0.9" />
+    </Glyph>
+  );
+}
+
+// Diagrams (Diagram mode's half of Build, docs/specs/010-palette/build-category.md): a node branching into two, the
+// structures that grow as you type (a mind map, an org chart, a flowchart).
+export function DiagramsTabIcon() {
+  return (
+    <Glyph size={18} units={18} strokeLinecap="butt">
+      <rect x="6" y="1.8" width="6" height="4.2" rx="1" />
+      <path d="M9 6v2.6M4.2 11V8.6h9.6V11" />
+      <rect x="1.6" y="11" width="5.2" height="4.2" rx="1" />
+      <rect x="11.2" y="11" width="5.2" height="4.2" rx="1" />
     </Glyph>
   );
 }

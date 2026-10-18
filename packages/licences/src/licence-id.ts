@@ -57,7 +57,7 @@ export function detectLicenceId(text: string): string | undefined {
 
 // Permissive and weak-copyleft licences a shipped work may carry (blueprint
 // D10). Anything else fails the build so that adding it is a human decision.
-export const LICENCE_ALLOWLIST: ReadonlySet<string> = new Set([
+const LICENCE_ALLOWLIST: ReadonlySet<string> = new Set([
   '0BSD',
   'Apache-2.0',
   'BlueOak-1.0.0',

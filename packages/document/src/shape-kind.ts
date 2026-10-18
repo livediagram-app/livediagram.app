@@ -112,6 +112,9 @@ export type ShapeKind =
   // Fence (docs/specs/009-elements/fence.md): one straight run of posts and rails an Avatar-mode
   // character cannot walk through. The run lies along the longer side; no fields of its own.
   | 'fence'
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start. A pixel teleport platform
+  // drawn in the sprite's palette; no fields of its own.
+  | 'avatar-pad'
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair, with
   // the chair's `chairFacing`. A desk seats one at a computer; a sofa seats two side by side.
   | 'desk'
@@ -182,9 +185,7 @@ export type ShapeKind =
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
   | 'progress-bar'
   | 'progress-ring'
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): a horizontal line with evenly-spaced points above
-  // it. Carries `railCount` (below); a canvas affordance adds points at the
-  // right end. The first of a family of composite "rail" components.
+  // The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): milestones along a spine, a concept graphic.
   | 'timeline-rail'
   // Rating (docs/specs/009-elements/rating.md): a row of five stars showing a 1–5 score. Carries
   // `rating` / `ratingAnim` (below).

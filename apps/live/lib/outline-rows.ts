@@ -15,8 +15,8 @@ import {
 
 export type OutlineRow = { id: string; level: number; marks: TextRun[] };
 // Where the caret goes after an edit: a row and a character offset in its text.
-export type OutlineCaret = { id: string; offset: number };
-export type OutlineRowsEdit = { rows: OutlineRow[]; caret: OutlineCaret };
+type OutlineCaret = { id: string; offset: number };
+type OutlineRowsEdit = { rows: OutlineRow[]; caret: OutlineCaret };
 
 let seq = 0;
 const newRowId = () => `row${++seq}`;

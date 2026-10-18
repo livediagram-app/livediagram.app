@@ -5,7 +5,7 @@ import type { Lens, LensSubject } from '@livediagram/explorer-lens';
 import { leadsBackHome, VIEW_TITLES } from './view-titles';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { groupDocumentsByFolder } from '@/lib/folder-tree';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 import type { TeamDocumentRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from './views';
 import {
@@ -17,7 +17,7 @@ import {
 } from './lens/pane-lens';
 
 /** What the lens did to the current view (docs/specs/013-workspace/explorer-filters.md "States"). */
-export type PaneLensResult = {
+type PaneLensResult = {
   /** The lens narrows something: a word or a value is set. */
   active: boolean;
   /** Documents shown, and documents the lens ran over, for the live region. */
@@ -69,20 +69,20 @@ export function useExplorerPane({
   viewerId: string;
   now: number;
 }) {
-  // A document saved only in this browser lives in This browser, not at the root of My documents
+  // A document saved only in this browser lives in This Browser, not at the root of My Documents
   // (docs/specs/013-workspace/explorer-structure.md); filed in one of the reader's folders, it is
   // listed there.
   const documentsByFolder = useMemo(
     () =>
       groupDocumentsByFolder(liveDocs, {
-        exclude: (d) => d.folderId === null && isLocalOnly(d),
+        exclude: (d) => d.folderId === null && isInThisBrowser(d),
       }),
     [liveDocs],
   );
 
   // Every document saved only in this browser, wherever its local record files it.
   const offlineDocuments = useMemo(
-    () => newestFirst(liveDocs.filter((d) => isLocalOnly(d))),
+    () => newestFirst(liveDocs.filter((d) => isInThisBrowser(d))),
     [liveDocs],
   );
 
@@ -176,7 +176,7 @@ export function useExplorerPane({
     };
   }, [base, paneContent.documents.length, lensSet, selected.kind, viewerId]);
 
-  // The sidebar's Recent count, mirroring "Shared with me": how many rows Recent shows, capped.
+  // The sidebar's Recent count, mirroring "Shared With Me": how many rows Recent shows, capped.
   const recentCount = useMemo(() => {
     const visible =
       liveDocs.filter((d) => !excluded.has(d.id)).length +
@@ -193,7 +193,7 @@ export function useExplorerPane({
   }, [selected, folderById, teams]);
 
   // Breadcrumb segments for the pane header, following the sidebar's rows. The leaf (the current
-  // view) is plain text. Folders sit under My documents, Recent under Home; every
+  // view) is plain text. Folders sit under My Documents, Recent under Home; every
   // other view is its own single leaf.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {

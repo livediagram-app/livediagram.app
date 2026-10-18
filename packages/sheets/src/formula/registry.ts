@@ -36,12 +36,10 @@ export const FUNCTION_FAMILIES: readonly [FunctionFamily, Record<string, FnDef>]
   ['Plan cards', CARD_FUNCTIONS],
 ];
 
-export const FUNCTIONS: Readonly<Record<string, FnDef>> = Object.freeze(
-  Object.assign(
-    Object.create(null) as Record<string, FnDef>,
-    ...FUNCTION_FAMILIES.map(([, fns]) => fns),
-  ),
-);
+// No prototype, so a name a formula types (`toString`, `__proto__`) never finds an Object member.
+const functionTable = Object.create(null) as Record<string, FnDef>;
+for (const [, fns] of FUNCTION_FAMILIES) Object.assign(functionTable, fns);
+export const FUNCTIONS: Readonly<Record<string, FnDef>> = Object.freeze(functionTable);
 
 export const FUNCTION_NAMES: readonly string[] = Object.freeze(
   FUNCTION_FAMILIES.flatMap(([, fns]) => Object.keys(fns)),

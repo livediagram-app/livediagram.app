@@ -48,7 +48,7 @@ export function markPlanTracksSeen(
 
 // What the tour made, kept until it is taken away: the element it placed (the example board or sheet), the
 // example sheet's sheet, and the example cards.
-export type PlanTourContent = {
+type PlanTourContent = {
   documentId: string;
   elementId: string;
   sheetId?: string;

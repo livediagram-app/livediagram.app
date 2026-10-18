@@ -14,7 +14,7 @@ import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { didYouMean } from './did-you-mean';
 
-export type Routed =
+type Routed =
   | { kind: 'top' }
   | { kind: 'resource'; resource: string }
   | { kind: 'verb'; verb: Verb; rest: string[] };

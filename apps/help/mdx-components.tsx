@@ -1,5 +1,5 @@
 import type { MDXComponents } from 'mdx/types';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import Link from 'next/link';
 import { articles, categories, articleHref, categoryHref } from '@/lib/articles';
 import {
@@ -149,7 +149,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </p>
     ),
-    a: ({ href, children }) => (
+    a: ({ href, children }: ComponentProps<'a'>) => (
       <a
         href={href}
         className="text-brand-700 underline underline-offset-2 transition-colors hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"

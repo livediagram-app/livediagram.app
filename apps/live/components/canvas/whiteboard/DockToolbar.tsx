@@ -26,9 +26,10 @@ const RovingContext = createContext<Roving>({ focusKey: '', setFocusKey: () => {
 
 const NAV_KEYS = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
 
-// A tool in hand or a toggle on: the Toolbar layout strip's active tile (PaletteIconButton).
+// A tool in hand or a toggle on: the Toolbar layout strip's active tile (PaletteIconButton). Its ring is inset: a
+// centred dock can land on a half pixel, where an outer ring's left edge went under the tile's own background.
 const DOCK_PRESSED =
-  'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50';
+  'bg-brand-100 text-brand-700 ring-1 ring-inset ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50';
 
 export function DockToolbar({
   label,
@@ -90,7 +91,7 @@ export function DockToolbar({
   );
 }
 
-export type DockButtonProps = {
+type DockButtonProps = {
   itemKey: string;
   label: string;
   icon: ReactNode;

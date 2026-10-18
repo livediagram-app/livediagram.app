@@ -267,7 +267,7 @@ describe('the tools on changesets', () => {
     const client = await connectTestClient(async (request) => {
       const path = new URL(request.url).pathname.replace(/^\/api/, '');
       const text = await request.text();
-      const body = text ? JSON.parse(text) : null;
+      const body: unknown = text ? JSON.parse(text) : null;
       sent.push({ method: request.method, path, body });
       const custom = answer(path, body);
       if (custom) return custom;

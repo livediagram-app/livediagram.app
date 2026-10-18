@@ -65,8 +65,15 @@ board of the template shows some, and every plan view on its Dashboard has somet
 ## How a template with tabs is made
 
 - **Every Plan template but Blank Plan and the spreadsheet templates makes several tabs**, in the order below; those
-  make one. Every
-  template of another mode makes one tab, as before.
+  make one. Every template of another mode makes one tab, except the three with a **companion Sheet**.
+- **A companion Sheet** is a Sheet tab that follows a Diagram template's tab, holding the live numbers behind the
+  drawing: the **Threat Model** (its Threat Model tab, then **Threat Register**), the **Metric Tree** (Metric Tree,
+  then **Driver Model**) and the **Value Stream Map** (Value Stream, then **Flow Data**), each the sheet template of
+  that kind ([Sheet templates](../029-sheets/sheet.md#sheet-templates)) filling its tab and opening in Plan. The first
+  tab is the template's as ever (its mode, pattern and layers); the companion takes the theme and nothing else of the
+  template's canvas (no pattern, layers or mode of the diagram's), so it is the same Sheet tab Start Planning would
+  make. Its sheet is made wherever the template's tabs are made, as a Plan template's is (sheet-store.md "Template
+  starts"), and a replace that fills one tab (`add_tab`) takes only the diagram, saying the template has two tabs.
 - **Where a person makes one**:
   - **The New Document wizard** makes the document with all the template's tabs, named as the template names
     them; the first is the one that opens.
@@ -328,7 +335,7 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
   table says.
 - **The sheet is made with the document.** The template's Sheet element names its start (`start` on the element,
   [Sheet store](../029-sheets/sheet-store.md#template-starts)); every path that makes the tabs makes the sheet
-  from it there and then: the New Document wizard (stored with the document, cloud or Local only), a start screen (as
+  from it there and then: the New Document wizard (stored with the document, cloud or This Browser), a start screen (as
   it adds the tabs), and agents (the MCP's `create_document` and `add_tab`, the api's seeded create). So the sheet
   is there for everyone, an agent's `read_sheet` included, the moment the document is.
 - The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,

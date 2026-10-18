@@ -29,7 +29,7 @@ import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './i
 export const FRAME_PAD = 32;
 export const FRAME_TOP = 64;
 
-export type ClusteredLayoutOptions = {
+type ClusteredLayoutOptions = {
   direction?: LayoutDirection;
   makeEdgeId?: () => string;
   // The template look graph input wears (graph-authoring.ts); absent for the editor's Mermaid import.
@@ -231,7 +231,17 @@ export function layoutClusteredGraph(
     contractedArrows.push(edgeToArrow({ from, to, label: e.label }, `contracted-${i}`));
   });
 
-  const contracted = autoLayoutElements([...frames, ...freeNodes, ...contractedArrows], {
+  // In the order the graph wrote them, a group where its first member was: a loop is broken where it was written
+  // to start, not at whichever group came first (frames listed ahead of the free nodes started every loop at one).
+  const written = new Map(graph.nodes.map((n, i) => [n.id, i] as const));
+  const at = (el: BoxedElement) =>
+    Math.min(
+      ...(frameIds.has(el.id)
+        ? clusters.find((c) => c.id === el.id)!.members.map((m) => written.get(m) ?? Infinity)
+        : [written.get(el.id) ?? Infinity]),
+    );
+  const blocks = [...frames, ...freeNodes].sort((a, b) => at(a) - at(b));
+  const contracted = autoLayoutElements([...blocks, ...contractedArrows], {
     direction,
     fixedSizeIds: new Set([...frameIds, ...sized]),
   });

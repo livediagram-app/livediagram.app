@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { drawingZoneClips, withZonesSettled, zoneMemberIds } from './article-zones';
-import { layOutIllustratePages, type IllustratePage } from './illustrate-page';
+import { layOutPages, type Page } from './page';
 import type { Element } from './index';
 
-const pages: IllustratePage[] = [
+const pages: Page[] = [
   { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' },
   { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f' },
 ];
-const laid = layOutIllustratePages(pages);
+const laid = layOutPages(pages);
 const box = (id: string, x: number, y: number) =>
   ({ id, type: 'shape', shape: 'square', x, y, width: 20, height: 20 }) as Element;
 const zone = (id: string, at?: { page: string; x: number; y: number }) => ({

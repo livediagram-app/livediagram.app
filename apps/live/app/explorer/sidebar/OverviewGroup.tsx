@@ -13,7 +13,7 @@ import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { inboxBadge } from './inbox-badge';
 
-// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Timeline, Shared with me.
+// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Timeline, Shared With Me.
 export function OverviewGroup({ divider, first }: { divider: SidebarDivider; first: boolean }) {
   const { selected, go, shared, timelineUnread, activity } = useExplorer();
   return (
@@ -23,6 +23,7 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
           so the number doesn't linger while Home loads. */}
       <SidebarRow
         icon={<HomeIcon />}
+        tone="sky"
         label={SIDEBAR_LABELS.home}
         textLabel={SIDEBAR_LABELS.home}
         selected={selected.kind === 'home'}
@@ -37,6 +38,7 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
       {/* Open actions and Plan cards ASSIGNED TO the reader (docs/specs/013-workspace/inbox.md), 0 included. */}
       <SidebarRow
         icon={<InboxIcon />}
+        tone="violet"
         label={SIDEBAR_LABELS.inbox}
         textLabel={SIDEBAR_LABELS.inbox}
         selected={selected.kind === 'inbox'}
@@ -50,6 +52,7 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
       {/* The Timeline (docs/specs/013-workspace/timeline.md §8.2): no badge, its unread count sits on Home. */}
       <SidebarRow
         icon={<TimelineIcon />}
+        tone="amber"
         label={SIDEBAR_LABELS.timeline}
         textLabel={SIDEBAR_LABELS.timeline}
         selected={selected.kind === 'timeline'}
@@ -61,6 +64,7 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
       />
       <SidebarRow
         icon={<ShareIcon />}
+        tone="emerald"
         label={SIDEBAR_LABELS.shared}
         textLabel={SIDEBAR_LABELS.shared}
         selected={selected.kind === 'shared'}

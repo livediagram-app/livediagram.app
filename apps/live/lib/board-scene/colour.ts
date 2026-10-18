@@ -27,10 +27,10 @@ export const INK_MAX_CHROMA = 0.04;
 // teal's light version is 0.080; Excalidraw's bronze, 0.046, stays custom) ...
 export const STOCK_MIN_CHROMA = 0.07;
 // ... at a line's lightness (stock versions sit at 0.47 to 0.68; pastels from 0.86 are fills) ...
-export const STOCK_LIGHTNESS_RANGE: readonly [number, number] = [0.3, 0.8];
+const STOCK_LIGHTNESS_RANGE: readonly [number, number] = [0.3, 0.8];
 // ... within this many degrees of a stock colour's hue (Excalidraw's orange is 12.6 from stock
 // orange and its pink 16.5 from stock pink; its teal, 19 from green, stays custom).
-export const STOCK_HUE_TOLERANCE_DEG = 18;
+const STOCK_HUE_TOLERANCE_DEG = 18;
 
 // A stock colour's own versions are that colour, whatever the band says: Yellow's dark-board version
 // is lighter than any line colour the band reads, and a board exported and imported again keeps

@@ -53,7 +53,7 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
   ],
 };
 
-export type PaletteCategory = keyof typeof CATEGORY_ROWS;
+type PaletteCategory = keyof typeof CATEGORY_ROWS;
 
 const ROW_H = 30;
 const HEAD_H = 40;

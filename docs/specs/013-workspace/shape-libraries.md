@@ -35,7 +35,7 @@ week stay two libraries.
 
 - **Import from draw.io** in the Explorer page header's **Import from** group takes library files
   (`<mxlibrary>`) alongside diagrams, in the same pick or folder; **each library file becomes its own
-  library** ([draw.io import](../020-import-export/drawio-import.md) "Shape libraries").
+  library** ([draw.io import](../020-import-export/drawio-import.md) "Shape Libraries").
 - **Name**: the file name without its extension; draw.io's default library name (`Untitled Library`,
   any case, with an optional copy number) or an empty name becomes "draw.io library". A name the owner
   already uses **keeps both**: the new library is suffixed " (2)", or the next free number.
@@ -91,10 +91,10 @@ Named constants, checked by the api and before any upload by the client:
 
 ## Managing libraries: the Explorer
 
-The Explorer's **Library** section gains **Shape libraries** beside Themes and Image gallery
+The Explorer's **Library** section gains **Shape Libraries** beside Themes and Image gallery
 ([Folders](folders.md)):
 
-- Route `/explorer/shape-libraries`; a sidebar row **Shape libraries** with a shapes glyph, under
+- Route `/explorer/shape-libraries`; a sidebar row **Shape Libraries** with a shapes glyph, under
   **Library**, after Themes ([Explorer structure](explorer-structure.md)). The page header's **Import from** group shows there as on every Explorer page.
 - The page lists the owner's libraries, newest first, each a card: name, "14 shapes", the first eight
   items' thumbnails; **Rename** (inline, the same name rules; Enter saves, Escape cancels; a name the

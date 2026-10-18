@@ -34,7 +34,7 @@ const WHITESPACE = /\s/;
 
 /** How one word reads: a token and its values, or text with the problem that kept it from being
  *  one (null for a plain word). */
-export type WordReading =
+type WordReading =
   | { kind: 'token'; dimension: LensDimension; values: readonly string[] }
   | { kind: 'text'; problem: WordProblem | null };
 
@@ -77,7 +77,7 @@ function inOrder<T extends string>(list: readonly T[], values: readonly string[]
   return list.filter((candidate) => values.includes(candidate));
 }
 
-/** Spaces in canonical order: My documents, Shared with me, then teams by id. */
+/** Spaces in canonical order: My Documents, Shared With Me, then teams by id. */
 function orderSpaces(values: readonly string[]): SpaceValue[] {
   const teams = [...new Set(values.filter(isTeamValue))].sort();
   return [...inOrder(SPACE_FIXED_VALUES, values), ...teams];

@@ -10,6 +10,7 @@ import { PADDING_PX, type TableElement } from './index';
 import { tableCellFontPx } from './table-cell-font';
 import { tableHeaderColours } from './table-header-colours';
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import { bidiLine } from './svg-bidi';
 
 // Track sizes for one axis: pinned entries keep their px, the rest share
 // whatever remains evenly (the CSS `minmax(0, 1fr)` behaviour TableView's
@@ -123,7 +124,7 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
       const tspans = lines
         .map(
           (line, i) =>
-            `<tspan x="${r2(tx)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(line)}</tspan>`,
+            `<tspan x="${r2(tx)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(bidiLine(line))}</tspan>`,
         )
         .join('');
       parts.push(

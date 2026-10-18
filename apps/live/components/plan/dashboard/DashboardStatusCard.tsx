@@ -14,7 +14,7 @@ import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';
 import { CARD_BODY } from './card-parts';
 
-export const STATUS_INFO: Record<
+const STATUS_INFO: Record<
   DashboardStatus,
   { label: string; dot: string; text: string; tint: string }
 > = {

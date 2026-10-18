@@ -5,7 +5,7 @@
 // statement outweighs a small eyebrow; the topmost on a tie. On one line, cut to
 // SLIDE_HEADLINE_MAX characters. Pure.
 import {
-  illustratePagesOf,
+  pagesOf,
   LABEL_FONT_PX,
   resolveSlide,
   type Deck,
@@ -17,7 +17,7 @@ import {
 // Longer than a row shows; the row truncates with an ellipsis.
 export const SLIDE_HEADLINE_MAX = 80;
 // Past this many characters a text weighs no more for being longer (a paragraph is no headline).
-export const HEADLINE_LENGTH_CAP = 40;
+const HEADLINE_LENGTH_CAP = 40;
 
 const SIZE: Record<string, number> = { sm: 12, md: 14, lg: 18, xl: 24, scale: 14 };
 
@@ -72,8 +72,7 @@ export function presentedSlideName(
   if (cardTitle?.trim()) return cardTitle.trim();
   const headline = slideHeadline(slide, tab);
   if (headline) return headline;
-  const page =
-    slide.pageId && tab ? illustratePagesOf(tab).find((p) => p.id === slide.pageId) : undefined;
+  const page = slide.pageId && tab ? pagesOf(tab).find((p) => p.id === slide.pageId) : undefined;
   if (page?.name?.trim()) return page.name.trim();
   if (tab?.name?.trim()) return tab.name.trim();
   return `Slide ${index + 1}`;

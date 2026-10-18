@@ -9,13 +9,8 @@ import {
   type ArticleZoneBlock,
 } from './article-flow';
 import { buildElementIndex } from './geometry';
-import { elementAnchorPoint } from './illustrate-page-content';
-import {
-  illustratePagesOf,
-  layOutIllustratePages,
-  type LaidOutPage,
-  type PageRect,
-} from './illustrate-page';
+import { elementAnchorPoint } from './page-content';
+import { pagesOf, layOutPages, type LaidOutPage, type PageRect } from './page';
 import { isBoxed, type Element, type Tab } from './index';
 
 /** Where a zone stood, on the canvas (null before it was first laid out, or off its pages). */
@@ -69,7 +64,7 @@ export function withElementsMoved(
   });
 }
 
-export type MeasuredZone = { id: string; index: number; x: number; y: number };
+type MeasuredZone = { id: string; index: number; x: number; y: number };
 
 // Under this far (canvas px) a measured zone has not moved: layout noise, not a change.
 const SETTLE_TOLERANCE = 0.75;
@@ -84,7 +79,7 @@ export function withZonesSettled<
 >(tab: T, flow: string, measured: readonly MeasuredZone[]): T {
   const doc = articlesOf(tab)[flow];
   if (!doc || measured.length === 0) return tab;
-  const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
   if (pages.length === 0) return tab;
   const byId = new Map(measured.map((m) => [m.id, m]));
   // Every zone's elements are read where everything stands now, before any zone moves: a zone

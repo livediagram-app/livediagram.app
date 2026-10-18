@@ -10,7 +10,7 @@ import type { Pt } from './geometry';
 import { drawnPoints, edgeState, vertexState, type CellState } from './state';
 import { routeEdge, type RouteEnd } from './view';
 
-export type EdgeRoute = {
+type EdgeRoute = {
   /** Every point of draw.io's route, both ends included, absolute (mxCellState.absolutePoints). */
   points: Pt[];
   /** The points draw.io paints: the route less any point within a pixel of the one before. */
@@ -20,7 +20,7 @@ export type EdgeRoute = {
 };
 
 /** Routes a page's edges on demand, each once. */
-export type PageRouter = (edgeId: string) => EdgeRoute | null;
+type PageRouter = (edgeId: string) => EdgeRoute | null;
 
 export function createPageRouter(graph: DrawioGraph): PageRouter {
   const { cells } = graph;

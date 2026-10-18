@@ -48,7 +48,7 @@ export function usePaletteTint(): PaletteTint | undefined {
   return useContext(PaletteTintContext);
 }
 
-export type TileHint = 'tooltip' | 'hover-card';
+type TileHint = 'tooltip' | 'hover-card';
 
 // The hint a palette tile carries when its caller does not choose one.
 export function tileHint(hint: TileHint | undefined, hideCaption: boolean | undefined): TileHint {
@@ -190,7 +190,8 @@ export function IconButton({
   const tone = refused
     ? 'cursor-not-allowed text-slate-600 opacity-50 dark:text-slate-100'
     : active
-      ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
+      ? // Inset, as the dock's (DOCK_PRESSED): on a strip centred to a half pixel an outer ring lost its left edge.
+        'bg-brand-100 text-brand-700 ring-1 ring-inset ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
       : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
   const { glyphStyle, glyphClass } = useTileGlyph({
     dragKind,
@@ -263,7 +264,7 @@ export function IconButton({
       {showCornerLetter ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-400 pointer-coarse:hidden"
+          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400 pointer-coarse:hidden"
         >
           {shortcut}
         </span>

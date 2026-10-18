@@ -15,7 +15,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // can teleport everybody is a canvas where somebody's half-typed note is lost.
 
 /** A live invitation: where it points, and who sent it. */
-export type FocusInvite = {
+type FocusInvite = {
   /** The presence id of whoever pressed, so the dialog can name them from the
    *  participant list (the op carries no name: a renamed participant's
    *  invitation should read correctly). */

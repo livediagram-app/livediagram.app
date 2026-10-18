@@ -10,7 +10,7 @@ import {
 import { answersAsSelf } from './document-room-rules';
 import { scopedSenderMayRelay } from './room-scope';
 
-export type OpGate =
+type OpGate =
   /** Never relayed, never answered. */
   | { kind: 'drop' }
   /** A Participant's `el` op: through the participant content rule, never relayed as sent. */

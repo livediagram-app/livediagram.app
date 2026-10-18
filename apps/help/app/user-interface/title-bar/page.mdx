@@ -40,11 +40,11 @@ Right after the name, a small pill says who can see this document. It reads one 
 - **Shared**: anyone with one of its [share links](/help/collaboration/sharing/) can open it.
 - **Team**: it lives in a [team library](/help/collaboration/teams/team-shared-documents/) and every member of the team can open it. A team document with a live share link reads **Shared** instead.
 - **Public**: it is listed in the [Community](/help/collaboration/sharing/community/), where anyone can find it, view it and make their own copy. This wins over Shared and Team, because it is the widest audience there is.
-- **Local only**: it is saved only in this browser, never on our servers (see [Offline Mode](/help/privacy-and-security/offline-mode/)). This wins over all the others.
+- **This Browser**: it is saved only in this browser, never on our servers (see [Offline Mode](/help/privacy-and-security/offline-mode/)). This wins over all the others.
 
-Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the document reaches. Under that the four audiences sit on one scale, **From Just You to Everyone**: Just you (Private), Link (Shared), Team and Everyone (Public), filled up to where the document is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). Local only sits apart below the scale, since it is the opposite of sharing: the document never leaves this browser.
+Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the document reaches. Under that the four audiences sit on one scale, **From Just You to Everyone**: Just you (Private), Link (Shared), Team and Everyone (Public), filled up to where the document is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). This Browser sits apart below the scale, since it is the opposite of sharing: the document never leaves this browser.
 
-<Figure caption="The legend under the visibility pill of a Shared document: who can see it, the four audiences from Just you to Everyone, Local only apart, and the owner's Change Who Can See This button.">
+<Figure caption="The legend under the visibility pill of a Shared document: who can see it, the four audiences from Just you to Everyone, This Browser apart, and the owner's Change Who Can See This button.">
   <VisibilityLegendFigure />
 </Figure>
 
@@ -58,7 +58,13 @@ After the visibility pill comes a second pill saying what you can do here right 
 
 Hover the pill to see who owns the document: **Owned by you** on your own documents, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
 
-If your role lets you edit, the pill is a switch. Click **Editing** and it turns to **Viewing**: the document becomes read-only, exactly as someone on a Viewer link sees it, so you can check what your viewers will get before you send a link. Click **Viewing** to go back to editing. The preview only affects you, in this browser tab: nobody else sees a change, nothing is saved, and reloading the page brings you back to **Editing**.
+If your role lets you edit, the pill is a switch that steps through all three, so you can check what each kind of link will get before you send it:
+
+- Click **Editing** and it turns to **Participating**: you work the document as someone on a Participant link does, with their palette and their limits. You can add stickies and text and move or delete what you add, but not anyone else's.
+- Click **Participating** and it turns to **Viewing**: the document becomes read-only, exactly as someone on a Viewer link sees it.
+- Click **Viewing** to go back to editing.
+
+The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the document.
 
 For a Participant or a Viewer the pill is just a label. Clicking it does nothing, because their link does not allow editing.
 
@@ -68,14 +74,14 @@ Like the visibility pill, the role pill is hidden on a phone, in Zen mode and in
 
 The right edge of the bar holds one main action, and which one you get depends on whose document it is.
 
-**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the document has a live link, so you can tell at a glance that it is shared. On a [Local only](/help/privacy-and-security/offline-mode/) document it asks you to save the document to your account first, since there is nothing on a server to share yet.
+**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the document has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) document it asks you to save the document to your account first, since there is nothing on a server to share yet.
 
 **Copy** is for everyone else who has the document open: someone on a share link of any role, or a team member opening a document a teammate owns. It makes a copy of the document that belongs to you:
 
 <Step n={1}>Click **Copy**. It reads **Copying** while the copy is made.</Step>
 <Step n={2}>The editor opens your copy, named "Copy of" and the original name.</Step>
 <Step n={3}>
-  Find it again later at the top level of My documents in the
+  Find it again later at the top level of My Documents in the
   [Explorer](/help/explorer/explorer-page/).
 </Step>
 

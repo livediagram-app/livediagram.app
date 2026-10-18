@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   ES_NOTE_GAP,
   ES_LANE_PITCH,
-  illustratePageSnapBoxes,
+  pageSnapBoxes,
   laneCentre,
-  layOutIllustratePages,
+  layOutPages,
   pageMargin,
   type Element,
   type EsTimeline,
@@ -214,10 +214,10 @@ describe('resolveBoxedMove — timeline lanes', () => {
   });
 });
 
-describe('resolveBoxedMove — Illustrate page lines', () => {
-  // docs/specs/007-editor/illustrate-pages.md "Snapping to the page".
-  const [page] = layOutIllustratePages([{ id: 'p', orientation: 'portrait' }]);
-  const boxes = illustratePageSnapBoxes([page!]);
+describe('resolveBoxedMove — Page lines', () => {
+  // docs/specs/007-editor/pages-mode.md "Snapping to the page".
+  const [page] = layOutPages([{ id: 'p', orientation: 'portrait' }]);
+  const boxes = pageSnapBoxes([page!]);
   const m = pageMargin(page!);
 
   it('snaps an edge to the page margin and guides it', () => {

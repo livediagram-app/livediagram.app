@@ -86,7 +86,7 @@ export function adjustRecognised(
 // The ratios Shift snaps a recognised rectangle to, width over height: a square, a landscape 5:3
 // and a portrait 3:5 (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"). Every other
 // boxed shape keeps 1:1 (a true circle).
-export const SHIFT_RECTANGLE_RATIOS = [1, 5 / 3, 3 / 5] as const;
+const SHIFT_RECTANGLE_RATIOS = [1, 5 / 3, 3 / 5] as const;
 
 /**
  * The width over height Shift holds `shape` to, read off it as it is when Shift takes effect: for a

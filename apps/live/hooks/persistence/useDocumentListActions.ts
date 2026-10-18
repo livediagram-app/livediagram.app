@@ -22,6 +22,9 @@ import {
 import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { handOffDeleteUndo, offerDeleteUndo, type DeletedTrash } from '@/lib/document-delete-undo';
+import { logMoveFailure } from '@/lib/move-failure';
+import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
+import { documentDuplicatedMessage, documentMovedMessage } from '@/lib/document-toast-copy';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
@@ -124,7 +127,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         // — a silent swallow left the row showing a name the server rejected.
         if (prev)
           setDocumentList((p) => p.map((d) => (d.id === id ? { ...d, name: prev.name } : d)));
-        toast.error('Could not rename the document. Please try again.');
+        toast.error(DOCUMENT_FAILURE.rename(prevName));
       });
   };
 
@@ -139,10 +142,13 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { onRestored?: () => void },
+    opts?: { onRestored?: () => void; name?: string },
   ) => {
     if (typeof window === 'undefined' || !ownerId) return;
     const listed = documentList.find((d) => d.id === id);
+    // The name the toast shows: a caller's (a team row this list does not hold), else the row's, else the open one's.
+    const name =
+      opts?.name ?? listed?.name ?? (id === currentDocument?.id ? currentDocument.name : undefined);
     // Which Trash it goes to: this browser's for an offline document, the team's for one the person's list does not
     // hold (a team document, open or in the panel's team rows), else the person's own.
     const trash: DeletedTrash = !listed
@@ -168,7 +174,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       await apiDeleteDocument(ownerId, id)
         .then(() => {
           track('Document', 'Deleted');
-          handOffDeleteUndo(id, trash);
+          handOffDeleteUndo(id, trash, name);
         })
         .catch(() => {});
       // Straight to the landing section: `/explorer` is only an index that redirects, one more page
@@ -193,7 +199,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
           prev.some((d) => d.id === id) ? prev : [...prev.slice(0, at), row, ...prev.slice(at)],
         );
       }
-      toast.error('Could not delete the document. Please try again.');
+      toast.error(DOCUMENT_FAILURE.delete(name));
       return;
     }
     track('Document', 'Deleted');
@@ -201,6 +207,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     offerDeleteUndo(toast, {
       ownerId,
       id,
+      name,
       trash,
       // Restored exactly as it was (trash.md "Restoring"), so the row it had goes back where it was.
       onRestored: () => {
@@ -242,29 +249,34 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     setDocumentList((prev) =>
       prev.map((d) => (movedUp.has(d.id) && d.folderId === parentId ? { ...d, folderId: id } : d)),
     );
-    toast.error('Could not delete the folder. Try again.');
+    toast.error(FOLDER_FAILURE.delete(name ?? folder?.name));
     return false;
   };
 
   const moveDocumentToFolder = (id: string, folderId: string | null) => {
     if (!ownerId) return;
-    const prevFolderId = documentList.find((d) => d.id === id)?.folderId ?? null;
+    const moved = documentList.find((d) => d.id === id);
+    const prevFolderId = moved?.folderId ?? null;
     setDocumentList((prev) => prev.map((d) => (d.id === id ? { ...d, folderId } : d)));
     void apiSetDocumentFolder(ownerId, id, folderId)
       .then(() => {
         // The row leaves the current view (it's now under the target
         // folder / the root), so confirm where it went — only once the
         // server actually accepted the move.
-        toast.success(folderId ? 'Moved to folder' : 'Moved to My documents');
+        const folderName = folders.find((f) => f.id === folderId)?.name ?? '';
+        toast.success(
+          documentMovedMessage(moved?.name, folderId ? { folder: folderName } : 'my-documents'),
+        );
         track('Document', 'Moved');
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        logMoveFailure('document', ` document=${id}`, err);
         // Roll the row back to its old folder and tell the user, instead
         // of swallowing the error after already claiming success.
         setDocumentList((prev) =>
           prev.map((d) => (d.id === id ? { ...d, folderId: prevFolderId } : d)),
         );
-        toast.error('Could not move the document. Please try again.');
+        toast.error(DOCUMENT_FAILURE.move(moved?.name));
       });
   };
 
@@ -275,16 +287,17 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   // (standalone pages).
   const duplicateDocument = async (id: string) => {
     if (!ownerId) return;
+    const name = documentList.find((d) => d.id === id)?.name;
     const newId = await duplicate(ownerId, id);
     if (newId) {
       track('Document', 'Duplicated');
       // Surfaces that stay put (the pages) get a confirmation; the
       // editor's afterDuplicate navigates to the copy, so its own
       // open is the feedback and this toast is simply preempted.
-      toast.success('Document duplicated');
+      toast.success(documentDuplicatedMessage(name));
       await afterDuplicate(newId);
     } else {
-      toast.error("Couldn't duplicate that document. Try again.");
+      toast.error(DOCUMENT_FAILURE.duplicate(name));
     }
   };
 

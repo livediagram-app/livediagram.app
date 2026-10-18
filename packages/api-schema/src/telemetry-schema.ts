@@ -104,7 +104,10 @@ export const TELEMETRY_CATEGORIES = [
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
   // What happened summary expanded); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
   // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
-  // more followed to the Recent page) | 'WhatHappened'; 'Loaded' with 'Retry' (a failed read
+  // more followed to the Recent page) | 'WhatHappened' | 'Hero.Documents' | 'Hero.Inbox' (a hero
+  // status pill followed) | 'Hero.NewDocument' (the hero's New document) | 'Welcome.Blank' | 'Welcome.Template' |
+  // 'Welcome.AllTemplates' | 'Welcome.Search' | 'Welcome.StartBlank' | 'Welcome.SignIn' (a start taken from the
+  // first-run Home); 'Opened' with 'Welcome' (the first-run Home shown); 'Loaded' with 'Retry' (a failed read
   // retried). Never a document name or a person.
   'Home',
   // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox of open
@@ -142,7 +145,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeIllustrate', fired before the mode applies.
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages', fired before the mode applies.
   'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
@@ -485,6 +488,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Desk',
     'Sofa',
     'Fence',
+    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
+    'Avatar-pad',
     // The virtual office (docs/specs/009-elements/office.md), in Navigate.
     'Room',
     'Meeting-table',

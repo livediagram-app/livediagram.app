@@ -8,7 +8,7 @@ import { gifTimeline, type GifFrame, type GifTimelineInput } from './gif-timelin
 import type { FrameDrawer } from './page-frames';
 import type { PageSnapshot } from './page-snapshot';
 
-export type MakeGifDeps = {
+type MakeGifDeps = {
   // The page (by place among the GIF's pages) captured at the frame size.
   snapshot: (page: number) => Promise<PageSnapshot>;
   drawer: FrameDrawer;
@@ -17,7 +17,7 @@ export type MakeGifDeps = {
   yieldToPage?: () => Promise<void>;
 };
 
-export type MakeGifInput = Omit<GifTimelineInput, 'stillPages'> & {
+type MakeGifInput = Omit<GifTimelineInput, 'stillPages'> & {
   signal: AbortSignal;
   onProgress: (fraction: number) => void;
 };
@@ -87,7 +87,7 @@ export async function makeGif(
 }
 
 // A page's palette is chosen from these of its frames: its first, middle and last outside a transition.
-export const PALETTE_SAMPLES = 3;
+const PALETTE_SAMPLES = 3;
 
 export function paletteSamples(frames: readonly GifFrame[], page: number): GifFrame[] {
   const own = frames.filter((f) => f.page === page && !f.from);

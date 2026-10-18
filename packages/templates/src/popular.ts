@@ -5,7 +5,7 @@
 import type { EditorMode } from '@livediagram/document';
 import { TEMPLATES, type TemplateKind } from './templates';
 
-export type PopularChoice = 'all' | EditorMode;
+type PopularChoice = 'all' | EditorMode;
 
 export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
   // The five blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
@@ -24,7 +24,15 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'sketchnote',
     'article',
   ],
-  diagram: ['blank', 'flowchart', 'mindmap', 'orgchart', 'swot', 'timeline', 'system-architecture'],
+  diagram: [
+    'blank',
+    'flowchart',
+    'mindmap',
+    'orgchart',
+    'gantt',
+    'timeline',
+    'system-architecture',
+  ],
   draw: [
     'whiteboard',
     'sketchnote',
@@ -33,7 +41,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'idea-garden',
     'rich-picture',
   ],
-  illustrate: [
+  pages: [
     'blank-illustration',
     'article',
     'blank-slide-deck',

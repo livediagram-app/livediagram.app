@@ -1,6 +1,6 @@
 'use client';
 
-// A layout's preview tile art (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layout
+// A layout's preview tile art (docs/specs/007-editor/pages-mode.md "Layouts"): the layout
 // built for THIS page's size and orientation and drawn by the export renderer in the tab's theme
 // and font on the page's own background, so the tile is exactly what pressing it puts on the page.
 // Outside the editor (no tab to paint with) it falls back to a wireframe: text as bars (a title

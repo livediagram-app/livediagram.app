@@ -23,7 +23,7 @@ import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
-import { illustrateTourOwed, requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
+import { pagesTourOwed, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -204,9 +204,9 @@ export function SettingsDialog({
   // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as Plan Tour.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
-  // Tours › "Illustrate Tour" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
-  const illustrateTourSeen = !illustrateTourOwed(settings);
-  const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
+  // Tours › "Pages Tour" (docs/specs/007-editor/pages-tour.md): as Plan Tour.
+  const pagesTourSeen = !pagesTourOwed(settings);
+  const pagesTourSeenAtOpen = useRef(pagesTourSeen);
   const close = () => {
     if (!tourSeen) {
       markTourPending();
@@ -217,7 +217,7 @@ export function SettingsDialog({
     if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
     if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
-    if (!illustrateTourSeen && illustrateTourSeenAtOpen.current) requestIllustrateTourRelaunch();
+    if (!pagesTourSeen && pagesTourSeenAtOpen.current) requestPagesTourRelaunch();
     onClose();
   };
 
@@ -360,8 +360,10 @@ export function SettingsDialog({
 
       <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
         <p className="text-[10px] text-slate-500 dark:text-slate-400">
-          Settings sync to your account and apply to every document you open, on every device you
-          sign in from.
+          {/* A guest has no account to sync to: their settings follow them in this browser only. */}
+          {signedIn
+            ? 'Settings sync to your account and apply to every document you open, on every device you sign in from.'
+            : 'Settings are kept in this browser and apply to every document you open. Sign in to have them on your other devices too.'}
         </p>
       </footer>
     </Dialog>

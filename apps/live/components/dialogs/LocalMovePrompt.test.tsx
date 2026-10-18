@@ -2,8 +2,8 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/014-identity/auth-and-guest-access.md "Moving Local only documents after signing in": offered
-// once signed in when this browser holds Local only documents, every one ticked; Move syncs each in
+// docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser after signing in": offered
+// once signed in when this browser holds documents in This Browser, every one ticked; Move syncs each in
 // turn and names any that stayed; Not Now is remembered until the count grows.
 
 const { auth, store, convert, track } = vi.hoisted(() => {
@@ -52,7 +52,7 @@ const show = async (enabled?: boolean) => {
 };
 
 describe('LocalMovePrompt', () => {
-  it('offers every Local only document, newest first, all ticked', async () => {
+  it('offers every document in This Browser, newest first, all ticked', async () => {
     await show();
     expect(screen.getByText('Move Local Documents to Your Account?')).toBeTruthy();
     const names = screen.getAllByRole('checkbox').slice(1);
@@ -91,7 +91,7 @@ describe('LocalMovePrompt', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 
-  it('names what stayed Local only, and reloads on Done when something moved', async () => {
+  it('names what stayed This Browser, and reloads on Done when something moved', async () => {
     convert.saveOfflineToCloud.mockImplementation(async (id: string) => {
       if (id === 'a') throw new Error('too big');
       return id;
@@ -107,7 +107,7 @@ describe('LocalMovePrompt', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 
-  it('remembers Not Now until there are more Local only documents', async () => {
+  it('remembers Not Now until there are more documents in This Browser', async () => {
     await show();
     fireEvent.click(screen.getByRole('button', { name: 'Not Now' }));
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LocalMovePrompt');

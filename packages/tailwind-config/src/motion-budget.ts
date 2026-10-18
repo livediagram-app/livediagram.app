@@ -15,9 +15,9 @@ import {
   MOTION_MS,
 } from './motion';
 
-export type TokenMap = ReadonlyMap<string, number>;
+type TokenMap = ReadonlyMap<string, number>;
 
-export type MotionViolation = {
+type MotionViolation = {
   file: string;
   line: number;
   rule: 'ceiling' | 'hover-ceiling' | 'unbounded' | 'token-drift';

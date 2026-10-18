@@ -86,7 +86,7 @@ export { LOOK_MD_MAX_NODES } from './look-size';
 import { LOOK_MD_MAX_NODES } from './look-size';
 // Auto direction lays a graph out both ways up to this size (two layouts' cost) and keeps the one whose aspect is
 // nearer LANDSCAPE; past it, down.
-export const AUTO_DIRECTION_MAX_NODES = 150;
+const AUTO_DIRECTION_MAX_NODES = 150;
 const LANDSCAPE = 1.5;
 
 // The words that start a clause after a noun phrase: "Orders service WHICH
@@ -232,12 +232,13 @@ const DEFAULT_LINES: Record<GraphStyle, ArrowStyle> = {
 // Laid-out elements for a graph: capped, positioned in the chosen style and direction, worn in the template look
 // (graph-look.ts: sizes, tones, side steps, loops round the outside, elbows), with its title and key. Groups force the
 // flow style (the clustered layout is layered) unless the style is lanes, where each group is a lane.
-// `makeEdgeId` names the arrows the edges become; random ids when omitted.
+// `makeEdgeId` names the arrows the edges become; random ids when omitted. `wholeLabels` keeps every label as
+// written, for the editor's Mermaid import: text a person pasted is theirs, not cut to a heading.
 export function layoutGraph(
   input: GraphInput,
-  options: { makeEdgeId?: () => string } = {},
+  options: { makeEdgeId?: () => string; wholeLabels?: boolean } = {},
 ): Element[] {
-  const { makeEdgeId } = options;
+  const { makeEdgeId, wholeLabels } = options;
   // A sequence diagram: lifelines and messages in order (sequence-layout.ts), from Mermaid or the graph itself.
   if (input.style === 'sequence') {
     const diagram = input.sequence ?? sequenceFromGraph(input);
@@ -249,7 +250,7 @@ export function layoutGraph(
   // An event-storming board is paper only: notes on lanes, no arrows, no heading (graph-storm.ts). A note's label is
   // its content, kept whole as a sticky's always is, so it skips the heading cap.
   if (input.style === 'storm') return layoutStormGraph(input);
-  const g = conciseGraph(input);
+  const g = wholeLabels ? { ...input, groups: withNodeGroups(input) } : conciseGraph(input);
   const direction =
     g.direction === 'right'
       ? ('LR' as const)
@@ -397,7 +398,7 @@ export function graphFromMermaid(
 
 // A sequence from a graph: its nodes the participants (a node shaped actor a stick figure), its edges the messages in
 // order, a dashed edge a reply.
-export function sequenceFromGraph(input: GraphInput): SequenceDiagram {
+function sequenceFromGraph(input: GraphInput): SequenceDiagram {
   return {
     participants: input.nodes.map((n) => ({
       id: n.id,

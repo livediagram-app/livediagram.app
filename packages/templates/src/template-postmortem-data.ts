@@ -135,7 +135,7 @@ export const PM_ROOT_CAUSE = {
   text: 'Critical timeouts are set by library defaults nobody reviews, and nothing tests checkout against a slow dependency.',
 };
 
-export type FindingColumn = {
+type FindingColumn = {
   title: string;
   hint: string;
   icon: string;

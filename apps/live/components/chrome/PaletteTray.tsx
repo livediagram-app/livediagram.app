@@ -7,6 +7,7 @@
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { EDITOR_VIEWPORT_ATTR } from '@/lib/editor-viewport';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -51,6 +52,8 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
     let watchedParent: HTMLElement | null = null;
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
+    const arrival =
+      typeof MutationObserver !== 'undefined' ? new MutationObserver(() => update()) : null;
     const update = () => {
       const card = document.querySelector<HTMLElement>(selector);
       if (card !== watched) {
@@ -69,11 +72,17 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
       }
       const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
+      // Not on screen yet (Draw's dock mounts a beat after an empty tab's pill asks for it): watch for it to
+      // arrive, and stop watching once it has. Only a resize re-measured it before, so the pill kept its no-dock
+      // place and sat on the dock's tools.
+      if (card) arrival?.disconnect();
+      else arrival?.observe(document.body, { childList: true, subtree: true });
     };
     update();
     window.addEventListener('resize', update);
     return () => {
       observer?.disconnect();
+      arrival?.disconnect();
       window.removeEventListener('resize', update);
     };
   }, [active, selector]);
@@ -93,11 +102,26 @@ export function PaletteTrayAction({ label, onAction }: { label: string; onAction
   );
 }
 
+// Where the tray goes on the page: in the editor's own box, beside the strip, so it stacks with the editor's
+// chrome. On the body it stood above the editor's whole stacking context, the header's popovers (who can see
+// this, the account menu) included. A box with a transform (a split pane) holds its fixed children, so the
+// tray's place is measured from that box's corner.
+export function trayHost(): { node: HTMLElement; dx: number; dy: number } {
+  const host = document
+    .querySelector(STRIP_CARD)
+    ?.closest<HTMLElement>(`[${EDITOR_VIEWPORT_ATTR}]`);
+  if (!host) return { node: document.body, dx: 0, dy: 0 };
+  if (getComputedStyle(host).transform === 'none') return { node: host, dx: 0, dy: 0 };
+  const r = host.getBoundingClientRect();
+  return { node: host, dx: r.left, dy: r.top };
+}
+
 export function PaletteTray({
   box,
   lead,
   children,
   end,
+  standing = false,
 }: {
   box: StripBox;
   // The leading icon, or a modifier's key chip.
@@ -106,19 +130,24 @@ export function PaletteTray({
   children: ReactNode;
   // Toggles and actions at the end of the row.
   end?: ReactNode;
+  // A standing message (an empty tab's Show Templates) rather than a mode's: it steps aside while a mode message
+  // is on screen, as the two share the tray's slot (`[data-mode-message]` in globals.css).
+  standing?: boolean;
 }) {
   if (typeof document === 'undefined') return null;
+  const host = trayHost();
   return createPortal(
     <div
       // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
       className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       // Up a pixel, so the tray covers the strip's bottom border where they meet and the two read as one.
-      style={{ left: box.left, width: box.width, top: box.bottom - 1 }}
+      style={{ left: box.left - host.dx, width: box.width, top: box.bottom - 1 - host.dy }}
     >
       <div
         // Floating UI: the canvas's capture-phase pointerdown leaves its presses alone (as TopCenterBanner).
         data-floating-panel=""
         data-palette-tray=""
+        {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
         role="status"
         className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-b-xl border border-t-0 border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-[0_6px_10px_-6px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         onPointerDown={(e) => e.stopPropagation()}
@@ -130,6 +159,6 @@ export function PaletteTray({
         {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
       </div>
     </div>,
-    document.body,
+    host.node,
   );
 }

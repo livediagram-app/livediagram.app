@@ -3,8 +3,8 @@ import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
 import { Pop } from './story-parts';
 
-// Group 12: the Illustrate templates and the blanks (docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates" and "Five blanks"): Blank Diagram, Blank Illustration, Event Poster, Year in Review, Résumé and
+// Group 12: the Pages templates and the blanks (docs/specs/007-editor/templates-by-mode.md
+// "Pages templates" and "Five blanks"): Blank Diagram, Blank Illustration, Event Poster, Year in Review, Résumé and
 // Recipe Card. Each draws its pages as sheets in their own proportions (A3, A4, Square, 4:5) with
 // the designed content sketched in, in the template's own colours. Static SVG preview tiles (one
 // branch per TemplateKind; see template-preview.tsx for who renders them); TemplatePreview chains

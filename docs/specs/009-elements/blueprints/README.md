@@ -5,12 +5,13 @@ Follow the references below only as needed; never upfront.
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
 - ./chair.md - when implementing or changing the chair, desk or sofa, their facing, seating or the Stand press
 - ./office.md - when implementing or changing the office pieces: their drawings, a room's walls and doorway, footprints, the meeting table's seats, drinks and the held cup
+- ./avatar-pad.md - when implementing or changing the Avatar Pad, its pixels, where Avatar mode starts or the arrival beam
 - ./fence.md - when implementing or changing the fence, its drawing or how it blocks Avatar-mode walking
 - ./checklist.md - when implementing or changing the checklist, its ticks, row editor or render
 - ./code-block.md - when implementing or changing the code block, its schemes, tokenizer, wrap or edit dialog
 - ./data-charts.md - when implementing or changing pie / bar / line charts, chart palettes, the key or the legend element
 - ./embeds.md - when implementing or changing the embed element, `embedTargetFor`, its providers or the no-load notice
-- ./entity.md - when implementing or changing the entity, its title band or its fields
+- ./entity.md - when implementing or changing the entity, its title band, fields and keys, in-place editing, field-to-field relationships or cardinality
 - ./image-reference-index.md - when implementing or changing `image_refs`, `image_grants`, their writers, backfill, or the image sweep, usage map, share read and render read
 - ./image-search.md - when implementing or changing the picker's Search tab, the Openverse client, the pick download or `ImageElement.credit`
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
@@ -28,7 +29,6 @@ Follow the references below only as needed; never upfront.
 - ./rich-text-notes.md - when implementing or changing rich-text notes, the note popover or the block-type picker
 - ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
-- ./timeline-rail.md - when implementing or changing the timeline rail, its points, labels or Add point
 - ./web-components.md - when implementing or changing web components, their rows, or legacy group migration
 - ./DEFAULTS.md - when an elements blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an elements blueprint covers

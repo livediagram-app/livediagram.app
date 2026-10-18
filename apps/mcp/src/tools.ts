@@ -29,6 +29,7 @@ import {
   templateFamilyOf,
   templateTabs,
   validTemplateKinds,
+  closestTemplatesHint,
   type TemplateKind,
 } from '@livediagram/templates';
 import {
@@ -81,7 +82,7 @@ import {
 import { registerTool } from './tool-annotations';
 import { registerPlanTools } from './plan-tools';
 import { registerSheetTools } from './sheet-tools';
-import { registerIllustrateTools } from './illustrate-tools';
+import { registerPagesTools } from './pages-tools';
 import { registerFormTools } from './form-tools';
 import {
   createDocumentTab,
@@ -104,7 +105,7 @@ export function registerTools(server: McpServer, env: Env): void {
   registerPlanTools(server, env);
   // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
   registerSheetTools(server, env);
-  registerIllustrateTools(server, env);
+  registerPagesTools(server, env);
   // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
   registerImageTools(server, env);
   registerFormTools(server, env);
@@ -185,8 +186,8 @@ export function registerTools(server: McpServer, env: Env): void {
         const kind = resolveTemplate(t.template);
         if (!kind) {
           return errorResult(
-            `Unknown template "${t.template}" in tab "${t.name}". Valid kinds: ` +
-              `${validTemplateKinds()}.`,
+            `Unknown template "${t.template}" in tab "${t.name}". ${closestTemplatesHint(t.template)}` +
+              `Valid kinds: ${validTemplateKinds()}.`,
           );
         }
         if (tabs.length === 0) firstTemplate = kind;
@@ -316,7 +317,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // fails before any network round trip.
     if (args.template && !resolveTemplate(args.template)) {
       return errorResult(
-        `Unknown template "${args.template}". Valid kinds: ${validTemplateKinds()}.`,
+        `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
       );
     }
     const input = resolveGraphInput(args);

@@ -43,7 +43,7 @@ export async function openDocument(
   expect(res.ok()).toBe(true);
 }
 
-export async function nameParticipant(
+async function nameParticipant(
   request: APIRequestContext,
   id: string,
   name: string,
@@ -121,7 +121,7 @@ export async function asGuest(page: Page, owner: string): Promise<void> {
 
 /**
  * An owner whose Home has everything: three drawn documents opened today, and on the first one
- * two other people at work (Priya comments, Sam edits), so What happened holds a summary.
+ * two other people at work (Priya comments, Sam edits), so What Happened holds a summary.
  */
 export async function seedBusyHome(
   request: APIRequestContext,
@@ -148,7 +148,7 @@ export async function seedBusyHome(
 }
 
 /** A document stored only in this browser, written as the editor writes it. */
-export type LocalSeed = {
+type LocalSeed = {
   name: string;
   /** Days before today (UTC) the document was opened on. */
   daysAgo: number[];
@@ -163,7 +163,7 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
     const day = (ago: number) => new Date(now - ago * 86_400_000).toISOString().slice(0, 10);
     await new Promise<void>((resolve, reject) => {
       const open = indexedDB.open('livediagram-offline', 2);
-      open.onerror = () => reject(open.error);
+      open.onerror = () => reject(open.error ?? new Error('IndexedDB open failed'));
       open.onsuccess = () => {
         const tx = open.result.transaction('documents', 'readwrite');
         for (const seed of seeds) {
@@ -178,7 +178,7 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
           });
         }
         tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
+        tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
       };
     });
   }, docs);
@@ -199,7 +199,7 @@ export async function seedWithinReach(page: Page, origin: string, owner: string)
   await openDocument(page.request, owner, two);
   await page.goto('/explorer/home');
   // Home has read this browser's store by now, so the store exists and is not being opened.
-  await expect(page.getByRole('list', { name: 'Jump back in' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
   await seedLocalDocuments(page, [
     { name: 'Atlas', daysAgo: [0, 1, 2, 3, 4, 5], lastOpenedIn: 60_000 },
     { name: 'Beacon', daysAgo: [1, 2, 3, 4, 5], lastOpenedIn: -1 * DAY_MS },

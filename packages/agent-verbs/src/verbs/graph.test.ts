@@ -18,7 +18,8 @@ describe('graphOfSource', () => {
   it('reads graph JSON, a replace holding one, and Mermaid', () => {
     expect(graphOfSource(arch, 'a.json').nodes).toHaveLength(3);
     expect(
-      graphOfSource(JSON.stringify({ replace: { graph: JSON.parse(arch) } }), 'r.json').edges,
+      graphOfSource(JSON.stringify({ replace: { graph: JSON.parse(arch) as unknown } }), 'r.json')
+        .edges,
     ).toHaveLength(2);
     expect(graphOfSource('flowchart LR\n  a --> b', 'f.mmd').nodes.map((n) => n.id)).toEqual([
       'a',

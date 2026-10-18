@@ -13,6 +13,7 @@ import {
 } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import {
   boardRoot,
@@ -116,6 +117,8 @@ export function PlanTourHost() {
   // One tour at a time: publish this one while it is on screen.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'plan';
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('plan', active);
   }, [active]);
@@ -184,7 +187,7 @@ export function PlanTourHost() {
   // Another tour ending re-renders this through useActiveTour, so the Plan tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inPlan || !canWork || otherTour || !hasPlanWork) return;
+    if (!inPlan || !canWork || otherTour || modalOpen || !hasPlanWork) return;
     const t = setTimeout(() => {
       setArmed(false);
       // Read as it is offered, from what is drawn: the board and Sheet the person sees.
@@ -202,7 +205,7 @@ export function PlanTourHost() {
     return () => clearTimeout(t);
     // workKey stands for boardIds and sheetIds.
     // oxlint-disable-next-line react/exhaustive-deps
-  }, [armed, active, seen, inPlan, canWork, otherTour, hasPlanWork, workKey, engineRef]);
+  }, [armed, active, seen, inPlan, canWork, otherTour, modalOpen, hasPlanWork, workKey, engineRef]);
 
   // Settings rerun (the Tours › "Plan Tour" row, turned on from off + closed): offers again in Plan once a
   // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared

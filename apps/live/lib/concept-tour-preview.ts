@@ -7,7 +7,7 @@ import { createElementKeyedStore } from './element-keyed-store';
 // A concept graphic's Build, Pulse and Flow; a chart's Grow.
 export type TourPreviewAnim = 'build' | 'pulse' | 'flow' | 'grow';
 
-export type ConceptTourPreview = {
+type ConceptTourPreview = {
   elementId: string;
   anim?: TourPreviewAnim;
   bar?: number;

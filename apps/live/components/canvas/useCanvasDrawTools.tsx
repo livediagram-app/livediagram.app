@@ -5,7 +5,7 @@ import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
-import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
+import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/page-guard';
 
 type CanvasDrawToolsInput = {
   props: CanvasProps;
@@ -28,7 +28,7 @@ type CanvasDrawToolsInput = {
 // The canvas's drawing gestures, composed in their order of precedence: the Path tool
 // (docs/specs/023-draw-mode/path-tool.md), then a polygon's click-to-place (docs/specs/008-canvas/polygon-tool.md), then
 // the draw-to-size or stamp of an armed tile (docs/specs/021-event-storming/event-storming.md Phase 4), with
-// Illustrate's off-page presses and the Format tool's page press ahead of them all.
+// Pages mode's off-page presses and the Format tool's page press ahead of them all.
 export function useCanvasDrawTools({
   props,
   pendingDraw,
@@ -99,22 +99,22 @@ export function useCanvasDrawTools({
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
     // A logo page's shown guides take a click near them (docs/specs/007-editor/logo-pages.md).
-    snapPoint: (p) => props.illustratePages?.logo?.snapPoint?.(p, viewportZoom) ?? null,
+    snapPoint: (p) => props.pagesMode?.logo?.snapPoint?.(p, viewportZoom) ?? null,
   });
   // The Format tool's press on a page's paper arms or paints its background (docs/specs/007-editor/
-  // illustrate-pages.md "Copying a background"); off every page it stays an empty-canvas press.
+  // pages-mode.md "Copying a background"); off every page it stays an empty-canvas press.
   const formatPagePress = (e: React.PointerEvent): boolean => {
     if (canvasTool !== 'format' || e.button !== 0 || !props.onFormatPagePress) return false;
     // On an element, the press is the element's (arming or painting its look): only the paper is the page's.
     if ((e.target as HTMLElement | null)?.closest?.('[data-element-id]')) return false;
-    const pageId = pageIdAtPress(props.illustratePages, e, wrapperRef, viewportZoom);
+    const pageId = pageIdAtPress(props.pagesMode, e, wrapperRef, viewportZoom);
     if (!pageId) return false;
     props.onFormatPagePress(pageId);
     return true;
   };
-  // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
+  // In Pages mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
-    pressIsOffPage(props.illustratePages, e, wrapperRef, viewportZoom);
+    pressIsOffPage(props.pagesMode, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
   return {

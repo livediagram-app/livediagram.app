@@ -26,6 +26,7 @@ import {
   detailsLabelOf,
   DETAILS_LABEL_DEFAULT,
   ITEM_TYPE_CUSTOM_MAX,
+  CUSTOM_CHOICE_OPTION_MAX,
   legacyCatalogue,
 } from './type-catalogue';
 
@@ -103,6 +104,15 @@ describe('the type catalogue', () => {
     expect(
       bad({ custom: [{ id: 'f-a', label: 'A', kind: 'choice', options: ['x', 'X'] }] }),
     ).toMatchObject({ reason: 'types[0].custom[0].options' });
+    // An option holds up to 100 characters, a form question's full answer (docs/specs/026-plan/item-types.md).
+    const choiceOf = (option: string) => ({
+      custom: call.custom.map((c) => (c.kind === 'choice' ? { ...c, options: [option] } : c)),
+    });
+    expect(CUSTOM_CHOICE_OPTION_MAX).toBe(100);
+    expect(bad(choiceOf('x'.repeat(CUSTOM_CHOICE_OPTION_MAX)))).toMatchObject({ ok: true });
+    expect(bad(choiceOf('x'.repeat(CUSTOM_CHOICE_OPTION_MAX + 1)))).toMatchObject({
+      reason: 'types[0].custom[0].options',
+    });
     expect(bad({ custom: [{ id: 'f-a', label: 'A', kind: 'person' }] })).toMatchObject({
       reason: 'types[0].custom[0].kind',
     });

@@ -1,4 +1,4 @@
-// Which layouts a page offers (docs/specs/007-editor/illustrate-pages.md "Layouts", "Slide
+// Which layouts a page offers (docs/specs/007-editor/pages-mode.md "Layouts", "Slide
 // layouts", docs/specs/007-editor/logo-pages.md "Logo layouts"): an infographic page the page
 // layouts, a slide page the slide layouts, a logo page the logo layouts, each by its own
 // categories; and any layout by its id, for placing it.
@@ -8,7 +8,7 @@ import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS, type PageLayoutId } from './page-
 import { LOGO_LAYOUT_CATEGORIES, LOGO_LAYOUTS } from './logo-layouts';
 import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS } from './slide-layouts';
 
-export type CatalogueLayout = {
+type CatalogueLayout = {
   id: PageLayoutId;
   label: string;
   category: string;
@@ -16,7 +16,7 @@ export type CatalogueLayout = {
   build: (box: LayoutBox) => Element[];
 };
 
-export type LayoutCatalogue = {
+type LayoutCatalogue = {
   categories: readonly { id: string; label: string }[];
   layouts: readonly CatalogueLayout[];
 };

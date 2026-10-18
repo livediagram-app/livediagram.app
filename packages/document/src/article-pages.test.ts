@@ -11,11 +11,11 @@ import {
 } from './article-pages';
 import { articlesOf } from './article-flow';
 import { shouldGrowForAbsentWriter } from './article-pages';
-import { illustratePagesOf, layOutIllustratePages, type IllustratePage } from './illustrate-page';
+import { pagesOf, layOutPages, type Page } from './page';
 import type { Element } from './index';
 
-const I = (id: string): IllustratePage => ({ id, orientation: 'portrait' });
-const D = (id: string, flow: string): IllustratePage => ({
+const I = (id: string): Page => ({ id, orientation: 'portrait' });
+const D = (id: string, flow: string): Page => ({
   id,
   orientation: 'portrait',
   kind: 'article',
@@ -31,8 +31,8 @@ const box = (id: string, cx: number, cy: number) =>
     width: 20,
     height: 20,
   }) as Element;
-const centreOn = (pages: IllustratePage[], pageId: string) => {
-  const r = layOutIllustratePages(pages).find((p) => p.id === pageId)!.rect;
+const centreOn = (pages: Page[], pageId: string) => {
+  const r = layOutPages(pages).find((p) => p.id === pageId)!.rect;
   return { x: r.x + 100, y: r.y + 100 };
 };
 
@@ -58,7 +58,7 @@ describe('articles in the row', () => {
     const on = centreOn(pages, 'c');
     const tab = { elements: [box('x', on.x, on.y)], pages, articles: { f: { blocks: [] } } };
     const out = withArticleRemoved(tab, 'f')!;
-    expect(illustratePagesOf(out).map((p) => p.id)).toEqual(['a']);
+    expect(pagesOf(out).map((p) => p.id)).toEqual(['a']);
     expect(out.elements).toEqual([]);
     expect(out.articles).toBeUndefined();
     expect(withArticleRemoved({ elements: [], pages: [D('b', 'f')] }, 'f')).toBeNull();
@@ -101,7 +101,7 @@ describe('articles in the row', () => {
     const copiedPage = out.pages[3]!.id;
     expect(copy.type === 'zone' && copy.at?.page).toBe(copiedPage);
     // The copy sits on the copied page, as the original on its own.
-    const laid = layOutIllustratePages(out.pages);
+    const laid = layOutPages(out.pages);
     const r = laid[3]!.rect;
     const el = out.elements[1] as Extract<Element, { x: number }>;
     expect(el.x + 10).toBeCloseTo(r.x + 100);
@@ -149,10 +149,10 @@ describe("the first page's own choice of kind", () => {
     expect(withPageKindChosen(art, 'p1', 'article', 'g')).toBeNull();
   });
   it('gives an article chosen on a page in a slide size the A4 an article can have', () => {
-    const wide = [{ ...only[0]!, orientation: 'landscape', size: 'slide' }] as IllustratePage[];
+    const wide = [{ ...only[0]!, orientation: 'landscape', size: 'slide' }] as Page[];
     const art = withPageKindChosen({ elements: [], pages: wide }, 'p1', 'article', 'f')!;
     expect(art.pages[0]!.size).toBeUndefined();
-    const square = [{ ...only[0]!, size: 'square' }] as IllustratePage[];
+    const square = [{ ...only[0]!, size: 'square' }] as Page[];
     expect(
       withPageKindChosen({ elements: [], pages: square }, 'p1', 'article', 'f')!.pages[0]!.size,
     ).toBe('square');
@@ -160,7 +160,7 @@ describe("the first page's own choice of kind", () => {
   it('turns the page into a 16:9 landscape slide, keeping its name and background', () => {
     const named = [
       { ...only[0]!, name: 'Intro', background: { fill: { kind: 'solid', color: '#0f172a' } } },
-    ] as IllustratePage[];
+    ] as Page[];
     const slide = withPageKindChosen({ elements: [], pages: named }, 'p1', 'slide', 'f')!;
     expect(slide.pages).toEqual([
       {
@@ -179,7 +179,7 @@ describe("the first page's own choice of kind", () => {
 describe('a duplicated article keeps its margin notes to itself', () => {
   it('points the copy at the copies of its markers', () => {
     const pages = [D('p', 'f')];
-    const r = layOutIllustratePages(pages)[0]!.rect;
+    const r = layOutPages(pages)[0]!.rect;
     const marker = {
       ...box('m1', r.x + r.width - 40, r.y + 120),
       type: 'annotation',

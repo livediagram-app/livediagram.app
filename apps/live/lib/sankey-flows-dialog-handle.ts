@@ -4,7 +4,7 @@ import { createDialogHandle } from './dialog-handle';
 // The open Flows dialog's tab switches and its close, for the Sankey element tour (docs/specs/007-editor/element-tours.md
 // "The Sankey tour"), which runs the dialog's Show Me steps from outside it.
 
-export type SankeyFlowsDialogHandle = SankeyFlowsTourApi & {
+type SankeyFlowsDialogHandle = SankeyFlowsTourApi & {
   // Closes the dialog as its Done does, storing what is being typed first.
   close: () => void;
 };

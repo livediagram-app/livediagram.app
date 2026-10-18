@@ -22,8 +22,9 @@ import {
 } from './event-storming-lanes';
 import { isEventStormingNote } from './event-storming';
 import type { Element, ElementId } from './index';
+import type { Rect } from './geometry-primitives';
 
-export type LaneBox = { x: number; y: number; width: number; height: number };
+type LaneBox = Rect;
 
 // Where a row ends: a box more than half a lane's height below the row's FIRST
 // box starts the next one. Measured from the first rather than the previous
@@ -76,7 +77,7 @@ export function rowsToLanes(boxes: readonly LaneBox[]): number[] {
 //               slot along its lane; anywhere else it stays.
 //   capture   — a lone note placed as if it were dropped there: the rhythm
 //               slot within reach takes it, as a drag would.
-export type ArrivalX = 'keep' | 'free-slot' | 'capture';
+type ArrivalX = 'keep' | 'free-slot' | 'capture';
 
 export function landArrivals(
   elements: Element[],

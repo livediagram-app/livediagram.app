@@ -14,7 +14,7 @@ export type Word = {
   raw: string;
 };
 
-export type TokeniseError = { column: number; expected: string };
+type TokeniseError = { column: number; expected: string };
 
 // JSON's escapes, so a JSON value's strings read the same in a word as in JSON.
 const ESCAPES: Readonly<Record<string, string>> = {

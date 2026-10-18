@@ -25,7 +25,7 @@ import { useGifExport } from './useGifExport';
 
 export const GIF_ERROR_COPY: Record<GifExportErrorCode, string> = {
   tainted:
-    "This browser couldn't draw the page into a GIF. Try Chrome, Edge or Firefox, or export a PNG.",
+    "This Browser couldn't draw the page into a GIF. Try Chrome, Edge or Firefox, or export a PNG.",
   'page-missing': 'That page is no longer in the tab.',
   failed: "Couldn't make the GIF. Try a smaller size or a shorter hold.",
 };
@@ -87,7 +87,7 @@ export default function GifExportPanel({
               className="max-h-[176px] w-auto max-w-full bg-white object-contain"
             />
           ) : (
-            <span className="text-xs text-slate-400">Preparing preview…</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>
           )}
         </div>
         <div className="flex flex-col gap-3 rounded-lg bg-slate-50 px-3 py-3 dark:bg-slate-800/60">

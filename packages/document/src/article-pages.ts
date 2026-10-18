@@ -1,5 +1,5 @@
 // Articles as runs of pages (docs/specs/007-editor/article-pages.md "An article",
-// docs/specs/007-editor/illustrate-pages.md "Page actions"): the row read as units (an
+// docs/specs/007-editor/pages-mode.md "Page actions"): the row read as units (an
 // infographic page, or a whole article), and the pure tab edits that act on a whole article:
 // add, duplicate, remove, move, and grow or shrink to the pages its writing reaches.
 import {
@@ -12,19 +12,19 @@ import {
 } from './article-flow';
 import { duplicateElements } from './duplicate';
 import {
-  illustratePagesOf,
-  layOutIllustratePages,
-  MAX_ILLUSTRATE_PAGES,
-  nextIllustratePageId,
+  pagesOf,
+  layOutPages,
+  MAX_PAGES,
+  nextPageId,
   PAGE_NAME_MAX,
   newLogoPage,
   newSlidePage,
   pageSizesFor,
-  withIllustratePages,
-  type IllustratePage,
+  withPages,
+  type Page,
   type PageKind,
-} from './illustrate-page';
-import { elementIdsOnPage, withPageContentReplaced } from './illustrate-page-content';
+} from './page';
+import { elementIdsOnPage, withPageContentReplaced } from './page-content';
 import type { Tab } from './index';
 
 type PagesTab = Pick<Tab, 'elements'> & {
@@ -34,10 +34,10 @@ type PagesTab = Pick<Tab, 'elements'> & {
 };
 
 /** One thing in the row that moves as one: an infographic page, or every page of an article. */
-export type PageUnit = { pageIds: string[]; flow?: string };
+type PageUnit = { pageIds: string[]; flow?: string };
 
-/** The row as units, in order (an article's pages sit together: illustratePagesOf). */
-export function pageUnits(pages: readonly IllustratePage[]): PageUnit[] {
+/** The row as units, in order (an article's pages sit together: pagesOf). */
+export function pageUnits(pages: readonly Page[]): PageUnit[] {
   const units: PageUnit[] = [];
   for (const p of pages) {
     const last = units[units.length - 1];
@@ -48,7 +48,7 @@ export function pageUnits(pages: readonly IllustratePage[]): PageUnit[] {
 }
 
 /** An article's pages, laid out, in order. */
-export function articlePages<P extends IllustratePage>(pages: readonly P[], flow: string): P[] {
+export function articlePages<P extends Page>(pages: readonly P[], flow: string): P[] {
   return pages.filter((p) => p.flow === flow);
 }
 
@@ -74,24 +74,24 @@ export function withArticleFlow<T extends PagesTab>(tab: T, flow: string, doc: A
  *  a new Title and paragraph. Null at the page limit. */
 export function withArticleAdded<T extends PagesTab>(
   tab: T,
-  page: Omit<IllustratePage, 'kind' | 'flow'>,
+  page: Omit<Page, 'kind' | 'flow'>,
   flow: string,
-): (T & { pages: IllustratePage[] }) | null {
-  const pages = illustratePagesOf(tab);
-  if (pages.length >= MAX_ILLUSTRATE_PAGES || pages.some((p) => p.id === page.id)) return null;
-  const next: IllustratePage[] = [...pages, { ...page, kind: 'article', flow }];
-  return withArticleFlow(withIllustratePages(tab, next), flow, newArticleFlow());
+): (T & { pages: Page[] }) | null {
+  const pages = pagesOf(tab);
+  if (pages.length >= MAX_PAGES || pages.some((p) => p.id === page.id)) return null;
+  const next: Page[] = [...pages, { ...page, kind: 'article', flow }];
+  return withArticleFlow(withPages(tab, next), flow, newArticleFlow());
 }
 
 /** The tab without an article: its pages, everything on them (arrows pinned to it too) and its
  *  writing. The units after it close the gap. Null when it is the only unit, or not there. */
 export function withArticleRemoved<T extends PagesTab>(tab: T, flow: string): T | null {
-  const pages = illustratePagesOf(tab);
+  const pages = pagesOf(tab);
   const gone = pages.filter((p) => p.flow === flow);
   if (gone.length === 0 || gone.length === pages.length) return null;
   let emptied: T = tab;
   for (const p of gone) emptied = withPageContentReplaced(emptied, p.id, []);
-  const repaged = withIllustratePages(
+  const repaged = withPages(
     emptied,
     pages.filter((p) => p.flow !== flow),
   );
@@ -106,8 +106,8 @@ export function withUnitMoved<T extends PagesTab>(
   tab: T,
   pageId: string,
   toUnit: number,
-): (T & { pages: IllustratePage[] }) | null {
-  const pages = illustratePagesOf(tab);
+): (T & { pages: Page[] }) | null {
+  const pages = pagesOf(tab);
   const units = pageUnits(pages);
   const from = units.findIndex((u) => u.pageIds.includes(pageId));
   if (from < 0) return null;
@@ -116,7 +116,7 @@ export function withUnitMoved<T extends PagesTab>(
   const [moved] = units.splice(from, 1);
   units.splice(to, 0, moved!);
   const byId = new Map(pages.map((p) => [p.id, p]));
-  return withIllustratePages(
+  return withPages(
     tab,
     units.flatMap((u) => u.pageIds.map((id) => byId.get(id)!)),
   );
@@ -139,14 +139,14 @@ export function withArticleDuplicated<T extends PagesTab>(
   tab: T,
   flow: string,
   newFlow: string,
-): (T & { pages: IllustratePage[] }) | null {
-  const pages = illustratePagesOf(tab);
+): (T & { pages: Page[] }) | null {
+  const pages = pagesOf(tab);
   const source = pages.filter((p) => p.flow === flow);
-  if (source.length === 0 || pages.length + source.length > MAX_ILLUSTRATE_PAGES) return null;
+  if (source.length === 0 || pages.length + source.length > MAX_PAGES) return null;
   const taken = [...pages];
   const pageMap = new Map<string, string>();
-  const copies = source.map((p): IllustratePage => {
-    const id = nextIllustratePageId(taken);
+  const copies = source.map((p): Page => {
+    const id = nextPageId(taken);
     taken.push({ id, orientation: p.orientation });
     pageMap.set(p.id, id);
     return {
@@ -159,9 +159,9 @@ export function withArticleDuplicated<T extends PagesTab>(
   });
   const lastAt = pages.findIndex((p) => p.id === source[source.length - 1]!.id);
   const next = [...pages.slice(0, lastAt + 1), ...copies, ...pages.slice(lastAt + 1)];
-  const before = layOutIllustratePages(pages);
-  const moved = withIllustratePages(tab, next);
-  const after = layOutIllustratePages(next);
+  const before = layOutPages(pages);
+  const moved = withPages(tab, next);
+  const after = layOutPages(next);
   // Every element on the article's pages, shifted from its page to that page's copy (all pages of
   // an article are one size, so one shift does for all of them).
   const onArticle = new Set<string>();
@@ -207,18 +207,18 @@ export function withArticleDuplicated<T extends PagesTab>(
  * never past the page limit. The same tab back when nothing changes.
  */
 export function withArticlePageCount<T extends PagesTab>(tab: T, flow: string, count: number): T {
-  const pages = illustratePagesOf(tab);
+  const pages = pagesOf(tab);
   const own = pages.filter((p) => p.flow === flow);
   if (own.length === 0) return tab;
-  const want = Math.max(1, Math.min(count, own.length + (MAX_ILLUSTRATE_PAGES - pages.length)));
+  const want = Math.max(1, Math.min(count, own.length + (MAX_PAGES - pages.length)));
   if (want === own.length) return tab;
   if (want > own.length) {
     const last = own[own.length - 1]!;
     const taken = [...pages];
-    const added: IllustratePage[] = [];
+    const added: Page[] = [];
     for (let i = own.length; i < want; i++) {
-      const id = nextIllustratePageId(taken);
-      const page: IllustratePage = {
+      const id = nextPageId(taken);
+      const page: Page = {
         id,
         orientation: last.orientation,
         ...(last.size ? { size: last.size } : {}),
@@ -230,29 +230,25 @@ export function withArticlePageCount<T extends PagesTab>(tab: T, flow: string, c
       added.push(page);
     }
     const lastAt = pages.findIndex((p) => p.id === last.id);
-    return withIllustratePages(tab, [
-      ...pages.slice(0, lastAt + 1),
-      ...added,
-      ...pages.slice(lastAt + 1),
-    ]);
+    return withPages(tab, [...pages.slice(0, lastAt + 1), ...added, ...pages.slice(lastAt + 1)]);
   }
-  const laid = layOutIllustratePages(pages);
+  const laid = layOutPages(pages);
   const drop = new Set<string>();
   for (let i = own.length - 1; i >= want; i--) {
     if (elementIdsOnPage(tab.elements, laid, own[i]!.id).size > 0) break;
     drop.add(own[i]!.id);
   }
   if (drop.size === 0) return tab;
-  return withIllustratePages(
+  return withPages(
     tab,
     pages.filter((p) => !drop.has(p.id)),
   );
 }
 
-/** Whether a page still offers the choice of its kind (docs/specs/007-editor/illustrate-pages.md
+/** Whether a page still offers the choice of its kind (docs/specs/007-editor/pages-mode.md
  *  "Page kinds"): the tab's only page, never chosen, with nothing on it. */
 export function offersPageKindChoice(
-  pages: readonly IllustratePage[],
+  pages: readonly Page[],
   pageId: string,
   contentCount: number,
 ): boolean {
@@ -268,14 +264,14 @@ export function withPageKindChosen<T extends PagesTab>(
   pageId: string,
   kind: PageKind,
   flow: string,
-): (T & { pages: IllustratePage[] }) | null {
-  const pages = illustratePagesOf(tab);
+): (T & { pages: Page[] }) | null {
+  const pages = pagesOf(tab);
   const page = pages.find((p) => p.id === pageId);
   if (!page || pages.length !== 1 || page.kind) return null;
-  if (kind === 'infographic') return withIllustratePages(tab, [{ ...page, kind: 'infographic' }]);
+  if (kind === 'infographic') return withPages(tab, [{ ...page, kind: 'infographic' }]);
   if (kind === 'slide') {
     const { name } = page;
-    return withIllustratePages(tab, [
+    return withPages(tab, [
       {
         ...newSlidePage(page.id),
         ...(page.background ? { background: page.background } : {}),
@@ -287,7 +283,7 @@ export function withPageKindChosen<T extends PagesTab>(
     // The artboard keeps the page's name and fill; a logo page takes no pattern.
     const { name } = page;
     const fill = page.background?.fill;
-    return withIllustratePages(tab, [
+    return withPages(tab, [
       {
         ...newLogoPage(page.id),
         ...(fill ? { background: { fill } } : {}),
@@ -301,7 +297,7 @@ export function withPageKindChosen<T extends PagesTab>(
   void _sides;
   const keepSize = size && pageSizesFor('article').includes(size) ? { size } : {};
   return withArticleFlow(
-    withIllustratePages(tab, [{ ...rest, ...keepSize, kind: 'article', flow }]),
+    withPages(tab, [{ ...rest, ...keepSize, kind: 'article', flow }]),
     flow,
     newArticleFlow(),
   );
@@ -328,7 +324,7 @@ function withNotesRelinked(doc: ArticleFlow, idMap: ReadonlyMap<string, string>)
 }
 
 /** Whether an editor that is not an article's writer grows it to the pages its writing needs
- *  (docs/specs/024-agents/illustrate-for-agents.md "Pages for the writing"): only when it is waiting
+ *  (docs/specs/024-agents/pages-for-agents.md "Pages for the writing"): only when it is waiting
  *  to (an agent wrote it, or the tab just loaded), never past a lock, and only to add pages. */
 export function shouldGrowForAbsentWriter(state: {
   local: boolean;

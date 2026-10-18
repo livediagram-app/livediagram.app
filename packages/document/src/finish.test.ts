@@ -5,7 +5,13 @@ import {
   PROFESSIONAL_CORNER_PX,
   PROFESSIONAL_FONT_ID,
   SKETCH_FONT_ID,
+  MARKER_FONT_ID,
+  MARKER_LINE_PX,
   finishArrowThickness,
+  finishArrowWidthPx,
+  finishDrawsBodyByHand,
+  finishIconWeight,
+  isHandDrawn,
   finishBorderStroke,
   finishCornerFallbackPx,
   finishCurvesNewArrows,
@@ -186,5 +192,53 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
     // Every kind not split must exist, so a renamed kind cannot quietly drop out of Sketch.
     const unsplit = [...SHAPE_KINDS].filter((k) => !finishSplitsFace(shape(k)));
     expect(unsplit.length).toBe(26);
+  });
+});
+
+describe('Marker (docs/specs/008-canvas/finish.md "Marker")', () => {
+  it('is a finish, drawn by hand', () => {
+    expect(isFinish('marker')).toBe(true);
+    expect(FINISHES).toContain('marker');
+    expect(isHandDrawn('marker')).toBe(true);
+    expect(isHandDrawn('sketch')).toBe(true);
+    expect(isHandDrawn('professional')).toBe(false);
+    expect(isHandDrawn('flexible')).toBe(false);
+  });
+
+  it('redraws every body but a sticky’s, which stays paper', () => {
+    expect(finishDrawsBodyByHand('marker', 'shape')).toBe(true);
+    expect(finishDrawsBodyByHand('marker', 'table')).toBe(true);
+    expect(finishDrawsBodyByHand('marker', 'sticky')).toBe(false);
+    expect(finishDrawsBodyByHand('sketch', 'sticky')).toBe(true);
+    expect(finishDrawsBodyByHand('flexible', 'shape')).toBe(false);
+  });
+
+  it('letters in Permanent Marker, a font picked on the element or the tab winning', () => {
+    expect(finishFontId(undefined, undefined, 'marker')).toBe(MARKER_FONT_ID);
+    expect(finishFontId('lora', undefined, 'marker')).toBe('lora');
+    expect(finishFontId(undefined, 'inter', 'marker')).toBe('inter');
+    expect(FONTS.some((f) => f.id === MARKER_FONT_ID && f.kind === 'Marker')).toBe(true);
+    // Picked on the element itself, Marker is more specific than the tab's font.
+    expect(elementFontId({ finish: 'marker' }, 'inter', 'flexible')).toBe(MARKER_FONT_ID);
+  });
+
+  it('draws unset and Thin arrows at a marker’s nib, a wider own width as picked', () => {
+    expect(finishArrowWidthPx(undefined, 'marker')).toBe(MARKER_LINE_PX);
+    expect(finishArrowWidthPx(1, 'marker')).toBe(MARKER_LINE_PX);
+    expect(finishArrowWidthPx(1, 'flexible')).toBe(1);
+    expect(finishArrowWidthPx(undefined, 'professional')).toBe(1);
+    expect(finishArrowWidthPx(undefined, 'flexible')).toBe(2);
+    expect(finishArrowWidthPx(7, 'marker')).toBe(7);
+  });
+
+  it('draws a line icon without its own weight Bold', () => {
+    expect(finishIconWeight(undefined, 'marker')).toBe('bold');
+    expect(finishIconWeight('thin', 'marker')).toBe('thin');
+  });
+
+  it('keeps Flexible’s corners and arrows', () => {
+    expect(finishCornerFallbackPx(8, 'marker')).toBe(8);
+    expect(finishCurvesNewArrows('marker')).toBe(true);
+    expect(finishNewArrowStyle('marker')).toBeUndefined();
   });
 });

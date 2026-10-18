@@ -2,6 +2,7 @@ import {
   arrowReferencesAny,
   createAnnotation,
   createShape,
+  createTable,
   type ArrowElement,
   type BoxedElement,
 } from '@livediagram/document';
@@ -129,6 +130,45 @@ describe('inheritedSizeFor', () => {
         height: fresh.height,
       });
     }
+  });
+
+  it('keeps a chart, a meter, a rating, a timeline rail and a legend their own size', () => {
+    const legend = { ...createShape('legend', 0, 0), width: 200, height: 170 } as BoxedElement;
+    for (const kind of [
+      'progress-bar',
+      'progress-ring',
+      'rating',
+      'pie-chart',
+      'bar-chart',
+      'line-chart',
+      'legend',
+      'timeline-rail',
+    ] as const) {
+      const fresh = createShape(kind, 0, 0) as BoxedElement;
+      expect(inheritedSizeFor(fresh, legend), kind).toEqual({
+        width: fresh.width,
+        height: fresh.height,
+      });
+    }
+  });
+
+  it('never hands a chart or meter size on to the next shape', () => {
+    const square = createShape('square', 0, 0);
+    for (const kind of ['progress-bar', 'rating', 'legend'] as const) {
+      const donor = createShape(kind, 0, 0);
+      expect(inheritedSizeFor(square, donor), kind).toEqual({
+        width: square.width,
+        height: square.height,
+      });
+    }
+  });
+
+  it('drops a table at its own size, and never hands a table size on', () => {
+    const table = createTable(0, 0);
+    const card = { ...createShape('card', 0, 0), width: 300, height: 90 } as BoxedElement;
+    expect(inheritedSizeFor(table, card)).toEqual({ width: table.width, height: table.height });
+    const node = createShape('mind-node', 0, 0);
+    expect(inheritedSizeFor(node, table)).toEqual({ width: node.width, height: node.height });
   });
 
   it('inherits the selected element size for a normal shape', () => {

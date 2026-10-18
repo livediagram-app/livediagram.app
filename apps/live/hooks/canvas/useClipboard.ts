@@ -34,9 +34,11 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   duplicateElements,
   sheetDrawnChartIds,
+  tabTakesPlanOnly,
   withMindBranches,
   withSheetCharts,
   withAttached,
+  withoutPlanOnly,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -60,11 +62,13 @@ import {
   isExcalidrawFileCandidate,
 } from '@/lib/excalidraw-paste';
 import type { BoardScene } from '@/lib/board-scene/scene';
+import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget } from '@/lib/typing-target';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 type ImageDescriptor = {
   id: string;
@@ -231,15 +235,28 @@ export function useClipboard(deps: ClipboardDeps) {
     track('Element', 'Copied');
   };
 
+  // A board or Sheet goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"): onto any other tab a
+  // paste leaves out its boards, its Sheets and the charts they draw, and says so.
+  const onlyWhatTheTabTakes = (copied: Element[]): Element[] => {
+    if (tabTakesPlanOnly(activeTab)) return copied;
+    const { kept, boards, sheets } = withoutPlanOnly(copied);
+    if (boards + sheets === 0) return copied;
+    debugLog('[clipboard] plan work left out', { boards, sheets });
+    toast.info(planOnlyLeftOutMessage(boards, sheets));
+    return kept;
+  };
+
   // `source` is what the OS clipboard carried, when it carried ours. Absent
   // for a paste that found nothing on the system clipboard, which falls back
   // to the in-app buffer. `at` is where the paste was asked for (the canvas
   // menu's right-click point); absent, the live canvas pointer decides.
   const pasteFromClipboard = (source?: Element[], at?: { x: number; y: number } | null) => {
     if (isReadOnly) return;
-    const pasting = source && source.length > 0 ? source : clipboard;
-    if (!pasting || pasting.length === 0) return;
+    const copied = source && source.length > 0 ? source : clipboard;
+    if (!copied || copied.length === 0) return;
     if (refuseCreate()) return;
+    const pasting = onlyWhatTheTabTakes(copied);
+    if (pasting.length === 0) return;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
     const { dx, dy, atPointer } = pasteTranslation(
       pasting,
@@ -558,7 +575,7 @@ export function useClipboard(deps: ClipboardDeps) {
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       const target = e.target as Element | null;
       if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
-      if (!target.closest('[data-canvas-a11y-root]')) return;
+      if (!target.closest(CANVAS_ROOT_SELECTOR)) return;
       const excalidraw = pasteRef.current.canPasteScene
         ? excalidrawTextFromPaste(e.clipboardData ?? null)
         : null;
@@ -596,4 +613,14 @@ export function useClipboard(deps: ClipboardDeps) {
     dropBoardFile,
     hasClipboard: (clipboard?.length ?? 0) > 0,
   };
+}
+
+// "Boards and sheets stay on Plan tabs, so the board and the sheets were left out".
+export function planOnlyLeftOutMessage(boards: number, sheets: number): string {
+  const named = [
+    ...(boards ? [boards === 1 ? 'the board' : 'the boards'] : []),
+    ...(sheets ? [sheets === 1 ? 'the sheet' : 'the sheets'] : []),
+  ];
+  const many = boards + sheets > 1;
+  return `Boards and sheets stay on Plan tabs, so ${named.join(' and ')} ${many ? 'were' : 'was'} left out`;
 }

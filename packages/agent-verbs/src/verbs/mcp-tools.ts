@@ -15,13 +15,15 @@ import {
   readFormShape,
   shareFormOutput,
   shareFormShape,
+  tryFormOutput,
+  tryFormShape,
 } from '../mcp/form-schema';
 import {
   changePagesOutput,
   changePagesShape,
   writeArticleOutput,
   writeArticleShape,
-} from '../mcp/illustrate-schema';
+} from '../mcp/pages-schema';
 import { listImagesOutput, listImagesShape } from '../mcp/image-schema';
 import {
   addTabOutput,
@@ -177,7 +179,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
     'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
     'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
-    "files it at the root of the user's My documents (or in their default folder for what that " +
+    "files it at the root of the user's My Documents (or in their default folder for what that " +
     'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
     'PNG of the first tab.',
   inputSchema: createDocumentShape,
@@ -310,7 +312,7 @@ export const mcpAddBoard = mcpTool('add_board', {
   behaviour: 'write',
   title: 'Add a Plan board',
   description:
-    'Put a Plan board on a tab: a preset (kanban, todo, sprint, bug-triage, retro, roadmap, weekly...) or ' +
+    'Put a Plan board on a tab in Plan (any other tab is refused): a preset (kanban, todo, sprint, bug-triage, retro, roadmap, weekly...) or ' +
     'columns by name, placed beside what the tab holds. A column named like one the document already ' +
     'has shares it, so its cards show on both. Then add cards with change_items.',
   inputSchema: addBoardShape,
@@ -392,7 +394,7 @@ export const mcpAddSheet = mcpTool('add_sheet', {
   behaviour: 'write',
   title: 'Add a sheet',
   description:
-    'Put a new Sheet (a spreadsheet) on a tab, beside what the tab holds, titled uniquely on the tab: blank, ' +
+    'Put a new Sheet (a spreadsheet) on a tab in Plan (any other tab is refused), beside what the tab holds, titled uniquely on the tab: blank, ' +
     'filled from A1 with rows of values or CSV text read as typed, or laid out from a design as a template is ' +
     '(change_sheet’s design), the Sheet sized to show it. Then read and change it with read_sheet and change_sheet. ' +
     'A document of its own sheet is create_document with the blank-spreadsheet template, its sheet "Sheet 1".',
@@ -402,14 +404,14 @@ export const mcpAddSheet = mcpTool('add_sheet', {
 
 export const mcpChangePages = mcpTool('change_pages', {
   behaviour: 'destructive',
-  title: 'Change Illustrate pages',
+  title: 'Change pages',
   description:
-    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Illustrate mode, in ' +
+    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Pages mode, in ' +
     'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
     'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
     "other page of its kind, every slide say, takes that page's background). A tab in another mode, named by tabId, " +
-    'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
+    'is switched into Pages. The answer gives every page with its rectangle in canvas coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
     "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
@@ -423,7 +425,7 @@ export const mcpWriteArticle = mcpTool('write_article', {
   behaviour: 'destructive',
   title: 'Write an article',
   description:
-    'Write an article (a document of text on pages, in Illustrate mode) from Markdown: a new one, or replace ' +
+    'Write an article (a document of text on pages, in Pages mode) from Markdown: a new one, or replace ' +
     'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
     'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
     'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
@@ -483,6 +485,19 @@ export const mcpShareForm = mcpTool('share_form', {
   outputSchema: shareFormOutput,
 });
 
+export const mcpTryForm = mcpTool('try_form', {
+  behaviour: 'write',
+  title: 'Try a form',
+  description:
+    'Fill in a form as a respondent would, to check it end to end, as the builder’s Preview does: the answers are ' +
+    'checked as the form link checks them (a wrong one is refused with why, and nothing is sent), then make what a ' +
+    'response makes, a card or a sheet row, its title starting "Preview: ". On a published form it is a counted ' +
+    'response (it takes the next number and counts toward the limit, taken even while closed, no email); on an ' +
+    'unpublished one it counts toward nothing. Delete a preview card with change_items when done.',
+  inputSchema: tryFormShape,
+  outputSchema: tryFormOutput,
+});
+
 // Every tool, in the order the server registers them.
 export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpListItems,
@@ -501,6 +516,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpAddForm,
   mcpChangeForm,
   mcpShareForm,
+  mcpTryForm,
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,

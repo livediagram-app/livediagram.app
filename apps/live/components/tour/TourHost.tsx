@@ -14,6 +14,7 @@ import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
@@ -21,6 +22,7 @@ import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
 // Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
@@ -68,7 +70,7 @@ export function TourHost() {
         elementId = el.id;
       }
       ctx.setSelectedId(elementId);
-      const node = await waitForSelector(`[data-element-id="${elementId}"]`, 2000);
+      const node = await waitForSelector(elementSelector(elementId), 2000);
       const r = node?.getBoundingClientRect();
       // Open beside the element; the menu clamps itself into the viewport.
       ctx.setContextMenu({
@@ -123,10 +125,13 @@ export function TourHost() {
   // Start Diagramming on screen holds the offer until a template is picked or the panel closed
   // (docs/specs/007-editor/start-diagramming.md "The tours wait").
   const startPanelOpen = useStartPanelOpen();
+  // Dialogs come first: an offer (or a Settings relaunch) waits for the last open dialog to close.
+  const modalOpen = useAnyModalOpen();
   const ready =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
     !startPanelOpen &&
+    !modalOpen &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     inDiagram &&

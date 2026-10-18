@@ -12,87 +12,92 @@
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { Brand, Button, buttonClassName, TextInput, ButtonContent } from '@livediagram/ui';
+import { Button, buttonClassName, TextInput, ButtonContent } from '@livediagram/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
-import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { sameOriginPath } from '@/lib/same-origin-path';
+import { AUTH_TITLE, AuthStage } from './AuthStage';
+import { AccountPitch } from './auth-pitches';
 
 // ---------------------------------------------------------------------
 // Outer card layout
 // ---------------------------------------------------------------------
 
-// The full-bleed card that both auth pages render inside. Wraps the
-// children in livediagram chrome: bg, centred Brand wordmark, optional
-// subtitle, optional inline error, optional footer link slot. Keeps
-// the two pages from drifting in spacing / colour / shadow tokens.
+// The card both auth pages render inside, on the Night Band frame
+// (docs/specs/014-identity/auth-and-guest-access.md "The look: Night
+// Band"): the page's title, an optional line under it, an optional
+// inline error or notice, and an optional footer link slot, beside the
+// account pitch. Keeps the two pages from drifting in spacing / colour /
+// shadow tokens. `pitch={false}` drops the pitch for the interstitials
+// and the guest-only notice, where "what an account adds" would mislead.
 export function AuthCard({
+  title,
   subtitle,
   error,
   notice,
   children,
   footer,
+  guestHref,
+  pitch = true,
 }: {
-  subtitle: string;
+  title: string;
+  subtitle?: string;
   error: string;
-  // Good news for the person (a new code is on its way): a calm status line, never the error box. An error wins.
+  // Good news (a code was resent): a status, never the error box; an error wins over it.
   notice?: string;
   children: ReactNode;
   footer?: ReactNode;
+  // The header's "keep going as a guest" link (guestReturnHref); none hides it.
+  guestHref?: string | null;
+  pitch?: boolean;
 }) {
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 py-10 dark:bg-slate-950">
-      {/* Same animated lines backdrop as the new-document + consent screens;
-          decorative, reduced-motion aware, hidden below sm. */}
-      <AnimatedLinesBackdrop />
-      <div className="relative z-10 w-full max-w-md">
-        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
-          <div className="mb-8 text-center">
-            <div className="mb-3 flex justify-center">
-              <Brand href="/" />
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
-          </div>
-
-          {error ? (
-            <div
-              role="alert"
-              className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-            >
-              {error}
-            </div>
-          ) : notice ? (
-            <div
-              role="status"
-              className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-            >
-              {notice}
-            </div>
-          ) : null}
-
-          {children}
-
-          {footer ? (
-            <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">{footer}</p>
-          ) : null}
-        </div>
+    <AuthStage aside={pitch ? <AccountPitch /> : undefined} guestHref={guestHref}>
+      <div className="mb-6">
+        <h1 className={AUTH_TITLE}>{title}</h1>
+        {subtitle ? (
+          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
-    </div>
+
+      {error ? (
+        <div
+          role="alert"
+          className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+        >
+          {error}
+        </div>
+      ) : notice ? (
+        <div
+          role="status"
+          className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+        >
+          {notice}
+        </div>
+      ) : null}
+
+      {children}
+
+      {footer ? (
+        <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">{footer}</p>
+      ) : null}
+    </AuthStage>
   );
 }
 
 // ---------------------------------------------------------------------
 // Interstitial — shown while Clerk is redirecting an already-signed-in
-// user, and as the Suspense fallback for both pages.
+// user, and as the Suspense fallback for both pages. Same frame, no
+// pitch, so a hand-off never flashes a different ground.
 // ---------------------------------------------------------------------
 
 export function RedirectingCard() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
-      <div className="rounded-xl border border-slate-200 bg-white px-8 py-6 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
-        <p className="text-sm text-slate-600 dark:text-slate-400">Redirecting…</p>
-      </div>
-    </div>
+    <AuthStage>
+      <p className="text-center text-sm text-slate-600 dark:text-slate-400">Redirecting…</p>
+    </AuthStage>
   );
 }
 
@@ -105,11 +110,16 @@ export function RedirectingCard() {
 
 export function AuthDisabledNotice() {
   return (
-    <AuthCard subtitle="Sign-in isn't enabled on this deployment" error="">
+    <AuthCard
+      title="Sign-in is off here"
+      subtitle="Sign-in isn't enabled on this deployment"
+      error=""
+      pitch={false}
+    >
       <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         This livediagram instance is running in <strong>guest-only</strong> mode: the canvas works
         without an account. To enable sign-in, set{' '}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800 dark:text-slate-200">
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-900 dark:text-slate-200">
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         </code>{' '}
         at build time and redeploy.
@@ -155,7 +165,7 @@ function CodeInputRow({
           maxLength={1}
           autoComplete={i === 0 ? 'one-time-code' : 'off'}
           value={codeDigits[i]}
-          className="h-12 w-10 rounded-md border border-slate-200 bg-white text-center text-lg font-semibold text-slate-900 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/30"
+          className="h-13 w-11 rounded-lg border border-slate-200 bg-white text-center text-xl font-semibold text-slate-900 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-brand-400 dark:focus:ring-brand-500/30"
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, '').slice(-1);
             const next = [...codeDigits];
@@ -358,7 +368,7 @@ export function GoogleAuthButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-800"
+      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-white/5 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-white/10"
     >
       {loading ? (
         <span className="text-slate-500 dark:text-slate-400">Redirecting…</span>
@@ -373,18 +383,13 @@ export function GoogleAuthButton({
 }
 
 export function OrDivider() {
+  // Two rules either side of the word rather than a chip over one rule: the card is
+  // translucent now, so a filled chip would show as a box.
   return (
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-      </div>
-      <div className="relative flex justify-center text-xs uppercase tracking-wide">
-        {/* The chip's fill must match the AuthCard surface so it reads as a
-            gap in the rule, not a floating box. */}
-        <span className="bg-white px-2 text-slate-400 dark:bg-slate-900 dark:text-slate-400">
-          or
-        </span>
-      </div>
+    <div className="flex items-center gap-3 text-xs tracking-wide text-slate-500 uppercase dark:text-slate-400">
+      <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+      or
+      <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
     </div>
   );
 }
@@ -463,6 +468,20 @@ export function resolvePostAuthDestination(
   return isSafeInternalPath(redirect) ? redirect : defaultDest;
 }
 
+// Where the header's "Not now, keep going as a guest" link goes
+// (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"):
+// back to the page the visitor came from when that is safe and works
+// without an account, else the new-document flow. The connect pages
+// (/oauth/*, /workbench/*) only work signed in, so returning a guest
+// there would just bounce them straight back here.
+const SIGNED_IN_ONLY = /^\/(oauth|workbench)(\/|\?|#|$)/i;
+export function guestReturnHref(searchParams: { get: (key: string) => string | null }): string {
+  const redirect = searchParams.get('redirect_url');
+  return isSafeInternalPath(redirect) && !SIGNED_IN_ONLY.test(redirect)
+    ? redirect
+    : POST_AUTH_DEFAULT;
+}
+
 // OAuth form: Clerk's authenticateWithRedirect navigates the browser
 // directly. With clean routing the completion URL is the SAME path as
 // the router.push form (there's no basePath to add any more), so this
@@ -481,7 +500,7 @@ export function resolveOAuthCompleteUrl(
 // sign-up, an extra step) navigates from that page instead, so the
 // destination has to travel there too or the user lands on a default and
 // loses where they were going (an MCP consent, issue #612).
-export const SSO_CALLBACK_PATH = '/sso-callback';
+const SSO_CALLBACK_PATH = '/sso-callback';
 export function ssoCallbackUrl(searchParams: { get: (key: string) => string | null }): string {
   const redirect = searchParams.get('redirect_url');
   return isSafeInternalPath(redirect)

@@ -339,7 +339,7 @@ There is no Week mode. There was one, the same grid over seven days with
 taller cells, and it went in the card redesign: it showed nothing the
 month grid's dots didn't, at a page-per-week cost the month grid doesn't
 charge, and a third mode is a third thing to explain on a header that
-also carries Filter, Help and New document. The month grid's day popover
+also carries Filter, Help and New Document. The month grid's day popover
 already answers "what happened on Wednesday".
 
 **Calendar** renders a month grid. Each day cell carries one
@@ -389,14 +389,14 @@ chip and the list it filters can never disagree.
 Calendar switch leaves the header and moves to the top of the filter
 popover, under a **View** heading, above the filters it applies to.
 Collapsing its labels to icons bought room for a while, but two of
-them beside Filter, Help and New document still crowded a phone header
+them beside Filter, Help and New Document still crowded a phone header
 into a scrum of glyphs — and the mode is a thing you set occasionally,
 not a thing you need permanently on screen. One button that opens
 everything beats five that technically fit. The trigger keeps its
 Filter label and dot; its accessible name says "View and filter
 timeline", because on that width it is both.
 
-**The header also carries New document**, at the row's right edge where
+**The header also carries New Document**, at the row's right edge where
 every other Explorer section puts its create action. A feed is a record
 of what happened rather than a container you add to, so this page
 originally left creation to the empty state's CTA (§2.4). That was
@@ -794,8 +794,8 @@ which takes that one card off the reader's feed.
   team's shared activity feed (§3.4) is untouched: this verb only exists
   on the personal Timeline, which is the only feed with an Explorer
   context to build the menu from.
-- **Soft so a re-emit can't resurrect it.** `attachEventToScopes` is
-  INSERT OR IGNORE against the composite key, so the coalesced editing
+- **Soft so a re-emit can't resurrect it.** An emit attaches its scopes
+  with INSERT OR IGNORE against the composite key, so the coalesced editing
   event — which re-attaches on every save — finds the dismissed row and
   leaves it dismissed. Removing today's "Document Updated" and then
   saving again does not bring it back; the reader said they'd seen
@@ -1143,7 +1143,7 @@ everything else even with stacking.
 
 **A person's own opens are recorded here but are not part of this feed.** [Explorer Home](explorer-home.md#opens)
 keeps a coalesced `document_opened` row per person per document per UTC day, in that person's `user` scope only
-(opens are private); Jump back in counts them as use days. It is outside the
+(opens are private); Jump Back In counts them as use days. It is outside the
 feed's vocabulary: `readTimeline` and `countUnseen` leave it out the way they leave out legacy renames, and no
 renderer, tone or chip knows it. Deletion, retention, the document sweep and sign-up migration treat it like every
 other row.
@@ -1216,7 +1216,7 @@ card's comments are recorded only by the comment routes.
 
 A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
 `action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no
-account yet). Both are what [Explorer Home](explorer-home.md)'s What happened needs to say "replied" and "assigned
+account yet). Both are what [Explorer Home](explorer-home.md)'s What Happened needs to say "replied" and "assigned
 you an action"; rows written before them read as "commented" and "assigned an action".
 
 Assigned actions ([Assigned actions](../012-collaboration/assigned-actions.md)) are likewise element-JSON, diffed on save
@@ -1565,7 +1565,7 @@ touch last"). It has no sidebar row.
 ### 8.2 Sidebar
 
 The feed has a **Timeline** row in the sidebar's Overview group ([Explorer structure](explorer-structure.md)), under
-the Inbox, and Home's What happened reaches it too, through its quiet **See timeline** link. The row carries no badge:
+the Inbox, and Home's What Happened reaches it too, through its quiet **See Timeline** link. The row carries no badge:
 the feed's unread badge sits on the **Home** row, which opens Home:
 
 ```text
@@ -1573,7 +1573,7 @@ Overview
   ⌂  Home              ← Home, the landing view; badge: unread feed events
   ◔  Inbox
   ┆  Timeline          ← this feed
-  ↗  Shared with me
+  ↗  Shared With Me
 ```
 
 The badge counts only OTHER people's events since the reader last looked (§2.5). Viewing Home counts as having
@@ -1625,7 +1625,7 @@ New category `Timeline` in the closed enum in
 
 - `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
   the page load started on it, `Nav` when reached from elsewhere (the
-  sidebar's Timeline row, or Home's See timeline link).
+  sidebar's Timeline row, or Home's See Timeline link).
 - `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
 - `Timeline`/`Selected` with `type` the source type — a filter chip
   toggled.

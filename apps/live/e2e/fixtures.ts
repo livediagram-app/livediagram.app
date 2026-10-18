@@ -60,20 +60,20 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar, Forms, Illustrate and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/030-forms/forms.md, docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// The Draw, Avatar, Forms, Pages and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
+// docs/specs/030-forms/forms.md, docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
-export async function markModeToursSeen(context: BrowserContext): Promise<void> {
+async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      // The Illustrate tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
+      // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
       if (
         prefs.drawTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
-        !Array.isArray(prefs.illustrateTourKinds) ||
+        !Array.isArray(prefs.pagesTourKinds) ||
         !Array.isArray(prefs.elementTourKinds)
       )
         localStorage.setItem(
@@ -83,8 +83,8 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
             drawTourSeen: true,
             avatarTourSeen: true,
             formTourSeen: true,
-            illustrateTourSeen: true,
-            illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+            pagesTourSeen: true,
+            pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',
@@ -145,9 +145,11 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
-// The wizard is a static export: its buttons are in the HTML before React attaches their handlers, and
-// a click in that gap does nothing, more often the busier the machine. React tags every element it
-// has hydrated with a `__reactProps$` key; wait for it on the element about to be used.
+// The wizard is a static export: its buttons are in the HTML before React attaches their handlers. A mode
+// card clicked in that gap is kept and acted on at hydration (new-document-route.md "A choice before
+// hydration"), but every other control's click in that gap does nothing, more often the busier the
+// machine. React tags every element it has hydrated with a `__reactProps$` key; wait for it on the
+// element about to be used.
 export async function untilHydrated(locator: Locator): Promise<void> {
   await expect
     .poll(() =>
@@ -171,7 +173,7 @@ export async function createInMode(page: Page, mode: string, url = '/new'): Prom
 }
 
 // The start screen over a new tab, by its mode's title (Start Diagramming, ...).
-export const startScreen = (page: Page, title: RegExp = /^Start /) =>
+const startScreen = (page: Page, title: RegExp = /^Start /) =>
   page.getByRole('region', { name: title });
 
 // Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
@@ -254,7 +256,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
 // the flag (a reload after declining it, a document opened by URL) nothing is owed, and this returns
 // at once instead of waiting out a timeout. With it, wait until the offer shows, or until the flag
 // clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
-// keeps it owed without showing it (the mode switch says which mode the tab is in).
+// keeps it owed without showing it (the editor marks which mode the tab is in).
 export async function dismissQuickTour(page: Page): Promise<void> {
   const decline = page.getByRole('button', { name: /^no$/i }).first();
   const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);

@@ -128,8 +128,18 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-    // No Popular, Write and Draw as one, every name one word.
-    expect(barNames()).toEqual(['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech', 'Media']);
+    // No Popular, Write and Draw apart, Build as Diagrams and Layout, every name one word.
+    expect(barNames()).toEqual([
+      'Shapes',
+      'Write',
+      'Draw',
+      'Diagrams',
+      'Concepts',
+      'Layout',
+      'Icons',
+      'Tech',
+      'Media',
+    ]);
     // No tiles of their own on the strip: they are in the flyouts.
     expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
   });
@@ -252,6 +262,48 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
   });
 
+  // docs/specs/007-editor/toolbar-layout.md "On a phone": held sideways the row has no menu card, and the strip
+  // keeps the phone's swiping row rather than turning into the desktop's centred one.
+  it('keeps the phone’s swiping row with no menu card', () => {
+    mobile.value = true;
+    render(
+      inMode(
+        'diagram',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          leading={null}
+          {...handlers()}
+        />,
+      ),
+    );
+    expect(document.querySelector('[data-strip-leading]')).toBeNull();
+    // The swiping card: its rail gives way, the controls beside it keep their size.
+    const card = document.querySelector('[data-tour-id="palette"]')!;
+    expect(card.className).toContain('min-w-0');
+    expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
+  });
+
+  it('draws the menu card on a phone’s row when given one', () => {
+    mobile.value = true;
+    render(
+      inMode(
+        'diagram',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          leading={<button type="button">Menu</button>}
+          {...handlers()}
+        />,
+      ),
+    );
+    expect(document.querySelector('[data-strip-leading]')).not.toBeNull();
+  });
+
   it('swaps the tiles when the category changes', () => {
     show({ mode: 'plan' });
     pickCategory('plan-metrics');
@@ -276,17 +328,16 @@ describe('ToolbarPalette', () => {
   });
 
   // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-  it('offers the mock-up kit and the charts in Illustrate mode only', () => {
+  it('offers the mock-up kit and the charts in Pages mode only', () => {
     show();
     expect(barNames()).not.toContain('Devices');
     expect(barNames()).not.toContain('Components');
     expect(barNames()).not.toContain('Data');
     cleanup();
-    show({ mode: 'illustrate' });
+    show({ mode: 'pages' });
     expect(barNames()).toEqual([
       'Shapes',
       'Write',
-      'Build',
       'Concepts',
       'Components',
       'Devices',
@@ -308,7 +359,9 @@ describe('ToolbarPalette', () => {
     show({ mode: 'facilitate' });
     expect(barNames()).toEqual([
       'Shapes',
+      'Write',
       'Draw',
+      'Layout',
       'Icons',
       'Stickers',
       'Media',
@@ -456,7 +509,7 @@ describe('ToolbarPalette', () => {
       });
 
     it("ends the strip in every mode's palette, and not on an event-storming board", () => {
-      for (const mode of ['diagram', 'illustrate', 'plan'] as const) {
+      for (const mode of ['diagram', 'pages', 'plan'] as const) {
         show({ mode });
         const buttons = within(strip()).getAllByRole('button');
         expect(buttons.at(-1)?.getAttribute('aria-label'), mode).toBe('Search elements');

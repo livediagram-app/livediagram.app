@@ -17,7 +17,7 @@ import { usePlacementDefaults } from './usePlacementDefaults';
 
 // The "Use as default for" submenu's data (docs/specs/013-workspace/default-folders.md "Use as
 // default for"; blueprint "Menus"): for a folder, an entry is checked when the folder holds that
-// key; for My documents, when the key has no working default. Undefined until the defaults load,
+// key; for My Documents, when the key has no working default. Undefined until the defaults load,
 // so a menu opened early shows no submenu rather than wrong checks.
 
 export type DefaultFolderMenu = {
@@ -34,7 +34,7 @@ export type DefaultFolderMenus = {
 const never = () => false;
 
 /** The folders a surface lists: its own folders, its team folders, the teams it has joined. */
-export type DefaultFolderLists = {
+type DefaultFolderLists = {
   personal: readonly { id: string; name: string; parentId: string | null }[];
   team: TeamFolderLists;
   teams: readonly { id: string; name: string }[];

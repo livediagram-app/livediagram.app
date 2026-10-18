@@ -1,4 +1,4 @@
-import { lucideLayoutGrid, lucideWorkflow } from '@livediagram/icons/lucide';
+import { lucideWorkflow } from '@livediagram/icons/lucide';
 import type { EditorMode } from '@livediagram/document';
 import type { ComponentType } from 'react';
 
@@ -23,9 +23,9 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
 // Two steps joined by a connector.
 export const FlowchartIcon = lucideGlyph(lucideWorkflow, 16);
 
-// A page with a little chart above two lines of writing, on its 24-unit grid: Illustrate mode's mark
+// A page with a little chart above two lines of writing, on its 24-unit grid: Pages mode's mark
 // (docs/specs/007-editor/editor-modes.md), for the pages it lays out, infographics and articles.
-export function IllustrateIcon({ size = 16, ...rest }: IconProps) {
+export function PagesIcon({ size = 16, ...rest }: IconProps) {
   return (
     <Glyph size={size} units={24} {...rest}>
       <rect x="4.5" y="2.5" width="15" height="19" rx="2" />
@@ -81,10 +81,7 @@ export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
 export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconProps>>> = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
-  illustrate: IllustrateIcon,
+  pages: PagesIcon,
   plan: PlanIcon,
   facilitate: FlipchartIcon,
 };
-
-// "Everything", every mode at once, in the template mode filter: a grid.
-export const EverythingIcon = lucideGlyph(lucideLayoutGrid, 16);

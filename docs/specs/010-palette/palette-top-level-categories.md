@@ -6,8 +6,8 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
-In Diagram, Facilitate and Illustrate the strip now shows these categories as a **category bar**, each opening a
-flyout of its tiles, with no Popular, one-word names, Write and Draw as one, and Facilitate's session tools gathered
+In Diagram, Facilitate and Pages the strip now shows these categories as a **category bar**, each opening a
+flyout of its tiles, with no Popular, one-word names, Write and Draw apart, and Facilitate's session tools gathered
 into Session ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are the bar's
 dividers there; the banded picker remains Plan's.
 
@@ -42,14 +42,14 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_  | Popular, full width                                                                                                                                                                             |
-| **Common**      | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
-| **Structure**   | Build, Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)                                                |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                              |
-| **Dynamic**     | Data (Illustrate, Facilitate)                                                                                                                                                                   |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                    |
+| Band            | Categories                                                                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_  | Popular, full width                                                                                                                                                                         |
+| **Common**      | Logo (Pages, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw  |
+| **Structure**   | Diagrams (Diagram), Layout (Diagram, Facilitate), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only) |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                          |
+| **Dynamic**     | Data (Pages, Facilitate)                                                                                                                                                                    |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                |
 
 ## Why flatten
 
@@ -188,14 +188,14 @@ arguably a Collaborate element by this spec's own rule, and said so.
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group              | Holds                                                                                                                 |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                           |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                     |
-| **Reactions**      | the five pads                                                                                                         |
-| **Selection Mode** | one button per mode (8)                                                                                               |
-| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
+| Group              | Holds                                                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                            |
+| **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
+| **Reactions**      | the five pads                                                                                                                     |
+| **Selection Mode** | one button per mode (8)                                                                                                           |
+| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
 
 **There is no Session group.** It held the Timer, the Dot vote and the Poll —
 a group named after the machinery that runs them rather than the job they do.

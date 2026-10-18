@@ -6,13 +6,14 @@
 // or rendered server-side), its subfolders, and a "+N" tile when there
 // is more inside than fits.
 //
-// An empty folder falls back to the card's plain folder glyph: there is
-// nothing to preview, and the glyph is the honest answer.
+// An empty folder shows the empty state's art: the folder on its floating badge
+// over the pulsing rings, as the editor's Explorer shows an empty folder, so an
+// empty card reads as waiting rather than broken.
 
+import { EmptyStateArt } from '@livediagram/ui';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { FolderCardGlyph } from './explorer-folder-cards';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
 
 // Half the box each way whatever the count, so a one-document folder and
@@ -31,7 +32,16 @@ export function FolderPreview({
   ownerId: string | null;
 }) {
   const { tiles, hidden } = folderPreviewTiles(contents);
-  if (tiles.length === 0) return <FolderCardGlyph />;
+  if (tiles.length === 0) {
+    return (
+      <span
+        data-folder-empty=""
+        className="relative flex h-full w-full items-center justify-center overflow-hidden"
+      >
+        <EmptyStateArt compact icon={<FolderSolidIcon open={false} />} />
+      </span>
+    );
+  }
   return (
     <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3">
       {tiles.map((tile) =>
@@ -57,7 +67,9 @@ export function FolderPreview({
         ),
       )}
       {hidden > 0 ? (
-        <span className={`${tileBox} text-xs font-medium text-slate-400`}>{`+${hidden}`}</span>
+        <span
+          className={`${tileBox} text-xs font-medium text-slate-500 dark:text-slate-400`}
+        >{`+${hidden}`}</span>
       ) : null}
     </span>
   );

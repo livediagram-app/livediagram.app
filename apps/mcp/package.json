@@ -31,12 +31,13 @@
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@resvg/resvg-wasm": "^2.6.2",
     "hono": "^4.13.13",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

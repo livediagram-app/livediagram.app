@@ -1,12 +1,11 @@
-// Editor-mode illustrations for the Canvas articles on Draw mode and Illustrate Mode
-// (docs/specs/018-help/help-app.md): the mode switch beside the menu button with its menu open, the
-// list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
+// Editor-mode illustrations for the Canvas articles on Draw mode and Pages Mode
+// (docs/specs/018-help/help-app.md): the mode switch at the top of an empty tab's start with its menu open,
+// the list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
 // five modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
 import { Scene, Label } from './primitives';
-import { MenuCard, Strip } from './toolbar-layout';
 import { ModeMark, type Mode } from './mode-mark';
 
 // The modes in the switch's order (the catalogue's), each with its tint in the menu.
@@ -14,15 +13,15 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
   { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
   { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
   { mode: 'Facilitate', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
-  { mode: 'Illustrate', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
+  { mode: 'Pages', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
   { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
 ];
 
-/** The mode switch beside the menu button in the top-left card, its menu open: the list of the
- *  five modes (the current one checked, Plan marked as a new tab) and the preview of the one under
- *  the pointer, Draw: its picture, name with ⇧D, description and tools. */
+/** The mode switch leading Start Diagramming's rail (start/StartModeSwitch.tsx), its menu open: the
+ *  list of the five modes (the current one checked; the tab is empty, so Plan is a plain switch) and
+ *  the preview of the one under the pointer, Draw: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
-  const mx = 40;
+  const mx = 13;
   const my = 54;
   const listW = 118;
   const pw = 210;
@@ -32,8 +31,37 @@ export function ModeSwitchScene() {
   const px = mx + listW;
   return (
     <Scene w={420} h={my + menuH + 14}>
-      <MenuCard x={12} y={14} />
-      <Strip x={82} y={14} />
+      {/* The start's top edge: the rail's named switch, then the panel's title */}
+      <rect
+        x={12}
+        y={8}
+        width={396}
+        height={40}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect x={13} y={9} width={listW + 12} height={38} rx={9} className="fill-slate-50" />
+      <g transform="translate(29 28)">
+        <ModeMark mode="Diagram" className="stroke-brand-600" scale={0.5} />
+      </g>
+      <Label x={42} y={28} size={11} weight={500} tone="strong">
+        Diagram
+      </Label>
+      <path
+        d={`M${listW - 2} 26 l3.5 3.5 l3.5 -3.5`}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Label x={listW + 40} y={23} size={11.5} weight={600} tone="strong">
+        Start Diagramming
+      </Label>
+      <Label x={listW + 40} y={37} size={9} tone="muted">
+        Pick a template, or close this to start blank.
+      </Label>
       {/* The menu, hanging below the switch */}
       <rect
         x={mx}
@@ -86,17 +114,6 @@ export function ModeSwitchScene() {
                 fill="none"
                 className="stroke-brand-600"
                 strokeWidth={1.6}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-            {mode === 'Plan' && (
-              // Plan opens in a new tab from a tab with something on it: a box with an arrow leaving it.
-              <path
-                d={`M${mx + listW - 18} ${ry + 9} h4 v4 M${mx + listW - 14} ${ry + 9} l-5 5 M${mx + listW - 16} ${ry + 14} v3 h-7 v-7 h3`}
-                fill="none"
-                className="stroke-slate-400"
-                strokeWidth={1.3}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />

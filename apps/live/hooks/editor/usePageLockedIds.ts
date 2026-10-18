@@ -1,7 +1,7 @@
 'use client';
 
-// The elements a locked page holds (docs/specs/007-editor/illustrate-pages.md "Locking a page"),
-// inert as on a locked layer. Empty outside Illustrate mode (no pages given) or with no lock.
+// The elements a locked page holds (docs/specs/007-editor/pages-mode.md "Locking a page"),
+// inert as on a locked layer. Empty outside Pages mode (no pages given) or with no lock.
 import { useMemo } from 'react';
 import { elementsOnLockedPages, type Element, type LaidOutPage } from '@livediagram/document';
 

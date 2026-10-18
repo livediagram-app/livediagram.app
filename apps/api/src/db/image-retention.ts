@@ -11,8 +11,8 @@ export const IMAGE_SWEEP_PAGE = 1000;
 // would reap more than this share of the old images, and more than this many,
 // is slowed to IMAGE_SWEEP_TRIPPED_MAX deletions, oldest first, and logged as
 // an error. A gap in the reference index looks exactly like that.
-export const IMAGE_SWEEP_TRIPWIRE_RATIO = 0.5;
-export const IMAGE_SWEEP_TRIPWIRE_MIN = 20;
+const IMAGE_SWEEP_TRIPWIRE_RATIO = 0.5;
+const IMAGE_SWEEP_TRIPWIRE_MIN = 20;
 
 // The most a tripped run deletes. Never zero: a tripwire that deleted nothing
 // latched for good once unused images legitimately outnumbered used ones (a

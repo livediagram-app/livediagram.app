@@ -1,18 +1,19 @@
 // What an element on a page sits on, as re-inking measures it (docs/specs/007-editor/
-// illustrate-pages.md "Re-inking"): the page's tones under the element's box. A solid is one
+// pages-mode.md "Re-inking"): the page's tones under the element's box. A solid is one
 // tone; the paper is white; a picture is its tone under its overlay; a gradient is the colours it
 // runs through across the box, along its angle, as CSS draws `linear-gradient(<angle>deg, ...)`.
 // Pure.
 import { mixHex } from './page-ink-contrast';
-import type { IllustratePage, PageRect } from './illustrate-page';
-import { pageFillTone } from './illustrate-page-content';
+import type { Page, PageRect } from './page';
+import { pageFillTone } from './page-content';
+import type { Rect } from './geometry-primitives';
 
 // The plain paper, measured as printed and exported.
 export const PAPER_TONE = '#ffffff';
 // How many points a gradient is sampled at across an element's span (its two ends and evenly
 // between): a two-stop gradient's colours lie on one line, so its worst contrast is near an end,
 // and five points find it to within a quarter of the span.
-export const GRADIENT_SAMPLES = 5;
+const GRADIENT_SAMPLES = 5;
 
 export type PageGround = {
   // Every tone the element may sit on: text and lines must read on the worst of them.
@@ -20,8 +21,6 @@ export type PageGround = {
   // Their mean: what an area (a card) is seen against as a whole.
   mean: string;
 };
-
-type Box = { x: number; y: number; width: number; height: number };
 
 /** Where a point falls along a CSS linear gradient drawn over `rect` at `angle` degrees: 0 at the
  *  start line, 1 at the end line (clamped). */
@@ -45,9 +44,9 @@ export function gradientPosition(
 /** The page's tones under a box, for a page whose background is `background` and whose rectangle
  *  is `rect`. */
 export function pageGroundUnder(
-  background: IllustratePage['background'],
+  background: Page['background'],
   rect: PageRect,
-  box: Box,
+  box: Rect,
 ): PageGround {
   const fill = background?.fill;
   if (!fill) return { tones: [PAPER_TONE], mean: PAPER_TONE };

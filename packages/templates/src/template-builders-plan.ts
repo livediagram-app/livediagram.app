@@ -69,7 +69,7 @@ function sheet(spec: SheetSpec, x: number, y: number): Box {
 // A template tab as the new Plan model makes it (docs/specs/026-plan/plan-tabs.md "Templates"): its name (null for a
 // template of one tab, which keeps the caller's name), its elements, and its tab fields, given every tab's id in order
 // (a Dashboard's slots name the template's Board and Sheet tabs).
-export type PlanTemplateTabDef = {
+type PlanTemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];
   tab?: (ids: readonly string[]) => Partial<Tab>;
@@ -131,12 +131,7 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
         build: (cx, cy) => [centred(board(spec.board!, 0, 0), cx, cy)],
         tab: () => ({ kind: 'board', opensIn: 'plan' }),
       };
-    if (spec.sheet)
-      return {
-        name,
-        build: (cx, cy) => [centred(sheet(spec.sheet!, 0, 0), cx, cy)],
-        tab: () => ({ kind: 'sheet', opensIn: 'plan' }),
-      };
+    if (spec.sheet) return sheetTabDef(name, spec.sheet);
     if (spec === dashSpec)
       return { name, build: () => [...metricEls, ...chartEls], tab: dashboardTab };
     return { name, build: () => [] };
@@ -144,6 +139,16 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
   if (wantsDashboard && !dashSpec)
     out.push({ name: 'Overview', build: () => [...metricEls, ...chartEls], tab: dashboardTab });
   return out;
+}
+
+// A Sheet tab of one Sheet (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab"): a Plan template's, or the
+// companion Sheet a Diagram template makes after its drawing (template-companions.ts).
+export function sheetTabDef(name: string | null, spec: SheetSpec): PlanTemplateTabDef {
+  return {
+    name,
+    build: (cx, cy) => [centred(sheet(spec, 0, 0), cx, cy)],
+    tab: () => ({ kind: 'sheet', opensIn: 'plan' }),
+  };
 }
 
 function centred<T extends Box>(el: T, cx: number, cy: number): T {

@@ -26,10 +26,10 @@ const atCross = (el: BoxedElement, c: number, d: LayoutDirection): BoxedElement 
 // end instead and packs there, beside the pairs it would have split.
 // Only where the row holds at least HUB_MIN_PAIRS members of one link each (stores, one to a service): a hub among
 // fewer is best left at the middle of what it links.
-export const HUB_MIN_LINKS = 3;
+const HUB_MIN_LINKS = 3;
 // How many members besides those sharing a spot a split may move before the row counts as tight (the split spread).
 const SPREAD_SLACK = 2;
-export const HUB_MIN_PAIRS = 3;
+const HUB_MIN_PAIRS = 3;
 export const isRowHub = (links: number, rowLinks: readonly number[]) =>
   links >= HUB_MIN_LINKS &&
   links * 2 > rowLinks.length &&

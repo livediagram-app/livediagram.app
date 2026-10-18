@@ -17,6 +17,7 @@
 // the thread renders readable and inert.
 
 import {
+  ACTION_STATUS_LABELS,
   activeCommentCount,
   elementActions,
   isBoxed,
@@ -32,7 +33,7 @@ import { useRelativeNow } from '@/lib/relative-time';
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {title}
       </span>
       {children}
@@ -136,12 +137,16 @@ export function PresentationElementPopover({
                   <span
                     aria-hidden
                     className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                      action.status === 'done' ? 'bg-emerald-500' : 'bg-amber-500'
+                      action.status === 'done'
+                        ? 'bg-emerald-500'
+                        : action.status === 'wont-do'
+                          ? 'bg-slate-400'
+                          : 'bg-amber-500'
                     }`}
                   />
                   <span
                     className={`min-w-0 flex-1 text-[11px] font-medium ${
-                      action.status === 'done'
+                      action.status !== 'open'
                         ? 'text-slate-400 line-through'
                         : 'text-slate-700 dark:text-slate-200'
                     }`}
@@ -155,8 +160,7 @@ export function PresentationElementPopover({
                   </span>
                 ) : null}
                 <span className="pl-3 text-[10px] text-slate-400 dark:text-slate-400">
-                  {action.assignee.name ?? 'Teammate'} ·{' '}
-                  {action.status === 'done' ? 'Done' : 'Open'}
+                  {action.assignee.name ?? 'Teammate'} · {ACTION_STATUS_LABELS[action.status]}
                 </span>
               </li>
             ))}

@@ -1,6 +1,6 @@
 'use client';
 
-import { LibraryIcon, ThisBrowserIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { LibraryIcon, ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
 import {
   LIBRARY_EXPAND_KEY,
@@ -12,10 +12,12 @@ import { trackSidebar } from './sidebar-telemetry';
 import { LIBRARY_PAGES } from './library-pages';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
+import { TagsSidebarRow } from './TagRows';
+import { TrashSidebarRow } from './TrashSidebarRow';
 
-// More (docs/specs/013-workspace/explorer-structure.md): This browser (offline documents,
-// docs/specs/006-document/offline-mode.md), Library, and Trash
-// (docs/specs/013-workspace/trash.md). `rows` decides whether This browser shows.
+// More (docs/specs/013-workspace/explorer-structure.md): This Browser (offline documents,
+// docs/specs/006-document/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
+// pages), and Trash (docs/specs/013-workspace/trash.md). `rows` decides whether This Browser shows.
 export function MoreGroup({
   rows,
   divider,
@@ -58,6 +60,7 @@ export function MoreGroup({
         expanded={expanded.has(LIBRARY_EXPAND_KEY)}
         onToggleExpand={toggleLibrary}
       >
+        <TagsSidebarRow depth={1} />
         {LIBRARY_PAGES.map(({ kind, label, Icon, row }) => (
           <SidebarRow
             key={kind}
@@ -73,17 +76,8 @@ export function MoreGroup({
           />
         ))}
       </SidebarRow>
-      <SidebarRow
-        icon={<TrashIcon />}
-        label={SIDEBAR_LABELS.trash}
-        textLabel={SIDEBAR_LABELS.trash}
-        selected={selected.kind === 'trash'}
-        onActivate={() => {
-          trackSidebar('Trash');
-          go({ kind: 'trash' });
-        }}
-        depth={0}
-      />
+      {/* Also a drop target for a dragged document or folder (explorer-structure.md "Dragging to the Trash"). */}
+      <TrashSidebarRow />
     </SidebarGroup>
   );
 }

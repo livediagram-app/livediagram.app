@@ -18,6 +18,7 @@ import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
+import { EARLY_MODE_SCRIPT, EARLY_MODE_STYLE } from './early-mode-choice';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
@@ -57,6 +58,7 @@ import {
   wizardBypassKind,
   wizardPresetMode,
   wizardPresetQuery,
+  wizardStartsBlank,
 } from '@/lib/new-document-params';
 import { backOutTarget } from '@/lib/back-out';
 import { getTheme } from '@/lib/themes';
@@ -175,7 +177,7 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
-  // Where a new document is stored: Local only for a guest (docs/specs/006-document/save-locations.md), decided at
+  // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, clerkUserId });
   useLayoutEffect(() => {
@@ -207,7 +209,7 @@ export default function NewDocumentPage() {
   };
 
   useEffect(() => {
-    document.title = 'New document | livediagram';
+    document.title = 'New Document | livediagram';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -300,7 +302,7 @@ export default function NewDocumentPage() {
     setSubmitting(true);
     // A `?q=` preset becomes the search in the new document's start panel (start-query.ts).
     handStartQuery(presetQuery);
-    // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
+    // Save location (docs/specs/006-document/save-locations.md): only This Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
     // An explicit blank (Skip, Start Blank, a blank's link) opens with its start closed (close-start-for-blank.ts).
@@ -319,7 +321,7 @@ export default function NewDocumentPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A Local only document has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+    // A document in This Browser has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
     if (offline) {
@@ -574,6 +576,9 @@ export default function NewDocumentPage() {
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
+      {/* A mode card chosen before hydration is kept, not lost (early-mode-choice.ts). */}
+      <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
+      <style>{EARLY_MODE_STYLE}</style>
       <EditorHeader
         documentName="New document"
         hideTitle
@@ -594,7 +599,10 @@ export default function NewDocumentPage() {
           <NewDocumentWizard
             busy={submitting || preparing}
             initialMode={presetMode}
-            onCreate={(kind) => void createByDefault(kind, false)}
+            // A mode chosen after a Start Blank link (`?start=blank`) opens its blank with the start closed.
+            onCreate={(kind) =>
+              void createByDefault(kind, wizardStartsBlank(window.location.search))
+            }
             onSkip={() => void createByDefault('blank', true)}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             // Escape backs out to the page that opened /new, creating nothing
@@ -603,7 +611,7 @@ export default function NewDocumentPage() {
           />
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
-            returning users get "Jump back in" (docs/specs/007-editor/new-document-route.md, hidden with no
+            returning users get "Jump Back In" (docs/specs/007-editor/new-document-route.md, hidden with no
             documents yet). Its fetch also reports the document count that
             gates the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md). The
             guided-tour sample card that used to sit under it was removed

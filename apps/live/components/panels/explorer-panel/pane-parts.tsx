@@ -18,7 +18,7 @@ const CARD =
 const CARD_CURRENT =
   'rounded-xl bg-brand-50/70 ring-2 ring-brand-400/70 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:bg-brand-500/10 dark:ring-brand-400/50';
 
-// The quiet text action at a heading's end ("See all", "See timeline").
+// The quiet text action at a heading's end ("See all", "See Timeline").
 export const PANE_LINK =
   'cursor-pointer rounded text-xs font-medium text-brand-700 transition hover:text-brand-800 hover:underline focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:text-brand-200';
 
@@ -45,7 +45,7 @@ export function PaneSection({
 }
 
 // Up and Down move between a list's rows (the [data-pane-row] buttons), as the rail's keys do.
-export function paneListKeys(e: KeyboardEvent<HTMLElement>): void {
+function paneListKeys(e: KeyboardEvent<HTMLElement>): void {
   if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
   const rows = [...e.currentTarget.querySelectorAll<HTMLElement>('[data-pane-row]')];
   const at = rows.indexOf(document.activeElement as HTMLElement);
@@ -63,7 +63,7 @@ export function PaneList({ label, children }: { label?: string; children: ReactN
   );
 }
 
-// Two columns of preview cards (folders, Jump back in), cascading in as the rows do.
+// Two columns of preview cards (folders, Jump Back In), cascading in as the rows do.
 export function PaneGrid({ label, children }: { label?: string; children: ReactNode }) {
   return (
     <ul aria-label={label} className="lvd-cascade grid grid-cols-2 gap-2" onKeyDown={paneListKeys}>

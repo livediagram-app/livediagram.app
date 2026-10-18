@@ -14,6 +14,9 @@ function textOf(content) {
     .join('\n');
 }
 
+// Results longer than this (a document read whole) are kept only as their length.
+const RESULT_TEXT_MAX = 20_000;
+
 export function documentIdsIn(text) {
   return [...text.matchAll(DOC_ID)].map((m) => m[1]);
 }
@@ -56,6 +59,9 @@ export function parseTranscript(jsonl) {
           isError: false,
           error: null,
           resultChars: 0,
+          // The result's text, for checks that judge what a call answered (a card a run later deleted); null past
+          // RESULT_TEXT_MAX or on an error.
+          result: null,
           images: 0,
         };
         for (const id of documentIdsIn(JSON.stringify(c.input ?? {}))) docs.add(id);
@@ -73,6 +79,7 @@ export function parseTranscript(jsonl) {
           ? (text.split('\n').find((l) => l.trim()) ?? '').slice(0, 300)
           : null;
         call.resultChars = text.length;
+        call.result = !call.isError && text.length <= RESULT_TEXT_MAX ? text : null;
         call.images = Array.isArray(c.content)
           ? c.content.filter((x) => x.type === 'image').length
           : 0;

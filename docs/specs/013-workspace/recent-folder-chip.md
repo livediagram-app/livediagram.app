@@ -24,7 +24,8 @@ two-level breadcrumb was considered for disambiguating repeated names
 
 Special cases:
 
-- **No folder** still shows a location: `My documents`, linking to its root.
+- **No folder** still shows a location: `My Documents`, linking to its root.
+- **A document kept in this browser** shows `This Browser`, linking to that place ([Explorer structure](explorer-structure.md) "Places"): it is not in My Documents, and its chip used to say it was.
   "Filed at the root" is information too. An AI-made document is no
   exception: provenance is the
   `made-by:ai` filter ([Explorer filters](explorer-filters.md)), not a

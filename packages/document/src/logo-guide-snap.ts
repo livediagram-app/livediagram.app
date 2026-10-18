@@ -2,7 +2,7 @@
 // guides"): a point near a guide lands on it. Where guides cross (the centre, a corner, a circle
 // meeting a centre line or a diagonal, a grid crossing) is preferred; else the nearest point on the
 // nearest guide line or circle. Only the guide parts shown count. Pure geometry, in canvas px.
-import type { PageRect } from './illustrate-page';
+import type { PageRect } from './page';
 import type { GuideCircle, GuideLine, LogoGuides } from './logo-page';
 
 type Point = { x: number; y: number };

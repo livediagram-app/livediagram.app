@@ -32,7 +32,7 @@ export type SettingsIconId =
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
   | 'draw'
-  | 'illustrate'
+  | 'pages'
   | 'presenting'
   | 'layers'
   | 'map'
@@ -209,10 +209,10 @@ const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
 const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
-const IllustrateSubGlyph = EDITOR_MODE_ICONS.illustrate;
+const PagesSubGlyph = EDITOR_MODE_ICONS.pages;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
-  illustrate: () => <IllustrateSubGlyph size={16} />,
+  pages: () => <PagesSubGlyph size={16} />,
   presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,

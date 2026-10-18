@@ -11,7 +11,7 @@ import {
 import type { LensTeam } from './types';
 
 /** One value a dimension offers, with its label. */
-export type LensValueOption = { value: string; label: string };
+type LensValueOption = { value: string; label: string };
 
 const UNKNOWN_TEAM_LABEL = 'Unknown team';
 const TEAM_NAME_ORDER = new Intl.Collator('en-GB');

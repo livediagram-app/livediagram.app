@@ -51,7 +51,7 @@ export function LaserColourRow({
         }}
         className="flex w-full cursor-pointer items-center justify-between gap-2 py-1.5 text-left"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Colour
         </span>
         <span className="flex items-center gap-1.5">

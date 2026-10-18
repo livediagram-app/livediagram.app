@@ -13,7 +13,7 @@ import { imageGrantRemovalStatement } from './image-grants';
 
 // Which documents are being removed: one by id, every document an owner holds,
 // or a set of ids (the Trash purge, docs/specs/013-workspace/trash.md).
-export type DocumentSelector = { column: 'id' | 'owner_id'; value: string } | { ids: string[] };
+type DocumentSelector = { column: 'id' | 'owner_id'; value: string } | { ids: string[] };
 
 // The WHERE clause over `documents` and its one bound value.
 function selectorWhere(selector: DocumentSelector): { where: string; value: string } {

@@ -6,7 +6,7 @@
 
 export type TextMeasure = (s: string) => number;
 
-export type WrappedText = { lines: string[]; width: number };
+type WrappedText = { lines: string[]; width: number };
 
 // Binary-search steps for the balanced width; 8 halvings of a <= 320px range
 // land within about a pixel.

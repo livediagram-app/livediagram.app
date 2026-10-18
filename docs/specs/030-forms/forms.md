@@ -20,7 +20,7 @@ document.
 | ------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
 | **Form tab**        | A tab of kind `form`: one form, filling the tab                                               | form page, survey tab         |
 | **form**            | The definition a Form tab holds: its heading, sections, questions, look and where answers go  | survey, questionnaire         |
-| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Illustrate's), step     |
+| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Pages mode's), step     |
 | **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)      |
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
@@ -124,7 +124,7 @@ previewing), the help link and the form's **cog**.
 ### The form card, top to bottom
 
 - **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a slide background in
-  colour, picked and drawn exactly as a slide's ([Illustrate pages](../007-editor/illustrate-pages.md)
+  colour, picked and drawn exactly as a slide's ([Pages](../007-editor/pages-mode.md)
   "Backgrounds", "Animated backgrounds"): the slide's **Background** section with **Solid**, **Gradient** (the tab
   theme's gradients first) and **Animated** (the slide motions, moving on screen; still under reduced motion), then
   **Pattern**. No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
@@ -222,8 +222,9 @@ so text contrast never depends on the theme.
 - **Font**: the tab font, on everything in the form (a tab with none keeps the app font).
 - **Finish**: **Flexible** draws boxes as they are; **Professional** squares their corners (2 px); **Sketch** draws
   every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink
-  (slate 700 light, slate 300 dark), neighbours wobbling differently, with a pencil-offset shadow. Focus, a pick and
-  an error keep their own outline colours.
+  (slate 700 light, slate 300 dark), neighbours wobbling differently, with a pencil-offset shadow; **Marker** draws
+  every box in a felt-tip's 3 px, its ink 86% opaque, its corners a touch uneven (neighbours differently), with no
+  shadow. Focus, a pick and an error keep their own outline colours.
 - **Backdrop**: the theme's canvas colour, its light or dark half following the viewer, with the tab's **canvas
   style** over it when someone picked one in Tab Style's Canvas (a Form tab is in Plan, whose own canvas is plain):
   a static pattern or an animated one moving behind the form (still under reduced motion), at the tab's pattern
@@ -273,7 +274,7 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 | **Checkbox**        | One checkbox beside the prompt ("I agree to...")                                 |                                                                               | true or false                 |
 
 - A prompt is 1 to 200 characters ("Untitled Question" until typed); help text up to 500.
-- Options are 1 to 40 characters (a Choice field's limit, as a question's options may become its field's), unique
+- Options are 1 to 100 characters (a Choice field's limit, as a question's options may become its field's), unique
   ignoring case (a repeat is put back), edited as a list: Enter adds the next ("Option 3", selected), Backspace in an
   empty one removes it, Alt+Up and Alt+Down move it, pasting several lines adds one option a line. **Add “Other”**
   adds an Other option with its own text box to Single and Multiple Choice; typing in it picks it, and its text is
@@ -384,8 +385,15 @@ Tour** stack beside the Draw tour's.
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
-  - A document kept on this device only (an offline document) cannot publish: the dialog says forms are published
-    from documents saved to livediagram.
+  - A document kept on this device only (an offline document) cannot publish until it is synced, so Share Form offers
+    the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-document-in-this-browser)):
+    the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is Offline**,
+    "It is saved only in this browser, so this form can't be published yet. Sync it to livediagram to publish it: the
+    form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
+    Document**. It syncs the document in place; the toast confirms and the same dialog carries straight on to the
+    unpublished view (Publish Form, held while the link is first read), so the Editor publishes without reopening
+    anything. Nothing uploads before Sync Document is pressed, nor before the reader is known; a failed sync says
+    why and leaves the button to try again. Only an Editor reaches Share Form, so only an Editor can sync from it.
 - The form link is `/form/<code>`: a code of 22 random characters (base 62, about 131 bits), separate from every
   share link. It grants **nothing** on the document: no read, no room, no images.
 - One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one: a
@@ -535,6 +543,27 @@ board settings, for switching back.
   new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
   any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
   where they are listed. The count is read when the tab opens and every 30 seconds while it is shown.
+- **Not Taking Responses**: for an Editor, a form that has been published but takes no responses now shows a red
+  (danger) warning right after the count, before Problems with this Form (amber), so a paused form is never missed:
+  the warning triangle and **Not Taking Responses**, a button whose tooltip says why and what it opens. The reasons,
+  first match wins (`formNotTakingReason`):
+  - **Suspended** (the link was suspended after reports): "Its link was suspended after reports. Share Form publishes
+    a new one." Opens Share Form.
+  - **Paused** (its destination broke): "Responses have nowhere to go. Choose where they go to take them again." Opens
+    Responses Go To.
+  - **Switched off** (Accepting Responses off): "Accepting Responses is off, so the link shows your closed message.
+    Turn it on in Share Form." Opens Share Form.
+  - **Closed On passed**: "Its Close On time has passed. Change it in Settings to take responses again." Opens
+    Settings.
+  - **Response Limit reached**: "It reached its Response Limit. Raise it in Settings to take responses again." Opens
+    Settings.
+  - **Document full** (as many cards as it can hold): "This document holds as many cards as it can. Remove some to
+    take responses again." Opens the tab responses go to, when there is one.
+    A form never published, a Draft (offline) one and one taking responses show none, and a sheet form is never full
+    (its rows are not cards). Its red is `red-700` on white (6.4:1; 5.9:1 on its `red-50` hover) and `red-300` on the
+    dark bar (`slate-900`, 9.3:1; 8.7:1 on its hover), all past WCAG AA's 4.5:1. Its accessible name carries the reason
+    ("Not Taking Responses. Accepting Responses is off, ..."), so the tooltip never holds the only copy of it. Participants and Viewers see
+    the state pill (Paused, Closed, Suspended) and no warning: what it opens is an Editor's.
 - **Inbox**: a **Form Responses** section in the Explorer's [Inbox](../013-workspace/inbox.md) lists each live
   form, in a document the reader owns or reaches through a team, that has responses the reader has not seen: "3 new
   responses to **Bug Report**", its document's chip, newest response first; a row opens the destination board (the
@@ -556,6 +585,8 @@ board settings, for switching back.
 | Start a form: New Form, a form template, the Forms tour  | ✓                                      |             |        |
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
+| See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
+| Sync a document in This Browser from Share Form          | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
@@ -582,7 +613,7 @@ session can add content elsewhere, never to a form.
 
 ## Agents
 
-An agent builds, reads and publishes a form as an Editor does, through four MCP tools
+An agent builds, reads, tries and publishes a form as an Editor does, through five MCP tools
 ([MCP server](../015-api/mcp-server.md) §4.9e) and the CLI's `form` commands, one engine for both
 (`packages/agent-verbs/src/forms/`). A form's responses stay what they are everywhere: cards (`list_items`,
 `change_items`, `fromForm` among their fields) or rows (`read_sheet`). `read_document` shows a Form tab as `kind=form`
@@ -643,6 +674,18 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 - **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
   `delete_link`. A form with problems is refused with every problem, as Share Form lists them. The answer is the
   state, the link and the count.
+- **`try_form`** (write): the builder's [Preview](#preview) for an agent, to check a form end to end. `answers` by
+  question id or prompt, as a respondent gives them (an option for a single choice, a list for several; on a choice
+  with **Other**, text that is no option is the Other answer). They are checked as the form link checks them before
+  anything is sent: a wrong one is refused (`invalid_answers`) with each question's error in the form's own words and
+  a choice's options, an unknown question with the questions there are, and nothing is written. Answers to a section
+  that does not show for these answers are left out and said so. Then it makes what Submit in Preview makes, titled
+  "Preview: ...": on a **published** form, or one whose responses go to a **sheet**, through `.../form-preview` (a
+  published form counts it: its number, toward the total and the limit, taken while closed too, no email); on an
+  unpublished board form, the card through the items route, numbered by nothing, as the editor makes it itself. A
+  form whose responses go nowhere, or an unpublished one whose board is gone, is refused
+  (`form_destination_missing`). It answers what it made (a card or a row), where (the board and column, or the
+  sheet), the response number or none, the card's title, and the card's id when it made the card itself.
 - **A live form is locked for agents too**: while it takes responses, `change_form` refuses every change but
   `settings`, saying to close it with `share_form` first (its link stays); the api refuses a changeset that changes
   anything else about it (`form_locked`), whoever sends it.
@@ -657,7 +700,8 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
   makes a Board or Sheet tab (`replace` of elements with `kind`), its sheet made under the id the form names. Every
   check is made before anything is written, so a refusal leaves the document as it was.
 - **The CLI**: `form get`, `form add` (`--starter`, or `--from` a JSON file of `add_form` input), `form change` (a
-  JSON file of changes, or stdin) and `form share` (`publish`, `close`, `delete_link`).
+  JSON file of changes, or stdin), `form share` (`publish`, `close`, `delete_link`) and `form try` (a JSON file of
+  answers, or stdin).
 - An empty list of changes is a read: nothing is written.
 
 ## Telemetry
@@ -671,6 +715,8 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Shared   | `Link`                                                  | Publish Form                                          |
 | Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
 | Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
+| Form     | Opened   | `NotTaking` + the reason (`NotTakingSwitchedOff`, ...)  | Not Taking Responses pressed                          |
+| Form     | Moved    | `SyncedToShare`                                         | Sync Document pressed in Share Form                   |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)                   | The api accepts or drops a response (server-side)     |
 | Form     | Sent     | `Preview`                                               | An Editor's Preview makes its card                    |
 | Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`             | A report is filed (server-side)                       |

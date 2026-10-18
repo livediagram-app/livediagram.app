@@ -8,6 +8,7 @@ import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livediagram/api-s
 import {
   diffToElementOps,
   invertElementOps,
+  planOnlyAddedOutsidePlan,
   type ElementId,
   type Tab,
 } from '@livediagram/document';
@@ -25,7 +26,7 @@ import { applyWrap } from './operations/wrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
-import { tabLocked, tooLarge } from './rejections';
+import { planOnlyOutsidePlan, tabLocked, tooLarge } from './rejections';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { createState, type EditState } from './state';
 import type { ApplyOptions, ApplyOutcome, ApplyRejection, EditLog, EditOperation } from './types';
@@ -145,6 +146,8 @@ export function applyEditOperations(
   }
   const next = finalise(state, log);
   if ('code' in next) return rejected(log, next, operations);
+  const offPlan = planOnlyAddedOutsidePlan(tab.elements, next);
+  if (offPlan.length) return rejected(log, planOnlyOutsidePlan(offPlan), operations);
   const elementOps = diffToElementOps(tab.elements, next.elements);
   const results = buildResultLines({ ...state, beforeElements: tab.elements }, next.elements);
   const present = new Set<ElementId>(next.elements.map((el) => el.id));

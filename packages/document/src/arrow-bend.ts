@@ -27,7 +27,7 @@ export type BendPlan =
   | { kind: 'insert'; mid: Pt; points: Delta[]; index: number; grab: Pt; fromBow?: true }
   | { kind: 'slide'; mid: Pt; route: Pt[]; segment: number; dir: Pt; grab: Pt };
 
-export type BendPatch = Partial<
+type BendPatch = Partial<
   Pick<ArrowElement, 'arrowStyle' | 'curveOffset' | 'curvePoints' | 'elbowOffset'>
 >;
 

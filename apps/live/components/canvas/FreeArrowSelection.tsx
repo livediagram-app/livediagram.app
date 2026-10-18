@@ -6,11 +6,11 @@ import { EdgeResizeHandle, ResizeHandles } from './element-parts';
 
 // Clearance between the arrow's drawn route and its frame, in canvas px: enough
 // that the edge handles sit clear of the endpoint grips.
-export const MOVE_FRAME_PAD_PX = 20;
+const MOVE_FRAME_PAD_PX = 20;
 // An axis narrower than this has nothing to scale (a horizontal arrow is flat).
 const FLAT_PX = 0.5;
 // Width of the grab band along each side of the frame, in screen px.
-export const MOVE_FRAME_HIT_PX = 10;
+const MOVE_FRAME_HIT_PX = 10;
 
 const EDGES = ['n', 'e', 's', 'w'] as const;
 

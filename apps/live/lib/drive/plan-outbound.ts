@@ -39,9 +39,9 @@ export type OutboundOp =
   | { op: 'trash-file'; item: DriveItem }
   | { op: 'finish-tombstone'; row: SeenRow };
 
-export type OutboundPlan = { ops: OutboundOp[]; nextDueAt: number | null };
+type OutboundPlan = { ops: OutboundOp[]; nextDueAt: number | null };
 
-export type OutboundOptions = {
+type OutboundOptions = {
   now: number;
   // A flush writes every changed document now, ignoring idle and interval.
   flush: boolean;
@@ -112,7 +112,7 @@ export function planOutbound(snapshot: MirrorSnapshot, opts: OutboundOptions): O
     }
   }
 
-  // Binned here, or no longer in My documents (moved into a team): the file
+  // Binned here, or no longer in My Documents (moved into a team): the file
   // goes to the bin, and the row stays so a way back restores it.
   for (const item of snapshot.items.values()) {
     if (item.kind !== 'document' || item.trashed) continue;

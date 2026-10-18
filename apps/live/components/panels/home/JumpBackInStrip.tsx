@@ -1,7 +1,7 @@
 'use client';
 
-// Jump back in on a phone (docs/specs/013-workspace/explorer-home.md "Phone"): one sideways strip of
-// at most 8 thumbnails, most used and recent alternating, ending in the See more tile. Its trailing
+// Jump Back In on a phone (docs/specs/013-workspace/explorer-home.md "Phone"): one sideways strip of
+// at most 8 thumbnails, most used and recent alternating, ending in the See More tile. Its trailing
 // edge fades while more lies to the right; the fade is an overlay, so nothing moves when it comes or
 // goes.
 
@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CompactEmptyState } from '@livediagram/ui';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { phoneOrder, stripFade, type JumpBackInSet } from '@/app/explorer/home/home-model';
+import type { JumpBackInMenuFor } from './JumpBackInMenu';
 import { JumpBackInTile, SeeMoreTile } from './JumpBackInTile';
 import { JumpBackInEmptyIcon } from './home-icons';
 import { STRIP_HEIGHT, STRIP_THUMB, STRIP_TILE } from './home-styles';
@@ -19,12 +20,15 @@ export function JumpBackInStrip({
   recentHref,
   onSeeMore,
   labelledBy,
+  menuFor,
 }: {
   ownerId: string;
   set: JumpBackInSet;
   recentHref: string;
   onSeeMore: () => void;
   labelledBy: string;
+  /** Each document's Explorer menu (explorer-home.md "Jump Back In"); omitted, no tile has one. */
+  menuFor?: JumpBackInMenuFor;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [fade, setFade] = useState(false);
@@ -45,13 +49,15 @@ export function JumpBackInStrip({
   }, [tiles.length]);
 
   return (
-    <div className="relative">
+    // On a phone the strip runs to the screen's edges (the page's 16 px padding given back), so a card scrolls out
+    // at the edge under the fade rather than being cut off short of it.
+    <div className="relative -mx-4 sm:mx-0">
       <div
         ref={ref}
-        className={`scrollbar-slim -mx-1 flex ${STRIP_HEIGHT} snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`}
+        className={`scrollbar-slim flex ${STRIP_HEIGHT} scroll-px-4 snap-x gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1`}
       >
         {tiles.length === 0 ? (
-          // The heading alone: the strip's height holds no second line, and See more beside it is the way forward.
+          // The heading alone: the strip's height holds no second line. With nothing to show, no See More either.
           <CompactEmptyState
             size="small"
             className="w-48 shrink-0"
@@ -67,14 +73,17 @@ export function JumpBackInStrip({
                   item={item}
                   group={group}
                   thumbClassName={STRIP_THUMB}
+                  entry={menuFor?.(item.documentId) ?? null}
                 />
               </li>
             ))}
           </ul>
         )}
-        <div className="snap-start">
-          <SeeMoreTile href={recentHref} onSeeMore={onSeeMore} />
-        </div>
+        {tiles.length > 0 ? (
+          <div className="snap-start">
+            <SeeMoreTile href={recentHref} onSeeMore={onSeeMore} />
+          </div>
+        ) : null}
       </div>
       <span
         aria-hidden

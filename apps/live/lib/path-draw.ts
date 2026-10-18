@@ -30,9 +30,9 @@ export type PathDraft = {
 };
 
 /** An end node of an open path, where a press resumes drawing. */
-export type PathEnd = { id: string; end: 'start' | 'end'; point: Point };
+type PathEnd = { id: string; end: 'start' | 'end'; point: Point };
 
-export type PathPress =
+type PathPress =
   | { kind: 'finish' }
   | { kind: 'close' }
   | { kind: 'cusp' }

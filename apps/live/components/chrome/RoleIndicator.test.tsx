@@ -36,7 +36,7 @@ describe('RolePill', () => {
     expect(pill.textContent).toContain('Editing');
     expect(pill.getAttribute('aria-describedby')).toBeTruthy();
     expect(document.getElementById(pill.getAttribute('aria-describedby')!)?.textContent).toBe(
-      'Switch to viewing (read-only)',
+      'Switch to participating (as a Participant sees it)',
     );
     fireEvent.click(pill);
     expect(onToggle).toHaveBeenCalledTimes(1);

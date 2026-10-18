@@ -2,7 +2,7 @@
 // GitHub avatar (avatars.githubusercontent.com/u/<id>?s=40, 2x its 20px display), fetched once and inlined as a JPEG data URI so
 // the footer never makes a request to GitHub: hotlinking would hand every visitor's IP to a third party, against
 // the privacy promise (docs/specs/019-marketing/marketing-site.md). Refresh by re-downloading at s=40.
-export type Contributor = { name: string; login: string; avatar: string };
+type Contributor = { name: string; login: string; avatar: string };
 
 export const CONTRIBUTORS: readonly Contributor[] = [
   {

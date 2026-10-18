@@ -8,15 +8,15 @@ import { changesBeyondSettings, readForm } from '@livediagram/forms';
 import { getLiveFormLink, isTabRevStale, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
-import { relayIllustrate } from '../room-client';
+import { relayPages } from '../room-client';
 import type { Env } from '../types';
 import { readStoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
 
-export const FORM_LOCKED_MESSAGE =
+const FORM_LOCKED_MESSAGE =
   'This form is taking responses, so only its settings can change. Close it first: its link stays.';
 
-export type AgentFormResult = { status: number; body: Record<string, unknown> };
+type AgentFormResult = { status: number; body: Record<string, unknown> };
 
 const refused = (status: number, error: string, message: string, extra = {}): AgentFormResult => ({
   status,
@@ -87,7 +87,7 @@ export async function writeAgentForm(
       tabId,
       patch: { name, form, ...(typeof theme === 'string' ? { theme } : {}) },
     };
-    await relayIllustrate(env, documentId, [op], '[forms] agent');
+    await relayPages(env, documentId, [op], '[forms] agent');
     console.info('[forms] agent.written', where);
     return { status: 200, body: { tabId, rev: written, name } };
   }

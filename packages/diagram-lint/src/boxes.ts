@@ -26,7 +26,7 @@ export function isLintBox(el: Element): el is BoxedElement {
 export const centreOf = (el: Rect): Point => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
 
 // The four corners as drawn, rotation included, clockwise from the top left.
-export function boxCorners(el: BoxedElement): Point[] {
+function boxCorners(el: BoxedElement): Point[] {
   const corners = [
     { x: el.x, y: el.y },
     { x: el.x + el.width, y: el.y },

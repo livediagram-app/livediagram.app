@@ -31,8 +31,29 @@ A standalone **text element** has no body set: its words are the whole element, 
 A shape **carries words** when its kind takes a label. Icons, charts, progress, rating, stickers and chairs keep
 their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
 body, or the concept graphics, which animate their rows with the Concept set. A Shape animation stored on a concept graphic or a sequence
-before they had sets of their own does not play: their menu has no Shape category to change or clear it. A step number's
+before they had sets of their own plays only when it is one of the [Shape motions](#shape-motions): their Shape section
+offers no other tile to change or clear it. A step number's
 **Play in Order** offsets its Shape animation by its number ([The step number](../009-elements/step-number.md)).
+
+### Shape motions
+
+Nine of the Shape set's values move or fade the element as a whole: **Blink**, **Heartbeat**, **Breathe**,
+**Bounce**, **Wobble**, **Shake**, **Jelly**, **Float** and **Swing**. They are its **motions**, and they suit any
+silhouette, so an element whose own set animates inside it takes them too: sticky notes, drawings, images and
+videos, tables, charts, Sankey diagrams, progress, ratings, concept graphics and sequence diagrams. Its menu shows a
+**Shape** section beside its own, offering the motions alone; a photo on a slide can bounce. The Shape set's
+other values (Pulse, Glow, Trace, Gradient, Shimmer, Highlight) light or trace a shape's own outline and fill, so
+they stay with the Shape set's members.
+
+Icons and text elements take no Shape section: the Icon set already bounces, floats and swings the glyph, and the
+Text set bounces and floats the words.
+
+A motion is stored in `animation`. On a sticky, drawing, image, video or table that is the field its own set
+writes too, so the element plays one or the other: picking a motion replaces its Sticky, Drawing, Media or Table
+animation, and that section then shows None (picking one of those replaces the motion the same way). A section's
+None clears only its own section's value. A chart, Sankey, progress bar, rating, concept graphic or sequence
+diagram keeps its own animation in a field of its own, so a motion composes with it: a pie can bounce while its
+slices sweep in.
 
 ### Sets that already exist
 
@@ -61,6 +82,8 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
   element selected, the Shape section animates the shape, and the Text section animates the text element and the
   shape's label.
 - A section reads its current value, Speed and Repeat from the **first member of its set** in the selection.
+- A Shape section offers the values **every member in it takes**: the whole set for shapes, a boundary's six, an
+  element's nine motions, and their overlap in a mixed selection (a boundary and a photo: Blink alone).
 - Every section is a closed `MenuAccordionSection`, as every element-menu section is.
 - Each option is a tile with a **live miniature** of its kind (a small box, a word, a note, a zig-zag line, a
   photo, a table, an arrow, a star, a progress bar, stars, a pie) running the real animation, frozen on a telling
@@ -76,7 +99,8 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
 ### Values a set no longer offers
 
 Before the sets split, every boxed element took the shape set. A saved value that the element's set does not offer
-(a sticky that bounces, a text element that traces) **keeps playing exactly as before**. Its section shows it as
+(a sticky that traces, a text element that traces) **keeps playing exactly as before**. A saved motion (a sticky
+that bounces) shows as itself in the element's Shape section. Its section shows it as
 one extra, selected tile after the set's own, labelled with its old name, so it can be seen and replaced. Picking
 anything else removes the extra tile for good.
 
@@ -92,7 +116,9 @@ A text element's old value lives in `animation`. Picking a Text animation for it
 - **Held while covering.** A board, view or Sheet that is maximised or fills its tab shows its rest frame, and its
   menu offers no Animation category ([Plan board](../026-plan/plan-board.md#maximised-board)).
 - **Rest frame.** Every animation has a rest frame: the element fully shown, in place, as it is with no animation.
-  Reduced motion, PNG and SVG export, and a still canvas show the rest frame. A reveal's rest frame is fully
+  Reduced motion, PNG and SVG export, and a still canvas show the rest frame. A tab window plays the shown tab's
+  animations that move the element whole or run along an arrow's line, and shows the rest frame for the others
+  ([The tab window](../009-elements/tab-window.md) "The element"). A reveal's rest frame is fully
   revealed, so nothing is ever exported or shown blank.
 - **Loops and reveals.** A **loop** repeats a motion around the rest frame. A **reveal** brings the element or its
   words in. With Repeat on, a reveal cycles: reveal, hold, clear, again. With Repeat off, it plays once and stays
@@ -108,8 +134,8 @@ A text element's old value lives in `animation`. Picking a Text animation for it
   theme's default stroke when it sets none); a text element, which has no border, takes its own ink.
 - **Composes with rotation.** Motion uses the independent `translate`, `rotate` and `scale` properties, so it
   composes with an element's own rotation.
-- **The format painter** copies a body animation only between members of the same set, and a Text animation to any
-  element that carries words.
+- **The format painter** copies a body animation only between members of the same set, a Shape motion to any
+  element that takes it, and a Text animation to any element that carries words.
 - **Clear Animation** (the command palette) clears the body and the Text animation together.
 
 ## The quality bar

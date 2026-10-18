@@ -93,7 +93,7 @@ export function CalendarView({
   const lastDay = model.weeks[rows - 1]?.[6]?.day ?? 0;
   // The entries a day has room for, below its date.
   const dayH = (height - FRAME_HEAD_H - WEEKDAY_H) / rows - DATE_H - 2;
-  // Compact cards, as a board draws them, where a day has room for one (a maximised calendar, a Visualisation
+  // Minimal cards, as a board draws them, where a day has room for one (a maximised calendar, a Visualisation
   // tab); a line each otherwise (a small slot).
   const cardRoom = Math.floor((dayH + CARD_GAP) / (CARD_H + CARD_GAP));
   const asCards = cardRoom >= 1;

@@ -37,6 +37,7 @@ import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFly
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { debugLog } from '@/lib/debug-log';
+import { announceToastFloorChange } from '@/components/toast/toast-floor';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
@@ -57,7 +58,7 @@ const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
 
-export type WhiteboardDockProps = {
+type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;
@@ -87,7 +88,10 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
   const { position } = model;
   useEffect(() => {
     debugLog('[whiteboard-dock] position', position);
+    // A toast already up stands on the dock where it now is (docs/specs/004-interface-design/toasts.md).
+    announceToastFloorChange();
   }, [position]);
+  useEffect(() => announceToastFloorChange, []);
   const [hint, setHint] = useState<{ left: number } | null>(null);
 
   // S asks for the Shapes flyout: opened as a hover opens it (its field focused, the focus going back
@@ -256,6 +260,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
     <div
       data-floating-panel=""
       data-whiteboard-dock=""
+      data-region="palette"
       data-dock-position={model.position}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

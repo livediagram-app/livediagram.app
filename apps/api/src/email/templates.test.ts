@@ -7,6 +7,7 @@ import {
   documentJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
+  teamInviteReminderEmail,
   week1Email,
   week2Email,
   welcomeEmail,
@@ -18,6 +19,25 @@ import {
 const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
 
 describe('email templates', () => {
+  // docs/specs/014-identity/transactional-email.md §6 "Branding": every email opens with the logo mark next
+  // to the wordmark and closes on the branded footer, all from the one shell.
+  it.each([
+    ['welcome', () => welcomeEmail(env)],
+    ['team invite', () => teamInviteEmail(env, 'Acme')],
+    ['account deleted', () => accountDeletedEmail(env)],
+  ])('%s carries the logo beside the wordmark', (_label, build) => {
+    const { html } = build();
+    expect(html).toContain('<img src="https://app.test/email/livediagram-mark-64.png"');
+    const logo = html.indexOf('email/livediagram-mark-64.png');
+    const wordmark = html.indexOf('>live</span>diagram');
+    expect(logo).toBeGreaterThan(-1);
+    expect(wordmark).toBeGreaterThan(logo);
+    // Header and footer both carry the lockup, each linked home.
+    expect(html.match(/livediagram-mark-64\.png/g)).toHaveLength(2);
+    expect(html).toContain('<a href="https://app.test" style="text-decoration:none">');
+    expect(html).toContain('>app.test</a>');
+  });
+
   it('welcome has a subject + links to /new', () => {
     const e = welcomeEmail(env);
     expect(e.subject).toMatch(/welcome/i);
@@ -65,6 +85,39 @@ describe('email templates', () => {
 
   it('falls back gracefully on a null team name', () =>
     expect(teamInviteEmail(env, null).html).toContain('a team'));
+
+  // docs/specs/013-workspace/teams.md "Declining from the email"
+  it('team invite carries a Decline link to /join/decline with its token, escaped for the URL', () => {
+    const e = teamInviteEmail(env, 'Acme', 'm-1.a/b+c');
+    expect(e.html).toContain('https://app.test/join/decline?token=m-1.a%2Fb%2Bc');
+    expect(e.html).toContain('Decline the invite');
+    expect(e.html).toContain('no account needed');
+  });
+
+  it('team invite without a token has no Decline link', () =>
+    expect(teamInviteEmail(env, 'Acme').html).not.toContain('/join/decline'));
+
+  // docs/specs/013-workspace/teams.md "Reminders and expiry"
+  it('the three reminders name the team, link to the invites page and carry the decline link', () => {
+    const subjects = new Set<string>();
+    for (const stage of [1, 2, 3] as const) {
+      const e = teamInviteReminderEmail(env, 'Acme', stage, 'tok');
+      expect(e.kind).toBe(`TeamInviteReminder${stage}`);
+      expect(e.subject).toContain('Acme');
+      expect(e.html).toContain('https://app.test/explorer/invites');
+      expect(e.html).toContain('https://app.test/join/decline?token=tok');
+      expect(e.unsubscribeUrl).toBeUndefined();
+      subjects.add(e.subject);
+    }
+    expect(subjects.size).toBe(3);
+    expect(teamInviteReminderEmail(env, 'Acme', 3, 'tok').html).toMatch(/closes in a week/);
+  });
+
+  it('reminders escape the team name too', () => {
+    const e = teamInviteReminderEmail(env, '<b>x</b>\nBcc: y', 2, 'tok');
+    expect(e.html).not.toContain('<b>x</b>');
+    expect(e.subject).not.toContain('\n');
+  });
 
   // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my document
   it('document-joined names the document + joiner and CTAs to the explorer', () => {

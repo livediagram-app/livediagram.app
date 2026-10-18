@@ -24,22 +24,22 @@ import {
 } from './sankey-model';
 
 /** The node labels' size per Text Size: smaller than a shape label, since a diagram holds many. */
-export const SANKEY_LABEL_PX: Record<TextSizePreset, number> = {
+const SANKEY_LABEL_PX: Record<TextSizePreset, number> = {
   sm: 10,
   md: 12,
   lg: 15,
   scale: 12,
 };
-export const SANKEY_EDGE_PAD_PX = 8; // kept clear inside the box on every side
+const SANKEY_EDGE_PAD_PX = 8; // kept clear inside the box on every side
 export const SANKEY_BAND_OPACITY = 0.42; // bands at rest: present, but the nodes still lead
 export const SANKEY_BAND_FOCUS_OPACITY = 0.78; // the hovered band, or every band of a hovered node
 export const SANKEY_BAND_DIM_OPACITY = 0.1; // everything else while something is hovered
 export const SANKEY_NEUTRAL_BAND = '#94a3b8'; // slate-400: reads on white and on a dark theme alike
-export const SANKEY_LABEL_GAP_PX = 6; // between a node's bar and its label
+const SANKEY_LABEL_GAP_PX = 6; // between a node's bar and its label
 // Label widths are estimated from the character count (there is no DOM headless): em per character for a
 // semibold name and for the lighter amount, a little generous so an estimate errs toward giving way.
-export const SANKEY_NAME_CHAR_EM = 0.6;
-export const SANKEY_DETAIL_CHAR_EM = 0.56;
+const SANKEY_NAME_CHAR_EM = 0.6;
+const SANKEY_DETAIL_CHAR_EM = 0.56;
 
 /**
  * The halo drawn behind a label so it reads over the bands: the opposite of the label's own colour, so dark
@@ -56,7 +56,7 @@ export function sankeyLabelPx(stored: TextSize | undefined): number {
   return SANKEY_LABEL_PX[textSize];
 }
 
-export type SankeyBandPaint =
+type SankeyBandPaint =
   { kind: 'solid'; color: string } | { kind: 'gradient'; from: string; to: string };
 
 export type SankeyLabel = {
@@ -73,7 +73,7 @@ export type SankeyLabel = {
   hidden: boolean;
 };
 
-export type SankeyFrame = {
+type SankeyFrame = {
   w: number;
   h: number;
   layout: SankeyLayout;

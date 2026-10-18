@@ -89,7 +89,7 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
 // One `board` delta per Plan board whose set-up changed (docs/specs/012-collaboration/collab-race-hardening.md,
 // phase 6). Derived here rather than at each control, so a column cog, the Board flyout, a widget dropped
 // from the palette and undo or redo all reach peers as only what changed.
-export function boardDeltaOps(before: Tab, after: Tab): RoomOp[] {
+function boardDeltaOps(before: Tab, after: Tab): RoomOp[] {
   const beforeById = new Map(before.elements.map((e) => [e.id, e]));
   const ops: RoomOp[] = [];
   for (const el of after.elements) {

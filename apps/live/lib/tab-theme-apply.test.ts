@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
+import {
+  LABEL_BACKDROP_CONTRAST,
+  contrastRatio,
+  type ArrowElement,
+  type Element,
+  type ShapeElement,
+  type Tab,
+} from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
-import { withThemeApplied } from './tab-theme-apply';
+import { labelsFollowCanvas, withThemeApplied } from './tab-theme-apply';
 
 // Applying a theme to a tab (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel").
 const shape = (over: Partial<ShapeElement> = {}): Element => ({
@@ -53,5 +60,32 @@ describe('withThemeApplied', () => {
     expect(out.theme).toBe('forest');
     expect((out.elements[0] as ShapeElement).fillColor).not.toBe('#123456');
     expect(out.backgroundColor).toBe(getTheme('forest').backgroundColor);
+  });
+});
+
+// docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it".
+describe('labels a pick sank', () => {
+  it('stores an ink that reads on the canvas the pick turned dark', () => {
+    const caption = {
+      id: 'c',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 120,
+      height: 24,
+      label: 'Caption',
+      textColor: '#334155',
+    } as unknown as Element;
+    const out = withThemeApplied({ id: 't', name: 'T', elements: [caption] }, 'midnight', 'dark');
+    const ink = (out.elements[0] as { textColor?: string }).textColor ?? '';
+    expect(contrastRatio(ink, out.backgroundColor ?? '')).toBeGreaterThanOrEqual(
+      LABEL_BACKDROP_CONTRAST,
+    );
+  });
+
+  it('follows the canvas on every tab but a Pages one', () => {
+    expect(labelsFollowCanvas({})).toBe(true);
+    expect(labelsFollowCanvas({ opensIn: 'pages' })).toBe(false);
+    expect(labelsFollowCanvas({ pages: [{ id: 'p', orientation: 'portrait' }] })).toBe(false);
   });
 });

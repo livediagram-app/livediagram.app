@@ -5,6 +5,7 @@ import {
   withAttached,
   anchorOutward,
   anchorPosition,
+  fieldEndPosition,
   isBoxed,
   nearestOfferedAnchor,
   withMindSubtrees,
@@ -15,6 +16,7 @@ import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 type BoxedDragHandlerDeps = {
   depsRef: RefObject<EditorDragDeps>;
@@ -32,23 +34,31 @@ export function useBoxedDragHandlers({
   setDrag,
   checkpointPendingRef,
 }: BoxedDragHandlerDeps) {
-  const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
+  // A press that an armed action takes instead of selecting: true when it took it. Shared by a drag's press and
+  // a tap that panned instead of dragging (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
+  const pressArmedAction = (elementId: string): boolean => {
     const d = depsRef.current;
     // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): same "armed source, next click
     // is the action" shape as the Format tool below. Draws a
     // pinned connector to the clicked shape instead of selecting it.
-    if (d.connectSourceId !== null && mode === 'move') {
+    if (d.connectSourceId !== null) {
       d.connectArrowTo(elementId);
-      return;
+      return true;
     }
     // Persistent Format tool: first click arms the source, each later
     // click paints onto the target and (in Keep painting) KEEPS the
     // source armed so the user can format many elements in a row.
-    if (d.formatToolActive && mode === 'move') {
+    if (d.formatToolActive) {
       if (d.formatSourceId === null) d.setFormatSourceId(elementId);
       else d.applyFormatFromSource(elementId);
-      return;
+      return true;
     }
+    return false;
+  };
+
+  const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
+    const d = depsRef.current;
+    if (mode === 'move' && pressArmedAction(elementId)) return;
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
@@ -154,6 +164,8 @@ export function useBoxedDragHandlers({
       clickToPlace?: boolean;
       placeOutPx?: number;
       tapPlaceOutPx?: number;
+      // Start from one of an entity's fields (docs/specs/009-elements/entity.md "Field to field").
+      field?: number;
     },
   ) => {
     const d = depsRef.current;
@@ -164,8 +176,13 @@ export function useBoxedDragHandlers({
     // A side without anchors (a triangle's top) starts from the nearest one
     // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
     const anchor = nearestOfferedAnchor(element, sideAnchor);
-    const start = anchorPosition(element, anchor);
-    const fromEnd: ArrowElement['from'] = { kind: 'pinned', elementId, anchor };
+    const fromEnd: ArrowElement['from'] =
+      opts?.field !== undefined
+        ? { kind: 'pinned', elementId, anchor, field: opts.field }
+        : { kind: 'pinned', elementId, anchor };
+    const start =
+      (opts?.field !== undefined && fieldEndPosition(element, anchor, opts.field)) ||
+      anchorPosition(element, anchor);
     // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
     // shape's own. It used to copy the shape's stroke so the pair matched,
     // but a red box then sprouted red arrows, a green box green ones, and
@@ -215,7 +232,7 @@ export function useBoxedDragHandlers({
     let startClientX = e.clientX;
     let startClientY = e.clientY;
     if (opts?.clickToPlace && element.width > 0 && element.height > 0) {
-      const node = document.querySelector(`[data-element-id="${elementId}"]`);
+      const node = document.querySelector(elementSelector(elementId));
       if (node) {
         const r = node.getBoundingClientRect();
         startClientX = r.left + ((start.x - element.x) / element.width) * r.width;
@@ -239,5 +256,5 @@ export function useBoxedDragHandlers({
     });
   };
 
-  return { beginDrag, beginAnchorDrag };
+  return { beginDrag, beginAnchorDrag, pressArmedAction };
 }

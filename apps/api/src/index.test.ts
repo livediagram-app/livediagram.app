@@ -342,6 +342,32 @@ describe('worker guest-id mint throttle', () => {
   });
 });
 
+// docs/specs/013-workspace/teams.md "Declining from the email": the open decline doors are limited per network,
+// on their own bucket, and never spend the owner-keyed write budget.
+describe('worker invite-decline throttle', () => {
+  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
+
+  it('429s a read or a decline once the per-network bucket is spent, apart from the write limiter', async () => {
+    const limit = vi.fn(async () => ({ success: false }));
+    const writes = vi.fn(async () => ({ success: true }));
+    for (const method of ['GET', 'POST']) {
+      const res = await worker.fetch(
+        new Request('https://api.test/api/teams/invite-decline/m.secret', {
+          method,
+          headers: { 'CF-Connecting-IP': '203.0.113.9' },
+        }),
+        {
+          TEAM_INVITE_RATE_LIMITER: { limit },
+          WRITE_RATE_LIMITER: { limit: writes },
+        } as unknown as Env,
+      );
+      expect(res.status).toBe(429);
+    }
+    expect(limit).toHaveBeenCalledWith({ key: 'invite-decline:203.0.113.0/24' });
+    expect(writes).not.toHaveBeenCalled();
+  });
+});
+
 // docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one document, confined at
 // the front door before any route runs.
 describe('workbench sessions at the front door', () => {

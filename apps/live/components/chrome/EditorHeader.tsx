@@ -12,6 +12,7 @@ import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
 import { useFormShareHost } from '@/lib/form-share-store';
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -24,7 +25,10 @@ import { useFormShareHost } from '@/lib/form-share-store';
 // than telling the user to check a connection that is fine. 'unauthenticated'
 // is a save the server could not tie to the signed-in account (a 401, or no
 // session token to send); it is retried, since the session can come back.
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden';
+// 'tooLarge' is a tab over the server's row cap (a 413): only an edit that
+// shrinks it can save, so it is not retried on a timer.
+export type SaveStatus =
+  'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden' | 'tooLarge';
 
 type EditorHeaderProps = {
   documentName: string;
@@ -40,7 +44,7 @@ type EditorHeaderProps = {
   // title badge to "Team" when the document has no share links.
   teamDocument?: boolean;
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
-  // to "Local only" (superseding "Private"); the caller also hides Share.
+  // to "This Browser" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
   // Listed in the public Community (docs/specs/025-community/community.md): the badge reads "Public".
   community?: boolean;
@@ -113,6 +117,7 @@ export function EditorHeader({
     // behind the canvas — siblings without explicit z-index stack in
     // document order and the canvas wins.
     <header
+      data-region="header"
       // Below the status bar / notch and past a landscape notch's sides (lib/safe-area).
       style={{
         height: `calc(3.5rem + ${safeInset('top')})`,
@@ -122,15 +127,17 @@ export function EditorHeader({
       className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <div className="flex w-auto items-center gap-2.5">
+        {/* The editor's logo goes up one level, to the Explorer home; the Explorer's goes to the homepage. */}
         <Brand
-          href="/"
+          href={EXPLORER_LANDING_PATH}
           size="md"
           accentColor={brandAccent}
           wordmarkClassName="hidden sm:inline"
           className="relative touch-target"
         />
       </div>
-      <div className="flex flex-1 items-center justify-start sm:justify-center">
+      {/* min-w-0 down to the name, so a long name truncates instead of pushing Share and Sign in off a phone. */}
+      <div className="flex min-w-0 flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
           <NameEditor
             initial={documentName}
@@ -142,13 +149,17 @@ export function EditorHeader({
             className="rounded border border-slate-300 bg-white px-2 py-0.5 text-sm text-slate-800 outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
-          <div className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-1">
             {readOnly ? (
               <span className="truncate px-2 py-0.5 text-sm text-slate-600 dark:text-slate-200">
                 {documentName}
               </span>
             ) : (
-              <HoverCard title="Rename document" description="Click to edit the name.">
+              <HoverCard
+                title="Rename document"
+                description="Click to edit the name."
+                className="min-w-0"
+              >
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
@@ -174,7 +185,7 @@ export function EditorHeader({
       </div>
       {/* Right-edge actions: full-height, flush to the top / bottom / right of
           the bar (the -mr-4 cancels the header's right padding). */}
-      <div className="-mr-4 flex items-stretch self-stretch">
+      <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
         {onMakeCopy ? (
           <HoverCard title="Make a copy" description="Duplicate this document into your own files.">
             <button

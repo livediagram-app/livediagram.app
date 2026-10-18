@@ -6,7 +6,7 @@
 import type { Env } from '../types';
 import { googleOAuthBase } from './config';
 
-export type GoogleOAuthErrorKind = 'invalid_grant' | 'failed';
+type GoogleOAuthErrorKind = 'invalid_grant' | 'failed';
 
 export class GoogleOAuthError extends Error {
   readonly kind: GoogleOAuthErrorKind;

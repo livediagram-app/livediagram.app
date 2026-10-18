@@ -24,7 +24,7 @@ toolbar beside a selected element.
 | [Share dialog](live-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
 | [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
 | [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
-| [Page panel](illustrate-tour.md#where-it-appears)                      | The page panel's title row, on every unlocked page        | An Editor (only an Editor has the panel)     |
+| [Page panel](pages-tour.md#where-it-appears)                           | The page panel's title row, on every unlocked page        | An Editor (only an Editor has the panel)     |
 | [Sankey Flows dialog](../009-elements/sankey.md#show-me)               | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 | [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me)    | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 

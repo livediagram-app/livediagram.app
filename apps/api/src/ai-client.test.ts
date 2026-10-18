@@ -63,7 +63,11 @@ describe('chatCompletions timeout', () => {
   const hanging = vi.fn(
     (_url: string, init: RequestInit) =>
       new Promise<Response>((_resolve, reject) => {
-        init.signal!.addEventListener('abort', () => reject(init.signal!.reason));
+        // As fetch does, it rejects with the signal's reason: whatever the abort was given.
+        init.signal!.addEventListener('abort', () => {
+          const reason: unknown = init.signal!.reason;
+          reject(reason);
+        });
       }),
   );
 

@@ -7,7 +7,7 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 
 export type CloudSyncProviderId = 'googleDrive';
 
-export type CloudSyncProvider = {
+type CloudSyncProvider = {
   id: CloudSyncProviderId;
   label: string;
   // Settings search synonyms, lower-case, space-separated.
@@ -27,7 +27,7 @@ export const CLOUD_SYNC_PROVIDERS: readonly CloudSyncProvider[] = [
     label: 'Google Drive',
     keywords: 'drive google sync backup mirror cloud gdrive',
     description:
-      'My documents, copied to your Google Drive in matching folders. Renames, moves and deletions sync both ways. livediagram only sees files it created.',
+      'My Documents, copied to your Google Drive in matching folders. Renames, moves and deletions sync both ways. livediagram only sees files it created.',
     helpArticle: 'googleDrive',
   },
 ];

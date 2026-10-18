@@ -140,7 +140,7 @@ type PhotoDraftDeps = {
   toastError: (message: string) => void;
 };
 
-export type PhotoDraftApi = {
+type PhotoDraftApi = {
   state: PhotoDraftState;
   // The review wizard's payload, set while `state.stage === 'review'`.
   review: PhotoReview | null;
@@ -177,22 +177,22 @@ const ERROR_TOASTS: Record<string, string> = {
   sign_in_required: 'Sign in to read a photo of your wall.',
   origin_not_allowed: 'Reading photos is not available from here.',
   rate_limited: 'Too many photos just now. Wait a moment and try again.',
-  ai_quota: 'The model key has used up its quota. Try again later, or raise the limit on the key.',
+  ai_quota: 'The model key is out of quota. Try later, or raise its limit.',
   ai_error: 'The reader could not finish. Try again in a moment.',
 };
 
 // Why a pick was refused. One per reason: "something is in the way" is not
 // actionable, and the thing in the way is always on screen already.
-export const BUSY_TOASTS = {
+const BUSY_TOASTS = {
   review: 'A photo is already open. Finish or cancel that one first.',
-  draft: 'Finish the notes from the last photo (Add or Discard them), then import another.',
+  draft: 'Finish the last photo’s notes first: Add or Discard them.',
   blocked: 'This board cannot take new notes right now.',
 } as const;
 
-export const REREAD_FAILED_TOAST =
+const REREAD_FAILED_TOAST =
   'The changed notes could not be read again. Type their words in yourself.';
 
-export const NO_NOTES_TOAST =
+const NO_NOTES_TOAST =
   'No stickies found in this photo. Fill the frame with the wall, shoot straight on, and give it good light.';
 
 export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {

@@ -34,3 +34,17 @@ describe('DockToolbar on a touch screen', () => {
     expect(letter.className).toMatch(/\bpointer-coarse:hidden\b/);
   });
 });
+
+// A centred dock can land on a half pixel; an outer ring then lost its left edge under the tile's own background.
+describe('DockButton pressed', () => {
+  it('draws its ring inside the tile', () => {
+    render(
+      <DockToolbar label="Tools" group="tools">
+        <DockButton itemKey="pen" label="Marker 1" icon={<svg />} pressed onPress={() => {}} />
+      </DockToolbar>,
+    );
+    const pen = screen.getByRole('button', { name: /Marker 1/ });
+    expect(pen.className).toMatch(/\bring-1\b/);
+    expect(pen.className).toMatch(/\bring-inset\b/);
+  });
+});

@@ -6,13 +6,13 @@ Status: shipped
 
 The editor's one panel layout, on every device (see "One layout" for the retired Floating
 layout). The Palette is a single horizontal strip pinned to the top centre of the canvas, the way
-Excalidraw's tool bar works. In Diagram, Facilitate and Illustrate the strip is the **category bar**
+Excalidraw's tool bar works. In Diagram, Facilitate and Pages the strip is the **category bar**
 (below): the mode's categories, each opening a flyout of its tiles. Plan keeps the category picker
 and one category's tiles:
 
 ```
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes  Draw │ Build  Concepts │ Icons  Tech  Media │ [🔍] │   Diagram, Facilitate, Illustrate
+ │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Facilitate, Pages
  ▼        └──────────────────────────────────────────────────────────────────────┘
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────┐
           │ [↖ ▾] │ [Cards ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │ [🔍] │                  Plan
@@ -20,14 +20,13 @@ and one category's tiles:
  Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
 ```
 
-- **Top left, before the strip: the menu button and the editor mode
-  switch** ([The mode switch](editor-modes.md#the-mode-switch)), in one card. On a phone the card
-  holds the menu button alone.
+- **Top left, before the strip: the menu button**, in a card with the tab's name. No mode switch sits there: a
+  tab's mode is chosen on its start while it is empty ([The mode switch](editor-modes.md#the-mode-switch)).
   On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Eraser / Format / Laser / Spotlight / Avatar / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
-- **Then, in Diagram, Facilitate and Illustrate, the category bar** ("The category bar").
+- **Then, in Diagram, Facilitate and Pages, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
@@ -41,7 +40,7 @@ and one category's tiles:
 
 ## The category bar
 
-Diagram, Facilitate and Illustrate show their **categories** on the strip rather than one category's tiles, the way
+Diagram, Facilitate and Pages show their **categories** on the strip rather than one category's tiles, the way
 the Icons category always showed its groups: the strip is a short row of named places, and each holds its tiles in
 a flyout. Finding a tile is one look along the bar, not a trip through a picker, and the strip never changes width
 under the pointer as a category is switched.
@@ -51,23 +50,31 @@ under the pointer as a category is switched.
 - **One button per category**, its glyph and its name (13 px, medium), in the mode's layout order
   ([Editor modes](editor-modes.md#the-palette-per-mode)), a hairline divider between the bands (Common, Structure,
   Decorate, Dynamic, Collaborate). No hover card: resting on a button opens its flyout, which names it.
-- **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`): Facilitate's
-  "Write & Build" reads **Write**, My shapes reads **Library**.
+- **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`): My shapes reads
+  **Library**.
 - **No Popular.** With every category one press away, a pick from across them adds nothing. The layouts keep their
   Popular entry; the bar leaves it out (`barCategoriesFor`).
-- **Write and Draw are one category, Draw** (the Draw glyph), where both are offered (Diagram, Facilitate): words
-  and pens are reached for together, and two buttons for them crowded the bar. Its flyout keeps them apart, a
-  **Write** section then a **Draw** section. Illustrate has no Draw, so its Write stays Write.
+- **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Facilitate). They were
+  once one button named Draw, but more than half of what it held was words and comments (Page, Text, Note,
+  Annotation, Pointer note, Callout, Comment, Action), so the name no longer said what was inside. Write holds the
+  words and the notes about the canvas; Draw holds only what is made by a stroke or a drag: the pens, Polygon, Arrow
+  and Line.
+- **Diagram splits Build into Diagrams and Layout**: **Diagrams** holds the structures that grow as you type (Mind
+  node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** what arranges and labels them (Lane, Frame,
+  Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number), after Concepts: what you build comes first, the ideas laid out beside it, then what it is arranged in. Fifteen tiles under one name mixed what
+  you build with what you build it in. Facilitate offers the same **Layout**: a board is laid out in frames and
+  lanes as a diagram is. Pages has **no Build**: its three page tiles moved beside their neighbours, the Stack
+  into Components and the Timeline and Table into Data.
 - **Session** (Facilitate): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
   into one category, browsed as Icons is (the two-pane browse, below), searchable across all of them. **Ask** keeps
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode       | Bar                                                                                          |
-  | ---------- | -------------------------------------------------------------------------------------------- |
-  | Diagram    | Shapes, Draw · Build, Concepts · Icons, Tech, Media                                          |
-  | Facilitate | Shapes, Draw · Icons, Stickers, Media · Data · Ask, Session                                  |
-  | Illustrate | (Logo,) Shapes, Write · Build, Concepts, Components, Devices · Icons, Stickers, Media · Data |
+  | Mode       | Bar                                                                                   |
+  | ---------- | ------------------------------------------------------------------------------------- |
+  | Diagram    | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media                 |
+  | Facilitate | Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session           |
+  | Pages      | (Logo,) Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
 
   Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
   from, as My shapes does in the picker.
@@ -75,7 +82,9 @@ under the pointer as a category is switched.
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
   (`useBarLabels`). Measured, not estimated: the menu card is wider in a mode that shows the tab's name, and an
-  estimate let Illustrate's bar run under it. A phone always shows the glyphs, 44 px apart, and the bar swipes
+  estimate let Pages mode's bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
+  need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
+  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone").
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
@@ -119,7 +128,10 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
   the glyph on a plate beside the name and its one-line blurb, two to a row (one, in a narrower flyout, for a
   category of three tiles or fewer, such as Media). A shortcut shows as a key cap beside the name.
 - **A footer** saying what the pointed-at tile does and its key, without the hover card's wait; before anything is
-  pointed at, "Click to add one, or drag it onto the canvas."
+  pointed at, "Click to add one, or drag it onto the canvas." ("Tap to add one, …" on a touch screen). It is **one
+  fixed height** whatever it says, room for the name and two lines of description (`FLYOUT_FOOTER_HEIGHT`, 69 px),
+  a longer description clamped to two lines: a footer that grew and shrank with each tile moved the flyout's edge
+  under the pointer as it travelled.
 - Under Minimal Chrome ([Power user mode](power-user-mode.md)) a picture tile shows its icon alone, named by a
   Tooltip; a card keeps its name, which is its content.
 - Every tile places, arms, drags onto the canvas (with the canvas ghost), shows its armed and refused states and
@@ -171,7 +183,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
   each catalogue at most **15** best matches (five rows; its category has the rest, with its browse),
   merged with the element tiles of the same section by how well the name matches (exact, prefix, substring, then keyword only; element tiles first among equals), so "chart" leads with the charts, not the flowchart shapes that only carry the word. A catalogue is this mode's when the mode's
-  palette offers its category (Icons and Stickers in Diagram and Illustrate, Technology in Diagram)
+  palette offers its category (Icons and Stickers in Diagram and Pages, Technology in Diagram)
   and another mode's otherwise. Before anything is typed, the entries already on the tab list with
   the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
@@ -283,9 +295,13 @@ which moved things under the pointer after every add; it is gone, its stored lis
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
   the rest (Cloud to Bubble).
-- **Write**: Page, Text | Note, Annotation.
+- **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
+  Action as a third group, **Comments**.
 - **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
 - **Build**: Mind node, Table | Lane, Frame, Timeline.
+- **Diagrams** (Diagram): Mind node, Org chart, Flowchart, Sequence, Table | Entity.
+- **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
+  **Containers** and **Parts** in the flyout.
 - **Components**: the cards (Code, Checklist, Entity) | the website blocks.
 - **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
 - **Media**: Image | the embeds | Avatar.
@@ -311,7 +327,7 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 ## The tab's name
 
 - On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
-  hairline, in every mode: Diagram, Draw, Illustrate and Plan alike, as a board's name rides there
+  hairline, in every mode: Diagram, Draw, Pages and Plan alike, as a board's name rides there
   ([The name rides in the menu box](../026-plan/plan-board.md)). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
 - While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
@@ -370,12 +386,11 @@ A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one he
 `PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
-button always was, so the Explorer fits a landscape phone. It gets the same chrome as a desktop ([Live app](live-app.md)):
+button always was. It gets the same chrome as a desktop ([Live app](live-app.md)):
 panels in their corners, Layers and Collaborate as popovers over
 their bottom-row buttons. What changes to fit the width:
 
-- **The menu button gets its own card, left of the strip,** without the mode switch: the tab
-  menu's Opens in switches mode on a phone ([The mode switch](editor-modes.md#the-mode-switch)).
+- **The menu button gets its own card, left of the strip.**
   The card sits at the left gutter and the strip follows it 8px to the right,
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the
@@ -398,6 +413,11 @@ their bottom-row buttons. What changes to fit the width:
   where it could not be reached. Without a strip (read-only, zen, the welcome
   flow) the corners keep their inset.
 - Read-only visitors have no strip, so their menu button stays top-left.
+- **Held sideways there is no menu button and no Explorer**, in the strip's row or the corner,
+  for every role, and nothing brings them back while the phone is sideways: the screen is too
+  short for the Explorer to be any use. The strip starts at the left gutter in the menu card's
+  place, still swiping. Turning the phone upright brings the button back ([A phone held
+  sideways](live-app.md#a-phone-held-sideways)).
 - The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
 ## Layout details

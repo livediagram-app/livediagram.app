@@ -30,7 +30,7 @@ const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 const JOIN_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 // At most one "new response" email per form per this window (docs/specs/030-forms/forms.md "Hearing about
 // responses"); the next one says how many came while it was held. Safe range 5..60 minutes.
-export const FORM_EMAIL_THROTTLE_MS = 15 * 60 * 1000;
+const FORM_EMAIL_THROTTLE_MS = 15 * 60 * 1000;
 import {
   actionAssignedEmail,
   mentionedEmail,

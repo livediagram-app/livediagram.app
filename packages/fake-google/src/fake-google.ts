@@ -30,7 +30,7 @@ export type Failure = {
   times?: number;
 };
 
-export type FakeGoogleOptions = Partial<StoreOptions> & {
+type FakeGoogleOptions = Partial<StoreOptions> & {
   now?: () => number;
   // Answer every code exchange without a refresh token, as Google does after
   // the first consent without prompt=consent.

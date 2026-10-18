@@ -15,6 +15,7 @@ import {
   type BoxedElement,
   type Element,
   type Tab,
+  type Rect,
 } from '@livediagram/document';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
@@ -22,10 +23,9 @@ import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
-type Box = { x: number; y: number; width: number; height: number };
 
 /** The gap between consecutive clicked inserts: the paste offset. */
-export const LIBRARY_INSERT_GAP = PASTE_OFFSET;
+const LIBRARY_INSERT_GAP = PASTE_OFFSET;
 
 export type LibraryShapeInsertDeps = {
   activeTab: Tab;
@@ -37,20 +37,20 @@ export type LibraryShapeInsertDeps = {
 };
 
 /** Places `item` centred on `at` (a drop point), else by the click rule; true when it landed. */
-export type InsertLibraryShape = (item: ShapeLibraryItem, at?: Point) => boolean;
+type InsertLibraryShape = (item: ShapeLibraryItem, at?: Point) => boolean;
 
 // An earlier insert: where its footprint landed, and how to tell it is still there.
 type Placed = {
   tabId: string;
-  box: Box;
+  box: Rect;
   ids: string[];
   anchor: { id: string; x: number; y: number };
 };
 
-const overlaps = (a: Box, b: Box) =>
+const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-const boxAround = (centre: Point, width: number, height: number): Box => ({
+const boxAround = (centre: Point, width: number, height: number): Rect => ({
   x: centre.x - width / 2,
   y: centre.y - height / 2,
   width,
@@ -70,11 +70,11 @@ function inPlace(p: Placed, tab: Tab): boolean {
  * Where a click lands `item`: centred on `centre`, moved right past every earlier insert it would
  * cover, each move centred on the row of the insert it clears.
  */
-export function clickFootprint(
+function clickFootprint(
   item: Pick<ShapeLibraryItem, 'width' | 'height'>,
   centre: Point,
-  earlier: readonly Box[],
-): Box {
+  earlier: readonly Rect[],
+): Rect {
   let box = boxAround(centre, item.width, item.height);
   // Each move goes strictly right, so it ends after at most one move per earlier insert.
   for (let moves = 0; moves <= earlier.length; moves++) {

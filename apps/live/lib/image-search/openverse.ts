@@ -9,12 +9,12 @@ import {
   type ImageCredit,
 } from '@livediagram/document';
 
-export const OPENVERSE_API_BASE = 'https://api.openverse.org/v1';
+const OPENVERSE_API_BASE = 'https://api.openverse.org/v1';
 // Openverse's anonymous maximum.
-export const OPENVERSE_PAGE_SIZE = 20;
+const OPENVERSE_PAGE_SIZE = 20;
 // Only pictures that may be used commercially AND modified (CC0, PDM, BY,
 // BY-SA): a diagram may be used at work, and the canvas crops and resizes.
-export const OPENVERSE_LICENSE_TYPE = 'commercial,modification';
+const OPENVERSE_LICENSE_TYPE = 'commercial,modification';
 
 export type OpenverseImage = {
   id: string;
@@ -52,7 +52,7 @@ export class OpenverseSearchError extends Error {
 }
 
 // Openverse's own shape and size filters. The picker never passes them; a page's Image background
-// asks for pictures of the page's shape, large (docs/specs/007-editor/illustrate-pages.md "Image
+// asks for pictures of the page's shape, large (docs/specs/007-editor/pages-mode.md "Image
 // backgrounds").
 export type OpenverseAspectRatio = 'tall' | 'wide' | 'square';
 export type OpenverseSize = 'small' | 'medium' | 'large';

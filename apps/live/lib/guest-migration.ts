@@ -6,6 +6,7 @@ import {
   subscribeGuestSelfId,
 } from './local-identity';
 import { debugLog } from '@/lib/debug-log';
+import { createListeners } from '@/lib/listeners';
 
 // Guest → account migration (docs/specs/014-identity/auth-and-guest-access.md).
 // Owner data waits for it: until it settles, the guest's documents still
@@ -24,12 +25,12 @@ const settledFor = new Set<string>();
 // is not enough: the React Compiler memoises `guestMigrationPending(clerkUserId)` on its
 // argument, so a re-render with the same user kept the stale "pending" and the editor never
 // loaded the document. The guest id is part of the state, so its changes notify too.
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 export function subscribeGuestMigration(onChange: () => void): () => void {
-  listeners.add(onChange);
+  const unsubscribe = listeners.subscribe(onChange);
   const unsubscribeGuestId = subscribeGuestSelfId(onChange);
   return () => {
-    listeners.delete(onChange);
+    unsubscribe();
     unsubscribeGuestId();
   };
 }
@@ -74,7 +75,7 @@ export function settleGuestMigration(clerkUserId: string): Promise<void> {
     clearTimeout(timer);
     settledFor.add(clerkUserId);
     inFlight = null;
-    listeners.forEach((fn) => fn());
+    listeners.notify();
   });
   inFlight = { clerkUserId, settled };
   return settled;

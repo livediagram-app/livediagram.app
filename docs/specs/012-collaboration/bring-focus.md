@@ -51,7 +51,8 @@ lost, and the cost of the extra click is one click.
   to break out. If you want to stay on somebody's shoulder, that is Follow Me
   and it already exists.
 - **Nobody already there is asked.** If your view is already on that tab,
-  showing that point in its middle, the invitation never appears. A press
+  showing that point in its middle (or, on a page, that page framed: see
+  "On a page"), the invitation never appears. A press
   gets repeated (to catch a latecomer, or because half the room said no the
   first time), and a repeat has to reach the people who declined without
   putting a dialog over the people who came. Their view is the difference
@@ -79,6 +80,24 @@ and the one fitted to the tab you left can be far too far in or out for this one
 (a huge board fitted at 8% leaves a small diagram unreadable), so the tab enters
 as any tab does, fitted to its content, and the point is then centred at that
 fitted zoom.
+
+### On a page
+
+On a tab in Pages mode ([Pages](../007-editor/pages-mode.md)) the thing worth looking
+at is a page, not a point: a slide, a poster, a page of an article. So when the element sits on a page,
+taking the invitation **frames that page**, whole, beside the Contents sidebar, exactly as pressing the
+page's label frames it (the same glide, the same fit), on this tab or after switching to it. Here the zoom
+does change, because seeing the page is the point and the zoom that frames it is worked out on each
+person's own screen, so it is still nobody else's zoom.
+
+The page is worked out at each end from the shared document (the page the point is on, while the tab is
+in a mode that shows pages), so the wire is unchanged. A Bring Focus on the surround between pages, or on
+a tab in any other mode, centres the point as above.
+
+"Already there" follows the landing: for a press on a page, somebody counts as already there when the
+middle of their view is on that page and all of the page is on their screen, at any zoom that shows it
+whole. Somebody zoomed into one corner of it is asked, because taking it would show them the page. The
+presser's three sentences use the same rule.
 
 ## Wire
 

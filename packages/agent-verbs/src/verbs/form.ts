@@ -1,11 +1,12 @@
 // The form verbs (docs/specs/030-forms/forms.md "Agents"): `form get` (read_form), `form add` (add_form), `form
-// change` (change_form, its changes from a JSON file or stdin) and `form share` (share_form), over the calls the MCP's
-// tools share. A Form tab is named by name or id; questions by id or prompt.
+// change` (change_form, its changes from a JSON file or stdin), `form share` (share_form) and `form try` (try_form, its
+// answers from a JSON file or stdin), over the calls the MCP's tools share. A Form tab is named by name or id; questions by id or prompt.
 import { z } from 'zod';
 import { STARTER_IDS, type StarterId } from '@livediagram/forms';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { addForm, changeForm, readForm, shareForm, type FormCallResult } from '../forms/form-calls';
 import type { FormChange } from '../forms/form-changes';
+import { tryForm } from '../forms/form-try';
 import type { FormReading } from '../forms/form-read';
 import type { QuestionInput } from '../forms/form-question';
 import { documentOf } from './shared';
@@ -221,4 +222,62 @@ export const formShare = defineVerb({
   },
 });
 
-export const formVerbs: readonly Verb[] = [formGet, formAdd, formChange, formShare] as Verb[];
+const tryOutput = z.object({
+  documentId: z.string(),
+  tabId: z.string(),
+  made: z.enum(['card', 'row']),
+  number: z.number().nullable(),
+  where: z.string(),
+  title: z.string().nullable(),
+  itemId: z.string().nullable(),
+  lines: z.array(z.string()),
+});
+
+export const formTry = defineVerb({
+  id: 'form.try',
+  summary: 'Try a form',
+  description:
+    'Fills in a form as a respondent would, from a JSON file (or stdin) of answers by question id or prompt, as the builder’s Preview does: the answers are checked first, then make a card or row titled "Preview: …". A published form counts it as a response.',
+  behaviour: 'write',
+  input: z.object({
+    doc: docArg,
+    answers: z.string().describe('A JSON file of answers by question id or prompt, or - for stdin'),
+    tab: tabFlag,
+  }),
+  output: tryOutput,
+  run: async (ctx, input) => {
+    const document = await documentOf(ctx, input.doc);
+    const answers = await jsonFrom<Record<string, unknown>>(ctx, input.answers, 'the answers');
+    const result = await tryForm(ctx.api, document.id, input.tab, answers);
+    if (!result.ok)
+      throw new VerbRefusal({
+        status: result.code.endsWith('_unknown') || result.code === 'form_tab_none' ? 404 : 400,
+        code: result.code,
+        message: result.message,
+        hint: HINT,
+      });
+    const { ok: _ok, ...output } = result;
+    return output;
+  },
+  text: (o) => [
+    ...o.lines.map((l) => `~ ${l}`),
+    `+ ${o.made === 'card' ? `card "${o.title}"` : 'row'} in ${o.where}${o.number ? `, response #${o.number}` : ', not counted'}`,
+  ],
+  quiet: (o) => (o.itemId ? [o.itemId] : []),
+  cli: {
+    positionals: ['doc', 'answers'],
+    examples: [
+      'livediagram form try "Team offsite" answers.json',
+      'echo \'{"Your name": "Ada"}\' | livediagram form try 3f9c -',
+    ],
+    prints: 'the card or row it made and where, and whether it counted',
+  },
+});
+
+export const formVerbs: readonly Verb[] = [
+  formGet,
+  formAdd,
+  formChange,
+  formShare,
+  formTry,
+] as Verb[];

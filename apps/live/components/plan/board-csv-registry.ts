@@ -5,7 +5,7 @@
 // CSV… does and its cards' CSV, kept current as it renders, as a Sheet publishes its settings.
 import { useLayoutEffect } from 'react';
 
-export type BoardCsvEntry = {
+type BoardCsvEntry = {
   // Whether this person may add cards here (an Editor or a Participant, not on an Archive board).
   canImport: boolean;
   onImportCsv: () => void;

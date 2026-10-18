@@ -57,7 +57,7 @@ export function strokePreset(px: number | undefined): BorderStroke {
 }
 
 // A dash at most this many stroke widths long reads as a dot (D38).
-export const DRAWIO_DOT_MAX_STROKES = 2;
+const DRAWIO_DOT_MAX_STROKES = 2;
 
 /** `dashed` / `dashPattern` as a line style; undefined when solid. */
 export function dashStyle(style: DrawioStyle): BorderStyle | undefined {
@@ -154,7 +154,7 @@ export function noteOf(cell: DrawioCell): string | undefined {
 }
 
 /** `hex` seen at `alpha` over white paper, as one opaque colour. */
-export function overPaper(hex: string, alpha: number): string {
+function overPaper(hex: string, alpha: number): string {
   const long = hex.length === 4 ? `#${[...hex.slice(1)].map((d) => d + d).join('')}` : hex;
   const channel = (i: number) =>
     Math.round(parseInt(long.slice(i, i + 2), 16) * alpha + 255 * (1 - alpha))
@@ -217,7 +217,7 @@ export function inkOnFill(fill: string | undefined): string | undefined {
   return isLightColor(fill) ? INK_ON_LIGHT : INK_ON_DARK;
 }
 
-export type TextOptions = {
+type TextOptions = {
   scale: TextScale;
   /** The element's own fill behind the label, when it has one. */
   onFill?: string;
@@ -246,7 +246,7 @@ function firstLines(runs: TextRun[], n: number): TextRun[] {
   return normalizeRuns(out.filter((r) => r.text !== ''));
 }
 
-export type TextFields = {
+type TextFields = {
   label?: string;
   richText?: TextRun[];
   textBold?: boolean;

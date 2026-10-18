@@ -7,7 +7,6 @@ export {
   readLibraries,
   type FoundDocument,
   type Libraries,
-  type TeamLibrary,
 } from './find-documents';
 export {
   defineVerb,
@@ -24,9 +23,7 @@ export {
   resolveDocument,
   resolveTab,
   type AddressCandidate,
-  type AddressLog,
   type AddressFailure,
-  type DocumentUrl,
   type ResolvedDocument,
   type TabSummary,
 } from './addressing';
@@ -42,15 +39,9 @@ export {
 } from './catalogue';
 export { argvToOperationLine } from './argv-line';
 export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
-export { classifySource, type ClassifiedSource, type SourceKind } from './source-kind';
-export {
-  HELD_RETRY_INTERVAL_MS,
-  submitChangeset,
-  WAIT_HELD_MAX_S,
-  type WriteFlags,
-  type WriteTarget,
-} from './write';
-export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic, type GuideTopic } from './guides';
+export { classifySource } from './source-kind';
+export { HELD_RETRY_INTERVAL_MS, submitChangeset, type WriteFlags } from './write';
+export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
 export {
   documentOf,
@@ -59,7 +50,6 @@ export {
   LIST_MAX_LIMIT,
   tabOf,
   tabPath,
-  type DocumentWithTabs,
 } from './verbs/shared';
 export { graphLint, graphOfSource } from './verbs/graph';
 export { tabListOf } from './verbs/tab';
@@ -75,8 +65,6 @@ export {
   resolveDashboardInput,
   type DashboardInput,
   type DashboardTabRef,
-  type ChangeBoardInput,
-  type ChangeBoardResult,
   applyItemChanges,
   bringBoardCardTypes,
   changeCardTypes,
@@ -86,17 +74,11 @@ export {
   planPath,
   resolveListingFilter,
   readPlanState,
-  type AddBoardInput,
-  type AddBoardResult,
-  type CardTypeChangesResult,
   type ItemChange,
-  type ItemChangesResult,
-  type PlanListing,
   type PlanState,
 } from './plan';
 export {
   addSheet,
-  applySheetChanges,
   buildSheetChange,
   changeSheet,
   chartsReadLive,
@@ -108,16 +90,12 @@ export {
   SHEET_READ_CHARS_MAX,
   SHEET_REFUSAL_WORDS,
   sheetsPath,
-  type AddSheetInput,
-  type AddSheetResult,
-  type ListedSheet,
   type ReadCell,
   type SheetChange,
-  type SheetChangesResult,
   type SheetFormatInput,
   type SheetRead,
   type SheetRefusal,
 } from './sheets';
-export * from './illustrate';
+export * from './pages';
 export * from './forms';
 export * from './images';

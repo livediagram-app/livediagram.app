@@ -10,19 +10,23 @@ import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileActive, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
 import { useTileGlyph } from './PaletteIconButton';
+import { tileEnterAnimation } from './palette-tile-finish';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 
 // The category flyout's tiles (CategoryFlyout, CategoryFlyoutSide): a picture tile for the grid categories, a card
 // with its blurb for the rest, and the footer that describes the pointed-at one. Each places, drags and tints as the
 // strip's own tile does; a tile with presets, or an opener, opens a side panel instead of placing.
 
+// A touch screen taps, so its hint says so (docs/specs/008-canvas/canvas-and-palette.md); each shows on its own pointer.
 const DEFAULT_HINT = 'Click to add one, or drag it onto the canvas.';
+const TOUCH_HINT = 'Tap to add one, or drag it onto the canvas.';
 
 /** Whether pressing this tile opens a side panel (its presets, or what an opener stands for) rather than placing. */
 export function opensSide(def: PaletteTileDef): boolean {
   return !!def.variants?.length || def.action.type === 'open';
 }
 
-export type ItemProps = {
+type ItemProps = {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
@@ -81,20 +85,27 @@ export function Kbd({ children, small }: { children: ReactNode; small?: boolean 
   );
 }
 
+// The footer's one height (docs/specs/007-editor/toolbar-layout.md "The category bar"): the name's line and two of
+// description (16 px each), 10 px above and below, and the 1 px top border. Fixed, so pointing along the tiles never
+// grows or shrinks the flyout under the pointer; a longer description clamps to its two lines.
+export const FLYOUT_FOOTER_HEIGHT = 16 * 3 + 10 * 2 + 1;
+
 /** What the pointed-at tile does, and its key: the hover card's job, without the wait. */
 export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
   return (
     <footer
       aria-live="polite"
-      className="flex min-h-[52px] items-center gap-3 rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 py-2.5 dark:border-slate-800 dark:bg-slate-950/40"
+      data-flyout-footer
+      style={{ height: FLYOUT_FOOTER_HEIGHT }}
+      className="flex shrink-0 items-center gap-3 overflow-hidden rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 dark:border-slate-800 dark:bg-slate-950/40"
     >
       {def ? (
         <>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-[12px] font-semibold text-slate-800 dark:text-slate-100">
+            <span className="truncate text-[12px] leading-4 font-semibold text-slate-800 dark:text-slate-100">
               {tileDisplayName(def)}
             </span>
-            <span className="line-clamp-2 text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
+            <span className="line-clamp-2 text-[11.5px] leading-4 text-slate-500 dark:text-slate-400">
               {def.variants?.length
                 ? 'Choose a preset to start from.'
                 : def.action.type === 'open'
@@ -110,7 +121,14 @@ export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
           ) : null}
         </>
       ) : (
-        <span className="text-[11.5px] text-slate-500 dark:text-slate-400">{DEFAULT_HINT}</span>
+        <>
+          <span className="text-[11.5px] text-slate-500 pointer-coarse:hidden dark:text-slate-400">
+            {DEFAULT_HINT}
+          </span>
+          <span className="hidden text-[11.5px] text-slate-500 pointer-coarse:inline dark:text-slate-400">
+            {TOUCH_HINT}
+          </span>
+        </>
       )}
     </footer>
   );
@@ -122,6 +140,7 @@ export function TileGrid({
   columns,
   ...rest
 }: Omit<ItemProps, 'def'> & { tiles: readonly PaletteTileDef[]; offset: number; columns: number }) {
+  const enter = tileEnterAnimation(useTabFinish());
   return (
     <ul
       style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
@@ -130,7 +149,7 @@ export function TileGrid({
       {tiles.map((def, i) => (
         <li
           key={def.id}
-          className="stagger-enter flex animate-pop-in"
+          className={`stagger-enter flex ${enter}`}
           style={{ '--stagger-i': offset + i } as React.CSSProperties}
         >
           <GridTile def={def} {...rest} />

@@ -17,12 +17,7 @@ import {
 import { withArticleFlow, withArticlePageCount } from './article-pages';
 import { withElementsMoved, zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './article-zones';
 import { isBoxed, type Element, type Tab } from './index';
-import {
-  illustratePagesOf,
-  layOutIllustratePages,
-  type LaidOutPage,
-  type PageRect,
-} from './illustrate-page';
+import { pagesOf, layOutPages, type LaidOutPage, type PageRect } from './page';
 import type { ShapeKind } from './shape-kind';
 
 // The shapes a diagram is drawn with: these, arrows, text, sticky notes and pen strokes go into a
@@ -59,8 +54,8 @@ export function isDrawingElement(el: Element): boolean {
 }
 
 // A drawing zone's room around what is drawn in it, and the least height it starts with.
-export const ARTICLE_DRAWING_PAD = 24;
-export const ARTICLE_DRAWING_MIN_HEIGHT = 200;
+const ARTICLE_DRAWING_PAD = 24;
+const ARTICLE_DRAWING_MIN_HEIGHT = 200;
 
 const boundsOf = (els: readonly Element[], all: readonly Element[]): PageRect => {
   let x0 = Infinity;
@@ -84,7 +79,7 @@ const boundsOf = (els: readonly Element[], all: readonly Element[]): PageRect =>
   return { x: x0, y: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
 };
 
-export type ZonePlan = {
+type ZonePlan = {
   zone: ArticleZoneKind;
   width: number;
   height: number;
@@ -211,7 +206,7 @@ type ArticlesTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown
 export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, textWidth: number): T {
   const doc = articlesOf(tab)[flow];
   if (!doc) return tab;
-  const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
   let elements = tab.elements;
   let changed = false;
   const blocks: ArticleBlock[] = [];
@@ -280,7 +275,7 @@ export function withZoneContentsRemoved<T extends ArticlesTab>(
   flow: string,
   gone: readonly ArticleZoneBlock[],
 ): T {
-  const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
   const els = tab.elements;
   const ids = new Set<string>();
   for (const z of gone) {
@@ -312,7 +307,7 @@ const insideRect = (r: PageRect, p: { x: number; y: number }) =>
   p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
 
 /** A zone the editor has just put into the writing, and where it measured it landing. */
-export type LandedZone = {
+type LandedZone = {
   id: string;
   blocks: ArticleBlock[];
   index: number;
@@ -328,12 +323,10 @@ export function withZoneLanded<T extends ArticlesTab>(
   flow: string,
   landed: LandedZone,
 ): { tab: T; rect: PageRect | null } {
-  const own = illustratePagesOf(tab).filter((p) => p.flow === flow).length;
+  const own = pagesOf(tab).filter((p) => p.flow === flow).length;
   if (own === 0) return { tab, rect: null };
   const grown = withArticlePageCount(tab, flow, Math.max(own, landed.index + 1));
-  const page = layOutIllustratePages(illustratePagesOf(grown)).filter((p) => p.flow === flow)[
-    landed.index
-  ];
+  const page = layOutPages(pagesOf(grown)).filter((p) => p.flow === flow)[landed.index];
   const doc = articlesOf(grown)[flow];
   if (!page || !doc) return { tab, rect: null };
   const blocks = landed.blocks.map((b) =>
@@ -354,7 +347,7 @@ export function withZoneLanded<T extends ArticlesTab>(
 }
 
 // A wrapped zone is at most this share of the text width.
-export const ARTICLE_WRAP_MAX_SHARE = 2 / 3;
+const ARTICLE_WRAP_MAX_SHARE = 2 / 3;
 
 /**
  * A zone's wrap or place across the text changed (docs/specs/007-editor/article-pages.md "Zones"):
@@ -379,7 +372,7 @@ export function withZoneWrap<T extends ArticlesTab>(
   const scale = Math.min(1, max / zone.width);
   let elements = tab.elements;
   if (scale < 1) {
-    const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+    const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
     const rect = zoneCanvasRect(pages, zone);
     if (rect) {
       const ids = zoneMemberIds(elements, rect);
@@ -441,7 +434,7 @@ export function withZoneSize<T extends ArticlesTab>(
   const doc = articlesOf(tab)[flow];
   const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
   if (!doc || !zone) return tab;
-  const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
   const rect = zoneCanvasRect(pages, zone);
   let leastH = ARTICLE_ZONE_MIN;
   let leastW = ARTICLE_ZONE_MIN;
@@ -470,7 +463,7 @@ export function withZoneSize<T extends ArticlesTab>(
 }
 
 /** An object dragged off its zone and dropped on its own article's pages: where it was dropped. */
-export type ObjectDraggedOut = { flow: string; zoneId: string; elementId: string; at: Point };
+type ObjectDraggedOut = { flow: string; zoneId: string; elementId: string; at: Point };
 type Point = { x: number; y: number };
 
 /**
@@ -483,8 +476,8 @@ export function objectsDraggedOut(before: ArticlesTab, now: ArticlesTab): Object
   const out: ObjectDraggedOut[] = [];
   const docsBefore = articlesOf(before);
   const docsNow = articlesOf(now);
-  const pagesBefore = layOutIllustratePages(illustratePagesOf(before));
-  const pagesNow = layOutIllustratePages(illustratePagesOf(now));
+  const pagesBefore = layOutPages(pagesOf(before));
+  const pagesNow = layOutPages(pagesOf(now));
   const elsBefore = before.elements;
   const elsNow = now.elements;
   for (const [flow, doc] of Object.entries(docsBefore)) {
@@ -519,14 +512,13 @@ export function withZoneMoved<T extends ArticlesTab>(
   zoneId: string,
   res: Parameters<typeof withZoneLanded>[2],
 ): T {
-  const pagesOf = (tab: T) =>
-    layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const flowPages = (tab: T) => layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
   const zoneOf = (tab: T) =>
     articlesOf(tab)[flow]?.blocks.find(
       (b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone',
     );
   const before = zoneOf(t);
-  const from = before ? zoneCanvasRect(pagesOf(t), before) : null;
+  const from = before ? zoneCanvasRect(flowPages(t), before) : null;
   const landed = withZoneLanded(t, flow, res);
   if (!from || !landed.rect) return landed.tab;
   const ids = zoneMemberIds(t.elements, from);

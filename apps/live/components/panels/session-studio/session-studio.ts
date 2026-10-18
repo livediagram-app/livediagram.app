@@ -17,8 +17,8 @@ import {
 // nudge buttons and drawn as a full wedge plus an outer lap ring.
 
 export const DIAL_LAP_MINUTES = 60;
-export const TIMER_MIN_MINUTES = TIMER_MINUTES_RANGE.min;
-export const TIMER_MAX_MINUTES = TIMER_MINUTES_RANGE.max;
+const TIMER_MIN_MINUTES = TIMER_MINUTES_RANGE.min;
+const TIMER_MAX_MINUTES = TIMER_MINUTES_RANGE.max;
 
 export function clampTimerMinutes(minutes: number): number {
   if (!Number.isFinite(minutes)) return TIMER_MIN_MINUTES;

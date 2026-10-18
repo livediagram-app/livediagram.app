@@ -18,7 +18,7 @@ export const CHART_SOURCE_COLS_MAX = 13;
 
 // The table a range holds (@livediagram/sheets SheetChartTable, restated): one category per row, one series per
 // value column.
-export type ChartTable = {
+type ChartTable = {
   categories: string[];
   series: { name: string; values: number[] }[];
 };

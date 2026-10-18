@@ -40,8 +40,8 @@ describe('orgChartTourSteps', () => {
 
   it('calls a child a report and a sibling a peer, with keys on a keyboard only', () => {
     const keys = orgChartTourSteps(ctxOf());
-    expect(keys.find((s) => s.id === 'report')!.body).toMatch(/^Tab, or Add Child/);
-    expect(keys.find((s) => s.id === 'peer')!.body).toMatch(/^Enter, or Add Sibling/);
+    expect(keys.find((s) => s.id === 'report')!.body).toMatch(/^Press Tab, or Add Child/);
+    expect(keys.find((s) => s.id === 'peer')!.body).toMatch(/^Press Enter, or Add Sibling/);
     const touch = orgChartTourSteps(ctxOf({ touch: true }));
     expect(touch.find((s) => s.id === 'report')!.body).not.toContain('Tab');
     expect(touch.find((s) => s.id === 'role')!.body).toMatch(/^Tap/);

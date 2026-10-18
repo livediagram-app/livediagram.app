@@ -9,6 +9,7 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import type { FolderActionBundle } from './explorer-view-props';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
 import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { folderDragProps } from '@/components/panels/explorer-drag-mime';
 import { useExplorerDropTarget } from './useExplorerDropTarget';
 
 // The Explorer's folder row (docs/specs/013-workspace/folders.md), lifted out of views.tsx: the list
@@ -64,6 +65,8 @@ export function FolderRow({
     <li
       className={`group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 ${drop.isDragOver ? DROP_TARGET_RING : ''}`}
       {...drop.handlers}
+      // One of the reader's own folders drags to the sidebar's Trash (explorer-structure.md "Dragging to the Trash").
+      {...folderDragProps(folder, renaming)}
       // Right-click anywhere on the row opens the same actions menu as the
       // ellipsis button (anchored to it).
       onContextMenu={menu.onContextMenu}

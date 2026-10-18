@@ -1,11 +1,11 @@
 // Sketch backdrops (docs/specs/008-canvas/finish.md "Sketch"): a shape that other elements sit on (a key's
-// card, a panel behind a group, a box with captions over it) keeps a solid fill under Sketch, because pencil
+// card, a panel behind a group, a box with captions over it) keeps a solid fill under Sketch (and Marker), because pencil
 // hatching behind words and shapes makes them unreadable. Only a shape that stands alone is hatched.
 //
 // "Sits on" is: another element later in the drawing order has its centre inside the shape's box. One pass
 // over the tab, shared by the canvas and every export so they agree. Sorted by centre x and binary searched,
 // so a tab costs O(n log n + hits), not O(n^2): it reruns on every element change of a sketched tab.
-import { finishHatchesKind, resolveFinish } from './finish';
+import { finishHatchesKind, isHandDrawn, resolveFinish } from './finish';
 import { isBoxed } from './index';
 import type { Element } from './index';
 
@@ -29,7 +29,7 @@ export function sketchBackdropIds(elements: readonly Element[], tabFinish: unkno
   const candidates: number[] = [];
   elements.forEach((el, i) => {
     if (!finishHatchesKind(el)) return;
-    if (resolveFinish((el as { finish?: unknown }).finish, tabFinish) !== 'sketch') return;
+    if (!isHandDrawn(resolveFinish((el as { finish?: unknown }).finish, tabFinish))) return;
     candidates.push(i);
   });
   if (candidates.length === 0) return out;

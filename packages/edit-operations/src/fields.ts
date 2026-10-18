@@ -32,7 +32,7 @@ import { iconsLike, isIconId } from '@livediagram/icons/search';
 
 // The spec's names, then the style keys the views print (`STYLE_KEYS`), so a printed `key=value` writes back
 // unchanged; `font` is a stored field name already.
-export const FIELD_ALIASES = [
+const FIELD_ALIASES = [
   'label',
   'note',
   'shape',
@@ -47,7 +47,7 @@ type Alias = (typeof FIELD_ALIASES)[number];
 
 export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
 /** What the `text` alias takes, as the format line and a rejection spell it. */
-export const TEXT_SIZE_VALUES = `${TEXT_SIZES.join(' ')} or a px from ${TEXT_PX_MIN} to ${TEXT_PX_MAX}`;
+const TEXT_SIZE_VALUES = `${TEXT_SIZES.join(' ')} or a px from ${TEXT_PX_MIN} to ${TEXT_PX_MAX}`;
 export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
 export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);

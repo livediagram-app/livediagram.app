@@ -71,7 +71,16 @@ export function isAllowedScriptUrl(
   return origins.indexOf(parsed.origin) >= 0;
 }
 
-/** The Clerk frontend API's origin, read from the publishable key (`pk_<env>_<base64 of "<host>$">`); none without. */
+/**
+ * Where Clerk's bot protection loads Cloudflare Turnstile from (`/turnstile/v0/api.js`) when the instance asks for a
+ * CAPTCHA on sign-up; refused, sign-up stops at "The CAPTCHA failed to load".
+ */
+const CLERK_CAPTCHA_ORIGIN = 'https://challenges.cloudflare.com';
+
+/**
+ * The Clerk frontend API's origin, read from the publishable key (`pk_<env>_<base64 of "<host>$">`), and the origin
+ * of the CAPTCHA its sign-up loads; none without a key.
+ */
 export function trustedScriptOrigins(env: {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
 }): string[] {
@@ -81,7 +90,7 @@ export function trustedScriptOrigins(env: {
   if (!match) return [];
   try {
     const host = atob(match[1]!).replace(/\$$/, '');
-    return /^[a-z0-9.-]+$/i.test(host) ? [`https://${host}`] : [];
+    return /^[a-z0-9.-]+$/i.test(host) ? [`https://${host}`, CLERK_CAPTCHA_ORIGIN] : [];
   } catch {
     return [];
   }
@@ -89,7 +98,8 @@ export function trustedScriptOrigins(env: {
 
 /**
  * The inline script first in every layout's <head>: the `default` policy (script URLs by `isAllowedScriptUrl`, and
- * React DOM's empty `<script></script>` alone as HTML), and the log line for every Trusted Types violation.
+ * React DOM's empty `<script></script>` alone as HTML), and the log line for every Trusted Types violation. Asked
+ * for HTML by hand rather than by a sink, the default policy throws, so it is never a pass-through for anyone.
  */
 // What the boot script may embed: a path prefix (`''`, `/live`, `/help`) and plain https origins. Anything else is a
 // caller's mistake, refused rather than written into a script.
@@ -113,7 +123,10 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
     "console.error('[trusted-types] script-url-refused '+url);return null;}," +
     // React DOM parses an empty script to make a <script> element on a client render; inert, the one HTML let through.
     // Written <\\/script> so the HTML parser never sees a closing tag inside this inline script.
-    "createHTML:function(html){if(html==='<script><\\/script>')return html;" +
+    "createHTML:function(html,type,sink){if(html==='<script><\\/script>')return html;" +
+    // Called by hand (no sink: the browser always names one), it creates nothing and throws, so a library that
+    // tries the default policy before its own (ProseMirror's clipboard) falls back to its own named policy.
+    "if(sink===undefined)throw new TypeError('[trusted-types] the default policy makes no HTML on request');" +
     "console.error('[trusted-types] html-refused '+html);return null;}});}" +
     "addEventListener('securitypolicyviolation',function(e){" +
     "if(String(e.violatedDirective).indexOf('trusted-types')>=0)" +

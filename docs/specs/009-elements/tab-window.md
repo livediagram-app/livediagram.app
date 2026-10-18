@@ -18,11 +18,23 @@ showing it is up to date.
 - **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on and never a Plan tab (a
   Board, Sheet or Dashboard tab, or any tab in Plan mode). Absent until chosen.
 - **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance,
-  the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window with the tab's
-  paper behind it, centred, never cropped. It follows every change to the tab (an edit, a collaborator's) at a
+  the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own
+  canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and
+  opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling
+  the window edge to edge, so the window reads as that tab and not as a picture on a blank card. It follows every change to the tab (an edit, a collaborator's) at a
   deferred priority, so a burst of edits never competes with the canvas.
-- **Still**: the drawing is a picture of the tab. It never scrolls, zooms or takes a click of its own; the window is
-  an ordinary element (select, move, resize, copy, layer, lock, delete).
+- **Moving**: the drawing moves as the tab does on the canvas. Each shown element's animation plays in the window
+  with its own Speed and Repeat, by the same motion the canvas draws: the Shape set's motions (Blink, Heartbeat,
+  Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing) and swells (Shimmer, Highlight), a sticky's Flutter, Sway,
+  Wiggle and Drop, a photo's Develop, Focus, Wipe and Iris, a drawing's Glow, and every arrow flow that runs along
+  its line (all but Dots and Comet). The animations that need the canvas's own pieces (a Pulse ring, a Glow halo, a
+  Trace light or a Gradient sheet, a sticky's Peel, Lift and Slap, letters that type or ripple, a table's cells, a
+  photo moving inside its frame, a chart's, icon's, progress bar's or rating's own motion, a travelling dot) show
+  their rest frame, as every export does. Loops run on one clock, so an edit on the shown tab redraws the window
+  without restarting them. Reduced Motion stills the drawing, as it stills the canvas. A window off screen holds
+  its drawing still until it is back in view.
+- **Still to the touch**: the drawing never scrolls, zooms or takes a click of its own; the window is an ordinary
+  element (select, move, resize, copy, layer, lock, delete).
 - **Its frame**: rounded corners (12 px) and a hairline in the element's stroke (the theme's hairline when unset);
   a Stroke and Opacity change it like any shape. Its fill is the shown tab's paper; it takes no label.
 - **A window inside the tab it shows** (a slide showing a tab that itself holds a window) is drawn as its **frame
@@ -79,7 +91,7 @@ knows it, else "Tab Window".
 
 | Mode       | Where                                                 |
 | ---------- | ----------------------------------------------------- |
-| Illustrate | **Media**: Tab Window, after Image, before the embeds |
+| Pages      | **Media**: Tab Window, after Image, before the embeds |
 | Diagram    | none (Search still finds and places it)               |
 | Draw       | none                                                  |
 | Facilitate | none                                                  |

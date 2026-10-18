@@ -99,12 +99,12 @@ export type EditorDragDeps = {
   // unaffected). Tracked via ref so a mid-drag toggle takes effect on
   // the next pointermove without re-attaching listeners.
   alignmentGuidesRef: React.RefObject<boolean>;
-  // Illustrate mode's page lines (illustratePageSnapBoxes): what a move or resize snaps to
+  // Pages mode's page lines (pageSnapBoxes): what a move or resize snaps to
   // besides other elements. Null outside the mode.
   pageSnapBoxes?: Element[] | null;
-  // Illustrate mode's laid-out pages: an arrow's end joins nothing on another page than its other
-  // end's (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"). Null outside it.
-  illustratePages?: readonly LaidOutPage[] | null;
+  // Pages mode's laid-out pages: an arrow's end joins nothing on another page than its other
+  // end's (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
+  pagesMode?: readonly LaidOutPage[] | null;
   // Set to true while a 2-finger pinch is active. The move handler
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.
@@ -127,6 +127,8 @@ export type EditorDragApi = {
   // renders only the chrome that draws it (useSnapGuideState).
   snapGuideStore: SnapGuideStore;
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // The armed action (connect an arrow, the format painter) a press on an element takes instead of selecting it.
+  pressArmedAction: (elementId: string) => boolean;
   beginAnchorDrag: (
     elementId: string,
     anchor: Anchor,
@@ -137,6 +139,8 @@ export type EditorDragApi = {
       // Enter a real drag, but remember what a no-movement TAP should do
       // (touch quick-connect, docs/specs/008-canvas/canvas-and-palette.md).
       tapPlaceOutPx?: number;
+      // Start from one of an entity's fields (docs/specs/009-elements/entity.md "Field to field").
+      field?: number;
     },
   ) => void;
   beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;

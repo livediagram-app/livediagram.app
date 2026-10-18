@@ -32,7 +32,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 | `FACILITATE` Popular tiles           | `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:session-timer`, `tools:session-vote`, `tools:session-poll`, `tools:reveal`, `collab:agenda`, `collab:idea-box`, `collab:qa-board`, `collab:temperature` (12, as every Popular)                                                                                                                                                                                        | spec "The palette"                |
 | `FACILITATE` categories              | `popular`, `shapes`, `my-shapes`, `write` (less `tools:page`, `tools:annotation`), `draw` (less `tools:shape-pen`, `tools:polygon`), `build` (less `tools:lane`, `tools:timeline`), `icons`, `stickers`, `media` (Diagram's: no embeds, D8), `collab-ask`, `collab-tools`, `collab-record`, `collab-react`, `collab-mode`, `collab-navigate`                                                                                             | spec "The palette"; D3            |
 | `DIAGRAM` categories                 | as today less `stickers` and the Collaborate elements; `write` = its own tiles then `collab:comment-pin`, `collab:action-card` (D4)                                                                                                                                                                                                                                                                                                      | spec "What Diagram gives up"      |
-| `sessionStripTools`                  | `facilitate` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; `illustrate` → vote and poll with `runningOnly` (the strip gets `canStart` false and `offersTimer` false); else `null`                                                                                                                                                                                                                     | spec "The Session strip per mode" |
+| `sessionStripTools`                  | `facilitate` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; `pages` → vote and poll with `runningOnly` (the strip gets `canStart` false and `offersTimer` false); else `null`                                                                                                                                                                                                                          | spec "The Session strip per mode" |
 | `TEMPLATE_MODES` additions           | `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`, `sailboat`, `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, `affinity-map`, `prioritization-matrix`, `risk-matrix`, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`, `blank-session` → `'facilitate'` | spec "Templates"                  |
 | `BLANK_TEMPLATE_FOR_MODE.facilitate` | `'blank-session'`                                                                                                                                                                                                                                                                                                                                                                                                                        | spec "Templates"                  |
 | `POPULAR_BY_MODE.facilitate`         | `blank-session`, `sailboat`, `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights`, `pub-quiz` (D5)                                                                                                                                                                                                                                                                                                                                | templates-by-mode spec            |
@@ -40,7 +40,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 ## Behaviour and state
 
 - **No new state.** The mode is `Tab.opensIn = 'facilitate'`, written by the existing switch,
-  Shift+D, tab menu Mode and template overrides. Everything else derives from the mode.
+  Shift+D on an empty tab, a start's switch and template overrides. Everything else derives from the mode.
 - **Gates:** `hasBoardLook`, `hasPageLook`, `hasPlanInput` are all `false` for `facilitate`; it
   takes Diagram's look and input. `useModeDefaultTool` starts it on Select (Hand on a phone), as
   Diagram.
@@ -54,7 +54,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 - **Strip:** `CanvasChrome` mounts the strip only when `sessionStripTools(mode, esBoard)` is
   non-null, and `useCanvasChromePanels` closes a session popover whose mode no longer offers it;
   both pass `props.esBoard`, so Diagram's strip vanishes, running tool or not, while an
-  event-storming board keeps it. Under `runningOnly` (Illustrate) a session popover also closes once
+  event-storming board keeps it. Under `runningOnly` (Pages) a session popover also closes once
   its vote or poll stops running, as a view-role visitor's does.
 - **Elements:** no change to faces, menus or quick menus; they never read the mode.
 - **Templates:** `templateCanvasOverrides` sets `opensIn` from `templateEditorMode(kind)`, so the
@@ -63,9 +63,9 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 ## Interfaces and contracts
 
 ```ts
-export type EditorMode = 'diagram' | 'draw' | 'illustrate' | 'plan' | 'facilitate';
+export type EditorMode = 'diagram' | 'draw' | 'pages' | 'plan' | 'facilitate';
 export function sessionStripTools(mode: EditorMode): readonly SessionStripTool[] | null;
-export const PALETTE_LAYOUTS: { diagram; illustrate; plan; facilitate };
+export const PALETTE_LAYOUTS: { diagram; pages; plan; facilitate };
 export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type derived from EditorMode
 ```
 
@@ -128,8 +128,8 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
   (Group 16, chained last in `template-preview.tsx`), with its hover story (the timer runs down, dots land).
 - The help card glyph `facilitate-mode` in `apps/help/lib/featureIcons.tsx` (three people round a
   speech bubble), hue `#c2410c` in `featureColours.ts`.
-- The Start Blank menu row (`packages/ui/src/StartBlankMenu.tsx`) and its funnel slot `HeaderSession`
-  on every surface (`packages/api-schema/src/cta-sources.ts`).
+- The funnel slot `HeaderSession` on every surface (`packages/api-schema/src/cta-sources.ts`), retired
+  with the public sites' Start Blank menu.
 
 ## Observability
 
@@ -139,19 +139,19 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 
 ## Testing
 
-| Spec rule                                                                                 | Test                                                                                                                   |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Five modes, order, labels, Shift+D wraps                                                  | `packages/document/src/editor-mode.test.ts`, `hooks/editor/editor-mode-shortcut.test.ts`                               |
-| Facilitate's palette layout and Popular                                                   | `components/palette/palette-layouts.test.ts`                                                                           |
-| Diagram drops Stickers + Collaborate, keeps Icons, Comment panel and Action card in Write | `palette-layouts.test.ts`                                                                                              |
-| Search still finds them in Diagram                                                        | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                                                      |
-| Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                       |
-| Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                         |
-| Share roles in Facilitate                                                                 | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `EditorModeSwitch.test.tsx` |
-| Templates open in Facilitate; blank                                                       | `apps/live/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                            |
-| Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                 |
-| Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                         |
-| OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                          |
+| Spec rule                                                                                 | Test                                                                                                                       |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Five modes, order, labels, Shift+D wraps                                                  | `packages/document/src/editor-mode.test.ts`, `hooks/editor/editor-mode-shortcut.test.ts`                                   |
+| Facilitate's palette layout and Popular                                                   | `components/palette/palette-layouts.test.ts`                                                                               |
+| Diagram drops Stickers + Collaborate, keeps Icons, Comment panel and Action card in Write | `palette-layouts.test.ts`                                                                                                  |
+| Search still finds them in Diagram                                                        | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                                                          |
+| Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                           |
+| Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                             |
+| Share roles in Facilitate                                                                 | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
+| Templates open in Facilitate; blank                                                       | `apps/live/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                                |
+| Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
+| Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                             |
+| OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |
 
 ## Defaults ledger
 

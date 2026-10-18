@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, penColourHex, type Element } from '@livediagram/document';
+import {
+  LABEL_BACKDROP_CONTRAST,
+  contrastRatio,
+  createFreehand,
+  penColourHex,
+  type Element,
+} from '@livediagram/document';
 import { createStockColourProjector } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>
@@ -66,5 +72,46 @@ describe('createStockColourProjector', () => {
     const project = createStockColourProjector();
     const els = [stroke()];
     expect(project(els, 'light')).toBe(els);
+  });
+});
+
+// docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it": given the stored and the
+// drawn canvas, a label the drawn canvas sank is drawn in an ink that reads there, and keeps that object between
+// renders.
+describe('labels against the drawn canvas', () => {
+  const caption = (id: string): Element =>
+    ({
+      id,
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 120,
+      height: 24,
+      label: 'Caption',
+      textColor: '#334155',
+    }) as unknown as Element;
+  const inkOf = (el: Element | undefined) => (el as { textColor?: string }).textColor ?? '';
+  const canvases = { stored: '#ffffff', drawn: '#0d121a' };
+
+  it('re-inks a label the drawn canvas sank', () => {
+    const project = createStockColourProjector();
+    const out = project([caption('a')], 'dark', undefined, canvases);
+    expect(contrastRatio(inkOf(out[0]), '#0d121a')).toBeGreaterThanOrEqual(LABEL_BACKDROP_CONTRAST);
+  });
+
+  it('keeps a re-inked label’s object while it is unchanged', () => {
+    const project = createStockColourProjector();
+    const a = caption('a');
+    const first = project([a, caption('b')], 'dark', undefined, canvases);
+    // Another element changes; the re-inked label does not.
+    const second = project([a, caption('c')], 'dark', undefined, canvases);
+    expect(second[0]).toBe(first[0]);
+  });
+
+  it('leaves labels alone when the canvas is drawn as stored', () => {
+    const project = createStockColourProjector();
+    const a = caption('a');
+    const board = [a];
+    expect(project(board, 'light', undefined, { stored: '#ffffff', drawn: '#ffffff' })).toBe(board);
   });
 });

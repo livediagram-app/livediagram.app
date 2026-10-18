@@ -7,7 +7,7 @@
 // a popover beside the button, as the Explorer's delete does. Reached from
 // the sidebar's More group and from Settings › Account.
 import { useState } from 'react';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { Button, EmptyState, TrashIcon } from '@livediagram/ui';
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -35,7 +35,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
       </InfoNote>
 
       {groups === null ? (
-        <p className="text-sm text-slate-400" role="status">
+        <p className="text-sm text-slate-500 dark:text-slate-400" role="status">
           Loading…
         </p>
       ) : groups.length === 0 ? (
@@ -80,8 +80,8 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                       <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
                         {row.name || 'Untitled document'}
                       </span>
-                      {/* This browser's Trash (docs/specs/006-document/offline-mode.md#local-only-pill). */}
-                      {group.scope.kind === 'local' ? <LocalOnlyPill /> : null}
+                      {/* This Browser's Trash (docs/specs/006-document/offline-mode.md#this-browser-pill). */}
+                      {group.scope.kind === 'local' ? <ThisBrowserPill /> : null}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {trashedOnLabel(row)} · {daysLeftLabel(row.trashedAt, now)}

@@ -9,7 +9,7 @@ import { useEffect, type RefObject } from 'react';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 
 // The gap kept between the group and the canvas's edge, in screen px.
-export const KEEP_ON_SCREEN_MARGIN_PX = 8;
+const KEEP_ON_SCREEN_MARGIN_PX = 8;
 
 // How far (in the element's own px, negative = left) a group should move to keep its right edge within
 // `visibleRight`, without its left edge passing `minLeft`; all in screen px, `scale` screen px per own px.

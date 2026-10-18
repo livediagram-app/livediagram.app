@@ -22,7 +22,7 @@ export const AVATAR_BURST_KEYS: Record<Reaction, string> = Object.fromEntries(
   REACTIONS.map((r, i) => [r, String(i + 1)]),
 ) as Record<Reaction, string>;
 
-export type AvatarKeyAction =
+type AvatarKeyAction =
   { type: 'behaviour'; kind: AvatarReactionKind } | { type: 'burst'; reaction: Reaction };
 
 const BY_KEY = new Map<string, AvatarKeyAction>([

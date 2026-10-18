@@ -39,6 +39,18 @@ All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and 
   nothing from it is inserted as markup; only its text and attributes are read.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
+### Server-rendered markup
+
+Because the prerender passes strings through, a **server component** that hands `trustedHtml(...)` to
+`dangerouslySetInnerHTML` puts a plain string into the RSC payload. The first load is fine (the markup is already in
+the HTML), but a client navigation to that page makes React write the string through `innerHTML`, the `default`
+policy refuses it, and the page crashes to a blank screen. The help centre's breadcrumb and category links all did
+this through the JSON-LD block. So outside the editor (a client app end to end), a sink lives in one of three places:
+a root `app/layout.tsx` (never re-rendered on navigation), a `'use client'` module (the call mints real `TrustedHTML`
+in the browser), or an app module that only client modules import. A sink in a shared package must be a client
+module itself, since any server page may render it: `JsonLd` is one. `trusted-types-sinks.test.ts` holds every
+file to this.
+
 ## Third parties
 
 | Code                                             | Needs                                                                           | Allowed by                                       |
@@ -49,6 +61,7 @@ All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and 
 | ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                      | The `ProseMirrorClipboard` policy name           |
 | Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
 | Clerk (editor, community sign-in)                | Script URLs on the Clerk frontend API origin                                    | `default`, origin from the publishable key       |
+| Clerk's sign-up bot protection                   | Cloudflare Turnstile's script on `https://challenges.cloudflare.com`            | `default`, beside Clerk's origin                 |
 | Clerk's session timers                           | A `Worker` from the page's own `blob:` URL (its fixed timer source)             | `default`, for the Worker constructor sink alone |
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
@@ -56,11 +69,20 @@ it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
 
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 
+**Asked by hand, `default` makes nothing.** The browser always calls the default policy with the sink's name; a call
+without one is code asking `trustedTypes.defaultPolicy.createHTML(...)` directly, and the policy throws. ProseMirror
+tries the default policy that way before making its own `ProseMirrorClipboard` policy, and only falls back when it
+throws: when the policy answered `null` instead, ProseMirror kept it and parsed every pasted HTML as empty, so a rich
+paste into an article pasted nothing (`article-paste.spec.ts` locks it).
+
 **One third party is refused by design.** Cloudflare's JavaScript Detections (bot management) is injected by the edge
 into every page: it writes a script into a hidden iframe with `innerHTML`, in the iframe's own realm, where no policy
 of ours can reach. Trusted Types refuses it, so each page load logs one error from Cloudflare's snippet
 (`/cdn-cgi/challenge-platform/scripts/jsd/`) and Cloudflare gets no JavaScript-detection signal. That trade is
-accepted: no bot or firewall rule may depend on that signal, and the error is not counted as a violation of ours.
+accepted: no bot or firewall rule may depend on that signal, and the error is not counted as a violation of ours:
+the client error report (`installClientErrorTracking`) skips a TrustedHTML refusal thrown by an inline script
+(`isEdgeSnippetRefusal`), since every script of ours is a file. Before that skip, each help centre page load
+reported it as `Uncaught.Help.NonError` or `Uncaught.Help.TypeError`.
 
 ## A refusal
 

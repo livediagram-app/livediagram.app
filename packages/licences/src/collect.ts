@@ -11,7 +11,7 @@ import { locatePackage, vendoredCandidates } from './package-path.ts';
 import type { TextRef, TextSource } from './texts.ts';
 
 // Files the bundler cannot see into; each must match an embedded work.
-export const BINARY_ASSET_EXTENSIONS: ReadonlySet<string> = new Set([
+const BINARY_ASSET_EXTENSIONS: ReadonlySet<string> = new Set([
   'wasm',
   'ttf',
   'otf',

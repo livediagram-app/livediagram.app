@@ -2,11 +2,11 @@ import type { ElementTourApi } from './element-tour-api';
 import {
   addRowStep,
   conceptOutro,
-  inElement,
   onGraphic,
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Chevrons tour (docs/specs/007-editor/element-tours.md "The Chevrons tour"): stages pointing left to right, each
 // edited on the canvas from its own bar (held open by the step, as if pointed at), the notes under them, and Pulse
@@ -19,17 +19,20 @@ export function chevronsTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
   const noted = ctx.rows.findIndex((r) => !!r.note);
   // The bar is held open by the step; a stage too small for its bar (zoomed out, or a narrow phone) draws none, so the
   // step rings the stage itself rather than waiting for a bar that never comes.
-  const barSelector = inElement(id, `[data-concept-row-bar][aria-label="Stage ${barAt + 1}"]`);
+  const barSelector = elementSelector(
+    id,
+    `[data-concept-row-bar][aria-label="Stage ${barAt + 1}"]`,
+  );
   const bar: TourStepOf<ElementTourApi> = {
     id: 'bar',
     title: "Each Stage's Own Bar",
     body: ctx.touch
-      ? 'Every stage shows a bar while the process is selected (zoom in if the stages are small): move it left or right, or delete it. With no notes yet, it offers Add Note.'
-      : 'Point at a stage for its bar: move it left or right, or delete it. With no notes yet, it offers Add Note.',
+      ? 'Each stage has a small bar while selected: move the stage, delete it, or add a note.'
+      : 'Point at a stage for its bar: move the stage, delete it, or add a note.',
     selector: () =>
       document.querySelector(barSelector)
         ? barSelector
-        : inElement(id, `[data-concept-row-zone="${barAt}"]`),
+        : elementSelector(id, `[data-concept-row-zone="${barAt}"]`),
     prepare: async (api) => {
       api.showStageBar(barAt);
       // A frame for the bar to draw before the step looks for it.
@@ -41,14 +44,14 @@ export function chevronsTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
     onGraphic(
       'stages',
       'Stages, Left to Right',
-      `Its ${ctx.rows.length} stages each point into the next, read left to right: a pipeline, a value chain, a lifecycle.`,
-      inElement(id),
+      `Stages read left to right, each pointing to the next.`,
+      elementSelector(id),
     ),
     onGraphic(
       'edit',
       'Type Over a Stage',
       `${click} a stage's name to type over it. Enter keeps it, Escape puts it back.`,
-      inElement(id, '[data-concept-row="0"]'),
+      elementSelector(id, '[data-concept-row="0"]'),
     ),
     bar,
     ...(noted >= 0
@@ -56,27 +59,22 @@ export function chevronsTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
           onGraphic(
             'notes',
             'A Note Under Each',
-            `A note sits under its stage: how long it takes, who owns it, the gate it waits on. ${click} it to change it.`,
-            inElement(id, `[data-concept-note="${noted}"]`),
+            `A note under a stage, like who owns it. ${click} it to edit.`,
+            elementSelector(id, `[data-concept-note="${noted}"]`),
           ),
         ]
       : []),
-    addRowStep(
-      'add',
-      'Add a Stage',
-      'Add Stage puts a new one at the end, up to eight. The others narrow to fit.',
-      'Add Stage',
-    ),
+    addRowStep('add', 'Add a Stage', 'Add Stage adds one at the end, up to eight.', 'Add Stage'),
     onGraphic(
       'animate',
       'Run the Pipeline',
-      'Animation, then Concept: Pulse runs along the stages, as here. Build brings them in left to right.',
-      inElement(id),
+      'Animation › Concept brings the stages in or pulses along them.',
+      elementSelector(id),
       'pulse',
     ),
     conceptOutro(
       'That Is a Chevron Process',
-      'It exports exactly as drawn, and every change is one undo step.',
+      'It exports as you see it. Undo takes back any change.',
     ),
   ];
 }

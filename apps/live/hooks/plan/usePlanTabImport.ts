@@ -17,7 +17,7 @@ import { debugLog } from '@/lib/debug-log';
 
 // How long an import waits for the item store (blueprint DEFAULTS): a document with no Plan content until the
 // import starts loading it only once the imported board lands, which is a fetch away.
-export const PLAN_IMPORT_READY_WAIT_MS = 10_000;
+const PLAN_IMPORT_READY_WAIT_MS = 10_000;
 
 // What landed: the cards made, those the document already had, and those the store refused.
 export type PlanTabImportResult = { added: number; skipped: number; failed: number };

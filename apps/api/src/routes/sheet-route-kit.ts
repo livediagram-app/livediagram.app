@@ -40,7 +40,7 @@ export function sheetCallerEdits(ctx: RouteContext, caller: SheetCaller): Promis
 }
 
 // A relay larger than this asks clients to fetch the sheet instead (blueprint sheet-store.md, D5).
-export const SHEET_RELAY_BYTES_MAX = 262_144;
+const SHEET_RELAY_BYTES_MAX = 262_144;
 export const SHEET_WRITE_RETRIES = 3;
 
 const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;

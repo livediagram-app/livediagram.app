@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 // What the IMPORTING session sees around a photo draft (docs/specs/021-event-storming/event-storming.md Phase 8), and
 // only that session: which notes on the board the photo matched, and what the
@@ -29,12 +30,12 @@ export type PhotoDraftView = {
 };
 
 let view: PhotoDraftView | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setPhotoDraftView(next: PhotoDraftView | null): void {
   if (view === next) return;
   view = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 export function getPhotoDraftView(): PhotoDraftView | null {
@@ -43,12 +44,7 @@ export function getPhotoDraftView(): PhotoDraftView | null {
 
 export function usePhotoDraftView(): PhotoDraftView | null {
   return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => {
-        listeners.delete(l);
-      };
-    },
+    listeners.subscribe,
     () => view,
     () => null,
   );

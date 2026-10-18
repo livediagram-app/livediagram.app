@@ -15,9 +15,12 @@
 import { embedTabImages } from '@livediagram/api-schema';
 import {
   drawnCount,
+  elementsOnPage,
   formLook,
+  laidOutPagesOf,
   migrateStoredTab,
   renderElementsToSvg,
+  renderPageToSvg,
   resolveFontStack,
   tabKindOf,
   type Tab,
@@ -266,9 +269,25 @@ async function renderTabBodyToSvg(
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
   const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
   const tab = community ? redactTabForCommunity(stored) : stored;
+  // A Pages tab previews as its first page alone, drawn as an export draws it
+  // (docs/specs/006-document/document-snapshots.md "Pages tabs"): every page side by
+  // side on the canvas shrinks to a row of slivers nobody can read at thumbnail size.
+  const pages = laidOutPagesOf(tab);
+  const firstPage = pages[0];
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
-  const images = await loadEmbeddedImages(env, liveDoc.id, tab);
+  // A first-page preview reads only that page's images: its elements' and its picture background.
+  const images = await loadEmbeddedImages(
+    env,
+    liveDoc.id,
+    firstPage
+      ? {
+          ...tab,
+          elements: elementsOnPage(tab.elements, pages, firstPage.id),
+          pages: tab.pages?.filter((p) => p.id === firstPage.id),
+        }
+      : tab,
+  );
   // A Plan board or card draws its document's items (docs/specs/026-plan/plan-board.md).
   const plan = tab.elements.some(
     (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
@@ -298,15 +317,16 @@ async function renderTabBodyToSvg(
         cards: sheetCards && items ? cardSourceOf(items.values(), typesOf(catalogue)) : null,
       })
     : undefined;
-  return renderElementsToSvg(tab, {
-    resolveImageHref: (id) => images.get(id),
+  const drawWith = {
+    resolveImageHref: (id: string) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
     items,
     sheets,
     // Custom types keep their colours (docs/specs/026-plan/item-types.md).
     itemTypes: plan ? typesOf(catalogue) : undefined,
-  });
+  };
+  return firstPage ? renderPageToSvg(tab, firstPage, drawWith) : renderElementsToSvg(tab, drawWith);
 }
 
 // Read each image element's bytes from R2 and return them keyed by imageId
@@ -324,7 +344,8 @@ async function loadEmbeddedImages(
 ): Promise<Map<string, string>> {
   const images = env.IMAGES;
   if (!images) return new Map();
-  const ids = imageRefIds(tab.elements);
+  // The elements' images and any page's picture background, as embedTabImages reads them.
+  const ids = imageRefIds(tab.elements, tab.pages);
   const servable = await servableImageIds(env, documentId, ids);
   if (servable.size < ids.length) {
     console.warn('[images] not servable by document', {

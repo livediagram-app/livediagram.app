@@ -9,7 +9,7 @@ import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { encodeStrokePoints } from './stroke-points';
 import { pathContours, pathOfContours, pathWorldAnchors } from './path-element';
 import type { PathAnchor } from './path-geometry';
-import type { LaidOutPage, PageRect } from './illustrate-page';
+import type { LaidOutPage, PageRect } from './page';
 import { MIRROR_AXIS_TOLERANCE } from './element-mirror';
 import type { GuideLine } from './logo-page';
 
@@ -116,7 +116,7 @@ export function symmetryMaps(rect: PageRect, settings: MirrorSettings): Symmetry
   }
 }
 
-export const mapPoint = (m: SymmetryMap, p: { x: number; y: number }) => ({
+const mapPoint = (m: SymmetryMap, p: { x: number; y: number }) => ({
   x: m.a * p.x + m.c * p.y + m.e,
   y: m.b * p.x + m.d * p.y + m.f,
 });

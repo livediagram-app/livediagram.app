@@ -126,9 +126,9 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool(
     'ChangePages',
     'Change Pages',
-    'Adding, changing, laying out, moving or deleting Illustrate pages: slides, logos, infographics.',
+    'Adding, changing, laying out, moving or deleting pages: slides, logos, infographics.',
   ),
-  mcpTool('WriteArticle', 'Write Article', 'Writing an article on Illustrate pages from Markdown.'),
+  mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
   mcpTool(
     'ReadForm',
     'Read Form',
@@ -145,6 +145,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Changing a form’s questions, sections, look, settings or destination.',
   ),
   mcpTool('ShareForm', 'Share Form', 'Publishing, closing or deleting a form’s link.'),
+  mcpTool(
+    'TryForm',
+    'Try Form',
+    'Filling in a form as a preview response, to check it end to end.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {
@@ -161,7 +166,7 @@ export const DRIVE_CONNECTED = chart(
   'Drive',
   'Linked',
   'Drive Connected',
-  'Someone connected Google Drive to mirror My documents.',
+  'Someone connected Google Drive to mirror My Documents.',
 );
 
 export const DRIVE_DISCONNECTED = chart(
@@ -192,7 +197,7 @@ export const DRIVE_FIRST_MIRROR = chart(
   'Drive',
   'Created',
   'First Mirrors Finished',
-  'A newly connected mirror finished copying every document in My documents into Drive.',
+  'A newly connected mirror finished copying every document in My Documents into Drive.',
   { types: ['FirstMirror'] },
 );
 
@@ -285,7 +290,7 @@ export const AGENT_CHANGESETS: MetricStack = {
 export const DRIVE_MIRROR: MetricStack = {
   stack: true,
   title: 'Google Drive',
-  blurb: 'My documents mirrored to Google Drive, and what comes back from Drive.',
+  blurb: 'My Documents mirrored to Google Drive, and what comes back from Drive.',
   headline: DRIVE_CONNECTED,
   members: [
     DRIVE_CONNECTED,

@@ -1,17 +1,17 @@
 // @vitest-environment jsdom
 
-// An empty page's layout card (docs/specs/007-editor/illustrate-pages.md "Layouts"); a logo page's
+// An empty page's layout card (docs/specs/007-editor/pages-mode.md "Layouts"); a logo page's
 // adds Start From Scratch (docs/specs/007-editor/logo-pages.md "Logo layouts").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, newLogoPage } from '@livediagram/document';
+import { layOutPages, newLogoPage } from '@livediagram/document';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
 
 afterEach(() => cleanup());
 
 describe('EmptyPageLayouts', () => {
   it('offers Start From Scratch on a logo page, starting it blank (not merely hiding the card)', () => {
-    const [page] = layOutIllustratePages([newLogoPage('l')]);
+    const [page] = layOutPages([newLogoPage('l')]);
     const onHide = vi.fn();
     const onBlank = vi.fn();
     render(
@@ -29,7 +29,7 @@ describe('EmptyPageLayouts', () => {
   });
 
   it('offers no Start From Scratch on an infographic page', () => {
-    const [page] = layOutIllustratePages([{ id: 'i', orientation: 'portrait' }]);
+    const [page] = layOutPages([{ id: 'i', orientation: 'portrait' }]);
     render(
       <EmptyPageLayouts
         page={page!}

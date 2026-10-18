@@ -14,8 +14,8 @@ import type { AnswerValue } from './answers';
 import { answerText } from './card';
 import { promptOf, questionsOf, type FormDefinition, type FormQuestion } from './model';
 
-export const SHEET_NUMBER_HEADER = '#';
-export const SHEET_SUBMITTED_HEADER = 'Submitted';
+const SHEET_NUMBER_HEADER = '#';
+const SHEET_SUBMITTED_HEADER = 'Submitted';
 // What a preview's "#" cell reads.
 export const SHEET_PREVIEW_MARK = 'Preview';
 

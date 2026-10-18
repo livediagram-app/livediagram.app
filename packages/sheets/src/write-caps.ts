@@ -8,7 +8,7 @@ import { NOBODY, type Sheet } from './sheet';
 import { applySheetWrite, type SheetWrite } from './store';
 import { sheetBytes, sheetProblem } from './validate';
 
-export type WriteCapsRejection = 'sheet_full' | 'sheet_too_large' | 'sheets_full';
+type WriteCapsRejection = 'sheet_full' | 'sheet_too_large' | 'sheets_full';
 
 // The cap the writes would cross, applied in order to `sheet`, or null when they fit. `documentCells` is the cells
 // every sheet of the document holds now, this one included. A change that grows nothing is never refused here, so

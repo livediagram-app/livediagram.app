@@ -192,7 +192,7 @@ holds a changeset's after-images is unchanged by it.
 2. Gate, migrate, `isValidTab`, `bodyExceedsCap`, strip `rev`, `documentId`, `orderIndex`, `updatedAt` from the
    body (CS32). Parse `X-Changeset-Seen` (CS19).
 3. Attempt: in parallel `getTab` and the records after the seen revision; `mergeChangesetsIntoSave` on the
-   received tab; then `mergeRoomLedger` on its result (changesets first, so the before-image compare sees the
+   received tab; then `applyRoomLedger` on its result (changesets first, so the before-image compare sees the
    save as sent); then the existing name cap, empty-tab backstop, `preferNewerQaAll`, `rewriteCommentAuthors`.
 4. Write with `upsertTabAtRev(..., existingTab?.rev ?? 0)`. On `tab_rev_stale` repeat step 3 once, then
    `409 tab_busy` (CS4); the editor's autosave already retries any non-403 failure (`saveFailureStatus`).
@@ -230,7 +230,7 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 ### Rooms for every server-stored document
 
 - `roomStubFor(env, documentId)` returns a stub for every document; the `shareable`/`teamId` gate goes. Its
-  callers (`mergeRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
+  callers (`fetchRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
   `readRoomSelections`) take the document id; `relayTabRename` is a rename's.
 - The editor opens its room when `hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
@@ -278,7 +278,7 @@ included) starts a reveal and a toast.
 Toast coalescing (`coalesceChangesetToast`): the key is `agentKey` for an agent changeset, else the changeset id.
 An op whose key has an entry with `lastAt` within `CHANGESET_TOAST_COALESCE_MS` adds its id and count to that toast
 and updates it in place (`toast.action` with the same `key`); otherwise a new entry replaces that key's toast, so
-one token has at most one toast. The toast stays until dismissed or replaced.
+one token has at most one toast. The toast goes after `TOAST_ANSWER_TIMEOUT_MS`, or when dismissed or replaced.
 
 **Show**: `track('Agent', 'Opened', 'Toast')`, switch to the tab when it is not active (`selectTab`), then
 `fitToBounds` over the union of `elementBounds` of the toast's touched elements still present, `maxZoom: 1` (CS34).
@@ -614,7 +614,8 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
 - The toast is `role="status"` in the existing `aria-live="polite"` stack; its message is the announcement. Buttons
   carry visible labels and `aria-label` "Show {name}'s changes" / "Undo {name}'s changes"; both are native buttons,
   keyboard reachable, Enter and Space activate. Focus is never moved to the toast.
-- The toast has no timeout (WCAG 2.2.1); it goes when dismissed or replaced by a newer burst from the same token.
+- The toast times out after `TOAST_ANSWER_TIMEOUT_MS` (10 s), held while hovered, focused or hidden (WCAG 2.2.1);
+  it also goes when dismissed or replaced by a newer burst from the same token. The changes stay in the history.
 - The outline is `aria-hidden`; it supplements the toast. Its 2 px stroke in a participant colour is drawn over a
   1 px halo in the canvas surface colour so it meets 3:1 against any element fill (WCAG 1.4.11).
 - Motion: the outline fades in and out over the motion blueprint's short duration (CS37); under

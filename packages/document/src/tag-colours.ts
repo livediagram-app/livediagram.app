@@ -13,7 +13,7 @@ export const TAG_COLOURS_MAX = 12;
 /** How much of a tag's colour washes its chip (D191). */
 export const TAG_CHIP_WASH = 0.16;
 /** The longest tag the map keeps (a card's tag bound). */
-export const TAG_COLOUR_TAG_MAX = 32;
+const TAG_COLOUR_TAG_MAX = 32;
 
 const HEX = /^#[0-9a-f]{6}$/i;
 

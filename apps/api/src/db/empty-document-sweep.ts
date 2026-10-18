@@ -8,10 +8,10 @@ import type { Env } from '../types';
 
 // Documents per statement: one bounded UPDATE over a scan measured at ~10 ms on
 // production (docs/specs/013-workspace/blueprints/empty-document-cleanup.md).
-export const EMPTY_SWEEP_BATCH = 500;
+const EMPTY_SWEEP_BATCH = 500;
 // Statements per cron run: 4 x 500 = 2,000 moves a day, the Trash purge's
 // order. A larger backlog drains over the following days, oldest save first.
-export const EMPTY_SWEEP_MAX_BATCHES = 4;
+const EMPTY_SWEEP_MAX_BATCHES = 4;
 
 // The checks are a CASE, not an OR chain: SQLite stops a CASE at its first match (an OR it may evaluate whole), so a
 // tab with elements is parsed twice at most and a body that is not JSON never reaches json_type. Measured on 5,000

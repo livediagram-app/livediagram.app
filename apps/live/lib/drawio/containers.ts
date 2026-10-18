@@ -115,7 +115,7 @@ function cellStyleOf(c: DrawioCell): TableCellStyle | null {
   return Object.keys(style).length > 0 ? style : null;
 }
 
-export type BuiltTable = { title: TextElement | null; table: TableElement | ShapeElement };
+type BuiltTable = { title: TextElement | null; table: TableElement | ShapeElement };
 
 export function buildTable(
   cell: DrawioCell,

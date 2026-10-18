@@ -181,8 +181,10 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
     **`read_sheet`** (a range's non-empty cells by A1: input, value and what it shows; plus freeze, merges and
     filter, validation rules and format rules), **`change_sheet`** (changes in order: set cells by A1 from rows of
     inputs; clear or format a range; insert or delete rows and columns; sort; freeze; rename; set or clear validation
-    rules and format rules) and **`add_sheet`** (place a Sheet element on a tab,
-    optionally filled from rows or CSV text).
+    rules and format rules) and **`add_sheet`** (place a Sheet element on a tab in
+    Plan, optionally filled from rows or CSV text: the tab named, else the first tab holding a sheet, else the first
+    tab in Plan; a named tab in another mode, or a document with no tab in Plan, is refused `tab_not_plan` before
+    any sheet is made, pointing at `add_tab` with a Sheet template; [Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
   - CLI: `sheet ls <doc>`, `sheet get <doc> <sheet> [range]`, `sheet set <doc> <sheet> <A1> <value…>` (or `--csv`
     from a file or stdin), `sheet add <doc> [--tab] [--title] [--csv]`, `sheet insert-rows`, `sheet insert-cols`,
     `sheet rm-rows`, `sheet rm-cols`.

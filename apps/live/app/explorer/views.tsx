@@ -69,11 +69,11 @@ export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
 // with no folder row behind them; `folder` is a real owned folder and
 // `team` a team the signed-in user belongs to (docs/specs/013-workspace/teams.md).
 export type SelectedNode =
-  // The landing view (docs/specs/013-workspace/explorer-home.md): Jump back in, What happened and
+  // The landing view (docs/specs/013-workspace/explorer-home.md): Jump Back In, What Happened and
   // the person's own Timeline.
   | { kind: 'home' }
   // The Timeline (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
-  // happened, with its own sidebar row and Home's See timeline link.
+  // happened, with its own sidebar row and Home's See Timeline link.
   | { kind: 'timeline' }
   // The Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the reader across every
   // document, open actions assigned to / by them and unresolved threads they're in.
@@ -84,6 +84,8 @@ export type SelectedNode =
   | { kind: 'search' }
   // Documents this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
+  // The reader's tags (docs/specs/013-workspace/tags.md "The Tags page"): every tag's documents, or one tag's.
+  | { kind: 'tags'; id?: string }
   | { kind: 'offline' }
   | { kind: 'shared' }
   | { kind: 'gallery' }

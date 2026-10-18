@@ -11,7 +11,7 @@ import type { LivediagramPort } from './livediagram-port';
 import { putSnapshotItem, type MirrorSnapshot } from './snapshot';
 import type { Rasteriser } from './thumbnail';
 
-export type DriveTelemetry = (action: 'Applied', type: string) => void;
+type DriveTelemetry = (action: 'Applied', type: string) => void;
 
 export class PassContext {
   private pending = new Map<string, DriveItem>();

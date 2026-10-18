@@ -13,7 +13,9 @@ import dynamic from 'next/dynamic';
 import { CloseIcon, SparkleIcon } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
+import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
@@ -36,23 +38,36 @@ export const SIGNIN_BANNER_DISMISS_KEY = 'livediagram:signin-banner-dismissed:v1
 // the mobile-nav overlay (z-[var(--z-chrome)]); the editor lifts it above
 // the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]).
 const EXPLORER_PLACEMENT = 'bottom-0 z-[var(--z-chrome)] pb-16';
+// The card's widest (`max-w-3xl`): the column that has to clear the chrome beneath it.
+const BANNER_MAX_WIDTH_PX = 768;
 
 export function SignInBanner({
   surface,
   onDismiss,
   placementClassName = EXPLORER_PLACEMENT,
+  standOnChrome = false,
 }: {
   // Which host mounted it, carried on every telemetry type (docs/specs/014-identity/sign-in-encouragement.md) so the
   // dashboard can tell an Explorer prompt from an editor one.
   surface: 'Explorer' | 'Editor';
   onDismiss: () => void;
   placementClassName?: string;
+  // The editor's banner stands 8px above its bottom chrome (the tab bar, the Undo / Timer / Vote / Poll cluster, the
+  // whiteboard dock) instead of a fixed lift, so it never covers a control somebody is running a session with.
+  standOnChrome?: boolean;
 }) {
+  const chromeFloor = useChromeFloor(standOnChrome, 0, BOTTOM_CHROME_SELECTOR, BANNER_MAX_WIDTH_PX);
   const [reasonsOpen, setReasonsOpen] = useState(false);
   const editor = surface === 'Editor';
   const trackSignIn = () =>
     track('UI', 'Selected', editor ? 'SignInBannerEditor' : 'SignInBannerExplorer');
   const { signInHref } = useAuthHrefs();
+  // The toasts stand on the card (docs/specs/004-interface-design/toasts.md "Placement"): it is
+  // `data-toast-floor`, and says when it comes and goes so a toast already up moves with it.
+  useEffect(() => {
+    announceToastFloorChange();
+    return announceToastFloorChange;
+  }, []);
 
   return (
     <>
@@ -60,19 +75,23 @@ export function SignInBanner({
           eat clicks meant for the pane behind; the card re-enables
           them for itself. */}
       <div
-        className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
+        // Steps aside while a tour's offer or last card is up: both stand at the bottom centre (TourPopover).
+        className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 [body[data-tour-card-open]_&]:hidden ${placementClassName}`}
+        style={standOnChrome ? { bottom: chromeFloor } : undefined}
       >
-        <div className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-600 dark:to-brand-700 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+        <div
+          data-toast-floor=""
+          className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-600 dark:to-brand-700 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5"
+        >
           {/* Decorative glyph tile */}
           <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 sm:flex">
             <SparkleIcon size={20} />
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold sm:text-base">Sign in to keep your work safe</p>
+            <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
             <p className="mt-0.5 text-xs text-white/85 sm:text-sm">
-              Free account. Your documents sync across devices, survive a cache clear or browser
-              restart, and carry your real name.
+              Share with your team, build with AI, sync across devices.
             </p>
           </div>
 

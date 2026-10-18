@@ -7,7 +7,7 @@ import type { BoxedElement } from './index';
 import { decodeStrokePoints } from './stroke-points-cache';
 import { encodeStrokePoints } from './stroke-points';
 import { logoPageAt } from './logo-page';
-import type { LaidOutPage } from './illustrate-page';
+import type { LaidOutPage } from './page';
 
 // An element whose centre is this close to the axis (a share of the artboard's width) already
 // sits on it: mirroring it would only stack a copy on itself.
@@ -49,7 +49,7 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
   return moved;
 }
 
-export type MirrorUse = 'drawing' | 'copy';
+type MirrorUse = 'drawing' | 'copy';
 
 /**
  * The twin an element gets on the logo page under its centre, or null: off every logo page, on
@@ -59,7 +59,7 @@ export type MirrorUse = 'drawing' | 'copy';
 /** The centre line a box drawn here reflects across: its logo page's, unless the box sits on the
  *  line already (it would be its own twin); null off a logo page. Shared by the twin a release
  *  adds and the twin previewed while drawing, so the two always agree. */
-export function mirrorAxisFor(
+function mirrorAxisFor(
   pages: readonly LaidOutPage[],
   box: { x: number; y: number; width: number; height: number },
 ): number | null {

@@ -10,7 +10,7 @@ import {
 } from '@livediagram/document';
 import type { LintContext } from './context';
 
-export const RESTYLES = ['angled', 'curved', 'straight'] as const;
+const RESTYLES = ['angled', 'curved', 'straight'] as const;
 export type Restyle = (typeof RESTYLES)[number];
 
 // The styles other than the arrow's own, each with the route it would draw.

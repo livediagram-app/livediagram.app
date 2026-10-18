@@ -246,11 +246,29 @@ function normaliseContent(el: Raw): unknown {
 // would lose two tiers at its first edit, and a cycle of 2 could never be edited. Past the most, the rest are dropped;
 // short of the fewest, rows named as the menu's Add names them ("Step 3") fill the gap.
 function normaliseConcept(el: Raw): Raw {
-  if (!Array.isArray(el.conceptRows)) return el;
+  if (!Array.isArray(el.conceptRows)) return el.shape === 'timeline-rail' ? railToTimeline(el) : el;
   const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
   const rows = el.conceptRows.slice(0, max);
   while (rows.length < min) rows.push({ label: `${noun} ${rows.length + 1}` });
   return rows.length === el.conceptRows.length ? el : { ...el, conceptRows: rows };
+}
+
+// A timeline rail saved before it was a Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its points
+// become milestones, each point's label its name (an unnamed one "Milestone 2"), and the point count and labels go.
+function railToTimeline(el: Raw): Raw {
+  const { min, max, noun } = CONCEPT_ROWS['timeline-rail'];
+  const labels = Array.isArray(el.railLabels) ? el.railLabels : [];
+  const stored =
+    typeof el.railCount === 'number' && Number.isFinite(el.railCount) ? el.railCount : 3;
+  const count = Math.max(min, Math.min(max, Math.round(stored)));
+  const { railCount: _count, railLabels: _labels, ...rest } = el;
+  return {
+    ...rest,
+    conceptRows: Array.from({ length: count }, (_, i) => {
+      const label = typeof labels[i] === 'string' ? labels[i].trim() : '';
+      return { label: label || `${noun} ${i + 1}` };
+    }),
+  };
 }
 
 const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';

@@ -6,7 +6,7 @@ import { criteriaMask, ifsNumbers, maskedNumbers, sameSizeAs } from './condition
 import { dims } from '../values';
 
 // Round half away from zero, as spreadsheets do, without float drift (2.675 → 2.68).
-export function roundHalfAway(x: number, digits: number): number {
+function roundHalfAway(x: number, digits: number): number {
   const m = 10 ** digits;
   const scaled = Math.abs(x) * m;
   const r = Math.round(Number(scaled.toPrecision(15)));

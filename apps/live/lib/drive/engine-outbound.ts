@@ -24,7 +24,7 @@ import {
 } from './snapshot';
 import type { MirrorDocument } from './livediagram-port';
 
-export type OutboundHooks = {
+type OutboundHooks = {
   onContentWritten(documentId: string): void;
   onCreated(): void;
   // A document's create or update failed and was skipped (not run-fatal): the
@@ -39,7 +39,7 @@ function documentIdOf(op: OutboundOp): string | null {
 }
 
 // A failure that ends the whole run rather than one op.
-export function isRunFatal(err: unknown): boolean {
+function isRunFatal(err: unknown): boolean {
   if (err instanceof DriveApiError) return err.isRateLimit || err.isAuth;
   return err instanceof TypeError; // fetch's network failure
 }

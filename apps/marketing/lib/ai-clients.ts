@@ -5,7 +5,7 @@
 import { mcpEndpoint, resolveMcpOrigin } from '@livediagram/api-schema';
 
 export const MCP_URL = mcpEndpoint(resolveMcpOrigin(process.env.NEXT_PUBLIC_MCP_ORIGIN));
-export const MCP_NAME = 'livediagram';
+const MCP_NAME = 'livediagram';
 
 export type AiClientGroup = 'Chat apps' | 'Coding agents' | 'Editors' | 'Anything else';
 
@@ -238,7 +238,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
   },
 ];
 
-export type StarterPrompt = { title: string; prompt: string };
+type StarterPrompt = { title: string; prompt: string };
 
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
 // a Plan template, write_article, change_pages, find + read_document, add_sheet.

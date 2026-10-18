@@ -7,6 +7,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { CountBadge, Glyph, lucideGlyph } from '@livediagram/ui';
 import {
   lucideChartColumn,
+  lucideClipboardList,
   lucidePanelsTopLeft,
   lucideSquareKanban,
   lucideStickyNote,
@@ -15,7 +16,12 @@ import {
 import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { MetricPreview, VisualisationPreview } from './slot-previews';
-import { CardPreview, DiagramPreview, SheetMetricPreview } from './card-previews';
+import {
+  CardPreview,
+  DiagramPreview,
+  FormMetricPreview,
+  SheetMetricPreview,
+} from './card-previews';
 
 // A gauge: a half ring and its needle.
 function GaugeGlyph() {
@@ -47,6 +53,23 @@ const BoardGlyph = lucideGlyph(lucideSquareKanban, 16);
 const TableGlyph = lucideGlyph(lucideTable, 16);
 const ChartGlyph = lucideGlyph(lucideChartColumn, 16);
 const NoteGlyph = lucideGlyph(lucideStickyNote, 16);
+const FormGlyph = lucideGlyph(lucideClipboardList, 16);
+
+/** Add to Slot's categories, in order (docs/specs/026-plan/plan-tabs.md "Filling a slot"). The picker builds its
+ *  sections from these names and each card looks its art up by them, so the two cannot name a category differently:
+ *  the picker said "Card Metrics" where the art was filed under "Metrics", and that card showed no picture, glyph or
+ *  description. */
+export const SLOT_CATEGORIES = [
+  'This Document’s Tabs',
+  'New Board',
+  'New Sheet',
+  'Card Metrics',
+  'Form Metrics',
+  'Visualisations',
+  'From a Sheet',
+  'Utilities',
+] as const;
+export type SlotCategory = (typeof SLOT_CATEGORIES)[number];
 
 // Two cards fanned behind the one in front: a stack of cards to write.
 function StackedCards({ palette }: { palette: PlanPalette }) {
@@ -62,7 +85,7 @@ function StackedCards({ palette }: { palette: PlanPalette }) {
   );
 }
 
-export const SLOT_CATEGORY_INFO: Record<string, Info> = {
+const SLOT_CATEGORY_INFO: Record<SlotCategory, Info> = {
   'This Document’s Tabs': {
     icon: <PanelsGlyph />,
     description: 'Your boards, sheets and diagrams, live.',
@@ -78,10 +101,15 @@ export const SLOT_CATEGORY_INFO: Record<string, Info> = {
     description: 'A blank grid, a budget or a tracker.',
     picture: (p) => <SheetPreview palette={p} tile={SHEET_TILES[1] ?? SHEET_TILES[0]!} />,
   },
-  Metrics: {
+  'Card Metrics': {
     icon: <GaugeGlyph />,
     description: 'Counts and progress across every card.',
     picture: (p) => <MetricPreview kind="progress" label="Completion" palette={p} />,
+  },
+  'Form Metrics': {
+    icon: <FormGlyph />,
+    description: 'Responses, status and dates from a form.',
+    picture: (p) => <FormMetricPreview metric="responses" palette={p} />,
   },
   Visualisations: {
     icon: <ChartGlyph />,
@@ -112,7 +140,7 @@ export function SlotCategoryCard({
   cascade,
   onOpen,
 }: {
-  title: string;
+  title: SlotCategory;
   count: number;
   palette: PlanPalette;
   // Its place in the grid, for the cascade on opening.

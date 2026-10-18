@@ -65,7 +65,8 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 - **Chrome** durations are tokens, in chrome stylesheets and in component classes.
 - **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
   `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
-  `feature-art/*.css` and `page-motion.css`. In telemetry
+  `feature-art/*.css` and `page-motion.css`. On the account and connect pages it's
+  `auth-motion.css`. In telemetry
   it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`. Any other
   stylesheet is chrome.
 - No component class or inline style carries a duration above the ceiling.
@@ -156,6 +157,10 @@ Three kinds of content motion were compared against the 250ms budget, and the op
   last at 130ms, so the hero settles in about 440ms. The cross-document crossfade stays at
   260ms. The scroll-driven section reveal follows the scroll, not a clock, so it isn't timed
   motion.
+- **The account and connect pages' entrance** follows the marketing hero's pace: the header, eyebrow and heading
+  take 310ms each, 35ms apart; the card lands in 420ms after 70ms with an overshoot; the promise rows take 360ms,
+  35ms apart from 105ms, and each icon pops in 300ms after its row, the last at 360ms, so the page settles by about
+  660ms. Their background lines are a content illustration: one route draws in, holds and trails off over 14 seconds.
 - **Telemetry data-viz reveals** run at half their original length, for the same reason. Cloud
   words take 210ms and start 11ms apart, capped at 250ms, so the cloud settles by about 460ms. A
   charted metric's pieces take 210ms and start 30ms apart. The line wipe takes 400ms after 150ms,

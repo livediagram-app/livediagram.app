@@ -6,12 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
-const mobile = vi.hoisted(() => ({ value: false }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => mobile.value }));
-
 afterEach(() => {
   cleanup();
-  mobile.value = false;
 });
 
 describe('ToolbarExplorerButton', () => {
@@ -44,7 +40,7 @@ describe('ToolbarExplorerButton', () => {
   });
 
   // The canvas's capture-phase gestures skip floating chrome: without the marker a press on the
-  // card (its mode switch menu included) with a Draw pen in hand started a stroke instead.
+  // card with a Draw pen in hand started a stroke instead.
   it('marks its card as floating chrome, so a Draw tool in hand never takes the press', () => {
     render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
     expect(
@@ -52,23 +48,9 @@ describe('ToolbarExplorerButton', () => {
     ).not.toBeNull();
   });
 
-  // docs/specs/007-editor/editor-modes.md "The mode switch": beside the menu button, wherever it sits.
-  it.each([false, true])('carries the editor mode switch beside it (inline %s)', (inline) => {
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <ToolbarExplorerButton open={false} onToggle={vi.fn()} inline={inline} />
-      </EditorModeProvider>,
-    );
-    const card = screen.getByRole('button', { name: 'Explorer' }).closest('[data-dock-button]')!;
-    expect(card.contains(screen.getByRole('button', { name: 'Editor mode: Diagram' }))).toBe(true);
-  });
-
-  // docs/specs/007-editor/editor-modes.md "The mode switch": not on a phone, whose tab menu's
-  // Opens in switches mode.
-  it.each([false, true])('carries no mode switch on a phone (inline %s)', (inline) => {
-    mobile.value = true;
+  // docs/specs/007-editor/editor-modes.md "The mode switch": a tab's mode is chosen on its start, never
+  // beside the menu button, on any screen.
+  it.each([false, true])('carries no mode switch (inline %s)', (inline) => {
     render(
       <EditorModeProvider
         value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
@@ -77,6 +59,6 @@ describe('ToolbarExplorerButton', () => {
       </EditorModeProvider>,
     );
     expect(screen.getByRole('button', { name: 'Explorer' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Editor mode/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /mode:/ })).toBeNull();
   });
 });

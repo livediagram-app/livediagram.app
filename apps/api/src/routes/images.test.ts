@@ -296,7 +296,7 @@ describe('POST /api/images under a per-owner cap', () => {
       limit: 3,
       current: 3,
     });
-    const key = images.put.mock.calls[0]![0];
+    const key: unknown = images.put.mock.calls[0]![0];
     expect(images.delete).toHaveBeenCalledWith(key);
   });
 

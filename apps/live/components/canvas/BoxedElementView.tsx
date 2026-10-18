@@ -32,7 +32,8 @@ import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { uprightTitleFrame } from '@/components/canvas/upright-title';
-import { EntityView } from '@/components/canvas/EntityView';
+import { EntityView } from '@/components/canvas/entity/EntityView';
+import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -45,6 +46,7 @@ import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { FenceView } from '@/components/canvas/collab/FenceView';
+import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
@@ -53,6 +55,7 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
+import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
@@ -94,6 +97,7 @@ function BoxedElementViewImpl({
   isSelected,
   isMultiSelected = false,
   onPlainClick,
+  onPressArmedAction,
   isEditing,
   editCursorAtEnd = false,
   isPaintMode,
@@ -112,8 +116,9 @@ function BoxedElementViewImpl({
   onCommitTable,
   onCommitHeaderSize,
   onSnapSeam,
-  onSetRailLabel,
   onToggleChecklistItem,
+  onSetEntityFields,
+  onStartFieldArrow,
   onSetPageHeading,
   onSetWebRows,
   onSetPointerTip,
@@ -263,6 +268,7 @@ function BoxedElementViewImpl({
       onCastVote,
       onShiftSelect,
       onPlainClick,
+      onPressArmedAction,
       onBeginDrag,
       onBeginEdit,
       onEditLink,
@@ -296,10 +302,10 @@ function BoxedElementViewImpl({
   // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
   const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
-  // Accent for the data-element fills (progress bar / ring, rail line, rating
-  // stars): a remote selector colour wins, else the element's own stroke, else
-  // the theme default stroke. Shared by the ProgressView / RailView / RatingView
-  // branches below so they all read the same accent.
+  // Accent for the data-element fills (progress bar / ring, rating stars): a
+  // remote selector colour wins, else the element's own stroke, else the theme
+  // default stroke. Shared by the ProgressView / RatingView branches below so
+  // they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
@@ -455,7 +461,25 @@ function BoxedElementViewImpl({
         longPress.onPointerDown(e);
         handleShapeDown(e);
       }}
-      onDoubleClick={handleDoubleClick}
+      onDoubleClick={(e) => {
+        // An Editor's double-click on an entity's fields edits that field in place
+        // (docs/specs/009-elements/entity.md "Editing on the canvas"); on its title, the title.
+        if (
+          element.type === 'shape' &&
+          element.shape === 'entity' &&
+          !readOnly &&
+          !isLocked &&
+          !remotelyLocked &&
+          !element.rotation &&
+          onSetEntityFields &&
+          wrapperRef.current &&
+          openEntityFieldAt(element, wrapperRef.current.getBoundingClientRect(), e.clientY)
+        ) {
+          e.stopPropagation();
+          return;
+        }
+        handleDoubleClick(e);
+      }}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
       onClick={
@@ -549,8 +573,11 @@ function BoxedElementViewImpl({
         />
       ) : null}
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
-          (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"). */}
-      <SketchFace active={finish === 'sketch' && finishSplitsFace(element)}>
+          (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
+          the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
+      <SketchFace
+        active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+      >
         <AccentEdgeOverlay
           element={withTagAccent(element, tagColours)}
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
@@ -573,7 +600,6 @@ function BoxedElementViewImpl({
           isLocked={isLocked}
           isSelected={isSelected}
           readOnly={readOnly}
-          onSetRailLabel={onSetRailLabel}
           onToggleChecklistItem={onToggleChecklistItem}
           chartPalette={chartPalette}
           fontFamily={fontFamily}
@@ -601,7 +627,24 @@ function BoxedElementViewImpl({
         ) : null}
         {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
         {element.type === 'shape' && element.shape === 'entity' ? (
-          <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
+          <EntityView
+            element={element}
+            textColor={textColor}
+            fontFamily={fontFamily}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            actions={
+              // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
+              isSelected &&
+              !readOnly &&
+              !isLocked &&
+              !remotelyLocked &&
+              !element.rotation &&
+              onSetEntityFields &&
+              onStartFieldArrow
+                ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
+                : undefined
+            }
+          />
         ) : null}
         {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
           drawn for its facing, plus whoever presence says is sitting in it. */}
@@ -631,6 +674,10 @@ function BoxedElementViewImpl({
             stroke={own.stroke ?? defaultStrokeColor(element, surface)}
             animClass={artAnimClass}
           />
+        ) : null}
+        {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
+        {element.type === 'shape' && element.shape === 'avatar-pad' ? (
+          <AvatarPadView animClass={artAnimClass} />
         ) : null}
         {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
         {element.type === 'shape' && element.shape === 'lane' ? (

@@ -1,4 +1,4 @@
-// More People layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"), category 'people':
+// More People layouts (docs/specs/007-editor/pages-mode.md "Layouts"), category 'people':
 // pure builders on the shared kit (page-layout-kit.ts), laid out in proportions of the page's
 // content box so each fits every size and orientation, in the tab's theme. The builders live in
 // page-layouts-set-people-2.ts and -3.ts, their shared parts in -parts.ts.

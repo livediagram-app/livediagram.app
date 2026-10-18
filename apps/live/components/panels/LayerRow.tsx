@@ -178,7 +178,7 @@ export function LayerRow({
             {layer.name}
           </span>
         )}
-        <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+        <span className="truncate text-[11px] text-slate-600 dark:text-slate-400">
           {layerMetaLine(layer, count, showCount)}
         </span>
       </span>

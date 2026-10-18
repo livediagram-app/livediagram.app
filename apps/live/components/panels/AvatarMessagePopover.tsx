@@ -26,7 +26,7 @@ export function AvatarMessagePopover({
   };
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Send a Message
       </div>
       <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900">

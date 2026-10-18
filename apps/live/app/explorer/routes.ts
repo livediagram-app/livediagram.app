@@ -6,6 +6,7 @@
 //   inbox    → /explorer/inbox           timeline → /explorer/timeline
 //   search   → /explorer/search          shared  → /explorer/shared
 //   favourites → /explorer/favourites
+//   tags     → /explorer/tags            one tag → /explorer/tags?id=<id>
 //   gallery  → /explorer/images          invites → /explorer/invites
 //   shape-libraries → /explorer/shape-libraries
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
@@ -36,6 +37,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/all';
     case 'favourites':
       return '/explorer/favourites';
+    case 'tags':
+      return node.id ? `/explorer/tags?id=${encodeURIComponent(node.id)}` : '/explorer/tags';
     case 'offline':
       return '/explorer/offline';
     case 'search':
@@ -102,6 +105,10 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'inbox' };
     case '/explorer/favourites':
       return { kind: 'favourites' };
+    case '/explorer/tags': {
+      const id = search.get('id');
+      return id ? { kind: 'tags', id } : { kind: 'tags' };
+    }
     case '/explorer/offline':
       return { kind: 'offline' };
     case '/explorer/shared':

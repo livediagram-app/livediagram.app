@@ -25,7 +25,7 @@ export const SELECTION_BOX_FALLBACK: Record<CanvasSurface, string> = {
 const BORDER_PCT: Record<CanvasSurface, number> = { light: 100, dark: 80 };
 const FILL_PCT: Record<CanvasSurface, number> = { light: 12, dark: 10 };
 
-export type SelectionBoxColors = { stroke: string; fill: string };
+type SelectionBoxColors = { stroke: string; fill: string };
 
 // color-mix rather than hex alpha, so any colour format a theme (or a custom
 // theme) uses still works.

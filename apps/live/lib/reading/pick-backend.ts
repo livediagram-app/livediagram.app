@@ -16,7 +16,7 @@ type Adapter = {
 };
 type Gpu = { requestAdapter(): Promise<Adapter | null> };
 
-export type BackendChoice =
+type BackendChoice =
   { backend: 'webgpu'; f16: boolean } | { backend: 'wasm'; why: ProcessorReason };
 
 const isSoftware = (adapter: Adapter): boolean =>

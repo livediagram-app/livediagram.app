@@ -1,6 +1,6 @@
 // Slide page illustrations for the Canvas article on Slide Pages (docs/specs/018-help/help-app.md).
 // Draws the real surface with its real labels: two slide pages in a row, each with its label
-// ("Page 1 · Slide (16:9) · Slide") and its title-bar buttons (IllustratePages.tsx), as icons at
+// ("Page 1 · Slide (16:9) · Slide") and its title-bar buttons (CanvasPages.tsx), as icons at
 // this size: the deck button first (PageDeckButton.tsx, its tooltip shown), Add Notes once the page is in the deck
 // (PageNotesButton.tsx), Layout, Background (page-title-bar.tsx), the padlock and the cog, then the + after the
 // last page. The first page is in the deck (an open eye, Hide in Slides); the second is not yet (the Slide Deck
@@ -158,14 +158,14 @@ function TitleBar({
   );
 }
 
-/** Two slide pages: the first in the deck (its eye), the second not yet (Add to Slides). */
+/** Two slide pages, both in the deck as every slide page is: the first's eye, the second's Add Notes. */
 export function SlidePagesScene() {
   const y = 66;
   const sy = y + 14;
   return (
     <Scene w={524} h={220}>
       <Tip cx={144} y={14} toY={y - 10} text="Hide in Slides" />
-      <Tip cx={398} y={14} toY={y - 10} text="Add to Slides" />
+      <Tip cx={400} y={14} toY={y - 10} text="Add Notes" />
       {/* Page 1: a Title Slide layout */}
       <TitleBar x={16} y={y} label="Page 1 · Slide (16:9) · Slide" inDeck />
       <Slide x={16} y={sy}>
@@ -176,7 +176,7 @@ export function SlidePagesScene() {
         <TextBar x={180} y={sy + 106} w={40} h={5} tone="faint" />
       </Slide>
       {/* Page 2: a Title and Bullets layout */}
-      <TitleBar x={252} y={y} label="Page 2 · Slide (16:9) · Slide" inDeck={false} />
+      <TitleBar x={252} y={y} label="Page 2 · Slide (16:9) · Slide" inDeck />
       <Slide x={252} y={sy}>
         <TextBar x={270} y={sy + 16} w={96} h={9} tone="accent" />
         {[0, 1, 2, 3, 4].map((i) => (

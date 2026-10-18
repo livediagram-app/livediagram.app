@@ -54,7 +54,7 @@ export const TAB_FINISH = chart(
   'Tab',
   'Changed',
   'Tab Finish',
-  'A tab’s finish changed (Flexible, Professional or Sketch).',
+  'A tab’s finish changed (Flexible, Professional, Sketch or Marker).',
   { types: ['Finish'] },
 );
 
@@ -189,8 +189,8 @@ export const SAVED_TO_CLOUD = chart(
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
-// documents after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
 // Each document it moves is a Saved to Cloud.
 export const LOCAL_MOVE_ACCEPTED = chart(
   'UI',
@@ -463,6 +463,10 @@ export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frame
 
 export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and technology icons.');
 
+// The data-model types Data Models charts (docs/specs/009-elements/entity.md), kept out of the catch-alls.
+const DATA_MODEL_ADDED = ['EntityField'];
+const DATA_MODEL_CHANGED = ['Entity', 'Cardinality'];
+
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
@@ -470,10 +474,11 @@ export const OTHER_ELEMENTS_ADDED: Metric = {
   typeIn: (type) =>
     !PALETTE_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
+    !DATA_MODEL_ADDED.includes(type ?? '') &&
     !/^Article[A-Z]/.test(type ?? ''),
   title: 'Other Elements Added',
   blurb:
-    'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables.',
+    'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables, entity fields in Data Models.',
 };
 
 export const ELEMENTS_ADDED: MetricStack = {
@@ -505,7 +510,13 @@ export const ELEMENTS_CHANGED = chart(
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
   // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts),
   // as are a logo page's tools (Logo Tools Used).
-  { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') && !LOGO_TOOL_TYPES.includes(t ?? '') },
+  // An entity's fields and a relationship's cardinality are Data Models'.
+  {
+    typeIn: (t) =>
+      !/^Article[A-Z]/.test(t ?? '') &&
+      !LOGO_TOOL_TYPES.includes(t ?? '') &&
+      !DATA_MODEL_CHANGED.includes(t ?? ''),
+  },
 );
 
 export const ELEMENTS_DELETED = chart(
@@ -699,6 +710,52 @@ export const TABLES: MetricStack = {
   blurb:
     'Editing inside a table: rows and columns added, removed and moved, and its header and zebra switches.',
   members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
+};
+
+// Data models (docs/specs/009-elements/entity.md): entities grown where they stand and joined into a model.
+export const ENTITY_RELATED_ADDED = chart(
+  'Element',
+  'Created',
+  'Related Entities Added',
+  "An entity added from another's quick-connect ring, already joined to it by a foreign key.",
+  { types: ['RelatedEntity'] },
+);
+
+export const ENTITY_FIELDS_STARTED = chart(
+  'Element',
+  'Added',
+  'Entity Fields Started',
+  "A new field started on an entity from its ring's Add Field.",
+  { types: DATA_MODEL_ADDED },
+);
+
+export const ENTITY_FIELDS_SAVED = chart(
+  'Element',
+  'Changed',
+  'Entity Fields Saved',
+  "An entity's fields saved, in place on the canvas or from its Fields menu.",
+  { types: ['Entity'] },
+);
+
+export const RELATIONSHIP_CARDINALITY = chart(
+  'Element',
+  'Changed',
+  'Cardinality Set',
+  "A relationship's cardinality picked from its toolbar (one to many, many to many and the rest).",
+  { types: ['Cardinality'] },
+);
+
+export const DATA_MODELS: MetricStack = {
+  stack: true,
+  title: 'Data Models',
+  blurb:
+    'Entities grown into a model: related entities added, fields started and saved, and relationship cardinality set.',
+  members: [
+    ENTITY_RELATED_ADDED,
+    ENTITY_FIELDS_STARTED,
+    ENTITY_FIELDS_SAVED,
+    RELATIONSHIP_CARDINALITY,
+  ],
 };
 
 // Undo and redo. (Document·Reverted, the removed Activity panel's per-entry revert, is a
@@ -955,6 +1012,9 @@ export const SHEET_CREATED = chart(
       'ExpenseReport',
       'SalesPipeline',
       'Inventory',
+      'ThreatRegister',
+      'DriverModel',
+      'ValueStream',
       'GuestList',
       'GradeBook',
       'HabitTracker',
@@ -1049,6 +1109,31 @@ export const FORMS_OPENED_CLOSED = chart(
   { types: ['Open', 'Closed'] },
 );
 
+export const FORMS_NOT_TAKING_OPENED = chart(
+  'Form',
+  'Opened',
+  'Not Taking Responses Pressed',
+  "A published form's red Not Taking Responses warning pressed, by why it takes none: suspended, paused, switched off, past its Close On time, at its Response Limit, or its document full.",
+  {
+    types: [
+      'NotTakingSuspended',
+      'NotTakingPaused',
+      'NotTakingSwitchedOff',
+      'NotTakingClosesAt',
+      'NotTakingLimit',
+      'NotTakingFull',
+    ],
+  },
+);
+
+export const FORMS_SYNCED_TO_SHARE = chart(
+  'Form',
+  'Moved',
+  'Documents Synced to Share a Form',
+  'A document in This Browser synced from Share Form, so its form could be published.',
+  { types: ['SyncedToShare'] },
+);
+
 export const FORM_RESPONSES = chart(
   'Form',
   'Sent',
@@ -1076,6 +1161,8 @@ export const FORMS: MetricStack = {
     FORMS_CONNECTED,
     FORMS_PUBLISHED,
     FORMS_OPENED_CLOSED,
+    FORMS_NOT_TAKING_OPENED,
+    FORMS_SYNCED_TO_SHARE,
     FORM_RESPONSES,
     FORM_REPORTS,
   ],

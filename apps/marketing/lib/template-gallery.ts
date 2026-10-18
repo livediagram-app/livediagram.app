@@ -22,7 +22,7 @@ import {
 // mode's, and Blank Spreadsheet), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
-type GalleryTemplate = TemplateDescriptor & {
+export type GalleryTemplate = TemplateDescriptor & {
   // Its primary category (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), then any it is
   // cross-listed in; a blank has none.
   category: TemplateCategory | null;
@@ -41,7 +41,7 @@ const POPULAR_LABEL = 'Blank Slate';
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
-function toGallery(t: TemplateDescriptor): GalleryTemplate {
+export function toGallery(t: TemplateDescriptor): GalleryTemplate {
   const categories = templateCategories(t.kind);
   const category = categories[0] ?? null;
   return {

@@ -9,11 +9,11 @@ export type CollaborateSide = 'open' | 'resolved';
 export type CollaborateKind = 'all' | 'comments' | 'actions';
 
 // One merged, sortable list entry.
-export type CollaborateRow =
+type CollaborateRow =
   | { kind: 'comment'; at: number; mine: false; comment: CommentRow }
   | { kind: 'action'; at: number; mine: boolean; action: ActionRow };
 
-export type CollaborateSection = {
+type CollaborateSection = {
   key: 'mine' | 'rest' | 'all';
   label: string | null;
   rows: CollaborateRow[];

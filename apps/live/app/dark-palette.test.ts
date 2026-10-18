@@ -15,6 +15,7 @@ import {
 } from 'typescript/unstable/ast';
 import { parseSourceFiles } from '@livediagram/source-ast';
 import { describe, expect, it } from 'vitest';
+import { contrastRatio } from '@livediagram/document';
 
 // The dark palette (docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)) is a set of
 // token overrides plus two class rules. None of it fails a build when it drifts: a new button painted
@@ -85,6 +86,60 @@ describe('the dark palette tokens', () => {
     const light = block(THEME_CSS, '@theme');
     for (const [stop, hex] of Object.entries(SKY)) {
       expect(light[`--color-brand-${stop}`], `brand-${stop}`).toBe(hex);
+    }
+  });
+});
+
+// Explorer: Midnight (color-scheme.md "Explorer: Midnight"): the Explorer's own dark tokens, held to Steel's rules.
+describe('the Explorer Midnight tokens', () => {
+  const midnight = block(THEME_CSS, ".dark[data-palette='midnight']");
+  const token = (name: string) => midnight[`--color-${name}`]!;
+
+  it('paints the Explorer in the navy surfaces', () => {
+    expect(token('slate-950')).toBe('#070b1a');
+    expect(token('slate-900')).toBe('#0a0f24');
+    expect(token('slate-800')).toBe('#111833');
+    expect(token('slate-700')).toBe('#1f2a55');
+  });
+
+  it('keeps secondary and brand text at 4.5:1 on the page and on a card', () => {
+    for (const ground of ['slate-900', 'slate-800']) {
+      expect(
+        contrastRatio(token('slate-400'), token(ground)),
+        `slate-400 on ${ground}`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(token('brand-400'), token(ground)),
+        `brand-400 on ${ground}`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(token('brand-300'), token(ground)),
+        `brand-300 on ${ground}`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps white on the solid fill at 4.5:1 and a selected segment at 3:1 on its track', () => {
+    expect(contrastRatio('#ffffff', token('brand-600'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio('#ffffff', token('brand-700'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(token('brand-600'), token('slate-950'))).toBeGreaterThanOrEqual(3);
+  });
+
+  it('defines every stop it retargets, so no Steel value leaks through', () => {
+    for (const stop of [
+      '50',
+      '100',
+      '200',
+      '300',
+      '400',
+      '500',
+      '600',
+      '700',
+      '800',
+      '900',
+      '950',
+    ]) {
+      expect(midnight[`--color-brand-${stop}`], `brand-${stop}`).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
 });

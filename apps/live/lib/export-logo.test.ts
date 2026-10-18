@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, newLogoPage } from '@livediagram/document';
+import { layOutPages, newLogoPage } from '@livediagram/document';
 import { pageExportFrame } from './export-page';
 import {
   LOGO_ICO_SIZES,
@@ -10,11 +10,11 @@ import {
 
 // docs/specs/007-editor/logo-pages.md "Export".
 describe('logo page export', () => {
-  const [plain] = layOutIllustratePages([newLogoPage('l')]);
-  const [painted] = layOutIllustratePages([
+  const [plain] = layOutPages([newLogoPage('l')]);
+  const [painted] = layOutPages([
     { ...newLogoPage('p'), background: { fill: { kind: 'solid', color: '#123456' } } },
   ]);
-  const [a4] = layOutIllustratePages([{ id: 'a', orientation: 'portrait' }]);
+  const [a4] = layOutPages([{ id: 'a', orientation: 'portrait' }]);
 
   it('leaves a logo page’s plain paper out when asked, keeping a fill', () => {
     const see = pageExportFrame(plain!, { transparentPaper: true });

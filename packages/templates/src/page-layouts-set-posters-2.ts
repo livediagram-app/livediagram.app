@@ -1,4 +1,4 @@
-// Posters layouts, part one (docs/specs/007-editor/illustrate-pages.md "Layouts"): a gig poster, a
+// Posters layouts, part one (docs/specs/007-editor/pages-mode.md "Layouts"): a gig poster, a
 // film's coming soon and an exhibition. Pure builders on the shared kit: the page's content box in,
 // uncoloured elements out. A page taller than SPLIT_RATIO times its width stacks; a squarer or wide
 // one sets the words beside the image.

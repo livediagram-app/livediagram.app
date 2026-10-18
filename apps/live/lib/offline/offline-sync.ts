@@ -12,6 +12,7 @@
 import { storeAsCreates } from '@livediagram/items';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { apiCreateDocument, apiSetFavourite } from '@/lib/api-client';
+import { apiSetDocumentTag } from '@/lib/api/tags';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { fetchCloudItems } from '../api/items';
 import { fetchCloudSheets, sheetAsCreate } from '../api/sheets';
@@ -25,7 +26,7 @@ import {
 // How many times a sync uploads a document that keeps changing under it before giving up. Each
 // change during the upload costs one more upload; three covers a person still typing for a few
 // seconds after choosing Sync Document, without retrying forever against a busy other tab.
-export const SYNC_UPLOAD_ATTEMPTS = 3;
+const SYNC_UPLOAD_ATTEMPTS = 3;
 
 // Why a sync stopped with the local copy kept: it changed during every upload, or the cloud copy
 // came up short of its cards or sheets.
@@ -41,7 +42,7 @@ export class OfflineSyncIncompleteError extends Error {
 // What the upload carried, as far as a later write would change it: every edit stamps savedAt
 // (tabs, name, deck, folder, card types), a card write moves itemsRev, a sheet write its rev.
 // A star or an open changes neither, and needs no new upload.
-export function uploadMark(rec: OfflineDocumentRecord): string {
+function uploadMark(rec: OfflineDocumentRecord): string {
   return JSON.stringify([
     rec.savedAt,
     rec.itemsRev ?? 0,
@@ -88,7 +89,7 @@ async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<Map<
   } catch (err) {
     // The server refuses a folder deleted since, or not the caller's, by name and writes nothing
     // (docs/specs/013-workspace/folders.md "Placement on create"). The sync files the document in
-    // the root of My documents instead, on its own say-so, rather than losing the conversion over a folder.
+    // the root of My Documents instead, on its own say-so, rather than losing the conversion over a folder.
     const code = err instanceof ApiError ? err.code : null;
     if (code !== 'folder_not_found' && code !== 'folder_scope_mismatch') throw err;
     console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);
@@ -148,6 +149,13 @@ export async function syncOfflineDocument(
       // on the server AFTER the delete: while the id is still registered offline,
       // apiSetFavourite would route the star straight back to the local store.
       if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
+      // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
+      // the document is synced either way.
+      await Promise.allSettled(
+        (done.rec.tagIds ?? []).map((tagId) =>
+          apiSetDocumentTag(ownerId, tagId, done.rec.id, true),
+        ),
+      );
       return { id: rec.id, imageIds };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);

@@ -42,10 +42,7 @@ export function rankForPlace(items: Iterable<Item>, place: ItemPlace, exceptId?:
 }
 
 // Where `place` lands in `column` (its items in rank order): the index it goes in at and its rank.
-export function rankInColumn(
-  column: readonly Item[],
-  place: ItemPlace,
-): { index: number; rank: string } {
+function rankInColumn(column: readonly Item[], place: ItemPlace): { index: number; rank: string } {
   const at = (id: string | null | undefined) => (id ? column.findIndex((i) => i.id === id) : -1);
   let index: number;
   if (place.after !== undefined) {
@@ -74,7 +71,7 @@ export function rankInColumn(
 
 // Ranks many new items against one store (a bulk create, a seed): each status's column is sorted once and kept
 // in order as items are placed, so n creates cost one sort per column, not one per create (rankForPlace).
-export interface ItemPlacer {
+interface ItemPlacer {
   rankFor: (place: ItemPlace) => string;
   // Records a placed item (its rank from rankFor) so the next create sees it.
   add: (item: Item) => void;

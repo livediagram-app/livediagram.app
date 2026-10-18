@@ -5,10 +5,9 @@
 // finds the reader's open cards straight from the item store through the `items_assignee` expression index,
 // using the table only to drop cards a board marks Done and to pick a board to open each one on.
 
-import type { Element } from '@livediagram/document';
+import { planBoardRowsFromElements, type Element } from '@livediagram/document';
 import type { ActivityCard } from '@livediagram/api-schema';
 import { itemPersonId } from '@livediagram/items';
-import { planBoardRowsFromElements } from '../collab-index/plan-board-rows';
 import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 
@@ -139,6 +138,8 @@ export const CARDS_CTES = `,
     match: `json_extract(i.fields, '$.assignee.id') IN (SELECT pid FROM mine)
        AND json_extract(i.fields, '$.archived') IS NOT 1
        AND json_extract(i.fields, '$.status') IS NOT 'trash'
+       -- A linked card's action is listed already (docs/specs/026-plan/linked-boards.md "The Inbox").
+       AND json_extract(i.fields, '$.linked') IS NULL
        AND NOT EXISTS (
          SELECT 1 FROM document_tabs dt
            JOIN plan_board_statuses pb

@@ -16,7 +16,7 @@ import type { Env } from '../types';
 // Pairing requests
 // ---------------------------------------------------------------------
 
-export type OpenPairingRequestInput = {
+type OpenPairingRequestInput = {
   ownerId: string;
   tokenId: string;
   origin: string;
@@ -86,7 +86,7 @@ function effectiveStatus(row: { status: RequestRow['status']; expires_at: number
   return row.status === 'pending' && row.expires_at <= now ? 'expired' : row.status;
 }
 
-export type PairingRequestRead = {
+type PairingRequestRead = {
   ownerId: string;
   tokenId: string;
   origin: string;
@@ -120,7 +120,7 @@ export async function readPairingRequest(
   };
 }
 
-export type PairingAnswer =
+type PairingAnswer =
   | { outcome: 'approved'; pairing: WorkbenchPairing }
   | { outcome: 'declined'; tokenId: string }
   | { outcome: 'missing' }
@@ -269,7 +269,7 @@ export async function insertWorkbenchTicket(env: Env, row: WorkbenchTicketRow): 
     .run();
 }
 
-export type ConsumedTicket = {
+type ConsumedTicket = {
   ownerId: string;
   tokenId: string;
   pairingId: string;
@@ -374,7 +374,7 @@ export async function insertWorkbenchSession(env: Env, row: WorkbenchSessionRow)
     .run();
 }
 
-export type WorkbenchSessionRead = WorkbenchSessionRow & {
+type WorkbenchSessionRead = WorkbenchSessionRow & {
   tokenRevoked: boolean;
   tokenReadOnly: boolean;
   tokenExpiresAt: number;

@@ -6,10 +6,10 @@ import { CLI_VERSION } from './config/version';
 import type { DebugLog } from './debug';
 import type { CliIo } from './io';
 
-export const REQUEST_TIMEOUT_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 // Reads the stored credential again: its token, or null when there is none. Null where none can change (an env token).
-export type RefreshToken = (() => Promise<string | null>) | null;
+type RefreshToken = (() => Promise<string | null>) | null;
 
 export type Transport = {
   forToken: (token: string) => ApiClient;

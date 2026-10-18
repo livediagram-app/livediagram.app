@@ -25,9 +25,9 @@ import { EXIT, type ExitCode } from '../output/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
 
-export const EXPORT_CONCURRENCY = 2;
+const EXPORT_CONCURRENCY = 2;
 export const EXPORT_RATE_RETRY_MS = 60_000;
-export const EXPORT_RATE_RETRIES = 3;
+const EXPORT_RATE_RETRIES = 3;
 
 type ExportFormat = (typeof EXPORT_FORMATS)[number];
 export type ExportInput = { all?: boolean; to: string; format: string };
@@ -166,7 +166,7 @@ export async function exportAll(
   const slugs = uniqueSlugs(documents);
   await io.files.mkdir(input.to);
   ctx.log(`export ${documents.length} documents as ${formats.join(',')}`);
-  const results: (string[] | null)[] = new Array(documents.length).fill(null);
+  const results = new Array<string[] | null>(documents.length).fill(null);
   let exit: ExitCode = EXIT.done;
   let next = 0;
   const worker = async () => {

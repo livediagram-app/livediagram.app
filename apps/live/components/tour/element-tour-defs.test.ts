@@ -21,6 +21,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   hub: createShape('hub', 0, 0),
   onion: createShape('onion', 0, 0),
   chevrons: createShape('chevrons', 0, 0),
+  timeline: createShape('timeline-rail', 0, 0),
   'mind-node': createShape('mind-node', 0, 0),
   flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' },
   'org-chart': {
@@ -67,7 +68,7 @@ describe('ELEMENT_TOUR_DEFS', () => {
     expect(api.closeSequence).toHaveBeenCalled();
   });
 
-  it('puts away the Chart data dialog on Done', () => {
+  it('puts away the Chart Data dialog on Done', () => {
     const api = { closeChartData: vi.fn() } as unknown as ElementTourApi;
     ELEMENT_TOUR_DEFS.chart.onDone?.(api);
     expect(api.closeChartData).toHaveBeenCalled();

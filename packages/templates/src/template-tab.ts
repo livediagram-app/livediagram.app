@@ -17,6 +17,31 @@ export function resolveTemplate(kind: string): TemplateKind | null {
 
 export const validTemplateKinds = () => TEMPLATES.map((t) => t.kind).join(', ');
 
+// At most this many kinds a refusal offers as close to an unknown one.
+export const CLOSEST_TEMPLATES_MAX = 5;
+
+const wordsOf = (text: string) => text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+
+/**
+ * The kinds an unknown one most likely meant (docs/specs/015-api/mcp-server.md §4.5): those whose kind or title has a
+ * word starting with a word of it (of 3 letters or more), so "retro" offers the four retrospectives.
+ */
+export function closestTemplateKinds(given: string): TemplateKind[] {
+  const asked = wordsOf(given).filter((w) => w.length >= 3);
+  if (asked.length === 0) return [];
+  return TEMPLATES.filter((t) =>
+    [...wordsOf(t.kind), ...wordsOf(t.title)].some((w) => asked.some((a) => w.startsWith(a))),
+  )
+    .slice(0, CLOSEST_TEMPLATES_MAX)
+    .map((t) => t.kind);
+}
+
+/** "Closest: retrospective, team-retro. " for an unknown kind with any, else nothing. */
+export function closestTemplatesHint(given: string): string {
+  const closest = closestTemplateKinds(given);
+  return closest.length ? `Closest: ${closest.join(', ')}. ` : '';
+}
+
 // A template tab: the curated scaffold at its hand-tuned coordinates (layout deliberately NOT run,
 // that is the point of a template), themed by buildTab like any other elements, plus the template's
 // canvas overrides and the templateChosen flag the editor's Quick Start reads. stampTabKind fills
@@ -74,7 +99,7 @@ export function buildTemplateTabs(
           themeId,
         ),
         templateChosen: true,
-        ...templateCanvasOverrides(kind),
+        ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
         ...def.tab?.(ids),
       }),
       kind,

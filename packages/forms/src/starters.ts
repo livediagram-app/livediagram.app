@@ -10,7 +10,7 @@ import {
 import { FORM_VERSION, type FormDefinition, type FormQuestion, type StarterId } from './model';
 
 // A field a starter's question maps to: matched on the card type by name and kind, else added.
-export interface StarterField {
+interface StarterField {
   label: string;
   kind: CustomFieldKind;
   options?: readonly string[];
@@ -256,7 +256,7 @@ export function formStarter(id: StarterId): FormStarter {
 }
 
 // The glyph a card type made for a form takes.
-export const FORM_TYPE_GLYPH = 'checklist';
+const FORM_TYPE_GLYPH = 'checklist';
 
 // The card type a starter's responses are made as: the ready-made one (the document's own copy when it has it),
 // else a new type named after the form. Its id is the caller's (unique in the catalogue).

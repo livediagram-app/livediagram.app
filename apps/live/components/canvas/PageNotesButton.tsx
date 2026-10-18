@@ -1,19 +1,19 @@
 'use client';
 
 // A slide page's speaker notes, in its title bar once the page is in the slide deck
-// (docs/specs/007-editor/illustrate-pages.md "Slides"): Add Notes while the slide has none, Notes
+// (docs/specs/007-editor/pages-mode.md "Slides"): Add Notes while the slide has none, Notes
 // (pressed) once it has. A popover holds the slide's notes, the same notes the Slide Deck panel
 // writes and the presenter view shows: they belong to the deck's slide, not to the page.
 import { useRef } from 'react';
 import { lucideFileText } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
-import type { PageDeckControls } from '@/hooks/editor/useIllustratePages';
+import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import { track } from '@/lib/telemetry';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
 const NotesIcon = lucideGlyph(lucideFileText, 14);
 
-export const ADD_NOTES = 'Add Notes';
+const ADD_NOTES = 'Add Notes';
 export const NOTES = 'Notes';
 
 // The title-bar room it takes (24 px and the gap, or named beside its icon), so the page's label
@@ -40,7 +40,7 @@ function NotesBody({
   const tracked = useRef(false);
   return (
     <label className="flex flex-col gap-1.5" data-page-notes-popover="">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         Speaker Notes
       </span>
       <textarea

@@ -21,7 +21,7 @@ import type { Element, ShapeKind, Tab } from './index';
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
 import { ADDER_KEY_LENGTH } from './adder';
-import { PAGE_HEADING_MAX } from './data-shapes';
+import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { parseStrokePoints } from './stroke-points';
@@ -153,6 +153,8 @@ export const SHAPE_KINDS = new Set<string>([
   'chair',
   // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
   'fence',
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start.
+  'avatar-pad',
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
   'desk',
   'sofa',
@@ -255,7 +257,13 @@ function endpointRule(ep: unknown): string | null {
     case 'free':
       return isNum(ep.x) && isNum(ep.y) ? null : 'a free end: finite x and y';
     case 'pinned':
-      return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string) ? null : PINNED_RULE;
+      if (!isNonEmptyStr(ep.elementId) || !ANCHORS.has(ep.anchor as string)) return PINNED_RULE;
+      return ep.field === undefined ||
+        (Number.isInteger(ep.field) &&
+          (ep.field as number) >= 0 &&
+          (ep.field as number) < ENTITY_MAX_FIELDS)
+        ? null
+        : `a pinned end's field: a whole number from 0 to ${ENTITY_MAX_FIELDS - 1}`;
     case 'on-arrow':
       return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
     // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no

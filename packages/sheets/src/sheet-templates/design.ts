@@ -19,6 +19,9 @@ export type TableBlock = {
   formats?: readonly (FormatPatch | null)[];
   // Columns typed over (the habit ticks, a deal's probability): shown as inputs.
   inputs?: readonly number[];
+  // A body cell's own number format, over its column's: for a column that holds several kinds of figure (the Driver
+  // Model's inputs: counts, rates and a ratio), by body row and column, both table-relative.
+  cellFormats?: readonly { row: number; col: number; f: FormatPatch }[];
 };
 
 // A field: its label (quiet) left of its value. An input is meant to be typed over (a soft yellow fill); a result

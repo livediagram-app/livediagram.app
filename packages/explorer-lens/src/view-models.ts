@@ -27,7 +27,7 @@ export type LensChip = {
 };
 
 /** One token in the field, applied or muted, with its accessible names. */
-export type LensPill = {
+type LensPill = {
   start: number;
   end: number;
   dimension: LensDimension;

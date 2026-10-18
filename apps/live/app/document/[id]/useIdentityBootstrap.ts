@@ -7,7 +7,7 @@ import {
   type SetStateAction,
   useEffectEvent,
 } from 'react';
-import { documentIdFromPath } from '@/lib/legacy-editor-path';
+import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@livediagram/document';
 import type { CommunitySession } from './editor-realtime';
 import {
@@ -143,7 +143,7 @@ export function useIdentityBootstrap(opts: {
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
-  // `early`: a Local only document opening before auth has settled (docs/specs/006-document/offline-mode.md
+  // `early`: a document in This Browser opening before auth has settled (docs/specs/006-document/offline-mode.md
   // "Instant open"). It has no owner on the server to wait for, so it loads under the placeholder
   // participant and settleEarlyIdentity resolves who is reading once auth answers.
   const bootstrap = useEffectEvent((early = false) => {
@@ -324,9 +324,10 @@ export function useIdentityBootstrap(opts: {
       );
     }
     const initialShareCode = initialUrl.searchParams.get('s');
-    // No path id and no share code → the user landed on the placeholder
-    // route directly. Hand off to /live/new for the welcome flow.
-    if (!initialId && !initialShareCode) {
+    // No path id and no share code on the editor's own route → the user landed on the placeholder
+    // route directly. Hand off to /new for the welcome flow. Any other address (a mistyped or retired
+    // page the not-found slot serves the editor for) is not found, never a new document: see load().
+    if (!initialId && !initialShareCode && isEditorPath(initialUrl.pathname)) {
       window.location.assign(`${window.location.origin}/new`);
       return;
     }
@@ -341,7 +342,7 @@ export function useIdentityBootstrap(opts: {
       // than hitting /api/participants again on every wrong guess.
       let self: Participant;
       if (early) {
-        // A Local only document reads from this browser whoever is reading: the identity follows.
+        // A document in This Browser reads from this browser whoever is reading: the identity follows.
         self = selfParticipant;
       } else if (selfParticipant.id !== 'self') {
         // Already resolved — skip the network round-trip.
@@ -375,6 +376,19 @@ export function useIdentityBootstrap(opts: {
         refreshDocumentList(self.id);
         refreshSharedList(self.id);
       };
+
+      // An address that names no document and carries no share link (docs/specs/007-editor/new-document-route.md
+      // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a
+      // mistyped or retired page opened the New Document wizard with no word of what went wrong.
+      if (!id && !shareCodeParam) {
+        debugLog('[load] not an editor address, showing not found');
+        setDocumentNotFound(true);
+        seedExplorerLists();
+        setHydrated(true);
+        setLoadingDocument(false);
+        setNameConfirmed(hasConfirmedName());
+        return;
+      }
 
       // Two URL flavours: `?d=<id>` is the owner's private URL,
       // `?s=<code>` is a share URL another participant follows. Visitor
@@ -616,8 +630,8 @@ export function useIdentityBootstrap(opts: {
     };
     run(watchdog, load);
   });
-  // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a Local
-  // only document opens straight from this browser. Share links, embeds and workbenches always wait.
+  // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a document in
+  // This Browser opens straight from this browser. Share links, embeds and workbenches always wait.
   const earlyOpen = useRef(false);
   const tryEarlyOpen = useEffectEvent(async () => {
     if (authLoaded || hydrated || embed || workbench) return;
@@ -628,7 +642,7 @@ export function useIdentityBootstrap(opts: {
     // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
     if (runRef.current !== 0) return;
     earlyOpen.current = true;
-    debugLog('[load] early open of a Local only document');
+    debugLog('[load] early open of a document in This Browser');
     bootstrap(true);
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,

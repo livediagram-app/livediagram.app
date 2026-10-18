@@ -121,7 +121,7 @@ export function patchTab(ts: Tab[], id: string, patch: Partial<Tab>): Tab[] {
 // `markTabLoaded`) OR it already carries elements (e.g. peer-delivered).
 // An unloaded, still-empty placeholder is never persisted. Callers that
 // don't pass the set (older tests) keep the unguarded behaviour.
-export type TabSaveDiff = {
+type TabSaveDiff = {
   changedTabs: Tab[];
   deletedIds: string[];
   orderChanged: boolean;
@@ -146,7 +146,7 @@ function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
     const b = current.elements[i];
     if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
   }
-  // The rest of the tab key by key, identity first too: an Illustrate tab's articles and pages are large,
+  // The rest of the tab key by key, identity first too: a Pages tab's articles and pages are large,
   // and serialising all of it on both sides every autosave cost the most when nothing in it had changed.
   const prevMeta = prev as unknown as Record<string, unknown>;
   const currentMeta = current as unknown as Record<string, unknown>;
@@ -215,7 +215,7 @@ export function computeTabSaveDiff(
 //   owner, so the author reads it like any visitor and edits it from their own document instead.
 //   - sessionShareCode: owners send none; visitors carry the code that
 //                       admitted them so write paths can authorise.
-export type DocumentSession = {
+type DocumentSession = {
   isOwner: boolean;
   sessionRole: AccessLevel;
   sessionShareCode: string | null;

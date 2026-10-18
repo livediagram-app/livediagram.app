@@ -11,6 +11,7 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
 } from '@livediagram/document';
+import { PAPER_INK } from './template-inks';
 
 export const GAP = 40;
 export const TITLE_H = 52;
@@ -23,7 +24,7 @@ export const BUTTON_H = 96;
 export const PAD_W = 150;
 export const UNDER_SECTION = SECTION_H + 12;
 export const BUTTON_W = 152;
-export const CHECK_ROW_H = 40;
+const CHECK_ROW_H = 40;
 // A bold large title's average glyph advance (a share of its size) and its box's inner room.
 const TITLE_CHAR_EM = 0.6;
 const TITLE_PAD_PX = 24;
@@ -181,6 +182,8 @@ export function stepCards(
         height: height - 16 - disc - 8 - 12,
         label: s.hint,
         textSize: 'sm',
+        // The card keeps its pastel tint in either half, so its line of how keeps a dark ink.
+        textColor: PAPER_INK,
         textAlignX: 'left',
         textAlignY: 'top',
       },

@@ -31,7 +31,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   first boards choose its card types, exactly: a Hiring Pipeline document has Role, Candidate and Onboarding Task, a
   Kanban board's Task and Action. A document that has a type of that id, or of that name (one renamed "Task"),
   keeps its own and gains nothing for it. A board that takes every type (Blank), an Archive and an All Cards board
-  bring none. A **Gantt chart** brings the types it names, else **Project**, so a document whose first Plan tab is a
+  bring none. A **Gantt Chart** brings the types it names, else **Project**, so a document whose first Plan tab is a
   Gantt chart has a type to add cards of ([Add Card](plan-views.md#gantt-chart)); no other view brings any.
 - **Every type can be deleted, the last one too**: a document left with none stores an empty catalogue and shows
   the empty states below.
@@ -123,7 +123,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
   options), Rating (a whole number from 1 to its scale, 3 to 10) and Card (a link to one card of another type,
-  below). Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
+  below). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
+  question's) fit; a card shows a long one shortened, and its details whole. Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
   how they read and are edited.
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
     EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to

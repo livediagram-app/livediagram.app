@@ -71,3 +71,28 @@ export function baselineAfterSave(
   }
   return { tabs, name };
 }
+
+// How long a save's window stays open after it lands (docs/specs/012-collaboration/collab-race-hardening.md "A save
+// that wrote over a peer's change writes again"). A peer's element op is sent only after their own write lands, so
+// it can reach us a round trip after ours did. Safe range: 500 ms to 5 s; longer only costs a few journal entries.
+export const SAVE_RESAVE_GRACE_MS = 1500;
+
+// The tabs this save wrote that a peer's element change reached after the save's snapshot: what we wrote of those
+// may be older than what D1 last had from the peer, so each is written again (content only, no ops).
+export function tabsChangedByPeersSince(
+  journal: RemoteOpJournal,
+  mark: number,
+  savedTabIds: ReadonlySet<string>,
+): string[] {
+  const touched = new Set<string>();
+  for (const { n, op } of journal.entries) {
+    if (n <= mark) continue;
+    if (
+      (op.kind === 'el' || op.kind === 'tab' || op.kind === 'tab-meta') &&
+      savedTabIds.has(op.tabId)
+    ) {
+      touched.add(op.tabId);
+    }
+  }
+  return [...touched];
+}

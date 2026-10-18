@@ -14,7 +14,8 @@ import { usePlan } from '@/components/plan/PlanContext';
 // card is dragged the Trash steps out of the strip as a wide drop target beside it. With no card types
 // (item-types.md "The type catalogue") New Card and Find a Card would surface nothing, so only Card Types shows, and
 // the Trash while it holds cards (deleting the last type sends its cards there, to restore once a type exists).
-// On a wide desktop each is named beside its icon (useDockNames), as the other strips' buttons are.
+// On a wide desktop each is named beside its icon (useDockNames), as the other strips' buttons are, in one short
+// word (Trash, New, Find, Types); the accessible names and hover cards keep the fuller labels, which contain them.
 export function PlanCardsClusterStrip({
   finderOpen,
   onToggleFinder,
@@ -60,7 +61,7 @@ export function PlanCardsClusterStrip({
             hoverTitle="Cards"
             hoverDescription="Every card in this document: search them, find the ones on no board, and open any of them."
             icon={<SearchIcon size={18} />}
-            name="Find a Card"
+            name="Find"
             popoverOpen={finderOpen}
             onTogglePopover={onToggleFinder}
           />
@@ -71,7 +72,7 @@ export function PlanCardsClusterStrip({
           hoverTitle="Card Types"
           hoverDescription="The kinds of card this document's boards hold, and the fields each one has."
           icon={<PlanCardsIcon size={18} />}
-          name="Card Types"
+          name="Types"
           dataTourId="card-types"
           popoverOpen={typesOpen}
           onTogglePopover={onToggleTypes}

@@ -68,6 +68,28 @@ export const TEAM_INVITE_EMAILS = email(
   'Read against Teams / Members Added on the Collaboration tab for invite conversion.',
 );
 
+// docs/specs/013-workspace/teams.md "Reminders and expiry": the follow-ups to an invite nobody answered.
+export const TEAM_INVITE_REMINDER_1_EMAILS = email(
+  'TeamInviteReminder1',
+  'Invite Reminders, Day 1',
+  'The first follow-up to a team invite nobody has answered, a day after it was sent.',
+  'neutral',
+);
+
+export const TEAM_INVITE_REMINDER_2_EMAILS = email(
+  'TeamInviteReminder2',
+  'Invite Reminders, Week 1',
+  'The second follow-up, a week after the invite.',
+  'neutral',
+);
+
+export const TEAM_INVITE_REMINDER_3_EMAILS = email(
+  'TeamInviteReminder3',
+  'Invite Reminders, Week 3',
+  'The last follow-up, three weeks in. The invite expires a week later.',
+  'neutral',
+);
+
 export const INVITE_RESPONSE_EMAILS = email(
   'InviteResponse',
   'Invite Responses',
@@ -135,6 +157,9 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   MILESTONE_EMAILS,
   FIRST_SHARE_EMAILS,
   TEAM_INVITE_EMAILS,
+  TEAM_INVITE_REMINDER_1_EMAILS,
+  TEAM_INVITE_REMINDER_2_EMAILS,
+  TEAM_INVITE_REMINDER_3_EMAILS,
   INVITE_RESPONSE_EMAILS,
   DOCUMENT_JOINED_EMAILS,
   COMMENT_EMAILS,

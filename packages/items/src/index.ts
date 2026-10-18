@@ -49,3 +49,4 @@ export * from './card-finder';
 export * from './slug';
 export * from './write-checks';
 export * from './type-catalogue-change';
+export * from './linked-cards';

@@ -1,5 +1,10 @@
-import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
+import {
+  useRef,
+  type PointerEvent as ReactPointerEvent,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
+import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
 import { createEraseFrameReader } from '@/lib/erase-frame';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { peerPushTarget } from '@/lib/avatar-walk';
@@ -15,7 +20,7 @@ import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@/lib/debug-log';
-import { isPanThrough } from '@/hooks/canvas/pan-through';
+import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -88,8 +93,12 @@ export function useCanvasSurfaceGestures({
   onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
   onDeselect: () => void;
-  onCanvasDoubleClick: (x: number, y: number) => void;
+  // `byFinger`: the double press was a finger's (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
+  onCanvasDoubleClick: (x: number, y: number, byFinger: boolean) => void;
 }) {
+  // What pressed last, for the double-click that follows: a dblclick event says nothing of the pointer, and a
+  // finger's double-tap zooms where a mouse's double-click drops text.
+  const lastPointerType = useRef<string | null>(null);
   // The live view, for an erase sweep's frame reader (lib/erase-frame): read per sample, after
   // any pan or zoom since the press.
   const viewRef = useLatest({ offset: viewportOffset, zoom: viewportZoom });
@@ -136,13 +145,14 @@ export function useCanvasSurfaceGestures({
   //    Falls through so pointermove on <main> keeps broadcasting laser
   //    samples.
   //  - Select tool → drag draws a marquee for multi-select.
-  const startPan = (e: ReactPointerEvent) =>
+  const startPan = (e: ReactPointerEvent, onTap?: () => void) =>
     setPan({
       startClientX: e.clientX,
       startClientY: e.clientY,
       startOffsetX: viewportOffset.x,
       startOffsetY: viewportOffset.y,
       movedRef: { current: false },
+      ...(onTap ? { onTap } : {}),
     });
 
   const routePanOrMarquee = (e: ReactPointerEvent) => {
@@ -166,6 +176,7 @@ export function useCanvasSurfaceGestures({
   };
 
   const onPointerDownCapture = (e: ReactPointerEvent) => {
+    lastPointerType.current = e.pointerType;
     // Pointer-downs that land on a floating panel (palette, context
     // panel, ...) are UI interactions, not canvas gestures. The
     // panels live inside <main> for layout, so their bubble-phase
@@ -256,22 +267,29 @@ export function useCanvasSurfaceGestures({
       // is (male / female), and a right-click anywhere else is swallowed —
       // the context menu stays shut in this mode either way.
       if (e.button === 0) {
-        // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
-        // out of a chair. A single click deliberately does nothing — walkTo
-        // refuses while seated, so you cannot be dragged out by a stray click
-        // — which left no pointer-only way out at all until this.
-        if (avatar.seatedOn && e.detail >= 2) {
-          avatar.standUp();
-          return;
-        }
-        // Clicking someone ELSE's character walks over and pushes them
-        // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
-        const peer = peerAvatarAt(point);
-        if (peer) {
-          avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
-        } else {
-          avatar.walkTo(point);
-        }
+        const detail = e.detail;
+        const walk = () => {
+          // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
+          // out of a chair. A single click deliberately does nothing — walkTo
+          // refuses while seated, so you cannot be dragged out by a stray click
+          // — which left no pointer-only way out at all until this.
+          if (avatar.seatedOn && detail >= 2) {
+            avatar.standUp();
+            return;
+          }
+          // Clicking someone ELSE's character walks over and pushes them
+          // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
+          const peer = peerAvatarAt(point);
+          if (peer) {
+            avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
+          } else {
+            avatar.walkTo(point);
+          }
+        };
+        // A finger has no middle button or Space to pan with (docs/specs/008-canvas/avatar-mode.md "Walking"):
+        // its drag pans, and only a press that never moved, a tap, walks.
+        if (e.pointerType === 'touch') startPan(e, walk);
+        else walk();
       } else if (e.button === 2) avatar.toggleLookAt(point);
       return;
     }
@@ -424,10 +442,10 @@ export function useCanvasSurfaceGestures({
   const onContextMenuPointerUp = rightClick.onPointerUp;
 
   const onPointerDown = (e: ReactPointerEvent) => {
-    // A finger on a board's empty space pans, whatever the tool, and never opens the canvas menu
-    // (hooks/canvas/pan-through.ts).
+    // A finger on a board's empty space, or on an element too big for the screen, pans, whatever the tool, and
+    // never opens the canvas menu (hooks/canvas/pan-through.ts).
     if (isPanThrough(e)) {
-      startPan(e);
+      startPan(e, panThroughTap(e));
       return;
     }
     // Touch press-and-hold on the empty canvas opens the context menu
@@ -513,14 +531,31 @@ export function useCanvasSurfaceGestures({
     routePanOrMarquee(e);
   };
 
+  const pressedByFinger = () => isDoubleTapZoomPointer(lastPointerType.current);
+
+  // The double press's canvas point. The wrapper's rect is post-transform, so a client position relative to its
+  // top-left is in scaled pixels: divide by the zoom to recover canvas coords. Linear, so it holds outside the
+  // wrapper's rect too.
+  const doublePressAt = (e: ReactMouseEvent) => {
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    return rect ? pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom) : null;
+  };
+
   const onWrapperDoubleClick = (e: ReactMouseEvent) => {
     if (e.target !== e.currentTarget) return;
-    const rect = wrapperRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    // rect is post-transform; click position relative to wrapper top-left
-    // is in scaled pixels — divide by zoom to recover canvas-coords.
-    const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    onCanvasDoubleClick(sx, sy);
+    const at = doublePressAt(e);
+    if (at) onCanvasDoubleClick(at.x, at.y, pressedByFinger());
+  };
+
+  // The bare surface around the content layer: the layer is scaled with the zoom, so zoomed out (a phone's usual
+  // view) most of the empty canvas is <main> itself. Only a finger's double-tap means anything there: it zooms
+  // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom"). The tools that make the layer inert
+  // (Spotlight, Isometric, Avatar) give every press on <main> a meaning of their own.
+  const onSurfaceDoubleClick = (e: ReactMouseEvent) => {
+    if (e.target !== e.currentTarget || !pressedByFinger()) return;
+    if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
+    const at = doublePressAt(e);
+    if (at) onCanvasDoubleClick(at.x, at.y, true);
   };
 
   return {
@@ -532,5 +567,7 @@ export function useCanvasSurfaceGestures({
     onPointerDown,
     onWrapperPointerDown,
     onWrapperDoubleClick,
+    onSurfaceDoubleClick,
+    pressedByFinger,
   };
 }

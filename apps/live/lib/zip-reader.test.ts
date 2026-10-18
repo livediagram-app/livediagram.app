@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { writeZip } from './zip-writer-fixture';
-import { ByteBudget, listZip, readZipEntry } from './zip-reader';
+import { ByteBudget } from './inflate';
+import { listZip, readZipEntry } from './zip-reader';
 
 const text = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
 

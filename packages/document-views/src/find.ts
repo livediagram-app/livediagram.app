@@ -16,7 +16,7 @@ export type FindOptions = { budget?: number; door?: ViewDoor };
 
 const LINE = { one: 'line', many: 'lines' };
 
-export function normaliseFind(text: string): string {
+function normaliseFind(text: string): string {
   return text.normalize('NFKC').toLowerCase();
 }
 
@@ -58,6 +58,13 @@ function searchedTexts(el: Element): [FindField, string[]][] {
     ['code', strings([stringField(el, 'code')])],
     ['comment', strings((thread?.comments ?? []).map((c) => stringField(c, 'text')))],
   ];
+}
+
+/** Every text `find` searches on one element (its label, note, cells, fields, items, nodes, code
+ *  and comments), for a caller that searches by element without the view, such as Pages mode's
+ *  Find a Page (docs/specs/007-editor/pages-mode.md "Contents"). */
+export function elementFindTexts(el: Element): string[] {
+  return searchedTexts(el).flatMap(([, texts]) => texts);
 }
 
 function matchedFields(el: Element, q: string): FindField[] {

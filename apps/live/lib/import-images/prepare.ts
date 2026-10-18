@@ -13,7 +13,7 @@ import type {
   PreparedImportImage,
 } from './types';
 
-export type PrepareResult =
+type PrepareResult =
   (PreparedImportImage & { ok: true }) | { ok: false; failure: ImportImageFailure };
 
 const fail = (failure: ImportImageFailure): PrepareResult => ({ ok: false, failure });

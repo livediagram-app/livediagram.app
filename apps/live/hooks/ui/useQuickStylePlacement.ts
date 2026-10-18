@@ -9,8 +9,9 @@
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { placeQuickStylePanel, type Rect } from '@/lib/quick-style-placement';
 import { debugLog } from '@/lib/debug-log';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
-const AREA_SELECTOR = 'main[data-canvas-a11y-root]';
+const AREA_SELECTOR = `main${CANVAS_ROOT_SELECTOR}`;
 // The palette strip, every panel or dock popover, the strip's More popover
 // and the bottom-right cluster.
 const OBSTACLE_SELECTOR =
@@ -23,7 +24,7 @@ const toRect = (r: DOMRect): Rect => ({
   height: r.height,
 });
 
-export type QuickStyleSpot = { left: number; top: number };
+type QuickStyleSpot = { left: number; top: number };
 
 export function useQuickStylePlacement(
   panelRef: RefObject<HTMLElement | null>,

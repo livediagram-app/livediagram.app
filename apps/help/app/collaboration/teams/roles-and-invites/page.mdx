@@ -43,15 +43,24 @@ One rule shapes the whole team: the **last remaining Admin** cannot be demoted, 
   invited.
 </Step>
 <Step n={3}>
-  They get an email letting them know, with a link to their Invites page. (If email isn't configured
-  on the deployment, the invite still lands in their in-app Invites section, so tell them out of
-  band as well.)
+  They get an email letting them know, with a link to their Invites page and a **Decline the
+  invite** link that works without an account. If they don't answer, a reminder follows a day later,
+  a week later and three weeks later. (If email isn't configured on the deployment, the invite still
+  lands in their in-app Invites section, so tell them out of band as well.)
 </Step>
 
 When that person signs in with the same email address, the invite appears in their Explorer **Invites** section, showing the team name, organisation, and member count. They don't need an account yet when you invite them: the invite waits until they sign up with that address. They then choose:
 
 - **Accept**, which adds them to the team with the role they were given (Member, unless an Admin promoted them), or
-- **Decline**, which removes the invite. An Admin can re-invite the same address later.
+- **Decline**, which turns the invite down. An Admin can re-invite the same address later.
+
+They can also decline straight from the email: its **Decline the invite** link opens a page that asks them to confirm with **Decline Invite**, with no sign-in and no account needed. Opening the link alone changes nothing.
+
+An invite nobody answers **expires 28 days** after it was sent, a week after the last reminder.
+
+## Rejected invites
+
+A declined or expired invite stays on the member list, marked **Rejected**, with "Declined" or "Expired" after the email address, so an Admin can see the answer. It grants no access and isn't counted as invited. An Admin can clear it with the cross on its row (**Remove from list?**), or invite the same address again, which replaces it with a fresh invite and a fresh set of reminders.
 
 A pending invite grants no access until it is accepted. Admins can get an email when someone accepts or declines, controlled by **Someone Responds to a Team Invite** in their [email notifications](/help/account-and-data/email-notifications/).
 
@@ -64,7 +73,7 @@ A pending invite grants no access until it is accepted. Admins can get an email 
 As an alternative, an Admin can turn on a **shareable invite link**. Anyone signed in who opens it can join the team as a Member.
 
 <Step n={1}>
-  Open the team page and press the link button beside the **⋯** menu at the top (**Invite by link**,
+  Open the team page and press the link button beside the **⋯** menu at the top (**Invite by Link**,
   Admins only).
 </Step>
 <Step n={2}>

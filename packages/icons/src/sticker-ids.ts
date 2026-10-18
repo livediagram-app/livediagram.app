@@ -12,12 +12,12 @@
 //    not ours to do. So the icon catalogue keeps rendering them exactly as it
 //    did, and only the palette moved.
 
-export const STICKER_ID_PREFIXES = ['emoji-', 'badge-'] as const;
+const STICKER_ID_PREFIXES = ['emoji-', 'badge-'] as const;
 
 // The prefix the emoji half carries. Kept as its own export because the
 // legacy-icon path below keys off precisely that set and not the badges,
 // which never existed as icons.
-export const LEGACY_EMOJI_ID_PREFIX = 'emoji-';
+const LEGACY_EMOJI_ID_PREFIX = 'emoji-';
 
 export function isStickerId(id: string): boolean {
   return STICKER_ID_PREFIXES.some((p) => id.startsWith(p));

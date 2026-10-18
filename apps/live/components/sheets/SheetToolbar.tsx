@@ -22,7 +22,7 @@ import {
   type ToolbarCategoryId,
 } from './sheet-toolbar-categories';
 
-export const TOOLBAR_PX = 44;
+const TOOLBAR_PX = 44;
 // A button's square, and its glyph and letters (the shared 16 px glyphs and 13 px letters, drawn larger here).
 const BUTTON_PX = 36;
 // A word button's rough width per character (a function's name), and its glyph beside the word.
@@ -220,17 +220,15 @@ export function SheetToolbar({
       aria-label="Sheet formatting"
       className={
         inBand
-          ? 'flex min-w-0 max-w-full flex-1 items-center gap-0 overflow-hidden rounded-xl border p-1 shadow-md shadow-slate-900/5'
+          ? 'flex min-w-0 max-w-full flex-1 items-center gap-0 overflow-hidden p-1'
           : 'flex shrink-0 items-center gap-0 overflow-hidden border-b px-1'
       }
       style={
         inBand
-          ? // In the Sheet's own colours, as its controls card is (band-controls.ts), so its ink always reads.
+          ? // Straight on the Sheet's header in its ink, no card of its own, as its controls are (band-controls.ts).
             {
               height: `var(--plan-band-card-h, ${BAND_CARD_PX}px)`,
               color: c.palette.text,
-              backgroundColor: c.palette.surface,
-              borderColor: c.palette.border,
             }
           : { height: TOOLBAR_PX, borderColor: c.palette.cardBorder, color: c.palette.text }
       }

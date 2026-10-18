@@ -9,6 +9,7 @@
 import type {
   Team,
   TeamInvite,
+  TeamInviteDecline,
   TeamInviteLink,
   TeamInviteLinkInfo,
   TeamInviteLinkJoin,
@@ -19,7 +20,7 @@ import type {
   TeamsResponse,
 } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
-import { API_BASE, apiDelete, apiHeaders, expectOk, apiFetch } from './core';
+import { API_BASE, apiDelete, apiHeaders, expectOk, expectOkOrNull, apiFetch } from './core';
 
 type TeamResponse = { team: Team };
 export type TeamDetailResponse = {
@@ -304,4 +305,29 @@ export async function apiJoinTeamByInviteLink(
   });
   if (res.status === 404) return null;
   return expectOk<TeamInviteLinkJoin>(res, 'join team by invite link');
+}
+
+// The invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"). No identity
+// headers: the token is the only credential, and the visitor may have no account. Null = the token names no
+// invite (wrong, or the invite was removed or replaced).
+const declineUrl = (token: string) =>
+  `${API_BASE}/teams/invite-decline/${encodeURIComponent(token)}`;
+
+// Read only: the team name and where the invite stands. Never declines.
+export async function apiReadTeamInviteDecline(token: string): Promise<TeamInviteDecline | null> {
+  return expectOkOrNull<TeamInviteDecline>(
+    await apiFetch(declineUrl(token)),
+    'read team invite decline',
+  );
+}
+
+// The decline itself, sent only by the page's button. Idempotent on the server; 'already_joined' when the
+// invite was accepted, which the token cannot undo.
+export async function apiDeclineTeamInvite(
+  token: string,
+): Promise<TeamInviteDecline | 'already_joined' | null> {
+  const res = await apiFetch(declineUrl(token), { method: 'POST' });
+  if (res.status === 404) return null;
+  if (res.status === 409) return 'already_joined';
+  return expectOk<TeamInviteDecline>(res, 'decline team invite');
 }

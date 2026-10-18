@@ -14,7 +14,7 @@ export const SKELETON_TILES_MORE = 4;
 // Each tile's glint starts this long after the one before, so it rolls across the grid.
 const GLINT_STEP_S = 0.09;
 
-export const PICK_STAGE_COPY: Record<PickStage, { short: string; long: string }> = {
+const PICK_STAGE_COPY: Record<PickStage, { short: string; long: string }> = {
   downloading: { short: 'Downloading', long: 'Downloading the full-size picture…' },
   saving: { short: 'Adding', long: 'Adding it to your gallery…' },
 };

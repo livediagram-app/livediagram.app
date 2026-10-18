@@ -52,8 +52,8 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   // Nothing is asked: the row leaves, and the toast offers it back.
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Menu for Quarterly plan' })).toHaveCount(0);
-  await expect(page.getByText('Document deleted')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Undo: restore the document' })).toBeVisible();
+  await expect(page.getByText('“Quarterly plan” deleted')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Undo: restore “Quarterly plan”' })).toBeVisible();
 
   // The share of lists: gone from the api's list too. The row leaves at once and the delete follows in
   // the background, so the api is asked until it has landed.
@@ -94,8 +94,8 @@ test('Undo on the delete toast puts the document back', async ({ page, baseURL, 
   await page.getByRole('button', { name: 'Menu for Roadmap' }).click();
   await page.getByRole('menu').last().getByText('Delete', { exact: true }).click();
   await expect(page.getByRole('button', { name: 'Menu for Roadmap' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Undo: restore the document' }).click();
-  await expect(page.getByText('Document restored')).toBeVisible();
+  await page.getByRole('button', { name: 'Undo: restore “Roadmap”' }).click();
+  await expect(page.getByText('“Roadmap” restored')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Menu for Roadmap' })).toBeVisible();
   const back = await page.request.get(`${apiBase}/documents/${id}`, {
     headers: ownerHeaders(owner),
@@ -216,7 +216,7 @@ test('an editor whose room join is refused is told too', async ({ page, baseURL 
               this.readyState = ws.readyState;
               const copy =
                 type === 'message'
-                  ? new MessageEvent('message', { data: (e as MessageEvent).data })
+                  ? new MessageEvent('message', { data: (e as MessageEvent<unknown>).data })
                   : type === 'close'
                     ? new CloseEvent('close', {
                         code: (e as CloseEvent).code,

@@ -7,6 +7,7 @@
 
 import { useSyncExternalStore } from 'react';
 import type { Element } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 export type DragOverlay = {
   tabId: string;
@@ -17,7 +18,7 @@ export type DragOverlay = {
 
 // A collaborator's preview: the geometry patches they sent, resolved against the elements being drawn
 // at read time, so the rest of each element is ours as it is now.
-export type PeerPatch = { id: string } & Record<string, unknown>;
+type PeerPatch = { id: string } & Record<string, unknown>;
 
 let local: DragOverlay | null = null;
 const peers = new Map<string, { tabId: string; patches: readonly PeerPatch[] }>();
@@ -25,11 +26,11 @@ const peers = new Map<string, { tabId: string; patches: readonly PeerPatch[] }>(
 // different lists): a reader must get the same object back until something changes, or
 // useSyncExternalStore re-renders it forever.
 let merged = new Map<string, WeakMap<readonly Element[], DragOverlay | null>>();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function changedNow(): void {
   merged = new Map();
-  for (const fn of listeners) fn();
+  listeners.notify();
 }
 
 // The overlay that turns `doc` into `next`, by identity: one linear pass per tick.
@@ -154,12 +155,7 @@ function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | n
 }
 
 // Called on every change to any preview (the drag hook writes one per frame).
-export function subscribeDragPreview(cb: () => void): () => void {
-  listeners.add(cb);
-  return () => {
-    listeners.delete(cb);
-  };
-}
+export const subscribeDragPreview = listeners.subscribe;
 
 // The tab's merged preview for drawing `elements`, read outside React (a store deriving from it on each
 // change); null when nobody is dragging there. The same object until something changes.

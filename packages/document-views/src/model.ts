@@ -2,7 +2,7 @@
 // model"), built once per render.
 import {
   computeRefs,
-  illustratePagesOf,
+  pagesOf,
   opensInOf,
   pageKindOf,
   isKnownElement,
@@ -39,10 +39,7 @@ export type ViewModel = {
 
 // Tab refs unique among the document's tabs; a tab outside them (no document context) takes the
 // ref it would have alone (VW4).
-export function tabRefsFor(
-  tabId: string,
-  tabIds: readonly string[] | undefined,
-): (id: string) => string {
+function tabRefsFor(tabId: string, tabIds: readonly string[] | undefined): (id: string) => string {
   const tabRefs = computeRefs(tabIds?.includes(tabId) ? tabIds : [tabId]);
   const known = new Set(tabRefs.ids);
   return (id) => (known.has(id) ? tabRefs.refOf(id) : computeRefs([id]).refOf(id));
@@ -65,18 +62,18 @@ function headerFacts(
     rev: rev ?? null,
     ...(opensInOf(tab) !== 'diagram' ? { mode: opensInOf(tab) } : {}),
     ...(tab.finish ? { finish: tab.finish } : {}),
-    ...illustrateFacts(tab),
+    ...pagesFacts(tab),
   };
 }
 
-// An Illustrate tab's pages by kind, for the header (docs/specs/024-agents/illustrate-for-agents.md
+// A Pages tab's pages by kind, for the header (docs/specs/024-agents/pages-for-agents.md
 // "Reading"); nothing for a tab in another mode.
-function illustrateFacts(tab: Tab): Pick<HeaderFacts, 'illustrate'> {
-  if (opensInOf(tab) !== 'illustrate') return {};
-  const pages = illustratePagesOf(tab);
-  const kinds: NonNullable<HeaderFacts['illustrate']>['kinds'] = {};
+function pagesFacts(tab: Tab): Pick<HeaderFacts, 'pages'> {
+  if (opensInOf(tab) !== 'pages') return {};
+  const pages = pagesOf(tab);
+  const kinds: NonNullable<HeaderFacts['pages']>['kinds'] = {};
   for (const p of pages) kinds[pageKindOf(p)] = (kinds[pageKindOf(p)] ?? 0) + 1;
-  return { illustrate: { pages: pages.length, kinds } };
+  return { pages: { pages: pages.length, kinds } };
 }
 
 // A tab's header facts alone, without its tree: what `overview` keeps of each tab body it reads.

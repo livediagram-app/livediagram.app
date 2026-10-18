@@ -73,7 +73,7 @@ export const VALUE_LABELS = {
     diagram: 'Diagram',
     draw: 'Draw',
     facilitate: 'Facilitate',
-    illustrate: 'Illustrate',
+    pages: 'Pages',
     plan: 'Plan',
   },
   kind: { 'event-storming': 'Event Storming' },
@@ -87,7 +87,7 @@ export const VALUE_LABELS = {
     'this-year': 'This year',
   },
   people: { me: 'Me', others: 'Others' },
-  space: { mine: 'My documents', shared: 'Shared with me' },
+  space: { mine: 'My Documents', shared: 'Shared With Me' },
 } as const;
 
 /** A dimension or the free text: what `Explorer / Selected / <Facet>` names. */

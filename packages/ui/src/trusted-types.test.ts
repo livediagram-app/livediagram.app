@@ -98,10 +98,22 @@ describe('isAllowedScriptUrl', () => {
 
 describe('trustedScriptOrigins', () => {
   const key = (host: string) => `pk_test_${btoa(`${host}$`)}`;
-  it("reads the Clerk frontend API's origin from the publishable key", () => {
+  it("reads the Clerk frontend API's origin from the publishable key, beside its sign-up CAPTCHA's", () => {
     expect(
       trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app') }),
-    ).toEqual(['https://clerk.livediagram.app']);
+    ).toEqual(['https://clerk.livediagram.app', 'https://challenges.cloudflare.com']);
+  });
+
+  it("lets Clerk's sign-up CAPTCHA load, and nothing else on its origin's neighbours", () => {
+    const origins = trustedScriptOrigins({
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app'),
+    });
+    const page = 'https://www.livediagram.app';
+    const turnstile = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    expect(isAllowedScriptUrl(turnstile, page, '/live', origins)).toBe(true);
+    expect(isAllowedScriptUrl('https://evil.cloudflare.com/x.js', page, '/live', origins)).toBe(
+      false,
+    );
   });
 
   it('names none without a key, or with one it cannot read', () => {
@@ -189,11 +201,29 @@ describe('trustedTypesBootScript', () => {
     const { created } = stubTrustedTypes();
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     run(trustedTypesBootScript('', []));
-    const createHTML = created.find((c) => c.name === 'default')!.rules.createHTML!;
-    expect(createHTML('<script></script>')).toBe('<script></script>');
-    expect(createHTML('<script>alert(1)</script>')).toBeNull();
-    expect(createHTML('<img src=x onerror=alert(1)>')).toBeNull();
+    // As the browser calls it for a sink: the value, the type and the sink's name.
+    const createHTML = created.find((c) => c.name === 'default')!.rules.createHTML as unknown as (
+      html: string,
+      type?: string,
+      sink?: string,
+    ) => unknown;
+    const atSink = (html: string) => createHTML(html, 'TrustedHTML', 'Element innerHTML');
+    expect(atSink('<script></script>')).toBe('<script></script>');
+    expect(atSink('<script>alert(1)</script>')).toBeNull();
+    expect(atSink('<img src=x onerror=alert(1)>')).toBeNull();
     expect(error).toHaveBeenCalledWith('[trusted-types] html-refused <img src=x onerror=alert(1)>');
+  });
+
+  // ProseMirror (the article editor's paste) asks `trustedTypes.defaultPolicy.createHTML(html)` first and makes its
+  // own ProseMirrorClipboard policy only if that throws. Returning null there handed it an empty string, so every
+  // rich paste into an article pasted nothing. Asked by hand, the default policy throws, logging no violation.
+  it('throws when asked for HTML by hand, so a library falls back to its own policy', () => {
+    const { created } = stubTrustedTypes();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    run(trustedTypesBootScript('', []));
+    const createHTML = created.find((c) => c.name === 'default')!.rules.createHTML!;
+    expect(() => createHTML('<p>Pasted <strong>bold</strong></p>')).toThrow(/no HTML on request/);
+    expect(error).not.toHaveBeenCalled();
   });
 
   // It is inlined into the page as script: what it embeds is checked first, and never carries a raw "<".

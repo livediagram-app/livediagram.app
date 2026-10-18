@@ -19,8 +19,11 @@ import {
   lucideFileText,
   lucideFileUp,
   lucideGift,
+  lucideGitFork,
+  lucideHourglass,
   lucideListTodo,
   lucidePackage,
+  lucideShieldCheck,
   lucideTable,
   lucideUsers,
 } from '@livediagram/icons/lucide';
@@ -76,7 +79,7 @@ const BlankGlyph = G(lucideTable);
 const CsvGlyph = G(lucideFileUp);
 
 // Each template's glyph in its row.
-export const TEMPLATE_GLYPHS: Record<SheetTemplateId, ReturnType<typeof G>> = {
+const TEMPLATE_GLYPHS: Record<SheetTemplateId, ReturnType<typeof G>> = {
   budget: G(lucideCoins),
   tracker: G(lucideListTodo),
   timesheet: G(lucideClock),
@@ -85,6 +88,9 @@ export const TEMPLATE_GLYPHS: Record<SheetTemplateId, ReturnType<typeof G>> = {
   expenses: G(lucideClipboardCheck),
   pipeline: G(lucideChartNoAxesColumnIncreasing),
   inventory: G(lucidePackage),
+  threats: G(lucideShieldCheck),
+  drivers: G(lucideGitFork),
+  'value-stream': G(lucideHourglass),
   guests: G(lucideGift),
   grades: G(lucideBookOpen),
   habits: G(lucideCircleCheck),
@@ -224,7 +230,7 @@ export function SheetSetupCards({
 }
 
 // How many cards the Cards step shows as a sample of what the search keeps.
-export const SETUP_PREVIEW_CARDS = 10;
+const SETUP_PREVIEW_CARDS = 10;
 
 // A sample of the cards found, first by number as the rows will be: each its type's glyph, number, title and state.
 // Only a look at what is filtered: nothing here opens.

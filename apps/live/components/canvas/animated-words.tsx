@@ -19,7 +19,7 @@ export const TEXT_ANIM_MAX_LETTERS = 60;
 /** Above this many words a label animates as one block (EA1). */
 export const TEXT_ANIM_MAX_WORDS = 60;
 /** The share of letters that flicker (EA8). */
-export const FLICKER_SHARE = 0.12;
+const FLICKER_SHARE = 0.12;
 
 export type TextAnimMode = 'letters' | 'words' | 'block';
 
@@ -49,7 +49,7 @@ const segmenter =
     ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
     : null;
 
-export function graphemes(text: string): string[] {
+function graphemes(text: string): string[] {
   return segmenter ? Array.from(segmenter.segment(text), (s) => s.segment) : Array.from(text);
 }
 

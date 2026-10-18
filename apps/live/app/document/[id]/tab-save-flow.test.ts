@@ -12,10 +12,12 @@ import { presetSetup } from '@livediagram/items';
 import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
 import {
   participantElementOps,
+  prepareTabSave,
   relayParticipantChanges,
   saveTabAndRelay,
   type SaveRoom,
 } from './tab-save-flow';
+import { createOwnElementWrites, isSupersededByOwnWrite } from './own-element-writes';
 
 const board = (): Tab =>
   ({
@@ -58,7 +60,7 @@ const columnNames = (tab: Tab): string[] => {
 // One room and one D1, each built from the pure parts the real ones use. The room takes a frame a tick
 // after it is sent (a socket is not instant), sequences it, records it in its ledger and only then
 // acknowledges it, as the Durable Object does. D1 answers a tab PUT at once the way the api does: it
-// merges in what the room sequenced after the saver's cursor (mergeRoomLedger), then the last write wins.
+// merges in what the room sequenced after the saver's cursor (fetchRoomLedger + applyRoomLedger), then the last write wins.
 function world(initial: Tab) {
   let seq = 0;
   const ledger = new Map<string, ElementLedger | VoteLedger>();
@@ -209,5 +211,85 @@ describe('relayParticipantChanges', () => {
 
   it('derives nothing for an unchanged tab', () => {
     expect(participantElementOps(tab([a]), tab([a]))).toEqual([]);
+  });
+});
+
+// docs/specs/012-collaboration/realtime-conflict-resolution.md "Same-element edits converge": the elements a save
+// writes are held from its snapshot until the room has sequenced its element ops.
+describe('a save holding its elements', () => {
+  const sticky = (id: string, x: number) =>
+    ({
+      id,
+      type: 'sticky',
+      x,
+      y: 0,
+      width: 10,
+      height: 10,
+      label: id,
+    }) as unknown as Tab['elements'][number];
+  const tab = (x: number): Tab => ({ id: 't1', name: 'T', elements: [sticky('a', x)] });
+  const peerMove = (x: number): RoomOp => ({
+    kind: 'el',
+    tabId: 't1',
+    op: { kind: 'update', element: sticky('a', x) },
+  });
+
+  it('holds from the snapshot through the write until the room confirms the element op', async () => {
+    const writes = createOwnElementWrites();
+    let confirm: (ok: boolean) => void = () => {};
+    const room: SaveRoom = {
+      send: vi.fn(),
+      sequence: vi.fn(() => new Promise<boolean>((resolve) => (confirm = resolve))),
+    };
+    let finishPut: () => void = () => {};
+    const put = vi.fn(() => new Promise<null>((resolve) => (finishPut = () => resolve(null))));
+    const prepared = prepareTabSave(tab(0), tab(40), writes);
+    expect(isSupersededByOwnWrite(writes, peerMove(90))).toBe(true);
+    const saving = saveTabAndRelay(tab(0), tab(40), () => room, put, prepared);
+    await Promise.resolve();
+    expect(isSupersededByOwnWrite(writes, peerMove(90))).toBe(true);
+    finishPut();
+    await saving;
+    expect(room.sequence).toHaveBeenCalledWith(expect.objectContaining({ kind: 'el' }));
+    expect(room.send).not.toHaveBeenCalled();
+    expect(isSupersededByOwnWrite(writes, peerMove(90))).toBe(true);
+    confirm(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(isSupersededByOwnWrite(writes, peerMove(90))).toBe(false);
+  });
+
+  it('lets go when the write fails, or when there is no room to tell', async () => {
+    const writes = createOwnElementWrites();
+    const failing = saveTabAndRelay(
+      tab(0),
+      tab(40),
+      () => null,
+      () => Promise.reject(new Error('offline')),
+      prepareTabSave(tab(0), tab(40), writes),
+    );
+    await expect(failing).rejects.toThrow('offline');
+    expect(writes.held.size).toBe(0);
+    await saveTabAndRelay(
+      tab(0),
+      tab(40),
+      () => null,
+      () => Promise.resolve(null),
+      prepareTabSave(tab(0), tab(40), writes),
+    );
+    expect(writes.held.size).toBe(0);
+  });
+
+  it('holds a Participant’s element ops until the room confirms them', async () => {
+    const writes = createOwnElementWrites();
+    let confirm: (ok: boolean) => void = () => {};
+    const room: SaveRoom = {
+      send: vi.fn(),
+      sequence: vi.fn(() => new Promise<boolean>((resolve) => (confirm = resolve))),
+    };
+    await relayParticipantChanges(tab(0), tab(40), () => room, writes);
+    expect(isSupersededByOwnWrite(writes, peerMove(90))).toBe(true);
+    confirm(false);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(writes.held.size).toBe(0);
   });
 });

@@ -41,7 +41,7 @@ export function estimateValues(scale: EstimateScale | undefined): readonly strin
   return ESTIMATE_SCALE_VALUES[scale ?? DEFAULT_ESTIMATE_SCALE];
 }
 
-export function isEstimateShape(kind: ShapeKind): boolean {
+function isEstimateShape(kind: ShapeKind): boolean {
   return kind === 'estimate';
 }
 
@@ -73,7 +73,7 @@ export function estimateRank(scale: EstimateScale | undefined, value: string): n
 // the lowest and highest answers by the scale's order ('?' is an answer but
 // not an end of the spread). `low` / `high` are the values to ring, absent
 // when unanimous. Shared by the canvas face and the export.
-export type EstimateSpread =
+type EstimateSpread =
   | { kind: 'none' }
   | { kind: 'unanimous'; value: string }
   | { kind: 'range'; low: string; high: string };
@@ -104,7 +104,7 @@ export function estimateSpreadLabel(spread: EstimateSpread): string {
 // different instrument wearing the same face.
 export const TEMPERATURE_VALUES: readonly string[] = ['1', '2', '3', '4', '5'];
 
-export function isTemperatureShape(kind: ShapeKind): boolean {
+function isTemperatureShape(kind: ShapeKind): boolean {
   return kind === 'temperature';
 }
 
@@ -169,7 +169,7 @@ export function isIdeaCardId(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0 && v.length <= IDEA_CARD_ID_MAX;
 }
 
-export function isIdeaBoxShape(kind: ShapeKind): boolean {
+function isIdeaBoxShape(kind: ShapeKind): boolean {
   return kind === 'idea-box';
 }
 
@@ -195,7 +195,7 @@ export function agendaTotalMinutes(items: AgendaItem[] | undefined): number {
   return (items ?? []).reduce((sum, item) => sum + clampAgendaMinutes(item.minutes), 0);
 }
 
-export function isAgendaShape(kind: ShapeKind): boolean {
+function isAgendaShape(kind: ShapeKind): boolean {
   return kind === 'agenda';
 }
 
@@ -249,7 +249,7 @@ export function isDecisionDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-export function isDecisionShape(kind: ShapeKind): boolean {
+function isDecisionShape(kind: ShapeKind): boolean {
   return kind === 'decision';
 }
 
@@ -264,7 +264,7 @@ export type RollCallEntry = { name: string; color: string; at: number };
 export const ROLL_CALL_MAX = 500;
 export const ROLL_CALL_MAX_TEXT = 120;
 
-export function isRollCallShape(kind: ShapeKind): boolean {
+function isRollCallShape(kind: ShapeKind): boolean {
   return kind === 'roll-call';
 }
 
@@ -317,7 +317,7 @@ export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
 // way the record box (docs/specs/009-elements/entity.md) renders its rows under its title.
 // Done check (docs/specs/012-collaboration/done-check.md): a room-response card like the rest of this family,
 // so it takes the same panel chrome and the same viewer context.
-export function isDoneCheckShape(kind: ShapeKind): boolean {
+function isDoneCheckShape(kind: ShapeKind): boolean {
   return kind === 'done-check';
 }
 

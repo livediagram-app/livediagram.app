@@ -4,6 +4,7 @@
 import { useRef, useState } from 'react';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
+import { importingStepOf, type BoardImportingStep } from '@/lib/board-scene-import';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { PickedExport } from '@/lib/pick-folder';
 import type { BoardFailure, BoardSummary } from '@/lib/ms-whiteboard/import';
@@ -20,7 +21,7 @@ export type MsWhiteboardStep =
   | { step: 'pick'; error?: string }
   | { step: 'reading' }
   | { step: 'list'; boards: BoardSummary[]; failures: BoardFailure[]; checked: ReadonlySet<string> }
-  | { step: 'importing'; board: number; boards: number; images?: { done: number; total: number } };
+  | BoardImportingStep;
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
@@ -59,14 +60,7 @@ export function useMsWhiteboardImport(deps: {
       }
     }
     const outcome: ImportOutcome = scenes.length
-      ? await deps.importScenes(scenes, (p) =>
-          setState({
-            step: 'importing',
-            board: p.board ?? 1,
-            boards: p.boards ?? scenes.length,
-            images: { done: p.done, total: p.total },
-          }),
-        )
+      ? await deps.importScenes(scenes, (p) => setState(importingStepOf(p, scenes.length)))
       : { status: 'error', error: failures[0]?.message ?? 'There was no board to import.' };
     if (outcome.status !== 'done') {
       setState({ step: 'pick', ...(outcome.status === 'error' ? { error: outcome.error } : {}) });

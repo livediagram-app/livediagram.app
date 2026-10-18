@@ -42,7 +42,7 @@ const newWorker = (): ReaderWorker =>
 // throttled CDN, a full disk): better told than waited on for ever.
 const STALL_MS = 60_000;
 
-export type BrowserRead = {
+type BrowserRead = {
   textById: Map<number, ReadText>;
   failure?: 'reader_unavailable';
   detail?: string;

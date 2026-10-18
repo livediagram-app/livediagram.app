@@ -7,7 +7,7 @@ import type { TabBar } from './TabBar';
 // only the data the bar renders is real.
 export type TabBarProps = ComponentProps<typeof TabBar>;
 
-export const TWO_TABS: Tab[] = [
+const TWO_TABS: Tab[] = [
   { id: 't1', name: 'First', elements: [] },
   { id: 't2', name: 'Second', elements: [] },
 ];

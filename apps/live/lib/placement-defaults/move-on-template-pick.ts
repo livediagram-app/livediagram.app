@@ -22,7 +22,7 @@ import type { TemplatePickHandoff } from './template-pick-handoff';
 import { templatePickMoveTarget } from './template-pick-move';
 
 /** The toast's words for a move: "Moved to Boards, your default folder for Kanban boards." */
-export function movedMessage(folderName: string, key: PlacementDefaultKey): string {
+function movedMessage(folderName: string, key: PlacementDefaultKey): string {
   return `Moved to ${folderName}, your default folder for ${defaultKeyEntry(key).noun}.`;
 }
 

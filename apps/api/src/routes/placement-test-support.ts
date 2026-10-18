@@ -5,7 +5,7 @@ import type { SqliteD1 } from '../test-sqlite-d1';
 // personal and team folders, and the two caller shapes. Not a `.test.ts` file, so vitest does not
 // collect it; only tests import it.
 
-export const PLACEMENT_T0 = 1_700_000_000_000;
+const PLACEMENT_T0 = 1_700_000_000_000;
 
 /** A signed-in caller: the hybrid owner and the verified id are the same Clerk id. */
 export const asUser = (userId: string) => ({ owner: userId, clerkUserId: userId });

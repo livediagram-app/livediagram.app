@@ -15,6 +15,11 @@ import type { Element, Tab } from '@livediagram/document';
 import { ApiError, apiJson } from './api';
 import type { Env } from './env';
 import { imageResult } from './image-result';
+import {
+  PREVIEW_IMAGE_BUDGET_BYTES,
+  PREVIEW_IMAGE_BUDGET_PIXELS,
+  PREVIEW_IMAGE_MAX_BYTES,
+} from './preview-budget';
 import { registerTool } from './tool-annotations';
 import { errorResult, requireToken, textResult } from './tool-helpers';
 
@@ -28,11 +33,6 @@ const CELL_HEIGHT = 220;
 const CAPTION_HEIGHT = 44;
 const GAP = 24;
 const CAPTION_MAX = 40;
-// resvg decodes each embedded picture at full size: measured at about 0.65 s a megapixel (a 2880x1800 screenshot,
-// 3.4 s; twelve, 14.9 s on an M-series laptop, docs/specs/015-api/mcp-server.md §4.5b). The sheet draws pictures in
-// order until they would pass this many pixels (three full-screen retina screenshots, about 10 s); the rest keep a
-// captioned placeholder and are never fetched.
-export const CONTACT_SHEET_MAX_PIXELS = 16_000_000;
 
 // The caller's gallery, or null when this server keeps no images (a self-host without R2 answers 503).
 async function readGallery(env: Env, token: string): Promise<ImageSummary[] | null> {
@@ -65,13 +65,22 @@ const caption = (n: number, name: string, drawn: boolean) => {
 };
 
 // The listed pictures on a throwaway tab, in a grid, each captioned with its place and name: drawn by the preview,
-// which embeds each picture with the caller's token as it does any tab's.
+// which embeds each picture with the caller's token as it does any tab's. The sheet spends the preview's budget
+// (./preview-budget.ts) itself, from the sizes the gallery lists, so a picture past it is captioned "too large to draw
+// here" and never fetched.
 export function contactSheetTab(images: readonly GalleryImage[]): Tab {
   let pixels = 0;
+  let bytes = 0;
   const elements: Element[] = images.slice(0, CONTACT_SHEET_MAX).flatMap((image, i) => {
     const size = image.width * image.height;
-    const drawn = pixels + size <= CONTACT_SHEET_MAX_PIXELS;
-    if (drawn) pixels += size;
+    const drawn =
+      image.size <= PREVIEW_IMAGE_MAX_BYTES &&
+      pixels + size <= PREVIEW_IMAGE_BUDGET_PIXELS &&
+      bytes + image.size <= PREVIEW_IMAGE_BUDGET_BYTES;
+    if (drawn) {
+      pixels += size;
+      bytes += image.size;
+    }
     const x = (i % SHEET_COLUMNS) * (CELL_WIDTH + GAP);
     const y = Math.floor(i / SHEET_COLUMNS) * (CELL_HEIGHT + CAPTION_HEIGHT + GAP);
     return [

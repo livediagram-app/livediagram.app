@@ -18,6 +18,7 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
 import { useContentsChrome } from './useContentsChrome';
+import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
 // editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
@@ -111,11 +112,12 @@ export function useCanvasChromePanels({
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
-  // Illustrate mode's Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): the popover,
+  // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
   // or docked as the sidebar (useContentsChrome).
   contentsPopoverEl: ReactNode;
   contentsSidebarEl: ReactNode;
   contentsDocked: boolean;
+  contentsSide: import('@/lib/contents-placement').ContentsSide;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
   avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
@@ -253,14 +255,14 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Slides popover belongs to Illustrate mode's button: leaving the mode (Shift+D, a tab
+  // The Slides popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab
   // switch) closes it rather than leaving it floating with no button under it.
-  const slidesOpen = activeDockPanel === 'slides' && !!props.illustratePages;
+  const slidesOpen = activeDockPanel === 'slides' && !!props.pagesMode;
   useEffect(() => {
-    if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
-  }, [activeDockPanel, props.illustratePages, closeDockPanel]);
-  // Contents, likewise, belongs to Illustrate mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
+    if (activeDockPanel === 'slides' && !props.pagesMode) closeDockPanel();
+  }, [activeDockPanel, props.pagesMode, closeDockPanel]);
+  // Contents, likewise, belongs to Pages mode: its popover, or the sidebar docked in its place.
+  const { contentsDocked, contentsSide, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
     props,
     chromeHidden,
     isMobile,
@@ -330,8 +332,11 @@ export function useCanvasChromePanels({
   const explorerOpen = activeDockPanel === 'explorer';
   const [explorerOpened, setExplorerOpened] = useState(explorerOpen);
   if (explorerOpen && !explorerOpened) setExplorerOpened(true);
+  // Withheld (the workbench frame, a phone held sideways), an open Explorer closes.
+  const explorerHidden = !!props.explorerHidden;
+  useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
   const explorerEl =
-    zenMode || props.explorerHidden || !explorerOpened ? null : (
+    zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
         recentExcludedIds={userPreferences.recentExcludedIds ?? []}
         onToggleRecentExclusion={onToggleRecentExclusion}
@@ -458,15 +463,15 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
-  // The Map is Diagram, Draw and Facilitate's: Illustrate has Contents for its pages, and a Plan
+  // The Map is Diagram, Draw and Facilitate's: Pages has Contents for its pages, and a Plan
   // board is a list, not a space to find your way round.
-  const mapMode = !props.illustratePages && props.editorMode !== 'plan';
+  const mapMode = !props.pagesMode && props.editorMode !== 'plan';
   const minimapEl =
     !chromeHidden && !isMobile && mapEnabled && mapMode && elements.length >= 4 ? (
       <ViewMinimap
         elements={mapElements}
-        pages={props.illustratePages?.pages}
-        writing={props.illustratePages?.articles?.flows}
+        pages={props.pagesMode?.pages}
+        writing={props.pagesMode?.articles?.flows}
         tabFont={props.tabFont}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
@@ -558,7 +563,7 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    // Over its cluster button (Illustrate mode) it renders beside the corner layer, like Collaborate.
+    // Over its cluster button (Pages mode) it renders beside the corner layer, like Collaborate.
     'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };
@@ -572,6 +577,7 @@ export function useCanvasChromePanels({
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
+    contentsSide,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
         <TidyUpPopover

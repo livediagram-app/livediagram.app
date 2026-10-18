@@ -27,8 +27,9 @@ is the whole of what the repo enforces.
   for `no-unused-vars`, `no-unused-expressions` and `no-array-constructor`, which oxlint runs on
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
 - **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
-  rules (see [Type-aware rules](#type-aware-rules)). They turn on one rule at a time, each at zero
-  findings ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)); on so far:
+  rules (see [Type-aware rules](#type-aware-rules)), each at zero findings
+  ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)); every rule of the set but
+  `require-await`:
   - `await-thenable`
   - `no-array-delete`
   - `no-base-to-string`
@@ -40,14 +41,17 @@ is the whole of what the repo enforces.
   - `no-redundant-type-constituents`
   - `no-unnecessary-type-assertion`
   - `no-unsafe-argument`
+  - `no-unsafe-assignment`, in source only
   - `no-unsafe-call`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-member-access`
   - `no-unsafe-return`
   - `no-unsafe-unary-minus`
   - `only-throw-error`
+  - `prefer-promise-reject-errors`, a reason of type `unknown` allowed
   - `restrict-plus-operands`
   - `restrict-template-expressions`
+  - `unbound-method`, in source only
 - **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
@@ -88,6 +92,20 @@ is the whole of what the repo enforces.
   (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@livediagram/oxlint-config`, whose tests run it.
+- A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it
+  by default, and `prefer-promise-reject-errors` is set to allow rejecting with it
+  (`allowThrowingUnknown`). Wrapping it would lose what was caught. A value typed `any` is still
+  refused, so a forwarded reason is given `unknown` where it is read.
+- `unbound-method` and `no-unsafe-assignment` run on source only, not on tests (`*.test.*`,
+  `*.spec.*` and the `e2e/` suites). A test stubs and restores a method by reference
+  (`Storage.prototype.getItem`, `element.scrollIntoView`), which is what `unbound-method` refuses;
+  in source, a member that reads no `this` and is passed on as a callback is declared as a function
+  property, not a method. Vitest types its asymmetric matchers (`expect.any`,
+  `expect.objectContaining`) as `any`, which is what `no-unsafe-assignment` refuses.
+- `require-await` stays off. An `async` function with no `await` is how the repo writes a fake or an
+  implementation of an async interface (`vi.fn(async () => value)`, a store answering a promise), and
+  how `act(async () => ...)` is called; rewriting each as `Promise.resolve(...)` reads worse, and turns a
+  throw in its body from a rejection into a synchronous throw.
 - A finding is fixed where it arises (a truer signature, a handled promise), never cast or
   suppressed away. A value that crosses into the program untyped (parsed JSON, a library's `any`)
   is given its type once, where it enters, with a comment when the library's own type is wrong.

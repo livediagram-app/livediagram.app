@@ -16,6 +16,9 @@
 >   package was created.
 >
 > The rest of this spec (URL shape, password exclusion, share dialog) holds.
+>
+> The same drawing, fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app:
+> [Share-link previews](share-link-previews.md).
 
 A share option that serves the document as a **live image**: an `<img>`-able URL
 that serves the current document as SVG, so it can be embedded in a README / wiki
@@ -44,7 +47,7 @@ export).
    role). 404 if missing / revoked / expired.
 2. If the document has a share password, 404 (no image for gated shares).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
-4. Render it to SVG and return `Content-Type: image/svg+xml` with a short
+4. Render it to SVG (a Pages tab as its first page alone, [Document SVG snapshots](../006-document/document-snapshots.md) "Pages tabs") and return `Content-Type: image/svg+xml` with a short
    `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
    update without hammering D1.
 

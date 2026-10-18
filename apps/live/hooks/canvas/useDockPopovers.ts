@@ -15,13 +15,13 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
-export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
+const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
   // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
   slides: 420,
-  // The Contents popover's `w-[380px]` (docs/specs/007-editor/illustrate-pages.md "Contents").
+  // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
   'plan-cards': 704,
@@ -39,14 +39,14 @@ export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   explorer: 608,
 };
 
-// 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
+// 'slides': the Slide Deck panel over its cluster button in Pages mode. 'card-types': the Card
 // Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
   | 'explorer'
   | 'layers'
   | 'collaborate'
   | 'slides'
-  // Illustrate mode's Contents (docs/specs/007-editor/illustrate-pages.md "Contents").
+  // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents").
   | 'contents'
   | 'card-types'
   | 'plan-trash'

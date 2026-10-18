@@ -178,7 +178,7 @@ describe('the tab PUT', () => {
       tab: { rev: number; documentId: string; orderIndex: number };
     };
     expect(tab).toMatchObject({ rev: 2, documentId: 'D', orderIndex: 0 });
-    const data = JSON.parse(
+    const data: unknown = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
     );
     expect(data).not.toHaveProperty('rev');

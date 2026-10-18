@@ -95,9 +95,9 @@ export type CanvasProps = {
   // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
-  // Illustrate mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
+  // Pages mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
   // pages"), present only in that mode.
-  illustratePages?: import('@/hooks/editor/useIllustratePages').IllustratePagesView | null;
+  pagesMode?: import('@/hooks/editor/usePagesMode').PagesModeView | null;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
@@ -164,6 +164,8 @@ export type CanvasProps = {
     configure: (elementId: string, actionId?: string | null) => void;
     complete: (elementId: string, actionId?: string | null) => void;
     reopen: (elementId: string, actionId?: string | null) => void;
+    // Opens the Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"); absent with no board.
+    openBoard?: () => void;
   };
   onSetSessionConfig?: (
     element: import('@livediagram/document').ShapeElement,
@@ -618,6 +620,10 @@ export type CanvasProps = {
   // for the single-element ellipsis).
   onOpenMultiContextMenu?: (screenX: number, screenY: number) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // The armed action a press on an element takes instead of selecting it (an arrow armed to connect, the
+  // format painter): true when it took it. For a touch press that panned instead of dragging, whose tap
+  // must still connect or paint (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
+  onPressArmedAction?: (id: string) => boolean;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
   // Inline label-editor (rich-text) alignment control, threaded through
@@ -639,17 +645,15 @@ export type CanvasProps = {
     >,
   ) => void;
   onCancelEdit: () => void;
-  // Append a point to the selected timeline rail (docs/specs/009-elements/timeline-rail.md) — the rail's
-  // "Add Point" action on the quick-connect "+".
-  onAddRailPoint: () => void;
   // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
   // selected table from the bottom / right plus.
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
-  // Edit one timeline-rail point's label (docs/specs/009-elements/timeline-rail.md). Omitted in read-only.
-  onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
+  // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
+  entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
   // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
@@ -694,7 +698,7 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  // The Format tool's press on an Illustrate page's paper (docs/specs/007-editor/illustrate-pages.md
+  // The Format tool's press on a page's paper (docs/specs/007-editor/pages-mode.md
   // "Copying a background"): arms or paints that page's background. Absent where pages cannot be
   // painted (another mode, a person who may not edit them), so such a press is an empty-canvas one.
   onFormatPagePress?: (pageId: string) => void;

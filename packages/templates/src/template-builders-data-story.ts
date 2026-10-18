@@ -1,6 +1,6 @@
-// Data Story template (kind `data-story`, docs/specs/007-editor/templates-by-mode.md "Illustrate
+// Data Story template (kind `data-story`, docs/specs/007-editor/templates-by-mode.md "Pages
 // templates"): one A4 portrait infographic that tells one story in numbers, a year at a made-up
-// branch library, Elm Street Library, that opens in Illustrate ready to print or post. It reads
+// branch library, Elm Street Library, that opens in Pages ready to print or post. It reads
 // the way a good infographic is read, biggest number first:
 //
 //   - a kicker, the headline and a one-line lead;
@@ -14,7 +14,7 @@
 //
 // Pure: () -> Element[], placed on the story's page (dataStoryPages) whatever centre is passed.
 
-import type { Element, IllustratePage } from '@livediagram/document';
+import type { Element, Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -61,7 +61,7 @@ const STORY_PAGE = templatePage(1, 'a4', 'portrait', 'Data Story', {
 });
 
 /** The story's page: one A4 portrait sheet on a pale teal-to-peach wash. */
-export function dataStoryPages(): IllustratePage[] {
+export function dataStoryPages(): Page[] {
   return [STORY_PAGE];
 }
 

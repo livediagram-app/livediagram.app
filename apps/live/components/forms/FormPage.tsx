@@ -42,6 +42,7 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
 
@@ -59,6 +60,8 @@ export function FormPage({
   ownerId,
   share,
   online,
+  onSyncToCloud,
+  syncReady,
 }: {
   tab: Tab;
   tabs: readonly Tab[];
@@ -71,10 +74,13 @@ export function FormPage({
   share: string | null;
   // A document kept on the server (an offline one has no link to publish).
   online: boolean;
+  // Moves an offline document onto the server in place, from Share Form, once the reader is known.
+  onSyncToCloud?: () => Promise<void>;
+  syncReady?: boolean;
 }) {
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(document.querySelector<HTMLElement>('[data-canvas-a11y-root]'));
+    if (node) setCanvas(document.querySelector<HTMLElement>(CANVAS_ROOT_SELECTOR));
   }, []);
   const layout = useCanvasLayerInsets(canvas, false);
   const plan = usePlan();
@@ -122,7 +128,8 @@ export function FormPage({
   // not locked (docs/specs/030-forms/forms.md "Hearing about responses").
   // The clock, read once a minute while an open form has a Close On to pass.
   const now = useNow(!!form.closesAt && !!link.link?.link?.open, NOW_TICK_MS);
-  const overdue = !!closedBySettings(form, { responses: link.link?.responses ?? 0, now });
+  const closedBy = closedBySettings(form, { responses: link.link?.responses ?? 0, now });
+  const overdue = !!closedBy;
   // A form taking responses is locked (docs/specs/030-forms/forms.md "A live form is locked"): Edit Form stops it first.
   const locked = canEdit && !!link.link?.link?.open && !overdue;
   const building = canEdit && !preview && !locked;
@@ -246,14 +253,21 @@ export function FormPage({
                       <FormStatusBar
                         link={link}
                         problem={problem}
-                        overdue={overdue}
-                        full={(plan?.items.size ?? 0) >= ITEMS_MAX}
+                        closedBy={closedBy}
+                        // Only cards fill a document: a sheet's rows never do.
+                        full={!form.sheet && (plan?.items.size ?? 0) >= ITEMS_MAX}
                         canEdit={canEdit}
                         onFix={() => openSettings('destination')}
                         onOpenResponses={destTab ? () => openTab(destTab.id) : null}
                         destinationName={destTab?.name ?? null}
                         problems={formProblemCount(problem, notReady)}
                         onProblems={() => setShareOpen(true)}
+                        onNotTaking={(fix) => {
+                          if (fix === 'share') setShareOpen(true);
+                          else if (fix === 'responses') {
+                            if (destTab) openTab(destTab.id);
+                          } else openSettings(fix);
+                        }}
                         controls={
                           canEdit ? (
                             <>
@@ -355,6 +369,8 @@ export function FormPage({
         }}
         notReady={notReady}
         toSheet={!!form.sheet}
+        onSyncToCloud={onSyncToCloud}
+        syncReady={syncReady}
         onShow={(p) => {
           setShareOpen(false);
           setPreview(false);

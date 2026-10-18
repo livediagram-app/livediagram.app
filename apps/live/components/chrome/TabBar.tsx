@@ -3,7 +3,8 @@ import dynamic from 'next/dynamic';
 import { tabDataRows } from './tab-data-rows';
 import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { scrollLeftToReveal } from './tab-strip-scroll';
 import {
   folderNamesInDocument,
   groupTabsIntoRuns,
@@ -24,7 +25,6 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { TabModeChoice } from './TabModeMenuRows';
 import type { AccessLevel } from '@livediagram/api-schema';
 import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
@@ -104,9 +104,6 @@ type TabBarProps = {
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
-  // The tab menu's Mode choice for a tab (docs/specs/007-editor/editor-modes.md), absent
-  // where it is not offered (an event-storming board, a visitor who cannot edit).
-  modeChoiceFor?: (tab: Tab) => TabModeChoice | undefined;
   // Move `sourceId` next to `targetId`. `placeBefore` (default true) picks
   // which side of the target it lands on — the tab bar sets it from the
   // pointer position so the drop matches the insertion caret. Omitting it
@@ -165,7 +162,6 @@ export function TabBar({
   otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
-  modeChoiceFor,
   onReorder,
   readOnly = false,
   isOutOfScope,
@@ -224,7 +220,6 @@ export function TabBar({
     deleteWarning: deleteTabWarning(tabs, tab.id),
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
-    modeChoice: modeChoiceFor?.(tab),
     // A Plan tab's cards are its document's items: it is not added to another document
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
@@ -302,10 +297,34 @@ export function TabBar({
   };
   const renderTabPill = (tab: Tab): ReactNode => <TabPill key={tab.id} tab={tab} ctx={pillCtx} />;
 
+  // The active tab is always in view: a tab added to a full strip, or picked from the Tabs list, used to open past
+  // the strip's edge, under Search. Runs when the active tab or the number of tabs changes, never on a timer.
+  const stripRef = useRef<HTMLDivElement>(null);
+  const lastTabId = tabs.at(-1)?.id;
+  const tabCount = tabs.length;
+  useEffect(() => {
+    const strip = stripRef.current;
+    const pill = strip?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!strip || !pill) return;
+    const s = strip.getBoundingClientRect();
+    const t = pill.getBoundingClientRect();
+    // The last tab brings Add tab with it, so a run of new tabs never has to hunt for it.
+    const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
+    const right = add ? add.getBoundingClientRect().right : t.right;
+    const left = scrollLeftToReveal(
+      { left: s.left, right: s.right, scrollLeft: strip.scrollLeft },
+      { left: t.left, right },
+    );
+    if (left === strip.scrollLeft) return;
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    strip.scrollTo({ left, behavior: still ? 'auto' : 'smooth' });
+  }, [activeId, tabCount, lastTabId]);
+
   return (
     <>
       <div
         data-editor-tabbar
+        data-region="tabs"
         // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
         // above the bottom inset (the height grows by it), its sides past the side insets.
         style={{
@@ -319,7 +338,7 @@ export function TabBar({
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
-            className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-400"
+            className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:flex dark:text-slate-400"
             aria-hidden
           >
             <TabsLabelIcon />
@@ -334,7 +353,10 @@ export function TabBar({
             left). */}
         {/* Sideways only: the tab menu's and Add tab's 44px tap areas (touch-target) reach past
             the row, and a free y axis drew a vertical scrollbar beside Search for them. */}
-        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1">
+        <div
+          ref={stripRef}
+          className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1"
+        >
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
               renderTabPill(run.tab)

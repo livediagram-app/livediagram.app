@@ -27,7 +27,7 @@ describe('participantTiles', () => {
   });
 
   it('offers something to add in every mode', () => {
-    for (const mode of ['diagram', 'draw', 'illustrate', 'plan'] as const) {
+    for (const mode of ['diagram', 'draw', 'pages', 'plan'] as const) {
       expect(participantTiles(mode, false).length).toBeGreaterThan(0);
     }
   });
@@ -55,7 +55,8 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
     const ids = buildCanvasToolOptions({
       isMobile: false,
       includeZen: true,
-      facilitateMode: true,
+      // Avatar is listed while in force (docs/specs/008-canvas/avatar-mode.md "Where it lives").
+      currentTool: 'avatar',
     }).map((o) => o.id);
     for (const tool of PARTICIPANT_CANVAS_TOOLS) expect(ids).toContain(tool);
     for (const tool of ['eraser', 'format', 'slide-deck']) {

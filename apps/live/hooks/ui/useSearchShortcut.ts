@@ -12,7 +12,7 @@ import { isTypingTarget } from '@/lib/typing-target';
 // Like the editor it stands down when the Keyboard Shortcuts setting is off, while typing in a
 // text field (the editor's chords skip text fields too), and while a dialog is open.
 
-export function isSearchChord(e: KeyboardEvent): boolean {
+function isSearchChord(e: KeyboardEvent): boolean {
   if (!(e.metaKey || e.ctrlKey) || e.altKey) return false;
   return e.key === '.' || e.key.toLowerCase() === 'k';
 }

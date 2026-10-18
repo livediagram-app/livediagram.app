@@ -22,7 +22,7 @@ person, not to a folder or a team: two teammates may send the same new documents
 | **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                          |
 | **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab, or a specific kind such as `event-storming`. |
 | **template family**  | The family of templates the document was made from, when it has one: `retrospective` or `kanban`.          |
-| **explicit root**    | The root of My documents, chosen on purpose (the placement picker's root tile): a place like any other.    |
+| **explicit root**    | The root of My Documents, chosen on purpose (the placement picker's root tile): a place like any other.    |
 | **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.           |
 
 - "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
@@ -41,7 +41,7 @@ order:
 | --------------------- | ------------------------ |
 | Diagrams              | `mode:diagram`           |
 | Whiteboards           | `mode:draw`              |
-| Illustrate pages      | `mode:illustrate`        |
+| Pages documents       | `mode:pages`             |
 | Plan boards           | `mode:plan`              |
 | Sessions              | `mode:facilitate`        |
 | Event Storming boards | `kind:event-storming`    |
@@ -125,14 +125,14 @@ never re-derived or rewritten afterwards:
 ## Duplicate
 
 - A Duplicate lands **beside its source**: the source's own team and folder, sent as an explicit
-  placement, the root of My documents included (as an explicit root). When the server refuses that
+  placement, the root of My Documents included (as an explicit root). When the server refuses that
   place (a team the person is not in, someone else's personal folder), the Duplicate is filed at the
-  explicit root of My documents instead, saying so in its log.
+  explicit root of My Documents instead, saying so in its log.
 - It records the **source's recorded intent** (`opensIn`, `tabKind`, `templateFamily`), unchanged;
   an unknown one stays unknown.
 - It is **never routed by a default**: its placement is always explicit.
 - The server copy (`POST /api/documents/:id/copy`) agrees: it carries the same three values, and
-  files the copy at the root of the copier's My documents, a place it chooses, never a default.
+  files the copy at the root of the copier's My Documents, a place it chooses, never a default.
 
 ## Precedence
 
@@ -143,12 +143,12 @@ A create's place is decided in this order; the first that answers wins:
 2. **Kind default**: the default for `kind:<tabKind>`, when the first tab is a specific kind.
 3. **Template default**: the default for `template:<templateFamily>`, when the document has one.
 4. **Mode default**: the default for `mode:<mode>`.
-5. **The root of My documents**.
+5. **The root of My Documents**.
 
 - **An absent placement is no choice.** A create whose body names no `folderId` (the key absent) and
   no team, and that carries an intent, consults the defaults.
 - **An explicit root is a choice.** `folderId: null`, present in the body, is the root of the chosen
-  space, chosen on purpose; with no team it is the explicit root of My documents, and it always wins
+  space, chosen on purpose; with no team it is the explicit root of My Documents, and it always wins
   over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
 - **The wizard** sends a `/new?folder=` / `?team=` context as an explicit placement. Every other create from
   `/new` (a mode chosen, **Create**, **Skip**, a bypass link without context) sends no placement, so these
@@ -160,7 +160,7 @@ A create's place is decided in this order; the first that answers wins:
 - **A personal folder of the person**, or **a team folder of a team the person has joined**. Team
   membership is checked against the verified account id (a Clerk session or an API token) only,
   never the guest `X-Owner-Id`, as for [Placement on create](folders.md#placement-on-create).
-- Not a space's root: the root of My documents is where a document lands with no default, and a
+- Not a space's root: the root of My Documents is where a document lands with no default, and a
   team's root is reached by creating inside the team.
 - Setting a default checks the folder then: a folder that is missing, someone else's, or in a team
   the person has not joined is `folder_not_found` (the answer never reveals that someone else's
@@ -227,7 +227,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 | ------------------------ | --------------------- | --------------------- | -------------------------- |
 | `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon    |
 | `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon       |
-| `mode:illustrate`        | Illustrate pages      | Illustrate pages      | The Illustrate mode's icon |
+| `mode:pages`             | Pages documents       | Pages documents       | The Pages mode's icon      |
 | `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon       |
 | `mode:facilitate`        | Sessions              | sessions              | The Facilitate mode's icon |
 | `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note              |
@@ -252,7 +252,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
     click elsewhere closes it.
 - **Team folders** offer it only to a signed-in, joined member: the folder menus of a team's
   library, and of the editor panel's team tree, are theirs alone. A guest never sees a team folder.
-- **My documents** carries the same submenu on its own menu (the sidebar's My documents row, and
+- **My Documents** carries the same submenu on its own menu (the sidebar's My Documents row, and
   the editor panel's): the root is where a document lands without a default, so there an entry is
   checked when its key has **no working default** (none, or a dangling one). Choosing an unchecked
   entry clears that key's default, sending those documents back to the root; a checked entry is
@@ -273,7 +273,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
   icons differ in shape, and the words are always there.
 - It takes space the row already holds after the name, so its appearance once the defaults load
   moves nothing on the row.
-- A dangling default marks nothing; the My documents row shows no marker.
+- A dangling default marks nothing; the My Documents row shows no marker.
 
 ### The New Document wizard
 
@@ -282,13 +282,13 @@ it has no Location step and shows no folder browser.
 
 - **No context, no placement.** A document made from `/new` without a `/new?folder=` or `?team=` context carries no
   placement, only its intent, so the server's [precedence](#precedence) files it: the default for its kind, template
-  or mode, else the root of My documents. A default the browser has not loaded yet is still honoured, as the server
+  or mode, else the root of My Documents. A default the browser has not loaded yet is still honoured, as the server
   resolves it.
 - **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in livediagram, ahead of
   any default.
 - **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
-  default for** and My documents' own menu. The wizard itself sets nothing.
-- None of this applies to **Local Browser**: an offline document has no folder ([Non-goals](#non-goals)).
+  default for** and My Documents' own menu. The wizard itself sets nothing.
+- None of this applies to **This Browser**: an offline document has no folder ([Non-goals](#non-goals)).
 
 ### A template picked after creation
 
@@ -299,9 +299,9 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 - **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
   document it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`
   context). It is written for a
-  cloud document made from a mode's blank, never for Local Browser or a template link (`/new?template=`), which is
+  cloud document made from a mode's blank, never for This Browser or a template link (`/new?template=`), which is
   filed by its template at creation.
-- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Illustrating, or
+- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Making Pages, or
   Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the
   precedence is resolved again for the template's intent, as the server resolves it (kind, then template, then mode
   default, `templatePickMoveTarget`), and the document **moves** to the default that answers, when it is somewhere
@@ -323,7 +323,7 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
   article's **Learn more**, said once rather than under every row.
 - A row names the entry, in the title case of every Settings label ("Whiteboards", "Kanban
   Boards"), and beneath it where those documents go: the folder's name (a team folder adds its
-  team: "Workshops · Design team", with a small folder mark), or **My documents** when there is
+  team: "Workshops · Design team", with a small folder mark), or **My Documents** when there is
   no default. Until the
   defaults and the folders have loaded it reads "Loading…"; if either cannot be read, "Couldn't
   load your default folders", with no buttons, never a guess.
@@ -332,7 +332,7 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 - **A dangling default** reads "<folder> (deleted), using <place>", or "<folder> (no longer
   available), using <place>" for a team folder whose team is not among the reader's, where <place>
   is where those documents go instead: the next working default of the
-  [precedence](#precedence) for that entry, else My documents. A Clear is offered.
+  [precedence](#precedence) for that entry, else My Documents. A Clear is offered.
   - The folder's name comes from this browser's memory of the names of the reader's default
     folders, kept while they were visible. When the browser never saw it, the row reads "A deleted
     folder, using <place>".
@@ -342,10 +342,10 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 A dialog around the shared placement browser ([Folders](folders.md)), titled "Default folder for
 new <these>", opened by Settings' Change.
 
-- It opens with the key's current default selected, else the My documents root.
-- Choosing the **My documents root** clears the default. A team's root cannot be chosen: with it
+- It opens with the key's current default selected, else the My Documents root.
+- Choosing the **My Documents root** clears the default. A team's root cannot be chosen: with it
   selected, the dialog says "Choose a folder inside the team" and its button is unavailable.
-- Its button reads **Use this folder** (or **Use My documents** at the root), and is unavailable
+- Its button reads **Use this folder** (or **Use My Documents** at the root), and is unavailable
   until the selection differs from the current default.
 - It offers the inline New Folder tile, as the move picker does.
 
@@ -360,7 +360,7 @@ new <these>", opened by Settings' Change.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModeIllustrate` /
+- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModePages` /
   `DefaultModePlan` / `DefaultModeFacilitate` / `DefaultKindEventStorming` /
   `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
   default, before the write.

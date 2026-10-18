@@ -3,7 +3,7 @@
 import type { Item } from './item';
 import { HEX_COLOUR } from './validate';
 
-export const ITEM_COLOUR_FIELD = 'color';
+const ITEM_COLOUR_FIELD = 'color';
 
 // A value as a lower-case `#rrggbb`, or undefined when it is not one.
 export function itemColourValue(v: unknown): string | undefined {

@@ -2,7 +2,7 @@
 
 // One slide in the Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md "The Slide
 // Deck panel"): its picture, its name and what it carries. A press opens the slide; every verb but
-// one lives in its `…` menu. Roomy (the Illustrate popover) it shows a large 16:9 picture with the
+// one lives in its `…` menu. Roomy (the Pages popover) it shows a large 16:9 picture with the
 // slide's number on it, and Present from Here on hover; in the narrow corner panel a small picture
 // beside its number.
 import { useEffect, useRef, useState, type ReactNode } from 'react';

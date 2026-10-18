@@ -6,7 +6,7 @@ import type { FormLinkResponse } from '@livediagram/api-schema';
 
 export type FormMetricTone = 'green' | 'amber' | 'red' | 'slate';
 
-export type FormMetricShown = {
+type FormMetricShown = {
   // The figure, large ("142", "3 days", "Accepting"), or null for a card whose body is its link.
   hero: string | null;
   // The line under it.

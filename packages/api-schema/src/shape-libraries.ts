@@ -17,9 +17,9 @@ export const MAX_SHAPE_LIBRARY_NAME_CHARS = 120;
 /** An item's title. */
 export const MAX_SHAPE_LIBRARY_TITLE_CHARS = 200;
 /** An item's id; the client mints UUIDs (36). */
-export const MAX_SHAPE_LIBRARY_ITEM_ID_CHARS = 64;
+const MAX_SHAPE_LIBRARY_ITEM_ID_CHARS = 64;
 /** An item's width and height, in px. */
-export const MAX_SHAPE_LIBRARY_ITEM_SIDE = 100_000;
+const MAX_SHAPE_LIBRARY_ITEM_SIDE = 100_000;
 
 /** Where a library came from; one value today. */
 export type ShapeLibrarySource = 'drawio';
@@ -69,7 +69,7 @@ export function uniqueLibraryName(name: string, taken: Iterable<string>): string
   }
 }
 
-export type ShapeLibraryItemsRejection =
+type ShapeLibraryItemsRejection =
   'not-a-list' | 'too-many-items' | 'invalid-item' | 'duplicate-item-id' | 'invalid-element';
 
 const side = (v: unknown) =>

@@ -9,7 +9,7 @@ import { centreX, centreY, type Box, type Pt } from './geometry';
 
 /** A style value as mxStylesheet.getCellStyle leaves it: `none` removes the key, numeric text
  *  becomes a number, anything else stays text. */
-export type StyleValue = string | number | undefined;
+type StyleValue = string | number | undefined;
 
 // mxUtils.isNumeric
 const isNumeric = (v: string) =>

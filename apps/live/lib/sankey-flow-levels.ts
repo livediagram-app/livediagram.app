@@ -17,15 +17,15 @@ import {
 import { draftFlows, type SankeyDraftRow } from '@/lib/sankey-flow-rows';
 
 /** A draft row and its index in the draft (its flow's position, which the reasons and labels use). */
-export type FlowLevelRow = { row: SankeyDraftRow; index: number };
+type FlowLevelRow = { row: SankeyDraftRow; index: number };
 
 /** A node that sends something, and the rows that carry it. */
-export type FlowSource = { name: string; rows: FlowLevelRow[] };
+type FlowSource = { name: string; rows: FlowLevelRow[] };
 
 /** One step of the diagram: the nodes sending from it. */
-export type FlowLevel = { step: number; sources: FlowSource[] };
+type FlowLevel = { step: number; sources: FlowSource[] };
 
-export type FlowLevels = { levels: FlowLevel[]; loose: FlowLevelRow[] };
+type FlowLevels = { levels: FlowLevel[]; loose: FlowLevelRow[] };
 
 /**
  * Groups `rows` into levels. A source's step is its column with every node at its own step (By Step), so the

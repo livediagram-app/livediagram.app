@@ -82,7 +82,7 @@ const DEEPEST_INK = '#0f172a';
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
 
 /** The colours a theme dresses the placeholder in, or null for a theme with none of its own. */
-export type PlaceholderThemeInk = { accent: string; fill: string | null; text: string | null };
+type PlaceholderThemeInk = { accent: string; fill: string | null; text: string | null };
 
 export function placeholderThemeInk(
   theme: Pick<ThemeDefinition, 'elementFill' | 'elementStroke' | 'elementText' | 'palette'>,
@@ -182,7 +182,7 @@ const ICON_SHARE_OF_SIDE = 0.4;
 const LINE_HEIGHT = 1.25;
 const FRAME_PX = 12;
 
-export type PlaceholderMetrics = {
+type PlaceholderMetrics = {
   labelPx: number;
   iconPx: number;
   gapPx: number;
@@ -242,8 +242,8 @@ const LONE_BADGE_SHARE = 0.6;
 const LONE_BADGE_MIN_PX = 12;
 const LONE_BADGE_MAX_PX = 56;
 
-export type EmptyFaceParts = { title: boolean; line: boolean; button: boolean };
-export type EmptyFaceLayout =
+type EmptyFaceParts = { title: boolean; line: boolean; button: boolean };
+type EmptyFaceLayout =
   | { kind: 'face'; scale: number; parts: EmptyFaceParts }
   /** Too small for any words: the badge alone (the button itself, for an editor). */
   | { kind: 'badge'; badgePx: number };

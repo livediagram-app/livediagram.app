@@ -1,4 +1,4 @@
-import { isBoxed, type Element } from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -7,18 +7,15 @@ import {
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
 import {
-  ActionMenuIcon,
-  CommentMenuIcon,
   ImageGlyph,
   LinkMenuIcon,
-  NoteMenuIcon,
   RemoveIconGlyph,
   FillColourIcon,
   TableGlyph,
   TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
@@ -31,9 +28,8 @@ import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The lower, content / metadata sections of the single-element context menu:
-// Text (labelled arrow / table cells), Image, Table structure, Link, and the
-// collaboration band's two categories (docs/specs/012-collaboration/assigned-actions.md) — Collaborate (Assign Action
-// + Comments) and Resources (Link + Note). Split out of EditorContextMenu;
+// Text (labelled arrow / table cells), Image, Table structure and Link. Assign Action, Comments, Link and Note are on
+// the menu's quick bar above every category (ElementMenuQuickBar). Split out of EditorContextMenu;
 // shares the accordion + colour scaffolding via props so only one section
 // opens at a time across the whole menu.
 type ElementContentSectionsProps = {
@@ -42,7 +38,6 @@ type ElementContentSectionsProps = {
   onClose: () => void;
   hasImage: boolean;
   hasLink: boolean;
-  showCollaborateGroup: boolean;
   sectionProps: Scaffold['sectionProps'];
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
@@ -55,13 +50,11 @@ export function ElementContentSections({
   onClose,
   hasImage,
   hasLink,
-  showCollaborateGroup,
   sectionProps,
   colorProps,
   textColorHandlers,
   labelFillHandlers,
 }: ElementContentSectionsProps) {
-  const boxed = isBoxed(target);
   const surface = useCanvasSurface();
   return (
     <>
@@ -248,84 +241,6 @@ export function ElementContentSections({
                 label="Set Link"
                 onClick={() => {
                   props.onLinkElement(target.id);
-                  onClose();
-                }}
-              />
-            </div>
-          )}
-        </MenuAccordionSection>
-      ) : null}
-      {/* ── Collaboration group (docs/specs/012-collaboration/assigned-actions.md): two categories — Collaborate
-            (the people tiles: Assign Action + Comments) then Resources
-            (the attached-material tiles: Link + Note). Both boxed-only:
-            arrows can't be linked, noted, commented on, or assigned, and nor can a Plan item
-            (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items"). */}
-      {showCollaborateGroup ? <MenuGroupSeparator /> : null}
-      {boxed && showCollaborateGroup ? (
-        <MenuAccordionSection
-          title="Collaborate"
-          icon={<CommentMenuIcon />}
-          {...sectionProps('collaborate')}
-        >
-          {/* Assign Action shows for everyone: signed-out users can
-                assign to themselves (docs/specs/012-collaboration/assigned-actions.md §2). */}
-          <MenuTileGrid cols={2}>
-            <MenuTile
-              icon={<ActionMenuIcon />}
-              label={target.action ? 'View Action' : 'Assign Action'}
-              onClick={() => {
-                props.onAssignAction(target.id);
-                onClose();
-              }}
-            />
-            {/* The comment PANEL element (docs/specs/012-collaboration/comment-pin.md) is not offered here: it
-                is a palette tile, and a second way in from every element's
-                menu was one more tile to read past on the way to the thread. */}
-            <MenuTile
-              icon={<CommentMenuIcon />}
-              label="Add Comment"
-              onClick={() => {
-                props.onOpenComments(target.id);
-                onClose();
-              }}
-            />
-          </MenuTileGrid>
-        </MenuAccordionSection>
-      ) : null}
-      {boxed && showCollaborateGroup ? (
-        <MenuAccordionSection
-          title="Resources"
-          icon={<LinkMenuIcon />}
-          {...sectionProps('resources')}
-        >
-          {/* Link-cards have their own Link category (set / change / remove),
-                so the generic "Add Link" is dropped here for them. */}
-          {target.type !== 'link-card' && target.type !== 'video' ? (
-            <MenuTileGrid cols={2}>
-              <MenuTile
-                icon={<LinkMenuIcon />}
-                label={target.link ? 'Edit Link' : 'Add Link'}
-                onClick={() => {
-                  props.onLinkElement(target.id);
-                  onClose();
-                }}
-              />
-              <MenuTile
-                icon={<NoteMenuIcon />}
-                label={target.note ? 'Edit Note' : 'Add Note'}
-                onClick={() => {
-                  props.onOpenNote(target.id);
-                  onClose();
-                }}
-              />
-            </MenuTileGrid>
-          ) : (
-            <div className="px-2 py-1.5">
-              <MenuTile
-                icon={<NoteMenuIcon />}
-                label={target.note ? 'Edit Note' : 'Add Note'}
-                onClick={() => {
-                  props.onOpenNote(target.id);
                   onClose();
                 }}
               />

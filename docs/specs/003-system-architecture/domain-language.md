@@ -7,13 +7,13 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 | Term         | Answers                        | Values                                                      | Where it lives                                |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Facilitate, Illustrate, Plan (`EditorMode`)  | Per tab, the same for everyone; `Tab.opensIn` |
+| **mode**     | How is a tab worked on?        | Diagram, Draw, Facilitate, Pages, Plan (`EditorMode`)       | Per tab, the same for everyone; `Tab.opensIn` |
 | **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
 
-- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Facilitate, Illustrate or Plan.
+- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Facilitate, Pages or Plan.
   (the Editor modes spec in 007-editor).
 - A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
 - A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
@@ -122,10 +122,10 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 
 The words for how elements are drawn, apart from their colours ([Finish](../008-canvas/finish.md)).
 
-| Term           | Means                                                                                   | Never called                   |
-| -------------- | --------------------------------------------------------------------------------------- | ------------------------------ |
-| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional or Sketch | tone, look, style, render mode |
-| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                | inherit, default               |
+| Term           | Means                                                                                           | Never called                   |
+| -------------- | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
+| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
 
 ## Flowcharts
 
@@ -183,3 +183,10 @@ The words for the public gallery of published documents ([Community](../025-comm
 - An element's **body set** animates the element; the **Text set** animates its words. A set is never a kind or a
   mode.
 - A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
+
+## This Browser
+
+**This Browser** is the one name for a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
+the place it lives (the Explorer's This Browser section, beside My Documents and the teams), the pill and badge that
+mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
+"Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.

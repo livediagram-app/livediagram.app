@@ -10,7 +10,7 @@ import {
 // any roster build (PR30). Entries travel in the presence frame's own `agents` array, so no reader of
 // `participants` ever counts one (I1, PR14).
 
-export const AGENT_PRESENCE_KEY_PREFIX = 'agent-presence:';
+const AGENT_PRESENCE_KEY_PREFIX = 'agent-presence:';
 
 export type AgentPresenceRecord = {
   id: string;
@@ -45,7 +45,7 @@ export type AgentPresenceWrite = {
   mode: 'set' | 'refresh';
 };
 
-export type AgentPresenceWriteResult =
+type AgentPresenceWriteResult =
   | { ok: true; expiresAt: number; created: boolean; broadcast: boolean }
   | { ok: false; error: 'agent_presence_full' };
 
@@ -194,7 +194,7 @@ const isNullableString = (v: unknown): v is string | null => v === null || typeo
 
 // The api's `PUT /presence` body, checked at the room's door; null for anything else. The api has already applied
 // the request rule (parseAgentPresenceRequest) and resolved focus to element ids.
-export function agentPresenceWriteOf(body: unknown): AgentPresenceWrite | null {
+function agentPresenceWriteOf(body: unknown): AgentPresenceWrite | null {
   if (typeof body !== 'object' || body === null) return null;
   const b = body as Record<string, unknown>;
   const ok =

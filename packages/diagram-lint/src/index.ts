@@ -4,15 +4,7 @@ export { lintGraph, lintTab, type LintOptions } from './lint';
 export { coloursSet } from './colours-set';
 export { withoutFindings } from './without-findings';
 export { formatLintReport, lintFooterPart, lintSummaryLine, lintVerdict } from './format';
-export {
-  COMPARE_DIMENSIONS,
-  compareGraphLayouts,
-  formatCompareTable,
-  parseCompareDimensions,
-  type CompareDimension,
-  type CompareRow,
-  type CompareVariant,
-} from './compare';
+export { compareGraphLayouts, formatCompareTable, parseCompareDimensions } from './compare';
 export { consoleLintLogger, type LintLogger } from './log';
 export type { LintSource } from './context';
 export * from './constants';

@@ -164,6 +164,18 @@ export type TemplateKind =
   | 'crazy-eights'
   // Power / interest stakeholder grid with stances and an engagement plan.
   | 'stakeholder-map'
+  // The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a Wardley map, a
+  // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, Amazon's
+  // Working Backwards PR/FAQ (an article), a family tree and a value stream map. The threat model, metric tree and
+  // value stream map make a companion Sheet tab after the drawing (template-companions.ts).
+  | 'wardley-map'
+  | 'threat-model'
+  | 'service-blueprint'
+  | 'metric-tree'
+  | 'value-proposition-canvas'
+  | 'working-backwards'
+  | 'family-tree'
+  | 'value-stream-map'
   // 5x5 likelihood x impact heatmap beside a risk register.
   | 'risk-matrix'
   // A research-backed user persona laid out as a profile sheet.
@@ -178,11 +190,11 @@ export type TemplateKind =
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
   | 'whiteboard'
-  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
+  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Pages mode on one
   // article page, written as a short project brief.
   | 'article'
   // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Five blanks"): a tab that opens
-  // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
+  // in Pages on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
   // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
@@ -201,8 +213,8 @@ export type TemplateKind =
   | 'journey-doodle'
   | 'pre-mortem'
   | 'idea-garden'
-  // Illustrate templates (docs/specs/007-editor/templates-by-mode.md "Illustrate templates"):
-  // documents of pages, opening in Illustrate on pages of their own (template-pages.ts).
+  // Pages templates (docs/specs/007-editor/templates-by-mode.md "Pages templates"):
+  // documents of pages, opening in Pages on pages of their own (template-pages.ts).
   | 'event-poster'
   | 'year-in-review'
   | 'resume'
@@ -336,23 +348,23 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'mindmap',
-    title: 'Mind map',
+    title: 'Mind Map',
     description:
       'A team offsite plan: five colour-coded branches with glyphs radiating from the topic.',
   },
   {
     kind: 'mindmap-tree',
-    title: 'Tree mind map',
+    title: 'Tree Mind Map',
     description: 'A left-to-right outline: a bold root, four branches and two sub-topics each.',
   },
   {
     kind: 'mindmap-bubble',
-    title: 'Bubble map',
+    title: 'Bubble Map',
     description: 'A brand voice ringed by six adjectives, each with a line that proves it.',
   },
   {
     kind: 'orgchart',
-    title: 'Org chart',
+    title: 'Org Chart',
     description:
       'A leadership team by person, with team bands, a dotted-line report and an open role.',
   },
@@ -370,25 +382,25 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'swimlane',
-    title: 'Swimlane flowchart',
+    title: 'Swimlane Flowchart',
     description: 'An order from click to doorstep across four role lanes.',
     extra: true,
   },
   {
     kind: 'decision-tree',
-    title: 'Decision tree',
+    title: 'Decision Tree',
     description: 'Can we ship on Friday? Yes / no questions down to go, wait and stop outcomes.',
     extra: true,
   },
   {
     kind: 'approval-workflow',
-    title: 'Approval workflow',
+    title: 'Approval Workflow',
     description: 'Manager and finance sign-off in role lanes, with rework and decline paths.',
     extra: true,
   },
   {
     kind: 'data-flow',
-    title: 'Data flow diagram',
+    title: 'Data Flow Diagram',
     description: 'A level-1 DFD of an online shop, with a key to the notation.',
     extra: true,
   },
@@ -558,28 +570,28 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'milestone-timeline',
-    title: 'Horizontal milestone timeline',
+    title: 'Horizontal Milestone Timeline',
     description:
       'A launch year to scale: milestone cards on stems above and below a phase ribbon, with launch day as the hero.',
     extra: true,
   },
   {
     kind: 'milestone-timeline-vertical',
-    title: 'Vertical milestone timeline',
+    title: 'Vertical Milestone Timeline',
     description:
       'A company history down the page: big years one side, story cards the other, a highlight and the next chapter.',
     extra: true,
   },
   {
     kind: 'venn',
-    title: 'Venn diagram',
+    title: 'Venn Diagram',
     description:
       'Desirable, feasible, viable: every overlap named, with the sweet spot in the middle.',
     extra: true,
   },
   {
     kind: 'journey',
-    title: 'User journey',
+    title: 'User Journey',
     description: 'A journey map: stages across, doing / thinking / feeling / pains / ideas down.',
     extra: true,
   },
@@ -597,21 +609,21 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'mobile-wireframe',
-    title: 'Mobile wireframe',
+    title: 'Mobile Wireframe',
     description:
       'A three-screen app flow joined by tap arrows, with numbered pins matching design notes.',
     extra: true,
   },
   {
     kind: 'laptop-wireframe',
-    title: 'Laptop wireframe',
+    title: 'Laptop Wireframe',
     description:
       'An analytics dashboard on a laptop: nav, sidebar, KPI row, a chart and a recent sign-ups table.',
     extra: true,
   },
   {
     kind: 'slide-deck',
-    title: 'Slide deck',
+    title: 'Slide Deck',
     description:
       'A six-slide pitch (title, problem, solution, traction, team, the ask) on 16:9 slide pages, with speaker notes.',
     extra: true,
@@ -625,56 +637,56 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'logo-design',
-    title: 'Logo design',
+    title: 'Logo Design',
     description:
       'A brand exploration on Square pages: six lockups (horizontal, stacked, app icon, one colour), each on its own artboard, plus a palette page. Pick one, delete the rest, swap in your own mark.',
     extra: true,
   },
   {
     kind: 'gantt',
-    title: 'Gantt chart',
+    title: 'Gantt Chart',
     description:
       'A twelve-week launch plan: workstreams, owners, progress bars, dependencies, a launch milestone and a Today line.',
     extra: true,
   },
   {
     kind: 'live-card',
-    title: 'Group card',
+    title: 'Group Card',
     description:
       'A greeting card the whole team signs, on two card pages: a cover with a photo, and an inside of signed notes with a slot for yours.',
     extra: true,
   },
   {
     kind: 'comparison-table',
-    title: 'Comparison table',
+    title: 'Comparison Table',
     description:
       'Three plans side by side with ticks and crosses, the cost for your team, and the recommended plan highlighted.',
     extra: true,
   },
   {
     kind: 'system-architecture',
-    title: 'System architecture',
+    title: 'System Architecture',
     description:
       'A vendor-neutral logical architecture in tiered lanes: clients, edge, services and data, wired with labelled protocols.',
     extra: true,
   },
   {
     kind: 'er-diagram',
-    title: 'Database schema',
+    title: 'Database Schema',
     description:
       'ER diagram of a food-delivery app: six tables with PK / FK columns, one-to-many relationships and their multiplicities.',
     extra: true,
   },
   {
     kind: 'sequence-diagram',
-    title: 'Sequence diagram',
+    title: 'Sequence Diagram',
     description:
       'UML checkout flow: an actor, lifelines, activation bars, sync / async / reply messages and an alt fragment.',
     extra: true,
   },
   {
     kind: 'prioritization-matrix',
-    title: 'Prioritization matrix',
+    title: 'Prioritization Matrix',
     description: 'Impact vs effort: Quick wins, Big bets, Fill-ins and Money pits, with a vote.',
     extra: true,
   },
@@ -687,20 +699,20 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'raci-matrix',
-    title: 'RACI matrix',
+    title: 'RACI Matrix',
     description:
       'Launch tasks by named roles with colour-coded R / A / C / I cells, a legend, and the checks to review it against.',
     extra: true,
   },
   {
     kind: 'user-story-map',
-    title: 'User story map',
+    title: 'User Story Map',
     description: 'Activities over tasks over stories, sliced into release lanes.',
     extra: true,
   },
   {
     kind: 'affinity-map',
-    title: 'Affinity map',
+    title: 'Affinity Map',
     description: 'Research notes grouped under insights and themes, with dot-vote tallies.',
     extra: true,
   },
@@ -803,7 +815,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'empathy-map',
-    title: 'Empathy map',
+    title: 'Empathy Map',
     description:
       'A persona over Says / Thinks / Does / Feels quadrants, with a Pains and Gains strip.',
     extra: true,
@@ -817,14 +829,14 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'sankey',
-    title: 'Sankey diagram',
+    title: 'Sankey Diagram',
     description:
       'Where visitors come from and where they go: channels into pages into trials, with every drop-off drawn to Bounced.',
     extra: true,
   },
   {
     kind: 'okr-tree',
-    title: 'OKR tree',
+    title: 'OKR Tree',
     description:
       'An objective over key results with progress rings, and initiatives with status badges.',
     extra: true,
@@ -838,7 +850,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'browser-wireframe',
-    title: 'Web page wireframe',
+    title: 'Web Page Wireframe',
     description:
       'A real landing page in a browser frame, annotated with pinned notes on why it is laid out so.',
     extra: true,
@@ -852,35 +864,35 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'cloud-architecture',
-    title: 'Cloud architecture',
+    title: 'Cloud Architecture',
     description:
       'A food-delivery stack on AWS: real service icons nested in edge, region, VPC and subnet groups.',
     extra: true,
   },
   {
     kind: 'uml-class',
-    title: 'Class diagram',
+    title: 'Class Diagram',
     description:
       'UML classes with visibility and types, wired by inheritance, composition, aggregation and associations.',
     extra: true,
   },
   {
     kind: 'state-machine',
-    title: 'State machine',
+    title: 'State Machine',
     description:
       'A delivery order’s UML lifecycle: a composite state, guards, a timeout and three final states.',
     extra: true,
   },
   {
     kind: 'floor-plan',
-    title: 'Floor plan',
+    title: 'Floor Plan',
     description:
       'A two-bed flat with study drawn to scale: furniture, colour zones, dimensions and a key.',
     extra: true,
   },
   {
     kind: 'event-storming',
-    title: 'Event storming',
+    title: 'Event Storming',
     description:
       'Explore a business domain with the sticky-note workshop notation: orange domain events on a left-to-right timeline.',
     extra: true,
@@ -901,28 +913,28 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'four-ls',
-    title: '4Ls retrospective',
+    title: '4Ls Retrospective',
     description:
       'Liked, Learned, Lacked and Longed for in a 2x2: the reflective retro for after a milestone.',
     extra: true,
   },
   {
     kind: 'sailboat',
-    title: 'Sailboat retrospective',
+    title: 'Sailboat Retrospective',
     description:
       'The picture retro: wind that pushes us, anchors that hold us back, rocks ahead and the island we sail for.',
     extra: true,
   },
   {
     kind: 'incident-postmortem',
-    title: 'Incident postmortem',
+    title: 'Incident Postmortem',
     description:
       'A blameless postmortem: impact, a phased timeline, five whys, what helped and prioritised follow-ups.',
     extra: true,
   },
   {
     kind: 'opportunity-solution-tree',
-    title: 'Opportunity solution tree',
+    title: 'Opportunity Solution Tree',
     description:
       "Product discovery from one outcome: needs in the customer's voice, a target, three solutions and their tests.",
     extra: true,
@@ -936,42 +948,99 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'stakeholder-map',
-    title: 'Stakeholder map',
+    title: 'Stakeholder Map',
     description:
       'Power vs interest: who to manage closely, keep satisfied, inform or monitor, with stances and an engagement plan.',
     extra: true,
   },
   {
     kind: 'risk-matrix',
-    title: 'Risk matrix',
+    title: 'Risk Matrix',
     description:
       'A 5x5 likelihood and impact heatmap with numbered risks, a residual move, and a register with owners and trends.',
     extra: true,
   },
   {
+    kind: 'wardley-map',
+    title: 'Wardley Map',
+    description:
+      'A value chain mapped on evolution: what to build, buy or rent, where it is all heading and the plays to make.',
+    extra: true,
+  },
+  {
+    kind: 'threat-model',
+    title: 'Threat Model',
+    description:
+      'Two tabs: a data-flow diagram with its trust boundaries and STRIDE threats marked, then a live Threat Register.',
+    extra: true,
+  },
+  {
+    kind: 'service-blueprint',
+    title: 'Service Blueprint',
+    description:
+      'An order end to end: what the customer does, what staff and systems do behind the line, and where it fails.',
+    extra: true,
+  },
+  {
+    kind: 'metric-tree',
+    title: 'Metric Tree',
+    description:
+      'Two tabs: a north-star metric broken into the inputs teams own, then a Driver Model sheet to try what-ifs on.',
+    extra: true,
+  },
+  {
+    kind: 'value-proposition-canvas',
+    title: 'Value Proposition Canvas',
+    description:
+      'What you offer against what one customer needs: their jobs, pains and gains, with the fit drawn in.',
+    extra: true,
+  },
+  {
+    kind: 'working-backwards',
+    title: 'Working Backwards',
+    description:
+      'Amazon’s PR/FAQ: the launch press release written before anything is built, then the customer and internal FAQs.',
+    extra: true,
+  },
+  {
+    kind: 'family-tree',
+    title: 'Family Tree',
+    description:
+      'Three generations on one page: couples, children and an adoption, with years, birthplaces and family stories.',
+    extra: true,
+  },
+  {
+    kind: 'value-stream-map',
+    title: 'Value Stream Map',
+    description:
+      'Two tabs: idea to production with its waits, process times and kaizen bursts, then the Flow Data sheet.',
+    extra: true,
+  },
+
+  {
     kind: 'user-persona',
-    title: 'User persona',
+    title: 'User Persona',
     description:
       'A research-backed persona: profile and quote, goals, frustrations, behaviours, personality and how we help.',
     extra: true,
   },
   {
     kind: 'meeting-agenda',
-    title: 'Meeting agenda',
+    title: 'Meeting Agenda',
     description:
       'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
     extra: true,
   },
   {
     kind: 'article',
-    title: 'Article',
+    title: 'Project Brief',
     description:
-      'Write on pages, like a doc: a project brief with headings and lists, room for charts and drawings in the text.',
+      'A project brief, written on pages like a doc: headings and lists to write over, room for charts and drawings in the text.',
     extra: true,
   },
   {
     kind: 'objectives-planner',
-    title: 'Objectives planner',
+    title: 'Objectives Planner',
     description:
       'Write personal objectives that stick: start with why, a sentence formula, a SMART test, key results and check-ins.',
     extra: true,

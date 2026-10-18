@@ -79,7 +79,7 @@ export function resolveBoxedMove({
   // Cmd/Ctrl held: place freely — skip alignment + distribution snapping
   // and their guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
   noSnap: boolean;
-  // Lines to snap to besides the elements' own (an Illustrate page's edges and margins), as
+  // Lines to snap to besides the elements' own (a page's edges and margins), as
   // stand-in boxes: aligned to and guided by, never spaced against.
   pageSnapBoxes?: Element[];
   // The user's alignment-guides preference (guides only; the snap still
@@ -416,7 +416,7 @@ function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, Sha
 // How a resize frame's hugging text boxes are sized (docs/specs/023-draw-mode/draw-mode.md "Text
 // boxes"): the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
 // measure. Given only for a single element; it applies to a text box that fits or wraps.
-export type TextHugResize = {
+type TextHugResize = {
   mode: DragMode;
   constrain: boolean;
   measure: (el: TextElement) => MeasureTextBlock;

@@ -7,7 +7,7 @@ import {
   pagePaintPress,
 } from './format-page-brush';
 
-// docs/specs/007-editor/illustrate-pages.md "Copying a background": the Format tool's page brush.
+// docs/specs/007-editor/pages-mode.md "Copying a background": the Format tool's page brush.
 
 describe('the page brush', () => {
   it('holds a page, and reads none from an element or an empty brush', () => {
@@ -43,7 +43,7 @@ describe('pagePaintPress', () => {
 });
 
 describe('formatBannerMessage', () => {
-  it('asks for a base, naming pages in Illustrate', () => {
+  it('asks for a base, naming pages in Pages', () => {
     expect(formatBannerMessage(null, false)).toBe('Select a base element to copy its style');
     expect(formatBannerMessage(null, true)).toBe('Select a base element or page to copy its style');
   });

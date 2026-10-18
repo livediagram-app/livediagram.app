@@ -17,6 +17,7 @@ import type {
   ChartType,
   ChecklistItem,
   EntityField,
+  FieldRemap,
   AgendaItem,
   ChairFacing,
   DecisionStatus,
@@ -174,8 +175,6 @@ export type EditorContextMenuProps = {
   onSetMarkerSize: (value: TextSizePreset) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
   onPreviewMarkerSize: (value: TextSizePreset) => void;
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): set the rail's point count.
-  onSetRailCount: (count: number) => void;
   // Rating (docs/specs/009-elements/rating.md): the star score + its animation.
   onSetRating: (value: number) => void;
   onSetRatingAnim: (value: RatingAnim | null) => void;
@@ -240,7 +239,7 @@ export type EditorContextMenuProps = {
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
   // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  onSetEntityFields: (fields: EntityField[]) => void;
+  onSetEntityFields: (fields: EntityField[], remap?: FieldRemap) => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.

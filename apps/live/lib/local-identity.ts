@@ -102,7 +102,7 @@ export function clearGuestSelfId(): void {
   notifyGuestId();
 }
 
-export type PendingGuestUpgrade = { from: string; to: string; sig: string };
+type PendingGuestUpgrade = { from: string; to: string; sig: string };
 
 export function getPendingGuestUpgrade(): PendingGuestUpgrade | null {
   const raw = readLocalStorageSafe(KEYS.pendingUpgrade);

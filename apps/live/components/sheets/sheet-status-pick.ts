@@ -2,6 +2,7 @@
 // browser and shared by every Sheet on the page, set from the bar's own menu or the Sheet's settings.
 import { useSyncExternalStore } from 'react';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { createListeners } from '@/lib/listeners';
 
 export const STATS = ['Sum', 'Average', 'Count', 'Min', 'Max'] as const;
 export type Stat = (typeof STATS)[number];
@@ -9,7 +10,7 @@ const DEFAULT_PICK: readonly Stat[] = ['Sum', 'Average', 'Count'];
 const PICK_KEY = 'livediagram:sheet-status-stats';
 
 let pick: readonly Stat[] | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // No storage (a private window, blocked site data) or a malformed value: the default pick.
 function read(): readonly Stat[] {
@@ -36,16 +37,11 @@ export function toggleStatusPick(stat: Stat): void {
   pick = next;
   // A blocked write keeps the pick for this page only.
   writeLocalStorageSafe(PICK_KEY, JSON.stringify(next));
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => listeners.delete(l);
-};
-
 export function useStatusPick(): readonly Stat[] {
-  return useSyncExternalStore(subscribe, statusPick, () => DEFAULT_PICK);
+  return useSyncExternalStore(listeners.subscribe, statusPick, () => DEFAULT_PICK);
 }
 
 // For tests: forget the pick read so far.

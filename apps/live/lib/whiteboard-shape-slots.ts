@@ -21,7 +21,7 @@ export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = ['arrow', 'r
 
 // A phone's dock keeps only the first pinned shape on the bar; the rest move to the top of the
 // Shapes flyout, so the bar fits the width (docs/specs/023-draw-mode/draw-mode.md "On a phone").
-export const PHONE_BAR_PINS = 1;
+const PHONE_BAR_PINS = 1;
 
 export function splitPhonePins(pinned: readonly WhiteboardShapeKey[]): {
   onBar: WhiteboardShapeKey[];
@@ -32,12 +32,12 @@ export function splitPhonePins(pinned: readonly WhiteboardShapeKey[]): {
 
 // The Shapes flyout's two rows of slots, Most used and Recent: a Within reach set with N = 3
 // (docs/specs/004-interface-design/within-reach.md).
-export const SLOTS_PER_ROW = 3;
+const SLOTS_PER_ROW = 3;
 
 // Kinds whose picks are kept: the last 20 kinds used (about 600 bytes), never evicting one of the
 // SHAPE_PICKS_PROTECTED most picked, so a favourite survives a spell of one-off picks.
 export const SHAPE_PICKS_KEPT = 20;
-export const SHAPE_PICKS_PROTECTED = 5;
+const SHAPE_PICKS_PROTECTED = 5;
 
 // With too little history: the Shapes flyout in order (Rectangle, Ellipse, Diamond, Cylinder,
 // Line, Arrow), then the rest of the catalogue, so the slots still fill when those are on the bar.
@@ -125,7 +125,7 @@ export type SlotLayout = {
 
 // How far past the bar a drop still counts as on it: a little over one button's width (the dock's are
 // 36px), so an empty pinned side is still a comfortable target.
-export const SLOT_BAR_REACH_PX = 44;
+const SLOT_BAR_REACH_PX = 44;
 
 // Where a dragged shape would land: the pinned side (an insertion `index`, 0 to the number pinned,
 // and the pinned slot under the pointer, if any, which a full side replaces), past the separator,

@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
@@ -16,12 +16,15 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
+import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
+import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
+import { isEditorPath } from '@/lib/legacy-editor-path';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -74,6 +77,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     if (!state.documentId) return;
     return () => requestDriveFlush();
   }, [state.documentId]);
+  // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
+  // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
+  const [accessEnded] = useState(() => takeAccessEnded());
   // Tab title reflects the document: "<name> | livediagram" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
@@ -106,7 +112,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     setPasswordRetry,
   } = state;
   // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
-  // which a Local only document opens under (docs/specs/006-document/offline-mode.md "Instant open").
+  // which a document in This Browser opens under (docs/specs/006-document/offline-mode.md "Instant open").
   const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
   // The full Explorer panel that sits behind the error / not-found status
   // screens (identical in both), built once from state. Just a React
@@ -176,17 +182,35 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   }
 
   if (documentNotFound) {
+    // An address that names no document is a missing page, not a missing document.
+    const page = !isEditorPath(window.location.pathname);
     // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
     return !appChrome ? (
       <EmbedShell>
         <NotFound
+          page={page}
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
         />
       </EmbedShell>
     ) : (
-      <StatusShell title="Document not found" explorer={fullExplorer}>
-        <NotFound onCreateNew={() => window.location.assign(`${window.location.origin}/new`)} />
+      // No Explorer panel beside it: the card stands alone and offers the Explorer as a button
+      // (docs/specs/007-editor/new-document-route.md "Unknown addresses").
+      <StatusShell
+        title={
+          page
+            ? 'Page not found'
+            : accessEnded !== null
+              ? 'No Longer Shared With You'
+              : 'Document not found'
+        }
+      >
+        <NotFound
+          page={page}
+          accessEnded={accessEnded !== null}
+          onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
+          onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
+        />
       </StatusShell>
     );
   }
@@ -234,11 +258,15 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           {/* The owner's shape libraries, for the palette's My shapes
               (docs/specs/013-workspace/shape-libraries.md). */}
           <ShapeLibraryProvider ownerId={ownerId}>
-            <EditorView />
+            {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
+                the first time one of them shows, so opening a document costs no extra request. */}
+            <DocumentTagsProvider ownerId={ownerId} lazy>
+              <EditorView />
+            </DocumentTagsProvider>
           </ShapeLibraryProvider>
         </MentionContext.Provider>
       </CustomThemeProvider>
-      {/* Moving this browser's Local only documents after signing in
+      {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}
     </EditorContext.Provider>

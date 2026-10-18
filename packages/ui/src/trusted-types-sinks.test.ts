@@ -43,6 +43,50 @@ describe('Trusted Types sinks', () => {
     expect(raw).toEqual([]);
   });
 
+  // A server component's `trustedHtml` runs in the prerender, where there is no Trusted Types, so the RSC payload
+  // carries a plain string; a client navigation then writes it through innerHTML and the default policy refuses
+  // it, crashing the page to blank (the help centre's breadcrumbs did this to every page). So outside the editor
+  // (a client app end to end) a sink lives in a root layout (never re-rendered on navigation), a 'use client'
+  // module, or an app module only client modules import.
+  it('mint TrustedHTML in the browser, never in a server component', () => {
+    const isClient = (f: string) => /^'use client';/.test(read(f));
+    const isLayout = (f: string) => /^apps\/[^/]+\/app\/layout\.tsx$/.test(f);
+    const sinks = files.filter(
+      (f) => !f.startsWith('apps/live/') && htmlExpressions(read(f)).length > 0,
+    );
+    // Who imports a module, by its path without extension (relative or `@/` specifiers).
+    const importers = (target: string) =>
+      files.filter((f) => {
+        if (f.startsWith('apps/live/')) return false;
+        const app = /^(apps|packages)\/[^/]+\//.exec(f)![0];
+        const stem = target.replace(/\.tsx?$/, '');
+        // Type-only imports carry no code onto the page.
+        return [...read(f).matchAll(/^import (?!type )[^;]*?from '([^']+)'/gms)].some(
+          ([, spec = '']) => {
+            const resolved = spec.startsWith('@/')
+              ? `${app}${spec.slice(2)}`
+              : spec.startsWith('.')
+                ? new URL(spec, `file:///${f}`).pathname.slice(1)
+                : null;
+            return resolved === stem || resolved === stem.replace(/\/index$/, '');
+          },
+        );
+      });
+    const clientOnly = (f: string, seen = new Set<string>()): boolean => {
+      if (isClient(f)) return true;
+      // A shared package's component reaches whatever server page renders it, so it must be a client module itself.
+      if (f.startsWith('packages/')) return false;
+      // A route file is where a server render starts.
+      if (/\/app\/(.+\/)?(page|template|layout)\.tsx$/.test(f)) return false;
+      if (seen.has(f)) return true;
+      seen.add(f);
+      // No importer at all means no page renders it.
+      return importers(f).every((i) => clientOnly(i, seen));
+    };
+    const serverSinks = sinks.filter((f) => !isLayout(f) && !clientOnly(f));
+    expect(serverSinks).toEqual([]);
+  });
+
   it('parse files only through parseInert', () => {
     const direct = files.filter(
       (f) =>

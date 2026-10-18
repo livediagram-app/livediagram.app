@@ -45,7 +45,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   missing, and pruned to the six in the note. A diagram the server has no snapshot for (one it could
   not draw) is remembered as having none, so it is not asked for again until it is saved, and shows its
   tile's placeholder. An Offline Mode document is remembered as having none without asking: its rows
-  never send a request ([Offline Mode](../006-document/offline-mode.md#local-only-badge--explorer)); a request that failed outright (no network) is simply asked again on
+  never send a request ([Offline Mode](../006-document/offline-mode.md#this-browser-badge--explorer)); a request that failed outright (no network) is simply asked again on
   the next list. The landing page reads them from the cache, never the
   network, and shows them as `<img>` (an SVG image runs no script).
 - **Forgotten on sign-out:** signing out clears the note and the thumbnails before Clerk signs out, so
@@ -64,7 +64,8 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   document (`/document/<id>`).
 - **Explorer Home**, the last card: "Explorer Home" with "Open" at the top right, over a tinted panel ("All your
   documents"), to `/explorer/home`.
-- **On a phone** the fan shows three cards: the two most recent documents and Explorer Home.
+- **On a phone** the fan shows three cards, the three most recent documents, and leaves Explorer Home off: the
+  band has room for three, and a returning visitor came for their documents.
 - **They stay put.** The template fan deals a new card every few seconds; a returning visitor came for these, so
   nothing is swapped. Each card springs in a beat after the one before it when the fan deals.
 - **Keyboard and screen readers:** real links, in reading order.

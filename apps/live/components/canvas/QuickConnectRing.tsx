@@ -1,6 +1,7 @@
 import {
   Fragment,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -11,17 +12,20 @@ import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import {
   ADD_COLUMN_OPTION,
-  ADD_POINT_OPTION,
   webRowOption,
   ADD_ROW_OPTION,
   FLOWCHART_NEXT_OPTION,
   FLOWCHART_PARALLEL_OPTION,
+  ADD_ENTITY_FIELD_OPTION,
+  ADD_RELATED_ENTITY_OPTION,
   MIND_CHILD_OPTION,
   MIND_SIBLING_OPTION,
   OPTIONS,
 } from './quick-connect-options';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 import { isDragTravel } from '@/lib/press-gestures';
+import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';
 
 // Same grace period as the other hover-open surfaces: long enough to cross
 // the gap between the + and its menu.
@@ -64,9 +68,6 @@ type QuickConnectRingProps = {
   onArrowPointerDown: (e: ReactPointerEvent) => void;
   // Enter freehand (pencil) draw mode.
   onPencil: () => void;
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): when set (the selected element is a rail), the
-  // ring gains an "Add Point" action that appends a point to the rail.
-  onAddRailPoint?: () => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): when set (the selected element is a stat row,
   // process or header with room for more), the ring gains an action that
   // appends one more stat / step / link, labelled with what it adds.
@@ -82,6 +83,9 @@ type QuickConnectRingProps = {
   // What `onGrowMind` grows, which names its two options. Absent: a mind map.
   growing?: 'mind' | 'flowchart';
   onAddTableColumn?: () => void;
+  // An entity (docs/specs/009-elements/entity.md "Growing a model"): Add Related Entity on this side, and
+  // Add Field when this is the bottom ring.
+  entity?: { onAddRelated: () => void; onAddField?: () => void };
 };
 
 // The plus trigger stays in the shared floating-control family (matching
@@ -160,16 +164,14 @@ export function QuickConnectRing({
   onSpawn,
   onArrowPointerDown,
   onPencil,
-  onAddRailPoint,
   webRow,
   variant = 'default',
   onAddTableRow,
   onGrowMind,
   growing = 'mind',
   onAddTableColumn,
+  entity,
 }: QuickConnectRingProps) {
-  // The rail "Add Point" action only appears when the selected element is a
-  // timeline rail (onAddRailPoint set), appended after the standard actions.
   // The table variant slims to Arrow + this side's structural add (Add Row
   // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Pencil / Text
   // don't apply to a grid.
@@ -180,8 +182,13 @@ export function QuickConnectRing({
           ...(onAddTableColumn ? [ADD_COLUMN_OPTION] : []),
           OPTIONS.find((o) => o.kind === 'arrow')!,
         ]
-      : onAddRailPoint
-        ? [...OPTIONS, ADD_POINT_OPTION]
+      : entity
+        ? // An entity's ring grows a data model: a related entity, a field, then the usual connect and copy.
+          [
+            ADD_RELATED_ENTITY_OPTION,
+            ...(entity.onAddField ? [ADD_ENTITY_FIELD_OPTION] : []),
+            ...OPTIONS.filter((o) => o.kind === 'arrow' || o.kind === 'duplicate'),
+          ]
         : webRow
           ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
           : onGrowMind
@@ -214,6 +221,26 @@ export function QuickConnectRing({
     const t = setTimeout(() => setRendered(false), EXIT_MS);
     return () => clearTimeout(t);
   }, [open]);
+
+  // The open menu kept on screen: beside an element that reaches the edge of a phone it fanned past the edge, out
+  // of reach. Nudged back in with `translate`, which composes with the open animation's `transform`. Written to the
+  // node rather than held in state: it is layout, measured after the menu mounts, and needs no render of its own.
+  const plusRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const plus = plusRef.current;
+    const box = menuRef.current;
+    if (!rendered || !plus || !box) return;
+    const p = plus.getBoundingClientRect();
+    const rect = quickRingMenuRect(
+      { x: p.left + p.width / 2, y: p.top + p.height / 2 },
+      { width: box.offsetWidth, height: box.offsetHeight },
+      placement,
+      NEAR,
+    );
+    const nudge = clampToViewport(rect, { x: 0, y: 0 });
+    box.style.translate = nudge.x || nudge.y ? `${nudge.x}px ${nudge.y}px` : '';
+  }, [rendered, placement, x, y, zoom]);
 
   // Hover-open (quick-add-on-hover, docs/specs/008-canvas/canvas-and-palette.md): open on pointer-enter of the +
   // or its menu, and close on a short delay after leaving both, so crossing
@@ -304,6 +331,7 @@ export function QuickConnectRing({
       {/* The plus trigger, centred at (cx, cy). Click toggles the ring.
           Styled to match the selection toolbar (white, slate, soft shadow). */}
       <button
+        ref={plusRef}
         type="button"
         aria-label="Quick add and connect"
         aria-expanded={open}
@@ -344,6 +372,7 @@ export function QuickConnectRing({
           plus (scales from the plus-side edge) on open. */}
       {rendered ? (
         <div
+          ref={menuRef}
           className={`pointer-events-auto absolute flex items-center rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 ${
             menu.col ? 'flex-col' : 'flex-row'
           }`}
@@ -389,9 +418,10 @@ export function QuickConnectRing({
                     onClick={() => {
                       if (isArrow) return;
                       if (option.kind === 'pencil') onPencil();
-                      else if (option.kind === 'add-point') onAddRailPoint?.();
                       else if (option.kind === 'add-web-row') webRow?.onAdd();
                       else if (option.kind === 'add-row') onAddTableRow?.();
+                      else if (option.kind === 'entity-related') entity?.onAddRelated();
+                      else if (option.kind === 'entity-field') entity?.onAddField?.();
                       else if (option.kind === 'add-column') onAddTableColumn?.();
                       else if (option.kind === 'mind-child' || option.kind === 'flowchart-next')
                         onGrowMind?.('child');

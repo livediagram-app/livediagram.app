@@ -11,7 +11,7 @@ export type TabStats = {
 };
 
 // The parts of a stored tab body the stats read.
-export type TabStatsBody = {
+type TabStatsBody = {
   kind?: string;
   opensIn?: string;
   layers?: unknown;

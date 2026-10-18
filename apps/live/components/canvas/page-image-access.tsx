@@ -1,6 +1,6 @@
 'use client';
 
-// Who is asking for a page's picture (docs/specs/007-editor/illustrate-pages.md "Image
+// Who is asking for a page's picture (docs/specs/007-editor/pages-mode.md "Image
 // backgrounds"): the identity and share code the image store needs, handed to the pages by the
 // canvas, and the pictures the sheets paint, each fetched once while it is on a page.
 import {
@@ -13,9 +13,9 @@ import {
   type ReactNode,
 } from 'react';
 import type { LaidOutPage } from '@livediagram/document';
-import { apiFetchImageBlobUrl } from '@/lib/api-client';
+import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 
-export type PageImageAccess = { ownerId: string; documentId: string; shareCode: string | null };
+type PageImageAccess = { ownerId: string; documentId: string; shareCode: string | null };
 
 const PageImageAccessContext = createContext<PageImageAccess | null>(null);
 
@@ -73,7 +73,7 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
   useEffect(() => {
     const mine = held.current;
     return () => {
-      for (const url of mine.values()) if (url) URL.revokeObjectURL(url);
+      for (const url of mine.values()) if (url) releaseImageBlobUrl(url);
       held.current = new Map();
       setSources(new Map());
     };
@@ -85,7 +85,7 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
     let dropped = false;
     for (const [id, url] of mine) {
       if (wanted.has(id)) continue;
-      if (url) URL.revokeObjectURL(url);
+      if (url) releaseImageBlobUrl(url);
       mine.delete(id);
       dropped = true;
     }
@@ -99,15 +99,15 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
       })
         .then((url) => {
           if (!url) {
-            console.warn('[illustrate-page] picture unavailable', { imageId: id });
+            console.warn('[page] picture unavailable', { imageId: id });
             return;
           }
           // Dropped (or the access changed) while it was on its way.
-          if (held.current !== mine || !mine.has(id)) return URL.revokeObjectURL(url);
+          if (held.current !== mine || !mine.has(id)) return releaseImageBlobUrl(url);
           mine.set(id, url);
           setSources((prev) => new Map(prev).set(id, url));
         })
-        .catch(() => console.warn('[illustrate-page] picture failed', { imageId: id }));
+        .catch(() => console.warn('[page] picture failed', { imageId: id }));
     }
     // The access is read through its key: a fresh object with the same values refetches nothing.
     // oxlint-disable-next-line react/exhaustive-deps

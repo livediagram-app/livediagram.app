@@ -7,11 +7,11 @@ import type { ReactNode } from 'react';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import type { WorkbenchPhase } from './workbench-machine';
 
-export type WorkbenchStatusPhase = Exclude<WorkbenchPhase, { phase: 'mounted' | 'ended' }>;
+type WorkbenchStatusPhase = Exclude<WorkbenchPhase, { phase: 'mounted' | 'ended' }>;
 
-export const OPENING_COPY = 'Opening your diagram…';
-export const REFUSED_HEADING = 'Open this diagram from your workbench';
-export const REFUSED_BODY =
+const OPENING_COPY = 'Opening your diagram…';
+const REFUSED_HEADING = 'Open this diagram from your workbench';
+const REFUSED_BODY =
   'This link works once, for a minute. Open the diagram again from your workbench.';
 
 function StatusShell({ children }: { children: ReactNode }) {

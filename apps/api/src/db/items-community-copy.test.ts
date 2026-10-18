@@ -21,7 +21,7 @@ describe('copyItemsStatements', () => {
       fields: JSON.stringify({
         title: 'Ship',
         status: 'todo',
-        assignee: JSON.parse(ALI),
+        assignee: JSON.parse(ALI) as unknown,
         votes: { 'p-ali': 2 },
         comments: { comments: [{ id: 'c1', author: 'Ali', text: 'Hi', createdAt: 1 }] },
       }),

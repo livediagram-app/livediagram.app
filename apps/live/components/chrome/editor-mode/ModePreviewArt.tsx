@@ -58,7 +58,7 @@ const ART: Record<EditorMode, ReactNode> = {
     </>
   ),
   // A page with a chart and lines, and a slide.
-  illustrate: (
+  pages: (
     <>
       <rect x="14" y="6" width="34" height="44" rx="3" />
       <path d="M22 26v-6M30 26V14M38 26v-8M22 34h18M22 41h12" />

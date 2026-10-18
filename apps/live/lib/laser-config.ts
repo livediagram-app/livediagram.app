@@ -17,7 +17,12 @@ import {
   type Appearance,
   type StandardColourName,
 } from '@livediagram/document';
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  pickOption,
+  storedRecord,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 
 export type LaserWidth = 'fine' | 'medium' | 'bold';
 export type LaserTrail = 'quick' | 'normal' | 'long';
@@ -128,23 +133,18 @@ function parseLaserColour(value: unknown): LaserColour {
 
 // --- Parsing ----------------------------------------------------------------
 
-function pick<T extends string>(value: unknown, options: readonly { id: T }[], fallback: T): T {
-  return options.some((option) => option.id === value) ? (value as T) : fallback;
-}
-
 // Parse a stored (or received) config field by field, so one unrecognised
 // value — a token from a later release, a hand-edited key — costs that field
 // rather than the whole pen. Pure, so the fallbacks are testable without
 // touching storage or a socket.
 export function parseLaserConfig(raw: unknown): LaserConfig {
-  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
-  if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_LASER_CONFIG };
-  const o = parsed as Record<string, unknown>;
+  const o = storedRecord(raw);
+  if (!o) return { ...DEFAULT_LASER_CONFIG };
   return {
-    width: pick(o.width, LASER_WIDTHS, DEFAULT_LASER_CONFIG.width),
+    width: pickOption(o.width, LASER_WIDTHS, DEFAULT_LASER_CONFIG.width),
     colour: parseLaserColour(o.colour),
-    trail: pick(o.trail, LASER_TRAILS, DEFAULT_LASER_CONFIG.trail),
-    effect: pick(o.effect, LASER_EFFECTS, DEFAULT_LASER_CONFIG.effect),
+    trail: pickOption(o.trail, LASER_TRAILS, DEFAULT_LASER_CONFIG.trail),
+    effect: pickOption(o.effect, LASER_EFFECTS, DEFAULT_LASER_CONFIG.effect),
   };
 }
 

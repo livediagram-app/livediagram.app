@@ -8,6 +8,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { setActiveTour } from '@/lib/tour-active';
+import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
 import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
@@ -82,6 +83,7 @@ afterEach(() => {
   setActiveTour('draw', false);
   setStartPanelOpen(false);
   clearTourPending();
+  while (anyModalOpen()) modalClosed();
 });
 
 describe('DrawTourHost offer', () => {
@@ -98,6 +100,23 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
     expect(stage.helpHref).toBe('/help/canvas/draw-mode/');
+  });
+
+  // docs/specs/007-editor/editor-tour.md "Dialogs come first".
+  it('waits while a dialog is open, then offers once it closes', () => {
+    editor();
+    act(() => modalOpened());
+    render(<DrawTourHost />);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(offered()).toBe(false);
+    expect(setUserPreferences).not.toHaveBeenCalled();
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
   });
 
   it('waits for the person to enter Draw', () => {

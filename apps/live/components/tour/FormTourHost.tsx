@@ -13,6 +13,7 @@ import { debugLog } from '@/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { FormStarterPicture } from '@livediagram/template-previews';
@@ -79,6 +80,8 @@ export function FormTourHost() {
 
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'form';
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('form', active);
   }, [active]);
@@ -126,7 +129,7 @@ export function FormTourHost() {
   // The offer: armed, on a Form tab, usable, not seen (a rerun clears that), and no other tour on screen.
   useEffect(() => {
     if (!armed || active || (seen && !rerun)) return;
-    if (!onForm || !canWork || otherTour) return;
+    if (!onForm || !canWork || otherTour || modalOpen) return;
     const t = setTimeout(
       () => {
         setArmed(false);
@@ -149,6 +152,7 @@ export function FormTourHost() {
     onForm,
     canWork,
     otherTour,
+    modalOpen,
     engineRef,
     tab.id,
     destTabId,

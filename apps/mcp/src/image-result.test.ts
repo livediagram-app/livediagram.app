@@ -9,6 +9,22 @@ vi.mock('./render', () => ({
   },
 }));
 
+// Each picture's bytes: a PNG header of a full-screen retina screenshot's size (2880x1800, 5.2 megapixels).
+const fetched: string[] = [];
+vi.mock('./api', () => ({
+  apiFetch: async (_env: unknown, _token: string, path: string) => {
+    fetched.push(path);
+    const b = new Uint8Array(24);
+    b.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
+    new DataView(b.buffer).setUint32(16, 2880);
+    new DataView(b.buffer).setUint32(20, 1800);
+    return new Response(b, { headers: { 'Content-Type': 'image/png' } });
+  },
+  apiJson: async () => {
+    throw new Error('not read');
+  },
+}));
+
 const { imageResult, tabFontIds, tabPreview } = await import('./image-result');
 
 describe('imageResult', () => {
@@ -43,7 +59,7 @@ describe('tabFontIds', () => {
 });
 
 describe('tabPreview', () => {
-  it('draws an Illustrate tab as its pages, its content and faces fetched together', async () => {
+  it('draws a Pages tab as its pages, its content and faces fetched together', async () => {
     drawn.length = 0;
     const tab = {
       id: 't',
@@ -60,11 +76,75 @@ describe('tabPreview', () => {
           label: 'On slide',
         },
       ],
+      opensIn: 'pages',
       pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
     } as never;
-    const block = await tabPreview(tab);
-    expect(block).toMatchObject({ type: 'image', mimeType: 'image/png' });
+    const blocks = await tabPreview(tab);
+    expect(blocks).toMatchObject([{ type: 'image', mimeType: 'image/png' }]);
     expect(drawn).toHaveLength(1);
     expect(drawn[0]).toMatch(/^<svg /);
+  });
+
+  it('draws pictures within the budget and says how many it left as placeholders', async () => {
+    drawn.length = 0;
+    fetched.length = 0;
+    const picture = (id: string, x: number) => ({
+      id,
+      type: 'image',
+      imageId: `img-${id}`,
+      x,
+      y: 0,
+      width: 300,
+      height: 200,
+    });
+    const tab = {
+      id: 't',
+      name: 'Screens',
+      elements: [picture('a', 0), picture('b', 320), picture('c', 640)],
+    } as never;
+    const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
+    // One screenshot fits 8 megapixels, the second and third would pass it.
+    expect(blocks).toEqual([
+      {
+        type: 'text',
+        text: '2 pictures are drawn as a placeholder in this preview, which draws only so many pixels; the document holds them as placed, and the editor shows them.',
+      },
+      { type: 'image', data: 'cG5n', mimeType: 'image/png' },
+    ]);
+    expect(drawn[0]!.match(/data:image\/png;base64/g)).toHaveLength(1);
+    expect(fetched).toEqual(['/images/img-a', '/images/img-b', '/images/img-c']);
+  });
+
+  it('budgets the pictures on a Pages tab’s pages too', async () => {
+    drawn.length = 0;
+    const shot = (id: string, x: number) => ({
+      id,
+      type: 'image',
+      imageId: `img-${id}`,
+      x,
+      y: 40,
+      width: 400,
+      height: 250,
+    });
+    const tab = {
+      id: 't',
+      name: 'Deck',
+      opensIn: 'pages',
+      elements: [shot('a', 40), shot('b', 480)],
+      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
+    } as never;
+    const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
+    expect(blocks.map((b) => b.type)).toEqual(['text', 'image']);
+    expect(blocks[0]).toMatchObject({ text: expect.stringMatching(/^1 picture is drawn/) });
+  });
+
+  it('adds no note when every picture is drawn', async () => {
+    const tab = {
+      id: 't',
+      name: 'One',
+      elements: [{ id: 'a', type: 'image', imageId: 'one', x: 0, y: 0, width: 30, height: 20 }],
+    } as never;
+    const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
+    expect(blocks.map((b) => b.type)).toEqual(['image']);
   });
 });

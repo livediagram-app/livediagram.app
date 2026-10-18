@@ -10,7 +10,7 @@ import { parseStoredLevel, type AccessLevel } from '@livediagram/api-schema';
 
 type RosterTab = { id: string; name: string };
 
-export type RosterGroup<T extends RosterTab = RosterTab> = {
+type RosterGroup<T extends RosterTab = RosterTab> = {
   // null for people whose tab focus points at a tab that no longer exists
   // (a peer can briefly sit on a tab someone just deleted). Grouped rather
   // than dropped so nobody vanishes from the list.
@@ -19,7 +19,7 @@ export type RosterGroup<T extends RosterTab = RosterTab> = {
   participants: Participant[];
 };
 
-export type CollaboratorRoster<T extends RosterTab = RosterTab> = {
+type CollaboratorRoster<T extends RosterTab = RosterTab> = {
   groups: RosterGroup<T>[];
   // People only: an agent's row is listed but never counted (docs/specs/024-agents/agent-presence.md).
   peopleCount: number;

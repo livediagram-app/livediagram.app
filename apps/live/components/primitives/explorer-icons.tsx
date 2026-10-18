@@ -28,6 +28,7 @@ import {
   lucideShapes,
   lucideShare2,
   lucideStar,
+  lucideTag,
 } from '@livediagram/icons/lucide';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
@@ -116,9 +117,10 @@ export function DocumentIcon({ size = 13 }: IconProps) {
 export function InboxIcon({ size = 13 }: IconProps) {
   return (
     <G16 size={size}>
-      <path d="M2 9.5V12a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 12V9.5" />
-      <path d="M2 9.5h3.2l1 1.8h3.6l1-1.8H14" />
-      <path d="M5.5 5.2 7.2 7l3.3-3.6" />
+      {/* Drawn half a unit high of the grid's middle, so its ink centres in a tile (optical-alignment.md). */}
+      <path d="M2 9V11.5a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 11.5V9" />
+      <path d="M2 9h3.2l1 1.8h3.6l1-1.8H14" />
+      <path d="M5.5 4.7 7.2 6.5l3.3-3.6" />
     </G16>
   );
 }
@@ -174,11 +176,13 @@ export const KeyIcon = lucideGlyph(lucideKey, 13);
 export { TeamIcon } from '@livediagram/ui';
 export const InviteIcon = lucideGlyph(lucideMail, 13);
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
-// documents (a root folder), Library, and This browser (a browser window).
+// documents (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const MyDocumentsIcon = lucideGlyph(lucideFolderRoot, 13);
 export const LibraryIcon = lucideGlyph(lucideLibrary, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
+// A luggage tag: Tags (docs/specs/013-workspace/tags.md), the sidebar row and the document menu's verb.
+export const TagIcon = lucideGlyph(lucideTag, 13);
 
 // ---------- Verbs ----------------------------------------------------
 

@@ -28,8 +28,8 @@ const SETTINGS_LIMIT = 6;
 // Internal-only input shapes for the by-name match inputs. Several
 // share the same {id, name} shape but stay distinct so a future
 // schema change to one doesn't silently propagate to the others.
-// `localOnly`: saved only in this browser (Offline Mode); the result carries the Local only pill
-// (docs/specs/006-document/offline-mode.md#local-only-pill).
+// `localOnly`: saved only in this browser (Offline Mode); the result carries the This Browser pill
+// (docs/specs/006-document/offline-mode.md#this-browser-pill).
 type SearchInputDocument = { id: string; name: string; localOnly?: boolean };
 type SearchInputFolder = { id: string; name: string };
 // "Shared with You" rows carry their still-live share code so picking
@@ -218,7 +218,7 @@ type SearchInput = {
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
   // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), breadcrumb-pathed + tagged with
-  // their team. Surfaced in the Teams group (not "My documents", which is
+  // their team. Surfaced in the Teams group (not "My Documents", which is
   // personal-only), with their own cap. Optional: guests have none.
   teamFolders?: { id: string; path: string; teamId: string; teamName: string }[];
   // Team-library documents (docs/specs/013-workspace/team-shared-documents.md), tagged with their team. Also
@@ -297,13 +297,13 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     });
   }
 
-  // "My documents": the personal folder tree only (team folders live under
+  // "My Documents": the personal folder tree only (team folders live under
   // Teams below, so this group's label honestly means "yours").
   const folderMatches = folders.filter((f) => matches(q, f.name)).slice(0, FOLDER_LIMIT);
   if (folderMatches.length > 0) {
     groups.push({
       key: 'folders',
-      label: 'My documents',
+      label: 'My Documents',
       items: folderMatches.map((f): FolderItem => ({
         kind: 'folder',
         id: f.id,

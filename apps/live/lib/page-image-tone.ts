@@ -1,9 +1,9 @@
-// A page picture's tone (docs/specs/007-editor/illustrate-pages.md "Image backgrounds"): its
+// A page picture's tone (docs/specs/007-editor/pages-mode.md "Image backgrounds"): its
 // average colour, sampled once when it is picked by drawing it down to a few pixels. What the page's
 // ink is chosen against. Browser-only (Image, canvas); its averaging is pure and tested.
 
 // The side the picture is drawn down to: enough to average, nothing to decode twice.
-export const PAGE_IMAGE_TONE_SAMPLE = 16;
+const PAGE_IMAGE_TONE_SAMPLE = 16;
 // A slow picture is not waited for: the page reads as mid grey instead.
 const TONE_TIMEOUT_MS = 4000;
 
@@ -52,7 +52,7 @@ export function sampleImageTone(src: string): Promise<string | undefined> {
         done(averageTone(ctx.getImageData(0, 0, n, n).data) ?? undefined);
       } catch {
         // A tainted canvas (a host that would not share its pixels).
-        console.warn('[illustrate-page] picture tone unreadable');
+        console.warn('[page] picture tone unreadable');
         done(undefined);
       }
     };

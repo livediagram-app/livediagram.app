@@ -35,8 +35,7 @@ export type DocumentEnvelope = {
 
 export type EnvelopeSheet = { id: string; tabId: string; title: string; [key: string]: unknown };
 
-export type DocumentEnvelopeFailure =
-  'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
+type DocumentEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function documentToEnvelopeText(
   liveDoc: { id: string; name: string; presentation: string | null },

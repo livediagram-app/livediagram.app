@@ -30,7 +30,7 @@ import { getTheme } from '@/lib/themes';
 import { useDashboard } from './dashboard-context';
 
 // A slider at rest this long lands as one step.
-export const CARD_STYLE_DRAG_SETTLE_MS = 400;
+const CARD_STYLE_DRAG_SETTLE_MS = 400;
 
 // The Dashboard tab's theme, for the viewer's appearance (the Default scheme has a light and a dark half). Outside
 // the editor (a test, a preview) the Default scheme.

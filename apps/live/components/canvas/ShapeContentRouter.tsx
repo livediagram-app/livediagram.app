@@ -2,6 +2,7 @@ import {
   chartTextInk,
   finishIconWeight,
   finishWobblesArt,
+  isHandDrawn,
   actorFigureRect,
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
@@ -36,8 +37,9 @@ import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { iconMakesRoomForLabel } from '@/components/primitives/icon-band';
 import { StickerView } from '@/components/canvas/StickerView';
 import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
+import { SketchArtPicture } from '@/components/canvas/SketchArtPicture';
+import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { ProgressView } from '@/components/canvas/ProgressView';
-import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
 import { CodeBlockView } from '@/components/canvas/CodeBlockView';
@@ -100,7 +102,6 @@ type ShapeContentRouterProps = Pick<
   | 'element'
   | 'isSelected'
   | 'readOnly'
-  | 'onSetRailLabel'
   | 'onToggleChecklistItem'
   | 'chartPalette'
   | 'fontFamily'
@@ -152,9 +153,7 @@ export function ShapeContentRouter({
   textColor,
   remoteBorderColor,
   isLocked,
-  isSelected,
   readOnly,
-  onSetRailLabel,
   onToggleChecklistItem,
   chartPalette,
   fontFamily,
@@ -165,24 +164,27 @@ export function ShapeContentRouter({
   // An icon's glyph moves aside for its caption from the moment the label is typed.
   const iconCaptioned = iconMakesRoomForLabel(element.label, !!isEditing);
   // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md): its
-  // Illustrate page's where that page has a fill, else the canvas's.
+  // Page's where that page has a fill, else the canvas's.
   const surface = useElementSurface(element.id);
   // A chart on a filled page is drawn adapted to what it sits on (docs/specs/007-editor/
-  // illustrate-pages.md "Charts adapt as they are drawn"): its series in its view, its text here.
+  // pages-mode.md "Charts adapt as they are drawn"): its series in its view, its text here.
   const chartGround = useChartGround(element.id);
   const chartText = chartTextInk(textColor, chartGround);
   // A sketched silhouette is the SketchOverlay's (docs/specs/008-canvas/finish.md); Professional thins an
   // unset border.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
   // Icons and stickers under Sketch draw through the shared hand-drawn wobble (SketchFilterDefs), their art kept.
+  // WebKit runs that filter again on every repaint, so there the art is drawn into still pictures instead.
   const wobble = finish === 'sketch' && finishWobblesArt(element);
   const art = (node: ReactNode) =>
-    wobble ? (
+    !wobble ? (
+      node
+    ) : liveFiltersRedrawOnRepaint() ? (
+      <SketchArtPicture>{node}</SketchArtPicture>
+    ) : (
       <div className="h-full w-full" style={{ filter: `url(#${SKETCH_TILE_FILTER_ID})` }}>
         {node}
       </div>
-    ) : (
-      node
     );
   return element.type === 'shape' && element.shape === 'sticker' ? (
     // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
@@ -242,17 +244,6 @@ export function ShapeContentRouter({
       accent={accent}
       track={progressTrackColour(element, surface)}
       textColor={textColor}
-    />
-  ) : element.type === 'shape' && isRailShape(element.shape) ? (
-    // Timeline rail (docs/specs/009-elements/timeline-rail.md): a line + evenly-spaced points, with an
-    // add-point affordance at the right end when selected + editable.
-    <RailView
-      element={element}
-      accent={accent}
-      textColor={textColor}
-      fontFamily={fontFamily}
-      editable={isSelected && !readOnly && !isLocked}
-      onSetLabel={onSetRailLabel}
     />
   ) : element.type === 'shape' && isRatingShape(element.shape) ? (
     // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
@@ -357,7 +348,7 @@ export function ShapeContentRouter({
       palette={chartPalette}
       ground={chartGround}
     />
-  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && finish !== 'sketch' ? (
+  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
     <ShapeSvgOverlay
       shape={element.shape}
       fill={element.fillColor ?? defaultFillColor(element, surface)}

@@ -34,6 +34,7 @@ import {
   POST_AUTH_SIGNIN_DEFAULT,
   RedirectingCard,
   authHrefWithReturn,
+  guestReturnHref,
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
@@ -223,7 +224,11 @@ function SignInContent() {
 
   return (
     <AuthCard
-      subtitle="Sign in to keep your documents and work across multiple devices."
+      title={showCodeStep ? 'Check your email' : 'Welcome back'}
+      subtitle={
+        showCodeStep ? undefined : 'Sign in to keep your documents with you on every device.'
+      }
+      guestHref={guestReturnHref(searchParams)}
       error={error}
       notice={notice}
       footer={

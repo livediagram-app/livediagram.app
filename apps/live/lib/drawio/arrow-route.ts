@@ -16,7 +16,7 @@ import type { Pt } from './cells';
 
 /** How far a segment may lean and still read as horizontal or vertical: draw.io paints a corner
  *  less than a pixel off its neighbour as a slight lean (mxShape.getWaypoints). */
-export const DRAWIO_AXIS_TOLERANCE_PX = 1;
+const DRAWIO_AXIS_TOLERANCE_PX = 1;
 
 type Axis = 'h' | 'v' | null;
 
@@ -123,7 +123,7 @@ export function snapRouteEnds(route: Pt[], from: Pt, to: Pt, orthogonal: boolean
 /** How far a sampled curve may stray from draw.io's (operator decision: about 2 px). */
 export const DRAWIO_CURVE_TOLERANCE_PX = 2;
 /** How finely draw.io's curve is sampled before the samples are thinned (D44). Safe range: 8 to 32. */
-export const DRAWIO_CURVE_SAMPLES_PER_PIECE = 16;
+const DRAWIO_CURVE_SAMPLES_PER_PIECE = 16;
 
 const quad = (a: Pt, c: Pt, b: Pt, t: number): Pt => ({
   x: (1 - t) ** 2 * a.x + 2 * (1 - t) * t * c.x + t * t * b.x,
@@ -186,7 +186,7 @@ const offLine = (p: Pt, line: Pt[]) =>
  *  `DRAWIO_CURVE_TOLERANCE_PX` of draw.io's (blueprint step 12.9), both ends included: starting
  *  from the ends, the sample of draw.io's curve farthest from the renderer's joins the points until
  *  none is farther than the tolerance, and no point of the renderer's curve strays farther either. */
-export function curveThrough(points: Pt[]): Pt[] {
+function curveThrough(points: Pt[]): Pt[] {
   const truth = drawioCurve(points, DRAWIO_CURVE_SAMPLES_PER_PIECE);
   const kept = new Set([0, truth.length - 1]);
   for (;;) {

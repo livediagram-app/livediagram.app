@@ -141,14 +141,6 @@ export function defaultScheme(appearance: Appearance = 'light'): ThemeDefinition
   return appearance === 'dark' ? DEFAULT_SCHEME_DARK : DEFAULT_SCHEME_LIGHT;
 }
 
-/** The colours a scheme paints the canvas with (its backdrop, minus the layout). */
-export function schemeBackdrop(scheme: ThemeDefinition): {
-  backgroundColor: string;
-  patternColor: string;
-} {
-  return { backgroundColor: scheme.backgroundColor, patternColor: scheme.patternColor };
-}
-
 // Is this canvas still one the DEFAULT scheme painted — either half of it —
 // rather than one somebody chose? Both halves count, because a tab saved by a
 // viewer in dark chrome carries the dark half and is no less untouched for it.
@@ -207,7 +199,7 @@ export function getBuiltInTheme(
 // every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
 // and an image renders its bytes so its colour fields are inert (see
 // ImageElement in @livediagram/document).
-export type ThemeColourField = {
+type ThemeColourField = {
   element: 'fillColor' | 'strokeColor' | 'textColor';
   theme: 'elementFill' | 'elementStroke' | 'elementText';
 };
@@ -293,7 +285,7 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
   return { ...el, ...patch };
 }
 
-// A page layout's elements in its tab's theme (docs/specs/007-editor/illustrate-pages.md "Layouts"): a layout is built
+// A page layout's elements in its tab's theme (docs/specs/007-editor/pages-mode.md "Layouts"): a layout is built
 // without colours of its own where it means the theme's, so each colour an element leaves unset takes the tab's
 // built-in theme's, as any element made on the tab does; a colour the layout set (an accent, a callout's tint) is
 // kept. The default scheme and a custom theme (resolved only in the editor) leave it as built. On a dark page (`dark`,
@@ -383,7 +375,7 @@ export function switchThemeElement(
 // chosen canvas pattern — e.g. reset Graph back to the theme's Grid, or
 // blank it entirely for Mono — which reads as "changing the theme loses
 // the canvas grid".
-export type TabBackdrop = {
+type TabBackdrop = {
   backgroundColor?: string;
   backgroundPattern?: BackgroundPattern;
   patternColor?: string;

@@ -9,12 +9,18 @@ import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 // commit passes through, so a gesture the room would refuse never lands on screen. An Editor and a Viewer pass
 // through untouched: an Editor's commit is never checked, and a Viewer's never reaches here.
 // How often a Participant is told a gesture was held back: once for a burst (a drag, a held key), not per frame.
-export const HELD_BACK_NOTICE_MS = 4000;
+const HELD_BACK_NOTICE_MS = 4000;
 export const HELD_BACK_NOTICE =
   'As a participant you can add and write, move stickies, and remove what you added.';
 
-export function useParticipantSession(level: AccessLevel, notify?: (message: string) => void) {
-  const [adderKey, setAdderKey] = useState<string | null>(null);
+export function useParticipantSession(
+  level: AccessLevel,
+  notify?: (message: string) => void,
+  // An Editor previewing as a Participant has no key from the room: its preview's own (useViewPreview).
+  previewKey: string | null = null,
+) {
+  const [roomAdderKey, setAdderKey] = useState<string | null>(null);
+  const adderKey = roomAdderKey ?? previewKey;
   const can = useMemo(() => resolveEditorCapabilities({ level, adderKey }), [level, adderKey]);
   const participating = level === 'participate';
   const lastNoticeRef = useRef(0);

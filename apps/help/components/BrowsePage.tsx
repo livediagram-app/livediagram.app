@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { JsonLd } from '@livediagram/ui';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { HelpHero } from '@/components/HelpHero';
+import { CATEGORY_ART } from '@/components/category-art';
 import { articleHref, type Article } from '@/lib/articles';
 import { collectionJsonLd } from '@/lib/structured-data';
 
@@ -23,15 +25,22 @@ export function BrowsePage({
   title,
   lede,
   listing,
+  eyebrow = 'Help Topic',
   children,
 }: {
   title: string;
+  /** The label above the title (docs/specs/018-help/help-pages.md "Shared look"). */
+  eyebrow?: string;
   lede: string;
   // A category landing's own path and the registry articles it lists, for its CollectionPage
   // structured data (docs/specs/018-help/help-app.md "SEO"). Pages that list something else leave it out.
   listing?: { appPath: string; articles: Article[] };
   children: ReactNode;
 }) {
+  // A category landing shows its category's scene; its slug is the first segment of its path.
+  const Art = listing
+    ? CATEGORY_ART[listing.appPath.split('/').filter(Boolean)[0] ?? '']
+    : undefined;
   return (
     <div>
       {listing && (
@@ -45,13 +54,8 @@ export function BrowsePage({
         />
       )}
       <Breadcrumb items={[{ label: title }]} />
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
-        <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
-          {title}
-        </h1>
-        <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg dark:text-slate-400">
-          {lede}
-        </p>
+      <HelpHero eyebrow={eyebrow} title={title} lede={lede} art={Art ? <Art /> : undefined} />
+      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8">
         {/* The cards title themselves with h3, so the grid gets the h2 between them and the page's h1
             that a screen reader's heading list (and Lighthouse's heading-order audit) expects. */}
         <h2 className="sr-only">Guides</h2>

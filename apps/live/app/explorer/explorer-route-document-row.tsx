@@ -23,9 +23,10 @@ import {
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
+import { DocumentRowTags } from '@/components/tags/DocumentRowTags';
 
 // One document row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
@@ -92,8 +93,10 @@ export function DocumentRow(props: DocumentEntryProps) {
         {favourite ? <FavouriteMarker /> : null}
         <DriveNoticeMarker documentId={liveDoc.id} />
         {titleNode}
+        {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), right after the name. */}
+        <DocumentRowTags documentId={liveDoc.id} compactOnPhone />
         {/* Beside the name at every width: the visibility column hides on a phone. */}
-        {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
+        {isInThisBrowser(liveDoc) ? <ThisBrowserPill /> : null}
         {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">

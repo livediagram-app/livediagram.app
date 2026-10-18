@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 
 import type { CodeLanguage } from '@livediagram/document';
 import type { CodeToken } from './code-tokens';
+import { createListeners } from '@/lib/listeners';
 
 // Async loader for the code tokenizer (docs/specs/009-elements/code-block.md), on the icon-registry
 // pattern: one memoized dynamic import, a useSyncExternalStore pair, and a
@@ -12,7 +13,7 @@ type Tokenizer = (code: string, language: CodeLanguage) => CodeToken[][];
 
 let tokenizer: Tokenizer | null = null;
 let loadPromise: Promise<void> | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function ensureCodeTokenizer(): Promise<void> {
   if (tokenizer) return Promise.resolve();
@@ -20,7 +21,7 @@ function ensureCodeTokenizer(): Promise<void> {
   loadPromise = import('./code-tokens')
     .then((m) => {
       tokenizer = m.tokenizeCode;
-      listeners.forEach((l) => l());
+      listeners.notify();
     })
     .catch((err) => {
       // Failed chunk fetch: log, clear the memo so the next consumer mount
@@ -29,11 +30,6 @@ function ensureCodeTokenizer(): Promise<void> {
       loadPromise = null;
     });
   return loadPromise;
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
 }
 
 const isLoaded = () => tokenizer !== null;
@@ -48,5 +44,5 @@ export function useCodeTokenizer(): boolean {
   useEffect(() => {
     void ensureCodeTokenizer();
   }, []);
-  return useSyncExternalStore(subscribe, isLoaded, () => false);
+  return useSyncExternalStore(listeners.subscribe, isLoaded, () => false);
 }

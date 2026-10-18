@@ -119,7 +119,6 @@ export function EditorContextMenuHost() {
     previewMarker,
     commitMarkerSize,
     previewMarkerSize,
-    setRailCountSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -204,7 +203,7 @@ export function EditorContextMenuHost() {
     previewTextSize,
     commitWordmark,
     previewWordmark,
-    illustratePages,
+    pagesMode,
     canCombine,
     combineSelected,
     commitFont,
@@ -319,9 +318,9 @@ export function EditorContextMenuHost() {
   // Wordmark type is offered for a text element whose centre is on a logo page
   // (docs/specs/007-editor/logo-pages.md "Wordmark type").
   const wordmarkOffered =
-    !!illustratePages &&
+    !!pagesMode &&
     ctxSelectedEl?.type === 'text' &&
-    !!logoPageAt(illustratePages.pages, {
+    !!logoPageAt(pagesMode.pages, {
       x: ctxSelectedEl.x + ctxSelectedEl.width / 2,
       y: ctxSelectedEl.y + ctxSelectedEl.height / 2,
     });
@@ -419,7 +418,6 @@ export function EditorContextMenuHost() {
       onPreviewMarker={previewMarker}
       onSetMarkerSize={commitMarkerSize}
       onPreviewMarkerSize={previewMarkerSize}
-      onSetRailCount={setRailCountSelected}
       onSetRating={setRatingSelected}
       onSetRatingAnim={setRatingAnimSelected}
       onSetRatingAnimSpeed={setRatingAnimSpeedSelected}
@@ -535,9 +533,7 @@ export function EditorContextMenuHost() {
       onPreviewTextSize={previewTextSize}
       wordmarkOffered={wordmarkOffered}
       onCombine={canCombine() ? (op) => void combineSelected(op) : undefined}
-      onMirrorCopy={
-        illustratePages?.logo?.canMirrorCopy() ? illustratePages.logo.mirrorCopy : undefined
-      }
+      onMirrorCopy={pagesMode?.logo?.canMirrorCopy() ? pagesMode.logo.mirrorCopy : undefined}
       onSetWordmark={commitWordmark}
       onPreviewWordmark={previewWordmark}
       onSetFont={commitFont}

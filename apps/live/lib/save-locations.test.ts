@@ -6,7 +6,7 @@ import { defaultSaveLocationFor, isOfflineLocation } from './save-locations';
 // future location can't silently create offline.
 describe('save locations', () => {
   // "The default depends on who is creating".
-  it('starts a guest on Local Browser when sign-in is enabled', () => {
+  it('starts a guest on This Browser when sign-in is enabled', () => {
     expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: true })).toBe('browser');
   });
 
@@ -18,7 +18,7 @@ describe('save locations', () => {
     expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: false })).toBe('livediagram');
   });
 
-  it('routes only Local Browser to the offline store', () => {
+  it('routes only This Browser to the offline store', () => {
     expect(isOfflineLocation('browser')).toBe(true);
     expect(isOfflineLocation('livediagram')).toBe(false);
   });

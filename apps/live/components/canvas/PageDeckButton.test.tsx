@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PageDeckButton } from './PageDeckButton';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": a slide page's deck button.
+// docs/specs/007-editor/pages-mode.md "Slides": a slide page's deck button.
 afterEach(cleanup);
 
 const controls = (slide?: { id: string; hidden: boolean }) => ({

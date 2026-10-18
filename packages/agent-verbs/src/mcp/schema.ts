@@ -77,8 +77,9 @@ const CONTENT_KINDS =
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
   `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
   'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
-  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"? }] rows (up to ' +
-  `${ENTITY_MAX_FIELDS}; keys go in the type, e.g. "uuid PK"); the box grows to fit its rows. ` +
+  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"?, "key"? }] rows (up to ' +
+  `${ENTITY_MAX_FIELDS}; "key" is "pk", "fk", "pk-fk" or "uk"); the box grows to fit its rows. A pinned ` +
+  'arrow end on an entity may add "field": a row index, with anchor "w" or "e", to join that field. ' +
   'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
   'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
   'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
@@ -122,7 +123,8 @@ const CONTENT_KINDS =
   '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
   'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
   'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +
-  'rings from the core out, "chevrons" 2 to 8 stages left to right. They draw their own rows in the colour ramp; ' +
+  'rings from the core out, "chevrons" 2 to 8 stages left to right, "timeline-rail" 2 to 8 milestones ' +
+  'left to right (label = what, note = when: a date, a quarter). They draw their own rows in the colour ramp; ' +
   'do not draw them from separate shapes. ' +
   // Round 2 (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "pointer-note": a note ("label") with a leader to a tip; "pointerTip" { x, y } is relative to its ' +
@@ -190,7 +192,7 @@ const ELEMENT_SCHEMA_HINT =
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
   'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
-  'Any element may carry "finish" ("flexible", "professional" or "sketch") to be drawn ' +
+  'Any element may carry "finish" ("flexible", "professional", "sketch" or "marker") to be drawn ' +
   'differently from its tab. ' +
   STYLE_FIELDS +
   CONTENT_KINDS;
@@ -298,14 +300,14 @@ use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 "text" (text is only for titles/captions), prefer pinned arrows (node -> node),
 and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
 entities, lanes and charts carry content fields, documented on each tool's
-element argument. For a standard artefact that is not a node/edge graph (kanban, SWOT,
-gantt, wireframe, retro, ...) list_templates has hand-tuned scaffolds: pass its kind as
+element argument. For a standard artefact that is not a node/edge graph (kanban, swot,
+gantt, browser-wireframe, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
 "template" on create_document / add_tab, then fill in real labels with
 update_document. search_icons finds icon ids for "iconId" and a graph node's "icon". Plan boards hold cards (items), which have their own tools:
 list_items reads a document's boards, their columns by name, its cards and its
 card types; change_items adds, edits and moves cards, naming columns, card
 types, fields and people as the board shows them; add_board puts a board on a
-tab (a preset or columns by name) and change_board changes one (title, columns,
+tab in Plan (a preset or columns by name) and change_board changes one (title, columns,
 the card types it shows); change_card_types adds and edits card types and their
 custom fields. A board shows only the card types it takes. A Plan template (kanban, project-planner, bug-triage)
 makes a document with boards ready to fill. Sheets (spreadsheets on a tab) have
@@ -313,8 +315,8 @@ theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A
 (inputs, worked-out values and what they show), change_sheet sets, clears and
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
-and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.
-Illustrate tabs hold pages: infographics, slides, logo artboards and articles
+and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
+Tabs in Pages mode hold pages: infographics, slides, logo artboards and articles
 (documents of text on pages). change_pages adds, changes, lays out (from a
 ready-made layout), moves, copies and deletes infographic, slide and logo pages
 and answers each page's rectangle on the canvas, where update_document puts
@@ -325,7 +327,7 @@ add a logo page. A new document for pages starts with create_document and one
 tab whose template is "blank-slide-deck" for a deck (one empty slide; change_pages
 adds the rest, each change an object such as {"op": "add", "kind": "slide",
 "layout": ...}) or "blank-illustration" otherwise (then write_article or
-change_pages on it); the Illustrate templates (article, slide-deck, logo-design, ...) start
+change_pages on it); the Pages templates (article, slide-deck, logo-design, ...) start
 from ready-made pages. A layout's elements hold sample text: read_document with
 view "pages" lists each page's elements with their refs and text, to replace
 with update_document. It also shows each article as Markdown.
@@ -333,8 +335,8 @@ Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
 without an account, each response a card on a Board tab or a row in a sheet.
 add_form makes one (from a starter or questions, in a document of its own when
 no documentId is given), change_form changes it, read_form reads it with its
-link, state and anything stopping it being published, and share_form publishes,
-closes or deletes its link. Asked for a form, survey, sign-up or RSVP, make a
+link, state and anything stopping it being published, share_form publishes,
+closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
 form; its responses are read with list_items (cards) or read_sheet (rows).`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
@@ -433,8 +435,9 @@ const finishField = z
   .optional()
   .describe(
     'How the tab is drawn (docs/specs/008-canvas/finish.md): "flexible" (the default), "professional" ' +
-      '(crisp corners, thin lines, no shadows) or "sketch" (hand-drawn lines, hatched fills, a ' +
-      'handwriting font). An element can carry its own "finish" too.',
+      '(crisp corners, thin lines, no shadows), "sketch" (hand-drawn pencil lines, hatched fills, a ' +
+      'handwriting font) or "marker" (bold felt-tip lines, coloured-in fills, marker lettering). An element ' +
+      'can carry its own "finish" too.',
   );
 
 // Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): the LOW-BURDEN path. Give just the
@@ -656,7 +659,7 @@ export const findDocumentsShape = {
 export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
 
 // The longest edit-operations text update_document takes: room for a few hundred lines.
-export const EDITS_MAX_CHARS = 40_000;
+const EDITS_MAX_CHARS = 40_000;
 
 export const readDocumentShape = {
   documentId: z.string().describe('The document id (from find_documents).'),
@@ -668,7 +671,7 @@ export const readDocumentShape = {
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
         'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
         'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
-        "pages: an Illustrate tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
+        "pages: a Pages tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
     ),
   budget: z
     .number()
@@ -711,13 +714,13 @@ export const readDocumentShape = {
     .boolean()
     .optional()
     .describe(
-      'Also attach a PNG preview of the tab (costs about a thousand tokens). An Illustrate tab draws as its pages, each as it exports: its background, what reaches onto it, cut at its edges.',
+      'Also attach a PNG preview of the tab (costs about a thousand tokens). A Pages tab draws as its pages, each as it exports: its background, what reaches onto it, cut at its edges.',
     ),
   page: z
     .union([z.string(), z.number().int().min(1)])
     .optional()
     .describe(
-      'With image, on an Illustrate tab: draw only this page, at its own size (its id, its place 1 first, or its name). Without it every page is drawn, in rows.',
+      'With image, on a Pages tab: draw only this page, at its own size (its id, its place 1 first, or its name). Without it every page is drawn, in rows.',
     ),
 };
 

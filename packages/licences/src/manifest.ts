@@ -12,7 +12,7 @@ import { textHash } from './licence-files.ts';
 
 export type Unused = { kind: 'override' | 'embedded'; id: string };
 
-export type BuiltManifest = {
+type BuiltManifest = {
   manifest: LicencesManifest;
   // hash -> normalised text, one file each.
   texts: Map<string, string>;

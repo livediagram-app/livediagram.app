@@ -1,12 +1,14 @@
-import { conceptOutro, inElement, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { doublePressWord, menuStep, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Entity tour (docs/specs/007-editor/element-tours.md "The Entity tour"), on a selected entity: a title over
-// `name: Type` rows, renaming it, its fields, the Fields menu that edits them, and joining entities with ER ends.
+// `name: Type` rows with their keys, renaming it, editing a field where it stands, the Fields menu, and growing a
+// model: related entities, field-to-field relationships and their cardinality.
 
-export type EntityTourContext = MenuTourEnv & {
+type EntityTourContext = MenuTourEnv & {
   // It has fields to ring (`data-entity-fields`).
   hasFields: boolean;
 };
@@ -17,40 +19,32 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
     onGraphic(
       'entity',
       'A Title Over Its Fields',
-      'One box for a UML class or an ER table: the title bar names it, and each row below is a field.',
-      inElement(id),
+      'A class or table: the title on top, a field on each row.',
+      elementSelector(id),
     ),
     onGraphic(
       'title',
       'Rename It',
-      `${doublePressWord(ctx)} it to type over its title. It formats and aligns like any label.`,
-      inElement(id),
+      `${doublePressWord(ctx)} its title bar to edit the title.`,
+      elementSelector(id),
     ),
     ...(ctx.hasFields
       ? [
           onGraphic(
             'rows',
             'name: Type',
-            'Each field is a name and an optional type, muted on the right so the names scan. A method is a row too: render(): void.',
-            inElement(id, '[data-entity-fields]'),
+            `Each field is a name, an optional type and a key. ${doublePressWord(ctx)} one to edit it.`,
+            elementSelector(id, '[data-entity-fields]'),
           ),
         ]
       : []),
-    menuStep(
-      ctx,
-      'menu',
-      'Edit the Fields',
-      'Tools, then Fields: a name and a type per row, a cross to remove one, and Add Field for the next, up to forty.',
-    ),
+    menuStep(ctx, 'menu', 'Edit the Fields', 'Tools › Fields adds, edits and removes fields.'),
     onGraphic(
       'relate',
       'Join Them Up',
-      "Draw a line from one entity to another, then give its ends the ER marks (one, many, zero or many) from the line's own menu.",
-      inElement(id),
+      'A "+" beside it adds a related entity, already joined. Or drag from the dot beside a field to a field of another entity: the line becomes one to many, and its Cardinality button changes that.',
+      elementSelector(id),
     ),
-    conceptOutro(
-      'That Is an Entity',
-      'It exports exactly as drawn, and every change is one undo step.',
-    ),
+    conceptOutro('That Is an Entity', 'It exports as you see it. Undo takes back any change.'),
   ];
 }

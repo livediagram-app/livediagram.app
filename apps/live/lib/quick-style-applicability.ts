@@ -6,7 +6,7 @@ import type { Element, FreehandElement } from '@livediagram/document';
 import { isQuickStyleTarget, type QuickStyleTarget } from './quick-style';
 import { isPenStroke } from './quick-style-pen';
 
-export type QuickStyleApplicability = {
+type QuickStyleApplicability = {
   targets: QuickStyleTarget[];
   strokes: FreehandElement[];
 };

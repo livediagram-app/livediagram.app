@@ -25,16 +25,15 @@ import { groupRows } from './event-storming-lane-landing';
 import { ES_LANES, ES_NOTE_GAP, laneCentre, laneIndexAt } from './event-storming-lanes';
 import type { BoardNote } from './event-storming-photo-match';
 import type { PhotoAddition } from './event-storming-photo';
+import type { Rect } from './geometry-primitives';
 
 // "Roughly above one another": within a quarter of a standard note.
 export const PHOTO_COLUMN_RADIUS = ES_NOTE_SIZE_PX.square.width / 4;
 
-type Box = { x: number; y: number; width: number; height: number };
-
-const centreX = (b: Box) => b.x + b.width / 2;
-const centreY = (b: Box) => b.y + b.height / 2;
-const overlapsX = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width;
-const overlaps = (a: Box, b: Box) =>
+const centreX = (b: Rect) => b.x + b.width / 2;
+const centreY = (b: Rect) => b.y + b.height / 2;
+const overlapsX = (a: Rect, b: Rect) => a.x < b.x + b.width && b.x < a.x + a.width;
+const overlaps = (a: Rect, b: Rect) =>
   overlapsX(a, b) && a.y < b.y + b.height && b.y < a.y + a.height;
 
 // COLUMNS. Visited left to right, each note joins the first column whose anchor
@@ -75,7 +74,7 @@ export function placeNewNotes(additions: PhotoAddition[], existing: BoardNote[])
   rows.forEach((row, r) => row.forEach((i) => (rowOf[i] = r)));
   const xs = alignColumns(additions, rowOf);
   const heightOf = (i: number) => additions[i]!.height;
-  const footprint = (i: number, lane: number): Box => ({
+  const footprint = (i: number, lane: number): Rect => ({
     x: xs[i]!,
     y: laneCentre(lane, ES_LANES) - heightOf(i) / 2,
     width: additions[i]!.width,
@@ -118,7 +117,7 @@ export function placeNewNotes(additions: PhotoAddition[], existing: BoardNote[])
       .map((_, i) => i)
       .filter((i) => laneOf[i] === lane)
       .sort((a, b) => centreX(additions[a]!) - centreX(additions[b]!) || a - b);
-    let previous: Box | null = null;
+    let previous: Rect | null = null;
     for (const i of onLane) {
       let at = footprint(i, lane);
       if (previous && at.x < previous.x + previous.width) {

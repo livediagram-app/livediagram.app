@@ -340,6 +340,17 @@ export const INVITES_DECLINED: Metric = {
   blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
 };
 
+// docs/specs/013-workspace/teams.md "Declining from the email": the same answer, given from the inbox.
+export const INVITES_DECLINED_FROM_EMAIL: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Email',
+  rising: 'neutral',
+  title: 'Invites Declined From Email',
+  blurb:
+    "The recipient turned an invitation down from the email's Decline link, without signing in.",
+};
+
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
@@ -555,6 +566,7 @@ export const TEAM_ACTIVITY: MetricStack = {
     INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
+    INVITES_DECLINED_FROM_EMAIL,
     DOCUMENTS_SHARED_TO_A_TEAM,
     TEAM_DOCUMENTS_MOVED,
     INVITE_LINKS_SHARED,
@@ -644,7 +656,7 @@ export const TIMELINE_VISITS = chart(
   'Timeline',
   'Opened',
   'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See timeline.",
+  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
   { types: ['Nav'] },
 );
 
@@ -704,11 +716,19 @@ export const HOME_VISITS = chart(
   { types: ['Nav'] },
 );
 
+export const HOME_WELCOMES = chart(
+  'Home',
+  'Opened',
+  'First-Run Homes',
+  'Home shown to someone with no documents yet, offering blanks and popular templates to start from.',
+  { types: ['Welcome'] },
+);
+
 export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
   'Documents Opened from Home',
-  'A document opened from Jump back in (most used or recent) or What happened, or See more followed.',
+  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
@@ -729,6 +749,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   members: [
     HOME_LANDINGS,
     HOME_VISITS,
+    HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
@@ -774,7 +795,7 @@ export const SLIDES_ADDED = chart(
   'UI',
   'Added',
   'Slides Added',
-  'A slide added to a deck: from a selection, an Illustrate page, a Plan card or a whole Plan board as a slide.',
+  'A slide added to a deck: from a selection, a page, a Plan card or a whole Plan board as a slide.',
   { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide', 'AllPageSlides'] },
 );
 

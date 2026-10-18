@@ -150,7 +150,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
   then "Troubleshooting steps" (`HelpArticleLink variant="text"`).
 - Panel: Copy Diagnostics (Copy icon, "Copied" with a check for 2 s) and Repair This Browser
   (Refresh icon, `aria-expanded`); the inline confirm lists what is kept.
-- Help tool: a bordered box titled "This browser" with the check lines, then the panel; after a
+- Help tool: a bordered box titled "This Browser" with the check lines, then the panel; after a
   repair "Done. Open your document again." and "Go to your documents".
 
 ## Accessibility

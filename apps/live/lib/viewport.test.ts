@@ -4,7 +4,7 @@ import {
   FIT_TO_SCREEN_MAX_AT_FIT,
   FIT_TO_SCREEN_MIN,
   FIT_TO_SCREEN_PADDING,
-  besideLeftInset,
+  besideSideInsets,
   computeFitBelow,
   computeFitToScreen,
   computeReadingFrame,
@@ -154,30 +154,42 @@ describe('isContentOffScreen', () => {
   });
 });
 
-// Illustrate mode centres its page below the Toolbar layout's strip
+// Pages mode centres its page below the Toolbar layout's strip
 // (docs/specs/007-editor/editor-modes.md "The pages").
-describe('besideLeftInset', () => {
+describe('besideSideInsets', () => {
   // A canvas x on screen, with the centred transform (lib/viewport.ts).
   const screenX = (x: number, w: number, f: { zoom: number; offset: { x: number } }) =>
     w / 2 + f.zoom * (x + f.offset.x - w / 2);
+  const box = { x: 3000, y: -400, width: 1123, height: 794 };
+  const w = 1200;
 
-  it('centres the box in the band beside a docked sidebar, not under it', () => {
-    const w = 1200;
-    const inset = 260;
-    const box = { x: 3000, y: -400, width: 1123, height: 794 };
-    const fitted = besideLeftInset(
-      computeFitBelow({ width: w - inset, height: 800 }, box, 64),
-      inset,
+  it('centres the box in the band beside a panel on the left, not under it', () => {
+    const insets = { left: 260, right: 0 };
+    const fitted = besideSideInsets(
+      computeFitBelow({ width: w - 260, height: 800 }, box, 64),
+      insets,
     );
     const left = screenX(box.x, w, fitted);
     const right = screenX(box.x + box.width, w, fitted);
-    expect((left + right) / 2).toBeCloseTo(inset + (w - inset) / 2, 6);
-    expect(left).toBeGreaterThan(inset);
+    expect((left + right) / 2).toBeCloseTo(260 + (w - 260) / 2, 6);
+    expect(left).toBeGreaterThan(260);
   });
 
-  it('leaves a frame alone with no sidebar', () => {
+  it('and beside a panel on the right', () => {
+    const insets = { left: 0, right: 300 };
+    const fitted = besideSideInsets(
+      computeFitToScreen({ width: w - 300, height: 800 }, box),
+      insets,
+    );
+    const left = screenX(box.x, w, fitted);
+    const right = screenX(box.x + box.width, w, fitted);
+    expect((left + right) / 2).toBeCloseTo((w - 300) / 2, 6);
+    expect(right).toBeLessThan(w - 300);
+  });
+
+  it('leaves a frame alone with no panel', () => {
     const frame = { zoom: 0.5, offset: { x: 10, y: 20 } };
-    expect(besideLeftInset(frame, 0)).toBe(frame);
+    expect(besideSideInsets(frame, { left: 0, right: 0 })).toBe(frame);
   });
 });
 

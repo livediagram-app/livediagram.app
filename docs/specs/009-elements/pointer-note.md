@@ -61,7 +61,7 @@ to the spot the note is about. CSS only; reduced motion and every export show th
 | Mode       | Where                                     |
 | ---------- | ----------------------------------------- |
 | Diagram    | **Write**: Pointer Note, after Annotation |
-| Illustrate | **Write**: Pointer Note                   |
+| Pages      | **Write**: Pointer Note                   |
 | Plan       | none                                      |
 | Facilitate | **Write**: Pointer Note                   |
 

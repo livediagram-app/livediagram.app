@@ -9,18 +9,20 @@ import { arrowPolyline, passesThroughOwnShapes, pathsCross } from './arrow-path-
 // Runs after the auto-rebind's re-evaluation, on the same working index.
 
 // Uncrossing straight paths converges in a pass or two; curves are capped.
-export const SWAP_MAX_PASSES = 8;
+const SWAP_MAX_PASSES = 8;
 // A side busier than this is left alone: pairs grow quadratically and a fan
 // that dense is separated visually anyway.
-export const SWAP_MAX_ENDS_PER_SIDE = 32;
+const SWAP_MAX_ENDS_PER_SIDE = 32;
 
 const SIDES: readonly Side[] = ['n', 'e', 's', 'w'];
 
 type End = { arrowId: ElementId; end: 'from' | 'to' };
 
+// A field-pinned end (docs/specs/009-elements/entity.md "Field to field") sits where its field is, not where
+// its anchor is, so trading anchors would move nothing: it takes no part.
 const anchorOf = (index: Map<ElementId, Element>, e: End): Anchor | null => {
   const ep = (index.get(e.arrowId) as ArrowElement)[e.end];
-  return ep.kind === 'pinned' ? ep.anchor : null;
+  return ep.kind === 'pinned' && ep.field === undefined ? ep.anchor : null;
 };
 
 const withAnchor = (arrow: ArrowElement, end: 'from' | 'to', anchor: Anchor): ArrowElement => {

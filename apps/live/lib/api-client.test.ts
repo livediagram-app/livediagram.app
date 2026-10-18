@@ -10,6 +10,7 @@ import {
   apiDeleteTab,
   apiDismissSharedWith,
   apiFetchImageBlobUrl,
+  releaseImageBlobUrl,
   apiListImages,
   apiLoadDocument,
   apiLoadShared,
@@ -22,6 +23,7 @@ import {
   setTokenProvider,
 } from './api-client';
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
+import { resetDisplayCacheForTests } from './image-display';
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -507,6 +509,28 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(bodies[0]!.itemTypes).toEqual(itemTypes);
     expect(bodies[1]).not.toHaveProperty('itemTypes');
   });
+
+  // docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies": a sync, a duplicate and a Drive import all
+  // hand over the document's sheets. The field was typed but never sent, so a synced document with a Sheet came up
+  // short and kept its local copy, and a copy landed without its sheets.
+  it('sends the sheet store when one is given', async () => {
+    const fetchSpy = vi.fn().mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ document: { id: 'd1' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const sheets = [{ id: 's1', tabId: 't1', title: 'Responses', cells: [] }];
+    await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [], sheets });
+    await apiCreateDocument('owner', { id: 'd2', name: 'N', tabs: [], sheets: [] });
+    const bodies = fetchSpy.mock.calls.map(
+      ([, init]) => JSON.parse((init as RequestInit).body as string) as Record<string, unknown>,
+    );
+    expect(bodies[0]!.sheets).toEqual(sheets);
+    expect(bodies[1]).not.toHaveProperty('sheets');
+  });
 });
 
 describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
@@ -809,6 +833,28 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     const [url, init] = spy.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toMatch(/\/images\/img%201\?d=d1$/); // imageId encoded
     expect((init.headers as Headers).get('X-Share-Code')).toBe('CODE2345');
+  });
+
+  it('hands every view of the same picture one shared URL, fetched once', async () => {
+    resetDisplayCacheForTests();
+    const spy = vi.fn().mockImplementation(async () => new Response('png', { status: 200 }));
+    vi.stubGlobal('fetch', spy);
+    const made = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:shared');
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    try {
+      const a = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
+      const b = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
+      expect([a, b]).toEqual(['blob:shared', 'blob:shared']);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(made).toHaveBeenCalledTimes(1);
+      releaseImageBlobUrl(a!);
+      expect(revoke).not.toHaveBeenCalled();
+      releaseImageBlobUrl(b!);
+      expect(revoke).toHaveBeenCalledWith('blob:shared');
+    } finally {
+      made.mockRestore();
+      revoke.mockRestore();
+    }
   });
 
   it('omits the query string when no document id is given', async () => {

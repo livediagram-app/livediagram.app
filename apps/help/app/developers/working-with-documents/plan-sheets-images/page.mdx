@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Plan Items, Sheets and Images',
   description:
-    'livediagram API examples for Plan items and card types, Sheet cells, image uploads, Illustrate pages and articles, SVG renders, copies and themes.',
+    'livediagram API examples for Plan items and card types, Sheet cells, image uploads, pages and articles, SVG renders, copies and themes.',
   path: '/help/developers/working-with-documents/plan-sheets-images/',
 });
 
 <ArticleLayout title="Plan Items, Sheets and Images" description="Worked examples for the rest of a document: Plan cards, Sheets, images, pages, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "plan-sheets-images")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the cards on its Plan boards, the cells of its Sheets, the images it shows, its Illustrate pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://livediagram.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the cards on its Plan boards, the cells of its Sheets, the images it shows, its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://livediagram.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the document open straight away, credited to you.
 
@@ -167,7 +167,7 @@ It answers with the write as it landed, the sheet's new `rev` and the stored sta
   the MCP server's `change_sheet`, which work out the ids for you.
 </Tip>
 
-A Sheet shows on a tab through a Sheet element. `livediagram sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
+A Sheet shows on a tab in Plan through a Sheet element, as a board does; any other tab refuses either (`tab_not_plan` from `add_sheet` and `add_board`, `invalid_value` from a changeset), so start one with `add_tab` and the `blank-spreadsheet` or `kanban` template. `livediagram sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
 
 ## Images
 
@@ -207,13 +207,13 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
 
 `GET /images` lists your uploads, `GET /images/usage` maps each to the documents that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and on a host that sets a gallery limit, `403 gallery_full`.
 
-## Illustrate Pages and Articles
+## Pages and Articles
 
-`POST /documents/$DOC/tabs/$TAB/illustrate` changes a tab's [Illustrate](/help/canvas/illustrate/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Illustrate by the same edit; a locked tab or an Event Storming board is refused.
+`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/canvas/pages-mode/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Pages by the same edit; a locked tab or an Event Storming board is refused.
 
 ```bash
 # Add two slides and rename the first page
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/illustrate \
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/pages \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "pages": [
     { "op": "add", "kind": "slide", "name": "Roadmap" },
@@ -222,7 +222,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/illustrate \
   ] }'
 
 # Write an article: the editor flows it onto pages
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/illustrate \
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/pages \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "article": { "markdown": "# Release notes\n\nWhat changed this month.", "size": "a4" } }'
 ```

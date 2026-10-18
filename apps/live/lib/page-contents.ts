@@ -1,4 +1,4 @@
-// The Contents popover's list (docs/specs/007-editor/illustrate-pages.md "Contents"): a row per
+// The Contents popover's list (docs/specs/007-editor/pages-mode.md "Contents"): a row per
 // page in row order, what each says about itself, which page is in view, and the Find a Page
 // narrowing. Pure: pages and the view in, rows out.
 import {
@@ -8,8 +8,9 @@ import {
   pageSizeLabel,
   pageUnits,
   type ArticleFlow,
-  type IllustratePage,
+  type Page,
   type LaidOutPage,
+  type PageKind,
 } from '@livediagram/document';
 import { rowDropIndex, type RowDrop } from '@/hooks/ui/useRowReorderDrag';
 
@@ -24,6 +25,9 @@ export type ContentsRow = {
   locked: boolean;
   // Its shape on the sheet, for the thumbnail's frame.
   aspect: number;
+  kind: PageKind;
+  // A slide page with a slide in the deck; absent where there is no deck to ask.
+  inDeck?: boolean;
 };
 
 // More pages than this show the Find a Page box.
@@ -65,33 +69,43 @@ export function contentsRows(
       line,
       locked: p.locked === true,
       aspect: p.rect.width / p.rect.height,
+      kind,
+      ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
     };
   });
 }
 
 /** The rows a Find a Page query keeps: every word found in the name, the line or the number. */
-export function filterContents(rows: readonly ContentsRow[], query: string): ContentsRow[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+export function filterContents(
+  rows: readonly ContentsRow[],
+  query: string,
+  // The words on each page (lib/page-texts.ts), searched as its name is.
+  texts?: ReadonlyMap<string, string>,
+): ContentsRow[] {
+  const words = normalise(query).split(/\s+/).filter(Boolean);
   if (words.length === 0) return [...rows];
   return rows.filter((r) => {
-    const hay = `${r.number} ${r.name} ${r.line}`.toLowerCase();
+    const hay = normalise(`${r.number} ${r.name} ${r.line} ${texts?.get(r.id) ?? ''}`);
     return words.every((w) => hay.includes(w));
   });
 }
 
+// Case and width folded, as the editor's find folds them (normaliseFind in document-views).
+const normalise = (text: string) => text.normalize('NFKC').toLowerCase();
+
 /** The page in view: the one whose rectangle holds the middle of the screen, else the nearest to
  *  it. `view` is the canvas's (the centred transform: a canvas x lands at screen
  *  `w/2 + zoom(x + offset.x - w/2)`, lib/viewport.ts) and `screen` the canvas area's size in screen
- *  px. `insetLeft` is the screen px a docked sidebar covers at the canvas's left: the middle is the
+ *  px. `insets` are the screen px the Contents panel covers at the canvas's sides: the middle is the
  *  middle of what shows beside it. */
 export function pageInView(
   pages: readonly LaidOutPage[],
   view: { zoom: number; offset: { x: number; y: number } },
   screen: { width: number; height: number },
-  insetLeft = 0,
+  insets: { left: number; right: number } = { left: 0, right: 0 },
 ): string | undefined {
   if (pages.length === 0) return undefined;
-  const cx = screen.width / 2 - view.offset.x + insetLeft / (2 * view.zoom);
+  const cx = screen.width / 2 - view.offset.x + (insets.left - insets.right) / (2 * view.zoom);
   const cy = screen.height / 2 - view.offset.y;
   let best: LaidOutPage | undefined;
   let bestD = Infinity;
@@ -108,15 +122,15 @@ export function pageInView(
 }
 
 /** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves
- *  to, or null when it stays put (docs/specs/007-editor/illustrate-pages.md "Contents"). A page moves
+ *  to, or null when it stays put (docs/specs/007-editor/pages-mode.md "Contents"). A page moves
  *  with its unit: an article's pages go together, so a drop beside any of its pages is a drop beside
  *  the whole article. */
 export function contentsDropUnit(
-  pages: readonly Pick<IllustratePage, 'id' | 'flow'>[],
+  pages: readonly Pick<Page, 'id' | 'flow'>[],
   pageId: string,
   drop: RowDrop,
 ): number | null {
-  const units = pageUnits(pages as IllustratePage[]);
+  const units = pageUnits(pages as Page[]);
   const unitOf = (id: string) => units.findIndex((u) => u.pageIds.includes(id));
   const from = unitOf(pageId);
   const target = pages[drop.index];

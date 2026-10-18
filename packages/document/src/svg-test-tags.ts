@@ -2,7 +2,7 @@
 // `<text[^>]*y="…"[^>]*>` is polynomial on repeated attributes): tags are found by index, and each
 // tag's attributes are read inside its own `<…>` only.
 
-export type SvgTag = Record<string, string>;
+type SvgTag = Record<string, string>;
 
 function attributesOf(tag: string): SvgTag {
   const out: SvgTag = {};

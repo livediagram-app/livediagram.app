@@ -38,7 +38,7 @@ export const AVATAR_HEARTBEAT_MS = 3000;
 
 // How close the pusher stands before shoving: just outside the other
 // character, so the two meet rather than overlap.
-export const AVATAR_SHOVE_REACH = 46;
+const AVATAR_SHOVE_REACH = 46;
 
 export const AVATAR_SPEED = 260;
 
@@ -51,7 +51,7 @@ export const AVATAR_HEIGHT = 56;
 // The sprite's SVG clips at its viewBox, so without headroom a hop chopped the
 // character off at the shoulders — the box has to cover the peak of the hop,
 // not just the standing figure.
-export const AVATAR_JUMP_HEADROOM = 80;
+const AVATAR_JUMP_HEADROOM = 80;
 
 // The sprite's drawing box, in one place so the placement (AvatarWalker) and
 // the art (AvatarSprite) can't drift apart. The figure is drawn on a 16x24
@@ -61,7 +61,7 @@ export const AVATAR_JUMP_HEADROOM = 80;
 const GRID_W = 16;
 const GRID_H = 24;
 // One grid pixel, in canvas px.
-export const AVATAR_UNIT = (AVATAR_HEIGHT + 4) / GRID_H;
+const AVATAR_UNIT = (AVATAR_HEIGHT + 4) / GRID_H;
 const SLACK_UNITS = 5;
 const HEADROOM_UNITS = AVATAR_JUMP_HEADROOM / AVATAR_UNIT;
 
@@ -112,7 +112,7 @@ const ARRIVE_EPSILON = 1.5;
 
 // How near a viewport edge (SCREEN px) the avatar may get before the
 // camera pans to keep it comfortably in frame.
-export const AVATAR_FOLLOW_MARGIN = 120;
+const AVATAR_FOLLOW_MARGIN = 120;
 
 export type AvatarFacing = 'down' | 'up' | 'left' | 'right';
 
@@ -122,7 +122,7 @@ export type AvatarPoint = { x: number; y: number };
 // peaks around 70px and lands in a bit over half a second — high enough to
 // read as a jump from across a room, short enough to spam.
 export const AVATAR_JUMP_VELOCITY = 520;
-export const AVATAR_GRAVITY = 1800;
+const AVATAR_GRAVITY = 1800;
 // How long the flag keeps waving after the feet are back down, so the wave
 // reads as a celebration rather than stopping dead on landing.
 export const AVATAR_WAVE_TAIL_MS = 700;

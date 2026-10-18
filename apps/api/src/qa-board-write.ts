@@ -25,7 +25,7 @@ import type { Env } from './types';
 // handful of re-reads is plenty.
 const MAX_ATTEMPTS = 8;
 
-export type QaWriteResult =
+type QaWriteResult =
   | { ok: true; changed: boolean; notes: QaNote[]; rev: number }
   | { ok: false; status: 404 | 409 | 413 };
 

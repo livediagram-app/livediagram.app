@@ -14,12 +14,12 @@ export function estimateTokens(text: string | number): number {
 export type Noun = { one: string; many: string };
 // A line and what it shows; a separator has no noun and is never counted.
 export type ViewLine = { text: string; noun?: Noun };
-export type Omission = { noun: string; count: number };
+type Omission = { noun: string; count: number };
 // What a view leaves out whatever the budget, and the arguments that show it.
-export type FixedOmission = { omitted: Omission[]; args: ElisionArguments };
+type FixedOmission = { omitted: Omission[]; args: ElisionArguments };
 
 // `kept` of `total` lines printed.
-export type FittedLines = {
+type FittedLines = {
   text: string;
   elision: Elision;
   kept: number;

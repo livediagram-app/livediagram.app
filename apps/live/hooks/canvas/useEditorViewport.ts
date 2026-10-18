@@ -14,17 +14,16 @@ import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
+import { isBoxed, unionBoxedBounds, type PageRect, type Tab } from '@livediagram/document';
 import {
   computeFitToScreen,
-  FIT_TO_SCREEN_PADDING,
   computeViewportCanvasRect,
   computeViewportCenter,
-  topChromeInset,
 } from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { glideViewport } from '@/lib/viewport-glide';
+import { tabFitView } from '@/lib/tab-fit-view';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
 // than 100%, so a mobile visitor lands on a usable overview instead
@@ -114,12 +113,12 @@ type EditorViewportApi = {
   ) => void;
   // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
   centreOn: (at: { x: number; y: number }) => void;
-  // Is that point already in the middle of this view?
-  isCentredOn: (at: { x: number; y: number }) => boolean;
+  // Is that point already in the middle of this view? With its page (Pages), is that page framed?
+  isCentredOn: (at: { x: number; y: number }, page?: PageRect | null) => boolean;
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
-export const FIT_GLIDE_MS = 420;
+const FIT_GLIDE_MS = 420;
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
@@ -282,35 +281,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   }, [deps.activeTab.elements, deps]);
 
   const fitToScreen = useCallback(() => {
-    const box = canvasMainRef.current?.getBoundingClientRect();
-    if (!box) return;
-    // Plain numbers: a DOMRect's fields are prototype getters, so spreading one (computeFitBelow does) loses them
-    // and the zoom comes out NaN.
-    const rect = { width: box.width, height: box.height, top: box.top, bottom: box.bottom };
-    const { activeTab } = depsRef.current;
-    const boxedIds = new Set(activeTab.elements.filter(isBoxed).map((el) => el.id));
-    if (boxedIds.size === 0) {
-      setViewportOffset({ x: 0, y: 0 });
-      setViewportZoom(1);
-      return;
-    }
-    const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
-    if (!bbox) return;
-    // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
-    const strip = document
-      .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
-      ?.getBoundingClientRect();
-    const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
-    // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
-    // strip was considered) and clears both the strip and the bottom chrome of the same depth.
-    const { zoom, offset } = computeFitToScreen(
-      rect,
-      bbox,
-      undefined,
-      Math.max(FIT_TO_SCREEN_PADDING, inset),
-    );
-    setViewportZoom(zoom);
-    setViewportOffset(offset);
+    const view = tabFitView(canvasMainRef.current, depsRef.current.activeTab.elements);
+    if (!view) return;
+    setViewportZoom(view.zoom);
+    setViewportOffset(view.offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
 
   // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
@@ -340,7 +314,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The rule itself is shared with the presser's side of the press, which asks
   // the same thing of everyone else's published viewport.
   const isCentredOn = useCallback(
-    (at: { x: number; y: number }) => {
+    (at: { x: number; y: number }, page?: PageRect | null) => {
       const node = canvasMainRef.current;
       if (!node) return false;
       return viewIsCentredOn(
@@ -350,6 +324,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           zoom: zoomRef.current,
         },
         at,
+        page,
       );
     },
     [viewportOffsetRef, zoomRef],

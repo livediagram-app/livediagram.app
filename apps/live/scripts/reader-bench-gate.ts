@@ -9,7 +9,7 @@
 //   npx tsx scripts/reader-bench-gate.ts <smolvlm.json> <det.json> <gated.json>
 import { readFileSync, writeFileSync } from 'node:fs';
 
-export type BenchResult = {
+type BenchResult = {
   wall: string;
   index: number;
   truth: string | null;

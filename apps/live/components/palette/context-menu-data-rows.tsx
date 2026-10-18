@@ -1,5 +1,5 @@
-// The DATA-shape context-menu rows (docs/specs/009-elements/progress.md progress, docs/specs/009-elements/timeline-rail.md rails,
-// rating, pie / chart): the inline editors (point stepper, star picker,
+// The DATA-shape context-menu rows (docs/specs/009-elements/progress.md progress,
+// rating, pie / chart): the inline editors (star picker,
 // percent slider), their category glyphs, and the shared AnimTiles
 // grid the three per-kind animation pickers ride. Split from
 // context-menu-rows.tsx (which re-exports everything here) so that file
@@ -12,8 +12,6 @@ import {
   clampPercent,
   PIE_ANIMS,
   PROGRESS_ANIMS,
-  RAIL_MAX_POINTS,
-  RAIL_MIN_POINTS,
   RATING_ANIMS,
   RATING_MAX,
   SANKEY_ANIMS,
@@ -47,46 +45,6 @@ import { lucideChartColumn, lucideChartPie, lucideStar } from '@livediagram/icon
 
 // Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
 // integer scale.
-// Timeline-rail point count (docs/specs/009-elements/timeline-rail.md): a − / value / + stepper. The canvas
-// "+" affordance adds points too; this also removes them.
-export function RailPointsRow({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (n: number) => void;
-}) {
-  const stepBtn =
-    'flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60';
-  return (
-    <div className="px-3 py-1.5">
-      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Points</p>
-      <div className="mt-1 flex items-center gap-2">
-        <button
-          type="button"
-          className={stepBtn}
-          disabled={value <= RAIL_MIN_POINTS}
-          onClick={() => onChange(Math.max(RAIL_MIN_POINTS, value - 1))}
-          aria-label="Fewer points"
-        >
-          −
-        </button>
-        <span className="w-8 text-center text-xs font-medium tabular-nums text-slate-700 dark:text-slate-200">
-          {value}
-        </span>
-        <button
-          type="button"
-          className={stepBtn}
-          disabled={value >= RAIL_MAX_POINTS}
-          onClick={() => onChange(Math.min(RAIL_MAX_POINTS, value + 1))}
-          aria-label="More points"
-        >
-          +
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // A small star glyph for the Rating controls (filled = scored, else outline).
 function StarGlyph({ filled, size = 16 }: { filled: boolean; size?: number }) {
@@ -150,7 +108,7 @@ export function RatingPickerRow({
 // everything else (speed, repeat, the play-once-vs-loop copy) is identical.
 // `header` adds the "Animation" label (Progress omits it, as the category
 // title already reads "Animation").
-export type AnimTilesProps<T extends string> = {
+type AnimTilesProps<T extends string> = {
   anim: T | null;
   speed: AnimationSpeed;
   repeat: boolean;

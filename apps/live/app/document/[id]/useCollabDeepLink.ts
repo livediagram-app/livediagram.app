@@ -1,6 +1,13 @@
 'use client';
 
-import { useEffect, useRef, type MutableRefObject, useEffectEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+  useEffectEvent,
+} from 'react';
 import type { Element } from '@livediagram/document';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
@@ -58,8 +65,17 @@ export function useCollabDeepLink({
   openActionPopover: (elementId: string) => void;
   openComments: (elementId: string) => void;
   openItem: (itemId: string) => void;
-}) {
+}): (target: CollabDeepLink) => void {
   const consumed = useRef(false);
+  // An arrival asked for in the editor (the Actions board's links, docs/specs/026-plan/linked-boards.md): the same
+  // landing as an Inbox link, run again for each ask.
+  const [asked, setAsked] = useState(0);
+  const askedLink = useRef<CollabDeepLink | null>(null);
+  const arrive = useCallback((target: CollabDeepLink) => {
+    askedLink.current = target;
+    consumed.current = false;
+    setAsked((n) => n + 1);
+  }, []);
   // The stable editor callbacks are read when the link lands, not depended on: re-running on their
   // identity would only re-evaluate an already-consumed link.
   const arriveAt = useEffectEvent(
@@ -81,7 +97,7 @@ export function useCollabDeepLink({
   const openCard = useEffectEvent((itemId: string) => openItem(itemId));
 
   useEffect(() => {
-    const target = link.current;
+    const target = askedLink.current ?? link.current;
     if (!target || consumed.current || !hydrated) return;
     // A card with no board lands on whichever tab the document opens on.
     if (target.at && activeId !== target.at.tabId) return;
@@ -100,5 +116,6 @@ export function useCollabDeepLink({
     // as close as the link can get (docs/specs/013-workspace/inbox.md §1).
     if (!el || el.type === 'arrow') return;
     arriveAt(el, target.open);
-  }, [link, hydrated, activeId, activeTabLoadState, elements]);
+  }, [link, hydrated, activeId, activeTabLoadState, elements, asked]);
+  return arrive;
 }

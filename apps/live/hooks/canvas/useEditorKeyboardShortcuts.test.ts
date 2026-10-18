@@ -60,13 +60,9 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
   });
 
-  it('walks on W in Facilitate only', () => {
-    const facilitate = spyLive();
-    VIEW_TOOL_KEYS.w!({ ...facilitate.live, facilitateMode: true });
-    expect(facilitate.calls).toEqual(['tool:avatar']);
-    const diagram = spyLive();
-    VIEW_TOOL_KEYS.w!(diagram.live);
-    expect(diagram.calls).toEqual([]);
+  it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
+    expect(VIEW_TOOL_KEYS.w).toBeUndefined();
+    expect(EDIT_KEYS.w).toBeUndefined();
   });
 });
 

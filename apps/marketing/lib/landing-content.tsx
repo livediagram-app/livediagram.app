@@ -12,37 +12,51 @@ import {
   ArticleWrapArt,
   AssignedActionsArt,
   AvatarModeArt,
+  BoardCsvArt,
   BoardImportArt,
   BoardWidgetsArt,
   BorderStyleArt,
   BringFocusArt,
   CanvasBackdropArt,
+  CanvasChartsArt,
+  CardCommentsArt,
+  CardDetailArt,
   CardTypesArt,
+  CellCommentsArt,
+  CodeBlockArt,
   CommentsArt,
   ComponentsArt,
+  ConditionalFormatArt,
+  ContentsSidebarArt,
   CustomThemesArt,
   DashboardArt,
   DragDuplicateArt,
+  DrawDockArt,
   EmbedArt,
   EntityArt,
   ErasersArt,
+  EventStormingArt,
   ExpiryArt,
   ExportArt,
   FacilitateModeArt,
   FacilitatorArt,
+  FindCardArt,
   FlowingArrowsArt,
+  FollowAlongArt,
   FontsArt,
+  FormAlertsArt,
   FormBuilderArt,
   FormResponsesArt,
+  FormSectionsArt,
   FormShareArt,
   FormatPainterArt,
   FullScreenSlideArt,
   HiddenVotesArt,
   IconsArt,
-  IllustrateBackgroundsArt,
-  IllustrateExportArt,
-  IllustrateIntoPagesArt,
-  IllustratePagesArt,
+  PagesBackgroundsArt,
+  PagesExportArt,
+  IntoPagesArt,
+  PagesArt,
   ImagesArt,
   InfographicLayoutArt,
   IsometricArt,
@@ -50,6 +64,7 @@ import {
   LaserArt,
   LayersArt,
   LinkCardArt,
+  LiveImageArt,
   LivingBackgroundArt,
   LockArt,
   LogoPageArt,
@@ -61,6 +76,7 @@ import {
   MermaidArt,
   MindMapArt,
   NotesArt,
+  PagesGifArt,
   PalmRejectionArt,
   PathToolArt,
   PencilArt,
@@ -74,25 +90,33 @@ import {
   RevokeArt,
   RichTextArt,
   RotateArt,
+  SearchPaletteArt,
   SelectionGlowArt,
+  SequenceArt,
   SessionToolsArt,
   ShapesArt,
   ShareLinksArt,
   SharedItemsArt,
+  SheetTogetherArt,
+  SheetValidationArt,
   SheetsArt,
   ShortcutsArt,
   SideBySideArt,
   SlideDeckArt,
   SlideLayoutsArt,
+  SlideTimingArt,
   SpotlightArt,
+  StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
+  TabWindowArt,
   TablesArt,
   TabsArt,
   TeamsArt,
   TechIconsArt,
   TemplatesArt,
   ThemesArt,
+  TidyPageArt,
   TimelineFeedArt,
   UndoRedoArt,
   UnlimitedTabsArt,
@@ -129,7 +153,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, Illustrate's infographics, its
+ * then each way of working on a tab (Diagram, Draw, Pages mode's infographics, its
  * slide decks and its documents, Plan's boards, then its sheets and forms). `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
@@ -280,6 +304,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
       },
       {
+        art: <FollowAlongArt />,
+        href: '/help/canvas/follow-along/',
+        group: 'Present & facilitate',
+        title: 'Follow someone\u2019s view',
+        description:
+          'Press Follow beside a teammate and your canvas goes where theirs goes: their tab, their pan, their exact zoom. A pill says who you are following, and the moment you move the canvas yourself, you have your own view back. Anyone can follow anyone, even on a view-only link.',
+      },
+      {
         art: <AvatarModeArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Present & facilitate',
@@ -301,7 +333,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog. Where iframes are blocked, like a GitHub README, a live image shows the latest version as a plain picture.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private.',
+      },
+      {
+        art: <LiveImageArt />,
+        href: '/help/collaboration/sharing/live-image/',
+        group: 'Share & access',
+        title: 'Live in your wiki, docs or README',
+        description:
+          'Copy an iframe from the Share dialog and the document sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save, of whichever tab you pick.',
       },
       {
         art: <TeamsArt />,
@@ -411,6 +451,46 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'A title bar over a list of name and type rows: the box at the heart of a UML class diagram and an ER model alike. Edit the fields from its menu, join them with the hollow triangle and diamond arrowheads UML expects, and skip building one out of stacked tables.',
       },
       {
+        art: <SequenceArt />,
+        href: '/help/palette/sequence-diagrams/',
+        group: 'More than boxes and arrows',
+        title: 'Sequence diagrams you type',
+        description:
+          'List who talks to whom and it draws the lifelines, arrows, activation bars and loops for you. Type a conversation straight down, one message per line, or paste it as text (A -> B: words). Calls, async messages and dashed replies, numbered on request so a review can say \u201cstep 4\u201d.',
+      },
+      {
+        art: <CanvasChartsArt />,
+        href: '/help/palette/tools/data-elements/',
+        group: 'More than boxes and arrows',
+        title: 'Charts and meters on the canvas',
+        description:
+          'Show the number, not just the box: column, bar, line, area and scatter charts from an editable grid or a CSV, a pie, progress bars and rings, a star rating and a timeline rail. They take the theme\u2019s colours and move, lock and export like any other element.',
+      },
+      {
+        art: <CodeBlockArt />,
+        href: '/help/palette/tools/code-blocks/',
+        group: 'More than boxes and arrows',
+        title: 'Code blocks with highlighting',
+        description:
+          'Put the payload beside the API arrow and the query under the database. A code block highlights TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS and YAML, wraps long lines if you like, and keeps its own colour scheme whatever the theme.',
+      },
+      {
+        art: <EventStormingArt />,
+        href: '/help/canvas/event-storming-boards/',
+        group: 'Event storming',
+        title: 'Event storming boards',
+        description:
+          'A board built for the workshop: the eight note kinds of the notation one click away, written in marker capitals on paper that keeps its size and colour. Notes snap to timeline lanes, and holding Alt over a gap slides the rest of the wall along to make room for the step you missed.',
+      },
+      {
+        art: <StickyPhotoArt />,
+        href: '/help/canvas/event-storming-boards/',
+        group: 'Event storming',
+        title: 'Bring the paper wall in from a photo',
+        description:
+          'Ran the session on a real wall? Take a photo and every sticky comes in as a note: its words read from the handwriting, its kind from the paper\u2019s colour, laid out where it was. Untick what is not a note, fix a misreading, then add them as a draft you check in place.',
+      },
+      {
         art: <IconsArt />,
         href: '/help/palette/icons/',
         group: 'More than boxes and arrows',
@@ -470,7 +550,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'A hundred and thirty-two starter templates',
+        title: 'A hundred and forty starter templates',
         description:
           'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, pub quizzes and icebreakers, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
@@ -577,6 +657,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Keyboard shortcuts',
         description:
           'The moves you repeat have keys: undo and redo, delete, switch tools, and drop a shape, arrow, sticky, or text without reaching for the palette. Hold Cmd and the palette shows each key. A built-in cheat sheet lists them all, and you can switch them off per device. The canvas itself is a stop in the Tab order: move through its elements from the keyboard, with the selection announced to screen readers.',
+      },
+      {
+        art: <SearchPaletteArt />,
+        href: '/help/search-panel/the-search-panel/command-palette/',
+        group: 'Neat without trying',
+        title: 'Find or run anything with \u2318K',
+        description:
+          'One box finds your documents, tabs and elements, even text inside table cells, and runs commands by name: type \u201ctidy\u201d for Auto Layout or \u201claser\u201d for the pointer. It adds a shape or icon by name, jumps to a setting, and opens the help article for whatever you just searched.',
       },
       {
         art: <UnlimitedTabsArt />,
@@ -741,6 +829,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Keys 1, 2 and 3 pick up three markers, each in six widths from Fine to Broad. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
       },
       {
+        art: <DrawDockArt />,
+        href: '/help/canvas/draw-mode/',
+        title: 'Shapes and text in the dock',
+        description:
+          'Draw mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
+      },
+      {
         art: <PressureArt />,
         href: '/help/canvas/draw-mode/',
         title: 'Pressure-sensitive pens',
@@ -791,7 +886,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore infographics',
     title: 'Posters, social posts and logos',
     description:
-      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
+      'Switch a tab to Pages and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
     metaDescription:
       'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
     highlights: [
@@ -802,46 +897,67 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     items: [
       {
-        art: <IllustratePagesArt />,
-        href: '/help/canvas/illustrate/',
+        art: <PagesArt />,
+        href: '/help/canvas/pages-mode/',
         title: 'Pages for print and social',
         description:
           'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
       },
       {
         art: <InfographicLayoutArt />,
-        href: '/help/canvas/illustrate/infographic-layouts/',
+        href: '/help/canvas/pages-mode/infographic-layouts/',
         title: 'Start a page from a layout',
         description:
           'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
-        art: <IllustrateBackgroundsArt />,
-        href: '/help/canvas/illustrate/',
+        art: <TidyPageArt />,
+        href: '/help/canvas/pages-mode/',
+        title: 'Tidy a page in one press',
+        description:
+          'Press the broom on a page and it straightens itself: anything poking past the margins comes back inside, edges that nearly line up do, and gaps that are nearly even become even. It keeps your layout and never moves anything far.',
+      },
+      {
+        art: <PagesBackgroundsArt />,
+        href: '/help/canvas/pages-mode/',
         title: 'Backgrounds from your theme',
         description:
           'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
       },
       {
-        art: <IllustrateIntoPagesArt />,
-        href: '/help/canvas/illustrate/',
+        art: <IntoPagesArt />,
+        href: '/help/canvas/pages-mode/',
         title: 'Turn any diagram into pages',
         description:
-          'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
+          'Switch a diagram, mind map or sketch to Pages mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
+      },
+      {
+        art: <TabWindowArt />,
+        href: '/help/canvas/pages-mode/tab-windows/',
+        title: 'A live window onto another tab',
+        description:
+          'Draw the diagram on its own tab, then put a window onto it on a slide or a poster. The window follows every change you or a collaborator make, so there is never a stale copy to paste again. Open jumps straight to the tab.',
       },
       {
         art: <LogoPageArt />,
-        href: '/help/canvas/illustrate/logo-pages/',
+        href: '/help/canvas/pages-mode/logo-pages/',
         title: 'Design a logo',
         description:
           'A logo page is a square artboard with construction guides to build on. Start from twenty-five logo layouts or a blank board, draw with Mirror for a symmetrical mark, combine shapes into one, set the name in wordmark type, then download a logo kit: SVG, PNGs from 16 to 1024 pixels and a favicon.',
       },
       {
-        art: <IllustrateExportArt />,
-        href: '/help/canvas/illustrate/exporting-pages/',
+        art: <PagesExportArt />,
+        href: '/help/canvas/pages-mode/exporting-pages/',
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
+      },
+      {
+        art: <PagesGifArt />,
+        href: '/help/canvas/pages-mode/exporting-pages/',
+        title: 'Pages as an animated GIF',
+        description:
+          'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
       },
     ],
   },
@@ -864,7 +980,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <SlideLayoutsArt />,
-        href: '/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides',
+        href: '/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides',
         title: 'Slide pages, ready-made layouts',
         description:
           'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
@@ -889,6 +1005,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Notes only you open',
         description:
           'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
+      },
+      {
+        art: <SlideTimingArt />,
+        href: '/help/selection-modes/slide-deck/presenter-controls/',
+        title: 'Keep the talk on time',
+        description:
+          'Give each slide a few minutes when you build the deck. While you present, an elapsed clock counts up and the slide\u2019s budget turns amber when you run over, on your screen only. Both are off until you want them, and running over never moves the deck on for you.',
       },
       {
         art: <PresentLocallyArt />,
@@ -925,7 +1048,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <ArticlePagesArt />,
-        href: '/help/canvas/illustrate/articles/',
+        href: '/help/canvas/pages-mode/articles/',
         group: 'Write',
         title: 'Write like a doc',
         description:
@@ -933,15 +1056,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <ArticleFlowArt />,
-        href: '/help/canvas/illustrate/articles/#pages-that-grow',
+        href: '/help/canvas/pages-mode/articles/#pages-that-grow',
         group: 'Write',
         title: 'Pages that grow',
         description:
           'Writing flows onto a new page as it grows, and empty pages tidy themselves away. A heading never strands alone at the foot of a page, and a page break is there when you want one.',
       },
       {
+        art: <ContentsSidebarArt />,
+        href: '/help/canvas/pages-mode/',
+        title: 'Every page in the Contents',
+        description:
+          'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
+      },
+      {
         art: <ArticleWrapArt />,
-        href: '/help/canvas/illustrate/articles/',
+        href: '/help/canvas/pages-mode/articles/',
         group: 'Write',
         title: 'Pictures and drawings in the text',
         description:
@@ -949,7 +1079,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <MarginCommentsArt />,
-        href: '/help/canvas/illustrate/articles/#comments-and-actions-on-words',
+        href: '/help/canvas/pages-mode/articles/#comments-and-actions-on-words',
         group: 'Write',
         title: 'Comments in the margin',
         description:
@@ -957,7 +1087,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <ArticleLooksArt />,
-        href: '/help/canvas/illustrate/articles/#the-articles-style',
+        href: '/help/canvas/pages-mode/articles/#the-articles-style',
         group: 'Write',
         title: 'Five looks for an article',
         description:
@@ -997,6 +1127,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'A card is one item, not a copy, so the same card can sit on the sprint board and the roadmap. Move it on one and it moves on both.',
       },
       {
+        art: <CardDetailArt />,
+        href: '/help/canvas/plan-mode/cards/',
+        title: 'Cards that hold the detail',
+        description:
+          'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, and the project it belongs to. Flag one for attention, and follow the trail between a project and its tasks without losing your place.',
+      },
+      {
+        art: <CardCommentsArt />,
+        href: '/help/canvas/plan-mode/cards/',
+        title: 'Talk it through on the card',
+        description:
+          'Every card has its own thread. @mention a teammate and they get an email that opens the card, resolve the thread when it is settled, and see the comment count on the card from the board.',
+      },
+      {
         art: <CardTypesArt />,
         href: '/help/canvas/plan-mode/card-types/',
         title: 'Card types and fields of your own',
@@ -1030,6 +1174,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Widgets that narrow the board',
         description:
           'Pin widgets to a board header (Completion, Due Soon, WIP Alerts, Top Voted, Stale Cards and more) and press one to narrow the board to just those cards.',
+      },
+      {
+        art: <FindCardArt />,
+        href: '/help/canvas/plan-mode/cards/',
+        title: 'Find any card',
+        description:
+          'The Cards list searches every card in the document by number, title or description, newest change first. Add up to eight filters, such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
+      },
+      {
+        art: <BoardCsvArt />,
+        href: '/help/canvas/plan-mode/boards/',
+        title: 'Boards in and out as CSV',
+        description:
+          'Import a CSV or TSV and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. Export any board as CSV, an image, a PDF or a Markdown outline.',
       },
       {
         art: <HiddenVotesArt />,
@@ -1093,6 +1251,34 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes.',
       },
       {
+        art: <SheetValidationArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Dropdowns and checkboxes',
+        description:
+          'Turn cells into coloured dropdown chips, a list from other cells, or tick boxes a formula can count. Number, date and text rules refuse a value that does not fit, or only warn, and say why in the cell.',
+      },
+      {
+        art: <ConditionalFormatArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Colour cells by their values',
+        description:
+          'Conditional formatting paints a cell when it meets a rule (text contains, greater than, a date before, or a formula of your own) or shades a whole column on a colour scale. You see each rule on the cells while you set it.',
+      },
+      {
+        art: <CellCommentsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Named ranges and cell comments',
+        description:
+          'Name a cell TaxRate and write =B2*TaxRate in any row. Leave a comment on a single cell: it carries an amber corner, opens as a thread, and is listed with every other open thread in the document.',
+      },
+      {
+        art: <SheetTogetherArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Edit together, cell by cell',
+        description:
+          'Everyone sees each change as it is made, with each person\u2019s selection outlined in their colour and name. Two people typing in different cells never overwrite each other, and a participant link can fill in cells without changing the rules.',
+      },
+      {
         art: <TemplatesArt />,
         href: '/help/canvas/plan-mode/#plan-templates',
         title: 'Twelve ready-made spreadsheets',
@@ -1133,6 +1319,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Click a question to word it, pick its type (short answer, paragraph, number, email, link, date, choices, rating or a checkbox) and mark it required, right in the form. Sections can show only on an earlier answer.',
       },
       {
+        art: <FormSectionsArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Pages, a cover and your look',
+        description:
+          'Split a form into sections people answer a page at a time, with Next, Back and a progress bar, and show a section only to those who answered a certain way. Add a cover band, and the form wears its tab\u2019s theme and font on its link too.',
+      },
+      {
         art: <FormShareArt />,
         href: '/help/canvas/plan-mode/forms/',
         title: 'One link to share',
@@ -1145,6 +1338,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Every answer lands',
         description:
           'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. The count on the form says how many are new.',
+      },
+      {
+        art: <FormAlertsArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'New answers find you',
+        description:
+          'Each response shows New until you open it, the form counts what is new to you, and your Inbox lists every form with fresh answers. The owner also gets an email, at most one every 15 minutes per form, and can switch it off in Settings.',
       },
       {
         art: <TemplatesArt />,

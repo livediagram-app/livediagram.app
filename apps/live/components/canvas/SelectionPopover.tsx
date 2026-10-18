@@ -16,12 +16,19 @@ import {
   FlowchartStepButtons,
   type FlowchartStepToolbar,
 } from '@/components/flowchart/FlowchartStepButtons';
+import dynamic from 'next/dynamic';
+import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
+import type { Rect } from '@livediagram/document';
 
-type Bounds = { x: number; y: number; width: number; height: number };
+// A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
+const CardinalityButton = dynamic(
+  () => import('@/components/canvas/entity/CardinalityButton').then((m) => m.CardinalityButton),
+  { ssr: false },
+);
 
 type SelectionPopoverProps = {
-  bounds: Bounds;
+  bounds: Rect;
   canvasOffset: { x: number; y: number };
   zoom: number;
   // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).
@@ -50,6 +57,8 @@ type SelectionPopoverProps = {
   // A flowchart step's group (docs/specs/009-elements/flowchart.md): Add Step, Add Branch, and an
   // Editor's Step Type and Lane menus. Passed only for an unlocked step someone may grow.
   flowchartStep?: FlowchartStepToolbar;
+  // A relationship between two entities (docs/specs/009-elements/entity.md "Cardinality ends").
+  cardinality?: CardinalityToolbar;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -78,7 +87,7 @@ type SelectionPopoverProps = {
   // read-only, or a kind that shows none (a Plan board or card, an
   // annotation), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
-  // A separate small toolbar to the right of this one (the element tour offer,
+  // A separate small toolbar to the left of this one (the element tour offer, away from Delete at the right end,
   // docs/specs/007-editor/element-tours.md), placed and nudged with it as one group.
   aside?: ReactNode;
 };
@@ -103,6 +112,7 @@ export function SelectionPopover({
   onEditPoints,
   onAddMindChild,
   flowchartStep,
+  cardinality,
   onAddMindSibling,
   onDuplicate,
   onBringToFront,
@@ -135,9 +145,11 @@ export function SelectionPopover({
     suspended,
   );
 
-  // The toolbar, and any aside beside it, ride one positioned group: placed, flipped and nudged inside the canvas
-  // together. The group is as wide as its content up to the screen less its margins; past that the aside wraps
-  // onto its own line on the far side from the element (above the toolbar when it sits above), never over it.
+  // The toolbar, and any aside before it, ride one positioned group: placed, flipped and nudged inside the canvas
+  // together. The aside leads, at the left, so it never sits beside Delete and the More at the toolbar's right end.
+  // The group is as wide as its content up to the screen less its margins; past that the aside wraps onto its own
+  // line on the far side from the element (above the toolbar when it sits above), never over it: being first, it
+  // takes the first line, which wrap-reverse puts at the bottom when the group sits below the element.
   return (
     <div
       ref={ref}
@@ -148,197 +160,208 @@ export function SelectionPopover({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className={`pointer-events-none absolute z-[var(--z-toolbar)] flex w-max max-w-[calc(100vw-1rem)] items-center justify-center gap-x-2 gap-y-7 ${placeAbove ? 'flex-wrap-reverse' : 'flex-wrap'}`}
+      className={`pointer-events-none absolute z-[var(--z-toolbar)] flex w-max max-w-[calc(100vw-1rem)] items-center justify-center gap-x-2 gap-y-7 ${placeAbove ? 'flex-wrap' : 'flex-wrap-reverse'}`}
       style={style}
     >
+      {aside}
       <div
         data-testid="selection-popover"
         role="toolbar"
         aria-label={title}
         // Its 32px buttons sit 4px apart, so on a touch screen each tap area reaches to 44px tall only
         // (touch-target-y, touch-targets.md), never sideways into its neighbour's.
-        className="pointer-events-auto relative flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-y"
+        className="pointer-events-auto relative max-w-[95vw] animate-fade-in rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-y"
       >
         {title && !minimalChrome ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
-        {showMore && onOpenContextMenu ? (
-          <>
-            <HoverCard title="More" description="Open the element menu.">
-              <button
-                ref={ellipsisRef}
-                // A stable id: this toolbar unmounts while the element menu it opens is up, and
-                // the menu's Escape finds it again by id (docs/specs/004-interface-design/menus.md).
-                id="selection-more-actions"
-                type="button"
-                data-context-menu-trigger
-                onClick={() => {
-                  const rect = ellipsisRef.current?.getBoundingClientRect();
-                  if (!rect) return;
-                  onOpenContextMenu(rect.left, rect.bottom);
-                }}
-                aria-label="More actions"
-                aria-haspopup="dialog"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        {/* The toolbar is at most 95vw wide; its buttons ride a strip that scrolls sideways when they outgrow it (a
+          flowchart step's full set on a phone). The strip reaches 6px past the buttons top and bottom, so their 44px
+          tap pads are not clipped, and it is not positioned, so a dropdown's menu anchors to the card and escapes its
+          clip. */}
+        <div
+          data-testid="selection-popover-strip"
+          className="-my-1.5 flex touch-pan-x items-center gap-1 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none]"
+        >
+          {showMore && onOpenContextMenu ? (
+            <>
+              <HoverCard title="More" description="Open the element menu.">
+                <button
+                  ref={ellipsisRef}
+                  // A stable id: this toolbar unmounts while the element menu it opens is up, and
+                  // the menu's Escape finds it again by id (docs/specs/004-interface-design/menus.md).
+                  id="selection-more-actions"
+                  type="button"
+                  data-context-menu-trigger
+                  onClick={() => {
+                    const rect = ellipsisRef.current?.getBoundingClientRect();
+                    if (!rect) return;
+                    onOpenContextMenu(rect.left, rect.bottom);
+                  }}
+                  aria-label="More actions"
+                  aria-haspopup="dialog"
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                >
+                  <EllipsisIcon />
+                </button>
+              </HoverCard>
+              <Divider />
+            </>
+          ) : null}
+
+          {onEditText ? (
+            <>
+              <PopoverButton
+                label={hasText ? 'Edit Text' : 'Add Text'}
+                description={
+                  hasText ? "Edit this element's text." : 'Give this element a text label.'
+                }
+                onClick={onEditText}
               >
-                <EllipsisIcon />
-              </button>
-            </HoverCard>
-            <Divider />
-          </>
-        ) : null}
+                <TextIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onEditText ? (
-          <>
-            <PopoverButton
-              label={hasText ? 'Edit Text' : 'Add Text'}
-              description={
-                hasText ? "Edit this element's text." : 'Give this element a text label.'
-              }
-              onClick={onEditText}
-            >
-              <TextIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onEditPoints ? (
+            <>
+              <PopoverButton
+                label="Edit Points"
+                description="Adjust the path's points, corners and curves."
+                onClick={onEditPoints}
+              >
+                <EditPointsIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onEditPoints ? (
-          <>
-            <PopoverButton
-              label="Edit Points"
-              description="Adjust the path's points, corners and curves."
-              onClick={onEditPoints}
-            >
-              <EditPointsIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onAddMindChild && onAddMindSibling ? (
+            <>
+              <PopoverButton
+                label={MIND_CHILD_OPTION.label}
+                description={MIND_CHILD_OPTION.description}
+                onClick={onAddMindChild}
+              >
+                {MIND_CHILD_OPTION.icon}
+              </PopoverButton>
+              <PopoverButton
+                label={MIND_SIBLING_OPTION.label}
+                description={MIND_SIBLING_OPTION.description}
+                onClick={onAddMindSibling}
+              >
+                {MIND_SIBLING_OPTION.icon}
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onAddMindChild && onAddMindSibling ? (
-          <>
-            <PopoverButton
-              label={MIND_CHILD_OPTION.label}
-              description={MIND_CHILD_OPTION.description}
-              onClick={onAddMindChild}
-            >
-              {MIND_CHILD_OPTION.icon}
-            </PopoverButton>
-            <PopoverButton
-              label={MIND_SIBLING_OPTION.label}
-              description={MIND_SIBLING_OPTION.description}
-              onClick={onAddMindSibling}
-            >
-              {MIND_SIBLING_OPTION.icon}
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {flowchartStep ? <FlowchartStepButtons {...flowchartStep} menuAnchor="toolbar" /> : null}
 
-        {flowchartStep ? <FlowchartStepButtons {...flowchartStep} /> : null}
+          {cardinality ? <CardinalityButton {...cardinality} menuAnchor="toolbar" /> : null}
 
-        {onDuplicate ? (
-          <>
-            <PopoverButton
-              label="Duplicate"
-              description="Create a copy of this element."
-              onClick={onDuplicate}
-            >
-              <DuplicateIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onDuplicate ? (
+            <>
+              <PopoverButton
+                label="Duplicate"
+                description="Create a copy of this element."
+                onClick={onDuplicate}
+              >
+                <DuplicateIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onBringToFront && onSendToBack ? (
-          <>
-            <PopoverButton
-              label="Bring to Front"
-              description="Stack this in front of everything else on its layer."
-              onClick={onBringToFront}
-            >
-              <BringToFrontIcon />
-            </PopoverButton>
-            <PopoverButton
-              label="Send to Back"
-              description="Stack this behind everything else on its layer."
-              onClick={onSendToBack}
-            >
-              <SendToBackIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onBringToFront && onSendToBack ? (
+            <>
+              <PopoverButton
+                label="Bring to Front"
+                description="Stack this in front of everything else on its layer."
+                onClick={onBringToFront}
+              >
+                <BringToFrontIcon />
+              </PopoverButton>
+              <PopoverButton
+                label="Send to Back"
+                description="Stack this behind everything else on its layer."
+                onClick={onSendToBack}
+              >
+                <SendToBackIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {/* Comment stays on the toolbar (it's the only edit-adjacent
+          {/* Comment stays on the toolbar (it's the only edit-adjacent
           action a view-role visitor gets, so it has to be reachable
           without right-clicking on a comment badge). For an editor
           session it duplicates the context menu entry, which is
           fine: comments are high-traffic and a one-click affordance
           beats a two-click context menu open + click. */}
-        {onOpenComments ? (
-          <PopoverButton
-            label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
-            description={
-              commentsReadOnly
-                ? 'Read the comments on this element.'
-                : 'Open the comment thread for this element.'
-            }
-            onClick={onOpenComments}
-          >
-            <CommentIcon />
-          </PopoverButton>
-        ) : null}
-
-        {onToggleLock ? (
-          <HoverCard
-            title={locked ? 'Unlock' : 'Lock'}
-            description={
-              locked
-                ? 'Allow this element to be moved, resized, and deleted again.'
-                : 'Protect from moves, resizes, and deletion. You can still unlock it.'
-            }
-          >
-            <button
-              type="button"
-              onClick={onToggleLock}
-              aria-label={locked ? 'Unlock' : 'Lock'}
-              aria-pressed={locked}
-              className={
-                locked
-                  ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-              }
-            >
-              <LockIcon closed={locked} />
-            </button>
-          </HoverCard>
-        ) : null}
-        {showDelete ? (
-          <>
-            <HoverCard
-              title="Delete"
+          {onOpenComments ? (
+            <PopoverButton
+              label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
               description={
-                locked ? 'Locked. Unlock it to delete.' : 'Delete this element (arrows too).'
+                commentsReadOnly
+                  ? 'Read the comments on this element.'
+                  : 'Open the comment thread for this element.'
+              }
+              onClick={onOpenComments}
+            >
+              <CommentIcon />
+            </PopoverButton>
+          ) : null}
+
+          {onToggleLock ? (
+            <HoverCard
+              title={locked ? 'Unlock' : 'Lock'}
+              description={
+                locked
+                  ? 'Allow this element to be moved, resized, and deleted again.'
+                  : 'Protect from moves, resizes, and deletion. You can still unlock it.'
               }
             >
               <button
                 type="button"
-                onClick={onDelete}
-                disabled={locked}
-                aria-label="Delete"
+                onClick={onToggleLock}
+                aria-label={locked ? 'Unlock' : 'Lock'}
+                aria-pressed={locked}
                 className={
                   locked
-                    ? 'flex h-8 w-8 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+                    ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
                     : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                 }
               >
-                <TrashIcon />
+                <LockIcon closed={locked} />
               </button>
             </HoverCard>
-          </>
-        ) : null}
+          ) : null}
+          {showDelete ? (
+            <>
+              <HoverCard
+                title="Delete"
+                description={
+                  locked ? 'Locked. Unlock it to delete.' : 'Delete this element (arrows too).'
+                }
+              >
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={locked}
+                  aria-label="Delete"
+                  className={
+                    locked
+                      ? 'flex h-8 w-8 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+                      : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                  }
+                >
+                  <TrashIcon />
+                </button>
+              </HoverCard>
+            </>
+          ) : null}
+        </div>
       </div>
-      {aside}
     </div>
   );
 }

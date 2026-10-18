@@ -29,11 +29,11 @@ export class AddressError extends Error {
 const refuse = (failure: AddressFailure) => new AddressError(failure);
 
 // A debug line naming how an address resolved (blueprint "Observability": `address <what> <how> <n> matches`).
-export type AddressLog = (line: string) => void;
+type AddressLog = (line: string) => void;
 
 const silent: AddressLog = () => {};
 
-export type DocumentUrl = { id: string } | { shareCode: string };
+type DocumentUrl = { id: string } | { shareCode: string };
 
 // A full document id: a UUID. Matched by shape, not length alone, so a 36-character name still
 // resolves by name.

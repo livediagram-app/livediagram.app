@@ -8,7 +8,7 @@ import { ArticlePage } from './hero-article-page';
 import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { FormBoard } from './hero-form-board';
-import { InfographicPages } from './hero-illustrate-page';
+import { InfographicPages } from './hero-page';
 import { MindMapBoard } from './hero-mindmap-board';
 import { PlanBoard } from './hero-plan-board';
 import { SheetBoard } from './hero-sheet-board';
@@ -19,7 +19,7 @@ import { TownHallBoard } from './hero-townhall-board';
 export type { HeroSceneKey } from './hero-scene-data';
 
 // The scene's live document, drawn in the window (hero-scene-data.ts holds the rest).
-export type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> };
+type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> };
 
 const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
   diagram: DiagramBoard,

@@ -9,6 +9,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { layered, milestoneCard, MUTED, type Shape } from './template-builders-milestones';
+import { CANVAS_TONES, PAPER_INK } from './template-inks';
 
 // Vertical milestone timeline: "Northwind Coffee · our story so far", a
 // company history in the classic alternating vertical layout. A downward
@@ -152,6 +153,8 @@ export function buildMilestoneTimelineVertical(cx: number, cy: number): Element[
       card.fillColor = '#fffbeb';
       card.strokeWidth = 'thick';
       card.themeLockFill = true;
+      // Its pale amber stays in either half, so its words keep a dark ink.
+      card.textColor = PAPER_INK;
     }
     if (c.kind === 'next') card.strokeStyle = 'dashed';
     content.push(
@@ -182,7 +185,8 @@ export function buildMilestoneTimelineVertical(cx: number, cy: number): Element[
         label: c.year,
         textSize: 'lg',
         textBold: true,
-        textColor: accent,
+        // The year sits on the canvas: the brown that edges a card sinks into the dark one.
+        textColor: accent === BROWN ? CANVAS_TONES.amber : accent,
         textAlignX: right ? 'right' : 'left',
       },
       {

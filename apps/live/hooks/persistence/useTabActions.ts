@@ -36,6 +36,7 @@ import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
+import { toastName } from '@/lib/toast-name';
 
 type TabActionsDeps = {
   tabs: Tab[];
@@ -112,7 +113,7 @@ export function useTabActions(deps: TabActionsDeps) {
   } = deps;
 
   // `mode`: open it in that mode (a Plan tab's switch offering a new tab instead, plan-tabs.md); else in the active
-  // tab's mode, so an Illustrate tab's + makes an Illustrate tab (newTabOpening).
+  // tab's mode, so a Pages tab's + makes a Pages tab (newTabOpening).
   const addTab = (mode?: EditorMode) => {
     // A session that cannot change the document's tabs adds none, whichever control asked.
     if (!deps.canEditStructure) return;
@@ -232,17 +233,19 @@ export function useTabActions(deps: TabActionsDeps) {
   const linkActiveTabTo = async (targetDocumentId: string) => {
     const source = tabs.find((t) => t.id === activeId);
     if (!source) return;
-    const targetName = documentList.find((d) => d.id === targetDocumentId)?.name ?? 'that document';
+    const target =
+      toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
     try {
       await apiLinkTab(ownerId, targetDocumentId, source.id);
-      toast.success(`Tab added to "${targetName}"`);
+      toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {
       // Previously swallowed silently: the user clicked a destination
       // and nothing visible happened. The toast surfaces the failure
       // without forcing a modal; refresh still runs so the source
       // document's local state remains consistent with what landed.
-      toast.error(`Could not add tab to "${targetName}". Try again.`);
+      // Two names fill the line, so the try-again is left to the reader.
+      toast.error(`Could not add ${toastName(source.name) ?? 'the tab'} to ${target}.`);
     }
     refreshDocumentList(ownerId);
   };

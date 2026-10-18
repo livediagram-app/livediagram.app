@@ -41,6 +41,8 @@ const SETUP_KEYS = new Set([
   'voting',
   'hideWriting',
   'fillTab',
+  // A linked board's kind (docs/specs/026-plan/linked-boards.md).
+  'collects',
 ]);
 const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width']);
 // Bounds on one frame, well past any real board (PLAN_COLUMNS_MAX columns, a handful of fields).

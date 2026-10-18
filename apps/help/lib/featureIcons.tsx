@@ -238,6 +238,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 10.5h18M3 15.5h18" />
     </Glyph>
   ),
+  // A round platform with a beam rising out of it: where a character arrives.
+  'avatar-pads': (
+    <Glyph>
+      <ellipse cx="12" cy="17" rx="8.5" ry="3" />
+      <path d="M3.5 17v1.5c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3V17" />
+      <path d="M8.5 14V6.5M15.5 14V6.5" opacity="0.55" />
+      <path d="M12 14.5V3" />
+    </Glyph>
+  ),
   // A room's walls with a doorway, a little table and a plant: an office floor plan.
   'virtual-office': (
     <Glyph>
@@ -470,8 +479,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
-  // A page with its colour band under a dashed spotlight ring: a guided look at Illustrate.
-  'illustrate-tour': (
+  // A page with its colour band under a dashed spotlight ring: a guided look at Pages.
+  'pages-tour': (
     <Glyph>
       <rect x="7" y="4" width="10" height="14" rx="1" />
       <path d="M7 7.5h10M9.5 11h5M9.5 13.5h3" />
@@ -522,7 +531,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A page with a title and a bar chart: the poster an infographic becomes.
-  illustrate: (
+  'pages-mode': (
     <Glyph>
       <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
       <path d="M8 6.5h8" />
@@ -1786,6 +1795,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 5h12a1.5 1.5 0 0 1 1.5 1.5V17" />
       <rect x="3.5" y="8" width="13" height="12" rx="1.5" />
       <circle cx="10" cy="14" r="3" />
+    </Glyph>
+  ),
+  // A luggage tag with its eyelet: a label you put on a document.
+  tags: (
+    <Glyph>
+      <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7z" />
+      <circle cx="8" cy="8" r="1.5" />
     </Glyph>
   ),
   // A diagram's box and decision, joined by a bent connector, arriving as a document.

@@ -11,7 +11,7 @@ import type { Workbook } from './engine/workbook';
 
 // A chart's link to its sheet: the sheet and the range, by ids, and only some of its columns when several ranges were
 // picked together (sheet.md "Charts").
-export type SheetChartLink = { sheetId: string; range: IdRange; cols?: readonly string[] };
+type SheetChartLink = { sheetId: string; range: IdRange; cols?: readonly string[] };
 
 export type SheetChartTable = {
   // The category labels, one per row of data.
@@ -21,7 +21,7 @@ export type SheetChartTable = {
 };
 
 // Bounds: a chart past these is unreadable, and they keep a read cheap on a huge range.
-export const CHART_CATEGORIES_MAX = 500;
+const CHART_CATEGORIES_MAX = 500;
 export const CHART_SERIES_MAX = 12;
 
 const DATE_FORMATS: ReadonlySet<NumberFormatKind> = new Set(['date', 'time', 'datetime']);

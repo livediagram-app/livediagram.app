@@ -4,7 +4,7 @@ import type { EditLog } from '@livediagram/edit-operations';
 // one recognisable fingerprint each, with the document, the tab, the changeset id and counts, never
 // content.
 
-export type LogFields = Readonly<Record<string, string | number | boolean | null>>;
+type LogFields = Readonly<Record<string, string | number | boolean | null>>;
 
 export function changesetLog(level: 'info' | 'warn', fingerprint: string, fields: LogFields): void {
   if (level === 'warn') console.warn(fingerprint, fields);

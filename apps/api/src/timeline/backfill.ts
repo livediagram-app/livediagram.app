@@ -18,7 +18,7 @@ import { record } from './record';
 // How far back the seed reaches. A cap rather than the whole library
 // because this runs in one request: a user with a thousand documents
 // would otherwise pay for a thousand upserts on their first page load.
-export const BACKFILL_DOCUMENT_LIMIT = 200;
+const BACKFILL_DOCUMENT_LIMIT = 200;
 
 type DocumentSeedRow = {
   id: string;

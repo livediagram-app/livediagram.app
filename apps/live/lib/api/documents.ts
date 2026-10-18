@@ -179,7 +179,7 @@ export async function apiCreateDocument(
     createdAt?: number;
     savedAt?: number;
     presentation?: string | null;
-    // Whether making it is a use, so it joins Explorer Home's Jump back in at once
+    // Whether making it is a use, so it joins Explorer Home's Jump Back In at once
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
     markUsed?: boolean;
@@ -214,6 +214,10 @@ export async function apiCreateDocument(
       ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
       ...(d.items && d.items.length ? { items: d.items } : {}),
+      // The sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"): typed since Sheets
+      // shipped but never sent, so a sync came up short of its sheets and kept the local copy, and a duplicate or
+      // a Drive import landed without them.
+      ...(d.sheets && d.sheets.length ? { sheets: d.sheets } : {}),
       // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
       ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     }),
@@ -237,7 +241,7 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
 }
 
 // The personal library and, beside it, the newest documents of the teams the caller has joined: the
-// team ones feed only the recent lists (Welcome back, Jump back in), never the personal library views.
+// team ones feed only the recent lists (Welcome back, Jump Back In), never the personal library views.
 export type DocumentListing = {
   documents: DocumentSummary[];
   teamRecent: TeamRecentDocument[];
@@ -266,7 +270,7 @@ async function _apiListDocumentsWithTeamRecent(ownerId: string): Promise<Documen
     const offlineIds = new Set(offline.map((o) => o.id));
     const documents = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
     // The landing page's returning-visitor fan reads this (docs/specs/019-marketing/returning-visitor.md).
-    // A Local only document has no server snapshot, so it is drawn here from the offline store
+    // A document in This Browser has no server snapshot, so it is drawn here from the offline store
     // (lib/local-snapshot.ts, loaded only when one is wanted) rather than asked of the server, where it
     // could only 404 (once per save, since the version is in the key). A guest's documents start local.
     rememberRecentDiagrams([...documents, ...teamRecent], (id, savedAt) =>
@@ -363,22 +367,19 @@ export async function apiDismissSharedWith(ownerId: string, documentId: string):
   });
 }
 
-// Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md). The WS upgrade
-// can't carry the Bearer token, so an identified caller (a signed-in
-// team member above all) proves access over normal authenticated REST
-// and rides the returned ticket on the upgrade URL as `?t=`. Returns
-// null on any failure — the connector falls back to the legacy
-// owner-id / share-code query params, which still cover every
-// non-team session.
+// Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md "Realtime model"). The WS upgrade
+// can't carry headers, so every session proves access here over normal REST (the Bearer token, the
+// signed guest id, the share code and its password) and rides the returned ticket on the upgrade URL as
+// `?t=`, the only thing that URL carries. Returns null on any failure: that upgrade is refused and the
+// connector mints again on its next reconnect.
 export async function apiCreateRoomTicket(
   ownerId: string,
   documentId: string,
   shareCode: string | null = null,
 ): Promise<RoomTicketResponse | null> {
-  // Retried with a short backoff: a team member whose mint fails has NO
-  // fallback (the legacy query params are personal/share-code only), and the
-  // connector mints a fresh one for every reconnect, so one transient blip
-  // would otherwise cost the session its realtime.
+  // Retried with a short backoff: a session whose mint fails has no other way
+  // into the room, and the connector mints a fresh one for every reconnect,
+  // so one transient blip would otherwise cost the session its realtime.
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {

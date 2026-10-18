@@ -55,7 +55,7 @@ export function useCombineShapes({
   readOnly,
 }: {
   activeTab: Tab;
-  // The laid-out pages while in Illustrate mode; null otherwise.
+  // The laid-out pages while in Pages mode; null otherwise.
   pages: readonly LaidOutPage[] | null;
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;

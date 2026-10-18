@@ -10,6 +10,8 @@ import {
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
+import { useToast } from '@/hooks/ui/useToast';
+import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 
 // Folder state + the three mutation handlers (create / rename /
 // delete). Three pages used to inline this triplet by hand:
@@ -62,6 +64,7 @@ export function useFolders(
   opts: { autoLoad?: boolean } = {},
 ): UseFoldersResult {
   const { autoLoad = true } = opts;
+  const toast = useToast();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(autoLoad);
 
@@ -115,11 +118,13 @@ export function useFolders(
         setFolders((prev) => [...prev, folder]);
         track('Folder', 'Created');
         return folder;
-      } catch {
+      } catch (err) {
+        console.warn('[folders] create failed', { message: (err as Error).message });
+        toast.error(FOLDER_FAILURE.create(name));
         return undefined;
       }
     },
-    [ownerId],
+    [ownerId, toast],
   );
 
   const renameFolder = useCallback(
@@ -139,15 +144,16 @@ export function useFolders(
         .then(() => {
           if (prevName !== trimmed) track('Folder', 'Renamed');
         })
-        .catch(() => {
-          // Roll the optimistic rename back to the stored name so the tree
-          // doesn't drift from the server on a failed write (this hook has no
-          // toast in scope; rollback keeps the UI truthful).
+        .catch((err: unknown) => {
+          // Roll the optimistic rename back to the stored name so the tree doesn't drift from the server on a
+          // failed write, and say so: a name that silently snapped back reads as the edit not taking.
+          console.warn('[folders] rename failed', { folder: id, message: (err as Error).message });
           if (prev)
             setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: prev.name } : f)));
+          toast.error(FOLDER_FAILURE.rename(prev?.name));
         });
     },
-    [folders, ownerId],
+    [folders, ownerId, toast],
   );
 
   const deleteFolder = useCallback(

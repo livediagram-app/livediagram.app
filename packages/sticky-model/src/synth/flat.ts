@@ -21,7 +21,7 @@ import type { Rng } from './rng';
 // what it learns otherwise from.
 
 // Screens show notes zoomed in far past any photograph: up to the 256px tile.
-export const FLAT_NOTE_SIZE_RANGE: [number, number] = [14, 240];
+const FLAT_NOTE_SIZE_RANGE: [number, number] = [14, 240];
 
 // A digital whiteboard's sticky palette and the editor's own event-storming
 // fills, exact: screens repeat one colour to the bit.
@@ -173,7 +173,7 @@ function snapped(note: NoteSpec): NoteSpec {
   return { ...note, angle: 0, cx: x0 + w / 2, cy: y0 + h / 2, w, h };
 }
 
-export type FlatWall = { rgb: Uint8Array; ids: Int32Array; notes: NoteSpec[]; noteSize: number };
+type FlatWall = { rgb: Uint8Array; ids: Int32Array; notes: NoteSpec[]; noteSize: number };
 
 export function paintFlatWall(
   rng: Rng,

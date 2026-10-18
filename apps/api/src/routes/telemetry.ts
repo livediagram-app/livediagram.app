@@ -134,13 +134,13 @@ export function buildTelemetrySummary(now: number, dailyRows: DailyRow[]): Telem
     const idx = dayIndex.get(row.day);
     if (idx === undefined) continue;
     totals[idx] = (totals[idx] ?? 0) + row.count;
-    const cat = byCategory[row.category] ?? new Array(SERIES_DAYS).fill(0);
+    const cat = byCategory[row.category] ?? new Array<number>(SERIES_DAYS).fill(0);
     cat[idx] = (cat[idx] ?? 0) + row.count;
     byCategory[row.category] = cat;
     // Per-event series for the Search view's metric trend line. The
     // grouped query already splits on action/type, so each row maps to
     // exactly one metric bucket.
-    const metric = byMetric[key] ?? new Array(SERIES_DAYS).fill(0);
+    const metric = byMetric[key] ?? new Array<number>(SERIES_DAYS).fill(0);
     metric[idx] = (metric[idx] ?? 0) + row.count;
     byMetric[key] = metric;
     for (const k of keys) {

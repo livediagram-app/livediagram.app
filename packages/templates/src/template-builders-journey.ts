@@ -12,6 +12,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { PAPER_INK } from './template-inks';
 
 const MUTED = '#64748b';
 
@@ -163,6 +164,8 @@ export function buildJourney(cx: number, cy: number): Element[] {
       label: row.label,
       textSize: 'md',
       textBold: true,
+      // The band keeps its pale tint on the Default scheme in either half, so its name keeps a dark ink.
+      textColor: PAPER_INK,
       textAlignX: 'left',
     });
 

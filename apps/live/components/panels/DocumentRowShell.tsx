@@ -1,5 +1,5 @@
 // The list item a document row sits in, across every list in the Explorer
-// panel: the sidebar tree's folders, My documents and This browser
+// panel: the sidebar tree's folders, My Documents and This Browser
 // rows, the current-document row, and the Recent sections.
 //
 // It exists for one behaviour that all five had written out longhand — a row

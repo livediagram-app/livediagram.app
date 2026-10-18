@@ -46,7 +46,7 @@ export function ImageExportPanel({
   // rasteriser + telemetry; this panel just collects the options.
   onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
-  // An Illustrate page export (docs/specs/007-editor/illustrate-pages.md "Export"): the page is
+  // A page export (docs/specs/007-editor/pages-mode.md "Export"): the page is
   // its own background and is never tilted, so neither the isometric nor the pattern toggle shows.
   pageExport?: boolean;
   // The page choice (ExportPagePicker), under the back bar and above the preview.
@@ -90,7 +90,7 @@ export function ImageExportPanel({
             dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
           />
         ) : (
-          <span className="text-xs text-slate-400">Preparing preview…</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>
         )}
       </div>
       {/* Isometric toggle. The help `?` sits beside the LABEL, not at the

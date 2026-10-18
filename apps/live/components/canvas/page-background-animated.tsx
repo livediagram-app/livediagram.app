@@ -1,7 +1,7 @@
 'use client';
 
 // The Background section's Animated category, on a slide page (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"): a carousel of motions, six to a page (two rows of
+// pages-mode.md "Animated backgrounds"): a carousel of motions, six to a page (two rows of
 // three), each tile playing in the tab theme's colours; then the theme colourings the chosen
 // motion comes in, and its speed. A hover previews on the slide, a press sets it, as the other
 // categories do; the speed previews as it is dragged and is set once, on letting go.
@@ -15,7 +15,7 @@ import {
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 import { CheckIcon, Tooltip } from '@livediagram/ui';
-import { fillCss, type ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
+import { fillCss, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import {
   colouringOf,
   motionColouring,
@@ -34,7 +34,7 @@ const TILE_H = 47;
 
 /** The theme's accent and second colour, read back from its gradient presets (Theme bright runs
  *  from one to the other): all a colouring needs. */
-export function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
+function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
   const bright = presets.find((p) => p.id === 'theme-bright')?.fill;
   return bright?.kind === 'gradient'
     ? {

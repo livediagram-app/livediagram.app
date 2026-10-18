@@ -35,7 +35,13 @@ function expiresAtFor(expiry: ShareLinkExpiry, from: number): number | null {
 // (0/O/1/I/l) so the share codes are easy to read aloud or transcribe.
 const SHARE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-export function generateShareCode(length = 8): string {
+// A share code is a bearer credential (docs/specs/015-api/api.md "Share codes"), and guessing runs against
+// every live link at once, not one: 14 characters of a 32-letter alphabet is 70 bits, where the old 8 were
+// 40 and a per-IP limit did not hold that population. Codes minted at 8 stay valid; nothing parses a code's
+// length.
+export const SHARE_CODE_LENGTH = 14;
+
+export function generateShareCode(length = SHARE_CODE_LENGTH): string {
   let code = '';
   const bytes = new Uint8Array(length);
   crypto.getRandomValues(bytes);

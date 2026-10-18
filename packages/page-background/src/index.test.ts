@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isPageMotion, parseColourBackground, parseColourFill, parsePagePattern } from './index';
 
-// A page background's colours (docs/specs/007-editor/illustrate-pages.md "Backgrounds").
+// A page background's colours (docs/specs/007-editor/pages-mode.md "Backgrounds").
 
 describe('parseColourFill', () => {
   it('reads a solid colour and a gradient, its angle brought into 0 to 359', () => {

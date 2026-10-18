@@ -7,7 +7,7 @@
 // 16 for the skip connections to line up.
 export const UNET_STRIDE = 16;
 
-export type PaddedRgb = { rgb: Float32Array; width: number; height: number };
+type PaddedRgb = { rgb: Float32Array; width: number; height: number };
 
 // RGBA bytes to the network's input: RGB floats in 0..1.
 export function rgbOf(rgba: Uint8ClampedArray): Float32Array {

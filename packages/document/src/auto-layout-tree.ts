@@ -43,7 +43,7 @@ function treeRoots(ids: ElementId[], edges: Edge[]): ElementId[] {
 // A stacked parent's leaves hang in a column under it (graph input's compact org chart,
 // docs/specs/015-api/mcp-server.md §4.7): indented from the parent's left by a quarter of its width plus this, so the
 // bus down from its lower-left quarter has room, each leaf this far below the one before.
-export const STACK_INDENT = 28;
+const STACK_INDENT = 28;
 export const STACK_GAP = 14;
 
 export function positionTreeComponent(

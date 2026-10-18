@@ -48,7 +48,7 @@ export function zoomAbout(view: PaneView, factor: number, at: { x: number; y: nu
 // tab's SVG starts in canvas space. The editor draws it at `main.left + W/2 + z (c + offset.x - W/2)`
 // (its `scale(z) translate(offset)` is centred on the canvas element, lib/viewport.ts).
 export type CanvasAnchor = { k: number; x0: number; y0: number };
-export type ScreenBox = { left: number; top: number; width: number; height: number };
+type ScreenBox = { left: number; top: number; width: number; height: number };
 export type EditorView = { zoom: number; offset: { x: number; y: number } };
 
 export function anchorFromPaneView(

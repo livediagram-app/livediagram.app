@@ -11,7 +11,7 @@ import { track } from '@/lib/telemetry';
 import { useCopiedFlash } from '@livediagram/ui';
 import { useRelativeNow } from '@/lib/relative-time';
 
-// "Invite by link" (docs/specs/013-workspace/teams.md): the admin actively turns on a shareable
+// "Invite by Link" (docs/specs/013-workspace/teams.md): the admin actively turns on a shareable
 // join link that expires after a week. Anyone signed in who opens the
 // URL can Join the team. Visual sibling of TeamFormModal (same backdrop
 // + fly-up panel). The parent owns the inviteLink value (it lives on
@@ -124,7 +124,7 @@ export function TeamInviteLinkDialog({
           id="invite-link-title"
           className="text-lg font-semibold text-slate-900 dark:text-slate-50"
         >
-          Invite by link
+          Invite by Link
         </h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Anyone signed in who opens this link can join the team as a member. The link expires after
@@ -151,7 +151,7 @@ export function TeamInviteLinkDialog({
                 {copied ? 'Copied' : 'Copy link'}
               </Button>
             </div>
-            <p className="mt-2 text-xs text-slate-400 dark:text-slate-400">
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
               {expiryLabel(inviteLink.expiresAt, now)}
             </p>
           </div>

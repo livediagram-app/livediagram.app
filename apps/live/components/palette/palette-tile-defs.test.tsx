@@ -131,7 +131,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 12,
+  build: 11,
   write: 5,
   draw: 6,
   // The Pen alone: the layout adds the Pencil and each person's markers (palette-layouts, PaletteLogoTab).
@@ -143,7 +143,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'my-shapes': 0,
   media: 9,
   components: 12,
-  concepts: 7,
+  concepts: 8,
   data: 7,
   // The Collaborate elements, one category per group (docs/specs/012-collaboration/facilitate-mode.md
   // "The palette"): 34 tiles between them.
@@ -152,7 +152,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-record': 5,
   'collab-react': 5,
   'collab-mode': 8,
-  'collab-navigate': 14,
+  'collab-navigate': 15,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
@@ -170,6 +170,9 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Borrowed tiles, listed by the Plan layout (palette-layouts.ts), so no tile of their own.
   'plan-content': 0,
   'plan-tools': 0,
+  // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md).
+  diagrams: 0,
+  layout: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,
 };

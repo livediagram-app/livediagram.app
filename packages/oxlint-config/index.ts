@@ -8,6 +8,8 @@ import { ICON_ART_ALLOWLIST } from '@livediagram/oxlint-config/raw-svg';
 
 const JS_FILES = ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx'];
 const TS_FILES = ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'];
+// Tests: unit and e2e specs, and the Playwright suites with their helpers.
+const TEST_FILES = ['**/*.test.*', '**/*.spec.*', '**/e2e/**'];
 
 // A `jsPlugins` specifier resolves from the config file that names it, so plugins are passed as
 // absolute paths: every workspace's config, and the tests' scratch configs, load the same files.
@@ -197,6 +199,7 @@ export default defineConfig({
     {
       // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
       // TypeScript only: a JavaScript file carries no types, so every value in it reads as `any`.
+      // `require-await` stays off (docs/specs/003-system-architecture/linting.md "Type-aware rules").
       files: TS_FILES,
       rules: {
         'typescript/await-thenable': 'error',
@@ -210,14 +213,29 @@ export default defineConfig({
         'typescript/no-redundant-type-constituents': 'error',
         'typescript/no-unnecessary-type-assertion': 'error',
         'typescript/no-unsafe-argument': 'error',
+        'typescript/no-unsafe-assignment': 'error',
         'typescript/no-unsafe-call': 'error',
         'typescript/no-unsafe-enum-comparison': 'error',
         'typescript/no-unsafe-member-access': 'error',
         'typescript/no-unsafe-return': 'error',
         'typescript/no-unsafe-unary-minus': 'error',
         'typescript/only-throw-error': 'error',
+        // A reason caught and passed on unchanged is unknown, as only-throw-error allows by default.
+        'typescript/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
         'typescript/restrict-plus-operands': 'error',
         'typescript/restrict-template-expressions': 'error',
+        'typescript/unbound-method': 'error',
+      },
+    },
+    {
+      // Source only. A test stubs and restores methods by reference (`Storage.prototype.getItem`,
+      // `element.scrollIntoView`), which is what unbound-method refuses; and vitest types its
+      // asymmetric matchers (`expect.any`, `expect.objectContaining`) as `any`, which is what
+      // no-unsafe-assignment refuses.
+      files: TEST_FILES,
+      rules: {
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/unbound-method': 'off',
       },
     },
     {

@@ -1,10 +1,10 @@
 'use client';
 
 // Bringing a template start back (docs/specs/007-editor/start-diagramming.md "Bringing it back"): once its × has
-// closed it, an empty Diagram, Facilitate or Illustrate tab says so in the palette tray, hanging from the strip as the
+// closed it, an empty Diagram, Facilitate or Pages tab says so in the palette tray, hanging from the strip as the
 // mode banners do, with Show Templates to open its start again. It goes with the emptiness: the first element ends
 // it. Without a strip on screen (Draw's dock) it is the same message as a top-centre pill, as a mode banner falls
-// back to (ModeBanner).
+// back to (ModeBanner). Either way it steps aside while a mode's message is up, which takes the same place.
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideSparkles } from '@livediagram/icons/lucide';
 import {
@@ -57,6 +57,9 @@ export function StartAgainTray({
   if (!strip)
     return (
       <div
+        // Steps aside while a mode message (an armed tool's Cancel, a modifier hint) is on screen: both stand just
+        // clear of the dock, so they would overlap (globals.css).
+        data-yields-to-mode=""
         className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
         style={pillPlace(dock, viewportHeight)}
       >
@@ -82,6 +85,7 @@ export function StartAgainTray({
   return (
     <PaletteTray
       box={strip}
+      standing
       lead={<SparklesGlyph />}
       end={<PaletteTrayAction label="Show Templates" onAction={reopen} />}
     >

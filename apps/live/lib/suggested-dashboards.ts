@@ -13,7 +13,7 @@ import {
 } from '@livediagram/items';
 import { tabKindOf, type Tab } from '@livediagram/document';
 
-export type SuggestedSlot =
+type SuggestedSlot =
   | { span: number; tab: { tabId: string; of: 'board' | 'sheet' } }
   | { span: number; view: PlanViewId }
   | { span: number };

@@ -60,7 +60,7 @@ A picker shows up to three groups, always in this order, each under a small head
    - The **soft tone** is for backgrounds, fills and highlights: the same hues as washes, pale on light paper
      and deep on dark, with White in Ink's place.
    - A surface that offers free colours shows a soft row headed "Light", then a strong row headed "Dark": an
-     Illustrate page's background, the canvas colour and the custom theme builder.
+     Page's background, the canvas colour and the custom theme builder.
 
 3. **Custom Colours**: the colours picked with **Add a custom colour** in this document, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
 
@@ -115,7 +115,7 @@ exactly as it did:
   element with no name field (a table, a note's border) stores the colour's light-paper hex. A fill stores
   its `#rrggbb`; a theme colour stores what it stored before.
 - The laser stores a standard colour by name, Your colour as `presence`, or a custom `#rrggbb`.
-- Off the canvas (Plan, Illustrate pages, articles, charts, themes), a standard colour stores its
+- Off the canvas (Plan, pages, articles, charts, themes), a standard colour stores its
   `#rrggbb` for light paper. A Plan card type and a card's own Colour accept any `#rrggbb`.
 
 ## How it looks
@@ -144,18 +144,18 @@ exactly as it did:
 
 ## Previews
 
-Where the surface previews (the element menu, Illustrate page backgrounds and gradient ends, article
+Where the surface previews (the element menu, page backgrounds and gradient ends, article
 accents), hovering or focusing a swatch shows the colour live and leaving the picker puts the colour back. A
 pick commits it, once, for undo.
 
 ## Skins
 
-| Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout, Plan column, Illustrate page background, article toolbar Colour, article Accent                                                                                                             |
-| **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                   |
-| **Field**         | A field-sized trigger (swatch, name, chevron) opening the picker in a popover               | Plan card Colour                                                                                                                                                                                             |
-| **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, custom theme builder tiles, Quick Style's **More colours**, Plan card type (end of its Name field) |
+| Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout, Plan column, page background, article toolbar Colour, article Accent                                                                                                                                                                                                                          |
+| **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                                                                                                                     |
+| **Field**         | A field-sized trigger (swatch, name, chevron) opening the picker in a popover               | Plan card Colour                                                                                                                                                                                                                                                                                               |
+| **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, custom theme builder tiles, Quick Style's **More colours**, Plan card type (end of its Name field), a tag's colour in the tag picker and its menu's Change Colour ([Tags](../013-workspace/tags.md)) |
 
 ## Quick Style
 

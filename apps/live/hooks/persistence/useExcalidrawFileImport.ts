@@ -3,6 +3,7 @@
 // host's commit, and hand the report on, with the files that could not be read listed first.
 import { useState } from 'react';
 import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
+import { importingStepOf, type BoardImportingStep } from '@/lib/board-scene-import';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { ExcalidrawContainer } from '@/lib/excalidraw-embedded';
@@ -12,9 +13,7 @@ import { track } from '@/lib/telemetry';
 export const UNEXPECTED = "Couldn't import that. Check the files and try again.";
 
 export type ExcalidrawImportStep =
-  | { step: 'pick'; error?: string }
-  | { step: 'reading' }
-  | { step: 'importing'; board: number; boards: number; images?: { done: number; total: number } };
+  { step: 'pick'; error?: string } | { step: 'reading' } | BoardImportingStep;
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
@@ -50,13 +49,7 @@ export function useExcalidrawFileImport(deps: {
 }) {
   const [state, setState] = useState<ExcalidrawImportStep>({ step: 'pick' });
 
-  const onProgress = (p: BoardImportProgress) =>
-    setState({
-      step: 'importing',
-      board: p.board ?? 1,
-      boards: p.boards ?? 1,
-      ...(p.total > 0 ? { images: { done: p.done, total: p.total } } : {}),
-    });
+  const onProgress = (p: BoardImportProgress) => setState(importingStepOf(p));
 
   const open = async (files: readonly File[]): Promise<void> => {
     if (files.length === 0) return;

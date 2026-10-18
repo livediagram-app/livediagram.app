@@ -1,18 +1,18 @@
 'use client';
 
-// A slide page's place in the slide deck (docs/specs/007-editor/illustrate-pages.md "Slides"),
+// A slide page's place in the slide deck (docs/specs/007-editor/pages-mode.md "Slides"),
 // first in its title bar, left of Layout and Background: Add to Slides while the deck has no slide
 // of the page; once it has, Hide in Slides (or Show in Slides while hidden), which hides the slide
 // from the presentation or shows it again. Named beside its icon on a desktop.
 import { Tooltip } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
-import type { PageDeckControls } from '@/hooks/editor/useIllustratePages';
+import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import { titleButtonClass } from './TitlePopoverButton';
 
-export const ADD_TO_SLIDES = 'Add to Slides';
-export const HIDE_IN_SLIDES = 'Hide in Slides';
-export const SHOW_IN_SLIDES = 'Show in Slides';
+const ADD_TO_SLIDES = 'Add to Slides';
+const HIDE_IN_SLIDES = 'Hide in Slides';
+const SHOW_IN_SLIDES = 'Show in Slides';
 
 // The title-bar room it takes (24 px and the gap), or named beside its icon, sized for its longest
 // name, so the page's label truncates first.

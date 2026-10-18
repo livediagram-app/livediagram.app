@@ -270,3 +270,220 @@ describe('a press on the canvas cover', () => {
     expect(interceptPress).toHaveBeenCalledTimes(1);
   });
 });
+
+// docs/specs/008-canvas/avatar-mode.md "Walking": a finger's drag pans, and only its tap walks.
+describe('Avatar mode presses', () => {
+  function avatarSetup() {
+    const walkTo = vi.fn();
+    const setPan = vi.fn();
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 400,
+        bottom: 800,
+        x: 0,
+        y: 0,
+        width: 400,
+        height: 800,
+      }) as DOMRect;
+    const { result } = renderHook(() =>
+      useCanvasSurfaceGestures({
+        canvasTool: 'avatar',
+        middleMousePan: true,
+        pendingDraw: null,
+        viewportOffset: { x: 0, y: 0 },
+        viewportZoom: 1,
+        mainRef: { current: null },
+        wrapperRef: { current: wrapper },
+        spaceHeldRef: { current: false },
+        setPan,
+        setMarquee: vi.fn(),
+        spotlight: {},
+        avatar: { walkTo, pos: { x: 0, y: 0 }, seatedOn: null },
+        peerAvatars: [],
+        isoCamera: {},
+        beginPendingDrawGesture: () => false,
+        onDeselect: vi.fn(),
+        onCanvasDoubleClick: vi.fn(),
+      } as never),
+    );
+    const press = (pointerType: string) =>
+      result.current.onPointerDownCapture({
+        target: document.createElement('div'),
+        button: 0,
+        detail: 1,
+        clientX: 120,
+        clientY: 240,
+        pointerType,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      } as unknown as ReactPointerEvent);
+    return { press, walkTo, setPan };
+  }
+
+  it('pans on a finger, walking only when the press turns out a tap', () => {
+    const { press, walkTo, setPan } = avatarSetup();
+    press('touch');
+    expect(walkTo).not.toHaveBeenCalled();
+    const pan = setPan.mock.calls[0]?.[0] as { startClientX: number; onTap?: () => void };
+    expect(pan.startClientX).toBe(120);
+    pan.onTap?.();
+    expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+  });
+
+  it('walks at once on a mouse click, starting no pan', () => {
+    const { press, walkTo, setPan } = avatarSetup();
+    press('mouse');
+    expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+    expect(setPan).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)": a press panning through an element hands its tap to the pan.
+describe('a pan-through press with a tap', () => {
+  it('carries the tap into the pan', async () => {
+    const { markPanThrough } = await import('./pan-through');
+    const { result, setPan } = setup('pan');
+    const onTap = vi.fn();
+    const press = {
+      button: 0,
+      pointerType: 'touch',
+      clientX: 1,
+      clientY: 2,
+      target: document.createElement('div'),
+      currentTarget: document.createElement('main'),
+      nativeEvent: new Event('pointerdown'),
+    } as unknown as ReactPointerEvent;
+    markPanThrough(press, onTap);
+    result.current.onPointerDown(press);
+    expect(setPan).toHaveBeenCalledWith(expect.objectContaining({ onTap }));
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom": the double-click carries who pressed.
+describe('a double press on the bare canvas', () => {
+  const inertTool = () =>
+    new Proxy({}, { get: (_, key) => (key === 'pos' ? { x: 0, y: 0 } : () => undefined) });
+  function dblSetup(canvasTool = 'select') {
+    const onCanvasDoubleClick = vi.fn();
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () =>
+      ({
+        left: 10,
+        top: 20,
+        right: 410,
+        bottom: 820,
+        x: 10,
+        y: 20,
+        width: 400,
+        height: 800,
+      }) as DOMRect;
+    const { result } = renderHook(() =>
+      useCanvasSurfaceGestures({
+        canvasTool,
+        middleMousePan: true,
+        pendingDraw: null,
+        viewportOffset: { x: 0, y: 0 },
+        viewportZoom: 2,
+        mainRef: { current: null },
+        wrapperRef: { current: wrapper },
+        spaceHeldRef: { current: false },
+        setPan: vi.fn(),
+        setMarquee: vi.fn(),
+        // The inert tools handle the press themselves; any of their calls is a no-op here.
+        spotlight: inertTool(),
+        avatar: inertTool(),
+        peerAvatars: [],
+        isoCamera: inertTool(),
+        beginPendingDrawGesture: () => false,
+        onDeselect: vi.fn(),
+        onCanvasDoubleClick,
+      } as never),
+    );
+    const press = (pointerType: string) =>
+      result.current.onPointerDownCapture({
+        target: document.createElement('div'),
+        button: 0,
+        clientX: 110,
+        clientY: 220,
+        pointerType,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      } as unknown as ReactPointerEvent);
+    const dbl = (target: Element = wrapper) =>
+      result.current.onWrapperDoubleClick({
+        target,
+        currentTarget: wrapper,
+        clientX: 110,
+        clientY: 220,
+      } as unknown as ReactMouseEvent);
+    const surface = document.createElement('main');
+    const dblSurface = (target: Element = surface) =>
+      result.current.onSurfaceDoubleClick({
+        target,
+        currentTarget: surface,
+        clientX: 610,
+        clientY: 20,
+      } as unknown as ReactMouseEvent);
+    return { press, dbl, dblSurface, onCanvasDoubleClick, result };
+  }
+
+  it("zooms on a finger's double-tap on the bare surface around the zoomed-out content", () => {
+    const { press, dblSurface, onCanvasDoubleClick, result } = dblSetup();
+    press('touch');
+    expect(result.current.pressedByFinger()).toBe(true);
+    dblSurface();
+    // Outside the wrapper's rect, by the same linear mapping.
+    expect(onCanvasDoubleClick).toHaveBeenCalledWith(300, 0, true);
+  });
+
+  it('leaves the bare surface alone for a mouse, for anything on it, and in the inert tools', () => {
+    const mouse = dblSetup();
+    mouse.press('mouse');
+    expect(mouse.result.current.pressedByFinger()).toBe(false);
+    mouse.dblSurface();
+    expect(mouse.onCanvasDoubleClick).not.toHaveBeenCalled();
+
+    const child = dblSetup();
+    child.press('touch');
+    child.dblSurface(document.createElement('div'));
+    expect(child.onCanvasDoubleClick).not.toHaveBeenCalled();
+
+    for (const tool of ['spotlight', 'isometric', 'avatar']) {
+      const inert = dblSetup(tool);
+      inert.press('touch');
+      inert.dblSurface();
+      expect(inert.onCanvasDoubleClick).not.toHaveBeenCalled();
+    }
+  });
+
+  it("says a finger's double-tap was a finger's, at the tapped canvas point", () => {
+    const { press, dbl, onCanvasDoubleClick } = dblSetup();
+    press('touch');
+    press('touch');
+    dbl();
+    expect(onCanvasDoubleClick).toHaveBeenCalledWith(50, 100, true);
+  });
+
+  it.each(['mouse', 'pen'])("says a %s's double-click was not", (pointerType) => {
+    const { press, dbl, onCanvasDoubleClick } = dblSetup();
+    press(pointerType);
+    dbl();
+    expect(onCanvasDoubleClick).toHaveBeenCalledWith(50, 100, false);
+  });
+
+  it('treats a double-click with no press seen as a mouse', () => {
+    const { dbl, onCanvasDoubleClick } = dblSetup();
+    dbl();
+    expect(onCanvasDoubleClick).toHaveBeenCalledWith(50, 100, false);
+  });
+
+  it('ignores a double press on anything but the bare canvas', () => {
+    const { press, dbl, onCanvasDoubleClick } = dblSetup();
+    press('touch');
+    dbl(document.createElement('div'));
+    expect(onCanvasDoubleClick).not.toHaveBeenCalled();
+  });
+});

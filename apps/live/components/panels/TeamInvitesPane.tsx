@@ -59,7 +59,9 @@ export function TeamInvitesPane({
               <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                 {invite.team.name}
               </span>
-              <span className="block truncate text-xs text-slate-400">{subtitle}</span>
+              <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                {subtitle}
+              </span>
             </span>
             <button
               type="button"

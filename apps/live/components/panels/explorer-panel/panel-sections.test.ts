@@ -13,14 +13,14 @@ import {
 const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: true });
 
 describe('the editor Explorer sections', () => {
-  it("lists the sidebar's groups, This browser only while it holds documents", () => {
+  it("lists the sidebar's groups, This Browser only while it holds documents", () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
       ['home', 'inbox', 'timeline', 'shared'],
       ['mine', 'team:t1'],
-      ['browser', 'library', 'trash'],
+      ['browser', 'tags', 'library', 'trash'],
     ]);
     const none = panelSectionGroups({ teams: [], hasBrowserDocuments: false });
-    expect(none[2]!.sections.map(sectionKey)).toEqual(['library', 'trash']);
+    expect(none[2]!.sections.map(sectionKey)).toEqual(['tags', 'library', 'trash']);
   });
 
   it('round-trips a key, and refuses one it does not know', () => {
@@ -32,7 +32,7 @@ describe('the editor Explorer sections', () => {
   });
 
   it('names each section, a team by its name', () => {
-    expect(sectionLabel({ kind: 'mine' })).toBe('My documents');
+    expect(sectionLabel({ kind: 'mine' })).toBe('My Documents');
     expect(sectionLabel({ kind: 'team', id: 't1' }, () => 'Design guild')).toBe('Design guild');
     expect(sectionLabel({ kind: 'team', id: 't1' })).toBe('Team');
   });
@@ -41,6 +41,8 @@ describe('the editor Explorer sections', () => {
     expect(sectionPage({ kind: 'mine' })).toEqual({ kind: 'all' });
     expect(sectionPage({ kind: 'browser' })).toEqual({ kind: 'offline' });
     expect(sectionPage({ kind: 'library' })).toEqual({ kind: 'gallery' });
+    expect(sectionPage({ kind: 'tags' })).toEqual({ kind: 'tags' });
+    expect(sectionLabel({ kind: 'tags' })).toBe('Tags');
     expect(sectionPage({ kind: 'team', id: 't1' })).toEqual({ kind: 'team', id: 't1' });
     expect(sectionPage({ kind: 'inbox' })).toEqual({ kind: 'inbox' });
   });

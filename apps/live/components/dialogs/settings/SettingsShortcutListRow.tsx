@@ -46,7 +46,7 @@ function ShortcutGroup({
       title={section.heading}
       open={open}
       onToggle={onToggle}
-      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400"
+      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
       chevronClassName="text-slate-400 dark:text-slate-400"
       bodyClassName=""
     >

@@ -5,6 +5,7 @@
 
 import type { SetStateAction } from 'react';
 import { debugLog } from './debug-log';
+import { createListeners } from '@/lib/listeners';
 
 export type Selection = {
   readonly selectedId: string | null;
@@ -17,11 +18,11 @@ export const EMPTY_SELECTION: Selection = Object.freeze({
 });
 
 export type SelectionStore = {
-  get(): Selection;
-  subscribe(listener: () => void): () => void;
-  setSelectedId(next: SetStateAction<string | null>): void;
-  setMultiSelectedIds(next: SetStateAction<Set<string>>): void;
-  setSelection(next: Selection): void;
+  get: () => Selection;
+  subscribe: (listener: () => void) => () => void;
+  setSelectedId: (next: SetStateAction<string | null>) => void;
+  setMultiSelectedIds: (next: SetStateAction<Set<string>>) => void;
+  setSelection: (next: Selection) => void;
 };
 
 // The selection as one set: the multi-selection when there is one, else the single selected id.
@@ -42,7 +43,7 @@ export function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boo
 
 export function createSelectionStore(): SelectionStore {
   let current = EMPTY_SELECTION;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
 
   const commit = (next: Selection) => {
     if (
@@ -56,17 +57,12 @@ export function createSelectionStore(): SelectionStore {
       single: next.selectedId,
       multi: next.multiSelectedIds.size,
     });
-    for (const listener of [...listeners]) listener();
+    listeners.notify();
   };
 
   return {
     get: () => current,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
+    subscribe: listeners.subscribe,
     setSelectedId(next) {
       const selectedId = typeof next === 'function' ? next(current.selectedId) : next;
       commit({ selectedId, multiSelectedIds: current.multiSelectedIds });
@@ -81,7 +77,7 @@ export function createSelectionStore(): SelectionStore {
   };
 }
 
-export type ElementSelectionFlags = { selected: boolean; multi: boolean; single: boolean };
+type ElementSelectionFlags = { selected: boolean; multi: boolean; single: boolean };
 
 export function elementSelectionFlags(s: Selection, id: string): ElementSelectionFlags {
   const multi = s.multiSelectedIds.has(id);

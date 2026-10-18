@@ -2,6 +2,7 @@
 
 import type { ImageSummary } from '@livediagram/api-schema';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
+import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
 
 // Aspect-square clickable thumbnail for one ImageSummary. Used by
 // the ImagePicker's Gallery tab + the Current Tab Images
@@ -36,9 +37,11 @@ export function GalleryImageButton({
   onClick,
   ariaLabel,
 }: GalleryImageButtonProps) {
+  // A tile is small: a tile-sized copy, so a gallery of camera photos stays light (image-display.ts).
   const state = useImageBlobUrl(ownerId, image.id, {
     documentId,
     shareCode: shareCode ?? null,
+    maxEdge: DISPLAY_EDGE_TILE,
   });
   return (
     <button

@@ -66,7 +66,8 @@ describe('createTelemetryEmitter', () => {
     expect(fetchMock).not.toHaveBeenCalled(); // buffered, not sent per-call
     vi.advanceTimersByTime(10_000);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const sent: unknown[] = fetchMock.mock.calls[0]!;
+    const [url, init] = sent;
     expect(url).toBe('/api/events');
     expect((init as { keepalive: boolean }).keepalive).toBe(true);
     expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([
@@ -314,6 +315,54 @@ describe('installClientErrorTracking', () => {
       ['Error', 'Client', 'Uncaught.Explorer.Other'],
       ['Error', 'Client', 'UnhandledRejection.Explorer.NonError'],
     ]);
+  });
+
+  it("skips the edge's bot-detection snippet that Trusted Types refuses by design", () => {
+    const track = vi.fn();
+    Object.assign(windowTarget, {
+      location: { pathname: '/help/canvas', href: 'https://livediagram.app/help/canvas/#top' },
+    });
+    mod.installClientErrorTracking(track);
+    // The snippet's throw: an inline script (filename is the page) and a cross-realm error.
+    windowTarget.fire('error', {
+      message:
+        "Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.",
+      filename: 'https://livediagram.app/help/canvas/',
+      error: { name: 'TypeError' },
+    });
+    windowTarget.fire('error', {
+      message: 'TypeError: This assignment requires a TrustedHTML',
+      filename: 'https://livediagram.app/help/canvas/',
+      error: { name: 'TypeError' },
+    });
+    // The same refusal from one of our own script files still counts, as does anything else inline.
+    windowTarget.fire('error', {
+      message: 'This assignment requires a TrustedHTML',
+      filename: 'https://livediagram.app/help/_next/static/chunks/app.js',
+      error: new TypeError('x'),
+    });
+    windowTarget.fire('error', {
+      message: 'x is undefined',
+      filename: 'https://livediagram.app/help/canvas/',
+      error: new RangeError('x'),
+    });
+    expect(track.mock.calls).toEqual([
+      ['Error', 'Client', 'Uncaught.Help.TypeError'],
+      ['Error', 'Client', 'Uncaught.Help.RangeError'],
+    ]);
+  });
+
+  it('reads an edge-snippet refusal only from a message and file it can trust', () => {
+    expect(mod.isEdgeSnippetRefusal(undefined, 'https://a/')).toBe(false);
+    expect(
+      mod.isEdgeSnippetRefusal(
+        { message: 'TrustedHTML', filename: undefined as never },
+        'https://a/',
+      ),
+    ).toBe(false);
+    expect(
+      mod.isEdgeSnippetRefusal({ message: 'TrustedHTML', filename: 'https://a/' }, 'https://a/#x'),
+    ).toBe(true);
   });
 
   it('still reports when the page or error is unknown', () => {

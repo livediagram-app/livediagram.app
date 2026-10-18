@@ -40,6 +40,7 @@ function setup(el: Element, tabLocked = false) {
       commit: (fn) => {
         elements = fn(elements);
       },
+      discardLastStep: vi.fn(),
       tickTabs: vi.fn(),
       applyFormatFromSource: vi.fn(),
       lockedByOther: () => false,

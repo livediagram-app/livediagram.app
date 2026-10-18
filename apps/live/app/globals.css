@@ -10,6 +10,8 @@
 @import './motion-sticky.css';
 @import './motion-media.css';
 @import './motion-page.css';
+/* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
+@import './auth-motion.css';
 @import './motion-drawing.css';
 @import './motion-table.css';
 @import './thumbnail-loader.css';
@@ -17,12 +19,31 @@
 @import './article-pages.css';
 @import './split-view.css';
 @import './sketch-face.css';
+@import './label-bidi.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
  * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
  * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
 @custom-variant phone {
   @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+    @slot;
+  }
+}
+
+/* A phone held sideways (docs/specs/007-editor/live-app.md "A phone held sideways"): the header and the
+ * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (lib/responsive.ts); the two
+ * state the same query. */
+@custom-variant landscape-phone {
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 499px) {
+    @slot;
+  }
+}
+
+/* A short window, whatever the pointer: a phone held sideways, or a desktop browser zoomed to 200% (720x450). Panels
+ * that need their height (the start panel, docs/specs/007-editor/start-diagramming.md "On a short window") trim
+ * their clearances here. */
+@custom-variant short-window {
+  @media (max-height: 499px) {
     @slot;
   }
 }
@@ -51,7 +72,7 @@
   }
 }
 
-/* Illustrate mode's page clip (components/canvas/IllustratePageClip.tsx): the layer covers the
+/* Pages mode's page clip (components/canvas/PageClip.tsx): the layer covers the
    canvas world without taking presses itself, so a press on the empty canvas still reaches the
    canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
    so an element's own pointer-events utility still wins. */
@@ -725,23 +746,34 @@
    rotates sheet and shadow together. A user-set element shadow (docs/specs/008-canvas/element-shadows.md)
    replaces the whole treatment — element-variant.ts drops this class when
    one is set. Recipe hand-tuned on a live canvas against Miro's renderer
-   (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md). */
+   (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md).
+
+   The caster is drawn as a picture of itself already blurred, never as a live
+   `filter: blur()`: Safari re-ran the blur for every note on screen on every
+   frame of a pan or zoom (docs/specs/008-canvas/canvas-performance.md). The
+   picture is computed from the same recipe (lib/sticky-peel-image.ts) and its
+   border-image and inset arrive as custom properties on the canvas root; the
+   sides stretch to the note's height, so the ramp keeps its proportions.
+
+   The caster's box runs 9px past the note's sides and 11px below it (10px and
+   13px on a dark canvas), wider than many gaps between notes, so it takes no pointer:
+   a click or a drop just beside a note reaches the board, not the note. */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
   z-index: -2;
-  inset: 0 -3px -5px;
-  filter: blur(2px);
-  background: linear-gradient(#0f172a00 10%, #0f172a52 77% 100%);
+  pointer-events: none;
+  inset: var(--lvd-sticky-peel-inset, 0);
+  border: 0 solid transparent;
+  border-image: var(--lvd-sticky-peel, none);
 }
 /* On a DARK canvas the peel's ink has to go deeper: the slate above is
    tuned against light paper, and on a dark wall it all but disappears —
-   the note stops lifting. Same construction (gradient in the paint, one
-   blur, no mask), stronger ink and a slightly longer throw. The canvas
-   surface flags itself (see isDarkCanvas). */
+   the note stops lifting. Same construction, stronger ink and a slightly
+   longer throw. The canvas surface flags itself (see isDarkCanvas). */
 [data-dark-canvas] .lvd-sticky-peel::before {
-  inset: 0 -4px -7px;
-  background: linear-gradient(#00000000 10%, #000000a8 77% 100%);
+  inset: var(--lvd-sticky-peel-dark-inset, 0);
+  border-image: var(--lvd-sticky-peel-dark, none);
 }
 
 .lvd-sticky-peel::after {
@@ -802,6 +834,13 @@
    entering and leaving isometric, which is a deliberate, rare switch. */
 :root:has([data-iso]) [data-floating-panel] {
   will-change: transform;
+}
+
+/* A standing message (an empty tab's Show Templates, StartAgainTray) steps aside while a mode's message (an armed
+   tool's Cancel, a modifier hint) is up: they take the same place under the strip or the Draw dock, and the mode's
+   says what the next click does (docs/specs/007-editor/start-diagramming.md "Bringing it back"). */
+body:has([data-mode-message]) [data-yields-to-mode] {
+  display: none;
 }
 
 /* Frames still settle BELOW the base plane rather than taking their index:
@@ -967,7 +1006,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 
 /* Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md, palette-tile-finish.ts). Professional:
-   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). */
+   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). Marker: bold round lines. */
 .palette-finish-professional svg {
   stroke-linejoin: miter;
 }
@@ -980,6 +1019,15 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 .palette-finish-sketch svg {
   filter: url(#lvd-sketch-tile);
+}
+/* Marker: a felt-tip's line, bold with round ends, slightly see-through so a glyph's crossings pool darker. */
+.palette-finish-marker svg {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.palette-finish-marker svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke-width: 2.75px;
+  stroke-opacity: 0.88;
 }
 
 /* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it

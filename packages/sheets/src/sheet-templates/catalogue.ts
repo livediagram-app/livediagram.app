@@ -13,6 +13,9 @@ export const SHEET_TEMPLATE_IDS = [
   'expenses',
   'pipeline',
   'inventory',
+  'threats',
+  'drivers',
+  'value-stream',
   'guests',
   'grades',
   'habits',
@@ -30,9 +33,9 @@ export type SheetStartId = (typeof SHEET_STARTS)[number];
 
 // Setup Sheet's headings over its templates.
 export const SHEET_TEMPLATE_GROUPS = ['Money', 'Work', 'People and Life'] as const;
-export type SheetTemplateGroup = (typeof SHEET_TEMPLATE_GROUPS)[number];
+type SheetTemplateGroup = (typeof SHEET_TEMPLATE_GROUPS)[number];
 
-export type SheetTemplateInfo = {
+type SheetTemplateInfo = {
   id: SheetTemplateId;
   name: string;
   line: string;
@@ -154,6 +157,60 @@ export const SHEET_TEMPLATES: readonly SheetTemplateInfo[] = [
     accent: 'orange',
     chart: 'bar-chart',
     keywords: ['stock', 'products', 'warehouse', 'reorder', 'items', 'sku', 'supplies', 'assets'],
+  },
+  {
+    id: 'threats',
+    name: 'Threat Register',
+    line: 'Threats by STRIDE, scored, rated and tracked to mitigated.',
+    group: 'Work',
+    accent: 'rose',
+    chart: 'bar-chart',
+    keywords: [
+      'threat model',
+      'stride',
+      'security',
+      'risks',
+      'vulnerabilities',
+      'mitigation',
+      'appsec',
+      'register',
+    ],
+  },
+  {
+    id: 'drivers',
+    name: 'Driver Model',
+    line: 'A north-star metric worked from its inputs, with what-ifs.',
+    group: 'Work',
+    accent: 'indigo',
+    chart: 'bar-chart',
+    keywords: [
+      'metric tree',
+      'north star',
+      'kpi',
+      'what if',
+      'scenario',
+      'growth model',
+      'levers',
+      'forecast',
+    ],
+  },
+  {
+    id: 'value-stream',
+    name: 'Value Stream',
+    line: 'Steps, waits and lead time, with flow efficiency worked out.',
+    group: 'Work',
+    accent: 'teal',
+    chart: 'bar-chart',
+    keywords: [
+      'value stream map',
+      'vsm',
+      'lead time',
+      'cycle time',
+      'flow efficiency',
+      'lean',
+      'bottleneck',
+      'devops',
+    ],
   },
   {
     id: 'guests',

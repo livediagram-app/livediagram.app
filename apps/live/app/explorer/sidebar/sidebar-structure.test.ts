@@ -9,6 +9,7 @@ import {
   SIDEBAR_GROUP_TITLES,
   sidebarDivider,
   sidebarGroups,
+  TAGS_EXPAND_KEY,
   type SidebarLayoutInput,
 } from './sidebar-structure';
 
@@ -33,16 +34,16 @@ describe('sidebarGroups', () => {
     expect(SIDEBAR_GROUP_TITLES).toEqual({ overview: 'Overview', spaces: 'Spaces', more: 'More' });
   });
 
-  it('shows Home, Inbox, Timeline and Shared with me to everyone', () => {
+  it('shows Home, Inbox, Timeline and Shared With Me to everyone', () => {
     expect(rowsOf(GUEST, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
     expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
-  it('gives a signed-in reader My documents, teams and New team last', () => {
+  it('gives a signed-in reader My Documents, teams and New Team last', () => {
     expect(rowsOf(SIGNED_IN, 'spaces')).toEqual(['myDocuments', 'teams', 'newTeam']);
   });
 
-  it('gives a guest the sign-in nudge instead of teams and New team', () => {
+  it('gives a guest the sign-in nudge instead of teams and New Team', () => {
     expect(rowsOf(GUEST, 'spaces')).toEqual(['myDocuments', 'signInNudge']);
   });
 
@@ -50,7 +51,7 @@ describe('sidebarGroups', () => {
     expect(rowsOf({ ...GUEST, signInAvailable: false }, 'spaces')).toEqual(['myDocuments']);
   });
 
-  it('shows Invites before New team only while an invite is pending', () => {
+  it('shows Invites before New Team only while an invite is pending', () => {
     expect(rowsOf({ ...SIGNED_IN, pendingInvites: 2 }, 'spaces')).toEqual([
       'myDocuments',
       'teams',
@@ -67,11 +68,11 @@ describe('sidebarGroups', () => {
     expect(rowsOf({ ...GUEST, pendingInvites: 3 }, 'spaces')).not.toContain('invites');
   });
 
-  it('hides This browser while it holds no documents', () => {
+  it('hides This Browser while it holds no documents', () => {
     expect(rowsOf(GUEST, 'more')).toEqual(['library', 'trash']);
   });
 
-  it('shows This browser first in More while it holds documents', () => {
+  it('shows This Browser first in More while it holds documents', () => {
     expect(rowsOf({ ...GUEST, offlineDocuments: 1 }, 'more')).toEqual([
       'thisBrowser',
       'library',
@@ -79,7 +80,13 @@ describe('sidebarGroups', () => {
     ]);
   });
 
-  it('keeps This browser while its view is current, even when empty', () => {
+  // docs/specs/013-workspace/tags.md "The sidebar": always shown, so it can be found before the first tag.
+  it('holds Tags inside Library, not as a row of More (tags.md "The sidebar")', () => {
+    expect(rowsOf(GUEST, 'more')).not.toContain('tags' as never);
+    expect(rowsOf(SIGNED_IN, 'more')).toContain('library');
+  });
+
+  it('keeps This Browser while its view is current, even when empty', () => {
     expect(rowsOf({ ...GUEST, selected: 'offline' }, 'more')).toContain('thisBrowser');
   });
 });
@@ -92,7 +99,7 @@ describe('sidebarGroups in the floating Explorer panel', () => {
     expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
-  it('shows the spaces but no Invites or New team', () => {
+  it('shows the spaces but no Invites or New Team', () => {
     expect(rowsOf(PANEL, 'spaces')).toEqual(['myDocuments', 'teams']);
   });
 
@@ -100,7 +107,7 @@ describe('sidebarGroups in the floating Explorer panel', () => {
     expect(rowsOf({ ...GUEST, surface: 'panel' }, 'spaces')).toEqual(['myDocuments']);
   });
 
-  it('shows This browser while it holds documents', () => {
+  it('shows This Browser while it holds documents', () => {
     expect(rowsOf({ ...PANEL, offlineDocuments: 1 }, 'more')).toEqual([
       'thisBrowser',
       'library',
@@ -133,12 +140,19 @@ describe('isLibraryView', () => {
 });
 
 describe('initialExpanded', () => {
-  it('opens My documents by default', () => {
+  it('opens My Documents by default', () => {
     expect([...initialExpanded({ kind: 'timeline' })]).toEqual([MY_DOCUMENTS_EXPAND_KEY]);
   });
 
   it('also opens Library when a Library page is the current view', () => {
     expect(initialExpanded({ kind: 'themes' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
+  });
+
+  it('opens Tags when a Tags page is the current view, and only then', () => {
+    expect(initialExpanded({ kind: 'tags', id: 't1' }).has(TAGS_EXPAND_KEY)).toBe(true);
+    // Tags lives inside Library, so a Tags page opens Library too.
+    expect(initialExpanded({ kind: 'tags', id: 't1' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
+    expect(initialExpanded({ kind: 'all' }).has(TAGS_EXPAND_KEY)).toBe(false);
   });
 
   it('keeps the expand keys apart from folder and team ids', () => {

@@ -1,7 +1,7 @@
 // The editing surfaces behind the Tools-family elements: the context menu's Tools
 // flyout (docs/specs/008-canvas/canvas-and-palette.md) with a Checklist, Progress, Data or
 // Portal section open, the Code dialog (docs/specs/009-elements/code-block.md), the line
-// chart's Chart data dialog (docs/specs/009-elements/pie-chart.md), and a table's row and
+// chart's Chart Data dialog (docs/specs/009-elements/pie-chart.md), and a table's row and
 // column controls. Every label is the editor's own string. Composed from the
 // shared primitives; raw shapes only for motifs the kit lacks.
 
@@ -369,7 +369,7 @@ export function CodeDialog() {
   );
 }
 
-/** The line chart's Chart data dialog: Import CSV, a row per category and a
+/** The line chart's Chart Data dialog: Import CSV, a row per category and a
  *  column per series, + Add row and Done. */
 export function LineDataDialog() {
   const series = ['Series 1', 'Series 2'];
@@ -385,7 +385,7 @@ export function LineDataDialog() {
         y={12}
         w={360}
         h={218}
-        title="Chart data"
+        title="Chart Data"
         sceneW={420}
         sceneH={240}
         scrim={false}

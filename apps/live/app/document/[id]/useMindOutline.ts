@@ -22,7 +22,7 @@ import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
-export type MindOutlineApi = {
+type MindOutlineApi = {
   // The root whose outline is open in the dialog, or null.
   openForId: string | null;
   // Whether `id` is a root whose outline may be edited now.

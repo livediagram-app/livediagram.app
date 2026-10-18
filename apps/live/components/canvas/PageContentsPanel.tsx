@@ -1,6 +1,6 @@
 'use client';
 
-// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): every page of the Illustrate
+// Contents (docs/specs/007-editor/pages-mode.md "Contents"): every page of the Pages
 // tab, a live thumbnail each, the page in view marked; a press glides there. An Editor adds a page
 // from its footer. A popover over its cluster button on a desktop (it stays open so a reader can
 // hop from page to page, and its header docks it back as the sidebar), a bottom sheet on a phone
@@ -14,11 +14,12 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
-import { ContentsAddPage, ContentsCount, ContentsFind, ContentsList } from './PageContentsList';
+import { ContentsAddPage } from './ContentsAddPage';
+import { ContentsFind, ContentsList } from './PageContentsList';
 
 const DockIcon = lucideGlyph(lucidePanelLeftOpen, 14);
 
@@ -29,7 +30,7 @@ export function PageContentsPanel({
   onClose,
   onDock,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   tab: PageThumbTab;
   anchor?: DockAnchor;
   onClose: () => void;
@@ -64,7 +65,6 @@ export function PageContentsPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [mobile, onClose]);
 
-  const count = <ContentsCount count={contents.pages.length} />;
   const body = (
     <div className="flex min-h-0 flex-col" data-page-contents="">
       <ContentsFind contents={contents} />
@@ -75,16 +75,11 @@ export function PageContentsPanel({
         className="gap-0.5 px-2 pb-2"
         style={{ maxHeight: mobile ? '55vh' : 'min(calc(100vh - 360px), 480px)' }}
       />
-      <ContentsAddPage contents={contents} columns={4} />
+      <ContentsAddPage contents={contents} />
     </div>
   );
 
-  if (mobile)
-    return (
-      <ContentsSheet onClose={onClose} count={count}>
-        {body}
-      </ContentsSheet>
-    );
+  if (mobile) return <ContentsSheet onClose={onClose}>{body}</ContentsSheet>;
   return (
     <MovablePanel
       title="Contents"
@@ -99,9 +94,8 @@ export function PageContentsPanel({
       onPopoverClose={onClose}
       headerActions={
         <>
-          {count}
           {onDock ? (
-            <HoverCard title="Dock as Sidebar" description="Keep Contents open down the left.">
+            <HoverCard title="Dock as Sidebar" description="Keep Contents open beside the canvas.">
               <button
                 type="button"
                 onClick={onDock}
@@ -124,15 +118,7 @@ export function PageContentsPanel({
 const NO_MOVE = () => {};
 
 // On a phone: the list in a bottom sheet, named, closed by a swipe down, an outside press or Escape.
-function ContentsSheet({
-  onClose,
-  count,
-  children,
-}: {
-  onClose: () => void;
-  count: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function ContentsSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   useEscape(onClose, { capture: true, stopPropagation: true });
   return (
     <BottomSheet
@@ -143,7 +129,6 @@ function ContentsSheet({
     >
       <div className="flex items-center justify-between px-4 pb-2 pt-0.5">
         <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contents</p>
-        {count}
       </div>
       {children}
     </BottomSheet>

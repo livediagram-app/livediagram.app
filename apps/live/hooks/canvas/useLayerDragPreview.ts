@@ -46,12 +46,12 @@ export type LayerPreviewInputs = {
 };
 
 export type LayerPreviewStore = {
-  subscribe(id: string, cb: () => void): () => void;
-  entryOf(id: string): PreviewEntry | undefined;
-  subscribeStructure(cb: () => void): () => void;
-  structure(): PreviewStructure | null;
+  subscribe: (id: string, cb: () => void) => () => void;
+  entryOf: (id: string) => PreviewEntry | undefined;
+  subscribeStructure: (cb: () => void) => () => void;
+  structure: () => PreviewStructure | null;
   // Re-derives from the latest preview and inputs, notifying only the elements whose entry changed.
-  update(inputs: LayerPreviewInputs): void;
+  update: (inputs: LayerPreviewInputs) => void;
 };
 
 // `ordered` with the preview laid over it: changed elements swapped in, removed ones dropped, added ones in the order
@@ -213,7 +213,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       lastOverlay = overlay;
       lastInputs = inputs;
       const prev = entries;
-      entries = overlay ? derive(overlay, inputs) : new Map();
+      entries = overlay ? derive(overlay, inputs) : new Map<string, PreviewEntry>();
       for (const [id, entry] of entries) entries.set(id, steadyEntry(prev.get(id), entry));
       const nextStructure: PreviewStructure | null =
         overlay && (overlay.removed.size > 0 || overlay.added.length > 0)

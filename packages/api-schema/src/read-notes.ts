@@ -68,7 +68,7 @@ export const PHOTO_MAX_NOTES = 400;
 // and the first frame is a trap), and SVG is absent for the same reason
 // docs/specs/009-elements/images.md keeps it out of uploads: it is XML that can carry script.
 export const PHOTO_ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
-export type PhotoAcceptedType = (typeof PHOTO_ACCEPTED_TYPES)[number];
+type PhotoAcceptedType = (typeof PHOTO_ACCEPTED_TYPES)[number];
 
 export function isPhotoAcceptedType(type: string): type is PhotoAcceptedType {
   return (PHOTO_ACCEPTED_TYPES as readonly string[]).includes(type);

@@ -8,7 +8,7 @@ export const DOCUMENT_DATE_MIN = Date.UTC(2000, 0, 1);
 // A device clock running ahead of the server's by up to a day is still trusted.
 export const DOCUMENT_DATE_SKEW_MS = 86_400_000;
 
-export type DocumentDates = { ok: true; createdAt: number; savedAt: number } | { ok: false };
+type DocumentDates = { ok: true; createdAt: number; savedAt: number } | { ok: false };
 
 const valid = (v: unknown, now: number): v is number =>
   typeof v === 'number' &&

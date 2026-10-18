@@ -188,3 +188,113 @@ describe('useCanvasPinchZoom under a covering element', () => {
     expect(getSheetZoom()).toBe(1);
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)": a two-finger pinch zooms about the
+// fingers and follows them as they move, changing the view at most once a frame.
+const touch = (type: string, points: [number, number][]) =>
+  act(() => {
+    const e = new Event(type, { bubbles: true, cancelable: true });
+    const touches = points.map(([clientX, clientY]) => ({ clientX, clientY }));
+    Object.defineProperty(e, 'touches', { value: touches });
+    canvas.dispatchEvent(e);
+  });
+
+describe('useCanvasPinchZoom touch pinch', () => {
+  // The wrapper's centre sits at (200, 100).
+  beforeEach(() => {
+    canvas.getBoundingClientRect = vi.fn(
+      () => ({ left: 0, top: 0, width: 400, height: 200 }) as DOMRect,
+    );
+  });
+
+  it('keeps the canvas point under the fingers there while zooming', () => {
+    setup();
+    touch('touchstart', [
+      [250, 100],
+      [350, 100],
+    ]);
+    touch('touchmove', [
+      [200, 100],
+      [400, 100],
+    ]);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    const { zoom, offset } = viewport.get();
+    expect(zoom).toBe(2);
+    // The point at screen (300, 100) shows canvas (300 - 200) / z - t: the same before and after.
+    expect((300 - 200) / zoom - offset.x).toBeCloseTo((300 - 200) / 1 - 0);
+    expect(offset.y).toBeCloseTo(0);
+  });
+
+  it('follows the fingers when they move together', () => {
+    setup();
+    touch('touchstart', [
+      [250, 100],
+      [350, 100],
+    ]);
+    touch('touchmove', [
+      [270, 140],
+      [370, 140],
+    ]);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(viewport.get()).toEqual({ zoom: 1, offset: { x: 20, y: 40 } });
+  });
+
+  it('changes the view once a frame, from the latest fingers, and measures the canvas once', () => {
+    setup();
+    const views: number[] = [];
+    viewport.subscribe(() => views.push(viewport.get().zoom));
+    touch('touchstart', [
+      [250, 100],
+      [350, 100],
+    ]);
+    touch('touchmove', [
+      [240, 100],
+      [360, 100],
+    ]);
+    touch('touchmove', [
+      [230, 100],
+      [370, 100],
+    ]);
+    touch('touchmove', [
+      [225, 100],
+      [375, 100],
+    ]);
+    expect(views).toEqual([]);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(views).toEqual([1.5]);
+    expect(canvas.getBoundingClientRect).toHaveBeenCalledTimes(1);
+  });
+
+  it('lands on the last fingers when they lift inside a frame', () => {
+    setup();
+    touch('touchstart', [
+      [250, 100],
+      [350, 100],
+    ]);
+    touch('touchmove', [
+      [200, 100],
+      [400, 100],
+    ]);
+    touch('touchend', []);
+    expect(viewport.get().zoom).toBe(2);
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('opens a zoom gesture for the pinch', () => {
+    const { result } = setup();
+    touch('touchstart', [
+      [250, 100],
+      [350, 100],
+    ]);
+    expect(canvasGestureNow()).toBe('zoom');
+    expect(result.current.isPinchingRef.current).toBe(true);
+    touch('touchend', []);
+    expect(result.current.isPinchingRef.current).toBe(false);
+  });
+});

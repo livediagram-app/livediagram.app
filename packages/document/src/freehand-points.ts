@@ -9,7 +9,7 @@ import type { FreehandElement } from './element-types';
 type Box = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height'>;
 
 // A box and its normalised points, before packing: what the live ink lays out each sample.
-export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height'> & {
+type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height'> & {
   points: NormalisedPoint[];
 };
 

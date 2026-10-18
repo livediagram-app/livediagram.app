@@ -33,7 +33,7 @@ export const BrowseStartGroup = createContext<{ id: string; bare: boolean } | nu
 // The group each browse last had open, by its root ("Icons", "Tech"), for a host that unmounts the browse between
 // visits (the Toolbar strip's popovers): going back to Icons reopens the group you left it on, rather than the grid.
 // The host keeps it for the page load; no host means every visit starts on the grid. A query is not kept.
-export type BrowseMemory = {
+type BrowseMemory = {
   get: (root: string) => string | null;
   set: (root: string, group: string | null) => void;
 };

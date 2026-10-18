@@ -39,7 +39,7 @@ function rootSide(label: string, px = ROOT_PX): number {
     side += 20;
   }
 }
-export function rootLook(label: string): { side: number; textSize: 'lg' | 'md' } {
+function rootLook(label: string): { side: number; textSize: 'lg' | 'md' } {
   const side = rootSide(label);
   return side <= ROOT_CAP
     ? { side, textSize: 'lg' }

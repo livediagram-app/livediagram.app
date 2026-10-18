@@ -49,7 +49,6 @@ export type {
 } from './types';
 export {
   EDIT_REJECTION_CODES,
-  EDIT_WARNING_CODES,
   type EditRejection,
   type EditRejectionCode,
   type EditWarning,
@@ -57,4 +56,4 @@ export {
   type FieldChange,
   type ResultLine,
 } from '@livediagram/api-schema';
-export * from './illustrate';
+export * from './pages';

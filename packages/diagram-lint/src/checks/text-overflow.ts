@@ -1,4 +1,4 @@
-// `text-overflow` (warning): on a page (an Illustrate tab) text is the content rather than a caption, so a text
+// `text-overflow` (warning): on a page (a Pages tab) text is the content rather than a caption, so a text
 // element whose words, wrapped as every headless render wraps them, need more lines than its box holds runs into what
 // is under it. On every tab, two text elements whose lines are drawn over each other print over each other (a board's
 // column heading wrapped onto its subtitle): `textOverprint` alone, as a caption's own box is not linted elsewhere.
@@ -14,6 +14,7 @@ import {
   wrapLabel,
   type BoxedElement,
   type Element,
+  type Rect,
 } from '@livediagram/document';
 import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
 import { refOf } from '../context';
@@ -26,7 +27,7 @@ const isText = (el: Element): el is Text =>
   (el as { label: string }).label.trim() !== '' &&
   [el.x, el.y, el.width, el.height].every((v) => Number.isFinite(v));
 
-type Ink = { x: number; y: number; width: number; height: number };
+type Ink = Rect;
 
 // Where a text's lines are drawn: wrapped at its room in its size (a Shift-resized text scaled), set in its box as the
 // renderer sets them (its alignment, its padding), less a little at the top and bottom for the glyphs' own leading,

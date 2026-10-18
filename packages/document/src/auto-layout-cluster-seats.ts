@@ -168,10 +168,10 @@ export function faceGroupEdges(
 // A frame's heading as drawn at its top left: its label's estimated width, at about FRAME_HEADING_CHAR_PX a
 // character (bold, at the nodes' size) plus its padding, FRAME_HEADING_HEIGHT tall. An estimate: a heading is a
 // few words, and the lead it sets keeps FRAME_HEADING_CLEAR spare.
-export const FRAME_HEADING_CHAR_PX = 8;
-export const FRAME_HEADING_PAD = 24;
-export const FRAME_HEADING_HEIGHT = 36;
-export const FRAME_HEADING_CLEAR = 16;
+const FRAME_HEADING_CHAR_PX = 8;
+const FRAME_HEADING_PAD = 24;
+const FRAME_HEADING_HEIGHT = 36;
+const FRAME_HEADING_CLEAR = 16;
 
 export function frameHeadingRect(frame: {
   x: number;

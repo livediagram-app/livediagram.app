@@ -17,6 +17,9 @@ Six elements for the shapes ideas come in, each one element that lays out its ow
   architecture, trust layers, a maturity model. Nesting, not overlap: it is not a Venn.
 - **Chevron process** (`shape: 'chevrons'`): arrow-shaped stages in a row, each pointing into the next, with an
   optional note under each. A value chain, delivery phases, a CI pipeline, a customer lifecycle.
+- **Timeline** (`shape: 'timeline-rail'`): milestones along one line toward an arrowhead, each a name and a when,
+  taking turns above and below the line. A roadmap, a release plan, a project's phases, a history. It was the
+  Timeline rail, a line of labelled points in Build; it keeps that kind, so every saved one opens as a Timeline.
 
 ## Why
 
@@ -42,14 +45,15 @@ conceptRows?: { label: string; note?: string }[];
 | Hub         | 3 to 8 | a satellite | not drawn                                   |
 | Onion       | 2 to 6 | a ring      | not drawn                                   |
 | Chevrons    | 2 to 8 | the stage   | a note under the stage                      |
+| Timeline    | 2 to 8 | a milestone | its when (a date, a quarter), by the dot    |
 
 A label is at most 60 characters and a note at most 40. Row order is meaning: the first row is the top layer, the
 top tier (the apex of a Pyramid, the widest band of a Funnel or Inverted) and the cycle's first step, at twelve
 o'clock, the rest following clockwise; a Hub's first satellite sits at twelve o'clock likewise; an Onion's first ring
-is its core, the rest outward; a Chevron process reads left to right.
+is its core, the rest outward; a Chevron process and a Timeline read left to right.
 
-**The element's label** is the Cycle's centre label and the Hub's hub. A Layer stack, a Pyramid, an Onion and a
-Chevron process take no label (they draw all their own text).
+**The element's label** is the Cycle's centre label and the Hub's hub. A Layer stack, a Pyramid, an Onion, a
+Chevron process and a Timeline take no label (they draw all their own text).
 
 **Spokes** (`hubSpokes?: boolean`, on when absent): a Hub draws a line from the hub to each satellite. **Spokes** is an
 on / off row in the Hub's section; off leaves the satellites floating round the hub.
@@ -66,7 +70,8 @@ on the stage's name; on a phone or any other touch screen (a tablet is wide but 
 bar. A bar keeps clear of its stage's name and its neighbours, never wider than the stage's words, which sit inside
 its body: zoomed out, it shrinks to fit the band above the name, and once that would make it too small to press (under three quarters of its size) it is
 not drawn until the view is zoomed in again. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
-**Add Step**, **Add Satellite**, **Add Ring** or **Add Stage**.
+**Add Step**, **Add Satellite**, **Add Ring**, **Add Stage** or **Add Milestone**. A milestone's when shows the
+placeholder "When" until it is written.
 
 **Pyramid variant** (`pyramidVariant: 'pyramid' | 'inverted' | 'funnel'`, Pyramid by default) is three tiles in the
 same section.
@@ -96,6 +101,29 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
   third of a stage's width. Labels are centred in the stage's body; with any note, the chevrons take the top 62% of
   the height and each note sits under its stage.
 
+### Timeline
+
+`timelineLayout(w, h, n)` (`packages/document/src/concept-timeline.ts`), shared by the face and the export:
+
+- **The spine** runs across the middle (`y = h / 2`) to an arrowhead at the right edge, `clamp(h * 0.06, 6, 12)` long:
+  time runs that way. It is drawn in the accent at 55%, 3 px, round-capped.
+- **The milestones** sit in even slots along the spine short of the arrowhead (`slot = (w - 1.5 * head) / n`, the
+  `i`th at `slot * (i + 0.5)`). Each is a dot of radius `clamp(min(h * 0.055, slot * 0.14), 5, 12)` in the accent,
+  ringed 3 px in the fill so it sits clear of the spine (a ramp would fade the last dots into the paper).
+- **They take turns**: the first above the spine, the next below, and so on, so words on one side are two slots apart
+  and each may take up to `1.9` slots' width, centred on its dot (narrowing near an end to stay centred inside the
+  element, never under `0.95` of a slot). A stem (`max(6, min(room * 0.3, 28))` long, the accent at 50%, 1.5 px) runs
+  from the dot out to the words: its **when** nearest the stem, in the accent, bold, at
+  `round(clamp(labelPx * 0.8, 10, 14))`, then its **name** right against it, in the ink, semibold, at `round(clamp(h * 0.075, 11, 17))`, one line tall
+  (shrinking to fit, then ellipsed, as every concept row). A when that is cleared leaves the name alone.
+- **Build** brings the milestones in left to right; **Pulse** lights each in turn. A Timeline is borderless and takes
+  no fill of its own.
+- **From the Timeline rail.** A timeline rail saved before (its `railCount` points and `railLabels`) opens as a
+  Timeline: each point a milestone, its label the name (an unnamed point `Milestone n`), within 2 to 8, and the point
+  count and labels are dropped (`element-normalise.ts`). Its old Points stepper, Add Point and Build-category tile are
+  gone: the Rows section, Add Milestone and the Concepts tile replace them.
+- **Starting content**: 720 × 240, Kick-off · Jan, First prototype · Mar, Beta with customers · Jun, Launch · Sep.
+
 ## Colours
 
 The rows are a **ramp from the accent**: the first row is the accent (the element's stroke) and each later row mixes
@@ -103,8 +131,11 @@ it further toward the element's fill, down to 22%. The Cycle draws its steps as 
 first step solid in the accent to mark where the loop starts. A Hub's hub is solid in the accent and its satellites
 the fill with an accent ring, its spokes in the accent at half strength. An Onion's core is the accent and each ring
 outward steps down the ramp; a Chevron process ramps left to right. Each row's text takes the readable colour for its own
-fill (`readableColour`), so labels stay legible down the ramp. A theme switch carries all of it, since it is derived
-from the stroke and fill.
+fill (`readableColour`), so labels stay legible down the ramp. A Cycle's later steps and a Hub's satellites, drawn in
+the fill, write their names in the element's text colour where it reads on that fill at 4.5:1, and in the fill's own
+readable label where it does not (`conceptDiscInk`): the text colour is chosen for the canvas, where a Cycle's centre
+words sit, so a pale fill on a dark canvas must not take it. A theme switch carries all of it, since it is derived from
+the stroke and fill.
 
 ## Animation
 
@@ -136,13 +167,13 @@ no animation.
 A new category, **Concepts**, in the Structure band: **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**, **Hub and
 Spoke**, **Onion**, **Chevrons**. The Funnel
 tile places a Pyramid with the Funnel variant (the variant is the decision, so it gets its own tile). The
-**Sankey** ([Sankey diagram](sankey.md)) joins them last, in Diagram and Illustrate: a flow drawn as wide as what it
+**Sankey** ([Sankey diagram](sankey.md)) joins them last, in Diagram and Pages: a flow drawn as wide as what it
 carries explains an idea the way a funnel or a cycle does.
 
 | Mode       | Concepts |
 | ---------- | -------- |
 | Diagram    | yes      |
-| Illustrate | yes      |
+| Pages      | yes      |
 | Plan       | no       |
 | Facilitate | no       |
 

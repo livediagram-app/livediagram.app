@@ -7,10 +7,10 @@ import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { isLocalOnly, readerAccessOf } from '@/lib/document-space';
+import { isInThisBrowser, readerAccessOf } from '@/lib/document-space';
 import { DocumentEntryMenu, documentDragProps, hrefForDocument } from '../document-row-shared';
 import { FavouriteMarker, FolderChip } from '../document-badges';
 import type { PaneDocument } from '../views';
@@ -27,6 +27,7 @@ import {
 } from './details-cells';
 import { formatSize } from './details-format';
 import { useSnapshotPrefetch } from './useSnapshotPrefetch';
+import { DocumentRowTags } from '@/components/tags/DocumentRowTags';
 
 // One document in the Details view (docs/specs/013-workspace/explorer-details-view.md): its columns,
 // the preview on a resting hover over the row, the drag source, and the `⋯` menu shown on hover.
@@ -44,7 +45,7 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
   const dense = useDenseRows();
   const CELL_CLASS = cellClass(dense);
   const rowRef = useRef<HTMLTableRowElement>(null);
-  const local = isLocalOnly(doc);
+  const local = isInThisBrowser(doc);
   const href = hrefForDocument(doc);
   const shareCode = doc.shared?.shareCode ?? null;
   // Preloaded: the row asks for its snapshot as it nears the viewport, so the preview paints at once.
@@ -95,7 +96,9 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
               {doc.name}
             </Link>
           )}
-          {local ? <LocalOnlyPill /> : null}
+          {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), right after the name. */}
+          <DocumentRowTags documentId={doc.id} />
+          {local ? <ThisBrowserPill /> : null}
           {isMadeByAi(doc) ? <MadeByAiPill /> : null}
           {folderChip ? (
             <span className="hidden shrink-0 sm:inline-flex">
@@ -153,7 +156,7 @@ function DocumentPreview({ doc, ownerId }: { doc: PaneDocument; ownerId: string 
         version={doc.savedAt}
         empty={doc.empty}
         shareCode={doc.shared?.shareCode}
-        offline={isLocalOnly(doc)}
+        offline={isInThisBrowser(doc)}
         className="block h-44 w-full overflow-hidden rounded-md border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="truncate px-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100">

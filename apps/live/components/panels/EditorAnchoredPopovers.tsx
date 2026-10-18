@@ -7,7 +7,7 @@ import { elementActions, isBoxed, threadAt } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
-import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
+import { commentPersisters } from '@/lib/comment-persistence';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { cellCommentAnchorSelector } from '@/hooks/sheets/sheet-comments-context';
 
@@ -60,6 +60,8 @@ export function EditorAnchoredPopovers() {
     saveAction,
     completeAction,
     reopenAction,
+    wontDoAction,
+    linkedActions,
     deleteAction,
     teams,
     clerkUserId,
@@ -73,24 +75,15 @@ export function EditorAnchoredPopovers() {
   // account, or the guest participant identity — guests can self-assign.
   const actionSelfId = clerkUserId ?? selfParticipant.id;
   const actionSelfName = clerkDisplayName ?? selfParticipant.name;
-  // A read-only session has no autosave, so its resolve or reopen goes through the comment endpoints; an editor's
-  // rides the room and its save.
-  const persistThreadState = (
-    thread: { comments: { id: string }[] } | undefined,
-    resolved: boolean,
-  ) => {
-    const first = thread?.comments[0]?.id;
-    if (!isReadOnly || !documentId || !first) return undefined;
-    return () =>
-      apiSetThreadResolved(
-        selfParticipant.id,
-        documentId,
-        activeTab.id,
-        first,
-        resolved,
-        sessionShareCode,
-      );
-  };
+  // A read-only session has no autosave, so its comment changes go through the comment endpoints; an editor's ride
+  // the room and its save (lib/comment-persistence.ts, shared with the Comment panel).
+  const persist = commentPersisters({
+    readOnly: isReadOnly,
+    documentId,
+    tabId: activeTab.id,
+    selfId: selfParticipant.id,
+    shareCode: sessionShareCode,
+  });
 
   // Each popover closes once its element can no longer hold it (deleted, an undo, another tab), rather than staying
   // hidden with its id set and reopening by itself when the element comes back (useCloseVanishedDialogs).
@@ -123,64 +116,24 @@ export function EditorAnchoredPopovers() {
                     }
                   : {})}
                 thread={thread}
-                onAddComment={(text, mentions) => {
-                  // View-role visitors don't autosave the tab, so
-                  // their addComment via the local commit alone
-                  // would vanish on refresh. Persist via the
-                  // dedicated POST /tabs/<id>/comments endpoint
-                  // (the only write path open to view-role) so the
-                  // viewer's contribution lives in D1 like an
-                  // owner / editor's would. The hook adopts the
-                  // server-minted id (or the viewer's own delete
-                  // would send an id the server doesn't have) and
-                  // counts the add once the server accepted it.
+                onAddComment={(text, mentions) =>
+                  // The hook adopts the server-minted id when the add went through the endpoint, and counts the
+                  // add once the server accepted it.
                   addComment(
                     target.id,
                     text,
-                    isReadOnly && documentId
-                      ? () =>
-                          apiAddComment(
-                            selfParticipant.id,
-                            documentId,
-                            activeTab.id,
-                            target.id,
-                            text,
-                            sessionShareCode,
-                            mentions,
-                            cell,
-                          )
-                      : undefined,
+                    persist.add(target.id, text, mentions, cell),
                     mentions,
                     cell,
-                  );
-                }}
-                onDeleteComment={(cid) => {
-                  // View-role visitors don't autosave the tab, so the
-                  // local delete alone would resurrect on refresh.
-                  // Persist via the dedicated DELETE endpoint (the
-                  // server re-checks authorId === caller, so a viewer
-                  // can only land their own deletes). Owners / editors
-                  // persist via the normal tab autosave.
-                  deleteComment(
-                    target.id,
-                    cid,
-                    isReadOnly && documentId
-                      ? () =>
-                          apiDeleteComment(
-                            selfParticipant.id,
-                            documentId,
-                            activeTab.id,
-                            cid,
-                            sessionShareCode,
-                          )
-                      : undefined,
-                  );
-                }}
+                  )
+                }
+                // The server re-checks authorId === caller, so a read-only session can only land its own deletes.
+                onDeleteComment={(cid) => deleteComment(target.id, cid, persist.remove(cid))}
                 // A session that may comment but not edit resolves and reopens through the comment endpoints, as it
                 // adds (docs/specs/024-agents/agent-presence.md "Comments"); the thread is named by its first comment.
-                onResolve={() => resolveThread(target.id, persistThreadState(thread, true), cell)}
+                onResolve={() => resolveThread(target.id, persist.threadState(thread, true), cell)}
                 onUnresolve={() =>
-                  unresolveThread(target.id, persistThreadState(thread, false), cell)
+                  unresolveThread(target.id, persist.threadState(thread, false), cell)
                 }
                 onClose={closeComments}
                 readOnly={isReadOnly}
@@ -199,12 +152,22 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === actionPopoverOpenId && isBoxed(el),
             );
             if (!target || !isBoxed(target) || !target.action) return null;
+            const actionId = target.action.id;
             return (
               <ActionPopover
                 elementId={target.id}
                 action={target.action}
                 onComplete={() => completeAction(target.id)}
                 onReopen={() => reopenAction(target.id)}
+                onWontDo={() => wontDoAction(target.id)}
+                onOpenBoard={
+                  linkedActions.openOnBoard
+                    ? () => {
+                        closeActionPopover();
+                        linkedActions.openOnBoard?.(actionId);
+                      }
+                    : undefined
+                }
                 onEdit={() => openAssignActionDialog(target.id)}
                 onDelete={() => deleteAction(target.id)}
                 onClose={closeActionPopover}

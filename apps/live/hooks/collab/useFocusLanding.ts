@@ -4,15 +4,16 @@ import { useCallback, useRef } from 'react';
 // takes you"). On your own tab only the pan moves: the zoom you chose for that canvas is yours. On another
 // tab there is no zoom of yours for that canvas yet, so the tab enters as it always does (its fit), and the
 // point is centred at the zoom that fit gave. Keeping the zoom fitted to the tab you left instead could land
-// a small diagram at the 8% a huge one needed.
+// a small diagram at the 8% a huge one needed. `land` is what arriving does once the tab is the right one:
+// centre the point, or on a Pages tab frame the page it is on ("On a page").
 export function useFocusLanding({
   activeId,
   setActiveId,
-  centreOn,
+  land,
 }: {
   activeId: string;
   setActiveId: (tabId: string) => void;
-  centreOn: (at: { x: number; y: number }) => void;
+  land: (tabId: string, at: { x: number; y: number }) => void;
 }): {
   onFollowTab: (tabId: string) => void;
   onCentreOn: (at: { x: number; y: number }) => void;
@@ -38,9 +39,9 @@ export function useFocusLanding({
     (at: { x: number; y: number }) => {
       // Crossing tabs: centring now would aim the canvas being left, so the point waits for the fit.
       if (pending.current && pending.current.at === null) pending.current.at = at;
-      else centreOn(at);
+      else land(activeId, at);
     },
-    [centreOn],
+    [activeId, land],
   );
 
   const afterTabFit = useCallback(
@@ -49,9 +50,9 @@ export function useFocusLanding({
       if (!landing?.at) return;
       // Another tab fitted first (they moved on before this one loaded): the landing is stale.
       pending.current = null;
-      if (landing.tabId === tabId) centreOn(landing.at);
+      if (landing.tabId === tabId) land(tabId, landing.at);
     },
-    [centreOn],
+    [land],
   );
 
   return { onFollowTab, onCentreOn, afterTabFit };

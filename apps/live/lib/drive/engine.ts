@@ -33,7 +33,7 @@ import { seenRowsOf, type SeenStore } from './tombstones';
 import { DriveTokenError, type TokenSource } from './token-source';
 import { debugLog } from '@/lib/debug-log';
 
-export type PassKind = 'arrival' | 'poll' | 'focus' | 'write' | 'flush' | 'manual';
+type PassKind = 'arrival' | 'poll' | 'focus' | 'write' | 'flush' | 'manual';
 
 export type DriveMirrorState =
   'starting' | 'idle' | 'syncing' | 'disconnected' | 'needs_reconnect' | 'needs_resume';
@@ -56,7 +56,7 @@ export type DriveMirrorStatus = {
   rootName: string | null;
   // The root folder's Drive file id, for Open folder; null until known.
   rootFolderId: string | null;
-  // Every mirrored (My documents) document: the savedAt last uploaded to
+  // Every mirrored (My Documents) document: the savedAt last uploaded to
   // Drive, or null while it has never been. A document not listed is not
   // mirrored (a team, shared or offline document) or is newer than the last
   // pass. Null until a pass has finished, so nothing is guessed on arrival.
@@ -66,7 +66,7 @@ export type DriveMirrorStatus = {
   failed: string[];
 };
 
-export type DriveEngineTelemetry = (
+type DriveEngineTelemetry = (
   action: 'Applied' | 'FirstMirrorFinished' | 'ReconnectNeeded',
   type?: string,
 ) => void;
@@ -76,7 +76,7 @@ export type Timers = {
   clearTimeout(handle: unknown): void;
 };
 
-export type DriveEngineDeps = {
+type DriveEngineDeps = {
   ownerId: string;
   host: string;
   deviceId: string;
@@ -113,7 +113,7 @@ const INITIAL: DriveMirrorStatus = {
 };
 
 // Each mirrored document's last uploaded savedAt, from the drive_items rows.
-export function mirroredFromItems(items: Iterable<DriveItem>): Record<string, number | null> {
+function mirroredFromItems(items: Iterable<DriveItem>): Record<string, number | null> {
   const out: Record<string, number | null> = {};
   for (const item of items) if (item.kind === 'document') out[item.ldId] = item.mirroredSavedAt;
   return out;
@@ -676,7 +676,7 @@ export class DriveMirrorEngine {
   // ---- adoption --------------------------------------------------------------
 
   // The user picked the folder livediagram could not see: make the matching
-  // folder in My documents under its nearest mirrored ancestor, and move the
+  // folder in My Documents under its nearest mirrored ancestor, and move the
   // noticed item into it (docs/specs/022-drive-mirror/drive-mirror.md, "Adopting a folder").
   async adoptFolder(kind: DriveItemKind, ldId: string, pickedFolderId: string): Promise<void> {
     const { deps } = this;

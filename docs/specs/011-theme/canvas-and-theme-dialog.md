@@ -31,38 +31,44 @@ records which look was picked, and the tab carries only those four ordinary sett
 picked one by one.
 
 A **Finish filter** sits left of the carousel's page controls on the Looks heading row: a compact dropdown,
-**All finishes** (the default, every look), then each finish (**Flexible**, **Professional**, **Sketch**),
+**All finishes** (the default, every look), then each finish (**Flexible**, **Professional**, **Sketch**, **Marker**),
 narrowing the carousel to the looks of that finish, paged afresh from its first page (or the page holding the
 tab's look when it is among them). It is the viewer's own, for this open of the dialog only (not stored), and
 changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
 The table is in the order the carousel shows them after the Mashup card, six to a page:
 
-| Look            | Theme    | Finish       | Tab font         | Pattern      | Pattern strength |
-| --------------- | -------- | ------------ | ---------------- | ------------ | ---------------- |
-| Everyday        | Default  | Flexible     | (none)           | Grid         | (kept)           |
-| Textbook        | UML      | Professional | Oswald           | Graph        | 50%              |
-| Whiteboard      | Mono     | Sketch       | (none)           | Blank        | (kept)           |
-| Spectrum        | Rainbow  | Flexible     | Inter            | Grid         | 50%              |
-| Boardroom       | Steel    | Professional | Inter            | Blank        | (kept)           |
-| Notebook        | Mocha    | Sketch       | (none)           | Lines        | (kept)           |
-| Seaside         | Ocean    | Flexible     | Nunito           | Waves        | (kept)           |
-| Doodle          | Rainbow  | Sketch       | Caveat           | Blank        | (kept)           |
-| Editorial       | Cream    | Professional | Lora             | Blank        | (kept)           |
-| Midnight        | Midnight | Flexible     | (none)           | Grid         | (kept)           |
-| Poster          | Tropical | Professional | Abril Fatface    | Diagonal     | 40%              |
-| Workshop        | Sand     | Sketch       | Permanent Marker | Grid         | 60%              |
-| Graph Paper     | Indigo   | Professional | Roboto Mono      | Graph        | (kept)           |
-| Daydream        | Pastel   | Flexible     | Nunito           | Grid         | 60%              |
-| Engineer        | Sky      | Professional | Space Grotesk    | Engineering  | (kept)           |
-| Lagoon          | Tropical | Flexible     | Space Grotesk    | Ripple       | 50%              |
-| Studio          | Lavender | Professional | Roboto Slab      | Isometric    | (kept)           |
-| Garden          | Forest   | Flexible     | Poppins          | Hexagonal    | 40%              |
-| Billboard       | Sunset   | Professional | Oswald           | Stripes      | 40%              |
-| Patchwork       | Pastel   | Sketch       | Lora             | Checkerboard | 30%              |
-| Northern Lights | Abyss    | Flexible     | Poppins          | Aurora       | 60%              |
-| Coffeehouse     | Espresso | Sketch       | Caveat           | Bricks       | 40%              |
-| Schematic       | UML      | Professional | Roboto Mono      | Crosshatch   | 40%              |
+| Look            | Theme    | Finish       | Tab font      | Pattern      | Pattern strength |
+| --------------- | -------- | ------------ | ------------- | ------------ | ---------------- |
+| Everyday        | Default  | Flexible     | (none)        | Grid         | (kept)           |
+| Textbook        | UML      | Professional | Oswald        | Graph        | 50%              |
+| Whiteboard      | Mono     | Marker       | (none)        | Blank        | (kept)           |
+| Spectrum        | Rainbow  | Flexible     | Inter         | Grid         | 50%              |
+| Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
+| Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
+| Seaside         | Ocean    | Flexible     | Nunito        | Waves        | (kept)           |
+| Doodle          | Rainbow  | Sketch       | Caveat        | Blank        | (kept)           |
+| Editorial       | Cream    | Professional | Lora          | Blank        | (kept)           |
+| Midnight        | Midnight | Flexible     | (none)        | Grid         | (kept)           |
+| Poster          | Tropical | Professional | Abril Fatface | Diagonal     | 40%              |
+| Workshop        | Sand     | Marker       | (none)        | Grid         | 60%              |
+| Graph Paper     | Indigo   | Professional | Roboto Mono   | Graph        | (kept)           |
+| Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
+| Engineer        | Sky      | Professional | Space Grotesk | Engineering  | (kept)           |
+| Lagoon          | Tropical | Flexible     | Space Grotesk | Ripple       | 50%              |
+| Studio          | Lavender | Professional | Roboto Slab   | Isometric    | (kept)           |
+| Garden          | Forest   | Flexible     | Poppins       | Hexagonal    | 40%              |
+| Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
+| Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
+| Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
+| Coffeehouse     | Espresso | Sketch       | Caveat        | Bricks       | 40%              |
+| Schematic       | UML      | Professional | Roboto Mono   | Crosshatch   | 40%              |
+| Flipchart       | Rainbow  | Marker       | (none)        | Lines        | 50%              |
+| Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
+| Greenboard      | Pine     | Marker       | (none)        | Blank        | (kept)           |
+| Picnic          | Pastel   | Flexible     | Poppins       | Checkerboard | 25%              |
+| Mural           | Plum     | Marker       | (none)        | Grid         | 50%              |
+| Field Notes     | Olive    | Sketch       | (none)        | Lines        | 60%              |
 
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
@@ -83,10 +89,15 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   migrates.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
-  Mashup card and the twenty-three looks fill four pages.
+  Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
 - **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each bring a theme or a
   pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
   four is new ground rather than a reshuffle.
+- **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
+  Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
+  marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
+  with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
+  (Flipchart and Picnic) keep two to every page.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
@@ -121,14 +132,14 @@ tab matches) but they never appear among the everyday looks.
   catalogue order. The order is worked out once per open of the dialog.
 - **The card** names its season in a small line above the look's name.
 
-| Season    | Look              | Theme     | Finish       | Tab font         | Pattern       | Pattern strength |
-| --------- | ----------------- | --------- | ------------ | ---------------- | ------------- | ---------------- |
-| New Year  | Countdown         | Sparkle   | Professional | Abril Fatface    | Sparkles      | 70%              |
-| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito           | Eggs          | 70%              |
-| Halloween | Haunted           | Pumpkin   | Sketch       | Permanent Marker | Cobwebs       | 70%              |
-| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora             | Candy Stripes | 30%              |
-| Christmas | Winter Wonderland | Frost     | Sketch       | Caveat           | Snowflakes    | 80%              |
-| Christmas | Fireside          | Evergreen | Professional | Roboto Slab      | Drift         | 60%              |
+| Season    | Look              | Theme     | Finish       | Tab font      | Pattern       | Pattern strength |
+| --------- | ----------------- | --------- | ------------ | ------------- | ------------- | ---------------- |
+| New Year  | Countdown         | Sparkle   | Professional | Abril Fatface | Sparkles      | 70%              |
+| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito        | Eggs          | 70%              |
+| Halloween | Haunted           | Pumpkin   | Marker       | (none)        | Cobwebs       | 70%              |
+| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora          | Candy Stripes | 30%              |
+| Christmas | Winter Wonderland | Frost     | Sketch       | Caveat        | Snowflakes    | 80%              |
+| Christmas | Fireside          | Evergreen | Professional | Roboto Slab   | Drift         | 60%              |
 
 - **Seasonal themes.** Sparkle (gold on midnight navy), Spring (painted-egg pastels, a hue per branch), Pumpkin
   (orange, purple and green per branch on a night canvas), Yuletide (red, green and gold per branch), Frost (icy
@@ -179,7 +190,7 @@ and the user can keep pressing it to regenerate.
 Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
 **Finish**, **Text** (the tab font and the default size) and **Canvas** (the pattern). Two columns, one on a phone.
 Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
-with reduced motion), under the shared back bar (the one Import and Export use: **Tab Style** then the panel's name).
+with reduced motion), under the shared [back bar](../004-interface-design/back-bar.md) (the one Import and Export use: **Tab Style** then the panel's name), which stays pinned to the top as the panel scrolls.
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
 open the dialog on that panel.
 

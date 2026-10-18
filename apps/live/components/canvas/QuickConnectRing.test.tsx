@@ -88,3 +88,33 @@ describe('QuickConnectRing menu', () => {
     expect(labels).toEqual(['Add Child', 'Add Sibling', 'Duplicate']);
   });
 });
+
+// A ring beside an element that reaches the edge of a phone fanned its menu past the edge, out of reach
+// (docs/specs/008-canvas/canvas-and-palette.md "Quick add + connect").
+describe('QuickConnectRing menu on a narrow screen', () => {
+  const place = (plusX: number) => {
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(390);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(844);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(40);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(160);
+    vi.spyOn(HTMLButtonElement.prototype, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(plusX - 12, 400, 24, 24),
+    );
+  };
+  afterEach(() => vi.restoreAllMocks());
+
+  it('is nudged back inside the right edge', () => {
+    place(359);
+    const { container } = render(ring(true));
+    // Natural left 359 + 20 = 379, so its right edge 419 overshoots 390 less the margin.
+    expect(menu(container)?.style.translate).toMatch(/^-\d+(\.\d+)?px 0px$/);
+    const dx = parseFloat(menu(container)!.style.translate);
+    expect(379 + 40 + dx).toBeLessThanOrEqual(390);
+  });
+
+  it('is left where it is when it fits', () => {
+    place(200);
+    const { container } = render(ring(true));
+    expect(menu(container)?.style.translate).toBe('');
+  });
+});

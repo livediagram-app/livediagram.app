@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { FROM_FORM_FIELD, readFromForm } from '@livediagram/forms';
 import type { Item } from '@livediagram/items';
+import { createListeners } from '@/lib/listeners';
 
 // How long a response's card shows New when nobody opens it. Safe range 1..30 days.
 export const FRESH_RESPONSE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -18,7 +19,7 @@ let opened: string[] | null = null;
 // The same ids as a set, so each card's check is one lookup however many were opened.
 let openedSet: ReadonlySet<string> = new Set();
 let version = 0;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function load(): string[] {
   if (opened) return opened;
@@ -45,7 +46,7 @@ export function markResponseOpened(item: Pick<Item, 'id' | 'fields'>): void {
   } catch {
     // Blocked storage: the mark goes for this visit only.
   }
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 export function isFreshResponse(
@@ -58,15 +59,10 @@ export function isFreshResponse(
   return !openedSet.has(item.id);
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
 // Whether `item` shows New now; it re-renders when any response is opened.
 export function useFreshResponse(item: Pick<Item, 'id' | 'fields' | 'createdAt'>): boolean {
   useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => version,
     () => 0,
   );

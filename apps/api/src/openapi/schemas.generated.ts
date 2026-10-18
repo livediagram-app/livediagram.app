@@ -3633,6 +3633,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "avatar-pad": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "badge": {
             "additionalProperties": false,
             "properties": {
@@ -6140,7 +6155,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diagram",
       "draw",
       "facilitate",
-      "illustrate",
+      "pages",
       "plan"
     ],
     "type": "string"
@@ -6183,11 +6198,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "status": {
-        "enum": [
-          "open",
-          "done"
-        ],
-        "type": "string"
+        "$ref": "#/components/schemas/ElementActionStatus"
       },
       "teamId": {
         "type": [
@@ -6237,6 +6248,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name"
     ],
     "type": "object"
+  },
+  "ElementActionStatus": {
+    "enum": [
+      "open",
+      "done",
+      "wont-do"
+    ],
+    "type": "string"
   },
   "ElementAnimation": {
     "anyOf": [
@@ -6492,6 +6511,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "elementId": {
             "$ref": "#/components/schemas/ElementId"
           },
+          "field": {
+            "type": "number"
+          },
           "kind": {
             "const": "pinned",
             "type": "string"
@@ -6530,6 +6552,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "EntityField": {
     "additionalProperties": false,
     "properties": {
+      "key": {
+        "$ref": "#/components/schemas/EntityKey"
+      },
       "name": {
         "type": "string"
       },
@@ -6541,6 +6566,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name"
     ],
     "type": "object"
+  },
+  "EntityKey": {
+    "enum": [
+      "pk",
+      "fk",
+      "pk-fk",
+      "uk"
+    ],
+    "type": "string"
   },
   "EstimateScale": {
     "enum": [
@@ -6678,7 +6712,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "flexible",
       "professional",
-      "sketch"
+      "sketch",
+      "marker"
     ],
     "type": "string"
   },
@@ -8003,189 +8038,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "c2"
     ],
     "type": "object"
-  },
-  "IllustrateAnswer": {
-    "additionalProperties": false,
-    "properties": {
-      "article": {
-        "additionalProperties": false,
-        "properties": {
-          "blocks": {
-            "type": "number"
-          },
-          "created": {
-            "type": "boolean"
-          },
-          "estimatedPages": {
-            "type": "number"
-          },
-          "flow": {
-            "type": "string"
-          },
-          "look": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ArticleLookId"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "pages": {
-            "items": {
-              "type": "number"
-            },
-            "type": "array"
-          },
-          "title": {
-            "type": "string"
-          },
-          "words": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "blocks",
-          "created",
-          "estimatedPages",
-          "flow",
-          "look",
-          "pages",
-          "title",
-          "words"
-        ],
-        "type": "object"
-      },
-      "articles": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleSummary"
-        },
-        "type": "array"
-      },
-      "changesetId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "lines": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "pages": {
-        "items": {
-          "$ref": "#/components/schemas/PageSummary"
-        },
-        "type": "array"
-      },
-      "switched": {
-        "type": "boolean"
-      },
-      "tab": {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "rev": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "rev"
-        ],
-        "type": "object"
-      }
-    },
-    "required": [
-      "tab",
-      "switched",
-      "lines",
-      "pages",
-      "articles",
-      "changesetId"
-    ],
-    "type": "object"
-  },
-  "IllustratePage": {
-    "additionalProperties": false,
-    "properties": {
-      "background": {
-        "$ref": "#/components/schemas/PageBackground"
-      },
-      "fit": {
-        "$ref": "#/components/schemas/PageSides"
-      },
-      "flow": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PageKind"
-      },
-      "locked": {
-        "const": true,
-        "type": "boolean"
-      },
-      "name": {
-        "type": "string"
-      },
-      "orientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "rowAt": {
-        "$ref": "#/components/schemas/RowAt"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
-      },
-      "startedBlank": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "id",
-      "orientation"
-    ],
-    "type": "object"
-  },
-  "IllustrateRequest": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "pages": {
-            "items": {
-              "$ref": "#/components/schemas/PageChange"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "pages"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "article": {
-            "$ref": "#/components/schemas/ArticleWrite"
-          }
-        },
-        "required": [
-          "article"
-        ],
-        "type": "object"
-      }
-    ]
   },
   "ImageCredit": {
     "additionalProperties": false,
@@ -9963,6 +9815,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LinkedRecordKind": {
+    "const": "actions",
+    "type": "string"
+  },
   "LintCode": {
     "enum": [
       "box-overlap",
@@ -10396,7 +10252,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "hidden": {
             "type": "number"
           },
-          "illustrate": {
+          "mode": {
+            "$ref": "#/components/schemas/EditorMode"
+          },
+          "outOfScope": {
+            "const": false,
+            "type": "boolean"
+          },
+          "pages": {
             "additionalProperties": false,
             "properties": {
               "kinds": {
@@ -10426,13 +10289,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "kinds"
             ],
             "type": "object"
-          },
-          "mode": {
-            "$ref": "#/components/schemas/EditorMode"
-          },
-          "outOfScope": {
-            "const": false,
-            "type": "boolean"
           },
           "rev": {
             "type": [
@@ -10554,6 +10410,51 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lg"
     ],
     "type": "string"
+  },
+  "Page": {
+    "additionalProperties": false,
+    "properties": {
+      "background": {
+        "$ref": "#/components/schemas/PageBackground"
+      },
+      "fit": {
+        "$ref": "#/components/schemas/PageSides"
+      },
+      "flow": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/PageKind"
+      },
+      "locked": {
+        "const": true,
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "orientation": {
+        "$ref": "#/components/schemas/PageOrientation"
+      },
+      "rowAt": {
+        "$ref": "#/components/schemas/RowAt"
+      },
+      "size": {
+        "$ref": "#/components/schemas/PageSizeId"
+      },
+      "startedBlank": {
+        "const": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "orientation"
+    ],
+    "type": "object"
   },
   "PageBackground": {
     "additionalProperties": false,
@@ -11077,6 +10978,144 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PagesAnswer": {
+    "additionalProperties": false,
+    "properties": {
+      "article": {
+        "additionalProperties": false,
+        "properties": {
+          "blocks": {
+            "type": "number"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "estimatedPages": {
+            "type": "number"
+          },
+          "flow": {
+            "type": "string"
+          },
+          "look": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleLookId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pages": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          },
+          "words": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "blocks",
+          "created",
+          "estimatedPages",
+          "flow",
+          "look",
+          "pages",
+          "title",
+          "words"
+        ],
+        "type": "object"
+      },
+      "articles": {
+        "items": {
+          "$ref": "#/components/schemas/ArticleSummary"
+        },
+        "type": "array"
+      },
+      "changesetId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lines": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "pages": {
+        "items": {
+          "$ref": "#/components/schemas/PageSummary"
+        },
+        "type": "array"
+      },
+      "switched": {
+        "type": "boolean"
+      },
+      "tab": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "rev"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "tab",
+      "switched",
+      "lines",
+      "pages",
+      "articles",
+      "changesetId"
+    ],
+    "type": "object"
+  },
+  "PagesRequest": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/PageChange"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "pages"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/ArticleWrite"
+          }
+        },
+        "required": [
+          "article"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "PagesView": {
     "additionalProperties": false,
     "properties": {
@@ -11138,9 +11177,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "header": {
         "$ref": "#/components/schemas/ViewHeader"
-      },
-      "illustrate": {
-        "type": "boolean"
       },
       "layouts": {
         "items": {
@@ -11254,11 +11290,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "object"
         },
         "type": "array"
+      },
+      "pagesMode": {
+        "type": "boolean"
       }
     },
     "required": [
       "header",
-      "illustrate",
+      "pagesMode",
       "pages",
       "articles",
       "layouts",
@@ -11658,6 +11697,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "cardSize": {
         "$ref": "#/components/schemas/CardSize"
+      },
+      "collects": {
+        "$ref": "#/components/schemas/LinkedRecordKind"
       },
       "columns": {
         "items": {
@@ -13812,6 +13854,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "done-check",
       "chair",
       "fence",
+      "avatar-pad",
       "desk",
       "sofa",
       "room",
@@ -15109,7 +15152,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pages": {
         "items": {
-          "$ref": "#/components/schemas/IllustratePage"
+          "$ref": "#/components/schemas/Page"
         },
         "type": "array"
       },
@@ -15245,7 +15288,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pages": {
         "items": {
-          "$ref": "#/components/schemas/IllustratePage"
+          "$ref": "#/components/schemas/Page"
         },
         "type": "array"
       },
@@ -15710,6 +15753,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TeamInviteDecline": {
+    "additionalProperties": false,
+    "properties": {
+      "status": {
+        "$ref": "#/components/schemas/TeamMemberStatus"
+      },
+      "teamName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "teamName",
+      "status"
+    ],
+    "type": "object"
+  },
   "TeamInviteLink": {
     "additionalProperties": false,
     "properties": {
@@ -15848,7 +15907,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TeamMemberStatus": {
     "enum": [
       "invited",
-      "joined"
+      "joined",
+      "declined",
+      "expired"
     ],
     "type": "string"
   },
@@ -17005,7 +17066,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hidden": {
         "type": "number"
       },
-      "illustrate": {
+      "mode": {
+        "$ref": "#/components/schemas/EditorMode"
+      },
+      "pages": {
         "additionalProperties": false,
         "properties": {
           "kinds": {
@@ -17035,9 +17099,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kinds"
         ],
         "type": "object"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/EditorMode"
       },
       "rev": {
         "type": [

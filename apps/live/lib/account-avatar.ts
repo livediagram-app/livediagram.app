@@ -12,7 +12,7 @@ export type ClerkPictureSource = {
 };
 
 /** What a Clerk image URL says it serves (spec §1): observed, undocumented, read defensively. */
-export type ClerkImageSource = 'upload' | 'oauth' | 'default' | 'other' | 'unknown';
+type ClerkImageSource = 'upload' | 'oauth' | 'default' | 'other' | 'unknown';
 
 const CLERK_STORAGE_HOST = 'images.clerk.dev';
 

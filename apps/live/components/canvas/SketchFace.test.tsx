@@ -6,12 +6,8 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { useSyncExternalStore } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  SKETCH_INK_MAX_WAIT_MS,
-  SKETCH_INK_SETTLE_MS,
-  SketchFace,
-  sketchInkCopy,
-} from './SketchFace';
+import { SketchFace, inkCopyOf, sketchInkCopy } from './SketchFace';
+import { SKETCH_INK_MAX_WAIT_MS, SKETCH_INK_SETTLE_MS } from './settle-watch';
 
 afterEach(() => {
   cleanup();
@@ -153,5 +149,96 @@ describe('SketchFace', () => {
     );
     expect(container.querySelector('[data-sketch-ink]')).toBeNull();
     expect(container.textContent).toBe('face');
+  });
+});
+
+/** A CSS animation as getAnimations reports one: its name, its element and how far it has run. */
+function fakeAnimation(target: Element, animationName: string, currentTime: number | null) {
+  return { animationName, currentTime, effect: { target } } as unknown as Animation;
+}
+
+// jsdom has no Web Animations: each element answers getAnimations from this table, the live face's animations
+// for a subtree query on it and each copied element's own animations by its class.
+function stubAnimations(live: () => Animation[], own: (el: Element) => Animation[]) {
+  const proto = Element.prototype;
+  const before = Object.getOwnPropertyDescriptor(proto, 'getAnimations');
+  Object.defineProperty(proto, 'getAnimations', {
+    configurable: true,
+    value(this: Element, options?: GetAnimationsOptions) {
+      return options?.subtree ? live() : own(this);
+    },
+  });
+  return () => {
+    if (before) Object.defineProperty(proto, 'getAnimations', before);
+    else Reflect.deleteProperty(proto, 'getAnimations');
+  };
+}
+
+describe('the ink copy’s animations', () => {
+  it('lands each copied animation on the frame the live face is on, by element and name', async () => {
+    vi.useFakeTimers();
+    const copied = new Map<Element, Animation[]>();
+    let liveFan: Animation[] = [];
+    const restore = stubAnimations(
+      () => liveFan,
+      (el) => {
+        if (!el.closest('[data-sketch-ink]') || !el.classList.contains('fan')) return [];
+        if (!copied.has(el))
+          copied.set(el, [fakeAnimation(el, 'fan', 0), fakeAnimation(el, 'pulse', 0)]);
+        return copied.get(el)!;
+      },
+    );
+    try {
+      const count = createCount(0);
+      function Answers() {
+        const n = useSyncExternalStore(count.subscribe, count.read);
+        return (
+          <>
+            <span data-tick={n}>{n}</span>
+            <button className="fan">A</button>
+            <button className="fan">B</button>
+          </>
+        );
+      }
+      const { container } = render(
+        <SketchFace active>
+          <Answers />
+        </SketchFace>,
+      );
+      const [ink, live] = Array.from(container.children);
+      const [a, b] = Array.from(live!.querySelectorAll('button'));
+      // Part way through the fan-out, the countdown ticks and the copy is taken again.
+      liveFan = [fakeAnimation(a!, 'fan', 300), fakeAnimation(b!, 'fan', 220)];
+      await act(async () => count.bump());
+      await act(async () => vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS));
+      const [inkA, inkB] = Array.from(ink!.querySelectorAll('button'));
+      expect(copied.get(inkA!)!.map((x) => x.currentTime)).toEqual([300, 0]);
+      expect(copied.get(inkB!)!.map((x) => x.currentTime)).toEqual([220, 0]);
+    } finally {
+      restore();
+    }
+  });
+
+  it('pairs only CSS animations, and only on elements the copy keeps', () => {
+    const live = face();
+    const button = live.querySelector('button')!;
+    const restore = stubAnimations(
+      () => [
+        // A transition (no animation name): a fresh clone never starts one.
+        { currentTime: 50, effect: { target: button } } as unknown as Animation,
+        // On a photo, which the copy prunes.
+        fakeAnimation(live.querySelector('img')!, 'fan', 40),
+        fakeAnimation(button, 'fan', 120),
+      ],
+      () => [],
+    );
+    try {
+      const { copy, animated } = inkCopyOf(live);
+      expect(animated).toHaveLength(1);
+      expect(animated[0]!.copy).toBe(copy.querySelector('button'));
+      expect(animated[0]!.live.currentTime).toBe(120);
+    } finally {
+      restore();
+    }
   });
 });

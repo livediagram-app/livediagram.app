@@ -1,5 +1,5 @@
 // "Group card" template builder (kind `live-card`, docs/specs/008-canvas/canvas-and-palette.md
-// "Templates on pages"): a greeting card the whole team signs, opening in Illustrate on two
+// "Templates on pages"): a greeting card the whole team signs, opening in Pages on two
 // Portrait post (4:5) pages, the shape of a real card. The first page is the cover (a festive
 // title, a dedication, a photo slot and a few party stickers) on a blush-to-sunshine wash; the
 // second is the inside, the message wall on cream: seven signed notes from different teammates
@@ -12,7 +12,7 @@
 //
 // Pure: () -> Element[], placed on the card's pages (liveCardPages) whatever centre is passed.
 
-import { createSticky, type Element, type IllustratePage } from '@livediagram/document';
+import { createSticky, type Element, type Page } from '@livediagram/document';
 import { heading, type Kit } from './page-layout-kit';
 import { pageKits, templatePage } from './template-page-kit';
 
@@ -72,7 +72,7 @@ const NOTES: Note[] = [
 ];
 
 /** The card's pages: the cover and the inside, both Portrait post (4:5). */
-export function liveCardPages(): IllustratePage[] {
+export function liveCardPages(): Page[] {
   return [
     templatePage(1, 'social', 'portrait', 'Cover', {
       fill: { kind: 'gradient', from: '#fce7f3', to: '#fef9c3', angle: 160 },

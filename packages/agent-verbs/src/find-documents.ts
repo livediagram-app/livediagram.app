@@ -13,7 +13,7 @@ import type {
 } from '@livediagram/api-schema';
 import type { ApiClient } from '@livediagram/api-client';
 
-export type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
+type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
 
 // Every library the caller reaches, with its folders (the repository link's coverage and folder picker):
 // the personal one, then each joined team's.

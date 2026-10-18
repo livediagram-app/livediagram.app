@@ -18,7 +18,7 @@ import {
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
-export const BOARD_CSV_FIELDS = [
+const BOARD_CSV_FIELDS = [
   ['assignee', 'Assignee'],
   ['priority', 'Priority'],
   ['start', 'Start'],
@@ -29,7 +29,7 @@ export const BOARD_CSV_FIELDS = [
 ] as const;
 
 // The file's name when the board has no title.
-export const BOARD_CSV_UNTITLED = 'Board';
+const BOARD_CSV_UNTITLED = 'Board';
 
 export function boardCsvFileName(title: string): string {
   return `${title.replace(/[\\/:*?"<>|]+/g, ' ').trim() || BOARD_CSV_UNTITLED}.csv`;
@@ -223,9 +223,9 @@ function builtInValue(
   }
 }
 
-export type BoardCsvRefusal = 'no_title_column' | 'no_types' | 'archive';
+type BoardCsvRefusal = 'no_title_column' | 'no_types' | 'archive';
 
-export interface BoardCsvImport {
+interface BoardCsvImport {
   creates: ItemCreate[];
   // Rows with a cell in them that add no card: no title, no status their type allows, past the room left.
   skipped: number;

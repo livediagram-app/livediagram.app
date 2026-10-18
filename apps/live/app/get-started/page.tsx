@@ -30,6 +30,7 @@ import {
   OrDivider,
   RedirectingCard,
   authHrefWithReturn,
+  guestReturnHref,
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
@@ -221,11 +222,11 @@ function GetStartedContent() {
 
   return (
     <AuthCard
+      title={phase === 1 ? 'Create your account' : 'Check your email'}
       subtitle={
-        phase === 1
-          ? 'Create a free account to keep your documents and work across multiple devices.'
-          : 'Check your email'
+        phase === 1 ? 'Free, and everything you made as a guest comes with you.' : undefined
       }
+      guestHref={guestReturnHref(searchParams)}
       error={error}
       notice={notice}
       footer={
@@ -288,6 +289,9 @@ function GetStartedContent() {
             </div>
           </div>
           <AuthEmailField value={email} onChange={setEmail} />
+          {/* Where Clerk's bot protection draws its CAPTCHA when it wants a press (a custom flow must hold it, or
+              Clerk falls back to the invisible widget, which has no way to ask); takes no room until then. */}
+          <div id="clerk-captcha" className="empty:hidden" />
           <Button type="submit" size="md" disabled={loading} className="w-full shadow-sm">
             {loading ? 'Creating account…' : 'Create account'}
           </Button>

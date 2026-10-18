@@ -1,4 +1,4 @@
-// How a page's picture is painted (docs/specs/007-editor/illustrate-pages.md "Image backgrounds"):
+// How a page's picture is painted (docs/specs/007-editor/pages-mode.md "Image backgrounds"):
 // its overlay and crop as CSS layers for the sheet, and as SVG for the exports, so the canvas and
 // the files paint it the same. Pure.
 import {
@@ -46,5 +46,5 @@ export function pageImageSrc(
   return resolve?.(fill.imageId);
 }
 
-// The picture as SVG for the exports and previews (@livediagram/document's illustrate-page-frame.ts).
+// The picture as SVG for the exports and previews (@livediagram/document's page-frame.ts).
 export { pageImageSvg } from '@livediagram/document';

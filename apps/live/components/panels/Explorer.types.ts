@@ -23,7 +23,7 @@ export type ExplorerProps = {
   // viewer. Distinct from a document's own ownerId.
   ownerId: string | null;
   // Every folder for the owner. Empty array = no user folders, but
-  // My documents still renders. See docs/specs/013-workspace/folders.md.
+  // My Documents still renders. See docs/specs/013-workspace/folders.md.
   folders: Folder[];
   // Documents shared with the current owner (read-only or edit
   // visitor entries). Empty array hides the section entirely so
@@ -70,7 +70,7 @@ export type ExplorerProps = {
   onDeleteDocument?: (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { onRestored?: () => void },
+    opts?: { onRestored?: () => void; name?: string },
   ) => void;
   onDuplicateDocument?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.

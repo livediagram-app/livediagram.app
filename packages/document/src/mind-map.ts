@@ -106,12 +106,15 @@ export function withMindBranches(
 }
 
 /** A node grown from another, plus what had to move to fit it in. */
-export type MindGrowth = {
+type MindGrowth = {
   node: ShapeElement;
   arrow: ArrowElement | null;
   /** Existing nodes to move, by id, so the new one has somewhere to sit. */
   shifts: MindShift[];
 };
+
+// `Array.isArray` alone narrows a readonly list to any[].
+const isRectList = (room: Rect | readonly Rect[]): room is readonly Rect[] => Array.isArray(room);
 
 /** How far down one existing node moves to make room. */
 export type MindShift = { id: ElementId; dy: number };
@@ -178,7 +181,7 @@ export function makeRoom(
   const shifts: MindShift[] = [];
   // Several rects when a re-layout moved many nodes at once: every one of
   // them is somewhere another tree must not be.
-  const obstacles: Rect[] = Array.isArray(room) ? [...room] : [room as Rect];
+  const obstacles: Rect[] = isRectList(room) ? [...room] : [room];
   for (const tree of ordered) {
     let dy = 0;
     for (const obstacle of obstacles) {

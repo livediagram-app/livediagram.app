@@ -6,7 +6,7 @@
 // the snap boxes with a logo page's keylines.
 import { useCallback, useMemo, useRef } from 'react';
 import {
-  illustratePageSnapBoxes,
+  pageSnapBoxes,
   logoPageSnapBoxes,
   type Element,
   type LaidOutPage,
@@ -15,7 +15,7 @@ import {
 } from '@livediagram/document';
 import { useTidyUpStrokes } from '@/hooks/canvas/useTidyUpStrokes';
 import { useCombineShapes } from '@/hooks/canvas/useCombineShapes';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { useLogoTools } from '@/hooks/editor/useLogoTools';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -30,8 +30,8 @@ import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferen
 
 type Commit = (map: (els: Element[]) => Element[]) => void;
 
-export function useLogoEditor<V extends IllustratePagesView>({
-  illustrateView,
+export function useLogoEditor<V extends PagesModeView>({
+  pagesModeView,
   pages,
   activeTab,
   commit,
@@ -45,8 +45,8 @@ export function useLogoEditor<V extends IllustratePagesView>({
   readOnly,
   getZoom,
 }: {
-  // The pages' view while in Illustrate mode, and its laid-out pages; null otherwise.
-  illustrateView: V | null;
+  // The pages' view while in Pages mode, and its laid-out pages; null otherwise.
+  pagesModeView: V | null;
   pages: readonly LaidOutPage[] | null;
   activeTab: Tab;
   commit: Commit;
@@ -112,8 +112,8 @@ export function useLogoEditor<V extends IllustratePagesView>({
   );
   useAssignRef(snapRef, snapPoint);
   const view = useMemo(
-    () => (illustrateView ? { ...illustrateView, logo: { ...tools, snapPoint } } : illustrateView),
-    [illustrateView, tools, snapPoint],
+    () => (pagesModeView ? { ...pagesModeView, logo: { ...tools, snapPoint } } : pagesModeView),
+    [pagesModeView, tools, snapPoint],
   );
 
   const { canCombine, combineSelected } = useCombineShapes({
@@ -138,7 +138,7 @@ export function useLogoEditor<V extends IllustratePagesView>({
 
   // Every page's edges, centre and margin, and a logo page's keylines while its guides show.
   const snapBoxes = pages
-    ? [...illustratePageSnapBoxes(pages), ...logoPageSnapBoxes(guidedPages ?? [])]
+    ? [...pageSnapBoxes(pages), ...logoPageSnapBoxes(guidedPages ?? [])]
     : null;
 
   return {

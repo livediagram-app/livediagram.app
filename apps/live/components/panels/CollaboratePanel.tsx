@@ -6,6 +6,7 @@ import {
   elementDisplayLabel,
   elementThreads,
   type BoxedElement,
+  type ElementActionStatus,
 } from '@livediagram/document';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type {
@@ -68,7 +69,7 @@ export type ActionRow = {
   label: string;
   // The action's name, status, and assignee identity.
   actionName: string;
-  status: 'open' | 'done';
+  status: ElementActionStatus;
   assigneeName: string;
   // Whether the action is assigned to the CURRENT user — sorts first
   // and renders as "You" (docs/specs/012-collaboration/assigned-actions.md §5: the panel's first job is "what's
@@ -160,7 +161,7 @@ export function CollaboratePanel({
             {sections.map((section) => (
               <section key={section.key} aria-label={section.label ?? undefined}>
                 {section.label ? (
-                  <h3 className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <h3 className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {section.label}
                   </h3>
                 ) : null}

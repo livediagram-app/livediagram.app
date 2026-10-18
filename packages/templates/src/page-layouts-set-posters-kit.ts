@@ -1,4 +1,4 @@
-// The Posters layouts' own parts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a column
+// The Posters layouts' own parts (docs/specs/007-editor/pages-mode.md "Layouts"): a column
 // that shares its height out between fixed and growing blocks, a letter-spaced eyebrow, a headline
 // set centred, accent rules and a thin divider. Pure, on the shared kit; no colours of their own.
 import type { Element, TextElement } from '@livediagram/document';

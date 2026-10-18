@@ -55,7 +55,7 @@ export function nearestAnchor(target: BoxedElement, point: Point): Anchor {
   return best;
 }
 
-export type ArrowProfile = 'whiteboard' | 'diagram';
+type ArrowProfile = 'whiteboard' | 'diagram';
 
 const sameColour = (a: ResolvedColour | null, b: ResolvedColour | null) =>
   JSON.stringify(a ?? { kind: 'ink' }) === JSON.stringify(b ?? { kind: 'ink' });

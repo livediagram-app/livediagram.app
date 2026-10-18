@@ -21,3 +21,29 @@ export function startDocumentDrag(
   if (document.localOnly) dataTransfer.setData(DOCUMENT_LOCAL_ONLY_DRAG_MIME, '');
   dataTransfer.effectAllowed = 'move';
 }
+
+// A dragged folder (docs/specs/013-workspace/explorer-structure.md "Dragging to the Trash"): its own type, so the
+// document drop targets (folders, My Documents) never take it; only the sidebar's Trash does.
+export const FOLDER_DRAG_MIME = 'application/x-livediagram-folder-id';
+
+/** What a dragged folder card or row carries: one of the reader's own folders, never one being renamed. */
+export function folderDragProps(
+  folder: { id: string; teamId?: string | null },
+  renaming: boolean,
+): { draggable?: true; onDragStart?: (e: React.DragEvent) => void } {
+  if (renaming || folder.teamId) return {};
+  return {
+    draggable: true,
+    onDragStart: (e) => {
+      e.dataTransfer.setData(FOLDER_DRAG_MIME, folder.id);
+      e.dataTransfer.effectAllowed = 'move';
+    },
+  };
+}
+
+/** What an Explorer drag carries, read from its types (a drop target can't read the data until the drop). */
+export function explorerDragKind(types: readonly string[]): 'document' | 'folder' | null {
+  if (types.includes(DOCUMENT_DRAG_MIME)) return 'document';
+  if (types.includes(FOLDER_DRAG_MIME)) return 'folder';
+  return null;
+}

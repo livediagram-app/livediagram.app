@@ -5,7 +5,7 @@ import { syntheticExportZip } from './ms-whiteboard-board';
 
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
 // "Making a document"), end to end against the real build and api worker, as a guest, in dark
-// mode: a board imported on its own is in Home's Jump back in without being opened; a two-board
+// mode: a board imported on its own is in Home's Jump Back In without being opened; a two-board
 // import puts neither there, though both are on the Recent page.
 
 test.use({ colorScheme: 'dark' });
@@ -34,13 +34,15 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText(SINGLE_BOARD);
 }
 
-const jumpBackIn = (page: Page) => page.getByRole('list', { name: 'Jump back in' });
+// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
+const jumpBackIn = (page: Page) =>
+  page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 
 async function freshGuest(page: Page): Promise<void> {
   await asGuest(page, await mintSignedGuest(page.request));
 }
 
-test('a board imported on its own is in Jump back in without being opened', async ({
+test('a board imported on its own is in Jump Back In without being opened', async ({
   page,
   pageErrors,
 }) => {
@@ -54,14 +56,14 @@ test('a board imported on its own is in Jump back in without being opened', asyn
   await expect(jumpBackIn(page).getByRole('link')).toHaveCount(1);
   await page.screenshot({ path: test.info().outputPath('single-import-home-desktop.png') });
 
-  // A phone: the same board in the strip, before its See more tile.
+  // A phone: the same board in the strip, before its See More tile.
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(tile).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('single-import-home-phone.png') });
   expectNoPageErrors(pageErrors);
 });
 
-test('a two-board import marks neither used: Jump back in stays empty, Recent has both', async ({
+test('a two-board import marks neither used: Jump Back In stays empty, Recent has both', async ({
   page,
   pageErrors,
 }) => {
@@ -70,7 +72,7 @@ test('a two-board import marks neither used: Jump back in stays empty, Recent ha
   await importBoards(page, 2);
 
   await page.goto('/explorer/home');
-  const jump = page.getByRole('region', { name: 'Jump back in' });
+  const jump = page.getByRole('region', { name: 'Jump Back In' });
   await expect(jump).toContainText('The documents you use most and last will gather here.');
   await expect(jumpBackIn(page).getByRole('link')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('bulk-import-home-desktop.png') });

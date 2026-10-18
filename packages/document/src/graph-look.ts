@@ -76,6 +76,24 @@ export function sideStepEdges(
 ): Set<string> {
   const flat = new Set<string>();
   const reach = reachOf(edges);
+  const out = new Map<string, string[]>();
+  for (const e of edges) (out.get(e.from) ?? out.set(e.from, []).get(e.from)!).push(e.to);
+  // Where the flow starts: the nodes nothing enters, or the first written when every node is on a loop.
+  const roots = nodes.filter((n) => inCount(edges, n.id) === 0).map((n) => n.id);
+  if (roots.length === 0 && nodes[0]) roots.push(nodes[0].id);
+  // The nodes the flow reaches before `decision`, walking from the roots without passing through it: an exit into
+  // one goes back to where the flow came from, a loop, never a step aside. Linear in the graph per decision.
+  const before = (decision: string) => {
+    const seen = new Set(roots.filter((r) => r !== decision));
+    const stack = [...seen];
+    while (stack.length)
+      for (const to of out.get(stack.pop()!) ?? []) {
+        if (to === decision || seen.has(to)) continue;
+        seen.add(to);
+        stack.push(to);
+      }
+    return seen;
+  };
   for (const n of nodes) {
     if (n.shape !== 'diamond') continue;
     const exits = outEdges(edges, n.id).filter((e) => e.to !== n.id);
@@ -83,7 +101,10 @@ export function sideStepEdges(
     const main =
       exits.find((e) => MAIN_EXIT.test((e.label ?? '').trim())) ??
       [...exits].sort((a, b) => reach(b.to) - reach(a.to))[0]!;
-    const side = exits.find((e) => e !== main && inCount(edges, e.to) === 1);
+    // A retry back to a step before the decision may be entered only once (the start, say), yet it is the way back.
+    const candidates = exits.filter((e) => e !== main && inCount(edges, e.to) === 1);
+    const earlier = candidates.length ? before(n.id) : null;
+    const side = candidates.find((e) => !earlier!.has(e.to));
     if (side) flat.add(edgeKey(side.from, side.to));
   }
   return flat;
@@ -127,8 +148,8 @@ export function withTones(
 }
 
 // How far outside the boxes a loop runs, and the space between two loops' tracks.
-export const LOOP_CLEARANCE = 40;
-export const LOOP_TRACK_GAP = 22;
+const LOOP_CLEARANCE = 40;
+const LOOP_TRACK_GAP = 22;
 
 export type Pt = { x: number; y: number };
 
@@ -342,7 +363,7 @@ export function routeLoops(
 }
 
 // Up to this many boxes a detour is searched for (orthogonal-router.ts); past it, the outside track.
-export const ROUTER_MAX_BOXES = 120;
+const ROUTER_MAX_BOXES = 120;
 const SIDES: readonly Side[] = ['n', 'e', 's', 'w'];
 
 // A side's anchors, its middle first then its quarters.
@@ -370,7 +391,7 @@ function anchorsInUse(elements: readonly Element[]): Map<string, Anchor[]> {
 // What a route pays per line already ending on a side it leaves or enters: two or three lines bunched on one side
 // read as one, so a route takes a free side for a bend or two more (a third "no" into one rejection drops in by its
 // top rather than squeezing in beside the other two).
-export const ROUTER_SIDE_LOAD_COST = 150;
+const ROUTER_SIDE_LOAD_COST = 150;
 
 // The cheapest clean route between two boxes over every pair of sides, or null. Each end takes its side's middle,
 // or a quarter of that side when another arrow already ends at the middle, so two arrows never meet in one point.
@@ -667,7 +688,7 @@ export function sideRejoins(elements: Element[], axis: 'TB' | 'LR', routes: Rout
 }
 
 // Space between two channels in one gap, and the bin bends fall into to count as one gap.
-export const CHANNEL_GAP = 14;
+const CHANNEL_GAP = 14;
 const CHANNEL_BIN = 24;
 
 // Elbows given channels of their own (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): every elbow

@@ -11,6 +11,7 @@
 
 import type { Anchor, BoxedElement, Element } from './index';
 import { isBoxed } from './index';
+import type { Rect } from './geometry-primitives';
 
 // How far off the source's own span a candidate may sit and still count as
 // "on that side". A fraction of the SOURCE's width/height rather than a fixed
@@ -20,8 +21,6 @@ const LATERAL_SLACK = 0.75;
 // Beyond this (again relative to the source) a box is not "just over there"
 // any more and the user meant to place the end themselves.
 const MAX_REACH = 6;
-
-type Box = { x: number; y: number; width: number; height: number };
 
 const overlaps = (aMin: number, aMax: number, bMin: number, bMax: number, slack: number): boolean =>
   aMin - slack < bMax && bMin < aMax + slack;
@@ -69,7 +68,7 @@ export function nearestElementTowards(
 // anchor's axis, or null when the candidate isn't on that side at all.
 // A candidate that merely overlaps the source contributes gap 0 rather than a
 // negative, so "sitting on top of it" never beats a real neighbour.
-function gapTowards(source: Box, el: Box, anchor: 'n' | 's' | 'e' | 'w'): number | null {
+function gapTowards(source: Rect, el: Rect, anchor: 'n' | 's' | 'e' | 'w'): number | null {
   if (anchor === 's')
     return el.y + el.height > source.y + source.height
       ? Math.max(0, el.y - (source.y + source.height))

@@ -36,7 +36,7 @@ function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 }
         room = id;
         return {
           fetch: vi.fn(async (url: string, init: { body: string }) => {
-            sent.push({ url, body: JSON.parse(init.body), room });
+            sent.push({ url, body: JSON.parse(init.body) as QaWriteRequest, room });
             return reply();
           }),
         };

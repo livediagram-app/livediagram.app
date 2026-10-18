@@ -64,6 +64,7 @@ export const HELP_ARTICLES = {
   microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
   drawioImport: 'explorer/drawio-import',
   shapeLibraries: 'explorer/shape-libraries',
+  tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
@@ -88,7 +89,7 @@ export const HELP_ARTICLES = {
   eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
-  illustrateTour: 'canvas/illustrate/illustrate-tour',
+  pagesTour: 'canvas/pages-mode/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -117,7 +118,7 @@ export const HELP_ARTICLES = {
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
   entities: 'palette/entities',
-  tabWindows: 'canvas/illustrate/tab-windows',
+  tabWindows: 'canvas/pages-mode/tab-windows',
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
@@ -134,11 +135,11 @@ export const HELP_ARTICLES = {
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
-  logoPages: 'canvas/illustrate/logo-pages',
-  // Each page kind's Show Me links its own article (docs/specs/007-editor/illustrate-tour.md).
-  slidePages: 'canvas/illustrate/slide-pages',
-  infographicLayouts: 'canvas/illustrate/infographic-layouts',
-  articlePages: 'canvas/illustrate/articles',
+  logoPages: 'canvas/pages-mode/logo-pages',
+  // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
+  slidePages: 'canvas/pages-mode/slide-pages',
+  infographicLayouts: 'canvas/pages-mode/infographic-layouts',
+  articlePages: 'canvas/pages-mode/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -198,8 +199,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Avatar Tour',
     description: 'What the tour shows you and how replaying works.',
   },
-  illustrateTour: {
-    title: 'Learn about the Illustrate Tour',
+  pagesTour: {
+    title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   sharing: {
@@ -333,7 +334,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   choosingAFinish: {
     title: 'Learn about finishes',
-    description: 'Drawing a tab crisp and print-ready, or sketched by hand.',
+    description: 'Drawing a tab crisp and print-ready, sketched by hand, or in bold marker.',
   },
   choosingFonts: {
     title: 'Learn about fonts',
@@ -402,7 +403,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   timeline: {
     title: 'Learn about Home and the Timeline',
-    description: 'Jump back in, what others did while you were away, and your own Timeline.',
+    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
   },
   inbox: {
     title: 'Learn about the Inbox',
@@ -412,8 +413,12 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Recent',
     description: 'Your most recently opened documents, personal and team, in one list.',
   },
+  tags: {
+    title: 'Learn about tags',
+    description: 'Coloured labels that group related documents across folders and teams.',
+  },
   sharedWithYou: {
-    title: 'Learn about Shared with me',
+    title: 'Learn about Shared With Me',
     description: 'Documents other people have shared with you, collected here.',
   },
   folders: {

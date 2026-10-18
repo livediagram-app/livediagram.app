@@ -188,7 +188,7 @@ export function MenuAccordionSection({
         onClick={onToggle}
         onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
         aria-expanded={open}
-        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
+        className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
         <span className="flex items-center gap-2">
           {/* Fixed-width, centred icon slot so every category title starts at
@@ -302,7 +302,7 @@ export function MenuActionRow({
       type="button"
       {...itemProps}
       onClick={onClick}
-      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${'text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'}`}
+      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${'text-slate-500 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'}`}
     >
       <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
       {label}

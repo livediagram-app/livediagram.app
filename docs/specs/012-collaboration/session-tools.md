@@ -240,6 +240,9 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   bottom-right corner (clearance from the edge, and from a neighbour's
   stepper on a packed canvas) and stops its own pointer events so a minus
   can't bubble into the element-body cast and re-add what it just removed.
+  Its fill is **opaque in both modes**, brand-tinted once it holds your dots: it is drawn on the element, and a
+  sticky note stays pale on a dark canvas, so a translucent tint took the note's colour under the dark mode's
+  light count and your own dots disappeared.
   Once casting closes it reverts to a read-only count: a result to read,
   not a control. **Nothing floats over the canvas for a vote.** How many dots
   you have left shows on the [Session strip](#the-session-strip)'s Vote
@@ -276,7 +279,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 
 The running session tools live in **one strip in the bottom-right cluster**, the way Plan mode's
 New Card, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
-own strip: Slides in Illustrate mode, the Plan strip in Plan mode), right
+own strip: Slides in Pages mode, the Plan strip in Plan mode), right
 after Undo and Redo. **An editor always has all three buttons**, running or not, so a session tool
 is one press away. Idle, a button is just its glyph and opens that tool's set-up pane, the same form a session
 button element's menu offers; running, it opens the live tool:
@@ -303,7 +306,7 @@ workshop that is always Diagram; **Plan** has Timer and
 Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
 one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on
 a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll;
-**Illustrate** shows a **Vote** or **Poll** button **only while one runs**, for everyone (an
+**Pages** shows a **Vote** or **Poll** button **only while one runs**, for everyone (an
 editor included), so a vote or poll started from a session button on a page can be watched and
 ended (the Poll button, like the Poll panel anywhere, only for the poll's host and anyone who has
 answered: answering is what buys you the tally, and only the host ends it), and nothing is started from the strip there (the session buttons on the page do that); it

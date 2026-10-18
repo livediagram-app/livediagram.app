@@ -1,15 +1,15 @@
 // The writing of an article page (docs/specs/007-editor/article-pages.md): an article's blocks in
 // order and its style, stored once per article on the tab (`Tab.articles[flow]`), shared by every
-// page of the article (`IllustratePage.flow`). Pure data and its reading: whatever is stored is
+// page of the article (`Page.flow`). Pure data and its reading: whatever is stored is
 // read defensively, so a malformed block, run or field is dropped rather than trusted.
 
 // Block and article limits (docs/specs/007-editor/article-pages.md "Blocks"). An article this
 // large is ~250 pages of text, far inside a tab's row (MAX_TAB_BYTES, 1.99 MB) only when the
 // text is too: the tab's own cap still has the last word on a save.
 export const MAX_ARTICLE_BLOCKS = 5000;
-export const MAX_ARTICLE_RUNS = 400;
+const MAX_ARTICLE_RUNS = 400;
 export const MAX_ARTICLE_BLOCK_TEXT = 20_000;
-export const MAX_ARTICLE_HREF = 2048;
+const MAX_ARTICLE_HREF = 2048;
 // Zones: no wider or taller than the largest page (A3 landscape is 1587 wide), no smaller than a
 // grip can still be pressed on.
 export const ARTICLE_ZONE_MIN = 24;

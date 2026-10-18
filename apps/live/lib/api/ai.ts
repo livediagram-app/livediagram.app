@@ -295,7 +295,7 @@ export async function apiAiStream(
 // did not answer — how many crops went unread and why. A CLIENT type: the
 // worker's wire format knows nothing about batching, because the batching is
 // ours.
-export type ReadNotesResult = ReadNotesResponse & { unread?: number; failure?: string };
+type ReadNotesResult = ReadNotesResponse & { unread?: number; failure?: string };
 
 export async function apiAiReadNotes(
   ownerId: string,
@@ -330,7 +330,7 @@ export async function apiAiReadNotes(
         return;
       }
       unread += slice[at]!.length;
-      const reason = answer.reason;
+      const reason: unknown = answer.reason;
       failure ??= reason instanceof Error ? reason.message : 'ai_error';
     });
     // Report batch-by-batch, so the author watching the bar sees the run

@@ -8,7 +8,7 @@ import type { PlanPalette } from './plan-palette';
 import { IN_BOX_TITLE_CLASS } from './menu-name-slot';
 
 // The longest board title, as the Board flyout's Title field takes it.
-export const BOARD_TITLE_MAX = 80;
+const BOARD_TITLE_MAX = 80;
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 const TITLE_CLASS = 'min-w-0 max-w-[40%] shrink-0 text-[17px] font-bold leading-tight';

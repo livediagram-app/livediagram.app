@@ -14,6 +14,9 @@ const api = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/api-client', () => api);
 
+const toast = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+
 import { useTeamFolderActions } from './useTeamFolderActions';
 
 // Team-library folder verbs from the Explorer panel (docs/specs/013-workspace/team-shared-documents.md). docs/specs/017-telemetry/telemetry.md's Folder
@@ -36,6 +39,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 beforeEach(() => {
   trackMock.mockReset();
+  toast.error.mockReset();
   api.apiCreateFolder.mockReset().mockResolvedValue({ id: 'f2', name: 'New folder' });
   api.apiUpdateFolder.mockReset().mockResolvedValue(undefined);
   api.apiDeleteFolder.mockReset().mockResolvedValue(undefined);
@@ -64,5 +68,35 @@ describe('useTeamFolderActions telemetry', () => {
     h.rename('f1', 'Renamed');
     await settle();
     expect(trackMock).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/013-workspace/folders.md "A write that fails says so".
+describe('useTeamFolderActions when the server refuses', () => {
+  it('says so for a create, a rename and a delete', async () => {
+    api.apiCreateFolder.mockRejectedValue(new Error('403'));
+    api.apiUpdateFolder.mockRejectedValue(new Error('403'));
+    api.apiDeleteFolder.mockRejectedValue(new Error('403'));
+    const h = handlers();
+    expect(await h.create('team_1', null)).toBeUndefined();
+    h.rename('f1', 'Renamed');
+    h.delete('f1');
+    await settle();
+    await settle();
+    expect(toast.error.mock.calls).toEqual([
+      ['Could not create the folder. Try again.'],
+      ['Could not rename “Specs”. Try again.'],
+      ['Could not delete “Specs”. Try again.'],
+    ]);
+  });
+
+  it('says nothing when every write lands', async () => {
+    const h = handlers();
+    await h.create('team_1', null);
+    h.rename('f1', 'Renamed');
+    h.delete('f1');
+    await settle();
+    await settle();
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });

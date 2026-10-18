@@ -17,7 +17,7 @@ import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
-import type { IllustratePage, PageOrientation } from './illustrate-page';
+import type { Page, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
@@ -355,16 +355,16 @@ export type Tab = {
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
   opensIn?: EditorMode;
-  // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `illustratePagesOf`).
-  pages?: IllustratePage[];
+  // (read via `pagesOf`).
+  pages?: Page[];
   // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
-  // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
+  // each document's blocks and style, shared by its pages (`Page.flow`). Read via
   // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
   articles?: Record<string, ArticleFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withIllustratePages`).
+  // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
@@ -474,14 +474,15 @@ export { sequenceDrawing, type SequenceLook } from './svg-render-sequence';
 export * from './person-node';
 export * from './boundary';
 export * from './concept';
+export * from './concept-timeline';
 export * from './concept-ramp';
 export * from './shape-variants';
 export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
-export * from './illustrate-page';
-export * from './illustrate-page-fit';
-export * from './illustrate-page-image';
+export * from './page';
+export * from './page-fit';
+export * from './page-image';
 export * from './page-lock';
 export * from './page-of';
 export * from './logo-page';
@@ -489,13 +490,13 @@ export * from './element-mirror';
 export * from './element-symmetry';
 export * from './logo-guide-snap';
 export * from './wordmark';
-export * from './illustrate-page-content';
-export * from './illustrate-page-frame';
+export * from './page-content';
+export * from './page-frame';
 export * from './page-ink';
 export * from './page-ink-contrast';
 export * from './page-ink-ground';
 export * from './page-ink-rules';
-export * from './illustrate-paginate';
+export * from './paginate';
 export * from './editor-mode-switch';
 export * from './article-flow';
 export * from './article-flow-ops';
@@ -507,10 +508,10 @@ export * from './article-to-page';
 export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
-export * from './illustrate-page-paint';
+export * from './page-paint';
 export * from './page-default-background';
-export * from './illustrate-edits';
-export * from './illustrate-background-copy';
+export * from './pages-edits';
+export * from './pages-background-copy';
 export * from './tab-window';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
@@ -601,6 +602,9 @@ export * from './finish';
 export * from './sketch';
 export * from './sketch-element';
 export * from './sketch-backdrop';
+export * from './marker';
+export * from './marker-element';
+export * from './hand-drawn';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';
@@ -611,6 +615,8 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './collab-index-rows';
+export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';
@@ -637,6 +643,9 @@ export * from './sankey-layout';
 export * from './sankey-frame';
 export * from './sankey-text';
 export * from './entity-geometry';
+export * from './entity-fields';
+export * from './entity-look';
+export * from './entity-related';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
@@ -646,6 +655,7 @@ export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
 export * from './chart-source';
+export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
@@ -656,6 +666,9 @@ export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
 export * from './fence';
+// The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
+export * from './avatar-palette';
+export * from './avatar-pad';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
@@ -752,7 +765,7 @@ export {
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
-export { SKETCH_FACE_FILTER } from './svg-render-sketch';
+export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
 // The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
@@ -770,6 +783,7 @@ export {
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
+export * from './label-backdrop';
 export * from './theme-presets';
 // A Form tab's look: its theme, finish and font as the builder and the form link's page draw them.
 export * from './form-look';
@@ -794,6 +808,7 @@ export * from './label-body';
 export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
+export * from './arrow-body-drop';
 export * from './geometry';
 export * from './arrow-path-hits';
 export * from './arrow-rebind';
@@ -817,7 +832,7 @@ export * from './legacy-docks';
 export * from './legacy-stroke-points';
 export * from './stored-elements';
 export * from './stored-tab';
-export { retiredSchemeOf, migrateRetiredScheme, type RetiredScheme } from './retired-schemes';
+export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
@@ -867,6 +882,7 @@ export * from './fonts';
 // helpers a presentation is built from. Kept here rather than in apps/live
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
+export * from './slide-deck-pages';
 export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.

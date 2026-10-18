@@ -8,6 +8,7 @@
 import type { ChairSitterFacing } from './collab-shapes';
 import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
 import type { ShapeKind } from './shape-kind';
+import type { Rect } from './geometry-primitives';
 
 export type OfficeKind =
   'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';
@@ -26,14 +27,15 @@ export function isOfficeShape(kind: string): kind is OfficeKind {
   return (OFFICE_KINDS as readonly string[]).includes(kind);
 }
 
-// The floor pieces: placed behind everything, never blocking, never a destination.
-export function isFloorShape(kind: string): kind is 'room' | 'rug' {
-  return kind === 'room' || kind === 'rug';
+// The floor pieces: placed behind everything, never blocking, never a destination. An Avatar Pad
+// (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it.
+export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' {
+  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad';
 }
 
 // Where you get a drink, and which.
 export type DrinkKind = 'water' | 'coffee';
-export const DRINK_OF: Partial<Record<ShapeKind, DrinkKind>> = {
+const DRINK_OF: Partial<Record<ShapeKind, DrinkKind>> = {
   'water-cooler': 'water',
   'coffee-machine': 'coffee',
 };
@@ -95,7 +97,7 @@ const allSides = (view: FurnitureDrawing): FurnitureArt => ({
 const T = OFFICE_TONES;
 
 // A potted plant: five leaves fanned above a terracotta pot.
-export const PLANT_VIEW: FurnitureDrawing = {
+const PLANT_VIEW: FurnitureDrawing = {
   width: 56,
   height: 88,
   parts: [
@@ -133,7 +135,7 @@ function bookRow(y: number, offset: number): Part[] {
   return out;
 }
 
-export const BOOKSHELF_VIEW: FurnitureDrawing = {
+const BOOKSHELF_VIEW: FurnitureDrawing = {
   width: 120,
   height: 132,
   parts: [
@@ -152,7 +154,7 @@ export const BOOKSHELF_VIEW: FurnitureDrawing = {
 };
 
 // A water cooler: a blue bottle upside down on a cooler with hot and cold taps.
-export const WATER_COOLER_VIEW: FurnitureDrawing = {
+const WATER_COOLER_VIEW: FurnitureDrawing = {
   width: 56,
   height: 112,
   parts: [
@@ -172,7 +174,7 @@ export const WATER_COOLER_VIEW: FurnitureDrawing = {
 };
 
 // A coffee machine with a carafe, on a little counter, a mug beside it.
-export const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
+const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
   width: 72,
   height: 96,
   parts: [
@@ -193,7 +195,7 @@ export const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
 };
 
 // A rug: an oval in the element's fill with a border, lying on the floor (no shadow: it is the floor).
-export const RUG_VIEW: FurnitureDrawing = {
+const RUG_VIEW: FurnitureDrawing = {
   width: 200,
   height: 120,
   parts: [
@@ -207,7 +209,7 @@ export const RUG_VIEW: FurnitureDrawing = {
 };
 
 // A seat round the meeting table: its point as fractions of the grid, and which way its sitter faces.
-export type TableSeat = { u: number; v: number; facing: ChairSitterFacing };
+type TableSeat = { u: number; v: number; facing: ChairSitterFacing };
 
 const TW = 232;
 const TH = 168;
@@ -275,10 +277,8 @@ export const OFFICE_ART: Record<Exclude<OfficeKind, 'room'>, FurnitureArt> = {
 
 // --- Footprints ------------------------------------------------------------
 
-type Box = { x: number; y: number; width: number; height: number };
-
 // The part of a piece that blocks walking, as fractions of its box: the pot, the shelf's base.
-export const OFFICE_FOOTPRINT: Partial<
+const OFFICE_FOOTPRINT: Partial<
   Record<OfficeKind, { x0: number; x1: number; y0: number; y1: number }>
 > = {
   plant: { x0: 15 / 56, x1: 41 / 56, y0: 63 / 88, y1: 84 / 88 },
@@ -286,7 +286,7 @@ export const OFFICE_FOOTPRINT: Partial<
 };
 
 /** The footprint of a piece that blocks, in canvas coordinates, or null for one that does not. */
-export function officeFootprint(el: Box & { shape: string }): Box | null {
+export function officeFootprint(el: Rect & { shape: string }): Rect | null {
   const f = OFFICE_FOOTPRINT[el.shape as OfficeKind];
   if (!f) return null;
   return {
@@ -369,13 +369,13 @@ export function roomParts(width: number, height: number, door: RoomDoor): Furnit
   return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
 }
 
-export type WallSegment = { a: { x: number; y: number }; b: { x: number; y: number } };
+type WallSegment = { a: { x: number; y: number }; b: { x: number; y: number } };
 
 /**
  * A room's walls as lines a character cannot cross, in canvas coordinates, broken at the doorway: along the
  * back wall's foot, down each side wall and along the front wall.
  */
-export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[] {
+export function roomWalls(el: Rect & { roomDoor?: RoomDoor }): WallSegment[] {
   const door = el.roomDoor ?? DEFAULT_ROOM_DOOR;
   const { x, y, width: w, height: h } = el;
   const half = ROOM_WALL / 2;
@@ -399,7 +399,7 @@ export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[] {
 }
 
 /** The four edges of a box as wall segments (a footprint's outline). */
-export function boxEdges(b: Box): WallSegment[] {
+export function boxEdges(b: Rect): WallSegment[] {
   const tl = { x: b.x, y: b.y };
   const tr = { x: b.x + b.width, y: b.y };
   const br = { x: b.x + b.width, y: b.y + b.height };

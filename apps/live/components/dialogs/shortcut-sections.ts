@@ -57,7 +57,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['K'], label: 'Laser Pointer' },
       { keys: ['E'], label: 'Eraser (click / drag to delete)' },
       { keys: ['P'], label: 'Pencil (freehand)' },
-      { keys: ['W'], label: 'Avatar Mode (Facilitate; click / arrows to walk)' },
       { keys: ['I'], label: 'Isometric View' },
       { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
@@ -93,6 +92,10 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       // A selected mind node claims plain Tab for growth (docs/specs/009-elements/mind-node.md), so the
       // caveat is on the row rather than in a footnote nobody reads.
       { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },
+      {
+        keys: ['F6'],
+        label: 'Next Region: Header, Palette, Canvas, Controls, Tabs  (Shift: previous)',
+      },
       { keys: ['Tab'], label: 'On a mind node: add a child' },
       { keys: ['Enter'], label: 'On a mind node: add a sibling' },
       { keys: ['⇧', 'Enter'], label: 'In a mind node’s label: new line' },

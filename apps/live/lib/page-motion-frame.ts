@@ -1,12 +1,12 @@
 // Where a slide's animated background stands as the slide opens (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"): each part's loop in app/motion-page.css, evaluated
+// pages-mode.md "Animated backgrounds"): each part's loop in app/motion-page.css, evaluated
 // at its start. The export draws this still, the first frame anyone sees, rather than the bare
 // gradient. Pure: the keyframes are restated here as numbers, and a test keeps the two in step.
 import type { MotionAnim, MotionAnimName } from './page-motion-parts';
 
 /** A part's pose: moved by (tx, ty), then turned (degrees) and scaled (`scale` both ways, `sx` and
  *  `sy` along one) about its transform origin, at an opacity. */
-export type MotionPose = {
+type MotionPose = {
   tx: number;
   ty: number;
   scale: number;

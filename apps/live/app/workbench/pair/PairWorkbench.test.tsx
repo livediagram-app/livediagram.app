@@ -93,7 +93,7 @@ describe('PairWorkbench', () => {
     env.authLoaded = false;
     render(<PairWorkbench />);
     expect(screen.getByText('Loading…')).toBeTruthy();
-    expect(screen.queryByRole('heading')).toBeNull();
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
     expect(api.apiReadPairingRequest).not.toHaveBeenCalled();
   });
 

@@ -11,7 +11,7 @@ import type { RouteContext } from './context';
 import { forCaller, itemBusy, relay, type ItemCaller } from './item-route-kit';
 
 // One attempt's next states by id, or a refusal. `missing`: how many wanted ids were not found on this read.
-export type BuildItems<T> = (
+type BuildItems<T> = (
   pending: T[],
   stored: Map<string, Item>,
   read: { attempt: number; missing: number },

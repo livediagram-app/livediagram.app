@@ -11,7 +11,7 @@ export type BoardSceneReport = {
 };
 
 // What each landed kind is counted as, singular and plural.
-export const LANDED_KIND_COPY: Readonly<Record<SceneItemKind, readonly [string, string]>> = {
+const LANDED_KIND_COPY: Readonly<Record<SceneItemKind, readonly [string, string]>> = {
   ink: ['pen stroke', 'pen strokes'],
   polyline: ['line', 'lines'],
   shape: ['shape', 'shapes'],

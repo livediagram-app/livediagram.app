@@ -475,3 +475,55 @@ describe('Escape on a just-grown mind node (docs/specs/009-elements/mind-node.md
     expect(onEscapeMindNode).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/007-editor/start-diagramming.md "Undo and redo reach the editor through an empty search".
+describe('undo and redo from the start search', () => {
+  function pressIn(input: HTMLInputElement, key: string, init: KeyboardEventInit = {}) {
+    const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+    input.dispatchEvent(e);
+    return e;
+  }
+  function searchBox(value: string, optIn = true) {
+    const input = document.createElement('input');
+    if (optIn) input.dataset.editorHistory = '';
+    input.value = value;
+    document.body.appendChild(input);
+    return input;
+  }
+
+  it('hands Cmd+Z, Cmd+Shift+Z and Ctrl+Y on while the search is empty', () => {
+    const undo = vi.fn();
+    const redo = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ undo, redo }).bag));
+    const input = searchBox('');
+    expect(pressIn(input, 'z', { metaKey: true }).defaultPrevented).toBe(true);
+    pressIn(input, 'z', { metaKey: true, shiftKey: true });
+    pressIn(input, 'y', { ctrlKey: true });
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(redo).toHaveBeenCalledTimes(2);
+    input.remove();
+  });
+
+  it('leaves them to the box once something is typed, and to any box that has not opted in', () => {
+    const undo = vi.fn();
+    const redo = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ undo, redo }).bag));
+    const typed = searchBox('flow');
+    expect(pressIn(typed, 'z', { metaKey: true }).defaultPrevented).toBe(false);
+    const other = searchBox('', false);
+    pressIn(other, 'z', { metaKey: true, shiftKey: true });
+    expect(undo).not.toHaveBeenCalled();
+    expect(redo).not.toHaveBeenCalled();
+    typed.remove();
+    other.remove();
+  });
+
+  it('keeps every other chord out of the empty search', () => {
+    const copySelection = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ copySelection }).bag));
+    const input = searchBox('');
+    pressIn(input, 'c', { metaKey: true });
+    expect(copySelection).not.toHaveBeenCalled();
+    input.remove();
+  });
+});

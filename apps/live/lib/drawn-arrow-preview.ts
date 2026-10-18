@@ -10,7 +10,7 @@ import { buildDressedDrawnArrow } from '@/lib/draw-commit';
 
 // The preview's one id: the markers and the pass-behind mask the arrow renderer keys on it stay
 // put for the whole drag.
-export const DRAWN_ARROW_PREVIEW_ID = 'drawn-arrow-preview';
+const DRAWN_ARROW_PREVIEW_ID = 'drawn-arrow-preview';
 
 // The line or arrow a draw gesture would land if released now, as the canvas would then show it
 // (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the commit's own builder and dressing, its

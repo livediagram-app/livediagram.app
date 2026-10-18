@@ -73,7 +73,7 @@ test.describe('Contrast audit, dark mode', () => {
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share this document' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share This Document' }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);
@@ -91,7 +91,7 @@ test.describe('Contrast audit, dark mode', () => {
     await visitor.context().close();
   });
 
-  // Home as a returning owner meets it (the document they opened in Jump back in), then My
+  // Home as a returning owner meets it (the document they opened in Jump Back In), then My
   // documents, which lists it as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     // Signed, so the identity holds across the two page loads.
@@ -104,7 +104,7 @@ test.describe('Contrast audit, dark mode', () => {
 
     await page.goto('/explorer/all');
     await documentRow(page, 'Contrast').waitFor();
-    expectAA(await auditContrast(page), 'Explorer, My documents');
+    expectAA(await auditContrast(page), 'Explorer, My Documents');
     expectNoPageErrors(pageErrors);
   });
 });

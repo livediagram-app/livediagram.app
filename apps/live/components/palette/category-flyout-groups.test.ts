@@ -15,7 +15,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'diagram' | 'facilitate' | 'illustrate', id: string): PaletteTileDef[] =>
+const tiles = (mode: 'diagram' | 'facilitate' | 'pages', id: string): PaletteTileDef[] =>
   paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
@@ -29,8 +29,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s, Facilitate’s and Illustrate’s strip, not Plan’s or Draw’s', () => {
-    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'facilitate', 'illustrate']);
+  it('is Diagram’s, Facilitate’s and Pages’s strip, not Plan’s or Draw’s', () => {
+    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'facilitate', 'pages']);
   });
 
   it('names every category in one word', () => {
@@ -58,7 +58,7 @@ describe('a flyout’s layout', () => {
 
   it('words a line its own way where a mode fills the category differently', () => {
     expect(flyoutTagline('write', 'fallback', 'facilitate')).toBe(
-      'Words, notes, tables and frames.',
+      'Words, notes, tables and checklists.',
     );
     expect(flyoutTagline('write', 'fallback', 'diagram')).toBe(
       'Words on the canvas: text, notes and comments.',
@@ -68,7 +68,7 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('heads Shapes, Draw and Build by the tile that starts each group', () => {
+  it('heads Shapes, Draw, Layout, Data and Components by the tile that starts each group', () => {
     expect(flyoutGroups('shapes', tiles('diagram', 'shapes')).map((g) => g.title)).toEqual([
       'Basics',
       'Flowchart',
@@ -79,9 +79,19 @@ describe('a flyout’s groups', () => {
       'Outlines',
       'Connectors',
     ]);
-    expect(flyoutGroups('build', tiles('diagram', 'build')).map((g) => g.title)).toEqual([
-      'Diagrams',
-      'Layout and Parts',
+    expect(flyoutGroups('layout', tiles('diagram', 'layout')).map((g) => g.title)).toEqual([
+      'Containers',
+      'Parts',
+    ]);
+    expect(flyoutGroups('data', tiles('pages', 'data')).map((g) => g.title)).toEqual([
+      'Charts',
+      'Meters',
+      'Tables',
+    ]);
+    expect(flyoutGroups('components', tiles('pages', 'components')).map((g) => g.title)).toEqual([
+      'Code and Lists',
+      'Page Blocks',
+      'Layout',
     ]);
     expect(flyoutGroups('data', tiles('facilitate', 'data')).map((g) => g.title)).toEqual([
       'Charts',

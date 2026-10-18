@@ -17,7 +17,7 @@ import type { Folder } from '@livediagram/api-schema';
 // its rows; this is navigation and creation, and the two only meet through the
 // current spot.
 
-export type TeamLibraryCrumb = { label: string; onClick?: () => void };
+type TeamLibraryCrumb = { label: string; onClick?: () => void };
 
 export function TeamLibraryHeader({
   crumbs,
@@ -108,7 +108,7 @@ export function TeamLibraryHeader({
               onClose={() => setCreateOpen(false)}
             >
               <MenuTileGrid cols={2}>
-                {/* New document lands directly in the team library, scoped
+                {/* New Document lands directly in the team library, scoped
                 to the folder currently open (docs/specs/013-workspace/team-shared-documents.md): /live/new
                 applies the team + folder placement after the create. */}
                 <MenuTile
@@ -117,7 +117,7 @@ export function TeamLibraryHeader({
                       <DocumentIcon />
                     </span>
                   }
-                  label="New document"
+                  label="New Document"
                   onClick={() => {
                     setCreateOpen(false);
                     window.location.assign(

@@ -26,7 +26,7 @@ export const COMMUNITY_SORTS = [
 
 export type CommunitySort = (typeof COMMUNITY_SORTS)[number]['id'];
 
-export function isCommunitySort(value: unknown): value is CommunitySort {
+function isCommunitySort(value: unknown): value is CommunitySort {
   return COMMUNITY_SORTS.some((s) => s.id === value);
 }
 
@@ -56,7 +56,7 @@ const SORT_PREFIX = 'sort:';
 const isSortToken = (word: string) => word.toLowerCase().startsWith(SORT_PREFIX);
 const CATEGORY_PREFIX = 'category:';
 const isCategoryToken = (word: string) => word.toLowerCase().startsWith(CATEGORY_PREFIX);
-export const COMMUNITY_MINE_TOKEN = 'is:mine';
+const COMMUNITY_MINE_TOKEN = 'is:mine';
 const isMineToken = (word: string) => word.toLowerCase() === COMMUNITY_MINE_TOKEN;
 
 // The plain search terms (blueprint C5): lowercased, whitespace-split, `#tag`, `category:` and `sort:` tokens

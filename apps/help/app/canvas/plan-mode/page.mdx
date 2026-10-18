@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 **Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item** (a task, a bug, a note or an idea) stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
 
-Plan is one of the five [editor modes](/help/canvas/editor-modes/), beside Diagram, Draw, Illustrate and Facilitate, and it is on for everyone: there is nothing to turn on in Settings. Plan works in tabs of its own: a Board, Sheet, Dashboard or Visualisation tab is always in Plan, and a tab in another mode never switches into it.
+Plan is one of the five [editor modes](/help/canvas/editor-modes/), beside Diagram, Draw, Pages and Facilitate, and it is on for everyone: there is nothing to turn on in Settings. Plan works in tabs of its own: a Board, Sheet, Dashboard or Visualisation tab is always in Plan, and a tab in another mode never switches into it.
 
 ## What Plan Mode Changes
 
@@ -26,6 +26,7 @@ Plan is one of the five [editor modes](/help/canvas/editor-modes/), beside Diagr
 - **Tools:** Plan starts on the **Hand** tool, because cards take the pointer themselves and a drag on the empty canvas pans. Pick **Select** to move or resize a board. The Eraser and Format Painter are left out.
 - **The bottom-right corner** gains, where Layers sits in the other modes, one strip of buttons: the **Trash** (an editor's, not on a phone), **New Card**, **Cards**, which finds any card in the document, and **Card Types**. They show once the tab has a board, a view or a Sheet of your cards; on an empty tab they stay out of the way. The Layers panel and the Quick Style panel are hidden in Plan; a board's look comes from the tab's theme, and its colours are still in its right-click menu.
 - **Everything else works as in Diagram mode:** selection, arrows, text, sticky notes, snapping, undo and shortcuts, so notes and arrows around a board behave as they always do.
+- **Boards and sheets stay on Plan tabs:** paste one onto a tab in another mode and it is left out, with a note saying so; everything else you copied still pastes.
 
 <Figure caption="In Plan mode the bottom-right corner holds Undo and Redo, then one strip with the Trash, New Card, Cards and Card Types, then the Theme & canvas button and zoom.">
   <PlanClusterScene />
@@ -33,10 +34,10 @@ Plan is one of the five [editor modes](/help/canvas/editor-modes/), beside Diagr
 
 ## Getting to Plan
 
-- **A new Plan tab:** on a Diagram, Draw, Illustrate or Facilitate tab, press the mode switch (beside the menu button at the top left) and choose **Plan**. A tab's mode can't cross into Plan, so you're asked **Open a New Plan Tab?**; press **New Plan Tab** to add one after your other tabs, opening on **Start Planning**. **Shift+D** steps only through the other four modes.
+- **A new Plan tab:** add a tab with the **+** in the tab bar, then on its start press the mode switch at the top of the list and choose **Plan** (or press **Shift+D** until you reach it). It opens on **Start Planning**. A tab with something on it keeps its mode.
 - **From a Plan tab:** add a tab with the **+** in the tab bar and it opens in Plan too.
 - **A new document:** pick **Blank Plan** in the New Document wizard (see [Starting a Board](#starting-a-board)).
-- **A Plan tab stays in Plan.** Picking another mode on it asks the same question the other way round and offers a new tab in that mode; the Plan tab itself never changes. On a phone, the tab menu lists no other modes on a Plan tab.
+- **A Board, Sheet or Dashboard tab stays in Plan.** Picking another mode on its start asks, for example, **Open a New Diagram Tab?** and offers a new tab in that mode; the Plan tab itself never changes.
 - **View-only visitors** have no mode switch: they see each tab in its own mode, can open cards to read them, and cannot drag, add or change anything.
 
 Boards, sheets and charts from older documents may still sit on a tab in another mode. There a board is an element like any other: you can select it, move it, resize it and draw around it, and it still updates as cards change. Its cards only take clicks and drags in Plan mode; elsewhere, double-click a card to open it.

@@ -12,7 +12,7 @@ import type { Workbook } from './engine/workbook';
 
 export type SheetCellRef = { r: string; c: string };
 export const COLUMN_STATS = ['sum', 'average', 'min', 'max', 'count'] as const;
-export type ColumnStat = (typeof COLUMN_STATS)[number];
+type ColumnStat = (typeof COLUMN_STATS)[number];
 export const COLUMN_STAT_NAMES: Record<ColumnStat, string> = {
   sum: 'Total',
   average: 'Average',
@@ -22,8 +22,8 @@ export const COLUMN_STAT_NAMES: Record<ColumnStat, string> = {
 };
 
 // The most rows a column read takes, and the most suggestions offered: a figure stays cheap on a huge sheet.
-export const METRIC_ROWS_MAX = 2000;
-export const FIGURE_SUGGESTIONS_MAX = 12;
+const METRIC_ROWS_MAX = 2000;
+const FIGURE_SUGGESTIONS_MAX = 12;
 
 const isNumber = (v: Value): v is number => typeof v === 'number' && Number.isFinite(v);
 
@@ -57,7 +57,7 @@ export function formatLike(sheet: Sheet, ref: SheetCellRef, n: number, locale: s
   return displayValue(n, sheet.cells.get(cellKey(ref.r, ref.c))?.format, locale).text;
 }
 
-export type SheetFigure = {
+type SheetFigure = {
   // The number, or null when the cell holds none (text, empty, an error).
   value: number | null;
   // As the Sheet shows it.
@@ -136,7 +136,7 @@ export function figureSuggestions(
   return out;
 }
 
-export type SheetColumn = {
+type SheetColumn = {
   c: string;
   // Its header (the text over its numbers), else its letters.
   label: string;
@@ -244,7 +244,7 @@ export function summarise(values: readonly number[], stat: ColumnStat): number |
   return stat === 'min' ? Math.min(...values) : Math.max(...values);
 }
 
-export type ColumnTrend = {
+type ColumnTrend = {
   last: number;
   previous: number | null;
   change: number | null;

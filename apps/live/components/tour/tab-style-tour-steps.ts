@@ -21,21 +21,21 @@ const step = (id: string, title: string, body: string, target: string): TabStyle
 const LOOKS = step(
   'looks',
   'One-Click Looks',
-  'Each look sets the tab’s colours, finish, font and canvas at once. One undo step.',
+  'A look sets the tab’s colours, font and canvas at once.',
   'tab-style-looks',
 );
 
 const PAGES = step(
   'pages',
   'More Looks',
-  'Use the arrows or the dots, or swipe, for the next page of looks.',
+  'Use the arrows, or swipe, for more looks.',
   'tab-style-looks-nav',
 );
 
 const FINE_TUNE = step(
   'fine-tune',
   'Fine-Tune Any Part',
-  'Each row shows what the tab uses now. Open one to change just that.',
+  'Change just one thing: open its row.',
   'tab-style-fine-tune',
 );
 
@@ -43,7 +43,7 @@ const OUTRO: TabStyleTourStep = {
   id: 'outro',
   card: 'outro',
   title: 'That Is Tab Style',
-  body: 'Everything here applies to the whole tab, for everyone on it.',
+  body: 'These apply to the whole tab, for everyone.',
 };
 
 export function tabStyleTourSteps(): TabStyleTourStep[] {

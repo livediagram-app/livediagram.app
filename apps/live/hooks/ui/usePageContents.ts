@@ -1,38 +1,43 @@
 'use client';
 
-// Illustrate's Contents as state (docs/specs/007-editor/illustrate-pages.md "Contents"), shared by
+// Pages mode's Contents as state (docs/specs/007-editor/pages-mode.md "Contents"), shared by
 // its two homes: the popover (a bottom sheet on a phone) and the sidebar docked down the canvas's
 // left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
 // keyboard, reordering by drag and adding a page live here once; each home lays them out.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { MAX_ILLUSTRATE_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
+import { MAX_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
   contentsDropUnit,
   contentsRows,
   filterContents,
   type ContentsRow,
 } from '@/lib/page-contents';
+import { pageTexts } from '@/lib/page-texts';
 import { track } from '@/lib/telemetry';
 import { useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
 
 // How far beyond the list's visible part a row's picture is drawn ahead of a scroll, in px.
-export const CONTENTS_DRAW_AHEAD_PX = 400;
+const CONTENTS_DRAW_AHEAD_PX = 400;
 
 export function usePageContents({
   view,
   tab,
   here,
   settleMs = 0,
+  slidesTool = true,
   onWent,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   tab: PageThumbTab;
   // The page in view as the list opens, scrolled to and marked.
   here: string | undefined;
   // How long the tab rests before the thumbnails redraw (usePageThumbnails); 0 redraws at once.
   settleMs?: number;
+  // Whether a slide page's toolbar offers Add to Slides (the popover's; the sidebar leaves it to
+  // the page's own title bar).
+  slidesTool?: boolean;
   // After a press went to a page (the phone's sheet closes then).
   onWent?: () => void;
 }) {
@@ -47,9 +52,15 @@ export function usePageContents({
       }),
     [pages, view.deck, view.articles],
   );
-  const shown = useMemo(() => filterContents(rows, query), [rows, query]);
+  // The words on each page, read only while a search is typed.
+  const searching = query.trim() !== '';
+  const texts = useMemo(
+    () => (searching ? pageTexts(pages, tab.elements, view.articles?.flows) : undefined),
+    [searching, pages, tab.elements, view.articles?.flows],
+  );
+  const shown = useMemo(() => filterContents(rows, query, texts), [rows, query, texts]);
   const list = useRef<HTMLDivElement>(null);
-  const buttons = useRef(new Map<string, HTMLButtonElement>());
+  const buttons = useRef(new Map<string, HTMLElement>());
   // The rows scrolled near view: only their pictures are drawn (a 100-page tab draws the handful on
   // screen, not all of them, as the list opens), each kept once drawn. null draws every row's (no
   // IntersectionObserver).
@@ -80,7 +91,7 @@ export function usePageContents({
       observer.current = null;
     };
   }, []);
-  const registerRow = (id: string, el: HTMLButtonElement | null) => {
+  const registerRow = (id: string, el: HTMLElement | null) => {
     const was = buttons.current.get(id);
     if (was && was !== el) observer.current?.unobserve(was);
     if (el) {
@@ -154,7 +165,7 @@ export function usePageContents({
     e.preventDefault();
     buttons.current.get(order[to]!)?.focus();
   };
-  const full = pages.length >= MAX_ILLUSTRATE_PAGES;
+  const full = pages.length >= MAX_PAGES;
   // The last page's kind leads the footer, highlighted: the next page is most often the same.
   const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add =
@@ -164,6 +175,22 @@ export function usePageContents({
           view.edit!.addPage!(kind);
         }
       : undefined;
+  // A page's own toolbar (an Editor's): what each press does, absent where it cannot. Delete and
+  // the rest refuse a locked page as its title bar's do, so a locked page offers only Unlock.
+  const { edit, deck } = view;
+  const actionsFor = (row: ContentsRow): PageActions | null => {
+    if (!edit) return null;
+    return {
+      ...(slidesTool && row.kind === 'slide' && deck && row.inDeck === false
+        ? { addToSlides: () => deck.add(row.id) }
+        : {}),
+      ...(edit.duplicatePage && edit.canDuplicate(row.id) && !full
+        ? { duplicate: () => edit.duplicatePage!(row.id) }
+        : {}),
+      toggleLock: () => edit.setLocked(row.id, !row.locked),
+      ...(edit.removePage && !row.locked ? { remove: () => edit.removePage!(row.id) } : {}),
+    };
+  };
   const focusFirst = () => {
     if (shown[0]) buttons.current.get(shown[0].id)?.focus();
   };
@@ -185,6 +212,7 @@ export function usePageContents({
     focusFirst,
     // Absent for a Participant and a Viewer, who see no footer.
     canAdd: !!view.edit?.addPage,
+    actionsFor,
     add,
     full,
     lastKind,
@@ -192,3 +220,10 @@ export function usePageContents({
 }
 
 export type PageContents = ReturnType<typeof usePageContents>;
+
+export type PageActions = {
+  addToSlides?: () => void;
+  duplicate?: () => void;
+  toggleLock: () => void;
+  remove?: () => void;
+};

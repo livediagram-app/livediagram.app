@@ -23,7 +23,7 @@ type EncodeArgs = {
   quality: number;
 };
 
-export type WebpEncoder = { encode(args: EncodeArgs): Promise<Blob | null> };
+type WebpEncoder = { encode(args: EncodeArgs): Promise<Blob | null> };
 
 export function createWebpEncoder(deps: {
   loadWasm: () => Promise<WasmWebpEncode>;

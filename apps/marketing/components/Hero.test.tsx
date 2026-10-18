@@ -4,23 +4,37 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livediagram/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livediagram/document';
-import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
+import {
+  HERO_FAN_FULL_MIN_PX,
+  HERO_FAN_OPENING,
+  HERO_FAN_SLOTS,
+  heroTemplate,
+  shuffleFan,
+} from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
+import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with the Start Blank menu in its bar, a returning visitor's recent diagrams, and the dealing fan.
+// with Start Blank in its bar, a returning visitor's recent diagrams, and the dealing fan.
 
 let reduceMotion = false;
+// Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
+let fullWidth = true;
 let observed: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
 
 beforeEach(() => {
   reduceMotion = false;
+  fullWidth = true;
   vi.stubGlobal(
     'matchMedia',
     (query: string) =>
       ({
-        matches: query.includes('reduce') ? reduceMotion : true,
+        matches: query.includes('reduce')
+          ? reduceMotion
+          : query.includes(`${HERO_FAN_FULL_MIN_PX}px`)
+            ? fullWidth
+            : true,
         media: query,
         addEventListener() {},
         removeEventListener() {},
@@ -103,13 +117,13 @@ describe('the hero', () => {
     expect(box.value).toBe('');
   });
 
-  it('closes the matches when focus moves to the Start Blank menu in the bar', () => {
+  it('closes the matches when focus moves to Start Blank in the bar', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
     fireEvent.change(box, { target: { value: 'retro' } });
     expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
-    const blank = within(screen.getByRole('search')).getByRole('button', { name: /Start Blank/ });
+    const blank = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
     fireEvent.focus(blank);
     expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
     fireEvent.focus(box);
@@ -124,19 +138,13 @@ describe('the hero', () => {
     expect(screen.getByText(/Nothing matches/)).toBeTruthy();
   });
 
-  it('offers every blank from its Start Blank menu, as the hero’s own funnel slots', () => {
+  it('sends Start Blank to the wizard with no start screen after it, as the hero’s own funnel slot', () => {
     render(<Hero />);
-    const form = screen.getByRole('search');
-    const hrefs = within(form)
-      .getAllByRole('menuitem', { hidden: true })
-      .map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual([
-      '/new?blank=1&via=Home.HeroBlankDraw',
-      '/new?template=whiteboard&via=Home.HeroBlankWhiteboard',
-      '/new?template=blank-session&via=Home.HeroBlankSession',
-      '/new?template=blank-illustration&via=Home.HeroBlankIllustration',
-      '/new?template=blank-plan&via=Home.HeroBlankPlan',
-    ]);
+    const link = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
+    expect(link.getAttribute('href')).toBe('/new?start=blank&via=Home.HeroBlank');
+    expect(within(screen.getByRole('search')).queryAllByRole('menuitem', { hidden: true })).toEqual(
+      [],
+    );
   });
 
   it('keeps the template fan below RECENT_FAN_MIN recent diagrams, then deals theirs and Explorer Home', () => {
@@ -173,6 +181,14 @@ describe('the hero', () => {
     expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
       '/explorer/home',
     );
+    // A phone shows the PHONE_RECENT most recent documents and leaves Explorer Home off.
+    const onPhone = screen
+      .getAllByRole('link')
+      .filter((a) => /^\/(document|explorer)\//.test(a.getAttribute('href') ?? ''))
+      .filter((a) => !a.parentElement!.className.split(' ').includes('max-sm:hidden'))
+      .map((a) => a.getAttribute('href'));
+    expect(onPhone).toEqual(['/document/d1', '/document/d2', '/document/d3']);
+    expect(onPhone).toHaveLength(PHONE_RECENT);
   });
 });
 
@@ -222,6 +238,30 @@ describe('the fan', () => {
       vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
     });
     expect(fanTitles()).toEqual(again);
+  });
+
+  it('shows all seven only on a very wide screen, and never swaps a card out of sight', () => {
+    fullWidth = false;
+    vi.useFakeTimers();
+    render(<Hero />);
+    const cards = () =>
+      screen
+        .getAllByRole('link')
+        .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'));
+    // The outer pair hides below the full width, the next pair on a phone.
+    const full = `max-[${HERO_FAN_FULL_MIN_PX}px]:hidden`;
+    const hides = cards().map((a) => {
+      const words = a.parentElement!.className.split(' ');
+      return words.includes(full) ? 'full' : words.includes('max-sm:hidden') ? 'phone' : 'always';
+    });
+    expect(hides).toEqual(['full', 'phone', 'always', 'always', 'always', 'phone', 'full']);
+    const first = fanTitles();
+    act(() => {
+      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 12);
+    });
+    const after = fanTitles();
+    expect([after[0], after[6]]).toEqual([first[0], first[6]]);
+    expect(after.slice(1, 6)).not.toEqual(first.slice(1, 6));
   });
 
   it('never swaps under reduced motion', () => {

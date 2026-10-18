@@ -140,8 +140,8 @@ exposes the custom type only to pages in the same browser engine, so:
   lands; without one, it is an ordinary image paste, as before.
 - **Dropped files** (on a tab that is not read-only): the same files land at the point
   they are released. Any other dropped file (a photo, a PNG or SVG without a scene) is
-  refused with an info toast: _"Only Excalidraw files, or images exported from
-  Excalidraw with the scene embedded, can be dropped on the canvas."_ A photo dropped on
+  refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with
+  the scene embedded."_ A photo dropped on
   an event-storming board still goes to the wall reader first
   ([Event storming](../021-event-storming/event-storming.md)).
 
@@ -290,7 +290,7 @@ saved in Excalidraw comes in as its own document, with no editor open.
 - **What it makes**: each file becomes **a new document with one whiteboard
   tab**, through the shared new-document target
   ([Board import](board-import.md) "new-document", `importBoardsAsDocuments`):
-  the whiteboard profile, filed where New document files, images through the
+  the whiteboard profile, filed where New Document files, images through the
   [Import image pipeline](import-image-pipeline.md). Several files make one
   document each; a file that cannot be read is listed with its reason and the
   rest still land. A whiteboard ignores the file's `viewBackgroundColor` (it is

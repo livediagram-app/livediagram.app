@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentListing } from '@/lib/api-client';
 
-// /new's Jump back in (docs/specs/007-editor/new-document-route.md; docs/specs/019-marketing/returning-visitor.md):
+// /new's Jump Back In (docs/specs/007-editor/new-document-route.md; docs/specs/019-marketing/returning-visitor.md):
 // your newest documents and your teams', merged by save, a team one marked with its team.
 
 const listing = vi.hoisted(() => ({ current: null as DocumentListing | null }));

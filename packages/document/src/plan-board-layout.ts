@@ -12,21 +12,20 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
 } from '@livediagram/items';
+import type { Rect } from './geometry-primitives';
 
-export const PLAN_BOARD_HEADER_H = 52;
+const PLAN_BOARD_HEADER_H = 52;
 export const PLAN_BOARD_PAD = 12;
-export const PLAN_BOARD_GAP = 12;
-export const PLAN_COLUMN_HEAD_H = 34;
+const PLAN_BOARD_GAP = 12;
+const PLAN_COLUMN_HEAD_H = 34;
 export const PLAN_CARD_H = 64;
-export const PLAN_CARD_GAP = 8;
+const PLAN_CARD_GAP = 8;
 
-type Box = { x: number; y: number; width: number; height: number };
-
-export interface PlanCardSlot extends Box {
+interface PlanCardSlot extends Rect {
   item: Item;
 }
 
-export interface PlanColumnSlot extends Box {
+interface PlanColumnSlot extends Rect {
   column: PlanColumn;
   count: number;
   overLimit: boolean;
@@ -38,9 +37,9 @@ export interface PlanColumnSlot extends Box {
 }
 
 // The room kept at a column's foot for its "+n more" line when its cards do not all fit.
-export const PLAN_MORE_H = 20;
+const PLAN_MORE_H = 20;
 
-export interface PlanLaneSlot {
+interface PlanLaneSlot {
   key: string;
   label: string;
   // The lane's band: its header row at `y`, its cards below, `height` in all.
@@ -49,7 +48,7 @@ export interface PlanLaneSlot {
   colour?: string;
 }
 
-export interface PlanBoardLayout {
+interface PlanBoardLayout {
   setup: PlanBoardSetup;
   projection: BoardProjection;
   columns: PlanColumnSlot[];
@@ -63,7 +62,7 @@ export const PLAN_LANE_HEAD_H = 26;
 // Null for a board with no readable set-up (it draws as its bare frame). `cardHeight` measures a card face at a
 // column's card width (the SVG export draws each as tall as its Display needs); absent, every card is PLAN_CARD_H.
 export function planBoardLayout(
-  el: Box & { planBoard?: unknown },
+  el: Rect & { planBoard?: unknown },
   items: ReadonlyMap<string, Item> | undefined,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   cardHeight: (item: Item, width: number) => number = () => PLAN_CARD_H,

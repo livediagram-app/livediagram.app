@@ -59,7 +59,10 @@ export const ALL_ANCHORS: readonly Anchor[] = [
 
 export type Endpoint =
   | { kind: 'free'; x: number; y: number }
-  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor }
+  // `field`: on an entity, the index of the field row the end lands on (docs/specs/009-elements/entity.md
+  // "Field to field"). The end meets the entity's left or right edge, the side its anchor is on, level
+  // with that row. Absent, out of range or on a top / bottom anchor: the plain anchor.
+  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor; field?: number }
   // Connected to a point ALONG another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md) — `t` is the
   // parametric position (0 = the target arrow's `from`, 1 = its `to`). The
   // position resolves dynamically from the target arrow's centreline, so it

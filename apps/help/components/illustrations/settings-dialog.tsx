@@ -51,7 +51,7 @@ const CATEGORIES = [
   'Privacy',
 ] as const;
 
-export type SettingsCategory = (typeof CATEGORIES)[number];
+type SettingsCategory = (typeof CATEGORIES)[number];
 
 /** The dialog frame: title, the search field over the category list with `active` picked, and
  *  the open pane headed by its name. Children draw the pane's rows (x from 152). */
@@ -118,7 +118,7 @@ function RowLabel({ y, hot, children }: { y: number; hot?: boolean; children: st
   );
 }
 
-export type EditorRowKey = 'quick-add' | 'guides' | 'auto-attach';
+type EditorRowKey = 'quick-add' | 'guides' | 'auto-attach';
 
 type EditorRow =
   | { key: EditorRowKey | 'middle-pan' | 'power-user'; label: string; on: boolean }

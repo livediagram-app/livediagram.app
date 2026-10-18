@@ -1,11 +1,11 @@
-// The DOM a page's tour steps point at (docs/specs/007-editor/illustrate-tour.md "The steps"): the tour page and its
+// The DOM a page's tour steps point at (docs/specs/007-editor/pages-tour.md "The steps"): the tour page and its
 // title-bar controls, held by that page rather than the first page, and its title-bar popovers (Layout, Background),
 // opened once by pressing their real button and closed again on leaving the step.
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { waitForSelector } from './tour-dom';
 
 /** The tour page's sheet. */
-export const pageSheet = (pageId: string) => `[data-illustrate-page-id="${CSS.escape(pageId)}"]`;
+export const pageSheet = (pageId: string) => `[data-page-id="${CSS.escape(pageId)}"]`;
 
 /** A control in the tour page's title bar, by its name. */
 export const pageButton = (pageId: string, name: string) =>
@@ -15,7 +15,7 @@ export const pageButton = (pageId: string, name: string) =>
 export const pageCog = (pageId: string) => `${pageSheet(pageId)} [data-tour-id="page-cog"]`;
 
 /** A title-bar popover by its name: anchored under its button, or a bottom sheet on a phone. */
-export const titlePopover = (name: string) =>
+const titlePopover = (name: string) =>
   `[role="dialog"][aria-label="${name}"]:is([data-anchored-popover], [data-bottom-sheet])`;
 
 // Whether an element sits wholly in the window.

@@ -85,7 +85,7 @@ const MAX_DOCUMENT_ID_LEN = 64;
 const MAX_NETWORK_TAG_LEN = 32;
 
 /** The server-verified facts an upgrade carries, as the api worker set them (empty header = none). */
-export type VerifiedSession = {
+type VerifiedSession = {
   verifiedRole?: AccessLevel;
   isOwner: boolean;
   tabScope: string | null;

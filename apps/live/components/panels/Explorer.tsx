@@ -8,6 +8,9 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { apiCreateFolder } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useToast } from '@/hooks/ui/useToast';
+import { logMoveFailure } from '@/lib/move-failure';
+import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
@@ -81,6 +84,7 @@ function ExplorerImpl({
   onToggleFavourite,
   onLibraryChanged,
 }: ExplorerProps) {
+  const toast = useToast();
   const minimalChrome = useMinimalChrome();
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (docs/specs/007-editor/live-app.md)
@@ -262,7 +266,7 @@ function ExplorerImpl({
           openFolder.id,
         )
       : null;
-  // New Folder in the folder open in the pane, or at the root of My documents or of the team shown.
+  // New Folder in the folder open in the pane, or at the root of My Documents or of the team shown.
   const newFolder =
     section.kind === 'mine' && onCreateFolder
       ? () =>
@@ -435,7 +439,7 @@ function ExplorerImpl({
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDocumentTo wired (signed-in sessions with teams), the picker
-          offers every space — My documents plus each team — so a team document
+          offers every space — My Documents plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDocumentToFolder path. */}
@@ -489,7 +493,10 @@ function ExplorerImpl({
                     });
                     track('Folder', 'Created', 'Team');
                     return { id: folder.id, name: folder.name, parentId: folder.parentId };
-                  } catch {
+                  } catch (err) {
+                    // The tile keeps the name typed, for another try.
+                    logMoveFailure('new-folder', '', err);
+                    toast.error(FOLDER_FAILURE.create(name));
                     return null;
                   }
                 }}

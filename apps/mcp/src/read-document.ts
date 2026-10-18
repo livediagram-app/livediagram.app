@@ -15,7 +15,7 @@ import { resolvePage } from '@livediagram/edit-operations';
 import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
-export type ReadDocumentArgs = {
+type ReadDocumentArgs = {
   documentId: string;
   tabId?: string;
   view?: TabViewName;
@@ -28,7 +28,7 @@ export type ReadDocumentArgs = {
   style?: boolean;
   format?: 'view' | 'json';
   image?: boolean;
-  // With image, one page of an Illustrate tab (an id, a place or a name).
+  // With image, one page of a Pages tab (an id, a place or a name).
   page?: string | number;
 };
 
@@ -68,7 +68,8 @@ function refusedView(err: unknown): ToolResult | null {
         : `${body.message}. Candidates: ${candidates.join('; ')}`,
     );
   }
-  const message = typeof body === 'object' && body !== null ? Reflect.get(body, 'message') : null;
+  const message: unknown =
+    typeof body === 'object' && body !== null ? Reflect.get(body, 'message') : null;
   return typeof message === 'string' ? errorResult(message) : null;
 }
 
@@ -118,7 +119,7 @@ export async function readDocument(
     if (!args.image) return result;
     const page = pageAsked(tab, args.page);
     if (typeof page === 'string') return errorResult(page);
-    return { ...result, content: [...result.content, await tabPreview(tab, auth, page)] };
+    return { ...result, content: [...result.content, ...(await tabPreview(tab, auth, page))] };
   }
 
   let read: { text: string; etag: string | null };
@@ -146,10 +147,10 @@ export async function readDocument(
   if (plain === null) return result;
   const page = pageAsked(plain.tab, args.page);
   if (typeof page === 'string') return errorResult(page);
-  return { ...result, content: [...result.content, await tabPreview(plain.tab, auth, page)] };
+  return { ...result, content: [...result.content, ...(await tabPreview(plain.tab, auth, page))] };
 }
 
-// The page `page` names on an Illustrate tab, laid out; undefined when none is asked for; a refusal in words when the
+// The page `page` names on a Pages tab, laid out; undefined when none is asked for; a refusal in words when the
 // tab has no pages or none by that name, naming the pages there are.
 export function pageAsked(
   tab: Tab,
@@ -158,7 +159,7 @@ export function pageAsked(
   if (ref === undefined) return undefined;
   const pages = laidOutPagesOf(tab);
   if (pages.length === 0)
-    return 'That tab has no pages: page draws one page of a tab in Illustrate mode.';
+    return 'That tab has no pages: page draws one page of a tab in Pages mode.';
   const found = resolvePage(pages, ref);
   if (found) return pages.find((p) => p.id === found.id);
   const named = pages

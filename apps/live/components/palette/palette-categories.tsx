@@ -16,6 +16,7 @@ import {
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
+  DiagramsTabIcon,
   DrawTabIcon,
   PopularTabIcon,
   IconsTabIcon,
@@ -191,7 +192,7 @@ export const PALETTE_CATEGORIES: {
     icon: <WriteTabIcon />,
   },
   {
-    // Illustrate mode, while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
+    // Pages mode, while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
     // palette").
     id: 'logo',
     label: 'Logo',
@@ -212,8 +213,19 @@ export const PALETTE_CATEGORIES: {
     label: 'Build',
     group: 1,
     description:
-      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
+      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
+  },
+  {
+    // Diagrams and Layout (docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout"): Diagram mode's
+    // Build as two, what is built apart from what it is laid out in. No tiles of their own: Diagram's layout lists
+    // Build's (and a few of Components') in them.
+    id: 'diagrams',
+    label: 'Diagrams',
+    group: 1,
+    description:
+      'The structures that grow as you type: mind nodes, org charts, flowcharts, sequence diagrams, tables and entities.',
+    icon: <DiagramsTabIcon />,
   },
   {
     // Concept graphics (docs/specs/009-elements/concept-graphics.md): the shapes ideas come in, as single elements.
@@ -221,8 +233,16 @@ export const PALETTE_CATEGORIES: {
     label: 'Concepts',
     group: 1,
     description:
-      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings and chevrons. Add, reorder and retitle rows in place.',
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings, chevrons and a timeline. Add, reorder and retitle rows in place.',
     icon: <ConceptsTabIcon />,
+  },
+  {
+    id: 'layout',
+    label: 'Layout',
+    group: 1,
+    description:
+      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, a diagram key, cards, badges and step numbers.',
+    icon: <BuildTabIcon />,
   },
   {
     id: 'components',
@@ -279,7 +299,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Media',
     group: 2,
     description:
-      'Pictures and figures: an uploaded image or a circular avatar; in Illustrate, embeds and a Tab Window onto another tab.',
+      'Pictures and figures: an uploaded image or a circular avatar; in Pages, embeds and a Tab Window onto another tab.',
     icon: <MediaTabIcon />,
   },
   {
@@ -341,7 +361,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Navigate',
     group: 6,
     description:
-      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
+      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, an avatar pad, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
     icon: <MoveGroupIcon />,
   },
 ];

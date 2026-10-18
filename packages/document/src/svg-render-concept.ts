@@ -14,10 +14,11 @@ import {
   pyramidLayout,
   pyramidVariantOf,
 } from './concept';
-import { conceptRamp } from './concept-ramp';
+import { conceptDiscInk, conceptRamp } from './concept-ramp';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { line as webLine, label as webLabel } from './svg-render-web';
+import { svgTimeline } from './svg-render-timeline';
 
 type Shape = BoxedElement & { type: 'shape' };
 
@@ -29,6 +30,8 @@ export function svgConcept(
   const n = rows.length;
   if (n === 0 && el.shape !== 'cycle' && el.shape !== 'hub') return '';
   const ramp = conceptRamp(n, o.stroke, o.fill);
+  // A cycle's later stages and a hub's satellites sit on discs in the fill, not on the canvas.
+  const discInk = conceptDiscInk(o.labelColor, o.fill);
   const fontFamily = o.fontFamily;
   if (el.shape === 'layer-stack') {
     const l = layerStackLayout(
@@ -132,17 +135,10 @@ export function svgConcept(
         return (
           `<circle cx="${r2(el.x + d.x)}" cy="${r2(el.y + d.y)}" r="${r2(l.satR)}" fill="${xmlEscape(o.fill)}"` +
           ` stroke="${xmlEscape(o.stroke)}" stroke-width="2"/>` +
-          webLine(
-            el,
-            row.label,
-            rect,
-            conceptFitPx(row.label, rect.width, l.labelPx),
-            o.labelColor,
-            {
-              bold: true,
-              fontFamily,
-            },
-          )
+          webLine(el, row.label, rect, conceptFitPx(row.label, rect.width, l.labelPx), discInk, {
+            bold: true,
+            fontFamily,
+          })
         );
       })
       .join('');
@@ -177,6 +173,7 @@ export function svgConcept(
       .join('');
     return discs + labels;
   }
+  if (el.shape === 'timeline-rail') return svgTimeline(el, rows, { ...o, fontFamily });
   if (el.shape === 'chevrons') {
     const notes = rows.some((r) => !!r.note);
     const l = chevronLayout(el.width, el.height, n, notes);
@@ -242,7 +239,7 @@ export function svgConcept(
           row.label,
           rect,
           conceptFitPx(row.label, rect.width, l.labelPx),
-          first ? ramp[0]!.text : o.labelColor,
+          first ? ramp[0]!.text : discInk,
           {
             bold: true,
             fontFamily,

@@ -14,6 +14,7 @@
 // box, so a big one has bigger type rather than more padding.
 
 import { fenceParts, FENCE_RAIL_OPACITY } from './fence';
+import { avatarPadArtRect, AVATAR_PAD_PARTS } from './avatar-pad';
 import {
   FURNITURE_ART,
   FURNITURE_FACE_SHADE,
@@ -99,6 +100,8 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'desk',
   'sofa',
   'fence',
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md).
+  'avatar-pad',
   // The virtual office (docs/specs/009-elements/office.md).
   'room',
   'meeting-table',
@@ -213,6 +216,8 @@ export function svgBehaviourFace(
       return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'fence':
       return fenceArt(el, stroke);
+    case 'avatar-pad':
+      return avatarPadArt(el);
     case 'comment-pin':
       // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
       return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
@@ -527,6 +532,24 @@ function fenceArt(el: Face, stroke: string): string {
         `<rect x="${r2(el.x + p.x)}" y="${r2(el.y + p.y)}" width="${r2(p.width)}" height="${r2(p.height)}" rx="${r2(p.rx)}" fill="${line}"${p.role === 'rail' ? ` opacity="${FENCE_RAIL_OPACITY}"` : ''}/>`,
     )
     .join('');
+}
+
+// An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel table AvatarPadView draws, scaled whole into the
+// box and centred, crisp-edged, its ring lit (the shimmer and the arrival are the canvas's).
+function avatarPadArt(el: Face): string {
+  const art = avatarPadArtRect(el);
+  const s = art.scale;
+  if (s <= 0) return '';
+  const ox = el.x + art.x;
+  const oy = el.y + art.y;
+  return (
+    `<g shape-rendering="crispEdges">` +
+    AVATAR_PAD_PARTS.map(
+      (p) =>
+        `<rect x="${r2(ox + p.x * s)}" y="${r2(oy + p.y * s)}" width="${r2(p.width * s)}" height="${r2(s)}" fill="${p.fill}"/>`,
+    ).join('') +
+    `</g>`
+  );
 }
 
 // A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table

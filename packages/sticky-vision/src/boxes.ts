@@ -63,7 +63,7 @@ const MAX_MERGE_PASSES = 12;
 // Sensor noise, as a fraction of the working image's long edge: a property of
 // the camera rather than of the wall. detectStickies (and the scripts that
 // replay its stages) read it through noiseFloorFor, so there is one number.
-export const NOISE_FLOOR_FRACTION = 0.008;
+const NOISE_FLOOR_FRACTION = 0.008;
 
 export function noiseFloorFor(imageSize: number): number {
   return Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
@@ -117,7 +117,7 @@ export function boxOf(c: Component): Box {
 // another is twice as long as it should be but exactly as tall, and two notes
 // side by side are one blob whose height is still one note. The short side is
 // the dimension overlap does not inflate.
-export function medianNoteSize(boxes: Box[]): number {
+function medianNoteSize(boxes: Box[]): number {
   return median(boxes.map((b) => Math.min(b.w, b.h)));
 }
 
@@ -284,7 +284,7 @@ export type PaperMask = { width: number; height: number; classes: Uint8Array };
 // sweep can say which rule costs which note.
 export type DropReason =
   'noise' | 'area' | 'aspect' | 'too-big' | 'size-floor' | 'fill' | 'piece-small' | 'rescue';
-export type OnDrop = (box: Box, reason: DropReason) => void;
+type OnDrop = (box: Box, reason: DropReason) => void;
 
 export function fitBoxes(
   components: Component[],

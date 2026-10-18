@@ -1,9 +1,9 @@
 // This browser's own opens of the documents stored only here (docs/specs/013-workspace/explorer-home.md
 // "Opens"; blueprint docs/specs/013-workspace/blueprints/explorer-home-view.md "Local opens").
 //
-// The server never sees an Offline Mode document, so it cannot count its opens. This browser does,
+// The server never sees an Offline Mode document, so it cannot count its opens. This Browser does,
 // by the server's own rule: the UTC days with an open, inside the 90-day use window, and the last
-// open, so Home's Jump back in places a local document among the rest. The record sits on the
+// open, so Home's Jump Back In places a local document among the rest. The record sits on the
 // document's own record, so it goes wherever the record goes (the local Trash, a purge, Sync
 // Document) and never leaves the browser.
 
@@ -20,7 +20,7 @@ import { debugLog } from '@/lib/debug-log';
 
 export type { LocalOpens };
 
-/** A local document that has been opened, as Jump back in merges it. */
+/** A local document that has been opened, as Jump Back In merges it. */
 export type LocalOpenDocument = { document: DocumentSummary; opens: LocalOpens };
 
 /** A record's stored opens as the current shape. The shape written before Within reach still

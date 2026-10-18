@@ -42,7 +42,7 @@ export const MAX_CLIPBOARD_ELEMENTS = 2000;
 // JSON.parse rather than after.
 export const MAX_CLIPBOARD_BYTES = 4_000_000;
 
-export type ClipboardEnvelope = {
+type ClipboardEnvelope = {
   schemaVersion: number;
   kind: typeof CLIPBOARD_KIND;
   copiedAt: number;
@@ -107,7 +107,7 @@ export function serialiseElements(elements: Element[]): string {
 // element, is what pastes. The marker still displaces a stale image, and it
 // lets the window that made the copy tell its own copy from anything copied
 // since.
-export type ClipboardWrite = { text: string; inAppOnly: boolean };
+type ClipboardWrite = { text: string; inAppOnly: boolean };
 
 export function clipboardWriteFor(elements: Element[], copyId: string): ClipboardWrite {
   if (elements.length <= MAX_CLIPBOARD_ELEMENTS) {
@@ -140,12 +140,12 @@ export function inAppCopyIdOf(text: string | null | undefined): string | null {
 
 /** Said when a copy is too large to leave this window. */
 export function copyTooLargeMessage(count: number): string {
-  return `Copied ${count.toLocaleString('en')} elements. That is too large for the system clipboard, so it pastes in this window only.`;
+  return `Copied ${count.toLocaleString('en')} elements: too many for the clipboard, so paste in this window.`;
 }
 
 /** Said when another window's too-large copy is pasted here. */
 export const IN_APP_COPY_ELSEWHERE =
-  'That copy was too large to leave the window it was made in. Paste it there, or copy fewer elements.';
+  'That copy was too big to leave its window. Paste it there, or copy less.';
 
 // The sheets a pasted payload carried, stashed for the pasted Sheets (lib/sheet-seeds.ts).
 export function takeSheetSeeds(text: string | null | undefined): void {

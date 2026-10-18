@@ -12,21 +12,22 @@ export const SIDEBAR_GROUP_TITLES = {
 
 export type SidebarGroupId = keyof typeof SIDEBAR_GROUP_TITLES;
 
-// Sentence-case copy for every fixed row. Read by the sidebar and by the
+// Title Case copy for every fixed row. Read by the sidebar and by the
 // floating Explorer panel, which names its spaces with the same words.
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
   timeline: 'Timeline',
-  shared: 'Shared with me',
-  myDocuments: 'My documents',
+  shared: 'Shared With Me',
+  myDocuments: 'My Documents',
   invites: 'Invites',
-  newTeam: 'New team',
-  thisBrowser: 'This browser',
+  newTeam: 'New Team',
+  thisBrowser: 'This Browser',
+  tags: 'Tags',
   library: 'Library',
-  gallery: 'Image gallery',
+  gallery: 'Image Gallery',
   themes: 'Themes',
-  shapeLibraries: 'Shape libraries',
+  shapeLibraries: 'Shape Libraries',
   trash: 'Trash',
 } as const;
 
@@ -59,7 +60,7 @@ export type SidebarLayoutInput = {
   surface?: 'page' | 'panel';
 };
 
-export type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
+type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
 
 export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   const { signedIn, signInAvailable, pendingInvites, offlineDocuments, selected } = input;
@@ -75,6 +76,8 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   // A row whose view is current stays, so the highlight never vanishes under the reader.
   const more: SidebarRowKind[] = [];
   if (offlineDocuments > 0 || selected === 'offline') more.push('thisBrowser');
+  // Tags always shows, so it can be found before the first tag (docs/specs/013-workspace/tags.md "The sidebar").
+  // Tags lives inside Library (docs/specs/013-workspace/tags.md "The sidebar"), always shown there.
   more.push('library', 'trash');
   return [
     { id: 'overview', rows: ['home', 'inbox', 'timeline', 'shared'] },
@@ -103,10 +106,16 @@ export function isLibraryView(kind: SelectedNode['kind']): boolean {
 // Entries of the shared `expanded` set; the colon keeps them apart from folder and team ids.
 export const MY_DOCUMENTS_EXPAND_KEY = 'space:my-documents';
 export const LIBRARY_EXPAND_KEY = 'more:library';
+export const TAGS_EXPAND_KEY = 'more:tags';
 
 // Computed before first paint, so nothing expands after load.
 export function initialExpanded(selected: SelectedNode): Set<string> {
   const keys = new Set([MY_DOCUMENTS_EXPAND_KEY]);
   if (isLibraryView(selected.kind)) keys.add(LIBRARY_EXPAND_KEY);
+  // A Tags page opens Library, where Tags lives, and Tags itself.
+  if (selected.kind === 'tags') {
+    keys.add(LIBRARY_EXPAND_KEY);
+    keys.add(TAGS_EXPAND_KEY);
+  }
   return keys;
 }

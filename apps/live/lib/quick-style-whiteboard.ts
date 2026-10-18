@@ -115,7 +115,7 @@ export function applyQuickCorners(el: Element, corners: QuickCorners): Element {
   return takesCorners(el) ? { ...el, borderRadius: corners } : el;
 }
 
-/** Clear styles on a whiteboard: the corners back to the kind's own default. */
+/** Clear Styles on a whiteboard: the corners back to the kind's own default. */
 export function clearQuickCorners(el: Element): Element {
   if (!takesCorners(el) || el.borderRadius === undefined) return el;
   const { borderRadius: _r, ...rest } = el;

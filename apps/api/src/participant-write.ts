@@ -28,7 +28,7 @@ export type ParticipantWriteFailure = { ok: false; status: 404 | 409 | 413 };
 export type ParticipantWriteResult =
   { ok: true; outcome: ParticipantOpResult } | ParticipantWriteFailure;
 
-export type ParticipantOpRequest = {
+type ParticipantOpRequest = {
   documentId: string;
   tabId: string;
   op: ElementOp;

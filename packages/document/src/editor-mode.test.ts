@@ -12,20 +12,21 @@ import {
   isEditorMode,
   nextEditorMode,
   opensInOf,
+  parseEditorMode,
 } from './editor-mode';
 import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw, Facilitate, Illustrate and Plan, Diagram by default', () => {
-    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'facilitate', 'illustrate', 'plan']);
+  it('are Diagram, Draw, Facilitate, Pages and Plan, Diagram by default', () => {
+    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'facilitate', 'pages', 'plan']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
 
   it('recognises a mode and nothing else', () => {
     expect(isEditorMode('diagram')).toBe(true);
     expect(isEditorMode('draw')).toBe(true);
-    expect(isEditorMode('illustrate')).toBe(true);
+    expect(isEditorMode('pages')).toBe(true);
     expect(isEditorMode('facilitate')).toBe(true);
     expect(isEditorMode('whiteboard')).toBe(false);
     expect(isEditorMode(undefined)).toBe(false);
@@ -45,6 +46,14 @@ describe('opensInOf', () => {
   it('reads a tab that opens in Draw', () => {
     expect(opensInOf({ opensIn: 'draw' })).toBe('draw');
     expect(opensInOf({ kind: 'diagram', opensIn: 'draw' })).toBe('draw');
+  });
+
+  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Pages was Illustrate, and Infographic.
+  it('reads either old name of Pages mode as Pages', () => {
+    expect(opensInOf({ opensIn: 'illustrate' })).toBe('pages');
+    expect(opensInOf({ opensIn: 'infographic' })).toBe('pages');
+    expect(parseEditorMode('illustrate')).toBe('pages');
+    expect(parseEditorMode('Illustrate')).toBeUndefined();
   });
 
   it('reads an unknown opening mode as Diagram', () => {
@@ -85,7 +94,7 @@ describe('the editor mode catalogue', () => {
       'Diagram',
       'Draw',
       'Facilitate',
-      'Illustrate',
+      'Pages',
       'Plan',
     ]);
     for (const m of EDITOR_MODE_CATALOGUE) expect(m.description.length).toBeGreaterThan(0);
@@ -119,15 +128,15 @@ describe('nextEditorMode', () => {
   it('moves forward through the catalogue, wrapping at the end', () => {
     expect(nextEditorMode('diagram')).toBe('draw');
     expect(nextEditorMode('draw')).toBe('facilitate');
-    expect(nextEditorMode('facilitate')).toBe('illustrate');
-    expect(nextEditorMode('illustrate')).toBe('plan');
+    expect(nextEditorMode('facilitate')).toBe('pages');
+    expect(nextEditorMode('pages')).toBe('plan');
     expect(nextEditorMode('plan')).toBe('diagram');
   });
 
   it('moves backward with a negative step, wrapping at the start', () => {
     expect(nextEditorMode('diagram', -1)).toBe('plan');
-    expect(nextEditorMode('plan', -1)).toBe('illustrate');
-    expect(nextEditorMode('illustrate', -1)).toBe('facilitate');
+    expect(nextEditorMode('plan', -1)).toBe('pages');
+    expect(nextEditorMode('pages', -1)).toBe('facilitate');
     expect(nextEditorMode('facilitate', -1)).toBe('draw');
     expect(nextEditorMode('draw', -1)).toBe('diagram');
   });
@@ -140,10 +149,10 @@ describe('nextEditorMode', () => {
   });
 });
 
-// Illustrate mode's page (docs/specs/007-editor/editor-modes.md "The pages").
+// Pages mode's page (docs/specs/007-editor/editor-modes.md "The pages").
 describe('hasPageLook', () => {
-  it('draws the page in Illustrate mode only', () => {
-    expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['illustrate']);
+  it('draws the page in Pages mode only', () => {
+    expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['pages']);
     // Plan mode (docs/specs/026-plan/plan-mode.md) takes input the Plan way; nothing else does.
     expect(EDITOR_MODES.filter(hasPlanInput)).toEqual(['plan']);
   });

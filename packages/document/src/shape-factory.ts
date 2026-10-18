@@ -22,8 +22,6 @@ import {
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
-  RAIL_DEFAULT_POINTS,
-  RAIL_POINT_STEP_PX,
   RATING_DEFAULT,
   REACTION_DEFAULT,
 } from './data-shapes';
@@ -35,6 +33,7 @@ import {
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { DEFAULT_SEATING_FACING } from './seating';
 import { FENCE_DEFAULT_SIZE } from './fence';
+import { AVATAR_PAD_DEFAULT_SIZE } from './avatar-pad';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
@@ -146,9 +145,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
   'progress-ring': { width: 130, height: 130 },
-  // Timeline rail: width carries the default points at RAIL_POINT_STEP_PX
-  // spacing; height leaves room for the dots + ticks above the line.
-  'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
+  // Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): four milestones, words above and below.
+  'timeline-rail': { width: 720, height: 240 },
   // Rating: a row of five stars.
   rating: { width: 200, height: 44 },
   // Charts default their legend BELOW the plot (docs/specs/009-elements/pie-chart.md), so the starting box
@@ -193,6 +191,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   chair: { width: 76, height: 84 },
   // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
   fence: { ...FENCE_DEFAULT_SIZE },
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): its pixel grid at four canvas px a pixel.
+  'avatar-pad': { ...AVATAR_PAD_DEFAULT_SIZE },
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
   // chair's scale, so a character fits the seat.
   desk: { width: 120, height: 112 },
@@ -383,6 +383,10 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture like the chair, each
   // with the facing it is drawn at, its label under it, and its proportions held.
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): pixels and no words, its grid kept square.
+  if (kind === 'avatar-pad') {
+    return { ...base, label: '', aspectLocked: true };
+  }
   if (kind === 'desk' || kind === 'sofa') {
     return {
       ...base,
@@ -489,7 +493,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'top',
       label: 'Entity',
       entityFields: [
-        { name: 'id', type: 'string' },
+        { name: 'id', type: 'string', key: 'pk' },
         { name: 'name', type: 'string' },
       ],
     };
@@ -613,11 +617,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'progress-bar') {
     return { ...base, progress: 50, progressAnim: 'fill' };
   }
-  // Timeline rail: starts with the default number of points; no label inside
-  // (the rail draws its own dots + line). See docs/specs/009-elements/timeline-rail.md.
-  if (kind === 'timeline-rail') {
-    return { ...base, railCount: RAIL_DEFAULT_POINTS, strokeColor: '#64748b' };
-  }
   // Rating: a row of stars, three filled by default, amber accent. See docs/specs/009-elements/rating.md.
   if (kind === 'rating') {
     return { ...base, rating: RATING_DEFAULT, strokeColor: '#f59e0b' };
@@ -729,6 +728,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         { label: 'Build', note: '2 min' },
         { label: 'Test', note: '8,400 tests' },
         { label: 'Release', note: 'manual gate' },
+      ],
+    };
+  // A Timeline's milestones, each with its when (docs/specs/009-elements/concept-graphics.md "Timeline").
+  if (kind === 'timeline-rail')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Kick-off', note: 'Jan' },
+        { label: 'First prototype', note: 'Mar' },
+        { label: 'Beta with customers', note: 'Jun' },
+        { label: 'Launch', note: 'Sep' },
       ],
     };
   // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.

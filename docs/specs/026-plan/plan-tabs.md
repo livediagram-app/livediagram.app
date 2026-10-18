@@ -23,10 +23,10 @@ it brings its own behaviour.
 ## The kinds
 
 - A Board, Sheet or Dashboard tab is always in **Plan** mode, whatever a stored or stale `opensIn` says (as an Event
-  Storming tab is always Diagram). Its mode switch still shows, reading Plan, with no line under the modes. Picking another mode asks
+  Storming tab is always Diagram). Its start's mode switch still shows, reading Plan, with no line under the modes. Picking another mode asks
   **Open a New <Mode> Tab?** ("A Dashboard is always in Plan. Its mode can’t change, but you can carry on in a new
   <Mode> tab.", or "A Board tab ...", "A Sheet tab ...") and **New <Mode> Tab** opens a new tab in that mode
-  after the others; Shift+D does nothing there. Its tab menu lists no modes.
+  after the others; Shift+D does nothing there. No tab menu lists modes.
 - The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), four tiles two by two:
   **Dashboard** a Dashboard tab, **Board** (then a preset) a Board tab, **Spreadsheet** (then a start) a Sheet tab,
   and a search reaches every template, another mode's included. The choice sets the tab's kind and adds its element in one change, one undo step.
@@ -85,6 +85,27 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
   copy and the original each keep their own name.
 - A board renamed by an agent (`change_board`) changes the board alone; the tab follows the next time either is
   renamed in the editor.
+
+## Only in Plan
+
+A Plan board and a Sheet are placed only on a tab in Plan (`opensInOf(tab) === 'plan'`: a Board, Sheet or Dashboard
+tab, or a general tab in Plan). A tab keeps its mode once it has content
+([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), and a board's cards and a Sheet's cells take input only
+in Plan, so one on a Diagram, Draw, Facilitate or Pages tab could never be worked there. Every way in keeps to it
+(`tabTakesPlanOnly`, `planOnlyAddedOutsidePlan` and `withoutPlanOnly` in `packages/document/src/plan-only.ts`):
+
+- **The palette, Search and a dropped CSV** are Plan mode's already: Search lists boards and Sheets in another mode
+  greyed out, "Only in Plan Mode".
+- **A paste** onto a tab in another mode leaves out every board and Sheet it holds, and the charts those Sheets draw,
+  and pastes the rest. It says what it left out: "Boards and sheets stay on Plan tabs, so the board was left out"
+  ("the sheet", "the boards", "the board and the sheets", ...). A paste holding nothing else pastes nothing, with the
+  same notice. Logged as `[clipboard] plan work left out` with the counts.
+- **An agent** is refused: `add_board` and `add_sheet` onto a tab in another mode answer `tab_not_plan`, before
+  anything is made ([Plan agents](plan-agents.md), [Sheet store](../029-sheets/sheet-store.md#agents)), and any
+  changeset (`update_document`, a template over an existing tab, the api) that would leave a new board or Sheet on
+  such a tab is refused `invalid_value`, naming the elements, with the hint to add a Board or Sheet tab instead
+  ([Agent changesets](../024-agents/agent-changesets.md#boards-and-sheets-only-in-plan)).
+- Boards and Sheets a tab already holds are left alone.
 
 ## Dashboard tab
 
@@ -324,11 +345,12 @@ laid out, never the canvas hidden under it:
 | Board tab     | PNG, SVG, PDF, Markdown, CSV |
 | Sheet tab     | PNG, SVG, PDF, CSV           |
 | Dashboard tab | PNG, SVG, PDF, JSON          |
-| Any other tab | every format, as ever        |
+| Any other tab | every format but CSV         |
 
 **CSV** opens a text panel like JSON's and Markdown's (view, copy, **Download .csv**): a Board tab's cards the board
 shows, a Sheet tab's cells as shown, both safe to open (a field a spreadsheet would run as a formula made inert).
-Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`).
+Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`). Any other tab has neither, so
+it is not offered CSV: it used to be, and copied or downloaded an empty file.
 
 - **Images** (PNG, SVG, PDF) of a **Board tab** draw its board alone (header, columns, counts and card faces, from the
   document's items) at the board's size, in the viewer's appearance; of a **Sheet tab**, its Sheet alone with its

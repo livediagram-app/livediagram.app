@@ -9,6 +9,7 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'HubTour', title: 'Hub and Spoke' },
   { token: 'OnionTour', title: 'Onion' },
   { token: 'ChevronsTour', title: 'Chevrons' },
+  { token: 'TimelineTour', title: 'Timeline' },
   { token: 'MindMapTour', title: 'Mind Map' },
   { token: 'FlowchartTour', title: 'Flowchart' },
   { token: 'OrgChartTour', title: 'Org Chart' },

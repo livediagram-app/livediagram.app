@@ -22,7 +22,7 @@ import {
 } from './hero-editor-chrome';
 
 // Every window's diagram is drawn in this box on a wide screen.
-export const LANDSCAPE_VIEWBOX = '0 -60 600 400';
+const LANDSCAPE_VIEWBOX = '0 -60 600 400';
 
 export type TabDef = { name: string; color: string; active?: boolean };
 

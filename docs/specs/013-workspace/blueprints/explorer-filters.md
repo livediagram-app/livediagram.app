@@ -343,7 +343,7 @@ The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
 | `apps/live/app/explorer/lens/LensStates.tsx`           | `LensAnnouncer`, `LensIssues`, `FilteredEmpty`, `LoadFailed`                                               |
 | `apps/live/app/explorer/search/page.tsx`               | `/explorer/search`, Search results                                                                         |
 | `apps/live/app/explorer/RetiredViewRedirect.tsx`       | `RETIRED_VIEW_TARGETS`, `RetiredViewRedirect`: `/explorer/unsorted`, `/dynamic`, `/generated`, `/activity` |
-| `apps/live/app/explorer/ViewInfo.tsx`                  | The info note This browser shows under its breadcrumb                                                      |
+| `apps/live/app/explorer/ViewInfo.tsx`                  | The info note This Browser shows under its breadcrumb                                                      |
 | `apps/live/components/primitives/MadeByAiPill.tsx`     | `MadeByAiPill`, `isMadeByAi`, `MADE_BY_AI_LABEL`, `MADE_BY_AI_DESCRIPTION`                                 |
 | `apps/live/app/explorer/useExplorerPane.ts`            | Each view's base list narrowed by the lens; `PaneLensResult` (counts, empty, subjects)                     |
 | `apps/live/app/explorer/useExplorerState.ts`           | Composes `useExplorerLens`; carries the lens in `go`; `failedReads`                                        |
@@ -362,21 +362,21 @@ The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
 `lensViewOf(kind)` is `'scoped'` for `all`, `folder`, `team`, `offline`; `'aggregate'` for `recent`, `favourites`,
 `search`, `shared`; `null` (no lens) for every other view. The base list each view narrows:
 
-| View         | Base list (before the lens)                                                                                                                        |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `all`        | Unset: root folders, then root documents (`folderId === null`, not local only). Set: every own document in the tree, local-only root ones excepted |
-| `folder`     | Unset: subfolders and documents in the folder. Set: every document in the folder's subtree (`scopeDocuments`)                                      |
-| `team`       | The team library at the open spot; set: every document in the spot's subtree                                                                       |
-| `offline`    | Every local-only document                                                                                                                          |
-| `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                                       |
-| `favourites` | Starred own and team rows                                                                                                                          |
-| `search`     | Own, team and shared rows, newest first, no cap                                                                                                    |
-| `shared`     | Shared with me                                                                                                                                     |
+| View         | Base list (before the lens)                                                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `all`        | Unset: root folders, then root documents (`folderId === null`, not This Browser). Set: every own document in the tree, This Browser root ones excepted |
+| `folder`     | Unset: subfolders and documents in the folder. Set: every document in the folder's subtree (`scopeDocuments`)                                          |
+| `team`       | The team library at the open spot; set: every document in the spot's subtree                                                                           |
+| `offline`    | Every document in This Browser                                                                                                                         |
+| `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                                           |
+| `favourites` | Starred own and team rows                                                                                                                              |
+| `search`     | Own, team and shared rows, newest first, no cap                                                                                                        |
+| `shared`     | Shared With Me                                                                                                                                         |
 
 The subjects suggestions mark against are the rows a set lens would reach: a scoped view's whole scope, the team
 sweep's rows of the open team, and on a view with no lens the `search` list. `lensSubjectOf(row, viewerId)`: a
 `shared` row is `sharedSubject`; a team row (`team` or `teamId`) is `documentSubject` with its team id and owner; every
-other row, local only included, is `documentSubject` with `teamId: null` and the reader as owner. Folder rows are hidden
+other row, This Browser included, is `documentSubject` with `teamId: null` and the reader as owner. Folder rows are hidden
 while the lens is set (`D83`).
 
 ### Behaviour and state
@@ -409,7 +409,7 @@ draftCaret)` is the tokens, a space, then the draft. Every draft edit runs `writ
    Any option (`null`) clears it; the Made by AI toggle sends `ai` or `null`. A new dimension's token is written after
    the tokens already there (`setDimensionValues`).
 8. **States.** Per document view, in order: loading skeleton; **Failed** when its read failed (`failedReads.documents`,
-   or `failedReads.shared` for Shared with me); **Empty** when the view holds nothing at all; **Filtered empty** when
+   or `failedReads.shared` for Shared With Me); **Empty** when the view holds nothing at all; **Filtered empty** when
    the lens is set and nothing matches (the chip row then leaves the issue lines to it); else the list.
 9. **Announce.** One `LensAnnouncer` lives in the shell beside the field, so it survives a navigation: it waits
    `LENS_SETTLE_MS` after the string changes, then writes `announceResults(shown, total)` read at that moment into a
@@ -462,7 +462,7 @@ type LibraryLens = { active: boolean; input: string; issues: readonly LensIssue[
 | Lens set on a view whose base list is empty       | Empty, not Filtered empty                                                          |
 | Select-all in the field, then type                | The selection is replaced, never collapsed by the model                            |
 | A pill removed by its button                      | Focus returns to the field on the next frame, reading the new string               |
-| My documents with no folders                      | The sidebar row has no chevron; in the panel it opens its page when empty          |
+| My Documents with no folders                      | The sidebar row has no chevron; in the panel it opens its page when empty          |
 
 ### Presentation
 
@@ -517,7 +517,7 @@ list=documents|shared')`. Never a word of the lens or an id.
 | States copy and the announcer's settle                     | `apps/live/app/explorer/lens/LensStates.test.tsx`                      |
 | The Made by AI badge                                       | `apps/live/components/primitives/MadeByAiPill.test.tsx`                |
 | Routes, retired views, titles                              | `apps/live/app/explorer/routes.test.ts`, `view-titles.test.ts`         |
-| The panel's My documents: folders then documents           | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
+| The panel's My Documents: folders then documents           | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
 | A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                 |
 | Real browser as a guest, desktop and phone                 | `apps/live/e2e/explorer-filters.spec.ts`                               |
 | Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/clerk-stub/explorer-filters.spec.ts`                    |

@@ -18,7 +18,7 @@ import {
   type ArticleListKind,
   type ArticleParagraphStyle,
 } from '@livediagram/document';
-import { articleSchema, safeMarkColor } from './article-schema';
+import { articleSchema, numberAttr, safeMarkColor, textAttr } from './article-schema';
 
 const S = articleSchema;
 const PARAGRAPH = S.nodes.paragraph;
@@ -58,13 +58,15 @@ export function setBlockStyle(style: ArticleParagraphStyle | 'code'): Command {
       for (const { node, pos } of blocks) {
         if (style === 'code') {
           if (node.type !== CODE)
-            tr.setBlockType(pos + 1, pos + node.nodeSize - 1, CODE, { id: node.attrs.id });
+            tr.setBlockType(pos + 1, pos + node.nodeSize - 1, CODE, {
+              id: textAttr(node.attrs, 'id'),
+            });
           continue;
         }
         const attrs = {
-          id: node.attrs.id,
+          id: textAttr(node.attrs, 'id'),
           style,
-          align: node.type === CODE ? 'left' : (node.attrs.align ?? 'left'),
+          align: node.type === CODE ? 'left' : (textAttr(node.attrs, 'align') ?? 'left'),
         };
         if (node.type === PARAGRAPH) tr.setNodeMarkup(pos, PARAGRAPH, attrs);
         else tr.setBlockType(pos + 1, pos + node.nodeSize - 1, PARAGRAPH, attrs);
@@ -86,17 +88,17 @@ export function toggleList(kind: ArticleListKind): Command {
       for (const { node, pos } of blocks) {
         if (all) {
           tr.setNodeMarkup(pos, PARAGRAPH, {
-            id: node.attrs.id,
+            id: textAttr(node.attrs, 'id'),
             style: 'body',
-            align: node.attrs.align,
+            align: textAttr(node.attrs, 'align'),
           });
         } else {
           tr.setNodeMarkup(pos, LIST, {
-            id: node.attrs.id,
+            id: textAttr(node.attrs, 'id'),
             list: kind,
-            level: node.type === LIST ? node.attrs.level : 0,
+            level: node.type === LIST ? numberAttr(node.attrs, 'level') : 0,
             checked: false,
-            align: node.attrs.align,
+            align: textAttr(node.attrs, 'align'),
           });
         }
       }
@@ -134,9 +136,9 @@ export function shiftLevel(by: 1 | -1): Command {
         const level = (node.attrs.level as number) + by;
         if (level < 0)
           tr.setNodeMarkup(pos, PARAGRAPH, {
-            id: node.attrs.id,
+            id: textAttr(node.attrs, 'id'),
             style: 'body',
-            align: node.attrs.align,
+            align: textAttr(node.attrs, 'align'),
           });
         else
           tr.setNodeMarkup(pos, undefined, {
@@ -293,7 +295,11 @@ const splitAs = splitBlockAs((node, atEnd) => {
   const heading = style !== 'body' && style !== 'quote';
   return {
     type: PARAGRAPH,
-    attrs: { id: '', style: atEnd && heading ? 'body' : style, align: node.attrs.align },
+    attrs: {
+      id: '',
+      style: atEnd && heading ? 'body' : style,
+      align: textAttr(node.attrs, 'align'),
+    },
   };
 });
 

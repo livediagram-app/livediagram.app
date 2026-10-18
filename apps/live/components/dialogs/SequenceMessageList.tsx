@@ -35,7 +35,7 @@ const KIND_HINT: Record<SequenceMessageKindName, string> = {
 };
 
 /** The arrow a kind draws: solid with a filled head, solid with an open head, dashed with an open head. */
-export function KindArrow({ kind }: { kind: SequenceMessageKindName }) {
+function KindArrow({ kind }: { kind: SequenceMessageKindName }) {
   return (
     <svg aria-hidden viewBox="0 0 28 12" className="h-3 w-7" fill="none" stroke="currentColor">
       <path

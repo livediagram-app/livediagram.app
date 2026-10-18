@@ -7,6 +7,7 @@ import {
   SEARCH_PRESET_MAX,
   wizardPresetMode,
   wizardPresetQuery,
+  wizardStartsBlank,
 } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
@@ -38,7 +39,7 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
 });
 
 describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
-  it('drops the refused placement and the bypass, so the wizard starts from the root of My documents', () => {
+  it('drops the refused placement and the bypass, so the wizard starts from the root of My Documents', () => {
     expect(choosePlacementAgainUrl('?blank=1&team=t1&folder=f1')).toBe('/new');
   });
 
@@ -57,7 +58,8 @@ describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)'
 describe('wizardPresetMode / wizardPresetQuery', () => {
   it('reads a known mode, and ignores an unknown one', () => {
     expect(wizardPresetMode('?mode=draw')).toBe('draw');
-    expect(wizardPresetMode('?folder=f1&mode=illustrate&via=Home.HeroBuild')).toBe('illustrate');
+    expect(wizardPresetMode('?folder=f1&mode=pages&via=Home.HeroBuild')).toBe('pages');
+    expect(wizardPresetMode('?mode=illustrate')).toBe('pages');
     expect(wizardPresetMode('?mode=sideways')).toBeNull();
     expect(wizardPresetMode('')).toBeNull();
   });
@@ -85,5 +87,22 @@ describe('placementParamsFromSearch', () => {
     expect(placementParamsFromSearch('')).toEqual({});
     expect(placementParamsFromSearch('?blank=1')).toEqual({});
     expect(placementParamsFromSearch('?folder=&team=')).toEqual({});
+  });
+});
+
+describe('wizardStartsBlank (docs/specs/007-editor/new-document-route.md "Start Blank after a mode")', () => {
+  it('reads ?start=blank, beside any other param', () => {
+    expect(wizardStartsBlank('?start=blank')).toBe(true);
+    expect(wizardStartsBlank('?start=blank&via=Home.HeaderBlank')).toBe(true);
+  });
+
+  it('is off without it or for any other value', () => {
+    expect(wizardStartsBlank('')).toBe(false);
+    expect(wizardStartsBlank('?start')).toBe(false);
+    expect(wizardStartsBlank('?start=templates')).toBe(false);
+  });
+
+  it('is not a bypass: the wizard still asks for a mode', () => {
+    expect(wizardBypassKind('?start=blank')).toBeNull();
   });
 });

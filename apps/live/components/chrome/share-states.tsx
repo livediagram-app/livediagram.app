@@ -3,10 +3,10 @@
 import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import {
-  LOCAL_ONLY_DESCRIPTION,
-  LOCAL_ONLY_LABEL,
-  LOCAL_ONLY_TONE,
-} from '@/components/primitives/LocalOnlyPill';
+  THIS_BROWSER_DESCRIPTION,
+  THIS_BROWSER_LABEL,
+  THIS_BROWSER_TONE,
+} from '@/components/primitives/ThisBrowserPill';
 
 // A document's visibility states (docs/specs/006-document/offline-mode.md, 025-community/community.md): their
 // words and tones, shared by the pill beside the title (SharedBadge) and its legend (VisibilityLegend).
@@ -49,11 +49,11 @@ export const SHARE_STATE_META: Record<
     dot: 'text-pink-500',
   },
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
-  // server. The Local only pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
+  // server. The This Browser pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
   offline: {
-    label: LOCAL_ONLY_LABEL,
-    description: LOCAL_ONLY_DESCRIPTION,
-    badge: `px-2 text-[10px] font-semibold ${LOCAL_ONLY_TONE}`,
+    label: THIS_BROWSER_LABEL,
+    description: THIS_BROWSER_DESCRIPTION,
+    badge: `px-2 text-[10px] font-semibold ${THIS_BROWSER_TONE}`,
     dot: '',
   },
 };
@@ -64,7 +64,7 @@ export const STATE_CHIP_HEIGHT_PX = 19;
 
 // The icon carries its colour itself: a wrapper would hide the svg from the chip's edge compensation.
 export function StateDot({ state, className }: { state: ShareState; className: string }) {
-  // The Local only pill's own glyph: a browser window.
+  // The This Browser pill's own glyph: a browser window.
   if (state === 'offline') return <ThisBrowserIcon size={10} />;
   return state === 'private' ? (
     <PrivateDotIcon className={className} />

@@ -16,7 +16,8 @@ import { paneCreateMode } from './pane-create-action';
 import { ViewToggle } from './ViewToggle';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 
-function HamburgerIcon() {
+// Shared with Home's hero, which stands in for this header on Home.
+export function HamburgerIcon() {
   return (
     <Glyph size={18} units={18} strokeLinejoin="miter">
       <path d="M3 5h12M3 9h12M3 13h12" />
@@ -72,8 +73,8 @@ export function PaneHeader({
   // button, docs/specs/015-api/public-api-and-tokens.md). Lets a section add a header CTA without going through
   // the document/folder Create dropdown.
   headerActions?: ReactNode;
-  // List/Card toggle (docs/specs/006-document/document-snapshots.md), shown at the far right of the actions row
-  // on the browse views that can render either layout. Both must be
+  // List/Card/Details toggle (docs/specs/006-document/document-snapshots.md), shown in the actions row left of
+  // Help and Create on the browse views that can render either layout. Both must be
   // present for the toggle to appear; sections that only list one way
   // (gallery, tokens, …) omit them.
   viewMode?: ExplorerViewMode;
@@ -98,7 +99,7 @@ export function PaneHeader({
   const singleCreate =
     createMode.kind === 'single'
       ? createMode.action === 'document'
-        ? { label: 'New document', onClick: onCreateDocument! }
+        ? { label: 'New Document', onClick: onCreateDocument! }
         : { label: folderLabel ?? 'New Folder', onClick: onCreateFolder! }
       : null;
   const [createOpen, setCreateOpen] = useState(false);
@@ -127,12 +128,15 @@ export function PaneHeader({
           ) : null}
         </div>
         {hasActions ? (
-          <div className="flex shrink-0 items-center gap-2">
-            {/* Section actions first, then Help. Help is the least-used
-                control in the row and belongs at its quiet end; leading
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+            {/* Wraps too when the actions alone outrun the pane (Timeline's at a tablet's width), ending flush
+                right. */}
+            {/* Section actions first, then the view toggle, then Help and Create. Help is the
+                least-used control in the row and belongs at its quiet end; leading
                 with it pushed the controls a reader actually reaches for
-                out to the right. */}
+                out to the right. Help and Create always sit right of the toggle. */}
             {headerActions}
+            {showViewToggle ? <ViewToggle mode={viewMode!} onChange={onSetViewMode!} /> : null}
             {helpArticle ? <HelpArticleLink article={helpArticle} variant="button" /> : null}
             {singleCreate ? (
               <Button
@@ -162,7 +166,6 @@ export function PaneHeader({
                 <CaretDownIcon />
               </Button>
             ) : null}
-            {showViewToggle ? <ViewToggle mode={viewMode!} onChange={onSetViewMode!} /> : null}
             {createOpen ? (
               <PortalMenu
                 anchor={createButton}
@@ -183,7 +186,7 @@ export function PaneHeader({
                           <DocumentIcon />
                         </span>
                       }
-                      label="New document"
+                      label="New Document"
                       onClick={() => {
                         onCreateDocument();
                         setCreateOpen(false);

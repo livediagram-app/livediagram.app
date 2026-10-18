@@ -8,8 +8,10 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
+  cardinalityLabel,
   isFlowchartStep,
   isMindNode,
+  joinsEntities,
   takesAttachments,
   threadAt,
   type Element,
@@ -30,6 +32,7 @@ import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 import { useElementTourOffer } from '@/lib/element-tour-offer';
 import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -185,6 +188,20 @@ export function CanvasSelectionToolbars({
                   ),
                 }
               : {})}
+            // A relationship (docs/specs/009-elements/entity.md "Cardinality ends"): an Editor's arrow
+            // joining two entities offers the cardinality presets.
+            cardinality={
+              !readOnly &&
+              !selectedLocked &&
+              props.entityActions &&
+              selected?.type === 'arrow' &&
+              joinsEntities(selected, elements)
+                ? {
+                    current: cardinalityLabel(selected),
+                    onPick: props.entityActions.setCardinalitySelected,
+                  }
+                : undefined
+            }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
@@ -222,7 +239,7 @@ export function CanvasSelectionToolbars({
                       // element. Fall back to the button coords if the
                       // element node can't be found.
                       const rect = document
-                        .querySelector(`[data-element-id="${selected.id}"]`)
+                        .querySelector(elementSelector(selected.id))
                         ?.getBoundingClientRect();
                       const anchor = rect ? elementMenuAnchor(rect) : { x, y };
                       onOpenElementContextMenu(selected.id, anchor.x, anchor.y);

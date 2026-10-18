@@ -90,6 +90,8 @@ type FakeState = {
     deleteAll: () => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
+  // The last blockConcurrencyWhile's work: the runtime delivers no request until it settles.
+  gate: Promise<void>;
   waitUntil: (promise: Promise<unknown>) => void;
 };
 
@@ -143,7 +145,11 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
         return Promise.resolve();
       },
     },
-    blockConcurrencyWhile: (fn) => fn(),
+    blockConcurrencyWhile: (fn) => {
+      state.gate = fn();
+      return state.gate;
+    },
+    gate: Promise.resolve(),
     waitUntil: () => {},
   };
   return state;
@@ -153,7 +159,15 @@ function newRoom(): { room: DocumentRoom; state: FakeState } {
   const state = makeState();
   // Only acceptWebSocket / getWebSockets are read off the state, so the
   // fake above suffices for unit coverage.
-  return { room: new DocumentRoom(state as unknown as DurableObjectState), state };
+  const room = new DocumentRoom(state as unknown as DurableObjectState);
+  // The input gate: as the runtime does, a request waits for the constructor's restore, which would
+  // otherwise race it (an agent's presence written, then cleared by the restore's reload).
+  const fetch = room.fetch.bind(room);
+  room.fetch = async (request) => {
+    await state.gate;
+    return fetch(request);
+  };
+  return { room, state };
 }
 
 function presence(id: string, role?: 'edit' | 'view'): ParticipantPresence {

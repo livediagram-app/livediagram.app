@@ -3,12 +3,17 @@
 // A margin note's face (docs/specs/007-editor/article-pages.md "Comments and actions"): on its chip,
 // a speech bubble holding the thread's open comment count (a dot before the first comment), or for
 // an action a tick, filled once the action is done. Its own count, so no badge strip rides on it.
-import { activeCommentCount, elementActions, type AnnotationElement } from '@livediagram/document';
+import {
+  activeCommentCount,
+  elementActions,
+  isClosedAction,
+  type AnnotationElement,
+} from '@livediagram/document';
 
 export function ArticleNoteFace({ element }: { element: AnnotationElement }) {
   if (element.articleNote === 'action') {
     const actions = elementActions(element);
-    const done = actions.length > 0 && actions.every((a) => a.status === 'done');
+    const done = actions.length > 0 && actions.every(isClosedAction);
     return (
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <svg viewBox="0 0 24 24" width="62%" height="62%" aria-hidden>

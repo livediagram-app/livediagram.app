@@ -103,7 +103,7 @@ export function inside(snap, word, group) {
   );
 }
 
-// An Illustrate tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
+// A Pages tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
 // (a logo page adds `· background #fff` before its count; an article page ends `· article art-1 · its writing below`).
 // A page line's rectangle on the canvas: `at -960,-540 1920x1080`.
 function rectOf(line) {
@@ -146,7 +146,7 @@ function sheetText(sheet) {
 }
 
 // One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms, pages).
-export function allText(snap) {
+function allText(snap) {
   const out = [];
   for (const d of snap.documents ?? []) {
     out.push(d.name);
@@ -183,14 +183,10 @@ export function typesOf(snap) {
   return (snap.documents ?? []).flatMap((d) => d.items?.types ?? []);
 }
 
-// A card type (by name) and its custom fields' names, lowercase.
+// A card type, by name.
 export function typeNamed(snap, word) {
   const re = asRegex(word);
   return typesOf(snap).find((t) => re.test(t.name)) ?? null;
-}
-
-export function customFieldNames(type) {
-  return (type?.custom ?? []).map((f) => lc(f.name));
 }
 
 export function hasField(type, word) {
@@ -225,7 +221,7 @@ export function cellsOf(sheet) {
   return sheet.read?.cells ?? [];
 }
 
-export function formulasOf(sheet) {
+function formulasOf(sheet) {
   return cellsOf(sheet).filter((c) => typeof c.input === 'string' && c.input.startsWith('='));
 }
 

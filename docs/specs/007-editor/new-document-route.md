@@ -117,10 +117,23 @@ editor mounts, reads the real id from `window.location.pathname`
 about), and loads the document via the API. The address bar stays
 on `/document/<uuid>`; nothing about the URL needs to lie.
 
-Behaviour for genuinely-unknown routes (e.g. `/live/typo`) is
-benign: the editor mounts, tries to load a document with id `typo`,
-the API 404s, the in-app `<NotFound>` card surfaces — branded with
-a "Create a new document" CTA.
+### Unknown addresses
+
+A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
+older build had) reaches the editor through the same slot. It names no
+document (`documentIdFromPath` reads no id off anything but
+`/document/<id>`) and carries no share link, so the editor shows the in-app
+`<NotFound>` card at once, titled **Page not found**
+("There is no page at this address. Open a document from the Explorer or
+start fresh.") with its **Open Explorer** and **New Document** buttons, and asks
+the API for nothing. A document that is missing or not yours gets the same card
+titled **Document not found**. The card stands alone under the app header, with
+no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
+`/explorer`, New Document to `/new`). An embed shows the card with New Document
+only, opening the app in a new tab. Only the editor's own empty route (`/document`,
+`/document/placeholder`) hands off to `/new`. Before, every address without a
+document id went to `/new`, so a mistyped or retired page opened the New
+Document wizard with no word of what went wrong.
 
 ### A failed load is not a missing document
 
@@ -183,7 +196,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees the mode's start in the middle of the canvas (Start Diagramming,
-   Start Facilitating, Start Illustrating, Start Planning; [Template starts](start-diagramming.md));
+   Start Facilitating, Start Making Pages, Start Planning; [Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document not found
@@ -281,9 +294,9 @@ The card has no backdrop, so the editor header stays live beside it. It stacks o
 
 This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](live-app.md)). Those are addressed separately.
 
-## Jump back in (recent documents card)
+## Jump Back In (recent documents card)
 
-Returning users get a **"Jump back in" card** pinned to the right of the
+Returning users get a **"Jump Back In" card** pinned to the right of the
 centred wizard (desktop `xl+` only — below that the wizard owns the width):
 the 5 most recently-saved documents they own or that sit in a team they have
 joined (the same list as the landing page's Welcome back,
@@ -305,7 +318,7 @@ browsed before signing up.
 
 - **Heading:** "What are you making today?"
 - **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Facilitate,
-  Illustrate, Plan), three then two from 640px (a six-track grid: the first row's cards take two tracks each, the
+  Pages, Plan), three then two from 640px (a six-track grid: the first row's cards take two tracks each, the
   second row's three, `modeCardSpan`; one column on a phone). Every card has the same build and, across both rows,
   the same height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads the top row as an equal
   rather than a wide, short strip. The cards carry no template names and no "Most Popular" badge.
@@ -331,12 +344,12 @@ answered. It does not ask where the document goes or what it is called:
   Blank Diagram.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
   - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-    says: Local Browser for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
+    says: This Browser for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
     `resolveSaveLocation`, the same as the bypass links: a guest never waits, a browser that looks signed in waits
-    for identity, so a signed-in person is never handed a Local only document.
+    for identity, so a signed-in person is never handed a document in This Browser.
   - **Filed** (livediagram) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
     otherwise the create carries no placement and the server files it in the person's
-    [default folder](../013-workspace/default-folders.md) for its intent, else the root of My documents.
+    [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Documents.
   - **Named** after its template ("Untitled Diagram", `untitledNameForTemplate`); it is renamed in the editor.
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livediagram and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
@@ -367,13 +380,24 @@ shows over the canvas. (The in-editor **Quick Start**, the whole catalogue acros
 removed with the starts' **Something Else**: each start already holds every template of its mode, and the mode
 switch reaches the others.)
 
+### A choice before hydration
+
+`/new` is a static export, so the mode cards are on screen before React attaches their handlers. A card clicked in
+that gap is **kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML
+parses, takes a click on a mode card until the wizard mounts, remembers the mode, and shows the progress cursor. The
+wizard's first layout effect turns the script off and creates the remembered mode, exactly as if the click had landed
+after hydration. The script listens on `window` in the capture phase, ahead of React's root listener, so a click it
+takes never also reaches the card, and only one document is made. Before this, a click in the gap did nothing and said
+nothing, and the slower the device the wider the gap (issue #238). Number keys pressed before hydration are not kept:
+the cards are not focused until the wizard mounts.
+
 ### The empty-canvas hint
 
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
 active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
 updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Facilitate; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Illustrate and Plan show none. It offers no action
+(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Pages and Plan show none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:empty-card-dismissed` in localStorage,
@@ -391,7 +415,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 ## Start Blank (skip the wizard)
 
-**Start Blank** is the name on every surface (the site header, and the `?blank=1` bypass it links to); it was
+**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks), and of the public sites' link to the wizard, `/new?start=blank` ([Start Blank after a mode](#start-blank-after-a-mode)); it was
 "Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
@@ -408,10 +432,9 @@ default document name) without walking the wizard:
   The placement context params compose with it
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Start Blank straight into a folder or team library. A failed create shows
-  the same retryable error card as the wizard path. This is the URL that
-  outside surfaces link to (the Blank Diagram row of the site header's "Start Blank" menu on
-  marketing and the telemetry dashboard, see [Marketing site](../019-marketing/marketing-site.md#the-start-blank-menu);
-  its other rows are `?template=whiteboard` and `?template=blank-illustration`).
+  the same retryable error card as the wizard path. This is the URL a
+  start that wants no choice links to (Explorer Home's first-run Start Blank; the public sites'
+  Start Blank asks for a mode first, see [Start Blank after a mode](#start-blank-after-a-mode)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -438,7 +461,7 @@ default document name) without walking the wizard:
 - **Where these links store the document**: the default for who is creating
   ([Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating),
   `resolveSaveLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a
-  Local only document, created without waiting for identity at all
+  document in This Browser, created without waiting for identity at all
   ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
   a signed-in person's create still waits for auth to settle. A placement param
   (`folder` / `team`) names a server place, so it makes the create a cloud one
@@ -477,8 +500,21 @@ default document name) without walking the wizard:
   Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
 - **No "Start Blank" button inside the wizard.** The footer's **Skip** already commits the same blank defaults, and
-  Start Blank now lives only on the outside surfaces that link to
+  Start Blank now lives only on the surfaces that link to
   `/new?blank=1`.
+
+### Start Blank after a mode
+
+**`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)).
+It is **not a bypass**: the wizard shows as usual and asks for a mode. The mode chosen (a card, a number key, a card
+clicked before hydration, or **Create**) makes that mode's blank exactly as without the flag, but opens it **with its
+start closed** (`closeStartForBlank`), as Skip's Blank Diagram does, so whoever asked for a blank is not shown
+templates again. Plan's start cannot be closed (it is where a board or sheet is picked), so a Plan blank keeps it.
+
+- Read by `wizardStartsBlank` (`lib/new-document-params.ts`) at the moment of the create: only the exact value
+  `blank` counts; any other `start` value, or none, keeps the start.
+- Composes with the placement context (`?folder=`, `?team=`) and `?via=`, and with `?mode=` (the preset card).
+- `?blank=1` and `?template=` still win: with either, the wizard is bypassed and the flag has nothing to change.
 
 ### In-place handoff to the editor
 
@@ -617,7 +653,7 @@ theme for a new tab.
 - "New Document" from Explorer → goes to `/new`.
 - `/new` from the home page, Escape → back on the home page, no document created.
 - `/new` typed in, Escape → the home page.
-- `/new`, choose a mode → the document is created at once, Local only for a guest, filed in the
+- `/new`, choose a mode → the document is created at once, This Browser for a guest, filed in the
   signed-in person's default folder for it.
 - `/new?blank=1` → no wizard; blank document created and editor loads on
   `/document/<id>`.
@@ -628,7 +664,7 @@ theme for a new tab.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
 - `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
-- `/new?mode=illustrate&q=article` → the wizard, Illustrate chosen; on the new document Start Illustrating
+- `/new?mode=pages&q=article` → the wizard, Pages chosen; on the new document Start Making Pages
   opens with its search reading "article".
 - `/new?mode=sideways` → the plain wizard, no card chosen.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was

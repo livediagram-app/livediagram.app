@@ -31,7 +31,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucidePresentation, 20),
     title: 'Slides, posters and logos',
-    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on Illustrate pages you can polish by hand.',
+    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on pages you can polish by hand.',
   },
   {
     icon: lucideGlyph(lucideFileText, 20),
@@ -61,7 +61,7 @@ export function AiCapabilities() {
       {CAPABILITIES.map(({ icon: Icon, title, body }) => (
         <li
           key={title}
-          className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
+          className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
         >
           <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
             <Icon aria-hidden />

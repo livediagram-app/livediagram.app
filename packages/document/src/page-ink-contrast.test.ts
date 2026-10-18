@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { contrastRatio, hexToRgb } from './colors';
 import { inkToward, isOpaqueHex, mixHex, worstContrast } from './page-ink-contrast';
 
-// docs/specs/007-editor/illustrate-pages.md "Re-inking": the least change, keeping the hue.
+// docs/specs/007-editor/pages-mode.md "Re-inking": the least change, keeping the hue.
 const hue = (hex: string) => {
   const { r, g, b } = hexToRgb(hex)!;
   const max = Math.max(r, g, b);

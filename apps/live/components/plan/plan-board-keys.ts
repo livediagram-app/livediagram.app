@@ -3,7 +3,7 @@
 // Shift+Up/Down moves it within its column, Enter opens, Delete moves it to the Trash, N adds to the column.
 import { itemTitle, type BoardProjection, type ItemMove } from '@livediagram/items';
 
-export type PlanKeyAction =
+type PlanKeyAction =
   | { kind: 'focus'; itemId: string }
   | { kind: 'move'; move: ItemMove; announce: string }
   | { kind: 'open' }

@@ -17,7 +17,7 @@ describe('templateStartMode', () => {
   it('offers each mode with templates its own start on an empty tab', () => {
     expect(templateStartMode(base)).toBe('diagram');
     expect(templateStartMode({ ...base, mode: 'facilitate' })).toBe('facilitate');
-    expect(templateStartMode({ ...base, mode: 'illustrate', pages: [{}] })).toBe('illustrate');
+    expect(templateStartMode({ ...base, mode: 'pages', pages: [{}] })).toBe('pages');
   });
 
   it('offers Start Drawing with the pen in hand, and none in Plan (Start Planning is its own)', () => {
@@ -25,12 +25,10 @@ describe('templateStartMode', () => {
     expect(templateStartMode({ ...base, mode: 'plan' })).toBeNull();
   });
 
-  it('offers none once the tab has content, or its Illustrate page a kind or company', () => {
+  it('offers none once the tab has content, or its page a kind or company', () => {
     expect(templateStartMode({ ...base, elementCount: 1 })).toBeNull();
-    expect(
-      templateStartMode({ ...base, mode: 'illustrate', pages: [{ kind: 'article' }] }),
-    ).toBeNull();
-    expect(templateStartMode({ ...base, mode: 'illustrate', pages: [{}, {}] })).toBeNull();
+    expect(templateStartMode({ ...base, mode: 'pages', pages: [{ kind: 'article' }] })).toBeNull();
+    expect(templateStartMode({ ...base, mode: 'pages', pages: [{}, {}] })).toBeNull();
   });
 
   it('offers none to someone who cannot edit, nor in zen, an embed, under the Quick Start or with a tool armed', () => {

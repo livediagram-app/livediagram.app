@@ -8,7 +8,7 @@ import type { Env } from './types';
 import { DAY_MS } from '@livediagram/items';
 
 export const SHEET_UNREFERENCED_DAYS = 30;
-export const SHEET_EXPIRY_BATCH = 25;
+const SHEET_EXPIRY_BATCH = 25;
 export const SHEET_EXPIRY_BATCH_CELLS = 100_000;
 export const SHEET_EXPIRY_CELLS_MAX = 500_000;
 

@@ -8,7 +8,7 @@ finding earns a fix only when it recurs; the same benchmark then shows whether t
 
 The kit lives in `apps/mcp/eval/`:
 
-- `bench/tasks/*.mjs`: the task bank, one file per area (`D` diagrams, `P` plan, `S` sheets, `I` illustrate, `F`
+- `bench/tasks/*.mjs`: the task bank, one file per area (`D` diagrams, `P` plan, `S` sheets, `I` pages, `F`
   facilitate, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
@@ -117,8 +117,11 @@ The kit lives in `apps/mcp/eval/`:
   blaming the assistant's pace.
 - Links point at livediagram.app when the local server has no public host set; a check on a link compares its code,
   never its host.
-- A form's responses cannot be submitted through the tools, so a check can only see where a response would land
-  (`read_form`'s `goesTo` and `column`); a response's landing is proven by the api's own tests.
+- A form's response lands through `try_form`: a check reads the "Preview: ..." card with `list_items` (or the row
+  with `read_sheet`) to see each answer where `read_form`'s `goesTo` and `column` say it goes. On a published form a
+  preview counts as a response, so a check on the response count allows for it. Judge a try from its own result
+  (`call.result`: `made`, `where`, `title`), never from the final snapshot: models check the card, then delete it as
+  the tool suggests, so a snapshot check fails a run that did everything right (Q6 and Q7, 2026-10-16).
 - A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
 - Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on

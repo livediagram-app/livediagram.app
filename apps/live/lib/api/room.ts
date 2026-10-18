@@ -22,9 +22,8 @@ import {
 import { opForTheWire } from '@livediagram/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
-import { getGuestSelfSig } from '../local-identity';
 import { startEditorTiming } from '../timing';
-import { getSessionSharePassword, wsUrl } from './core';
+import { wsUrl } from './core';
 import { debugLog } from '../debug-log';
 
 export type RoomHandlers = {
@@ -69,57 +68,27 @@ export type RoomHandlers = {
   onResync?: () => void;
 };
 
-// Auth identifiers the connector rides on the room WebSocket URL.
-type RoomAuthOptions = {
-  shareCode?: string | null;
-  ownerId?: string | null;
-  // The guest signature for `ownerId` (X-Owner-Sig over REST); filled in by
-  // connectRoom from the stored self signature, never by callers.
-  ownerSig?: string | null;
-  // One-time room ticket (docs/specs/015-api/api.md), minted over authenticated REST via
-  // apiCreateRoomTicket. The only leg that can admit a team member —
-  // the worker doesn't trust a bare `o` for team membership.
+// connectRoom's options: the ticket that admits the socket, and how to mint a fresh one for a reconnect.
+type RoomConnectOptions = {
+  // One-time room ticket (docs/specs/015-api/api.md "Realtime model"), minted over authenticated REST via
+  // apiCreateRoomTicket: the REST gates (the guest signature, the share code and its password, team
+  // membership) all ran there, so the upgrade URL carries nothing but this. Null when the mint failed; the
+  // upgrade is then refused and the reconnect mints again.
   ticket?: string | null;
-};
-
-// connectRoom's options: the auth legs, and how to mint a fresh ticket for a reconnect.
-type RoomConnectOptions = RoomAuthOptions & {
-  // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent
-  // the first one again was refused, and a team member or signed-in owner lost the room for the rest
-  // of the session. Called before each reconnect of a session that used a ticket.
+  // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent the
+  // first one again was refused, and the session lost the room for good. Called before every reconnect.
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
 };
 
-// Build the room WebSocket auth query string. Browsers can't set custom
-// headers on a WebSocket upgrade, so these ride on the query string; the
-// api worker reads them, resolves role, and forwards an X-Verified-Role
-// header to the Durable Object before the upgrade reaches it. Empty /
-// missing values are stripped so the URL stays clean.
-//   - `t` one-time room ticket (docs/specs/015-api/api.md) — proof the connector passed
-//     the authenticated REST access gates moments ago; required for
-//     team documents, where a bare owner id is not trusted.
-//   - `s` share code, `o` owner id (for documents the visitor owns)
-//   - `p` share password (docs/specs/013-workspace/share-password.md) for a protected document's room.
-// (A `g` guest-signature param used to ride along for presence-identity
-// binding; the DO switched to server-random ephemeral presence ids —
-// docs/specs/015-api/public-api-and-tokens.md §6 — and the server-side read was removed, so the client
-// stopped sending it.)
-// Pure (sharePassword passed in) so the param mapping is unit-tested.
-export function roomQueryString(options: RoomAuthOptions, sharePassword: string | null): string {
-  const params = new URLSearchParams();
-  if (options.ticket) params.set('t', options.ticket);
-  if (options.shareCode) params.set('s', options.shareCode);
-  if (options.ownerId) {
-    params.set('o', options.ownerId);
-    // Proof of possession for `o`, the same signature REST sends as
-    // X-Owner-Sig: once the guest signature gate is armed the worker refuses
-    // a bare owner id here. Absent for legacy unsigned guests and self-hosts.
-    if (options.ownerSig) params.set('os', options.ownerSig);
-  }
-  if (sharePassword) params.set('p', sharePassword);
-  return params.toString();
+// The room WebSocket's query string. Browsers can't set headers on a WebSocket upgrade, so whatever
+// admits the socket rides the URL, and a URL is logged (edge logs, Logpush, tail). Only the ticket rides
+// it: single-use, document-scoped and a minute long, so a logged one is already spent. The share code,
+// the owner id, its signature and the share password used to ride here as `s`, `o`, `os` and `p`; they
+// now go to the ticket mint as headers (docs/specs/015-api/api.md "Realtime model").
+export function roomQueryString(ticket: string | null): string {
+  return ticket ? new URLSearchParams({ t: ticket }).toString() : '';
 }
 
 // Reconnect backoff: a dropped socket auto-reopens so a brief network blip
@@ -140,7 +109,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to D1.
 const OUTBOX_MAX = 500;
-export function isOutboxOp(msg: RoomOutgoing): boolean {
+function isOutboxOp(msg: RoomOutgoing): boolean {
   if (msg.kind !== 'op') return false;
   const kind = (msg.op as { kind?: unknown }).kind;
   return kind === 'poll-answer' || isMutationOpKind(kind);
@@ -163,7 +132,7 @@ const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
-export type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
+type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
 
 export function connectRoom(
   documentId: string,
@@ -190,21 +159,19 @@ export function connectRoom(
 } {
   // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
   let participant = initialParticipant;
-  // Auth identifiers ride on the query string (see roomQueryString). The
-  // share password is read from the same session state apiHeaders uses, so
-  // the editor doesn't have to thread it through; owners never have it set.
+  // The ticket rides the query string (see roomQueryString); every reconnect mints a fresh one,
+  // even after a mint that failed.
   let ticket = options.ticket ?? null;
-  // A session admitted by a ticket keeps minting one per reconnect, even after a mint that failed.
-  const usesTicket = ticket !== null && !!options.mintTicket;
   const urlNow = () => {
-    const qs = roomQueryString(
-      { ...options, ticket, ownerSig: options.ownerId ? getGuestSelfSig() : null },
-      getSessionSharePassword(),
-    );
+    const qs = roomQueryString(ticket);
     return wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
   };
 
-  let ws: WebSocket;
+  // Null until the first ticket is minted and the first socket made.
+  let ws: WebSocket | null = null;
+  const isOpen = () => ws?.readyState === WebSocket.OPEN;
+  // The latest selection and tab focus we told the room, said again on every new socket (see send).
+  const lastSaid = new Map<string, RoomOutgoing>();
   let closed = false; // the caller called close() — never reconnect after that
   let opened = false; // we've had at least one successful session (→ reconnects sync)
   let attempts = 0;
@@ -253,7 +220,8 @@ export function connectRoom(
   // The current socket's keepalive, stopped when the caller closes the connector (a dead socket may never fire close).
   let stopSocketKeepalive = () => {};
   const open = () => {
-    ws = new WebSocket(urlNow());
+    const socket = new WebSocket(urlNow());
+    ws = socket;
     // This socket, as opposed to `opened` (any session so far).
     let socketOpened = false;
     // The close of this socket is handled once: by its close event, or first by the keepalive finding it dead.
@@ -268,7 +236,7 @@ export function connectRoom(
     };
     stopSocketKeepalive = stopKeepalive;
     const checkAlive = () => {
-      if (ws.readyState !== WebSocket.OPEN) return;
+      if (socket.readyState !== WebSocket.OPEN) return;
       const now = Date.now();
       if (pingSentAt !== null) {
         if (lastHeard >= pingSentAt) pingSentAt = null;
@@ -276,7 +244,7 @@ export function connectRoom(
           debugLog('[room] keepalive unanswered; treating the socket as dropped');
           stopKeepalive();
           try {
-            ws.close();
+            socket.close();
           } catch {
             // Already closing.
           }
@@ -286,10 +254,10 @@ export function connectRoom(
       }
       if (pingSentAt === null && now - lastHeard >= ROOM_KEEPALIVE_IDLE_MS) {
         pingSentAt = now;
-        ws.send(ROOM_PING);
+        socket.send(ROOM_PING);
       }
     };
-    ws.addEventListener('open', () => {
+    socket.addEventListener('open', () => {
       socketOpened = true;
       lastHeard = Date.now();
       keepalive = setInterval(checkAlive, ROOM_KEEPALIVE_TICK_MS);
@@ -297,7 +265,7 @@ export function connectRoom(
       // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
       // the room we are the same facilitator it granted before the refresh.
       const facilitatorToken = readFacilitatorToken?.();
-      ws.send(
+      socket.send(
         JSON.stringify({
           kind: 'hello',
           participant,
@@ -307,25 +275,31 @@ export function connectRoom(
       // A reconnect (not the first open): ask the room for the ops we missed
       // while we were gone before resuming live traffic.
       if (opened) {
-        ws.send(JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing));
+        socket.send(
+          JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing),
+        );
       }
       opened = true;
       // A new socket is a new presence id: nobody follows it yet, and our own follow is said again.
       handlers.onFollowers?.([]);
       const following = options.readFollowing?.();
       if (following) {
-        ws.send(
+        socket.send(
           JSON.stringify({
             kind: 'op',
             op: { kind: 'follow', target: following },
           } satisfies RoomOutgoing),
         );
       }
+      // A new socket is a session the room knows nothing about: our selection (which holds elements
+      // from an agent, docs/specs/024-agents/agent-changesets.md "Held elements") and our tab are
+      // said again, including when they were set before this socket first opened.
+      for (const msg of lastSaid.values()) socket.send(JSON.stringify(msg));
       const held = outbox;
       outbox = [];
-      for (const msg of held) ws.send(JSON.stringify(msg));
+      for (const msg of held) socket.send(JSON.stringify(msg));
     });
-    ws.addEventListener('message', (e) => {
+    socket.addEventListener('message', (e) => {
       lastHeard = Date.now();
       // The keepalive's answer: proof of life, nothing to apply.
       if (e.data === ROOM_PONG) return;
@@ -417,18 +391,21 @@ export function connectRoom(
       attempts++;
       reconnectTimer = setTimeout(() => void reopen(), delay);
     };
-    ws.addEventListener('close', onClose);
+    socket.addEventListener('close', onClose);
   };
-  // A reconnect: with a fresh ticket when the session rode one (a spent ticket is refused).
+  // A reconnect, with a fresh ticket: the room spends each one it admits.
   const reopen = async () => {
     reconnectTimer = null;
-    if (usesTicket) {
-      ticket = await options.mintTicket!();
+    if (options.mintTicket) {
+      ticket = await options.mintTicket();
       if (closed) return;
     }
     open();
   };
-  open();
+  // Without a ticket in hand, the first socket waits for one; the connector exists meanwhile, so what
+  // the editor says before the room opens (its selection, its tab) is kept and said on open.
+  if (ticket === null && options.mintTicket) void reopen();
+  else open();
 
   // A fresh round of attempts once the browser is back online or the tab is shown again, only while parked.
   const resume = () => {
@@ -452,7 +429,11 @@ export function connectRoom(
     // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
     const msg: RoomOutgoing =
       raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
-    if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+    // State, not events: only the latest of each counts, so it is kept to say again on the next socket.
+    if (msg.kind === 'op' && (msg.op.kind === 'select' || msg.op.kind === 'tab-focus')) {
+      lastSaid.set(msg.op.kind, msg);
+    }
+    if (ws && isOpen()) ws.send(JSON.stringify(msg));
     else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
   };
 
@@ -463,7 +444,7 @@ export function connectRoom(
     // (the op waits in the outbox, unconfirmed), drops, or the room stays silent past the timeout.
     sequence: (op) => {
       if (closed) return Promise.resolve(false);
-      if (ws.readyState !== WebSocket.OPEN) {
+      if (!isOpen()) {
         send({ kind: 'op', op });
         return Promise.resolve(false);
       }
@@ -490,14 +471,12 @@ export function connectRoom(
     // is down: a save made then is not merged with the room's ledger, because
     // what the client changed offline must not be overruled by the room.
     cursor: (): { epoch: string; seq: number } | null =>
-      ws.readyState === WebSocket.OPEN && lastEpoch !== null
-        ? { epoch: lastEpoch, seq: lastSeq }
-        : null,
+      isOpen() && lastEpoch !== null ? { epoch: lastEpoch, seq: lastSeq } : null,
     // An identity change over the open socket (docs/specs/014-identity/profile-picture.md §4): the
     // room updates the roster in place. A closed socket just remembers it for the next hello.
     updateSelf: (next) => {
       participant = next;
-      if (ws.readyState === WebSocket.OPEN) {
+      if (ws && isOpen()) {
         ws.send(JSON.stringify({ kind: 'identity', participant } satisfies RoomOutgoing));
       }
     },
@@ -509,7 +488,7 @@ export function connectRoom(
       settleAll(false);
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
       stopSocketKeepalive();
-      ws.close();
+      ws?.close();
     },
   };
 }

@@ -16,15 +16,7 @@
 export type { IconDef, IconPrim, PrimStyle, StyledPrim, TechIconDef, TechProvider } from './types';
 export { xmlEscape } from './xml';
 export { matches, paletteRank } from './search-rank';
-export {
-  inkInsets,
-  pathBounds,
-  primBounds,
-  primsBounds,
-  unionBounds,
-  type Bounds,
-  type InkInsets,
-} from './ink';
+export { inkInsets, pathBounds, primsBounds, unionBounds, type Bounds } from './ink';
 export {
   GLYPH_SIZES,
   ICON_SMALL_MAX_PX,
@@ -32,7 +24,6 @@ export {
   ICON_STROKE_PX_SMALL,
   glyphStrokePx,
   strokeUnits,
-  type GlyphSize,
 } from './weight';
 export { CAP_HEIGHT_EM, capBandBaselineY } from './svg-cap-band';
 export {

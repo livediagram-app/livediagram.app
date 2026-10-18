@@ -2,7 +2,7 @@
 
 ## What
 
-A **Sequence diagram**: one element holding a list of participants and the messages between them, laid out by itself
+A **Sequence Diagram**: one element holding a list of participants and the messages between them, laid out by itself
 as a UML sequence diagram: headed boxes over dashed lifelines, a row per message, activation bars where a call is
 answered, self-calls looping out and back, replies dashed. A `shape: 'sequence'`.
 
@@ -106,7 +106,7 @@ unless Repeat is on. CSS only (a clip from the top); reduced motion and every ex
 | Mode       | Where                                        |
 | ---------- | -------------------------------------------- |
 | Diagram    | **Build**: Sequence Diagram, after Flowchart |
-| Illustrate | none                                         |
+| Pages      | none                                         |
 | Plan       | none                                         |
 | Facilitate | none (Search still finds and places it)      |
 

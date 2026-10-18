@@ -6,12 +6,12 @@
 import {
   ARTICLE_TOP_MIN_PX,
   articleMarginPx,
-  ILLUSTRATE_PAGE_GAP,
+  PAGE_GAP,
   type ArticleStyle,
   type LaidOutPage,
 } from '@livediagram/document';
 
-export type FlowFrame = {
+type FlowFrame = {
   // The box's top-left on the canvas, and its size, in canvas px.
   x: number;
   y: number;
@@ -37,7 +37,7 @@ export function flowFrame(pages: readonly LaidOutPage[], margin: number): FlowFr
   // The top keeps room for the page toolbar above the first line (articleTopMarginPx).
   const top = Math.min(Math.max(m, ARTICLE_TOP_MIN_PX), pageH * 0.375);
   const columnWidth = pageW - 2 * m;
-  const gap = 2 * m + ILLUSTRATE_PAGE_GAP;
+  const gap = 2 * m + PAGE_GAP;
   const count = pages.length;
   return {
     x: lead.rect.x + m,
@@ -71,7 +71,7 @@ export function pagePlaceOf(
 
 /** The text width before an article is laid out (no pages of its own yet), canvas px: about an A4
  *  page's column at Normal margins. */
-export const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
+const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
 
 /** An article's text width (one column), from its pages laid out among `pages`. */
 export function articleTextWidth(

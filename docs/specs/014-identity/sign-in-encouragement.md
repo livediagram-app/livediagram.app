@@ -36,15 +36,25 @@ Common gate (all must hold):
 The pane reserves extra bottom padding while it's up so the last row
 never hides behind it.
 
+**Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
+the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's
+top instead of landing on its words, as a "Document deleted · Undo" once did.
+
 **Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
-never greets someone the instant they open a document. It sits above
-the tab bar and over the canvas chrome, and is additionally hidden:
+never greets someone the instant they open a document. It **stands on the
+bottom chrome**, 8px above the tab bar, the bottom-right cluster (Undo / Redo, the
+Session strip's Timer, Vote and Poll, Layers, Zoom) and the whiteboard dock, measured as
+the toast stack measures its floor (`useChromeFloor`, `BOTTOM_CHROME_SELECTOR`), so it never
+covers a control. It once sat over that cluster, and a guest Editor running a session had to
+dismiss it to reach the timer or the vote. It is drawn over the canvas, and is additionally hidden:
 
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
 - in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering/leaving zen does **not**
   restart the delay; the timer runs on the stable gate (Clerk / signed
-  in / embed / dismissed) and zen only hides the card at render.
+  in / embed / dismissed) and zen only hides the card at render, and
+- while a **tour's offer or last card** is up ([Editor tour](../007-editor/editor-tour.md)): they take the same place
+  at the bottom, so the banner steps aside until the card goes (`data-tour-card-open` on the body).
 
 The delay is per editor session (per page load); it isn't persisted
 across reloads. Opening document after document in quick succession
@@ -55,8 +65,10 @@ never triggers it; staying in one for 5+ minutes does.
 - Fixed to the bottom of the viewport, a centred floating card with a
   max width, rounded corners, shadow, and a brand gradient, visually a
   peer of the app's other branded surfaces, not chrome.
-- Contents: a small icon/illustration, a headline ("Sign in to keep
-  your work safe"), one line of supporting copy, a primary **Sign in**
+- Contents: a small icon/illustration, a headline ("Sign in to access
+  Teams & AI"), one line of supporting copy saying what those give and
+  that documents sync ("Share with your team, build with AI, sync across
+  devices."), a primary **Sign in**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a

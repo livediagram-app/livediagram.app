@@ -3,8 +3,8 @@
 // cells from the width and height it is given. Pure, so the breakpoints are tested without a DOM.
 
 // The view's header (view-frame ViewFrame, 2.5rem) and the body's padding either side (px-3 / py-3).
-export const VIEW_HEADER_PX = 40;
-export const VIEW_PAD_PX = 12;
+const VIEW_HEADER_PX = 40;
+const VIEW_PAD_PX = 12;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
@@ -12,8 +12,8 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
 // Detailed card (about 200 px with the filter bar), else Compact; as many columns as fit, 12 px apart.
 export const CARD_SEARCH_GAP_PX = 12;
 export const CARD_SEARCH_DETAILED_MIN_PX = 240;
-export const CARD_SEARCH_COMPACT_MIN_PX = 200;
-export const CARD_SEARCH_DETAILED_MIN_HEIGHT_PX = 260;
+const CARD_SEARCH_COMPACT_MIN_PX = 200;
+const CARD_SEARCH_DETAILED_MIN_HEIGHT_PX = 260;
 // The most cards drawn at once, as the card finder caps its rows (CARD_FINDER_ROWS_MAX): a Detailed face is a few
 // dozen nodes, so thousands would stall a render. The rest are counted under the grid.
 export const CARD_SEARCH_SHOWN_MAX = 200;
@@ -37,14 +37,14 @@ export function cardSearchLayout(
 
 // Cards by Field: the rows share the body's height, each up to 96 px tall with a bar up to 44 px thick; below 24 px a
 // row the list scrolls instead of squeezing. Labels and counts grow with the bar.
-export const WORKLOAD_ROW_MIN_PX = 24;
+const WORKLOAD_ROW_MIN_PX = 24;
 export const WORKLOAD_ROW_MAX_PX = 96;
-export const WORKLOAD_BAR_MIN_PX = 14;
+const WORKLOAD_BAR_MIN_PX = 14;
 export const WORKLOAD_BAR_MAX_PX = 44;
 // The legend's line above the bars.
 const WORKLOAD_LEGEND_PX = 28;
 
-export type WorkloadLayout = {
+type WorkloadLayout = {
   rowHeight: number;
   bar: number;
   font: number;
@@ -75,7 +75,7 @@ export function workloadLayout(width: number, height: number, rows: number): Wor
 export const MATRIX_COUNT_MIN_PX = 12;
 export const MATRIX_COUNT_MAX_PX = 44;
 
-export type MatrixLayout = {
+type MatrixLayout = {
   labelColumn: number;
   gap: number;
   countFont: number;

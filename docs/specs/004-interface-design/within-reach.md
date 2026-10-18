@@ -27,7 +27,7 @@ side's set and then the set of both, and loses nothing.
 | Surface                                                                       | Item         | A use                                                                                                                                                                 | N   | Empty place                     |
 | ----------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
 | [Draw mode: Shape slots](../023-draw-mode/draw-mode.md#shape-slots)           | A shape kind | A pick; counted for as long as it is kept                                                                                                                             | 3   | The next fallback kind          |
-| [Explorer Home: Jump back in](../013-workspace/explorer-home.md#jump-back-in) | A document   | A day the person opened, edited or made it, over the last 90 days; a bulk import is no use ([Making a document](../013-workspace/explorer-home.md#making-a-document)) | 4   | Nothing: the place is not drawn |
+| [Explorer Home: Jump Back In](../013-workspace/explorer-home.md#jump-back-in) | A document   | A day the person opened, edited or made it, over the last 90 days; a bulk import is no use ([Making a document](../013-workspace/explorer-home.md#making-a-document)) | 4   | Nothing: the place is not drawn |
 
 ## Presentation
 

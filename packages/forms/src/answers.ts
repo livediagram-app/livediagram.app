@@ -24,7 +24,7 @@ export type AnswerError =
   | 'must_tick';
 
 // What a respondent sends: answers by question id, the text of an Other option, and the hidden field.
-export interface ResponseBody {
+interface ResponseBody {
   answers: Record<string, unknown>;
   other?: Record<string, unknown>;
   website?: unknown;
@@ -68,7 +68,7 @@ function isEmpty(v: unknown): boolean {
   );
 }
 
-export type AnswerCheck = { value?: AnswerValue; error?: AnswerError };
+type AnswerCheck = { value?: AnswerValue; error?: AnswerError };
 
 export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): AnswerCheck {
   // An Other pick stands for its typed text.
@@ -155,7 +155,7 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
 // The value a respondent's Other option sends in place of an option name.
 export const OTHER_ANSWER = '__other__';
 
-export type ResponseCheck =
+type ResponseCheck =
   | { ok: true; answers: Map<string, AnswerValue> }
   | { ok: false; errors: Record<string, AnswerError> };
 

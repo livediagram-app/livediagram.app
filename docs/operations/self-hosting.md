@@ -140,7 +140,7 @@ pnpm --filter @livediagram/router exec wrangler deploy   # last, depends on the 
 
 Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
 
-Deploy order matters: the router's service bindings reference six other workers, so it can't deploy until they exist; the optional `mcp` worker deploys after `api` (it binds to it). The GitHub Actions deploy workflow encodes this as job dependencies.
+Deploy order matters: the router's service bindings reference six other workers, so it can't deploy until they exist; `live`, `community` and the optional `mcp` worker deploy after `api` (each binds to it; `live` and `community` only for link previews and work without it). The GitHub Actions deploy workflow encodes this as job dependencies.
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
@@ -238,7 +238,7 @@ The last two are the spend-DoS defence: on a public deployment they stop a third
 
 ## Email (optional, Resend)
 
-The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
+The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
 
 To turn it on, verify a sending domain in Resend, then:
 
@@ -252,6 +252,17 @@ Optional knobs (plain `[vars]`):
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livediagram.app`.
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
+
+## Team invite reminders and expiry
+
+Teams need Clerk. With it on, the daily cron expires team invites nobody answered within 28 days (whether or not
+email is configured) and, with `RESEND_API_KEY` set, sends the three reminders first
+([Teams](../specs/013-workspace/teams.md#reminders-and-expiry)). Migration `0095_team_invite_decline_and_reminders.sql`
+adds the columns; nothing else to configure.
+
+- `TEAM_INVITE_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 20 requests a minute per
+  network on the invite email's open Decline doors (`/api/teams/invite-decline/...`). Without the binding every
+  request is allowed; the token is 256 random bits either way.
 
 ## Forms
 
@@ -276,7 +287,7 @@ Plan-mode Sheets ([Sheet store](../specs/029-sheets/sheet-store.md)) need no set
 
 ## Google Drive mirror (optional, needs Clerk)
 
-Signed-in users can mirror My documents to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
+Signed-in users can mirror My Documents to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
 
 1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
 2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livediagram+json`, default extension `livediagram`.

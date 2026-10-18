@@ -45,27 +45,32 @@ Three regions stacked vertically, filling the viewport:
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark, document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header — not from the editor header itself.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Community, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer)); the other apps' headers keep the menu.
+- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links)), document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Community, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer)); the other apps' headers keep the menu.
 - **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, the Palette strip, plus the context panels.
-- **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. **Button Labels** in Settings › Appearance (`dockButtonNames`, on by default) turns those labels off on a desktop too, as Minimal chrome does; a phone never shows them, whatever it says. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
+- **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. When the tabs run past the bar it scrolls sideways, and **the active tab is always in view**: switching to a tab, or adding one, scrolls the row the least distance that shows all of it, and **Add tab** with it when it is the last tab (smoothly, or at once under reduced motion). Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. **Button Labels** in Settings › Appearance (`dockButtonNames`, on by default) turns those labels off on a desktop too, as Minimal chrome does; a phone never shows them, whatever it says. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
 ## Role pill
 
-The **role pill** says whether you are editing or viewing this document. Everyone sees it, owner included.
+The **role pill** says whether you are editing, participating in or viewing this document. Everyone sees it, owner included.
 
 - **Where.** In the title bar, after the visibility badge. From `sm` up, like the visibility badge: a phone's title
   bar has no room. Under [Minimal chrome](power-user-mode.md#minimal-chrome) it becomes an icon at the start of the
   status bar instead.
-- **What it reads.** "Editing" (emerald) or "Viewing" (amber).
+- **What it reads.** "Editing" (emerald), "Participating" (teal) or "Viewing" (amber).
 - **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
 - **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
   badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
 - **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
-  button: clicking it switches between Editing and **Viewing**, a read-only preview of the document as a view-link
-  visitor sees it. The preview is local to this tab and this visit: it changes nothing on the server, nothing other
-  participants see, and a reload returns to Editing. The pill's accessible description says what a click does
-  ("Switch to viewing (read-only)" / "Switch to editing").
+  button: each click steps **Editing**, then **Participating**, a preview of the document as a Participant sees and
+  works it ([Share roles](../013-workspace/share-roles.md)), then **Viewing**, a read-only preview as a view-link
+  visitor sees it, then back to Editing. The preview is local to this tab and this visit: it changes no one's role on
+  the server, nothing other participants see of you, and a reload returns to Editing. Participating works as a
+  Participant does: the Participate palette and its limits, adding stickies and text, and moving, rewriting and
+  deleting only what you added while previewing. An Editor has no adder key from the room, so the preview stamps
+  what it adds with its own (`preview-<participant id>`); what you add stays in the document, and no real
+  Participant's key matches it. The pill's accessible description says what a click does ("Switch to participating
+  (as a Participant sees it)" / "Switch to viewing (read-only)" / "Switch to editing").
 - **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
   can be read by keyboard.
 - Zen mode and embeds hide it with the rest of the header.
@@ -127,13 +132,15 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 ## Header actions
 
+A long document name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left.
+
 The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `apps/live/components/chrome/header-action.tsx`); Share fills brand while the document is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
 
 ## Share dialog
 
-The "Share this document" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team document, every joined member: [Team shared documents](../013-workspace/team-shared-documents.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+The "Share This Document" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team document, every joined member: [Team shared documents](../013-workspace/team-shared-documents.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
 
 ### The pass metaphor
 
@@ -227,6 +234,65 @@ On a phone-sized viewport the editor's chrome would crowd the canvas. It tighten
 
 - **EditorHeader** drops the `livediagram` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the document title centres correctly.
 - **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
+
+### A phone held sideways
+
+**The header and the tab bar fold away on a phone held sideways**, so the canvas fills the screen.
+Held sideways, a phone is short: the header (56px) and the tab bar (48px) took 104px of an iPhone
+15's 393px, leaving the canvas 289px, and 256px of a small Android's 360px (measured 2026-10-17).
+Folded, the canvas gets all of it (393px, 360px). Sideways means a touch screen in landscape under
+500px tall: `LANDSCAPE_PHONE_MEDIA_QUERY` in `lib/responsive.ts`,
+`(pointer: coarse) and (orientation: landscape) and (max-height: 499px)`, with the CSS twin the
+`landscape-phone:` variant (`app/globals.css`). The height is `PHONE_MAX_HEIGHT_PX`, the same 500px
+that makes a sideways phone a phone at all (above): the tallest phone held sideways is about 440px
+(a 6.9" iPhone Pro Max), and the shortest tablet held sideways is 744px (an iPad mini). A phone held upright, a tablet
+and a desktop window however short (a fine pointer) never fold. `orientation: landscape` keeps an
+upright phone whose layout shrinks for its keyboard (an older Android) from folding mid-typing.
+
+- **What stays.** Everything else on the canvas stays where it is: the strip across the top (the
+  palette, its Search), the bottom-right cluster (Undo, Redo, the Session strip, Layers, the Theme
+  & Canvas brush, Fit), the menus and the dialogs.
+- **What goes for good: the menu button and the Explorer.** At this height the Explorer has no
+  room to be useful, so the menu button is not drawn (in the strip's row or, without a strip, the
+  corner) and the strip starts at the left gutter in its place. Unlike the bars, nothing brings
+  it back while the phone is sideways: not the handle, not a tour. An Explorer open when the
+  phone turns closes. Turning the phone upright brings the button back. `EditorCanvasHost` sets
+  `explorerHidden` from `useIsLandscapePhone` (`hooks/ui/useIsMobileViewport.ts`, the
+  `LANDSCAPE_PHONE_MEDIA_QUERY` above), the same gate the workbench frame uses; the palette keeps
+  the phone's swiping row without the menu card (`leading` of `null`).
+- **The bars handle.** A small card at the canvas's top-right corner (12px in, and past a landscape
+  notch's side inset and below the top inset; a 36px button with a 44px tap area) holds a chevron:
+  **Show Header and Tabs**. Pressing it brings both bars back where they always are: the canvas
+  shrinks to make room again, so nothing covers it or the chrome on it. The button, now under the
+  header, turns into **Hide Header and Tabs** (`aria-expanded` says which) and folds them again. So
+  what lives in the bars stays one press away: Share or Make a Copy, the document's name and
+  badges, the role pill, the tabs and their menus, Add Tab, Search, Settings and the appearance
+  toggle. The strip's row keeps the handle's 54px clear on its right (`LANDSCAPE_HANDLE_ROOM`: the
+  46px card and the row's 8px gap), so a long strip scrolls short of it rather than under it. The
+  choice lasts while the document is open in that window: not saved, not synced, and a
+  fresh load starts folded.
+- **The bars come back on their own** when something needs them: a rename asked for elsewhere (the
+  Rename Document and Rename Tab search commands) shows them first, so the name field takes the
+  focus; a tour on screen (any of them: the Diagram tour's Tabs step points at the tab bar) keeps
+  them shown; and a bar never folds while focus is inside it, so a layout that changes while a
+  name is typed there (the on-screen keyboard resizing it) cannot fold the field away. Pressing
+  Hide takes the focus to the handle, which ends a rename as any press outside it does.
+- **Turning the phone** upright shows the bars at once and sideways folds them again (unless shown
+  with the handle). The fold is CSS alone: a media query hides the two bars' wrappers
+  (`display: contents` otherwise, so the column lays out as before), with no resize or orientation
+  listener and no script on the hot path; a press of the handle re-lays the column out once.
+- **Not drawn** where the bars are not there to fold: zen mode (it hides them already and keeps its
+  own way out, [Zen mode](zen-mode.md)), embeds and the workbench frame, the welcome flow, and a
+  running presentation.
+- **Every share role** gets the fold and the handle alike, Editor, Participant and Viewer: it is a
+  view of the editor, never of the document, and what is inside each bar keeps its own role gates.
+- **Telemetry:** the handle sends `UI / Toggled / LandscapeBarsOn` when it shows the bars and
+  `LandscapeBarsOff` when it folds them ([Telemetry](../017-telemetry/telemetry.md)); the automatic
+  fold and unfold send nothing.
+
+Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals, the telemetry),
+`LandscapeBarFold` (the wrapper round each bar) and `LandscapeBarsHandle`
+(`components/chrome/LandscapeBars.tsx`), wired in `EditorView`.
 
 These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 

@@ -1,4 +1,4 @@
-import { isEditorMode, type EditorMode } from '@livediagram/document';
+import { parseEditorMode, type EditorMode } from '@livediagram/document';
 import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
@@ -25,17 +25,26 @@ export function wizardBypassKind(search: string): TemplateKind | null {
 
 // The template step's presets (`?mode=`, `?q=`; docs/specs/007-editor/new-document-route.md): the
 // mode filter to open on, and words to open the search with. Not a bypass: the author still picks.
-// An unknown mode, or empty words, is ignored.
+// An unknown mode, or empty words, is ignored; a mode's old name (`?mode=illustrate`) reads as today's.
 export const SEARCH_PRESET_MAX = 60;
 
 export function wizardPresetMode(search: string): EditorMode | null {
   const mode = new URLSearchParams(search).get('mode');
-  return isEditorMode(mode) ? mode : null;
+  return parseEditorMode(mode) ?? null;
 }
 
 export function wizardPresetQuery(search: string): string | null {
   const q = new URLSearchParams(search).get('q')?.trim().slice(0, SEARCH_PRESET_MAX);
   return q ? q : null;
+}
+
+// `?start=blank` (docs/specs/007-editor/new-document-route.md "Start Blank after a mode"): the public sites' Start
+// Blank links. Not a bypass: the wizard still asks for a mode, but the chosen mode's blank opens with its start
+// closed, as Skip's does, since whoever asked for a blank has already said they want no templates.
+const START_BLANK_VALUE = 'blank';
+
+export function wizardStartsBlank(search: string): boolean {
+  return new URLSearchParams(search).get('start') === START_BLANK_VALUE;
 }
 
 // The placement context params (/new?folder=<id>, /new?team=<id>), pre-seeding the Settings
@@ -44,7 +53,7 @@ const PLACEMENT_PARAMS = ['folder', 'team'] as const;
 
 // Where "Choose another place" leads after a refused placement (docs/specs/007-editor/
 // new-document-route.md "Placement rides the create"): /new without the refused placement and
-// without the bypass, so the wizard opens with its picker on the root of My documents. Every other param is kept.
+// without the bypass, so the wizard opens with its picker on the root of My Documents. Every other param is kept.
 export function choosePlacementAgainUrl(search: string): string {
   const params = new URLSearchParams(search);
   for (const key of [...WIZARD_BYPASS_PARAMS, ...PLACEMENT_PARAMS]) params.delete(key);

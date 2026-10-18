@@ -36,7 +36,7 @@ describe('parseDocumentEnvelope', () => {
   it('round-trips', () => {
     const text = documentToEnvelopeText({ id: 'd1', name: 'Plan', presentation: null }, [tab], 7);
     const parsed = parseDocumentEnvelope(text);
-    expect(parsed).toEqual({ ok: true, envelope: JSON.parse(text) });
+    expect(parsed).toEqual({ ok: true, envelope: JSON.parse(text) as unknown });
   });
 
   it('names each failure', () => {

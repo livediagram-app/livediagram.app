@@ -11,15 +11,20 @@ import type { PanelSection } from '../explorer-panel/panel-sections';
 import { PaneGrid, PaneList, PaneSkeleton } from '../explorer-panel/pane-parts';
 import { PanelFolderItem, type PanelFolder, type PanelFolderIndex } from './PanelFolderItem';
 import { PanelDocumentItem } from './PanelDocumentItem';
+import { PanelTagsSection } from './PanelTagsSection';
 import { PanelTreeProvider, type PanelTree } from './PanelTreeContext';
 
 export type PanelTreeSection = Extract<
   PanelSection,
-  { kind: 'mine' } | { kind: 'team' } | { kind: 'browser' } | { kind: 'shared' }
+  { kind: 'mine' } | { kind: 'team' } | { kind: 'browser' } | { kind: 'shared' } | { kind: 'tags' }
 >;
 
 export const isTreeSection = (s: PanelSection): s is PanelTreeSection =>
-  s.kind === 'mine' || s.kind === 'team' || s.kind === 'browser' || s.kind === 'shared';
+  s.kind === 'mine' ||
+  s.kind === 'team' ||
+  s.kind === 'browser' ||
+  s.kind === 'shared' ||
+  s.kind === 'tags';
 
 const NO_FOLDERS: PanelFolder[] = [];
 
@@ -36,8 +41,8 @@ export function paneFolderParent(
 const NO_DOCUMENTS: DocumentListItem[] = [];
 
 // The rows of one of the editor's Explorer sections that hold documents (docs/specs/013-workspace/explorer-structure.md
-// "The pane"): My documents' and a team's folders then documents, opening a folder in place under a breadcrumb back
-// to the space's root; This browser's documents; what is shared with the reader. Each empty place says so in the
+// "The pane"): My Documents' and a team's folders then documents, opening a folder in place under a breadcrumb back
+// to the space's root; This Browser's documents; what is shared with the reader. Each empty place says so in the
 // Explorer's own empty state.
 export function PanelExplorerTree({
   section,
@@ -97,7 +102,18 @@ export function PanelExplorerTree({
 
   const value = { ...tree, defaultFolders, onOpenFolder };
   let body: React.ReactNode;
-  if (section.kind === 'browser' || section.kind === 'shared') {
+  if (section.kind === 'tags') {
+    // Every document a tag can sit on: the reader's own (this browser's included) and their teams', newest first.
+    const own = [...ownIndex.documentsByFolder.values()].flat();
+    const byTeam = teams.flatMap((t) =>
+      (documentsByTeam.get(t.id) ?? NO_DOCUMENTS).map((d): PaneDocument => ({ ...d, team: t })),
+    );
+    // By id: a browser document filed in a folder is in both of the first two lists.
+    const docs = [
+      ...new Map([...own, ...offlineDocuments, ...byTeam].map((d) => [d.id, d])).values(),
+    ].sort((a, b) => b.savedAt - a.savedAt);
+    body = <PanelTagsSection documents={docs} />;
+  } else if (section.kind === 'browser' || section.kind === 'shared') {
     const docs: PaneDocument[] =
       section.kind === 'browser' ? offlineDocuments : shared.map(sharedToPaneDocument);
     body = docs.length ? (

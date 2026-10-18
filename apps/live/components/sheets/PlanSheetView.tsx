@@ -2,7 +2,7 @@
 
 // The Sheet element (docs/specs/029-sheets/sheet.md; blueprint sheet-element.md "Editor components"): its sheet from
 // the store, drawn as header, toolbar, formula bar, grid and status bar in the board colours of the tab's theme.
-// Takes input in Plan mode only; elsewhere it is drawn and moved like any element, and a double-click offers Plan.
+// Takes input in Plan mode only (a Sheet goes only on a tab in Plan; sheet.md "Only in Plan").
 // Maximises as a board does: one stable tree inside MaximisableSlot, so nothing is lost either way. Loaded as its
 // own chunk, with the engine, only when a Sheet is drawn.
 import { useCardTableSync, type CardTablePush } from './useCardTableSync';
@@ -104,7 +104,6 @@ function SheetBody({
   const plan = usePlan();
   const palette = planPalette(useCanvasSurface(), planOwnColours(element));
   const model = useSheetModel(element, bridge, plan);
-  const [hint, setHint] = useState(false);
   if (!model.sheet) {
     // A copy, or a template's Sheet (sheet-store.md "Template starts"), not made yet is on its way, never gone.
     const pending = !!element.planSheet?.copyOf || !!element.planSheet?.start;
@@ -148,7 +147,6 @@ function SheetBody({
         borderRadius: RADIUS,
         ...(fontFamily ? { fontFamily } : {}),
       }}
-      onDoubleClick={interactive ? undefined : () => setHint(true)}
     >
       <SheetWorkspace
         element={element}
@@ -159,33 +157,6 @@ function SheetBody({
         maximised={maximised}
         fontFamily={fontFamily}
       />
-      {hint && !interactive ? (
-        <div
-          role="dialog"
-          aria-label="Switch to Plan"
-          className="absolute left-1/2 top-1/2 z-40 w-max max-w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-lg border px-4 py-3 text-[13px] shadow-lg"
-          style={{ backgroundColor: palette.surface, borderColor: palette.border }}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          <p>Switch to Plan to edit this sheet</p>
-          <div className="mt-2 flex justify-end gap-2">
-            <Button variant="ghost" size="xs" onClick={() => setHint(false)}>
-              Not Now
-            </Button>
-            <Button
-              variant="primary"
-              size="xs"
-
-              onClick={() => {
-                setHint(false);
-                bridge.switchToPlan();
-              }}
-            >
-              Switch to Plan
-            </Button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

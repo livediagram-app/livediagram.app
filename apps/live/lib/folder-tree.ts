@@ -16,9 +16,9 @@
 // fields a tree needs, so every surface indexes through here rather than
 // rebuilding the maps inline.
 
-export type TreeFolder = { id: string; name: string; parentId: string | null };
+type TreeFolder = { id: string; name: string; parentId: string | null };
 
-export type FolderIndex<F extends TreeFolder = TreeFolder> = {
+type FolderIndex<F extends TreeFolder = TreeFolder> = {
   // Every folder by id, so a walk up the parents doesn't rescan the list.
   folderById: Map<string, F>;
   // Children per parent id (null = root), so the recursive renderer is O(1)
@@ -106,7 +106,7 @@ export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[
 // Documents per folder id (null = the root), newest first
 // in every bucket: the order every Explorer list shows a folder's contents
 // in. `exclude` drops rows before bucketing, for the panel, which keeps
-// offline documents off the root because This browser lists them.
+// offline documents off the root because This Browser lists them.
 export function groupDocumentsByFolder<D extends { folderId: string | null; savedAt: number }>(
   liveDocs: readonly D[],
   opts: { exclude?: (d: D) => boolean } = {},

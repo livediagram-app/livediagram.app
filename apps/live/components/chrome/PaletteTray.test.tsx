@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ModeBanner } from './ModeBanner';
-import { usePaletteStripBox } from './PaletteTray';
+import { usePaletteStripBox, useToolbarBox } from './PaletteTray';
 
 // docs/specs/007-editor/toolbar-layout.md "Layout details": messages hang from the strip as its tray.
 
@@ -105,5 +105,63 @@ describe('the palette tray', () => {
     mountStrip({ hidden: true });
     render(<Banner onAction={() => {}} />);
     expect(document.querySelector('[data-palette-tray]')).toBeNull();
+  });
+
+  // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty Draw tab's pill stands clear of the dock,
+  // which mounts a beat after the pill asks where it is. Only a resize measured it again, so the pill kept its no-dock
+  // place and sat on the dock's tools.
+  it('measures a toolbar that arrives after it was first asked for', async () => {
+    function Probe() {
+      const box = useToolbarBox('[data-whiteboard-dock]');
+      return <output data-testid="box">{box ? `${box.top}-${box.bottom}` : 'none'}</output>;
+    }
+    render(<Probe />);
+    expect(screen.getByTestId('box').textContent).toBe('none');
+    const dock = document.createElement('div');
+    dock.setAttribute('data-whiteboard-dock', '');
+    vi.spyOn(dock, 'getBoundingClientRect').mockReturnValue(new DOMRect(300, 12, 600, 46));
+    await act(async () => {
+      document.body.append(dock);
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('box').textContent).toBe('12-58');
+  });
+});
+
+// The tray stacks with the editor's chrome, under the header's popovers (who can see this).
+describe('trayHost', () => {
+  function stripIn(host: HTMLElement) {
+    const root = document.createElement('div');
+    root.setAttribute('data-toolbar-palette', '');
+    const card = document.createElement('div');
+    card.setAttribute('data-tour-id', 'palette');
+    root.append(card);
+    host.append(root);
+  }
+
+  it('is the editor’s box, not the body, so a header popover stands over the tray', async () => {
+    const { trayHost } = await import('./PaletteTray');
+    const editor = document.createElement('div');
+    editor.setAttribute('data-editor-viewport', 'window');
+    document.body.append(editor);
+    stripIn(editor);
+    expect(trayHost()).toEqual({ node: editor, dx: 0, dy: 0 });
+  });
+
+  it('falls back to the body without an editor box', async () => {
+    const { trayHost } = await import('./PaletteTray');
+    stripIn(document.body);
+    expect(trayHost().node).toBe(document.body);
+  });
+
+  it('measures from a split pane’s corner, as its transform holds the tray', async () => {
+    const { trayHost } = await import('./PaletteTray');
+    const pane = document.createElement('div');
+    pane.setAttribute('data-editor-viewport', 'pane');
+    pane.style.transform = 'translateZ(0)';
+    vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue(new DOMRect(640, 48, 640, 700));
+    document.body.append(pane);
+    stripIn(pane);
+    expect(trayHost()).toEqual({ node: pane, dx: 640, dy: 48 });
   });
 });

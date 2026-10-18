@@ -224,6 +224,10 @@ function behaviourSkin(
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
   // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
+  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
+  if (kind === 'avatar-pad') {
+    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
+  }
   if (kind === 'fence') {
     return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
   }
@@ -591,6 +595,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'fence',
   'desk',
   'sofa',
+  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is its pixels.
+  'avatar-pad',
   // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
   'room',
   'meeting-table',
@@ -637,7 +643,7 @@ export function supportsBorderControls(element: Element): boolean {
 // Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
 // a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
 // (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
-export const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
+const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
   'card',
   'callout',
   'site-header',

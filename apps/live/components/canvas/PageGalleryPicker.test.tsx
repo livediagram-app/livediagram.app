@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHOOSE_FROM_MY_IMAGES, PageGalleryPicker } from './PageGalleryPicker';
 
-// docs/specs/007-editor/illustrate-pages.md "Image backgrounds": Choose From My Images opens the person's gallery
+// docs/specs/007-editor/pages-mode.md "Image backgrounds": Choose From My Images opens the person's gallery
 // beside the panel; one press picks a picture and closes it.
 
 const images = [

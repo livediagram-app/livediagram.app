@@ -210,8 +210,8 @@ whole chart is laid out by the flowchart layout, so Tab and Enter grow any templ
 - **Flowchart**: the checkout flow, flowing down; its key stays an ordinary group of shapes beside
   it.
 - **Swimlane**: a laned chart, flowing right.
-- **Approval workflow**: a laned chart, flowing right.
-- **Decision tree**: a chart of Decisions with Yes / No exits, flowing down.
+- **Approval Workflow**: a laned chart, flowing right.
+- **Decision Tree**: a chart of Decisions with Yes / No exits, flowing down.
 
 The **Data flow** template keeps its own notation (a DFD's entities, processes and stores are not
 flowchart steps) and is unchanged.
@@ -224,7 +224,7 @@ on a type change; `Element` · `Added` · `FlowchartLane` on Add Lane; `Element`
 
 ## Element tour
 
-The first time an Editor selects a flowchart step, a small **Tour** toolbar beside its selection toolbar offers the
+The first time an Editor selects a flowchart step (not on a phone), a small **Tour** toolbar beside its selection toolbar offers the
 [Flowchart tour](../007-editor/element-tours.md#the-flowchart-tour): Add Step and Add Branch (with Tab and Enter),
 Step Type, Lane on a laned chart, and the Flowchart menu.
 

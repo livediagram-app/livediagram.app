@@ -1,6 +1,6 @@
 'use client';
 
-// The page navigator (docs/specs/007-editor/illustrate-pages.md "Getting around the pages"): a small
+// The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a small
 // bar under each page, while there are two pages or more: previous, the page's place ("2 of 5"),
 // next. An arrow fits the neighbouring page in the view, as a press on its label does. Held at one
 // screen size; for everyone who can see the pages.

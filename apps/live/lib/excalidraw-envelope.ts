@@ -14,9 +14,9 @@ import { isRecord } from '@livediagram/document';
 /** Excalidraw caps one image at 4 MiB; this admits about a dozen as data URLs. */
 export const EXCALIDRAW_MAX_SCENE_CHARS = 64 * 1024 * 1024;
 /** How much of a text the cheap paste test looks at. */
-export const EXCALIDRAW_DETECT_PREFIX_CHARS = 256;
+const EXCALIDRAW_DETECT_PREFIX_CHARS = 256;
 
-export type ExcalidrawRejection =
+type ExcalidrawRejection =
   'too-large' | 'not-json' | 'not-object' | 'not-excalidraw' | 'no-elements';
 
 const MESSAGES: Record<ExcalidrawRejection, string> = {
@@ -27,7 +27,7 @@ const MESSAGES: Record<ExcalidrawRejection, string> = {
   'no-elements': 'Scene is missing its elements array.',
 };
 
-export type ReadEnvelopeResult =
+type ReadEnvelopeResult =
   | { ok: true; envelope: ExcalidrawEnvelope }
   | { ok: false; rejection: ExcalidrawRejection; error: string };
 

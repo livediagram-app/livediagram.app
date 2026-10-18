@@ -10,13 +10,13 @@ import {
   type TemplateCategory,
 } from './template-categories';
 
-export const BLANKS_CATALOGUE_CATEGORY = {
+const BLANKS_CATALOGUE_CATEGORY = {
   id: 'blanks',
   label: 'Blanks',
   description: 'An empty tab in each mode, to start from nothing.',
 } as const;
 
-export type TemplateCatalogue = {
+type TemplateCatalogue = {
   categories: { id: TemplateCategory | 'blanks'; label: string; description: string }[];
   templates: {
     kind: TemplateKind;

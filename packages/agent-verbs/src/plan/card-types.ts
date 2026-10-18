@@ -26,7 +26,7 @@ import {
   type PlanState,
 } from './plan-state';
 
-export interface CardTypeChangesResult {
+interface CardTypeChangesResult {
   applied: string[];
   // The numbers of the cards moved to the Trash with a deleted type.
   trashed: string[];

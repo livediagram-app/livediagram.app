@@ -24,7 +24,9 @@ Five messages, two kinds:
 
 4. **Team invite** — when an email address is invited to a team ([Teams](../013-workspace/teams.md)), the
    invitee gets a message with a link to sign in and view/accept the invite
-   (`/explorer/invites`).
+   (`/explorer/invites`), and a quieter **Decline invite** link to
+   `/join/decline?token=<token>` that turns it down with no account and no
+   sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
 5. **Account deleted** — after a user deletes their account (spec: account
    self-deletion), a confirmation that the account and its data are gone.
 
@@ -58,6 +60,13 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
     quotes the comment (the first 280 characters): the recipient was named in
     it, and the document is in their own team's library.
+13. **Team invite reminders** (transactional, kinds `TeamInviteReminder1` /
+    `TeamInviteReminder2` / `TeamInviteReminder3`) — 1, 7 and 21 days after an
+    invite nobody has answered, from the daily cron, each with its own Decline
+    invite link. The invite expires (is rejected) 28 days after it was sent. Not
+    opt-out: the recipient may have no account to hold a preference, and the
+    Decline link is the one-click way to stop them. Stamps on the invite's own
+    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, migration 0095); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -161,11 +170,25 @@ sighting with a changed address (§4), resets the count to zero.
   template's telemetry token (see below): it rides on the builder's return so
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
+  **Branding.** Every builder renders through one shell, so every email looks
+  the same: a brand-gradient band across the top of the card (sky-400 to
+  blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
+  the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
+  and a footer under the card with the lockup again, the tagline ("Diagram,
+  draw and make pages together, live. Free and open source.") and a link to the
+  site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
+  (`/email/livediagram-mark-64.png`, shown at 28px in the header and 22px in
+  the footer) served by the marketing app and written by `pnpm icons:brand`,
+  because Gmail and Outlook drop SVG and most clients block `data:` images.
+  Its `alt` is empty, since the wordmark beside it names the product when
+  images are blocked. The path is permanent: every email already sent points
+  at it.
 - `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new", and
   refreshes a returning owner's address), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
 - Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
-  invite in `routes/teams.ts` (invite create), deletion in `routes/account.ts`.
+  invite in `routes/teams.ts` (invite create), invite reminders + expiry in
+  `scheduled()` via `email/team-invite-reminders.ts`, deletion in `routes/account.ts`.
 
 All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
@@ -189,13 +212,16 @@ name, or a recipient count.
 - No document content, names, or anything the user typed is ever in an email
   beyond the team name (already known to the invitee's inviter) and the user's
   own email.
+- The team invite and its reminders go to an address an Admin typed, which may
+  have no account: that is why they carry no account footer, and why their only
+  credential is the single-purpose decline token, stored hashed
+  ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
 - Off by default; self-hosters opt in by providing their own Resend key + domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
 
 ## 8. Out of scope (for now)
 
-Unsubscribe endpoint for the lifecycle series, HTML theming beyond simple
-inline styles, bounce handling beyond the attempt cap in §5 (Resend handles
+Unsubscribe endpoint for the lifecycle series, dark-mode email variants, bounce handling beyond the attempt cap in §5 (Resend handles
 delivery; sends are best-effort and idempotent via the `*_sent_at` stamps). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each of its two transactional notifications, stored

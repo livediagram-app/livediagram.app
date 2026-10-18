@@ -1,5 +1,5 @@
-// The steps of Show Me on a logo page (docs/specs/007-editor/logo-pages.md "Show Me"), and the Illustrate tour's Logo
-// track (docs/specs/007-editor/illustrate-tour.md "Logo track"): a tour of the logo tools, run on the page itself.
+// The steps of Show Me on a logo page (docs/specs/007-editor/logo-pages.md "Show Me"), and the Pages tour's Logo
+// track (docs/specs/007-editor/pages-tour.md "Logo track"): a tour of the logo tools, run on the page itself.
 // Each step rings a real control of the page it was started on, which stays usable, so the person can pick a layout
 // or turn the guides on while the step is up.
 import type { PageTourApi, PageTourStep } from './page-tour-api';
@@ -11,7 +11,7 @@ export const LOGO_WELCOME: LogoTourStep = {
   id: 'welcome',
   card: 'welcome',
   title: 'Getting started with logos?',
-  body: 'Want a quick look at designing a logo? We will open its layouts and show you the guides, mirror drawing and combining shapes.',
+  body: 'A quick look at logo layouts, guides, mirror drawing and combining shapes?',
 };
 
 const titleButton = (name: string) => (api: PageTourApi) =>
@@ -20,7 +20,7 @@ const titleButton = (name: string) => (api: PageTourApi) =>
 const LAYOUTS: LogoTourStep = {
   id: 'layouts',
   title: 'Start From a Logo Layout',
-  body: 'Lockups, wordmarks, emblems and marks, each a whole logo in your theme and font, ready to make your own. Pick one now if you like.',
+  body: 'Start from a ready-made logo in your theme. Pick one now if you like.',
   selector: () => '[data-page-panel]',
   requires: (api) => pageCog(api.pageId),
   prepare: (api) => api.openPanel(api.pageId, 'layouts'),
@@ -30,21 +30,21 @@ const LAYOUTS: LogoTourStep = {
 const GUIDES: LogoTourStep = {
   id: 'guides',
   title: 'Draw on Guides',
-  body: 'Centre lines, diagonals, circles, a square and a grid over the artboard, and shapes snap to the circle and square. Choose which show, and how strongly.',
+  body: 'Guides to line things up. Shapes snap to them. Choose which show.',
   selector: titleButton('Guides'),
 };
 
 const MIRROR: LogoTourStep = {
   id: 'mirror',
   title: 'Mirror As You Draw',
-  body: 'Turn it on and whatever you draw on one side appears on the other, or round the centre in radial copies.',
+  body: 'Draw on one side and it mirrors on the other, or round the centre.',
   selector: titleButton('Mirror'),
 };
 
 const COMBINE_SHOWING: LogoTourStep = {
   id: 'combine',
   title: 'Combine Shapes',
-  body: 'Unite the selected shapes into one, subtract one from another, keep only where they overlap, or keep where they do not. Holes stay see-through.',
+  body: 'Merge shapes, cut one from another, or keep only the overlap.',
   selector: () => '[aria-label="Combine shapes"]',
 };
 
@@ -52,14 +52,14 @@ const COMBINE_SHOWING: LogoTourStep = {
 const COMBINE_HIDDEN: LogoTourStep = {
   id: 'combine',
   title: 'Combine Shapes',
-  body: 'Select two or more shapes on the page and Combine appears above them: unite them into one, subtract one from another, keep only where they overlap, or keep where they do not.',
+  body: 'Select two shapes and Combine appears: merge them, cut one from the other, or keep the overlap.',
 };
 
 const OUTRO: LogoTourStep = {
   id: 'outro',
   card: 'outro',
   title: 'That Is a Logo Page',
-  body: 'When it is ready, Export › Logo Kit downloads it as SVG, PNGs from 16 to 1024 px and a favicon, in one zip.',
+  body: 'Export › Logo Kit downloads every size you need, plus a favicon.',
 };
 
 // The steps: Combine rings its button when two shapes are already selected, else it explains where it appears.

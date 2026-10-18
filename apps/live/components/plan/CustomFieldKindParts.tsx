@@ -211,7 +211,7 @@ export function CustomFieldPreview({
       aria-label="Preview"
       className="rounded-lg bg-slate-50 px-3 py-1.5 dark:bg-slate-800/50"
     >
-      <figcaption className="pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+      <figcaption className="pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Preview
       </figcaption>
       <div className="pointer-events-none" aria-hidden>

@@ -23,9 +23,9 @@ import type { Edge, Pt, Size } from './auto-layout-shared';
 export type SideSpec = { parent: ElementId; sign: 1 | -1 };
 
 // How far off a node's centre line an exit may sit and still read as continuing its column.
-export const IN_LINE_PX = 12;
+const IN_LINE_PX = 12;
 
-export type TidyRanking = {
+type TidyRanking = {
   layer: Map<ElementId, number>;
   /** Edges that run with the flow (including side edges), in input order. */
   forward: Edge[];
@@ -34,7 +34,7 @@ export type TidyRanking = {
   side: Map<ElementId, SideSpec>;
 };
 
-export type TidyRankInput = {
+type TidyRankInput = {
   ids: ElementId[];
   edges: Edge[];
   /** Where each node is drawn now, to read the author's order from. */

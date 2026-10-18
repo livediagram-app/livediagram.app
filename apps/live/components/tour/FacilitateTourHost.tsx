@@ -7,6 +7,7 @@ import { debugLog } from '@/lib/debug-log';
 import { FACILITATE_TOUR_RELAUNCH_EVENT } from '@/lib/facilitate-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { findTour } from './tour-dom';
 import {
@@ -54,6 +55,8 @@ export function FacilitateTourHost() {
   // One tour at a time: publish this one while it is on screen, and wait while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'facilitate';
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('facilitate', active);
   }, [active]);
@@ -108,7 +111,7 @@ export function FacilitateTourHost() {
   // re-renders this through useActiveTour, so this tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inFacilitate || !canWork || otherTour) return;
+    if (!inFacilitate || !canWork || otherTour || modalOpen) return;
     const t = setTimeout(() => {
       setArmed(false);
       debugLog('[facilitate-tour] offer');
@@ -117,7 +120,7 @@ export function FacilitateTourHost() {
       track('UI', 'Opened', 'FacilitateTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [armed, active, seen, inFacilitate, canWork, otherTour, engineRef]);
+  }, [armed, active, seen, inFacilitate, canWork, otherTour, modalOpen, engineRef]);
 
   // Settings rerun (the Tours › "Facilitate Tour" row, turned on from off + closed): offers again in
   // Facilitate, and otherwise the next time the person enters it (the row has cleared the preference).

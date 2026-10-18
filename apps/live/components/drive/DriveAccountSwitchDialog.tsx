@@ -13,16 +13,16 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { ApiError } from '@/lib/api/core';
 
-export const ACCOUNT_SWITCH_TITLE = 'Switch Google Account?';
+const ACCOUNT_SWITCH_TITLE = 'Switch Google Account?';
 export const ACCOUNT_SWITCH_BODY =
-  'This Google account is not the one livediagram syncs with. Switching moves Cloud Sync to the new account and starts a fresh copy of My documents in its Drive. The files already in the other account’s Drive stay there untouched.';
+  'This Google account is not the one livediagram syncs with. Switching moves Cloud Sync to the new account and starts a fresh copy of My Documents in its Drive. The files already in the other account’s Drive stay there untouched.';
 export const ACCOUNT_SWITCH_EXPIRED =
   'This request timed out. Nothing changed. Connect again from Settings, Account, Cloud Sync.';
 export const ACCOUNT_SWITCH_FAILED = 'That didn’t work. Nothing changed. Try again.';
 
 type Phase = 'ask' | 'switching' | 'keeping' | 'failed' | 'expired';
 
-export type DriveAccountSwitchDialogProps = {
+type DriveAccountSwitchDialogProps = {
   // Each resolves once the api accepted it and the page is leaving; a throw
   // keeps the dialog open with the error.
   onSwitch: () => Promise<void>;

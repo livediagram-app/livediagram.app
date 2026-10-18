@@ -49,6 +49,7 @@ import {
   notFound,
   signInRequired,
 } from '../responses';
+import { declineTeamInvite } from '../db/team-invite-decline';
 import { emailEnabled, sendEmail } from '../email/client';
 import { notifyInviteResponse } from '../email/notifications';
 import { teamInviteEmail } from '../email/templates';
@@ -71,6 +72,8 @@ import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { closeMemberTeamSessions } from '../room-access-client';
 import { handleTeamActionRoutes } from './team-action-routes';
 import { handleTeamMentionRoutes } from './team-mention-routes';
+import { handleTeamInviteDecline } from './team-invite-decline-route';
+import { memberDisplayName } from './team-member-name';
 import type { RouteContext } from './context';
 
 // Light shape check, not RFC 5322: something@something.tld. The real
@@ -108,6 +111,12 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       ? (await getMembership(env, team.id, userId))?.status === 'joined'
       : false;
     return json({ team, memberCount, alreadyMember });
+  }
+
+  // /api/teams/invite-decline/<token> — the invite email's Decline link (docs/specs/013-workspace/teams.md).
+  // Open like the link resolve above: the invitee may have no account, and the token is the credential.
+  if (segments.length === 4 && segments[2] === 'invite-decline') {
+    return handleTeamInviteDecline(ctx, segments[3]!);
   }
 
   if (!userId) return signInRequired();
@@ -329,7 +338,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const email = body?.email ? normaliseEmail(body.email) : '';
       if (!email || !EMAIL_PATTERN.test(email)) return badRequest('invalid email');
       if (await teamHasEmail(env, teamId, email)) return conflict('already_member');
-      const member = await addTeamMember(env, { teamId, email });
+      const { member, declineToken } = await addTeamMember(env, { teamId, email });
       // docs/specs/013-workspace/timeline.md §4.4: emitted with NO scope — the invitee is an email
       // address until they sign in, so there is nobody to scope it to.
       // attachClaimedInviteEvents hands it to them once the lazy claim
@@ -338,9 +347,12 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         recordInviteReceived(env, team, { id: member.id, userId: null }, userId, member.createdAt),
       );
       // docs/specs/014-identity/transactional-email.md: tell the invitee they've been invited, with a link to their
-      // invites page. Best-effort, in the background; no-op when email is off.
+      // invites page and a Decline link that needs no account (docs/specs/013-workspace/teams.md). Best-effort,
+      // in the background; no-op when email is off.
       if (emailEnabled(env)) {
-        ctx.waitUntil?.(sendEmail(env, { to: email, ...teamInviteEmail(env, team.name) }));
+        ctx.waitUntil?.(
+          sendEmail(env, { to: email, ...teamInviteEmail(env, team.name, declineToken) }),
+        );
       }
       return json({ member }, { status: 201 });
     }
@@ -385,6 +397,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const body = (await request.json().catch(() => null)) as { role?: string } | null;
       const role = body?.role;
       if (role !== 'admin' && role !== 'member') return badRequest('invalid role');
+      // A rejected invite holds no role worth changing: the list offers it Remove only.
+      if (member.status === 'declined' || member.status === 'expired') {
+        return conflict('invite_rejected');
+      }
       // Last-admin guard (docs/specs/013-workspace/teams.md): demoting the only JOINED admin
       // would leave the team unmanageable. Invited rows are exempt —
       // they don't count as managing admins yet either way.
@@ -414,6 +430,21 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // skipped for invited rows (declining a pre-promoted invite
       // must always work — it was never a managing admin).
       if (!isAdmin && !isSelf) return adminRequired();
+      // Their own pending invite: a DECLINE (docs/specs/013-workspace/teams.md). The row stays, marked
+      // 'declined', so the admins see the answer on the list as Rejected; only the request that flipped it
+      // tells them (Timeline card + invite-response email), so a double-click stays quiet.
+      if (member.status === 'invited' && isSelf) {
+        if (await declineTeamInvite(env, member.id)) {
+          ctx.waitUntil?.(recordInviteDeclined(env, team, userId, memberDisplayName(member)));
+          const responder = member.email ?? clerkEmail;
+          if (responder) {
+            ctx.waitUntil?.(
+              notifyInviteResponse(env, team, responder, false, userId).catch(() => {}),
+            );
+          }
+        }
+        return noContent();
+      }
       if (
         member.role === 'admin' &&
         member.status === 'joined' &&
@@ -440,9 +471,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         ctx.waitUntil?.(closeMemberTeamSessions(env, teamId, member.userId).catch(() => {}));
       }
       const who = { userId: member.userId, name: memberDisplayName(member) };
-      if (member.status === 'invited' && isSelf) {
-        ctx.waitUntil?.(recordInviteDeclined(env, team, userId, who.name));
-      } else if (member.status === 'joined') {
+      if (member.status === 'joined') {
         // Leaving and being removed read very differently to everyone
         // else in the team, so they are separate events rather than one
         // "membership ended".
@@ -452,17 +481,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
             : recordMemberRemoved(env, team, who, userId, audience),
         );
       }
-      // docs/specs/014-identity/profile-and-email-notifications.md: a self-removal of a still-INVITED row is a DECLINE — tell
-      // the team's admins. An admin revoking a pending invite, or a joined
-      // member leaving, is not an invite response and notifies no one.
-      if (member.status === 'invited' && isSelf) {
-        const responder = member.email ?? clerkEmail;
-        if (responder) {
-          ctx.waitUntil?.(
-            notifyInviteResponse(env, team, responder, false, userId).catch(() => {}),
-          );
-        }
-      }
+      // An admin withdrawing a pending invite or clearing a rejected one, or a joined member leaving, is not
+      // an invite response and notifies no one (docs/specs/014-identity/profile-and-email-notifications.md).
       return noContent();
     }
     return notFound();
@@ -476,19 +496,4 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
 // this" greps to one symbol).
 function adminRequired(): Response {
   return forbidden('admin_required');
-}
-
-// The name a timeline bubble shows for a member. Mirrors what the
-// Explorer's team pane renders: the display name where the invite
-// email gives us one, else nothing (the renderer falls back to "A
-// member"). Never the full address — a timeline event travels to
-// everyone in the team, and an invite address is not theirs to read.
-function memberDisplayName(member: { email: string | null; name?: string | null }): string | null {
-  if (member.name) return member.name;
-  const local = member.email?.split('@')[0];
-  if (!local) return null;
-  return local
-    .replace(/[._-]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .trim();
 }

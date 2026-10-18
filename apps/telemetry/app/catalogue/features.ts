@@ -248,7 +248,7 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Changed',
   'Editor Mode Switches',
   'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan', 'ModeFacilitate'] },
+  { types: ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeFacilitate'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -256,25 +256,25 @@ export const TAB_OPENS_IN = chart(
   'Tab',
   'Changed',
   'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Illustrate mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate', 'OpensInPlan'] },
+  'A tab set to open in Diagram, Draw or Pages mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInPages', 'OpensInPlan'] },
 );
 
-// Illustrate mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
+// Pages mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
 export const PAGE_ORIENTATION = chart(
   'Tab',
   'Changed',
   'Page Orientations Set',
-  "An Illustrate tab's A4 page turned to portrait or landscape, from the page's settings.",
+  "A Pages tab's A4 page turned to portrait or landscape, from the page's settings.",
   { types: ['PagePortrait', 'PageLandscape'] },
 );
 
-// Illustrate pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
-export const ILLUSTRATE_PAGES = chart(
+// Pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
+export const PAGES = chart(
   'Tab',
   'Changed',
-  'Illustrate Pages Added and Deleted',
-  'A page added to an Illustrate tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
+  'Pages Added and Deleted',
+  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
   {
     types: [
       'PageAdded',
@@ -343,12 +343,12 @@ export const LOGO_MIRROR_SETTINGS = chart(
   },
 );
 
-// An Illustrate page's own settings (docs/specs/007-editor/illustrate-pages.md).
-export const ILLUSTRATE_PAGE_SETUP = chart(
+// A page's own settings (docs/specs/007-editor/pages-mode.md).
+export const PAGE_SETUP = chart(
   'Tab',
   'Changed',
-  'Illustrate Pages Set Up',
-  "An Illustrate page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
+  'Pages Set Up',
+  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
   {
     types: [
       'PageSize',
@@ -366,13 +366,13 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   },
 );
 
-// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
+// Contents (docs/specs/007-editor/pages-mode.md "Contents"): a press on a page in the list,
 // going there, or a page dragged to a new place in it.
 export const PAGE_CONTENTS_JUMPS = chart(
   'UI',
   'Used',
   'Contents Jumps and Reorders',
-  "A page pressed in Illustrate's Contents list (the canvas gliding to it), or dragged to a new place there.",
+  "A page pressed in Pages mode's Contents list (the canvas gliding to it), or dragged to a new place there.",
   { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
 );
 
@@ -385,26 +385,26 @@ export const TAB_WINDOW_USE = chart(
   { types: ['TabWindowOpen'], rising: 'neutral' },
 );
 
-// Building Illustrate pages: a layout placed, a page duplicated or moved.
-export const ILLUSTRATE_PAGE_BUILDING = chart(
+// Building pages: a layout placed, a page duplicated or moved.
+export const PAGE_BUILDING = chart(
   'Tab',
   'Changed',
-  'Illustrate Pages Built',
-  'A layout put onto an Illustrate page, a page duplicated, moved or split, or a board put onto a page.',
+  'Pages Built',
+  'A layout put onto a page, a page duplicated, moved or split, or a board put onto a page.',
   { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut', 'PageFitToContent'] },
 );
 
-// Leaving Illustrate past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
-// Illustrate"): how often people go on to Diagram or Draw once told their pages will not show.
-export const LEAVE_ILLUSTRATE_CONFIRMED = chart(
+// Leaving Pages past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
+// Pages"): how often people go on to Diagram or Draw once told their pages will not show.
+export const LEAVE_PAGES_CONFIRMED = chart(
   'Editor',
   'Changed',
-  'Illustrate Left Past the Warning',
-  'Someone switched an Illustrate tab with pages to Diagram or Draw after the warning that its pages do not show there.',
-  { types: ['LeaveIllustrateConfirmed'] },
+  'Pages Left Past the Warning',
+  'Someone switched a Pages tab with pages to Diagram or Draw after the warning that its pages do not show there.',
+  { types: ['LeavePagesConfirmed'] },
 );
 
-// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/illustrate-pages.md
+// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/pages-mode.md
 // "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
 export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
   'UI',
@@ -484,12 +484,12 @@ export const WHITEBOARDS: MetricStack = {
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
-    LEAVE_ILLUSTRATE_CONFIRMED,
+    LEAVE_PAGES_CONFIRMED,
     TAB_OPENS_IN,
     PAGE_ORIENTATION,
-    ILLUSTRATE_PAGES,
-    ILLUSTRATE_PAGE_SETUP,
-    ILLUSTRATE_PAGE_BUILDING,
+    PAGES,
+    PAGE_SETUP,
+    PAGE_BUILDING,
     PAGE_CONTENTS_JUMPS,
     TAB_WINDOW_USE,
     LOGO_TOOLS,
@@ -609,9 +609,28 @@ export const ACTIONS_EMAILED: Metric = {
 export const ACTIONS_COMPLETED: Metric = {
   category: 'Action',
   action: 'Resolved',
-  type: null,
+  // Won't Do closes an action without it being done: its own card, below.
+  typeIn: (type) => type !== 'WontDo',
   title: 'Actions Completed',
   blurb: 'Read against actions assigned: the follow-through rate on the feature.',
+};
+
+export const ACTIONS_WONT_DO: Metric = {
+  category: 'Action',
+  action: 'Resolved',
+  type: 'WontDo',
+  title: 'Actions Closed as Won’t Do',
+  blurb:
+    'Actions someone decided against: closed without being done, from the canvas or the Actions board.',
+};
+
+export const ACTIONS_BOARDS_MADE: Metric = {
+  category: 'Action',
+  action: 'Linked',
+  type: 'Board',
+  title: 'Actions Boards Made',
+  blurb:
+    'Documents that got an Actions board: a board tab where every action in the document has a card, kept in step with the canvas.',
 };
 
 export const FOLDERS_CREATED: Metric = {
@@ -673,6 +692,8 @@ export const ASSIGNED_ACTIONS: MetricStack = {
     ACTIONS_ASSIGNED,
     ACTIONS_EMAILED,
     ACTIONS_COMPLETED,
+    ACTIONS_WONT_DO,
+    ACTIONS_BOARDS_MADE,
     ACTIONS_EDITED,
     ACTIONS_OPENED,
     ACTIONS_DELETED,
@@ -688,7 +709,7 @@ export const EXPLORER_SIDEBAR_PICKS = chart(
   'UI',
   'Selected',
   'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This Browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
   {
     typeIn: (type) =>
       (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
@@ -706,6 +727,31 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
+// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their documents. Never a name.
+export const TAGS_CREATED = chart(
+  'Explorer',
+  'Created',
+  'Tags Made',
+  'A tag made, from the tag picker on a document or New Tag on the Tags page.',
+  { types: ['Tag'], rising: 'good' },
+);
+
+export const TAGS_APPLIED = chart(
+  'Explorer',
+  'Added',
+  'Tags Put On or Taken Off',
+  'A tag ticked on or off a document in the tag picker.',
+  { actionIn: ['Added', 'Removed'], types: ['Tag'], rising: 'good' },
+);
+
+export const TAGS_EDITED = chart(
+  'Explorer',
+  'Renamed',
+  'Tags Renamed, Recoloured or Deleted',
+  'A tag renamed or recoloured, or deleted (which takes it off every document).',
+  { actionIn: ['Renamed', 'Changed', 'Deleted'], types: ['Tag', 'TagColour'], rising: 'neutral' },
+);
+
 // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
 export const DEFAULT_FOLDERS_SET = chart(
   'Folder',
@@ -719,7 +765,7 @@ export const DEFAULT_FOLDERS_CLEARED = chart(
   'Folder',
   'Cleared',
   'Default Folders Cleared',
-  'A default folder cleared, so new documents of that kind land in My documents again.',
+  'A default folder cleared, so new documents of that kind land in My Documents again.',
   { rising: 'neutral' },
 );
 
@@ -727,7 +773,7 @@ export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made and nested, tab folders, tabs and documents filed, default folders, the Explorer sidebar and its filters.',
+    'Folders made and nested, tab folders, tabs and documents filed, tags, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -739,6 +785,9 @@ export const ORGANISATION: MetricStack = {
     TABS_UNFILED,
     EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
+    TAGS_CREATED,
+    TAGS_APPLIED,
+    TAGS_EDITED,
     DEFAULT_FOLDERS_SET,
     DEFAULT_FOLDERS_CLEARED,
   ],
@@ -844,6 +893,16 @@ export const OFFICE_DRINKS = chart(
   { types: ['WaterCooler', 'CoffeeMachine'] },
 );
 
+// Avatar Pad arrivals (docs/specs/009-elements/avatar-pad.md "Telemetry"): an entry into Avatar mode that started on a
+// pad, once per entry, never per peer seen arriving.
+export const AVATAR_PAD_ARRIVALS = chart(
+  'Canvas',
+  'Used',
+  'Avatar Pad Arrivals',
+  'An entry into Avatar mode that started on an Avatar Pad, the character beamed in.',
+  { types: ['AvatarPadArrival'] },
+);
+
 // Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
 // either door, never what they said.
 export const AVATAR_MESSAGES = chart(
@@ -858,7 +917,7 @@ export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_MESSAGES, MODE_OPTIONS],
+  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_PAD_ARRIVALS, AVATAR_MESSAGES, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
@@ -869,13 +928,21 @@ export const CANVAS_ZOOMS = chart(
   'Canvas',
   'Zoomed',
   'Canvas Zooms',
-  'Zoomed in or out, to fit, or to a preset.',
+  'Zoomed in or out, to fit, to a preset, or on a double-tapped spot.',
 );
 
 export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on or off.', {
   types: ['ZenModeOn', 'ZenModeOff'],
   rising: 'neutral',
 });
+
+export const LANDSCAPE_BARS = chart(
+  'UI',
+  'Toggled',
+  'Landscape Bars',
+  'The header and tabs shown or folded from the handle on a phone held sideways.',
+  { types: ['LandscapeBarsOn', 'LandscapeBarsOff'], rising: 'neutral' },
+);
 
 export const PANELS_DOCKED = chart(
   'UI',
@@ -897,8 +964,8 @@ export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, PANELS_DOCKED, EXPLORER_VIEW],
+    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
+  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.
@@ -994,11 +1061,11 @@ export const AVATAR_TOUR_OFFERED = opened(
   (t) => t === 'AvatarTourOffer',
 );
 
-// The Illustrate tour's offer (docs/specs/007-editor/illustrate-tour.md); charted in its funnel on the Visitors tab.
-export const ILLUSTRATE_TOUR_OFFERED = opened(
-  'Illustrate Tour Offered',
-  'The Illustrate tour offered, the first time someone works in Illustrate mode.',
-  (t) => t === 'IllustrateTourOffer',
+// The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
+export const PAGES_TOUR_OFFERED = opened(
+  'Pages Tour Offered',
+  'The Pages tour offered, the first time someone works in Pages mode.',
+  (t) => t === 'PagesTourOffer',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
@@ -1077,8 +1144,8 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
-// documents after signing in"); charted with Offline Mode on the Dashboard.
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',
   'Someone signed in with documents kept only in this browser and was offered to move them to the account.',

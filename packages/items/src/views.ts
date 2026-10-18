@@ -7,7 +7,7 @@ import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { PRIORITY_LABELS, isPriority } from './fields';
 
-export function itemKeyLabel(item: Pick<Item, 'key'>): string {
+function itemKeyLabel(item: Pick<Item, 'key'>): string {
   return `#${item.key}`;
 }
 

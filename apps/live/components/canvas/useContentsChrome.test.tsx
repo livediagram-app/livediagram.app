@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages } from '@livediagram/document';
+import { layOutPages } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -10,17 +10,17 @@ import { useContentsChrome } from './useContentsChrome';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/illustrate-pages.md "Contents": docked as a sidebar on a desktop until the
+// docs/specs/007-editor/pages-mode.md "Contents": docked as a sidebar on a desktop until the
 // person minimises it; the popover over its button otherwise; a phone never has the sidebar.
 afterEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
 });
 
-const illustratePages = {
-  pages: layOutIllustratePages([
-    { id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' },
-  ]),
+const slide = (id: string) =>
+  ({ id, orientation: 'landscape', kind: 'slide', size: 'slide' }) as const;
+const pagesMode = {
+  pages: layOutPages([slide('p1'), slide('p2')]),
   focusPage: () => {},
 };
 
@@ -32,7 +32,7 @@ function chrome(
   const { result } = renderHook(() =>
     useContentsChrome({
       props: {
-        illustratePages,
+        pagesMode,
         userPreferences: {},
         elements: [],
         layers: [],
@@ -60,6 +60,26 @@ describe('useContentsChrome', () => {
     expect(c.closeDockPanel).toHaveBeenCalled();
   });
 
+  it('keeps the button with a single page: nothing to find your way round', () => {
+    const one = { ...pagesMode, pages: layOutPages([slide('p1')]) };
+    const c = chrome({ pagesMode: one } as never);
+    expect(c.contentsDocked).toBe(false);
+    expect(c.contentsSidebarEl).toBeNull();
+  });
+
+  it('pins to the left until moved, the side kept in this browser alone', () => {
+    expect(chrome().contentsSide).toBe('left');
+    const docked = chrome();
+    (
+      docked.contentsSidebarEl as ReactElement<{ onMoveToSide: (side: 'right') => void }>
+    ).props.onMoveToSide('right');
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ContentsSideRight');
+    expect(localStorage.getItem('livediagram:contents-side:v1')).toBe('right');
+    expect(chrome().contentsSide).toBe('right');
+    // Never in the synced preferences.
+    expect(readUserPreferences()).not.toHaveProperty('contentsSide');
+  });
+
   it('never docks on a phone, whatever the choice', () => {
     const c = chrome({ activeDockPanel: 'contents' }, { isMobile: true });
     expect(c.contentsDocked).toBe(false);
@@ -78,10 +98,10 @@ describe('useContentsChrome', () => {
     expect(open.contentsPopoverEl).not.toBeNull();
   });
 
-  it('shows nothing in Zen, with the chrome away, or outside Illustrate', () => {
+  it('shows nothing in Zen, with the chrome away, or outside Pages', () => {
     expect(chrome({ zenMode: true }).contentsSidebarEl).toBeNull();
     expect(chrome({}, { chromeHidden: true }).contentsSidebarEl).toBeNull();
-    const none = chrome({ illustratePages: null, activeDockPanel: 'contents' });
+    const none = chrome({ pagesMode: null, activeDockPanel: 'contents' });
     expect(none.contentsSidebarEl).toBeNull();
     expect(none.contentsPopoverEl).toBeNull();
   });

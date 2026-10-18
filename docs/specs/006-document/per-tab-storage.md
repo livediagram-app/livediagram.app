@@ -130,6 +130,10 @@ renders immediately rather than showing a spinner over real content.
   tab, the back-forward cache) and when the editor unmounts for another page of the app. Those writes stay alive
   past the page while they fit the browser's keepalive budget (64 KB in all, 60 KB used); the rest are sent as
   plain requests, which land when the page lives on. Two events on the same way out send the content once.
+- A text edit still open when the page goes (a label, an arrow label, a table cell, a one-line field) is part of
+  what goes. It commits on blur, and a reload or a closed tab fires none, so on `beforeunload` and `pagehide` the
+  flush first commits the open edit (`lib/open-edit.ts`, `useCommitOnLeave`); a label typed and left open used to
+  come back as its first letter.
 - A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
   ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.
 
@@ -198,8 +202,8 @@ toasting "Check your connection" on a wired fibre line.
 So it gets its own `unauthenticated` save status (`saveFailureStatus` in
 `save-failure.ts` maps every failure to exactly one status):
 
-- The toast reads "Couldn't confirm you're signed in, so your changes aren't
-  saving. Sign in again to keep them."
+- The toast reads "Your sign-in has lapsed, so changes aren't saving. Sign in
+  again."
 - The autosave keeps retrying on the next edit, unlike `forbidden`: the
   session can come back, and when it does the next save lands.
 
@@ -207,6 +211,23 @@ Every failed save also reaches error telemetry exactly once
 (`reportSaveFailure`): a failure the api client already reported
 (`Http*`, `Network.*`, `Auth.NoSessionToken`) isn't counted again, and
 anything else thrown on the save path reports as `SaveFailed.<Kind>`.
+
+### A tab too big to save says so
+
+A **413** (`payload_too_large`) is the server refusing a tab over its row cap
+([Tab size](../015-api/api.md#tab-size), `MAX_TAB_BYTES`, just under 2 MB: about 5,000 labelled shapes). It is
+neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. It used to toast
+"Couldn't save your changes. Check your connection." and retry every minute, a save that could never land.
+
+So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.ts`):
+
+- The toast reads "This tab is too big to save. Move some of it to another tab." It fires on the transition into
+  `tooLarge`, as the others do.
+- No retry timer: only an edit can change the size, and the next edit's save tries again (and lands once the tab
+  is back under the cap, clearing the status).
+- The last-chance flush on the way out still runs; it is refused the same way and changes nothing.
+- Leaving the page asks first, as while saves fail ([Load recovery](../007-editor/load-recovery.md) "Leaving with
+  unsaved changes asks first"): the changes are unsaved. The "Retrying" banner does not show, since nothing is retried.
 
 ### Autosave guard: never persist an unloaded tab
 

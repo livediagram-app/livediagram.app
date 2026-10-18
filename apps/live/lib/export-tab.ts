@@ -15,15 +15,17 @@ import {
   arrowLabelPass,
   articlesOf,
   drawingZoneClips,
-  illustratePagesOf,
+  pagesOf,
   isBoxed,
   isDrawingElement,
-  layOutIllustratePages,
+  layOutPages,
   layerBands,
   layerOpacityOf,
   shade,
   exportFontIds,
   visibleLayerElements,
+  type ArrowElement,
+  type ArrowLineMotion,
   type BoxedElement,
   type Element,
   type LaidOutPage,
@@ -90,7 +92,7 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
-  // One Illustrate page to export (docs/specs/007-editor/illustrate-pages.md "Export"): the
+  // One page to export (docs/specs/007-editor/pages-mode.md "Export"): the
   // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
   // backdrop do not apply.
   page?: LaidOutPage;
@@ -119,6 +121,17 @@ export type ImageExportOpts = {
   // in, so their words export in their own faces; without it a window draws its frame named for its tab.
   resolveTabWindow?: ResolveTabWindow;
   tabWindowFontIds?: readonly string[];
+  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each element's
+  // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
+  // Only a tab window passes it (an inline SVG on the page); every file export is a still.
+  motion?: SvgMotion;
+};
+
+// How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
+// line for an arrow's flow. Undefined for one that holds still.
+export type SvgMotion = {
+  boxed: (el: BoxedElement) => { className: string; style: string } | undefined;
+  arrowLine: (el: ArrowElement) => ArrowLineMotion | undefined;
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -140,7 +153,7 @@ import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
 function exportZoneClips(tab: Tab, page: LaidOutPage | undefined): Map<string, PageRect> {
   if (!page) return new Map();
   return drawingZoneClips(
-    layOutIllustratePages(illustratePagesOf(tab)),
+    layOutPages(pagesOf(tab)),
     articlesOf(tab),
     tab.elements,
     isDrawingElement,
@@ -272,7 +285,7 @@ export async function renderTabToCanvas(
   const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
-  // Content page reaches 19200 px, docs/specs/007-editor/illustrate-pages.md "Sizes").
+  // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
   const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
@@ -307,7 +320,7 @@ export async function renderTabToCanvas(
       // The paper behind it is already down: a failed paint must never abort the export.
     }
     // A slide's animated background, still as the slide opens, over its gradient and under all on
-    // it (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+    // it (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
     const pageFill = opts.page?.background?.fill;
     if (opts.page && pageFill?.kind === 'gradient' && pageFill.motion) {
       const r = opts.page.rect;
@@ -550,7 +563,7 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 // three image formats under the current isometric / pattern options.
 // A slide's animated background in the SVG export: a picture of its gradient with the motion as
 // it stands when the slide opens, as the PNG and PDF paint it (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
+// pages-mode.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
 // gradient.
 function pageMotionSvg(page: LaidOutPage | undefined): string {
   const fill = page?.background?.fill;
@@ -559,6 +572,13 @@ function pageMotionSvg(page: LaidOutPage | undefined): string {
   const href = motionFrameHref(fill, r.width, r.height);
   if (!href) return '';
   return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${href}"/>`;
+}
+
+// A boxed element's markup in the group its animation class rides (tab-window-motion.ts), or as it is.
+function withMotion(el: BoxedElement, motion: SvgMotion | undefined, svg: string): string {
+  const m = motion?.boxed(el);
+  if (!m) return svg;
+  return `<g class="lvd-svg-motion ${xmlEscape(m.className)}" style="${xmlEscape(m.style)}">${svg}</g>`;
 }
 
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
@@ -672,21 +692,25 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         inner.push(
           svgZoneClipped(
             el.id,
-            svgBoxed(el, {
-              resolveImageHref,
-              resolveIconArt: resolveIconArtLoaded,
-              resolveStickerArt: resolveStickerArtLoaded,
-              tabFont: tab.font,
-              tabFinish: tab.finish,
-              sketchBackdrop: backdrops.has(el.id),
-              surface,
-              ...chartInk,
-              items: opts.items,
-              itemTypes: opts.itemTypes,
-              sheets: opts.sheets,
-              resolvePlanArt: opts.resolvePlanArt,
-              resolveTabWindow: opts.resolveTabWindow,
-            }),
+            withMotion(
+              el,
+              opts.motion,
+              svgBoxed(el, {
+                resolveImageHref,
+                resolveIconArt: resolveIconArtLoaded,
+                resolveStickerArt: resolveStickerArtLoaded,
+                tabFont: tab.font,
+                tabFinish: tab.finish,
+                sketchBackdrop: backdrops.has(el.id),
+                surface,
+                ...chartInk,
+                items: opts.items,
+                itemTypes: opts.itemTypes,
+                sheets: opts.sheets,
+                resolvePlanArt: opts.resolvePlanArt,
+                resolveTabWindow: opts.resolveTabWindow,
+              }),
+            ),
             clips,
           ),
         );
@@ -706,6 +730,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               els,
               paper,
               tab.finish,
+              opts.motion?.arrowLine(el),
             ),
             clips,
           ),

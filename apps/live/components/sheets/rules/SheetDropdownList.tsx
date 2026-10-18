@@ -11,7 +11,7 @@ import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import type { SheetController } from '../sheet-controller';
 
 // Over this many options, a search field (data-validation.md; blueprint sheet-rules.md "Constants").
-export const DROPDOWN_SEARCH_FROM = 8;
+const DROPDOWN_SEARCH_FROM = 8;
 const LIST_WIDTH_PX = 240;
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();

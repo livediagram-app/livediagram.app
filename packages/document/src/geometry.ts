@@ -9,6 +9,7 @@ import {
   type Endpoint,
 } from './index';
 import { anchorLayoutPoint } from './anchor-layouts';
+import { entityFieldPoint } from './entity-geometry';
 import { anchorFraction, anchorLiesOn, offeredAnchors } from './anchors';
 import { rotatePoint, type Point, type Rect } from './geometry-primitives';
 import { anchorOutline, connectorBox, projectOntoOutline } from './shape-outline';
@@ -165,7 +166,33 @@ export function endpointPosition(
   }
   const target = lookup(endpoint.elementId);
   if (!target || !isBoxed(target)) return { x: 0, y: 0 };
+  if (endpoint.field !== undefined) {
+    const onField = fieldEndPosition(target, endpoint.anchor, endpoint.field);
+    if (onField) return onField;
+  }
   return anchorPosition(target, endpoint.anchor);
+}
+
+// A field-pinned end on an entity (docs/specs/009-elements/entity.md "Field to field"): the left or right
+// edge, level with the field's row, turned with the element. Null (the plain anchor applies) on any other
+// element, on a top or bottom anchor, or for a field that is not drawn.
+export function fieldEndPosition(
+  element: BoxedElement,
+  anchor: Anchor,
+  field: number,
+): Point | null {
+  if (element.type !== 'shape' || element.shape !== 'entity') return null;
+  const side = anchorLiesOn(anchor, 'w') ? 'w' : anchorLiesOn(anchor, 'e') ? 'e' : null;
+  if (!side) return null;
+  const local = entityFieldPoint(element, side, field, element.entityFields?.length ?? 0);
+  if (!local) return null;
+  const rotation = element.rotation ?? 0;
+  if (!rotation) return local;
+  return rotatePoint(
+    local,
+    { x: element.x + element.width / 2, y: element.y + element.height / 2 },
+    rotation,
+  );
 }
 
 export function elementBounds(element: Element, elements: Element[]): Rect {

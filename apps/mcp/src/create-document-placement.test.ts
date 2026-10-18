@@ -83,7 +83,7 @@ describe('create_document intent', () => {
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'facilitate', tabKind: 'diagram' }],
-    ['floor-plan', { mode: 'illustrate', tabKind: 'diagram' }],
+    ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'facilitate', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
@@ -130,9 +130,9 @@ describe('create_document intent', () => {
 });
 
 describe('create_document folder', () => {
-  it('reports My documents when the document landed at the root', async () => {
+  it('reports My Documents when the document landed at the root', async () => {
     const { run, requested } = harness({ folderId: null, teamId: null });
-    expect((await run([elements])).structuredContent.folder).toBe('My documents');
+    expect((await run([elements])).structuredContent.folder).toBe('My Documents');
     expect(requested.filter((r) => r.startsWith('GET') && !r.includes('/tabs/'))).toEqual([]);
   });
 

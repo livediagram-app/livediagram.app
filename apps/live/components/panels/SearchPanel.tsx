@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { NoMatches, SearchIcon, useEscape } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
@@ -16,6 +16,7 @@ import {
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type {
   SearchPanelDocument,
   SearchPanelFolder,
@@ -139,6 +140,10 @@ export function SearchPanel({
     openedRef.current = true;
     track('Search', 'Opened');
   }, []);
+
+  // A full-screen modal that does not use the Dialog shell, so it registers with the modal guard itself: the
+  // canvas shortcuts behind it go quiet and the tours wait for it (docs/specs/007-editor/editor-tour.md).
+  useModalGuard(true);
 
   // Esc closes. Capture phase + stopPropagation so the modal owns
   // the key even when the editor's global shortcuts are listening.
@@ -284,7 +289,7 @@ export function SearchPanel({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <kbd className="text-[10px] font-medium">Esc</kbd>
           </button>
@@ -338,7 +343,7 @@ export function SearchPanel({
                         </span>
                         {/* A plain label: a link cannot sit inside this result button. */}
                         {item.kind === 'document' && item.localOnly ? (
-                          <LocalOnlyPill asLabel />
+                          <ThisBrowserPill asLabel />
                         ) : null}
                         {item.kind === 'element' ? (
                           <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">

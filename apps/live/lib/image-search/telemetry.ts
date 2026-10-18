@@ -23,7 +23,7 @@ const PICK_WARNINGS = {
 
 export const IMAGE_SEARCH_THUMBNAIL_FALLBACK = 'ImageSearch.ThumbnailFallback';
 
-export type ImageSearchWarning =
+type ImageSearchWarning =
   | (typeof SEARCH_WARNINGS)[OpenverseSearchErrorKind]
   | (typeof PICK_WARNINGS)[PickFailure]
   | typeof IMAGE_SEARCH_THUMBNAIL_FALLBACK;

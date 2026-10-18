@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, type RefObject } from 'react';
 
 // How tall a growing field may get: a fixed height in px (the comment composer), or a number of its own lines (the
 // card panel's title: three), measured from its computed line height and padding.
-export type AutoHeightMax = { px: number } | { lines: number };
+type AutoHeightMax = { px: number } | { lines: number };
 
 // The tallest a field may be, border-box, for `max`; Infinity when its line height cannot be read.
 function maxHeightOf(field: HTMLElement, max: AutoHeightMax, borders: number): number {

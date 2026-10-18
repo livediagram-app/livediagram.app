@@ -18,11 +18,11 @@ import { isValidElement } from './validate';
 
 // The element types a Participant may add. A `shape` only as a mind node grown from another, an `arrow` only as
 // the connector between two mind nodes (`addableOn`).
-export const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image', 'shape', 'arrow'] as const;
+const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image', 'shape', 'arrow'] as const;
 // The fields a Participant may change on an element someone else added: its words.
-export const PARTICIPANT_TEXT_FIELDS = ['label', 'richText'] as const;
+const PARTICIPANT_TEXT_FIELDS = ['label', 'richText'] as const;
 // What else a Participant may change on anyone's sticky: where it sits and its colour.
-export const PARTICIPANT_STICKY_FIELDS = [
+const PARTICIPANT_STICKY_FIELDS = [
   'fillColor',
   'strokeColor',
   'textColor',
@@ -30,22 +30,22 @@ export const PARTICIPANT_STICKY_FIELDS = [
 ] as const;
 // The elements a Participant may place on anyone's behalf: move and resize, since they are the content itself. A
 // text box is not one: it often labels the board's structure, so it stays where its author put it.
-export const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
-export const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
+const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
+const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
 // The most a Participant's writing may grow anyone's mind node, per character of its label: a line of the
 // largest label there is (TEXT_PX_MAX) at double line height, as if every character wrapped alone. Generous for
 // any real label, and a bound, so one changed letter cannot stretch a node to ten million pixels that only an
 // Editor could put back (it never shrinks on its own).
 export const MIND_GROW_PX_PER_CHAR = TEXT_PX_MAX * 2;
 // What a Participant may change on anyone's mind node: where it sits, so growing a map re-lays it tidily.
-export const PARTICIPANT_MIND_FIELDS = ['x', 'y'] as const;
+const PARTICIPANT_MIND_FIELDS = ['x', 'y'] as const;
 // What a Participant may change on anyone's flowchart step: where it sits, so growing a chart lays it out
 // (docs/specs/009-elements/flowchart.md "Share roles").
-export const PARTICIPANT_STEP_FIELDS = ['x', 'y'] as const;
+const PARTICIPANT_STEP_FIELDS = ['x', 'y'] as const;
 // What a Participant may change on anyone's flowchart lane: its band, which the chart's layout fits to its steps.
-export const PARTICIPANT_LANE_FIELDS = ['x', 'y', 'width', 'height'] as const;
+const PARTICIPANT_LANE_FIELDS = ['x', 'y', 'width', 'height'] as const;
 // What a Participant may change on anyone's image: the picture it shows.
-export const PARTICIPANT_IMAGE_FIELDS = [
+const PARTICIPANT_IMAGE_FIELDS = [
   'imageId',
   'naturalWidth',
   'naturalHeight',
@@ -82,7 +82,7 @@ export function participantWritesOn(el: Element): boolean {
   return !(el.type === 'shape' && isBehaviourShape(el.shape));
 }
 
-export function isParticipantAddable(type: string): boolean {
+function isParticipantAddable(type: string): boolean {
   return (PARTICIPANT_ADDABLE_TYPES as readonly string[]).includes(type);
 }
 
@@ -131,7 +131,7 @@ function isMindConnectorOn(tab: Tab, el: Element): boolean {
 // Whether a Participant may remove this element though someone else added it: any mind node (decided 2026-10-10),
 // and a mind connector, including one whose node went first in the same change (each end a mind node on the tab
 // or no longer on it), so deleting a node takes its branch line with it.
-export function removableByAnyone(tab: Tab, el: Element): boolean {
+function removableByAnyone(tab: Tab, el: Element): boolean {
   if (isMindNode(el)) return true;
   if (el.type !== 'arrow') return false;
   const ends = [(el as { from: Endpoint }).from, (el as { to: Endpoint }).to];
@@ -145,7 +145,7 @@ export function removableByAnyone(tab: Tab, el: Element): boolean {
 // Whether a Participant may add this element to the tab, or hold it there as its own after a change: a sticky,
 // text or image anywhere; a mind node only as a branch of one already on the tab, a flowchart step only in a chart
 // already on it; an arrow only between two mind nodes or two steps of one chart.
-export function addableOn(tab: Tab, el: Element): boolean {
+function addableOn(tab: Tab, el: Element): boolean {
   if (!isParticipantAddable(el.type)) return false;
   if (el.type === 'shape') {
     if (isMindNode(el)) return mindNodeOn(tab, (el as Bag).mindParentId);

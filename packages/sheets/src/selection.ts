@@ -230,7 +230,7 @@ export function selectsSeveral(sel: Selection, grid: Grid): boolean {
 }
 
 // The range Enter and Tab move within, when more than one cell is selected.
-export function primaryRange(sel: Selection): GridRange {
+function primaryRange(sel: Selection): GridRange {
   return sel.ranges[sel.ranges.length - 1]!;
 }
 

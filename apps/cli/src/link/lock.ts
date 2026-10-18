@@ -10,7 +10,7 @@ import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { SYNC_LOCK_POLL_MS, SYNC_LOCK_WAIT_MS } from './constants';
 
-export type LinkLock = { release(): Promise<void> };
+type LinkLock = { release(): Promise<void> };
 
 type Holder = { pid: number; hostname: string };
 

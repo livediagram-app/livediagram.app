@@ -110,7 +110,7 @@ ColourPicker({
 - Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` call `onPreview(id)`; `onPointerLeave` of the root
   and focus leaving the root call `onPreviewEnd`; unmount reverts (`useRevertOnUnmount`).
 - **Add a custom colour** (`MoreColoursGlyph`) toggles the editor; Use calls `onPick(hex)` and closes it.
-- Outside-press handling: `ContextMenu`, `IllustratePagePanel` and `RichTextEditor` ignore presses and focus inside
+- Outside-press handling: `ContextMenu`, `PagePanel` and `RichTextEditor` ignore presses and focus inside
   `[data-anchored-popover]`, so a picker popover never closes its host.
 
 ## Data and persistence

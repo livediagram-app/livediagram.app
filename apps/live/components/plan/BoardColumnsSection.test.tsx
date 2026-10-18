@@ -37,7 +37,7 @@ const kanban: PlanBoardSetup = {
 
 function show(setup: PlanBoardSetup, overrides: Record<string, unknown> = {}) {
   for (const key of Object.keys(plan)) delete plan[key];
-  const updateBoard = vi.fn();
+  const updateBoard = vi.fn<(elementId: string, setup: PlanBoardSetup) => void>();
   Object.assign(
     plan,
     {
@@ -61,8 +61,7 @@ function show(setup: PlanBoardSetup, overrides: Record<string, unknown> = {}) {
   } as ShapeElement;
   const onClose = vi.fn();
   const { rerender } = render(<BoardColumnsSection element={element} open onClose={onClose} />);
-  const statuses = () =>
-    (updateBoard.mock.lastCall?.[1] as PlanBoardSetup | undefined)?.columns.map((c) => c.status);
+  const statuses = () => updateBoard.mock.lastCall?.[1].columns.map((c) => c.status);
   // The board redrawn with the set-up it was just given.
   const redraw = () =>
     rerender(

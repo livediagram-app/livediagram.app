@@ -7,7 +7,7 @@ import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 import { getPaletteDragPreview, subscribePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { dropSlotAt } from './usePlanCardDrag';
 
-export type PlanCardDrop =
+type PlanCardDrop =
   | { outcome: 'added' }
   | { outcome: 'refused'; message: string }
   | { outcome: 'missed'; message: string };
@@ -53,7 +53,7 @@ export function boardClientPoint(
 // The gap a palette card opens in a column while it is dragged over a board (the same gap a card from
 // another board opens), so the drop points show before the drop. A fixed height: the card is not made
 // yet, so it has no size on screen to borrow.
-export const PLAN_PALETTE_GAP_PX = 56;
+const PLAN_PALETTE_GAP_PX = 56;
 
 let hovered: string | null = null;
 
