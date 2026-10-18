@@ -116,7 +116,7 @@ curl -X PUT https://livediagram.app/api/documents/$DOC/item-types \
   }'
 ```
 
-Up to 32 types. A custom field's `kind` is `text`, `longtext`, `number`, `date`, `checkbox`, `link`, `choice` or `card`, and its id starts `f-`. `"itemTypes": null` goes back to the default types (Project, Task, Note, Idea, Action). If someone changed the types since you read them, the answer is `409 item_types_stale` with the stored catalogue and revision, to apply your change to again. This needs edit access to the whole document.
+Up to 32 types. A custom field's `kind` is `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `multichoice`, `rating` or `card`, and its id starts `f-`. `"itemTypes": null` goes back to the default types (Project, Task, Note, Idea, Action). If someone changed the types since you read them, the answer is `409 item_types_stale` with the stored catalogue and revision, to apply your change to again. This needs edit access to the whole document.
 
 The [CLI](/help/developers/cli/) (`item add`, `item set`, `item move`, `type ls`) and the MCP server's `change_items` and `change_card_types` do all of this by column and type **names**, which is easier for an agent than status ids.
 

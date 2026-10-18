@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles and posters, and Plan for boards of cards. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles, posters and logos, and Plan for boards of cards, spreadsheets and forms. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -69,7 +69,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start drawing and pick a starting point: a blank canvas in any mode, or one of ${TEMPLATE_COUNT} templates. The document opens straight away, and a short tour points out where everything lives.`,
+        a: `Press Start drawing and choose what you are making: Diagram, Draw, Workshop, Pages or Plan. The document opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -160,11 +160,26 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
         a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+      },
+      {
+        q: 'Can I make a diagram look hand-drawn?',
+        a: (
+          <>
+            Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and
+            print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip,
+            like a flip chart). Switch it from the tab's style, or set it on one element, and
+            nothing about the diagram changes underneath. Ready-made looks set the theme, finish,
+            font and canvas pattern in one click. See{' '}
+            <a href="/help/canvas/finish/">choosing a finish</a>.
+          </>
+        ),
+        aText:
+          "Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip, like a flip chart). Switch it from the tab's style, or set it on one element, and nothing about the diagram changes underneath. Ready-made looks set the theme, finish, font and canvas pattern in one click. See choosing a finish.",
       },
       {
         q: 'What are the five modes?',
@@ -179,13 +194,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the
-            mouse. Pick a Tree, Balanced, Downward or Bubble layout, tidy it in one click, or open
-            Edit Outline to rewrite the whole map as an indented list. See{' '}
+            mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in
+            one click, or open Edit Outline to rewrite the whole map as an indented list. See{' '}
             <a href="/help/palette/mind-maps/">mind maps</a>.
           </>
         ),
         aText:
-          'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Balanced, Downward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
+          'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
       },
       {
         q: 'Can I plan projects with it?',
@@ -318,6 +333,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Select some cells to chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files come in and go out, and twelve templates start you off, from a Budget Planner and an Invoice to a Loan Calculator and a Habit Tracker. See Sheets.',
       },
       {
+        q: 'Can I make a form or survey?',
+        a: (
+          <>
+            Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event
+            RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in
+            without an account; every response lands as a card on a board or a row in a Sheet, so
+            the answers turn straight into work. See{' '}
+            <a href="/help/canvas/plan-mode/forms/">forms</a>.
+          </>
+        ),
+        aText:
+          'Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in without an account; every response lands as a card on a board or a row in a Sheet, so the answers turn straight into work. See forms.',
+      },
+      {
         q: 'Can I present from it?',
         a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Pages adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
       },
@@ -364,6 +393,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
+      },
+      {
+        q: 'Can we walk around a board together?',
+        a: (
+          <>
+            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
+            character around the canvas, with speech bubbles, a status and reactions. The Virtual
+            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
+            coffee machine to meet at. See{' '}
+            <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
       },
       {
         q: 'Can I stop a finished tab being changed?',
@@ -527,7 +570,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',
@@ -636,7 +679,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance and photo import switch on when you add an AI key, and email and the Google Drive mirror once sign-in and their own keys are set up.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email and the Google Drive mirror once sign-in and their own keys are set up.',
       },
     ],
   },

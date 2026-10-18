@@ -175,6 +175,20 @@ livediagram article set "Project brief" brief.md                  # write it bac
 
 `page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
 
+## Forms
+
+A [form](/help/canvas/plan-mode/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:
+
+```bash
+livediagram form add --starter rsvp --name "Summer Party"   # a new document with a Form tab
+livediagram form get "Summer Party"                         # its questions, where responses go, its link
+livediagram form change "Summer Party" changes.json         # up to 50 changes, all or nothing
+livediagram form share "Summer Party" publish               # or close, or delete-link
+livediagram form try "Summer Party" answers.json            # one test response, as the builder's Preview sends
+```
+
+A test response makes a card (or sheet row) titled **Preview:**, so you can see each answer land where you expect, then delete it.
+
 ## Files, Exports and Pictures
 
 ```bash

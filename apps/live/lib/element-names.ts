@@ -4,6 +4,8 @@
 // they can't drift.
 
 import {
+  CHART_TYPE_LABELS,
+  chartTypeOf,
   DEFAULT_SESSION_TOOL,
   type BoxedElement,
   type Element,
@@ -42,7 +44,11 @@ export function kindLabel(el: Element): string {
   // A session button names the tool it starts ('Timer', 'Poll'), not the generic kind, which said nothing about it.
   if (el.type === 'shape' && el.shape === 'session-button')
     return SESSION_TOOL_KIND[el.session?.tool ?? DEFAULT_SESSION_TOOL];
-  if (el.type === 'shape') return shapeKindLabel(el.shape);
+  if (el.type === 'shape') {
+    // A chart is named by its chart type, as the palette names it: 'Column chart', not its kind's 'Bar chart'.
+    const chart = chartTypeOf(el);
+    return chart ? `${CHART_TYPE_LABELS[chart]} chart` : shapeKindLabel(el.shape);
+  }
   return 'Element';
 }
 

@@ -290,6 +290,11 @@ inset, as the menu box's mode tile does), and to its right the chosen category's
   for a new name, names the selection ([Named ranges](#named-ranges)). A name that cannot be one says why in a toast
   ("Names start with a letter or _, then letters, digits, _ or .", "That reads as a cell reference", "Another range on
   this sheet is called that").
+- **An open edit is saved before the name box moves.** Enter in the name box saves the cell being edited first, as a
+  press on another cell does; an edit that cannot be saved (a formula missing its bracket) stays open, back in it
+  with its error, and the selection does not move. Escape there also returns to the edit. Wherever focus lands on the
+  grid while an edit stays open (a toolbar button pressed mid-way through such a formula), a key is the edit's:
+  Escape gives it up and any other key goes on in it (`focusOpenEdit`). Before, every key after went nowhere.
 - **fx** and the bar show the active cell's input (a formula as typed, a number unformatted); editing there edits
   the cell, as typing in it does. It grows to three lines for a long input, then scrolls.
 
@@ -480,7 +485,7 @@ at a glance rather than as a long list. Each row names what it will do to this s
 | Insert          | **Insert Row Above**, **Insert Row Below**, **Insert Column Left**, **Insert Column Right** (as many as the selection spans: "Insert 3 Rows Above"), then **Insert Cells, Shift Right**, **Insert Cells, Shift Down**                                                                                                  |
 | Delete          | **Delete Row 4** / **Delete Rows 2 to 4**, **Delete Column B** / **Delete Columns B to C**, then **Delete Cells, Shift Left**, **Delete Cells, Shift Up**                                                                                                                                                              |
 | Cells           | **Merge Cells** (a selection of more than one cell; asking first when it would drop values) or **Unmerge Cells** (a selection touching a merge), **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**, **Conditional Formatting…** ([Conditional formatting](conditional-formatting.md)) |
-| Sort            | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**                                                                                                                                                                                                      |
+| Sort            | **Sort Sheet A to Z**, **Sort Sheet Z to A** (the sheet by the active cell's column, as the toolbar's Sort, and named as it is there), **Custom Sort…**                                                                                                                                                                |
 | Paste Special   | **Values Only**, **Formatting Only**                                                                                                                                                                                                                                                                                   |
 | Data Validation | **Dropdown**, **Checkbox**, **Data Validation…**, **Remove Validation** (the selection touches a rule) ([Data validation](data-validation.md))                                                                                                                                                                         |
 | Chart           | **Column Chart**, **Bar Chart**, **Line Chart**, **Area Chart**, **Scatter Chart**, **Pie Chart**, **Doughnut Chart**                                                                                                                                                                                                  |
@@ -575,7 +580,7 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
 ### Sort
 
 - **Sort A to Z / Z to A** on a column sorts the whole sheet's rows by it, keeping frozen rows (headers) in place.
-- **Sort Range…** sorts the selection only: by one column or more (each A to Z or Z to A), with **Data has a header
+- **Custom Sort…** sorts the selection only (its dialog is titled Custom Sort): by one column or more (each A to Z or Z to A), with **Data has a header
   row** to keep the first row.
 - Order: numbers ascending, then text (ignoring case), then true/false, then errors, then empty cells last, both
   ways.
@@ -583,7 +588,7 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
 - A sort is one change, undone in one step.
 - A sort over rows a merge spans (a merge of more than one row: Merge Cells down, not Merge Across) is refused, as in
   Google Sheets and Excel, with "Unmerge the cells that span rows before sorting.": moving its rows apart would
-  stretch the merge over whatever lands between them. Sort Range refuses only for a merge inside its range; an
+  stretch the merge over whatever lands between them. Custom Sort refuses only for a merge inside its range; an
   agent's sort is refused the same way (`merge_split`).
 
 ### Filter

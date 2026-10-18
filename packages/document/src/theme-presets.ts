@@ -1,5 +1,5 @@
 import type { BorderStroke, BorderStyle } from './border-style';
-import { canvasSurface, isLightColor, shade, tint } from './colors';
+import { canvasSurface, DARK_INK, isLightColor, shade, tint } from './colors';
 import type { Element } from './index';
 import { labelOn as readableLabelOn, reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';
 import type { ThemeDefinition } from './themes';
@@ -159,6 +159,10 @@ function buildShapeColorPresets(theme: ThemeDefinition, readable: boolean): Shap
   const dark = canvasSurface(theme.backgroundColor) === 'dark';
   const quiet = (c: string, amount: number) => (dark ? shade(c, amount) : tint(c, amount));
   const ink = (c: string, amount: number) => (dark ? tint(c, amount) : shade(c, amount));
+  // The Border tier is a line drawing on the paper: white on a light canvas; on a dark one the half's own element
+  // fill, or the dark ink's for a theme that paints none (Default). White there was a glaring card: the flowchart
+  // template's error step on a dark canvas.
+  const lineFill = dark ? (theme.elementFill ?? DARK_INK.fill) : '#ffffff';
 
   const pool: ShapeColorPreset[] = [];
   // ── Theme: the accent, quiet → loud ──
@@ -279,7 +283,7 @@ function buildShapeColorPresets(theme: ThemeDefinition, readable: boolean): Shap
       // the two never dedupe into one.
       id: 'hairline',
       name: 'Hairline',
-      fill: '#ffffff',
+      fill: lineFill,
       stroke: accent,
       text: accent,
       borderStroke: 'thin',
@@ -288,36 +292,36 @@ function buildShapeColorPresets(theme: ThemeDefinition, readable: boolean): Shap
     {
       id: 'outline',
       name: 'Outline',
-      fill: '#ffffff',
+      fill: lineFill,
       stroke: accent,
-      text: shade(accent, 0.3),
+      text: ink(accent, 0.3),
       borderStroke: 'medium',
       borderStyle: 'dashed',
     },
     {
       id: 'dotted',
       name: 'Dotted',
-      fill: tint(accent, 0.85),
+      fill: quiet(accent, 0.85),
       stroke: accent,
-      text: shade(accent, 0.45),
+      text: ink(accent, 0.45),
       borderStroke: 'medium',
       borderStyle: 'dotted',
     },
     {
       id: 'dash-dot',
       name: 'Dash-Dot',
-      fill: tint(accent, 0.92),
+      fill: quiet(accent, 0.92),
       stroke: accent,
-      text: shade(accent, 0.4),
+      text: ink(accent, 0.4),
       borderStroke: 'medium',
       borderStyle: 'dash-dot',
     },
     {
       id: 'frame',
       name: 'Frame',
-      fill: '#ffffff',
-      stroke: shade(accent, 0.4),
-      text: shade(accent, 0.5),
+      fill: lineFill,
+      stroke: ink(accent, 0.4),
+      text: ink(accent, 0.5),
       borderStroke: 'thick',
       borderStyle: 'solid',
     },

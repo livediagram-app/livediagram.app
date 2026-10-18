@@ -161,11 +161,20 @@ export function themeColourMap(
       for (const k of ['fill', 'stroke', 'text'] as const) {
         const key = p[k].toLowerCase();
         if (!map.has(key)) map.set(key, to[k]);
+        // Keyed by the preset too: a colour two presets share (Paper's and Outline's white) maps by the one the shape
+        // wears, not by whichever claimed the bare colour first.
+        const byPreset = presetColourKey(p.id, p[k]);
+        if (!map.has(byPreset)) map.set(byPreset, to[k]);
       }
     }
   }
   MAPS.set(theme, { ...MAPS.get(theme), [appearance]: map });
   return map;
+}
+
+// A preset's colour in the map, keyed by the preset it belongs to ('|' never appears in a colour key).
+function presetColourKey(presetId: string, colour: string): string {
+  return `${presetId}|${colour.toLowerCase()}`;
 }
 
 // The element colour fields a theme paints (any element kind), which a viewer's half redraws.
@@ -177,10 +186,13 @@ const VIEWED_FIELDS = ['fillColor', 'strokeColor', 'textColor', 'arrowheadColor'
 export function viewElementInTheme<T extends object>(el: T, map: ReadonlyMap<string, string>): T {
   if (map.size === 0) return el;
   let patch: Record<string, string> | null = null;
+  const preset = (el as { colorPreset?: unknown }).colorPreset;
   for (const field of VIEWED_FIELDS) {
     const value = (el as Record<string, unknown>)[field];
     if (typeof value !== 'string') continue;
-    const to = map.get(value.toLowerCase());
+    const to =
+      (typeof preset === 'string' ? map.get(presetColourKey(preset, value)) : undefined) ??
+      map.get(value.toLowerCase());
     if (to && to !== value) (patch ??= {})[field] = to;
   }
   if (patch && breaksTextPair(el as Record<string, unknown>, patch)) {

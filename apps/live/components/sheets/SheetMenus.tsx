@@ -381,11 +381,11 @@ function SortDialog({ actions, onClose }: { actions: SheetActions; onClose: () =
   return (
     <ContextMenu
       position={{ x: (rect?.left ?? 100) + 60, y: (rect?.top ?? 100) + 40 }}
-      label="Sort range"
+      label="Custom Sort"
       onClose={onClose}
     >
       <div className="w-72 px-3 py-2 text-[12px]" onKeyDown={(e) => e.stopPropagation()}>
-        <div className="mb-2 font-semibold">Sort Range</div>
+        <div className="mb-2 font-semibold">Custom Sort</div>
         <label className="mb-2 flex cursor-pointer items-center gap-1.5">
           <input type="checkbox" checked={header} onChange={(e) => setHeader(e.target.checked)} />
           Data has a header row

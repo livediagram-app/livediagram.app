@@ -24,6 +24,7 @@ import {
   EDIT_KEYS,
   runModShortcut,
   coveredKeyRole,
+  PARTICIPANT_KEYS,
   VIEW_TOOL_KEYS,
   WHITEBOARD_EDIT_KEYS,
   WHITEBOARD_VIEW_KEYS,
@@ -285,7 +286,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // An empty start search hands undo and redo on (start-diagramming.md): it has no typing of its own to undo.
         const historyChord = lower === 'z' || lower === 'y';
         if (inText && !(historyChord && passesHistoryChords(target))) return;
-        runModShortcut(e, live);
+        // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the
+        // canvas's, as on a covered canvas: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
+        if (!runModShortcut(e, live) && live.isReadOnly && coveredKeyRole(e) === 'swallow') {
+          e.preventDefault();
+        }
         return;
       }
 
@@ -399,7 +404,16 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      if (live.isReadOnly) return;
+      if (live.isReadOnly) {
+        // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
+        const add =
+          live.participant && live.canvasTool !== 'avatar' ? PARTICIPANT_KEYS[lower] : undefined;
+        if (add) {
+          e.preventDefault();
+          add(live);
+        }
+        return;
+      }
       // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
       // element-add / Eraser / Pencil keys stay dormant while walking, so a
       // stray keypress can't drop a shape mid-narration. The view tools above

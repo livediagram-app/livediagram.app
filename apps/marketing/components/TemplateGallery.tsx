@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { CategoryTiles } from '@/components/CategoryTiles';
 import { TemplateCard } from '@/components/TemplateCard';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import { galleryShelves, type ShelfId } from '@/lib/template-gallery';
+import { shelfScrollTarget } from '@/lib/shelf-scroll';
 import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
 import { EYEBROW } from '@/components/eyebrow';
 
@@ -32,6 +33,18 @@ export function TemplateGallery() {
     setOpenId(id);
     setOpened(true);
   };
+  // A shelf the visitor opens is brought into view when it is not (lib/shelf-scroll.ts): it opens
+  // above the cards, so from a card lower down it would open out of sight. Smooth, at once under
+  // reduced motion.
+  const shelfRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = shelfRef.current;
+    if (!opened || !el) return;
+    const to = shelfScrollTarget(el.getBoundingClientRect(), window.innerHeight, window.scrollY);
+    if (to === null) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: to, behavior: reduce ? 'auto' : 'smooth' });
+  }, [openId, opened]);
 
   return (
     <section id="templates" className={`${BAND_SECTION} scroll-mt-[72px]`}>
@@ -46,21 +59,23 @@ export function TemplateGallery() {
         </div>
 
         <div className="mt-12 flex flex-col gap-10">
-          {open.map((shelf) => (
-            <TemplateCarousel
-              key={shelf.id}
-              label={shelf.label}
-              count={shelf.templates.length}
-              itemsKey={shelf.templates.map((t) => t.kind).join(',')}
-              reveal={opened}
-            >
-              {shelf.templates.map((t, i) => (
-                <li key={t.kind} style={{ '--tg-i': i } as CSSProperties}>
-                  <TemplateCard template={t} source="Home.Gallery" />
-                </li>
-              ))}
-            </TemplateCarousel>
-          ))}
+          <div ref={shelfRef}>
+            {open.map((shelf) => (
+              <TemplateCarousel
+                key={shelf.id}
+                label={shelf.label}
+                count={shelf.templates.length}
+                itemsKey={shelf.templates.map((t) => t.kind).join(',')}
+                reveal={opened}
+              >
+                {shelf.templates.map((t, i) => (
+                  <li key={t.kind} style={{ '--tg-i': i } as CSSProperties}>
+                    <TemplateCard template={t} source="Home.Gallery" />
+                  </li>
+                ))}
+              </TemplateCarousel>
+            ))}
+          </div>
           {folded.length > 0 ? <CategoryTiles groups={folded} onOpen={openCategory} /> : null}
         </div>
       </div>

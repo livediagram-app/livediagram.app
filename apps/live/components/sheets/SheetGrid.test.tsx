@@ -482,3 +482,19 @@ describe('presence', () => {
     expect(sent.at(-1)).toMatchObject({ ranges: null });
   });
 });
+
+// docs/specs/029-sheets/sheet.md "Formula bar": an edit left open with focus on the grid (a formula it could not save,
+// then a toolbar button) kept every key from it, Escape included. The keys are the edit's.
+describe('keys on the grid while an edit stays open', () => {
+  it('give the edit up on Escape, and return any other key to the edit', async () => {
+    const h = await mountGrid({ rows: 5, cols: 3 });
+    act(() => h.c().setEditing({ r: 0, c: 0, origin: 'cell', draft: '=(1+2' }));
+    const editor = document.querySelector<HTMLTextAreaElement>('textarea[data-sheet-editor]')!;
+    act(() => h.grid.focus());
+    key(h, { key: 'x' });
+    expect(document.activeElement).toBe(editor);
+    act(() => h.grid.focus());
+    key(h, { key: 'Escape' });
+    expect(h.c().editing).toBeNull();
+  });
+});
