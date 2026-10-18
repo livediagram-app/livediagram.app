@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { refocusAfterField } from './refocus-after-field';
 
 // Inline rename input shared by the document title (EditorHeader), tabs
 // (TabBar), and tab folders (TabFolderChip). Mounts focused with the
@@ -39,9 +40,11 @@ export function NameEditor({
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
+          refocusAfterField(e.currentTarget);
           onCommit(value);
         } else if (e.key === 'Escape') {
           e.preventDefault();
+          refocusAfterField(e.currentTarget);
           onCancel();
         }
       }}
