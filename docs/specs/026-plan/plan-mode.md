@@ -19,8 +19,8 @@ item store.
 
 ## Offering the mode
 
-- Plan is the fifth mode, after Illustrate: the mode switch, the tab menu's mode rows, **Shift+D** and the template picker's
-  mode filter list it in that order.
+- Plan is the fifth mode, after Illustrate: a start's mode switch, **Shift+D** on an empty tab and the template
+  picker's mode filter list it in that order.
 - It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
   Its Settings › Experimental switch went when it graduated.
 - Its mark is a board: three columns, the middle one holding a raised card.
@@ -168,8 +168,9 @@ Plan must cost nothing to a document that does not use it:
   take the pointer or the keyboard there; switching back to Plan makes them work again.
 - **A diagram is welcome in Plan**: a tab's shapes, ink, arrows and pages stay on it in Plan mode, worked the Diagram
   way (Plan's palette offers fewer of them, nothing more).
-- The mode switch and **Shift+D** switch at once, with no question, as between any two modes; Shift+D announces
-  the mode it reached.
+- A start's mode switch and **Shift+D** switch an empty tab at once, with no question, as between any two modes;
+  Shift+D announces the mode it reached. A tab with content keeps its mode
+  ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)).
 - A tab with Plan content is never added to another document: the tab menu's **Add to Document** is off for it,
   as its cards are this document's items.
 - Telemetry: a switch is the existing mode event (`Editor` · `Changed` · `ModePlan`, ...), nothing more.

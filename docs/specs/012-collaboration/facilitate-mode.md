@@ -40,7 +40,7 @@ boards.
 - **The Session strip with all three tools**, Timer, Vote and Poll, with their set-up panes
   ([Session tools](session-tools.md#the-session-strip)).
 - **It starts on Select** (Hand on a phone), like Diagram.
-- **Its mark** is a flipchart on an easel, on the switch, the tab menu's Mode, the tab pill, the
+- **Its mark** is a flipchart on an easel, on a start's mode switch, the tab pill, the
   template picker's mode filter, the Explorer's Opens in and the help article.
 
 ## What Diagram gives up

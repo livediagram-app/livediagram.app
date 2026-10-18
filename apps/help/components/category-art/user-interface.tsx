@@ -13,13 +13,13 @@ function Callout({ cx, cy, n }: { cx: number; cy: number; n: number }) {
   );
 }
 
-// User Interface: the whole editor laid out, with numbered callouts on its parts: the menu and mode switch,
+// User Interface: the whole editor laid out, with numbered callouts on its parts: the menu and tab name,
 // the palette strip, the style panel, and the tab bar and zoom along the foot.
 export function UserInterfaceArt() {
   return (
     <Stage>
       <Window x={14} y={10} w={372} h={200} title="Product launch · livediagram">
-        {/* Menu button and mode switch. */}
+        {/* Menu button and the tab's name. */}
         <rect
           x={24}
           y={42}
@@ -35,9 +35,9 @@ export function UserInterfaceArt() {
           strokeWidth={1.4}
           strokeLinecap="round"
         />
-        <rect x={46} y={46} width={32} height={14} rx={4} className="fill-brand-50" />
-        <Label x={62} y={53.5} anchor="middle" size={7.5} weight={700} tone="accent">
-          Diagram
+        <line x1={46} y1={47} x2={46} y2={59} className="stroke-slate-200" strokeWidth={1} />
+        <Label x={64} y={53.5} anchor="middle" size={7.5} weight={600} tone="strong">
+          Tab 1
         </Label>
 
         {/* Palette strip. */}

@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-// The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): an icon-only dropdown
-// chip opening the mode menu (its preview is covered in ModeMenu.test.tsx), the same for everyone, reading the editor's resolved mode from EditorModeProvider;
-// nothing where no switch is offered.
+// The mode switch on a start's rail (docs/specs/007-editor/editor-modes.md "The mode switch"): a named dropdown chip
+// opening the mode menu (its preview is covered in ModeMenu.test.tsx), the same for everyone, reading the editor's
+// resolved mode from EditorModeProvider; nothing where no switch is offered.
 
 import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -16,10 +16,13 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
-import { EditorModeProvider } from './editor-mode-context';
-import { EditorModeSwitch } from './EditorModeSwitch';
+import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
+import { StartModeSwitch } from './StartModeSwitch';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('@/lib/view-transition', () => ({
+  startTypedTransition: (_type: string, change: () => void) => change(),
+}));
 const confirm = vi.hoisted(() => vi.fn(async () => true));
 vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => confirm }));
 
@@ -38,28 +41,28 @@ function renderSwitch(mode: EditorMode, over: Partial<EditorModeState> = {}) {
     <EditorModeProvider
       value={{ mode, setMode: onChange, canSwitch: true, canEdit: true, ...over }}
     >
-      <EditorModeSwitch />
+      <StartModeSwitch />
     </EditorModeProvider>,
   );
   return { onChange, ...view };
 }
 
-const slot = (container: HTMLElement) => container.querySelector('[data-editor-mode-switch]');
-const chip = () => screen.getByRole('button', { name: /^Editor mode:/ });
+const slot = (container: HTMLElement) => container.querySelector('[data-start-mode-switch]');
+const chip = () => screen.getByRole('button', { name: /^Tab mode:/ });
 
-describe('EditorModeSwitch chip', () => {
+describe('StartModeSwitch chip', () => {
   it.each(EDITOR_MODES)('is a collapsed menu button named after %s', (mode) => {
     renderSwitch(mode);
-    expect(chip().getAttribute('aria-label')).toBe(`Editor mode: ${editorModeLabel(mode)}`);
+    expect(chip().getAttribute('aria-label')).toBe(`Tab mode: ${editorModeLabel(mode)}`);
     expect(chip().getAttribute('aria-haspopup')).toBe('menu');
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(chip().getAttribute('aria-keyshortcuts')).toBe('Shift+D');
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
-  it('shows the current mode as an icon, no words', () => {
+  it('shows the current mode as its icon and name', () => {
     renderSwitch('diagram');
-    expect(chip().textContent).toBe('');
+    expect(chip().textContent).toBe('Diagram');
     expect(chip().querySelectorAll('svg').length).toBeGreaterThan(0);
   });
 
@@ -202,7 +205,7 @@ describe('EditorModeSwitch chip', () => {
   });
 });
 
-describe('EditorModeSwitch slot', () => {
+describe('StartModeSwitch slot', () => {
   it('keeps one width across both modes (zero layout shift)', () => {
     const widths = new Set<string>();
     for (const mode of EDITOR_MODES) {
@@ -213,13 +216,13 @@ describe('EditorModeSwitch slot', () => {
   });
 
   it('renders nothing outside an editor', () => {
-    const { container } = render(<EditorModeSwitch />);
+    const { container } = render(<StartModeSwitch />);
     expect(container.innerHTML).toBe('');
   });
 });
 
 // The switch reads the editor's own resolution (useEditorMode), as EditorView provides it.
-describe('EditorModeSwitch in the editor', () => {
+describe('StartModeSwitch in the editor', () => {
   let seq = 0;
   const freshTab = (over: Partial<Tab> = {}): Tab => {
     seq += 1;
@@ -235,17 +238,17 @@ describe('EditorModeSwitch in the editor', () => {
     });
     return (
       <EditorModeProvider value={editorMode}>
-        <EditorModeSwitch />
+        <StartModeSwitch />
       </EditorModeProvider>
     );
   }
 
   it("shows the tab's mode, and switches the tab from the menu", () => {
     render(<Host tab={freshTab({ opensIn: 'draw' })} />);
-    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
+    expect(chip().getAttribute('aria-label')).toBe('Tab mode: Draw');
     fireEvent.click(chip());
     fireEvent.click(screen.getByRole('menuitemradio', { name: /^Diagram/ }));
-    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Diagram');
+    expect(chip().getAttribute('aria-label')).toBe('Tab mode: Diagram');
   });
 
   // docs/specs/007-editor/live-app.md#role-pill: previewing as a viewer, an editor is a viewer.
@@ -266,7 +269,7 @@ describe('EditorModeSwitch in the editor', () => {
 
 // docs/specs/026-plan/plan-tabs.md "The kinds": a Board, Sheet or Dashboard tab keeps Plan; the switch shows, and another
 // mode asks to open a new tab in it.
-describe('EditorModeSwitch on a tab that keeps its mode', () => {
+describe('StartModeSwitch on a tab that keeps its mode', () => {
   it('offers a new tab in another mode, never switching this one', async () => {
     const newTabIn = vi.fn();
     const { onChange } = renderSwitch('plan', {
@@ -287,7 +290,7 @@ describe('EditorModeSwitch on a tab that keeps its mode', () => {
 });
 
 // docs/specs/007-editor/editor-modes.md "Plan stands apart": no tab switches into Plan, nor out of it.
-describe('EditorModeSwitch and Plan', () => {
+describe('StartModeSwitch and Plan', () => {
   it('offers a new Plan tab rather than switching a Diagram tab into Plan', async () => {
     const newTabIn = vi.fn();
     const { onChange } = renderSwitch('diagram', { newTabIn });
@@ -313,7 +316,7 @@ describe('EditorModeSwitch and Plan', () => {
 
 // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped edit link edits its one tab and adds none,
 // so its session is offered no new tab: the rows that would open one are inert.
-describe('EditorModeSwitch for a session that cannot add tabs', () => {
+describe('StartModeSwitch for a session that cannot add tabs', () => {
   it('leaves the locked rows inert and asks nothing', () => {
     confirm.mockClear();
     const { onChange } = renderSwitch('plan', {
