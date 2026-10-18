@@ -90,6 +90,7 @@ export function ownerLabelFor(liveDoc: PaneDocument): string {
 export function DocumentActionsMenu({
   document: liveDoc,
   anchor,
+  beside,
   ownerId,
   onClose,
   onStartRename,
@@ -109,6 +110,8 @@ export function DocumentActionsMenu({
 }: {
   document: PaneDocument;
   anchor: HTMLElement | null;
+  // The card the menu belongs to, to open beside rather than over (PortalMenu's `beside`).
+  beside?: HTMLElement | null;
   // Viewer id for Offline Mode conversions (docs/specs/006-document/offline-mode.md).
   ownerId: string | null;
   onClose: () => void;
@@ -162,7 +165,7 @@ export function DocumentActionsMenu({
 
   if (liveDoc.shared) {
     return (
-      <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
+      <PortalMenu anchor={anchor} placement="below" beside={beside} onClose={onClose}>
         {header}
         <MenuActionRow
           plain
@@ -189,7 +192,7 @@ export function DocumentActionsMenu({
     );
   }
   return (
-    <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
+    <PortalMenu anchor={anchor} placement="below" beside={beside} onClose={onClose}>
       {header}
       {/* Open leads, on its own, unless this IS the open document: the
           verb people reach for first sits first, and a menu on the
@@ -323,16 +326,19 @@ export function DocumentActionsMenu({
 export function DocumentEntryMenu({
   entry,
   anchor,
+  beside,
   onClose,
 }: {
   entry: DocumentEntryProps;
   anchor: HTMLElement | null;
+  beside?: HTMLElement | null;
   onClose: () => void;
 }) {
   return (
     <DocumentActionsMenu
       document={entry.document}
       anchor={anchor}
+      beside={beside}
       ownerId={entry.ownerId}
       onClose={onClose}
       onStartRename={entry.onStartRename}

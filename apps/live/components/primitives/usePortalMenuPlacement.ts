@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { clampToViewport, VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
+import { besideSpot } from './beside-placement';
 
 export type PortalMenuPlacement = 'above' | 'below' | 'above-start' | 'below-start';
 
@@ -20,24 +21,36 @@ export const PLACEMENT_TRANSFORM: Record<PortalMenuPlacement, string> = {
  * Where an anchored PortalMenu sits, and its outside-press dismissal: it hangs off the anchor's
  * bounding rect, is nudged back inside the viewport, and closes on a press outside both itself
  * and its anchor (the anchor's own click toggles it). `node` is the rendered menu, null until it
- * is placed.
+ * is placed. With `beside` (the card the menu belongs to), it opens beside that card instead,
+ * out of its way (besideSpot), once it can measure itself, and hangs from the anchor only when
+ * neither side has room. `flat` says the spot is its top-left corner, with no placement transform.
  */
 export function usePortalMenuPlacement(
   anchor: HTMLElement | null,
   placement: PortalMenuPlacement,
   node: HTMLElement | null,
   onClose: () => void,
+  beside?: HTMLElement | null,
 ) {
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [pos, setPos] = useState<{ left: number; top: number; flat?: boolean } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
   const reposition = useCallback(() => {
     if (!anchor) return;
+    if (beside && node) {
+      const spot = besideSpot(
+        beside.getBoundingClientRect(),
+        node.offsetWidth,
+        window.innerWidth,
+        VIEWPORT_EDGE_MARGIN,
+      );
+      if (spot) return setPos({ ...spot, flat: true });
+    }
     const r = anchor.getBoundingClientRect();
     const start = placement.endsWith('-start');
     const below = placement.startsWith('below');
     setPos({ left: start ? r.left : r.right, top: below ? r.bottom : r.top });
-  }, [anchor, placement]);
+  }, [anchor, placement, beside, node]);
   useReposition(reposition);
 
   useLayoutEffect(() => {
@@ -82,5 +95,7 @@ export function usePortalMenuPlacement(
     return () => document.removeEventListener('pointerdown', handler, true);
   }, [onClose, anchor, node]);
 
-  return pos ? { left: pos.left + adjust.x, top: pos.top + adjust.y } : null;
+  return pos
+    ? { left: pos.left + adjust.x, top: pos.top + adjust.y, flat: pos.flat ?? false }
+    : null;
 }

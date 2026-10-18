@@ -23,6 +23,9 @@ import {
 type PortalMenuBase = {
   anchor: HTMLElement | null;
   placement?: PortalMenuPlacement;
+  // The card the menu belongs to: it opens beside that card, out of its way, when there is room
+  // (usePortalMenuPlacement).
+  beside?: HTMLElement | null;
   onClose: () => void;
   children: ReactNode;
   // A wider menu for rows that carry a line under their name (the Sheet's function menus): 20rem, not 14.
@@ -55,6 +58,7 @@ export function PortalMenu(props: PortalMenuProps) {
 function CommandPortalMenu({
   anchor,
   placement = 'below',
+  beside,
   onClose,
   children,
   label,
@@ -67,7 +71,7 @@ function CommandPortalMenu({
     label,
     initialFocus,
   });
-  const at = usePortalMenuPlacement(anchor, placement, element, onClose);
+  const at = usePortalMenuPlacement(anchor, placement, element, onClose, beside);
   return (
     <PortalMenuFrame
       at={at}
@@ -85,6 +89,7 @@ function CommandPortalMenu({
 function ControlPortalMenu({
   anchor,
   placement = 'below',
+  beside,
   onClose,
   children,
   label,
@@ -95,7 +100,7 @@ function ControlPortalMenu({
     trigger: anchor,
     label,
   });
-  const at = usePortalMenuPlacement(anchor, placement, element, onClose);
+  const at = usePortalMenuPlacement(anchor, placement, element, onClose, beside);
   return (
     <PortalMenuFrame
       at={at}
@@ -119,7 +124,7 @@ function PortalMenuFrame({
   wide = false,
   children,
 }: {
-  at: { left: number; top: number } | null;
+  at: { left: number; top: number; flat: boolean } | null;
   placement: PortalMenuPlacement;
   attach: (el: HTMLElement | null) => void;
   tree: MenuTree;
@@ -135,7 +140,11 @@ function PortalMenuFrame({
           ref={attach}
           {...surfaceProps}
           className={`fixed z-[var(--z-popover)] flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
-          style={{ left: at.left, top: at.top, transform: PLACEMENT_TRANSFORM[placement] }}
+          style={{
+            left: at.left,
+            top: at.top,
+            transform: at.flat ? 'none' : PLACEMENT_TRANSFORM[placement],
+          }}
         >
           {children}
         </div>

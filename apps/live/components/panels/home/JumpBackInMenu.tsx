@@ -3,9 +3,10 @@
 // The ⋯ menu a Jump Back In card or tile carries (docs/specs/013-workspace/explorer-home.md "Jump Back In"): the
 // document's own Explorer menu (DocumentEntryMenu), from a ⋯ button that sits beside the card's link (a button can't
 // sit inside one) or a right-click anywhere on the card. Without an entry (a document the Explorer has not loaded)
-// it draws only its children: no button, and the browser's own right-click.
+// it draws only its children: no button, and the browser's own right-click. The menu opens beside the card, out of its
+// way, when there is room.
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
@@ -37,8 +38,11 @@ export function JumpBackInMenu({
   children: ReactNode;
 }) {
   const menu = useRowMenu({ disabled: !entry || entry.renaming });
+  // The card itself, for the menu to open beside.
+  const [card, setCard] = useState<HTMLDivElement | null>(null);
   return (
     <div
+      ref={setCard}
       className={`group relative min-w-0 ${className ?? ''}`}
       onContextMenu={entry ? menu.onContextMenu : undefined}
     >
@@ -52,7 +56,12 @@ export function JumpBackInMenu({
         />
       ) : null}
       {entry && menu.open ? (
-        <DocumentEntryMenu entry={entry} anchor={menu.triggerRef.current} onClose={menu.close} />
+        <DocumentEntryMenu
+          entry={entry}
+          anchor={menu.triggerRef.current}
+          beside={card}
+          onClose={menu.close}
+        />
       ) : null}
     </div>
   );

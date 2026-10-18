@@ -14,6 +14,7 @@ import {
   PortalMenu,
 } from './PortalMenu';
 import { MenuTile, MenuToolButton } from './MenuTiles';
+import { BESIDE_GAP } from './beside-placement';
 
 const MENU_W = 224;
 const MENU_H = 300;
@@ -117,6 +118,56 @@ describe('PortalMenu', () => {
     expect(menu.style.left).toBe('40px');
     expect(menu.style.top).toBe('130px');
     expect(menu.style.transform).toBe('translate(0, 4px)');
+  });
+});
+
+// docs/specs/013-workspace/explorer-home.md "Jump Back In": a card's menu opens beside the card, out of its way.
+describe('PortalMenu beside a card', () => {
+  const open = (card: DOMRect) => {
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(MENU_W);
+    vi.mocked(HTMLElement.prototype.getBoundingClientRect).mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.hasAttribute('data-menu-surface')) {
+        return rect(parseFloat(this.style.left), parseFloat(this.style.top), MENU_W, MENU_H);
+      }
+      if (this.hasAttribute('data-card')) return card;
+      // The ⋯ at the card's top right.
+      return rect(card.right - 40, card.top + 8, 32, 32);
+    });
+    const beside = document.createElement('div');
+    beside.setAttribute('data-card', '');
+    render(
+      <PortalMenu
+        anchor={document.createElement('button')}
+        placement="below"
+        beside={beside}
+        onClose={() => {}}
+      >
+        <span>Item</span>
+      </PortalMenu>,
+    );
+    return screen.getByRole('menu');
+  };
+
+  it("opens to the card's right, its top level with the card's", () => {
+    const menu = open(rect(100, 120, 220, 180));
+    expect(menu.style.left).toBe(`${320 + BESIDE_GAP}px`);
+    expect(menu.style.top).toBe('120px');
+    expect(menu.style.transform).toBe('none');
+  });
+
+  it('opens to its left when the right has no room', () => {
+    const menu = open(rect(700, 120, 220, 180));
+    expect(menu.style.left).toBe(`${700 - BESIDE_GAP - MENU_W}px`);
+    expect(menu.style.transform).toBe('none');
+  });
+
+  it('hangs below the ⋯ when neither side has room', () => {
+    const menu = open(rect(20, 120, window.innerWidth - 40, 180));
+    // Hung from the ⋯'s bottom right, as every other menu.
+    expect(menu.style.top).toBe(`${120 + 8 + 32}px`);
+    expect(menu.style.transform).toBe('translate(-100%, 4px)');
   });
 });
 
