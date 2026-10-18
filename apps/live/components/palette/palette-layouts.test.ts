@@ -18,7 +18,7 @@ import { tileById, tilesForCategory } from './palette-tile-defs';
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
 const ids = (mode: 'diagram' | 'pages' | 'plan' | 'facilitate', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'pages' | 'plan', category: string) =>
+const tileIds = (mode: 'diagram' | 'pages' | 'plan' | 'facilitate', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);

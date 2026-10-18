@@ -323,28 +323,28 @@ six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** an
 ("Collaborate's six" below), and shares Pages mode's **Data**: every chart and meter, since a session reads results
 and sets targets as often as a page reports them.
 
-| Category          | Diagram | Pages | Plan | Facilitate          |
-| ----------------- | ------- | ---------- | ---- | ------------------- |
-| Popular           | yes     | yes        | no   | yes                 |
-| Plan's seven      | no      | no         | yes  | no                  |
-| Logo              | no      | logo page  | no   | no                  |
-| Shapes            | yes     | yes        | no   | yes                 |
-| My shapes         | yes     | yes        | no   | yes                 |
-| Write             | yes     | yes        | no   | yes                 |
-| Draw              | yes     | no         | no   | yes                 |
-| Build             | no      | no         | no   | no                  |
-| Diagrams          | yes     | no         | no   | no                  |
-| Layout            | yes     | no         | no   | yes                 |
-| Components        | no      | yes        | no   | no                  |
-| Concepts          | yes     | yes        | no   | no                  |
-| Devices           | no      | yes        | no   | no                  |
-| Event Storming    | board   | no         | no   | no                  |
-| Icons             | yes     | yes        | no   | yes                 |
-| Stickers          | no      | yes        | no   | yes                 |
-| Tech              | yes     | no         | no   | no                  |
-| Media             | yes     | yes        | no   | yes                 |
-| Data              | no      | yes        | no   | yes                 |
-| Collaborate's six | no      | no         | no   | yes                 |
+| Category          | Diagram | Pages     | Plan | Facilitate |
+| ----------------- | ------- | --------- | ---- | ---------- |
+| Popular           | yes     | yes       | no   | yes        |
+| Plan's seven      | no      | no        | yes  | no         |
+| Logo              | no      | logo page | no   | no         |
+| Shapes            | yes     | yes       | no   | yes        |
+| My shapes         | yes     | yes       | no   | yes        |
+| Write             | yes     | yes       | no   | yes        |
+| Draw              | yes     | no        | no   | yes        |
+| Build             | no      | no        | no   | no         |
+| Diagrams          | yes     | no        | no   | no         |
+| Layout            | yes     | no        | no   | yes        |
+| Components        | no      | yes       | no   | no         |
+| Concepts          | yes     | yes       | no   | no         |
+| Devices           | no      | yes       | no   | no         |
+| Event Storming    | board   | no        | no   | no         |
+| Icons             | yes     | yes       | no   | yes        |
+| Stickers          | no      | yes       | no   | yes        |
+| Tech              | yes     | no        | no   | no         |
+| Media             | yes     | yes       | no   | yes        |
+| Data              | no      | yes       | no   | yes        |
+| Collaborate's six | no      | no        | no   | yes        |
 
 Pages offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
