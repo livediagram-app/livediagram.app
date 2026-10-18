@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import {
   Brand,
@@ -99,6 +99,17 @@ export function EditorHeader({
 }: EditorHeaderProps) {
   const formShare = useFormShareHost();
   const [editing, setEditing] = useState(false);
+  // A rename ended by Enter or Escape leaves focus nowhere (its field is gone), so it comes back to the title; one
+  // ended by clicking elsewhere keeps the focus that click gave.
+  const titleRef = useRef<HTMLButtonElement>(null);
+  const wasEditing = useRef(false);
+  useEffect(() => {
+    if (wasEditing.current && !editing) {
+      const lost = !document.activeElement || document.activeElement === document.body;
+      if (lost) titleRef.current?.focus();
+    }
+    wasEditing.current = editing;
+  }, [editing]);
 
   // The command palette requests a rename by bumping renameNonce. Each request is
   // honoured once, as soon as the title can be edited (it may be hidden behind the
@@ -161,6 +172,7 @@ export function EditorHeader({
                 className="min-w-0"
               >
                 <button
+                  ref={titleRef}
                   type="button"
                   onClick={() => setEditing(true)}
                   // 44px tall on a touch screen; padding, not a pad, since `truncate` clips a ::before.
