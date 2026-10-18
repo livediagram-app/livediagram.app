@@ -67,8 +67,19 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
+import { dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+
+// Whether a paste carries something for the canvas rather than words: a file, an Excalidraw scene, or elements
+// copied here (their JSON or the in-app copy's id).
+function pasteHoldsCanvasContent(data: DataTransfer | null, canPasteScene: boolean): boolean {
+  if (!data) return false;
+  if (data.files.length > 0) return true;
+  if (canPasteScene && excalidrawTextFromPaste(data)) return true;
+  const text = data.getData('text/plain');
+  return parseElementsPayload(text) !== null || inAppCopyIdOf(text) !== null;
+}
 
 type ImageDescriptor = {
   id: string;
@@ -357,10 +368,14 @@ export function useClipboard(deps: ClipboardDeps) {
   };
 
   // A file dropped on the canvas, at its canvas point: an Excalidraw file or export lands as its
-  // scene there; any other file is not something the canvas takes, and says so.
+  // scene there; a file Import reads is pointed at Import; any other file is not something the canvas takes, and
+  // says so.
   const dropBoardFile = (file: File, at: { x: number; y: number }) => {
     if (isReadOnly || !insertBoardScene) return;
     const refuse = () => toast.info(DROP_NOT_A_SCENE);
+    // A draw.io, Mermaid, Markdown or JSON file replaces the tab through Import, and is told so.
+    const importHint = dropImportHint(file);
+    if (importHint) return toast.info(importHint);
     if (!isExcalidrawFileCandidate(file)) return refuse();
     void pasteExcalidrawFile(file, refuse, at);
   };
@@ -434,7 +449,13 @@ export function useClipboard(deps: ClipboardDeps) {
         target instanceof HTMLElement &&
         !!target.closest('[data-article-flow]') &&
         articlePasteIsCanvas(e.clipboardData ?? null);
-      if (!intoArticle && isTypingTarget(target)) {
+      // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-diagramming.md
+      // "Undo and redo reach the editor through an empty search"): elements copied from another tab land on this
+      // new one rather than their JSON in the search. Text still searches.
+      const intoEmptySearch =
+        passesHistoryChords(target) &&
+        pasteHoldsCanvasContent(e.clipboardData ?? null, pasteRef.current.canPasteScene);
+      if (!intoArticle && !intoEmptySearch && isTypingTarget(target)) {
         return;
       }
       if (isReadOnly) return;

@@ -25,6 +25,7 @@ import {
   useSheetDrag,
 } from '@livediagram/ui';
 import { lucideSearch, lucideX } from '@livediagram/icons/lucide';
+import { useChromeFloor } from '@/components/toast/useToastFloor';
 import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -35,6 +36,8 @@ import { takeStartQuery } from './start-query';
 import { liftBestMatch } from './best-match';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
+
+const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
@@ -118,6 +121,8 @@ export function StartPanel<C extends string>({
   // On a phone the panel is a sheet risen from the bottom edge; one that can close drags down to close (Dialog's
   // phoneSheet, BottomSheet).
   const sheet = useSheetDrag(onClose ?? (() => {}));
+  // Where the tab bar stands, for the phone and short-window sheet to stand on (useChromeFloor, as toasts do).
+  const tabBarFloor = useChromeFloor(true, 0, TAB_BAR_SELECTOR);
   const searching = query.trim().length > 0;
   // A title match leads, under Best Match, lifted out of its group (start-diagramming.md "A title match leads").
   const { best, groups: results } = searching
@@ -231,20 +236,35 @@ export function StartPanel<C extends string>({
   );
   return (
     // Clear of the top chrome (the menu button and the palette strip, 8.5rem down) and the bottom clusters. On a phone,
-    // over the tab bar and docked to the bottom edge below the top bar, as the phone's sheets are. On a short window
+    // a sheet below the top bar standing on the tab bar. On a short window
     // (a phone held sideways, 390px tall with its bars folded, or a desktop zoomed to 200%, 450px) those two clearances
-    // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster.
-    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16">
+    // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster, clear of the home
+    // indicator, the one place it still meets the bottom edge.
+    <div
+      className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[calc(var(--start-floor)-8px)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-[var(--start-floor)] short-window:pt-16"
+      // On a phone, and on a short window, the sheet stands on the tab bar while it shows (measured as the toast stack
+      // measures its floor; a sideways phone folds its bars away), so the tabs stay in reach: Start Planning cannot
+      // close, and over the bar it left a new tab no way back to the others but a template. Flush on a phone.
+      style={{ '--start-floor': `${tabBarFloor}px` } as CSSProperties}
+    >
       <section
         aria-labelledby={titleId}
+        // Escape closes a start that can close, as its × does, once the search has nothing to clear (the search box
+        // takes the first Escape) and outside an open menu (the mode menu's Escape closes only the menu).
+        onKeyDown={(e) => {
+          if (e.key !== 'Escape' || !onClose || e.defaultPrevented) return;
+          if ((e.target as HTMLElement).closest?.('[role="menu"]')) return;
+          e.stopPropagation();
+          onClose();
+        }}
         // One height whatever the category shows, so the panel never jumps as it changes.
-        className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 ${
+        className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 short-window:pb-[var(--start-inset)] ${
           swapped ? '' : 'animate-dialog-in max-sm:animate-sheet-up'
         }`}
         style={
           {
             ...sheet.style,
-            paddingBottom: safeInset('bottom'),
+            '--start-inset': safeInset('bottom'),
             backgroundColor: palette.card,
             borderColor: palette.border,
             color: palette.text,
@@ -260,11 +280,12 @@ export function StartPanel<C extends string>({
           pillColor={palette.border}
         />
         <header
-          // Room on the right for the help and × pinned in the corner.
-          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pt-1"
+          // Room on the right for the help and × pinned in the corner. On a phone only the title's row needs it: the
+          // search below runs the full width, so a long placeholder ("Find a board, sheet, form or layout") fits.
+          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pr-5 max-sm:pt-1"
           style={{ borderColor: palette.border }}
         >
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 max-sm:pr-20">
             <h2
               id={titleId}
               className="text-[20px] font-semibold tracking-tight max-sm:text-[18px]"

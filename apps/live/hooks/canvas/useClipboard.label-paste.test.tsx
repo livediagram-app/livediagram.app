@@ -143,3 +143,29 @@ describe('pasting copied elements into a note open for typing', () => {
     expect(h.elements()).toHaveLength(1);
   });
 });
+
+// docs/specs/007-editor/start-diagramming.md "Undo and redo reach the editor through an empty search": a new tab's
+// start has its search focused, and elements copied from another tab used to land in it as JSON.
+describe('pasting into an empty start search', () => {
+  function search(value: string): HTMLInputElement {
+    const input = document.createElement('input');
+    input.dataset.editorHistory = '';
+    input.value = value;
+    document.body.appendChild(input);
+    return input;
+  }
+
+  it('lands copied elements on the canvas', () => {
+    const h = harness(null);
+    const event = paste(search(''), serialiseElements([copied]));
+    expect(event.defaultPrevented).toBe(true);
+    expect(h.elements()).toHaveLength(2);
+  });
+
+  it('leaves text, and any paste into a search with words in it, to the box', () => {
+    const h = harness(null);
+    expect(paste(search(''), 'flowchart').defaultPrevented).toBe(false);
+    expect(paste(search('mind'), serialiseElements([copied])).defaultPrevented).toBe(false);
+    expect(h.elements()).toHaveLength(1);
+  });
+});

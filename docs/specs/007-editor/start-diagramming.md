@@ -25,7 +25,9 @@ draws them.
   left as it is.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's),
   across the mode's templates; matches are grouped under their group, each once, in rail order, then the matches of
-  every other mode ([Found in other modes](#found-in-other-modes)). Escape clears a search first.
+  every other mode ([Found in other modes](#found-in-other-modes)). Escape clears a search first;
+  with nothing to clear it closes a start that can close, as its × does (outside an open mode menu, whose Escape
+  closes only the menu).
 - **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. Typing "flowchart" leads with Flowchart, though Design's
@@ -47,6 +49,9 @@ draws them.
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
   are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `lib/typing-target.ts`); once something
   is typed in it they undo the typing, as in any text box.
+  A **paste** of canvas content reaches the editor the same way: elements copied from another tab (or an image, or an
+  Excalidraw scene) pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the
+  search. Pasted text still searches.
 
 ### Recommended and groups
 
@@ -198,12 +203,15 @@ They are kept for the browser tab only and read once (`start-query.ts`).
   ([Diagram tour](editor-tour.md) "Look").
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
-- **On a phone** the panel is a sheet risen from the bottom edge (`animate-sheet-up`), full width below the top bar,
-  over the tab bar, clear of the home indicator, with the grab handle every phone sheet has. A start that cannot
-  close (Start Planning) settles back when dragged.
+- **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
+  standing on the tab bar, with the grab handle every phone sheet has. A start that cannot close (Start Planning)
+  settles back when dragged. The tab bar stays in reach: over it, a new Plan tab's start left no way back to the
+  document's other tabs, nor to the tab's menu, but choosing a template. Where the bar stands is measured, as the
+  toast stack measures its floor (`useChromeFloor`), so a short window stands on it too while it shows and keeps
+  the room when the bars are folded away.
 - **On a short window** (under 500px tall, whatever the pointer: a phone held sideways, or a laptop zoomed to 200%,
-  720×450) the panel clears only the palette strip's height (`pt-16`) and lies over the bottom cluster (`pb-2`, the
-  overlay layer), as on a sideways phone. With the desktop clearances (8.5rem above, 7rem below) a 450px window left
+  720×450) the panel clears only the palette strip's height (`pt-16`) and lies over the bottom cluster (the overlay
+  layer), standing on the tab bar while it shows, as on a sideways phone. With the desktop clearances (8.5rem above, 7rem below) a 450px window left
   the cards 96px, less than one card, so zooming the browser made the start unusable.
 
 ## Telemetry

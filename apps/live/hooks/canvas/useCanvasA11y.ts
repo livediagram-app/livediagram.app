@@ -15,8 +15,8 @@
 import { useEffect } from 'react';
 import { isBoxed, type Element } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { announce } from '@/lib/announcer';
-import { describeMany, describeOne } from '@/lib/element-names';
+import { announce, getAnnouncementSnapshot } from '@/lib/announcer';
+import { describeMany, describeSelected } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { Selection, SelectionStore } from '@/lib/selection-store';
@@ -137,13 +137,21 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       }
       if (s.selectedId) {
         const el = elements.find((x) => x.id === s.selectedId);
-        if (el) announce(`Selected ${describeOne(el)}`);
+        if (el) announce(`Selected ${describeSelected(el, elements)}`);
         return;
       }
-      if (hadSelection) announce('Selection cleared');
+      // A clear that came with a verb which said what happened ("Deleted 'Login'") leaves its word standing:
+      // "Selection cleared" spoken over it would be all the reader heard.
+      if (hadSelection && getAnnouncementSnapshot().nonce === heardAtChange) {
+        announce('Selection cleared');
+      }
     };
+    // The announcer's count when the selection changed, so speak can tell whether another verb has spoken since.
+    let heardAtChange = getAnnouncementSnapshot().nonce;
     const unsubscribe = selection.subscribe(() => {
-      if (!frame) frame = requestAnimationFrame(speak);
+      if (frame) return;
+      heardAtChange = getAnnouncementSnapshot().nonce;
+      frame = requestAnimationFrame(speak);
     });
     return () => {
       unsubscribe();
