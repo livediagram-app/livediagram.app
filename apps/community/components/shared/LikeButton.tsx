@@ -5,9 +5,9 @@ import { useState, type MouseEvent } from 'react';
 import type { LikeState } from '@/lib/useLike';
 import { HeartIcon } from './icons';
 
-// The heart (blueprint §10): a toggle button with aria-pressed whose name carries the count. The name is
-// its own content, "Like (4 likes)", with the words a card does not show kept for screen readers only, so
-// the visible count is always part of the name (WCAG 2.5.3). On a card it sits above the card's stretched
+// The heart (blueprint §10): a toggle button with aria-pressed whose name carries the count, "Like (4 likes)",
+// so the visible count is always part of the name (WCAG 2.5.3). The name is an aria-label rather than hidden
+// spans around the count: browsers pad a visually hidden span with spaces, so Chromium read "Like ( 4 likes )". On a card it sits above the card's stretched
 // link and never navigates. The pop on liking is CSS
 // (`.heart-pop`), switched off under reduced motion.
 export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm' | 'lg' }) {
@@ -26,6 +26,7 @@ export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm'
     <button
       type="button"
       aria-pressed={liked}
+      aria-label={`Like (${formatCommunityCount(likeCount)} ${noun})`}
       disabled={gone}
       onClick={onClick}
       className={`group/like touch-target relative z-10 inline-flex items-center gap-1.5 rounded-lg font-semibold tabular-nums transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50 ${
@@ -43,10 +44,8 @@ export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm'
         fill={liked ? 'currentColor' : 'none'}
         className={pop && liked ? 'heart-pop' : ''}
       />
-      <span className="sr-only">Like (</span>
-      <span>{formatCommunityCount(likeCount)}</span>{' '}
-      <span className={large ? 'font-medium' : 'sr-only'}>{noun}</span>
-      <span className="sr-only">)</span>
+      <span>{formatCommunityCount(likeCount)}</span>
+      {large ? <span className="font-medium">{noun}</span> : null}
     </button>
   );
 }
