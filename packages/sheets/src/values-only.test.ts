@@ -32,4 +32,14 @@ describe('valuesOnly', () => {
       false,
     );
   });
+
+  it('answers a malformed write without throwing, leaving it for validateWrite to refuse', () => {
+    expect(writesFormats({ kind: 'cells', cells: 123 } as never)).toBe(false);
+    expect(writesFormats({ kind: 'cells', cells: [null] } as never)).toBe(false);
+    const notAList = { kind: 'cells', cells: 'x' } as never;
+    expect(valuesOnly(notAList)).toBe(notAList);
+    expect(
+      valuesOnly({ kind: 'cells', cells: [null, { r: 'r', c: 'c', i: { v: 1 }, f: {} }] } as never),
+    ).toEqual({ kind: 'cells', cells: [null, { r: 'r', c: 'c', i: { v: 1 } }] });
+  });
 });

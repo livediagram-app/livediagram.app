@@ -188,6 +188,19 @@ describe('placement into a folder deleted meanwhile', () => {
   });
 });
 
+describe('PUT /documents/:id/folder — a malformed body', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('400s a folderId or teamId that is not a string or null, and writes nothing', async () => {
+    db.getDocument.mockResolvedValue(inTeam());
+    for (const body of [{ folderId: { a: 1 } }, { folderId: 'f2', teamId: [] }, { teamId: 4 }]) {
+      const { ctx } = ctxWith(body);
+      expect((await handleDocumentPlacement(ctx))?.status).toBe(400);
+    }
+    expect(db.setDocumentFolder).not.toHaveBeenCalled();
+  });
+});
+
 // docs/specs/013-workspace/team-shared-documents.md: a team document moved to another team never stays owned by
 // someone outside it, so the mover takes ownership when the owner isn't a joined member of the destination.
 describe('PUT /documents/:id/folder — between teams', () => {

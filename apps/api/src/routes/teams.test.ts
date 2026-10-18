@@ -462,6 +462,28 @@ describe('POST /api/teams (create)', () => {
     const res = await handleTeams(makeCtx('POST', '/api/teams', { body: { id: 't1' } }));
     expect(res.status).toBe(400);
   });
+
+  it('400 for an id, name or organisation that is not a string, never a 500', async () => {
+    for (const body of [
+      { id: {}, name: 'Crew' },
+      { id: 't1', name: 123 },
+      { id: 't1', name: 'Crew', organisation: [] },
+      { id: 'x'.repeat(65), name: 'Crew' },
+    ]) {
+      const res = await handleTeams(makeCtx('POST', '/api/teams', { body }));
+      expect(res.status).toBe(400);
+    }
+    expect(db.createTeam).not.toHaveBeenCalled();
+  });
+
+  it('409 when the id is already a team', async () => {
+    db.getTeam.mockResolvedValue(team);
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams', { body: { id: 't1', name: 'Crew' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(db.createTeam).not.toHaveBeenCalled();
+  });
 });
 
 describe('team-scoped access', () => {
@@ -488,6 +510,25 @@ describe('team-scoped access', () => {
     const res = await handleTeams(makeCtx('PUT', '/api/teams/t1', { body: { name: 'New name' } }));
     expect(res.status).toBe(403);
     expect(db.updateTeam).not.toHaveBeenCalled();
+  });
+
+  it('PUT 400 for a name or organisation that is not a string, never a 500', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    for (const body of [{ name: 5 }, { name: null }, { organisation: {} }]) {
+      const res = await handleTeams(makeCtx('PUT', '/api/teams/t1', { body }));
+      expect(res.status).toBe(400);
+    }
+    expect(db.updateTeam).not.toHaveBeenCalled();
+  });
+
+  it('invite 400 for an email that is not a string', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/t1/members', { body: { email: ['a@b.co'] } }),
+    );
+    expect(res.status).toBe(400);
   });
 
   it('DELETE removes the team for an admin', async () => {

@@ -11,7 +11,7 @@ import {
   getTeam,
   setDocumentFolder,
 } from '../db';
-import { forbidden, noContent, notFound } from '../responses';
+import { badRequest, forbidden, noContent, notFound } from '../responses';
 import {
   audienceForDocument,
   recordDocumentMoved,
@@ -27,6 +27,10 @@ import {
 } from './context';
 
 // Returns null when the request isn't the placement route.
+// A placement field as sent: an id, null, or absent.
+const isIdOrNull = (v: unknown): v is string | null | undefined =>
+  v === undefined || v === null || typeof v === 'string';
+
 export async function handleDocumentPlacement(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   // /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md). Body:
@@ -58,9 +62,11 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       if (!existing) return missingDocument(ctx, id);
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
-      const body = read as { folderId?: string | null; teamId?: string | null };
-      const folderId = body.folderId ?? null;
-      const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
+      const { folderId: rawFolderId, teamId: rawTeamId } = read;
+      if (!isIdOrNull(rawFolderId) || !isIdOrNull(rawTeamId))
+        return badRequest('invalid folderId/teamId');
+      const folderId = rawFolderId ?? null;
+      const teamId = rawTeamId !== undefined ? rawTeamId : existing.teamId;
       // `ownsDocument`, not a bare id compare: a TEAM document's owner id is a
       // Clerk id every teammate can read, and `isOwner` below decides whether
       // the caller may change the document's SCOPE — including moving it out of
