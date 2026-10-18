@@ -31,4 +31,18 @@ describe('SearchPanel', () => {
       'This Browser',
     );
   });
+
+  it('is a modal dialog that hands focus back to what opened it when it closes', () => {
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const { unmount } = render(
+      <SearchPanel documents={[]} folders={[]} onSelectDocument={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(screen.getByRole('dialog', { name: 'Search' }).getAttribute('aria-modal')).toBe('true');
+    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search documents/));
+    unmount();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
 });

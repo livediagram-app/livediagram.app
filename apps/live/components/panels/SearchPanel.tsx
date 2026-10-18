@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { NoMatches, SearchIcon, useEscape } from '@livediagram/ui';
+import { NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
   buildSearchResults,
@@ -130,6 +130,10 @@ export function SearchPanel({
   const inputRef = useRef<HTMLInputElement>(null);
   const searchedRef = useRef(false);
   const openedRef = useRef(false);
+  // A modal: Tab stays inside it, and closing hands focus back to what opened it (the Search button), not the page.
+  // Declared before the field's focus below, so it records the opener rather than the field.
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -261,7 +265,14 @@ export function SearchPanel({
       }}
       className="absolute inset-0 z-[var(--z-modal)] flex items-start justify-center bg-slate-900/30 px-4 pt-[12vh] backdrop-blur-sm dark:bg-slate-950/50"
     >
-      <div className="flex w-[34rem] max-w-full animate-fly-up-in flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        tabIndex={-1}
+        className="flex w-[34rem] max-w-full animate-fly-up-in flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      >
         <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
           <span className="text-slate-400 dark:text-slate-400" aria-hidden>
             <SearchIcon />
