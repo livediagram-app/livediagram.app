@@ -16,12 +16,16 @@ import {
   FlowchartStepButtons,
   type FlowchartStepToolbar,
 } from '@/components/flowchart/FlowchartStepButtons';
-import {
-  CardinalityButton,
-  type CardinalityToolbar,
-} from '@/components/canvas/entity/CardinalityButton';
+import dynamic from 'next/dynamic';
+import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import type { Rect } from '@livediagram/document';
+
+// A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
+const CardinalityButton = dynamic(
+  () => import('@/components/canvas/entity/CardinalityButton').then((m) => m.CardinalityButton),
+  { ssr: false },
+);
 
 type SelectionPopoverProps = {
   bounds: Rect;

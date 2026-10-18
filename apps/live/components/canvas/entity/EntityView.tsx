@@ -15,8 +15,15 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { EntityKeyGlyph } from './EntityKeyGlyph';
-import { EntityFieldControls } from './EntityFieldControls';
+import dynamic from 'next/dynamic';
 import type { EntityCanvasActions } from './entity-actions';
+
+// Only a selected entity in an editing session works in place, so its controls (the field editor, the
+// ports) load on that first selection rather than with the editor.
+const EntityFieldControls = dynamic(
+  () => import('./EntityFieldControls').then((m) => m.EntityFieldControls),
+  { ssr: false },
+);
 
 // An entity (docs/specs/009-elements/entity.md): a tinted title bar over striped `name: Type` rows with a
 // key gutter — a UML class, an ER table, a struct.

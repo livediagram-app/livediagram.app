@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
+  entityFieldView,
   entityHeaderHeight,
   type EntityField,
   type FieldRemap,
@@ -10,6 +11,7 @@ import {
 } from '@livediagram/document';
 import { getEntityFieldEdit, setEntityFieldEdit } from '@/lib/entity-field-edit';
 import { EntityView } from './EntityView';
+import { EntityFieldControls } from './EntityFieldControls';
 import { openEntityFieldAt } from './entity-double-click';
 
 // docs/specs/009-elements/entity.md "Editing on the canvas" and "Field to field".
@@ -26,6 +28,15 @@ const entity = (over: Partial<ShapeElement> = {}): ShapeElement => ({
 });
 
 const actions = () => ({ setFields: vi.fn(), startFieldArrow: vi.fn() });
+
+// The controls as the view mounts them on a selected entity, its fields read through entityFieldView.
+const Controls = ({ element, a }: { element: ShapeElement; a: ReturnType<typeof actions> }) => (
+  <EntityFieldControls
+    element={element}
+    fields={(element.entityFields ?? []).map(entityFieldView)}
+    actions={a}
+  />
+);
 
 afterEach(() => act(() => setEntityFieldEdit(null)));
 
@@ -53,10 +64,20 @@ describe('EntityView', () => {
   });
 });
 
+describe('the view with actions', () => {
+  it('loads its controls and opens a field', async () => {
+    act(() => setEntityFieldEdit({ entityId: 'e1', index: 0 }));
+    render(
+      <EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={actions()} />,
+    );
+    expect((await screen.findByLabelText<HTMLInputElement>('Field name')).value).toBe('id');
+  });
+});
+
 describe('in-place editing', () => {
   it('saves a renamed field and moves to the next on Enter', () => {
     const a = actions();
-    render(<EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={a} />);
+    render(<Controls element={entity()} a={a} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 1 }));
     const name = screen.getByLabelText('Field name') as HTMLInputElement;
     expect(name.value).toBe('email');
@@ -71,7 +92,7 @@ describe('in-place editing', () => {
 
   it('adds a new field after the last only once it has words, and cycles its key', () => {
     const a = actions();
-    render(<EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={a} />);
+    render(<Controls element={entity()} a={a} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 2 }));
     const name = screen.getByLabelText('Field name');
     fireEvent.click(screen.getByRole('button', { name: /Key: None/ }));
@@ -88,7 +109,7 @@ describe('in-place editing', () => {
 
   it('writes nothing for a blank new field, and closes on Escape', () => {
     const a = actions();
-    render(<EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={a} />);
+    render(<Controls element={entity()} a={a} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 2 }));
     fireEvent.keyDown(screen.getByLabelText('Field name'), { key: 'Enter' });
     expect(a.setFields).not.toHaveBeenCalled();
@@ -102,7 +123,7 @@ describe('in-place editing', () => {
 
   it('removes a field emptied of name and type, letting go of ends on it', () => {
     const a = actions();
-    render(<EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={a} />);
+    render(<Controls element={entity()} a={a} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 0 }));
     fireEvent.change(screen.getByLabelText('Field name'), { target: { value: '' } });
     fireEvent.change(screen.getByLabelText('Field type'), { target: { value: '' } });
@@ -115,18 +136,14 @@ describe('in-place editing', () => {
   });
 
   it('steps back with Shift+Tab on the name', () => {
-    render(
-      <EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={actions()} />,
-    );
+    render(<Controls element={entity()} a={actions()} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 1 }));
     fireEvent.keyDown(screen.getByLabelText('Field name'), { key: 'Tab', shiftKey: true });
     expect(getEntityFieldEdit()).toEqual({ entityId: 'e1', index: 0 });
   });
 
   it('ends an open edit when the entity is deselected', () => {
-    const { unmount } = render(
-      <EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={actions()} />,
-    );
+    const { unmount } = render(<Controls element={entity()} a={actions()} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 0 }));
     unmount();
     expect(getEntityFieldEdit()).toBeNull();
@@ -152,9 +169,7 @@ describe('openEntityFieldAt', () => {
 describe('field ports', () => {
   it('shows a port each side of the hovered field and starts a relationship from it', () => {
     const a = actions();
-    const { container } = render(
-      <EntityView element={entity()} textColor="#000" fontFamily={undefined} actions={a} />,
-    );
+    const { container } = render(<Controls element={entity()} a={a} />);
     const layer = container.querySelector('[data-entity-field-controls]') as HTMLElement;
     const header = entityHeaderHeight(entity().textSize);
     layer.getBoundingClientRect = () => ({ top: 0, height: 200 - header }) as DOMRect;
