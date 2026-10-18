@@ -28,7 +28,7 @@ import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { HomeHero } from '@/components/panels/home/HomeHero';
 import { useHeroPresence } from '@/components/panels/home/useHeroPresence';
-import { useMidnightPalette } from './useMidnightPalette';
+import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
 import { useExplorerState } from './useExplorerState';
 import { teamFolderPath } from './routes';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';

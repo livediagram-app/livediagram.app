@@ -69,6 +69,33 @@ Four routes inside `apps/live/`:
 
 The shared card chrome and inputs live in `apps/live/components/chrome/auth-shared.tsx` so the two pages don't drift.
 
+### The look: Night Band
+
+Every account and connect page (`/sign-in`, `/get-started`, `/sso-callback`, the OAuth consent and device pages and
+the workbench pairing page) stands on one frame, `AuthStage` (`apps/live/components/chrome/AuthStage.tsx`), modelled on
+the marketing site's "No Catch" night section:
+
+- **Header.** The brand at the top left. On `/sign-in` and `/get-started` a **"Not now, keep going as a guest"** link
+  sits at the top right, because the canvas never needs an account. It goes back to the page's `?redirect_url` when
+  that is safe and is not itself a signed-in-only page (`/oauth/*`, `/workbench/*`), and to `/new` otherwise
+  (`guestReturnHref`). The connect pages have no guest link: they only work signed in.
+- **The card.** A frosted card holding the page's title (the `h1`: "Welcome back", "Create your account", "Check your
+  email" on the code step), an optional line under it, the error or notice, the form and the cross-link footer.
+- **The pitch.** Beside the card, an eyebrow, a heading and three promise rows, each a tinted icon, a coloured lead
+  and a line. The account pages say what an account adds ("No catch": every device, AI tools, 0 paywalls); the connect
+  pages say what connecting means ("Connect": live, your call, revoke any time). The pitch holds no controls.
+- **Two decorative lines** trace in slowly behind the content on wide screens: hidden from assistive technology, still
+  under reduced motion, and absent below the `lg` breakpoint.
+- **Both themes.** Dark mode wears the Midnight palette (the root carries `data-palette="midnight"` while the frame is
+  mounted, as on the Explorer; [Colour scheme](../004-interface-design/color-scheme.md#explorer-midnight)), so the
+  page is the night section itself. Light mode is the same layout on a pale dotted ground (`slate-100`) with a white
+  card and the darker accent inks (`emerald-700`, `brand-700`, `amber-700`), all at WCAG 2.2 AA.
+- **Phone first.** Below `lg` the card comes first and the pitch follows it, stacked, compact and full width with a
+  16px gutter; at `lg` and up the pitch takes the left column and the card the right. The card is first in the DOM at
+  every width, so the form is what a screen reader and the Tab key reach first.
+- **Interstitials** (the redirecting card, `/sso-callback`) use the same frame with no pitch, the card centred, so a
+  hand-off between pages never flashes a different ground.
+
 Signed-in status surfaces in the editor header via `<AuthControls>` (initial bubble + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor — they're purely informational.
 
 ## Identity display name
