@@ -70,3 +70,13 @@ describe('elementKindLabel — event-storming notes', () => {
     expect(elementKindLabel(note({ fillColor: '#93c5fd' }))).toBe('Sticky');
   });
 });
+
+// docs/specs/009-elements/pie-chart.md "Chart types": a chart is named as the palette names it.
+describe('a chart', () => {
+  it('is named by its chart type, not its stored kind', () => {
+    expect(elementKindLabel(shape('bar-chart'))).toBe('Column Chart');
+    const area = { type: 'shape', shape: 'line-chart', chartVariant: 'area' } as unknown as Element;
+    expect(elementKindLabel(area)).toBe('Area Chart');
+    expect(elementKindLabel(shape('pie-chart'))).toBe('Pie Chart');
+  });
+});

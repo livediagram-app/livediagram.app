@@ -233,6 +233,17 @@ describe('parseEditOperations: refusals', () => {
     ]);
   });
 
+  // A word that reads as a placement but is not one (right: for right-of:) is told which placements there are.
+  it('names the placements for a word that is not one', () => {
+    const [error] = errorsOf('add square label=x right:n3');
+    expect(error!.details[0]).toBe(
+      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>',
+    );
+    expect(error!.hint).toBe(
+      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>',
+    );
+  });
+
   it('refuses what each operation cannot read', () => {
     expect(
       [

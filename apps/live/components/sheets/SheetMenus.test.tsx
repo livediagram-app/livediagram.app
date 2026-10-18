@@ -213,15 +213,15 @@ describe('the cell menu', () => {
 
   it('sorts by the active column, or opens Custom Sort', () => {
     show(h, cellMenu, { at: 'A1' });
-    fireEvent.click(fly('Sort', 'Sort Z to A'));
+    fireEvent.click(fly('Sort', 'Sort Sheet Z to A'));
     expect(h.value('A1')).toBe(2);
     reopen();
-    fireEvent.click(fly('Sort', 'Sort A to Z'));
+    fireEvent.click(fly('Sort', 'Sort Sheet A to Z'));
     expect(h.value('A1')).toBe(1);
     reopen();
     fireEvent.click(fly('Sort', 'Custom Sort…'));
     expect(h.ctl().menu).toEqual({ kind: 'sort' });
-    expect(screen.getByRole('dialog', { name: 'Sort range' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Custom Sort' })).toBeTruthy();
   });
 
   it('merges at once when nothing is lost, asks when values would be, and unmerges', () => {
@@ -550,7 +550,7 @@ describe('the sort dialog', () => {
     document.body.appendChild(grid);
     show(h, { kind: 'sort' }, { at: 'A1:C4' });
     act(() => h.ctl().setGridEl(grid));
-    const dialog = screen.getByRole('dialog', { name: 'Sort range' });
+    const dialog = screen.getByRole('dialog', { name: 'Custom Sort' });
     expect(within(dialog).getByText('Sort by')).toBeTruthy();
     const columns = () => within(dialog).getAllByLabelText<HTMLSelectElement>('Column');
     const orders = () => within(dialog).getAllByLabelText<HTMLSelectElement>('Order');

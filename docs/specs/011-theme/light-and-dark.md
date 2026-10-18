@@ -59,6 +59,11 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   their words sit on pages with their own paper. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
   ([#819](https://github.com/livediagram-app/livediagram.app/issues/819)).
+- **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
+  in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
+  Default), their lines and labels lightened to read there. A white card on a dark canvas glared, as the flowchart
+  template's error step did. A preset-styled box is redrawn by the preset it wears (`colorPreset`), not only by its
+  colours, so a white that two presets share (Paper keeps its white in both halves) maps to the right one.
 - **A shape styled with an earlier preset follows too.** A shape styled before presets met the floor stores the
   colours they had then; those are read as the same preset, so the box is drawn as today's version of it (a stored
   Bold of white on a mid-tone fill is drawn with the darker fill).

@@ -184,7 +184,7 @@ export const COLLAB_DONE_COLOR = '#16a34a';
 // at 3:1 or better on both, white text. Sticky notes, images, link cards
 // and videos are absent on purpose: their colours are their identity, and they
 // look the same on any paper.
-const DARK_INK = {
+export const DARK_INK = {
   fill: '#141b26',
   stroke: '#64748b',
   text: '#ffffff',

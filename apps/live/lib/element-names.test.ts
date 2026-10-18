@@ -87,6 +87,15 @@ describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () =>
   });
 });
 
+describe('a chart', () => {
+  it('is named by its chart type, as the palette names it', () => {
+    expect(kindLabel(createShape('bar-chart', 0, 0))).toBe('Column chart');
+    expect(kindLabel({ ...createShape('bar-chart', 0, 0), chartVariant: 'horizontal' })).toBe(
+      'Bar chart',
+    );
+  });
+});
+
 describe('shapeKindLabel', () => {
   it('reads a shape kind as prose, for the Shape tiles of the element menu', () => {
     expect(shapeKindLabel('square')).toBe('Square');

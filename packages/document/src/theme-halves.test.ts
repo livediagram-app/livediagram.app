@@ -3,7 +3,10 @@ import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { themeColourMap, themeHalf, viewElementInTheme } from './theme-halves';
 import { THEMES } from './themes';
 import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
-import { contrastRatio } from './colors';
+import { contrastRatio, isLightColor } from './colors';
+import { defaultScheme } from './themes';
+import { resolveStockColours } from './stock-colours';
+import { createShape } from './factories';
 
 // docs/specs/011-theme/light-and-dark.md "What a viewer sees": a box's text and fill are drawn as a pair.
 const map = new Map([
@@ -64,6 +67,39 @@ describe('themeColourMap and stored preset colours', () => {
     expect(drawn.fillColor).toBe(now.fill);
     expect(drawn.strokeColor).toBe(now.stroke);
     expect(contrastRatio(drawn.textColor, drawn.fillColor)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+// docs/specs/011-theme/light-and-dark.md: a box drawn with a Border-tier preset on a light canvas (a white line drawing,
+// the flowchart template's "Show card error") is drawn on the dark half's paper, not as a glaring white card, even
+// though Paper's white is the same colour.
+describe('a preset-styled box in the other half', () => {
+  const brand = defaultScheme('light');
+  const outlineIn = (h: 'light' | 'dark') =>
+    shapeColorPresets(themeHalf(brand, h)).find((p) => p.id === 'outline')!;
+
+  it('is drawn as the same preset there, by the preset it wears', () => {
+    const light = outlineIn('light');
+    const dark = outlineIn('dark');
+    expect(light.fill).toBe('#ffffff');
+    const el = {
+      colorPreset: 'outline',
+      fillColor: light.fill,
+      strokeColor: light.stroke,
+      textColor: light.text,
+    };
+    const viewed = viewElementInTheme(el, themeColourMap(brand, 'dark'));
+    expect(viewed.fillColor).toBe(dark.fill);
+    // Default paints with the stock colours, which the canvas then draws for its surface.
+    const drawn = resolveStockColours({ ...createShape('square', 0, 0), ...viewed }, 'dark');
+    expect(isLightColor(drawn.fillColor)).toBe(false);
+    expect(contrastRatio(drawn.textColor, drawn.fillColor)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('leaves a Paper card, white in both halves, white', () => {
+    const paper = shapeColorPresets(brand).find((p) => p.id === 'paper')!;
+    const el = { colorPreset: 'paper', fillColor: paper.fill, textColor: paper.text };
+    expect(viewElementInTheme(el, themeColourMap(brand, 'dark')).fillColor).toBe('#ffffff');
   });
 });
 

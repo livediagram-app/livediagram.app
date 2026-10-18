@@ -1,6 +1,7 @@
 import { FLOWCHART_STEP_LABEL, flowchartStepTypeOf, isFlowchartStep } from './flowchart';
 import type { Element, ShapeKind } from './index';
 import { eventStormingKindOf } from './event-storming';
+import { CHART_TYPE_LABELS, chartTypeOf } from './chart-types';
 
 // Human-readable name for a shape kind, e.g. 'square' -> 'Square',
 // 'speech-bubble' -> 'Speech Bubble'. Used in selection labels and any
@@ -40,6 +41,10 @@ export function elementKindLabel(el: Element): string {
       // never "Selected Diamond".
       const step = isFlowchartStep(el) ? flowchartStepTypeOf(el.shape) : undefined;
       if (step) return FLOWCHART_STEP_LABEL[step];
+      // A chart IS its chart type (docs/specs/009-elements/pie-chart.md "Chart types"): the palette's "Column Chart"
+      // was "Selected Bar Chart", from its stored kind, and an area chart read as a line chart.
+      const chart = chartTypeOf(el);
+      if (chart) return `${CHART_TYPE_LABELS[chart]} Chart`;
       return SHAPE_LABELS[el.shape] ?? titleCase(el.shape);
     }
     case 'text':

@@ -45,6 +45,8 @@ export type FormulaInput = {
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   accept: (name: string, el: HTMLTextAreaElement | null) => void;
+  // Save the open edit where it is; false (with the error shown) when it cannot be saved.
+  save: () => boolean;
 };
 
 export function useFormulaInput(actions: SheetActions): FormulaInput {
@@ -80,13 +82,14 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
     [c],
   );
 
-  const commit = (move: Dir | 'none', all = false, override?: string) => {
+  const commit = (move: Dir | 'none', all = false, override?: string): boolean => {
     const r = actions.commitEdit(move, all, override);
     if (!r.ok) setError({ message: r.message, at: r.at });
     else {
       setPoint(null);
       setError(null);
     }
+    return r.ok;
   };
 
   const accept = (name: string, el: HTMLTextAreaElement | null) => {
@@ -218,5 +221,6 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
     onKeyDown,
     onChange,
     accept,
+    save: () => commit('none'),
   };
 }

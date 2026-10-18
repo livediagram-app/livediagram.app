@@ -3,7 +3,12 @@
 // aria-labels and live announcements read the same names everywhere, so
 // they can't drift.
 
-import type { BoxedElement, Element } from '@livediagram/document';
+import {
+  CHART_TYPE_LABELS,
+  chartTypeOf,
+  type BoxedElement,
+  type Element,
+} from '@livediagram/document';
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
@@ -25,7 +30,11 @@ export function kindLabel(el: Element): string {
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
-  if (el.type === 'shape') return shapeKindLabel(el.shape);
+  if (el.type === 'shape') {
+    // A chart is named by its chart type, as the palette names it: 'Column chart', not its kind's 'Bar chart'.
+    const chart = chartTypeOf(el);
+    return chart ? `${CHART_TYPE_LABELS[chart]} chart` : shapeKindLabel(el.shape);
+  }
   return 'Element';
 }
 

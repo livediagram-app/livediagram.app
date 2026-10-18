@@ -68,6 +68,9 @@ A Participant changes the board's **content**, never its **shape**.
   delete is refused. A stale screen therefore never writes an old copy of the board over a newer one.
 - **Undo** takes back the Participant's own steps; an undo that would make a forbidden change is refused like any
   other.
+- **A chord the role may not run stays the canvas's.** A Viewer's or Participant's Cmd/Ctrl+A, +D, +Shift+L and the
+  z-order chords do nothing rather than reaching the browser, which selected the page's text or opened the bookmark
+  dialog; copy stays the browser's, so text on the page can still be copied.
 
 ## Building a new feature
 
@@ -82,7 +85,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: an Event
   Storming board's coloured notes, else Sticky and Text (whatever the mode's Popular holds); then Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter, or Add
   child and Add sibling on its toolbar), not from a tile. Each tile works as an Editor's does: dragged onto the
-  canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw.
+  canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw; its key (N, T, 9, as the tiles show) arms it the same way, and no other add key runs (`PARTICIPANT_KEYS`).
 - **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Eraser, Format
   Painter and Slide Deck are an Editor's. Avatar is in the picker only while you are in it; a Participant enters it,
   like anyone, from a Selection Mode button on the board.
