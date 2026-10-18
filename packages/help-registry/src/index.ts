@@ -3162,10 +3162,14 @@ export function getSubArticles(parentSlug: string): Article[] {
 /**
  * The articles matching `query` (case-insensitive, on title, description and keywords), best first: a title that
  * starts with the query, then a title with a word starting with it, then a title containing it, then a match in
- * the description, then one in the keywords alone. Registry order breaks ties.
+ * the description, then one in the keywords alone, then (for a query of several words) an article holding every
+ * word somewhere across the three, those with more of the words in the title first: "export png" finds Exporting
+ * Diagrams. Registry order breaks ties.
  */
 export function searchArticles(query: string): Article[] {
-  const lower = query.toLowerCase();
+  const lower = query.toLowerCase().trim();
+  const words = lower.split(/\s+/).filter(Boolean);
+  // Ranks 5 and up: every word found across the three fields, fewer of them outside the title ranking higher.
   const rank = (a: Article): number => {
     const title = a.title.toLowerCase();
     if (title.startsWith(lower)) return 0;
@@ -3173,7 +3177,10 @@ export function searchArticles(query: string): Article[] {
     if (title.includes(lower)) return 2;
     if (a.description.toLowerCase().includes(lower)) return 3;
     if (a.keywords.toLowerCase().includes(lower)) return 4;
-    return -1;
+    if (words.length < 2) return -1;
+    const hay = `${title} ${a.description} ${a.keywords}`.toLowerCase();
+    if (!words.every((w) => hay.includes(w))) return -1;
+    return 5 + words.filter((w) => !title.includes(w)).length;
   };
   return articles
     .map((a) => ({ a, r: rank(a) }))
