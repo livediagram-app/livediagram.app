@@ -42,7 +42,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | --------------- | -------- | ------------ | ------------- | ------------ | ---------------- |
 | Everyday        | Default  | Flexible     | (none)        | Grid         | (kept)           |
 | Textbook        | UML      | Professional | Oswald        | Graph        | 50%              |
-| Whiteboard      | Mono     | Sketch       | (none)        | Blank        | (kept)           |
+| Whiteboard      | Mono     | Marker       | (none)        | Blank        | (kept)           |
 | Spectrum        | Rainbow  | Flexible     | Inter         | Grid         | 50%              |
 | Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
 | Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
@@ -63,6 +63,12 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
 | Coffeehouse     | Espresso | Sketch       | Caveat        | Bricks       | 40%              |
 | Schematic       | UML      | Professional | Roboto Mono   | Crosshatch   | 40%              |
+| Flipchart       | Rainbow  | Marker       | (none)        | Lines        | 50%              |
+| Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
+| Greenboard      | Pine     | Marker       | (none)        | Blank        | (kept)           |
+| Picnic          | Pastel   | Flexible     | Poppins       | Checkerboard | 25%              |
+| Mural           | Plum     | Marker       | (none)        | Grid         | 50%              |
+| Field Notes     | Olive    | Sketch       | (none)        | Lines        | 60%              |
 
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
@@ -83,10 +89,15 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   migrates.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
-  Mashup card and the twenty-three looks fill four pages.
+  Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
 - **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each bring a theme or a
   pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
   four is new ground rather than a reshuffle.
+- **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
+  Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
+  marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
+  with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
+  (Flipchart and Picnic) keep two to every page.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
