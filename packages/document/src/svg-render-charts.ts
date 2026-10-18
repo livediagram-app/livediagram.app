@@ -27,6 +27,7 @@ import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement } from './index';
 import { legendFontPx } from './label-font';
+import { textAdvanceEm } from './text-advance';
 import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -68,10 +69,10 @@ function svgChartLegend(
     });
     return parts.join('');
   }
-  // A row, wrapped and centred: measured the way the wrapped-label emitter
-  // measures, off the character count, since there is no DOM to ask.
+  // A row, wrapped and centred: each name's width estimated per character (text-advance.ts), since there is no DOM
+  // to ask; a flat average ran short on wide letters and drew one name into the next swatch.
   const itemW = (item: PieSlice) =>
-    swatch + 4 + Math.max(8, (item.label || '—').length * fontPx * 0.51) + 10;
+    swatch + 4 + Math.max(8, textAdvanceEm(item.label || '—') * fontPx) + 10;
   const rows: PieSlice[][] = [[]];
   let used = 0;
   for (const item of items) {
