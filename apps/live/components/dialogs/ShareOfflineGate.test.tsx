@@ -7,7 +7,7 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 import { ShareOfflineGate } from './ShareOfflineGate';
 
-// docs/specs/006-document/offline-mode.md "Sharing a Local Only document": Share says the document is
+// docs/specs/006-document/offline-mode.md "Sharing a document in This Browser": Share says the document is
 // offline and offers Sync Document; nothing syncs until it is pressed, nor before the reader is known;
 // a failure leaves the button to try again.
 afterEach(() => {

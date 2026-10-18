@@ -49,7 +49,7 @@ const CONTENT: Record<
     icon: <ThisBrowserIcon />,
     title: 'Nothing in this browser',
     description:
-      'Choose "Local Browser" as the Save location in the New Document wizard and browser-only documents collect here.',
+      'Documents saved only in this browser collect here. Take Offline on any document of yours moves it here.',
     cta: 'New Document',
   },
   folder: {

@@ -171,16 +171,16 @@ test('Jump Back In is 4 most used cards, then 4 recent, none twice', async ({
   const list = jumpBackIn(page);
   await expect(list.getByRole('link')).toHaveCount(8);
   expect(await names(page.getByRole('list', { name: 'Most Used' }))).toEqual([
-    'Atlas, Local Only',
-    'Beacon, Local Only',
-    'Compass, Local Only',
-    'Delta, Local Only',
+    'Atlas, This Browser',
+    'Beacon, This Browser',
+    'Compass, This Browser',
+    'Delta, This Browser',
   ]);
   expect(await names(page.getByRole('list', { name: 'Recent' }))).toEqual([
     'Server two',
     'Server one',
-    'Echo, Local Only',
-    'Foxtrot, Local Only',
+    'Echo, This Browser',
+    'Foxtrot, This Browser',
   ]);
   // Atlas is both the most used and the newest: it shows once, under most used.
   await expect(list.getByRole('link', { name: /^Atlas/ })).toHaveCount(1);
@@ -221,14 +221,14 @@ test('on a phone the strip alternates, holds eight and ends in See More', async 
   const list = jumpBackIn(page);
   await expect(list.getByRole('link')).toHaveCount(8);
   expect(await names(list)).toEqual([
-    'Atlas, Local Only',
+    'Atlas, This Browser',
     'Server two',
-    'Beacon, Local Only',
+    'Beacon, This Browser',
     'Server one',
-    'Compass, Local Only',
-    'Echo, Local Only',
-    'Delta, Local Only',
-    'Foxtrot, Local Only',
+    'Compass, This Browser',
+    'Echo, This Browser',
+    'Delta, This Browser',
+    'Foxtrot, This Browser',
   ]);
   // One row, sideways.
   const tops = await list.evaluateAll((items) =>
@@ -312,9 +312,9 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
 
   await seedLocalDocuments(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
   await page.reload();
-  const link = jumpBackIn(page).getByRole('link', { name: 'Kept on this laptop, Local Only' });
+  const link = jumpBackIn(page).getByRole('link', { name: 'Kept on this laptop, This Browser' });
   await expect(link).toBeVisible();
-  await expect(link.getByText('Local Only')).toBeVisible();
+  await expect(link.getByText('This Browser')).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

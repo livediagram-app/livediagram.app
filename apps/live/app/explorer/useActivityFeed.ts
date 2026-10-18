@@ -2,8 +2,8 @@
 
 // The Inbox's data (docs/specs/013-workspace/inbox.md §1, §5): one read, split into the
 // three sections the pane shows, plus the count the sidebar badge draws. Assigned to You holds actions and
-// Plan cards (§2.4) in one list. The read is the server's and, beside it, this browser's Local Only documents
-// (§2.6), whose rows are marked `local` so they show the Local Only pill.
+// Plan cards (§2.4) in one list. The read is the server's and, beside it, this browser's documents in This Browser
+// (§2.6), whose rows are marked `local` so they show the This Browser pill.
 //
 // Held in Explorer state (like favourites) rather than gated to the
 // section, because the sidebar badge renders on every Explorer section
@@ -41,7 +41,7 @@ const NO_LOCAL: OfflineActivity = { actions: [], threads: [], cards: [], cardThr
 const markLocal = <T extends object>(rows: T[]): Located<T>[] =>
   rows.map((r) => ({ ...r, local: true as const }));
 
-// This browser's Local Only documents (§2.6), read beside the server's index. The store failing lists nothing
+// This Browser's documents in This Browser (§2.6), read beside the server's index. The store failing lists nothing
 // local, never the page's failed state: that is the server read's to report.
 function readLocal(owner: string): Promise<OfflineActivity> {
   return readOfflineActivity([owner, getGuestSelfId()]).then(

@@ -54,6 +54,6 @@ describe('ExplorerCurrentDocument', () => {
       setDocumentVisibility({ shareable: false, team: false, offline: true, community: false }),
     );
     render(<ExplorerCurrentDocument item={doc} ownerId="me" onOpen={vi.fn()} />);
-    expect(screen.getByLabelText('Local Only')).toBeTruthy();
+    expect(screen.getByLabelText('This Browser')).toBeTruthy();
   });
 });

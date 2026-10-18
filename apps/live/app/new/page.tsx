@@ -177,7 +177,7 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
-  // Where a new document is stored: Local Only for a guest (docs/specs/006-document/save-locations.md), decided at
+  // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, clerkUserId });
   useLayoutEffect(() => {
@@ -302,7 +302,7 @@ export default function NewDocumentPage() {
     setSubmitting(true);
     // A `?q=` preset becomes the search in the new document's start panel (start-query.ts).
     handStartQuery(presetQuery);
-    // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
+    // Save location (docs/specs/006-document/save-locations.md): only This Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
     // An explicit blank (Skip, Start Blank, a blank's link) opens with its start closed (close-start-for-blank.ts).
@@ -321,7 +321,7 @@ export default function NewDocumentPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A Local Only document has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+    // A document in This Browser has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
     if (offline) {

@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
-import { LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
+import { THIS_BROWSER_DESCRIPTION } from '@/components/primitives/ThisBrowserPill';
 import { PanelExplorerTree, type PanelTreeSection } from './PanelExplorerTree';
 import type { PanelTree } from './PanelTreeContext';
 
@@ -119,10 +119,10 @@ describe('PanelExplorerTree', () => {
     expect(assign).not.toHaveBeenCalled();
   });
 
-  it('marks a document in this browser Local Only, with what it means', () => {
+  it('marks a document in this browser This Browser, with what it means', () => {
     render(<Harness section={{ kind: 'browser' }} />);
-    expect(rows()).toEqual([`Workshop notes. ${LOCAL_ONLY_DESCRIPTION}`]);
-    expect(screen.getByText('Local Only')).toBeTruthy();
+    expect(rows()).toEqual([`Workshop notes. ${THIS_BROWSER_DESCRIPTION}`]);
+    expect(screen.getByText('This Browser')).toBeTruthy();
   });
 
   it('lists what is shared with the reader', () => {

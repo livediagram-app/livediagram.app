@@ -88,7 +88,7 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           </DocumentTagsProvider>
         </ShapeLibraryProvider>
       </CustomThemeProvider>
-      {/* Moving this browser's Local Only documents after signing in
+      {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
       <LocalMovePrompt />
     </ExplorerProvider>

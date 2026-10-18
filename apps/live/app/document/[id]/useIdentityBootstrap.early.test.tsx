@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/006-document/offline-mode.md "Instant open": a Local Only document opens before auth
+// docs/specs/006-document/offline-mode.md "Instant open": a document in This Browser opens before auth
 // settles, with no guest id, participant read or Explorer lists in its way; who is reading resolves
 // once auth answers, without loading the document again. Anything else still waits for auth.
 
@@ -89,7 +89,7 @@ beforeEach(() => {
 afterEach(() => vi.clearAllMocks());
 
 describe('useIdentityBootstrap early open', () => {
-  it('opens a Local Only document before auth settles, without the server', async () => {
+  it('opens a document in This Browser before auth settles, without the server', async () => {
     const { set, lists } = render({ authLoaded: false });
     await flush();
     expect(api.apiLoadDocument).toHaveBeenCalledExactlyOnceWith('self', 'doc-1');

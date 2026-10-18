@@ -36,19 +36,19 @@ describe('favourites on an offline document', () => {
   });
 
   it('stars an offline document without reaching the server', async () => {
-    await offlineCreateDocument({ id: 'off-1', name: 'Local Only' }, 1000);
+    await offlineCreateDocument({ id: 'off-1', name: 'This Browser' }, 1000);
     await apiSetFavourite('owner-1', 'off-1', true);
     expect(fetchCalls).toEqual([]);
   });
 
   it('remembers the star, so it survives a reload', async () => {
-    await offlineCreateDocument({ id: 'off-1', name: 'Local Only' }, 1000);
+    await offlineCreateDocument({ id: 'off-1', name: 'This Browser' }, 1000);
     await apiSetFavourite('owner-1', 'off-1', true);
     expect(await apiListFavourites('owner-1')).toContain('off-1');
   });
 
   it('un-stars it again', async () => {
-    await offlineCreateDocument({ id: 'off-1', name: 'Local Only' }, 1000);
+    await offlineCreateDocument({ id: 'off-1', name: 'This Browser' }, 1000);
     await apiSetFavourite('owner-1', 'off-1', true);
     await apiSetFavourite('owner-1', 'off-1', false);
     expect(await apiListFavourites('owner-1')).not.toContain('off-1');

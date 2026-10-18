@@ -6,7 +6,7 @@ import { SparkleIcon } from '@/components/primitives/explorer-icons';
 
 // The Made by AI badge (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every row and
 // card of a document an AI made carries it, so what the Made by AI filter reads is visible. A
-// sparkle and the words, never colour alone; built like the Local Only pill, in violet.
+// sparkle and the words, never colour alone; built like the This Browser pill, in violet.
 
 export const MADE_BY_AI_LABEL = 'Made by AI';
 const MADE_BY_AI_DESCRIPTION =

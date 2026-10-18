@@ -46,7 +46,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
   document at once give the second **This document is already in the Community.**
 - **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
-  Private, Shared and Team; only Local Only beats it), and the Share dialog's status line says the document is public.
+  Private, Shared and Team; only This Browser beats it), and the Share dialog's status line says the document is public.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
   is public.
 - **In the Explorer**: while the post is public, the document's visibility badge on every list row and card (Recent,

@@ -143,7 +143,7 @@ export function useIdentityBootstrap(opts: {
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
-  // `early`: a Local Only document opening before auth has settled (docs/specs/006-document/offline-mode.md
+  // `early`: a document in This Browser opening before auth has settled (docs/specs/006-document/offline-mode.md
   // "Instant open"). It has no owner on the server to wait for, so it loads under the placeholder
   // participant and settleEarlyIdentity resolves who is reading once auth answers.
   const bootstrap = useEffectEvent((early = false) => {
@@ -342,7 +342,7 @@ export function useIdentityBootstrap(opts: {
       // than hitting /api/participants again on every wrong guess.
       let self: Participant;
       if (early) {
-        // A Local Only document reads from this browser whoever is reading: the identity follows.
+        // A document in This Browser reads from this browser whoever is reading: the identity follows.
         self = selfParticipant;
       } else if (selfParticipant.id !== 'self') {
         // Already resolved — skip the network round-trip.
@@ -630,8 +630,8 @@ export function useIdentityBootstrap(opts: {
     };
     run(watchdog, load);
   });
-  // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a Local
-  // only document opens straight from this browser. Share links, embeds and workbenches always wait.
+  // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a document in
+  // This Browser opens straight from this browser. Share links, embeds and workbenches always wait.
   const earlyOpen = useRef(false);
   const tryEarlyOpen = useEffectEvent(async () => {
     if (authLoaded || hydrated || embed || workbench) return;
@@ -642,7 +642,7 @@ export function useIdentityBootstrap(opts: {
     // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
     if (runRef.current !== 0) return;
     earlyOpen.current = true;
-    debugLog('[load] early open of a Local Only document');
+    debugLog('[load] early open of a document in This Browser');
     bootstrap(true);
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,

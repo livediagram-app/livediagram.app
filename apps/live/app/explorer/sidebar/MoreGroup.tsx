@@ -15,9 +15,9 @@ import { SidebarRow } from './SidebarRow';
 import { TagsSidebarRow } from './TagRows';
 import { TrashSidebarRow } from './TrashSidebarRow';
 
-// More (docs/specs/013-workspace/explorer-structure.md): This browser (offline documents,
+// More (docs/specs/013-workspace/explorer-structure.md): This Browser (offline documents,
 // docs/specs/006-document/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
-// pages), and Trash (docs/specs/013-workspace/trash.md). `rows` decides whether This browser shows.
+// pages), and Trash (docs/specs/013-workspace/trash.md). `rows` decides whether This Browser shows.
 export function MoreGroup({
   rows,
   divider,

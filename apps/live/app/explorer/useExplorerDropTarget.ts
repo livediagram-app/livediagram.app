@@ -2,7 +2,7 @@
 
 import { useDocumentDropTarget } from '@/components/panels/useDocumentDropTarget';
 import { debugLog } from '@/lib/debug-log';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 import { useOptionalExplorer } from './ExplorerContext';
 import { planDocumentDrop, type DropPlace } from './document-drop';
 
@@ -28,7 +28,7 @@ export function useExplorerDropTarget(to: DropPlace, opts: { onLongHover?: () =>
     const from: DropPlace = team
       ? { teamId: team.team.id, folderId: team.folderId }
       : { teamId: null, folderId: own!.folderId };
-    const plan = planDocumentDrop({ from, to, localOnly: own ? isLocalOnly(own) : false });
+    const plan = planDocumentDrop({ from, to, localOnly: own ? isInThisBrowser(own) : false });
     debugLog(
       `[explorer-drop] ${plan} document=${id} to=${to.teamId ? 'team' : 'personal'}:${to.folderId ? 'folder' : 'root'}`,
     );

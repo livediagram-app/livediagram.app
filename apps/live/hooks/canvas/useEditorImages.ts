@@ -93,7 +93,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // newly-uploaded image surfaces without a document reload. View-
   // role visitors skip the fetch (the accordion is hidden for them
   // anyway via the !isReadOnly gate at the call site).
-  // The owner is a trigger too: a Local Only document opens under the 'self' placeholder and learns
+  // The owner is a trigger too: a document in This Browser opens under the 'self' placeholder and learns
   // who is reading afterwards (docs/specs/006-document/offline-mode.md "Instant open"), and the
   // placeholder is nobody's gallery.
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));

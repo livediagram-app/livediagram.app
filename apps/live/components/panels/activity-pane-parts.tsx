@@ -26,7 +26,7 @@ import {
   GlyphDisc,
 } from '@livediagram/ui';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import type { Located } from '@/app/explorer/useActivityFeed';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { cardDeepLinkHref, collabDeepLinkHref, formResponsesHref } from '@/lib/collab-deep-link';
@@ -311,13 +311,13 @@ type DocumentPlace = Located<
 >;
 
 // Which document the row is from; a team document's chip leads with the
-// team glyph so the source of the work reads at a glance. A Local Only document's chip is followed by the Local
-// only pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#local-only-pill).
+// team glyph so the source of the work reads at a glance. When the document is in This Browser, the chip is followed by
+// the This Browser pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#this-browser-pill).
 function PlaceChip({ place }: { place: DocumentPlace }) {
   return (
     <>
       <DocumentChip place={place} />
-      {place.local ? <LocalOnlyPill asLabel /> : null}
+      {place.local ? <ThisBrowserPill asLabel /> : null}
     </>
   );
 }

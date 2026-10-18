@@ -9,8 +9,8 @@ import { Spinner } from '@/components/palette/template-picker-icons';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useLocalMovePrompt } from '@/hooks/persistence/useLocalMovePrompt';
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local Only
-// documents after signing in"), mounted by the Explorer and the editor. Renders nothing until there is
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// after signing in"), mounted by the Explorer and the editor. Renders nothing until there is
 // something to offer.
 export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   const { authLoaded, clerkUserId } = useClerkApiBootstrap();
@@ -45,8 +45,8 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
         <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
           <p role="alert">
             {phase.failed.length === 1
-              ? 'This one could not be moved and is still Local Only:'
-              : `These ${phase.failed.length} could not be moved and are still Local Only:`}
+              ? 'This one could not be moved and is still This Browser:'
+              : `These ${phase.failed.length} could not be moved and are still This Browser:`}
           </p>
           <ul className="mt-2 list-disc pl-5 text-slate-600 dark:text-slate-300">
             {phase.failed.map((name, i) => (
@@ -77,7 +77,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
       </DialogHeader>
       <div className="px-6 py-5">
         <ImportChecklist
-          legend="Local Only documents"
+          legend="documents in This Browser"
           rows={prompt.rows}
           checked={prompt.checked}
           onToggle={prompt.toggle}

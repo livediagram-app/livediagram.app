@@ -1,42 +1,45 @@
 // @vitest-environment jsdom
 
-// The editor header's badge for a document saved only in this browser reads "Local Only", matching
-// the Explorer's pill (docs/specs/006-document/offline-mode.md#local-only-badge--explorer).
+// The editor header's badge for a document saved only in this browser reads "This Browser", matching
+// the Explorer's pill (docs/specs/006-document/offline-mode.md#this-browser-badge--explorer).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { LOCAL_ONLY_DESCRIPTION, LOCAL_ONLY_LABEL } from '@/components/primitives/LocalOnlyPill';
+import {
+  THIS_BROWSER_DESCRIPTION,
+  THIS_BROWSER_LABEL,
+} from '@/components/primitives/ThisBrowserPill';
 import { SharedBadge } from './SharedBadge';
 
 afterEach(cleanup);
 
 describe('SharedBadge', () => {
-  it('reads Local Only for a document in this browser, never Offline', () => {
+  it('reads This Browser for a document in this browser, never Offline', () => {
     render(<SharedBadge shareable={false} offline />);
-    const badge = screen.getByText(LOCAL_ONLY_LABEL).closest('[tabindex]') as HTMLElement;
-    expect(badge.textContent).toContain('Local Only');
+    const badge = screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]') as HTMLElement;
+    expect(badge.textContent).toContain('This Browser');
     expect(badge.textContent).not.toContain('Offline');
   });
 
   it('carries an icon beside the words, not colour alone', () => {
     render(<SharedBadge shareable={false} offline />);
-    const badge = screen.getByText(LOCAL_ONLY_LABEL).closest('[tabindex]') as HTMLElement;
+    const badge = screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]') as HTMLElement;
     expect(badge.querySelector('svg')).not.toBeNull();
   });
 
-  it('is named Local Only and described with the pill sentence', () => {
+  it('is named This Browser and described with the pill sentence', () => {
     render(<SharedBadge shareable={false} offline />);
-    const badge = screen.getByText(LOCAL_ONLY_LABEL).closest('[tabindex]') as HTMLElement;
-    expect(badge.getAttribute('aria-label')).toBe(LOCAL_ONLY_LABEL);
+    const badge = screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]') as HTMLElement;
+    expect(badge.getAttribute('aria-label')).toBe(THIS_BROWSER_LABEL);
     const id = badge.getAttribute('aria-describedby');
-    expect(document.getElementById(id!)?.textContent).toBe(LOCAL_ONLY_DESCRIPTION);
+    expect(document.getElementById(id!)?.textContent).toBe(THIS_BROWSER_DESCRIPTION);
   });
 
   it('explains it in the legend on focus', () => {
     render(<SharedBadge shareable={false} offline />);
-    const badge = screen.getByText(LOCAL_ONLY_LABEL).closest('[tabindex]') as HTMLElement;
+    const badge = screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]') as HTMLElement;
     fireEvent.focus(badge);
-    expect(screen.getAllByText(LOCAL_ONLY_DESCRIPTION).length).toBeGreaterThan(1);
+    expect(screen.getAllByText(THIS_BROWSER_DESCRIPTION).length).toBeGreaterThan(1);
   });
 
   it('keeps the other states named and described the same way', () => {
@@ -50,13 +53,13 @@ describe('SharedBadge', () => {
 
 // docs/specs/025-community/community.md: listed in the Community, the document is public.
 describe('SharedBadge in the Community', () => {
-  it('reads Public while listed, over Shared, and Local Only still wins', () => {
+  it('reads Public while listed, over Shared, and This Browser still wins', () => {
     render(<SharedBadge shareable community />);
     expect(screen.getByText('Public')).toBeTruthy();
     expect(screen.queryByText('Shared')).toBeNull();
     cleanup();
     render(<SharedBadge shareable={false} offline community />);
-    expect(screen.getByText(LOCAL_ONLY_LABEL)).toBeTruthy();
+    expect(screen.getByText(THIS_BROWSER_LABEL)).toBeTruthy();
     expect(screen.queryByText('Public')).toBeNull();
   });
 });

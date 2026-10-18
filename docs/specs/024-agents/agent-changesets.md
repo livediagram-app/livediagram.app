@@ -92,7 +92,7 @@ editor that was offline when it landed.
 ## Rooms for personal documents
 
 An editor connects to its document's room for every server-stored document it has open, personal ones included.
-A document in Offline Mode or This browser has no room and no agent can reach it. On a personal document that is
+A document in Offline Mode or This Browser has no room and no agent can reach it. On a personal document that is
 neither shared nor in a team the editor sends only its selection and its tab focus; cursors, laser, viewport and
 drag previews stay for documents with an audience.
 

@@ -1,30 +1,30 @@
 # Save Locations
 
 A new document is stored in one of a small set of **save locations**: on the server (livediagram) or in this browser
-only (Local Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible). Google Drive is not
+only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible). Google Drive is not
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
 **Nobody is asked.** The New Document wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Document** and **Take Offline**.
-(The wizard used to end on a Location step with a Save location chooser, a tile per location, the Local Browser
+(The wizard used to end on a Location step with a Save location chooser, a tile per location, the This Browser
 data-loss warning and a folder browser; it was removed, as most people answered it with the default before they had
-anything on the canvas. A Local Only document still says what it is on the document itself: the editor header's
-**Local Only** badge and its legend, [Offline Mode](offline-mode.md#local-only-badge--explorer).)
+anything on the canvas. A document in This Browser still says what it is on the document itself: the editor header's
+**This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
 
-| Location          | What it means                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livediagram**   | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
-| **Local Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
+| Location         | What it means                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| **livediagram**  | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
+| **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
 
-| Who                               | Default           |
-| --------------------------------- | ----------------- |
-| A guest, with sign-in enabled     | **Local Browser** |
-| A signed-in person                | **livediagram**   |
-| Anyone on a guest-only deployment | **livediagram**   |
+| Who                               | Default          |
+| --------------------------------- | ---------------- |
+| A guest, with sign-in enabled     | **This Browser** |
+| A signed-in person                | **livediagram**  |
+| Anyone on a guest-only deployment | **livediagram**  |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
@@ -37,7 +37,7 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 - Before Clerk has answered, `signedIn` is the `__client_uat` hint
   ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers)).
   A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
-  a Local Only document; a guest never waits.
+  a document in This Browser; a guest never waits.
 - There is no per-person override: no setting chooses the store. Where a document is **filed** on livediagram is the
   person's to set, in Settings > Documents > Default Folders ([Default folders](../013-workspace/default-folders.md)).
   A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
@@ -132,7 +132,7 @@ A signed-in user can mirror the documents in My Documents to their own Google
 Drive. The document still lives in livediagram (the default location): Drive
 holds a copy that is kept in sync both ways while a tab is open, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with
-**livediagram** is mirrored like any other. Local Browser documents have no
+**livediagram** is mirrored like any other. Documents in This Browser have no
 server copy and are not mirrored. The mirror itself (connection, folder tree,
 rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
 here.
@@ -140,7 +140,7 @@ here.
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 `Document` / `Created` carries a `type` naming the store,
-`Cloud` for livediagram and `Offline` for Local Browser. A future location adds
+`Cloud` for livediagram and `Offline` for This Browser. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
