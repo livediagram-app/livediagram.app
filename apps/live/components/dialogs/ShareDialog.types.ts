@@ -53,6 +53,8 @@ export type ShareDialogProps = {
   community?: ReactNode;
   // Listed in the public Community: the status line says Public (docs/specs/025-community/community.md).
   communityListed?: boolean;
+  // The document sits in a team library: the status line says every member can open it.
+  teamDocument?: boolean;
   // Why the password can't be set right now (a published document: a post and a password exclude each
   // other), shown in place of the switch's effect; null or absent when it can.
   passwordLockedReason?: string | null;
