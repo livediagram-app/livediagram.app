@@ -362,12 +362,12 @@ describe('ToolbarPalette', () => {
       'Write',
       'Draw',
       'Layout',
+      'Ask',
+      'Session',
       'Icons',
       'Stickers',
       'Media',
       'Data',
-      'Ask',
-      'Session',
     ]);
     // The other Collaborate categories are Session's groups, not buttons of their own.
     expect(COLLAB_IDS.length).toBeGreaterThan(0);
