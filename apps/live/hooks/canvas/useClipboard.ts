@@ -62,6 +62,7 @@ import {
   isExcalidrawFileCandidate,
 } from '@/lib/excalidraw-paste';
 import type { BoardScene } from '@/lib/board-scene/scene';
+import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -240,7 +241,7 @@ export function useClipboard(deps: ClipboardDeps) {
     if (tabTakesSheets(activeTab)) return copied;
     const { kept, sheets } = withoutSheets(copied);
     if (sheets === 0) return copied;
-    console.info('[clipboard] sheets left out', { sheets });
+    debugLog('[clipboard] sheets left out', { sheets });
     toast.info(sheetsLeftOutMessage(sheets));
     return kept;
   };
