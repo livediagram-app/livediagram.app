@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
+import { Brand, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
@@ -26,6 +26,7 @@ import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
+import { SectionsDrawer } from './SectionsDrawer';
 import { HomeHero } from '@/components/panels/home/HomeHero';
 import { useHeroPresence } from '@/components/panels/home/useHeroPresence';
 import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
@@ -234,31 +235,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
         {/* The sidebar is hidden below `sm`; this slides the same tree in
             from the left, opened by the hamburger in the pane header. */}
         {mobileNavOpen ? (
-          <div className="fixed inset-0 z-[var(--z-overlay)] sm:hidden">
-            <div
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-              onClick={() => setMobileNavOpen(false)}
-              aria-hidden
-            />
-            <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] animate-slide-in-left flex-col overflow-y-auto border-r border-slate-200 bg-white px-3 py-4 shadow-xl dark:border-slate-700 dark:bg-slate-800">
-              <div className="mb-1 flex items-center justify-between pl-1">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Sections
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMobileNavOpen(false)}
-                  aria-label="Close"
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                >
-                  <CloseIcon size={11} />
-                </button>
-              </div>
-              <AreaErrorBoundary area="ExplorerSidebar" fallback="panel">
-                <ExplorerSidebar />
-              </AreaErrorBoundary>
-            </div>
-          </div>
+          <SectionsDrawer onClose={() => setMobileNavOpen(false)}>
+            <AreaErrorBoundary area="ExplorerSidebar" fallback="panel">
+              <ExplorerSidebar />
+            </AreaErrorBoundary>
+          </SectionsDrawer>
         ) : null}
 
         {/* ---------- Right pane: the active section route ---------- */}

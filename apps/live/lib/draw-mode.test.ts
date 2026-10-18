@@ -69,6 +69,22 @@ describe('drawBannerMessage', () => {
     );
   });
 
+  // docs/specs/008-canvas/canvas-and-palette.md: the banner names a shape as the tile that armed it named it.
+  it('names a shape as its tile does, a variant or a compound kind included', () => {
+    expect(
+      drawBannerMessage(
+        { type: 'shape', kind: 'pyramid', variant: 'funnel', name: 'Funnel' },
+        false,
+      ),
+    ).toBe('Tap to drop or drag to draw Funnel');
+    expect(drawBannerMessage({ type: 'shape', kind: 'hub', name: 'Hub and Spoke' }, false)).toBe(
+      'Tap to drop or drag to draw Hub and Spoke',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
+      'Tap to drop or drag to draw Square',
+    );
+  });
+
   it('renders the combined tap/drag copy per box intent', () => {
     expect(drawBannerMessage({ type: 'text' }, false)).toBe('Tap to drop or drag to place text');
     expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(
@@ -81,6 +97,9 @@ describe('drawBannerMessage', () => {
       'Tap to drop or drag to draw an arrow',
     );
     expect(drawBannerMessage({ type: 'table' }, false)).toBe('Tap to drop or drag to draw a table');
+    expect(drawBannerMessage({ type: 'arrow', ends: 'none' }, false)).toBe(
+      'Tap to drop or drag to draw a line',
+    );
     expect(drawBannerMessage({ type: 'link-card' }, false)).toBe(
       'Tap to drop or drag to draw a link card',
     );

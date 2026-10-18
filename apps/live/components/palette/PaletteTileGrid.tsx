@@ -1,14 +1,8 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
-import type {
-  ComponentKind,
-  EstimateScale,
-  Reaction,
-  SelectionMode,
-  SessionTool,
-  ShapeKind,
-} from '@livediagram/document';
+import type { ComponentKind, ShapeKind } from '@livediagram/document';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
-import type { PendingDraw } from '@/lib/draw-mode';
+import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
+import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
@@ -24,17 +18,7 @@ import { MarkerPaletteTile } from './MarkerPaletteTile';
 // (with the mobile-close / draw-armed wrapping already applied) and threaded
 // to every grid.
 export type PaletteTileActions = {
-  addShape: (
-    kind: ShapeKind,
-    opts?: {
-      session?: SessionTool;
-      reaction?: Reaction;
-      mode?: SelectionMode;
-      estimateScale?: EstimateScale;
-      plan?: string;
-      variant?: string;
-    },
-  ) => void;
+  addShape: (kind: ShapeKind, opts?: AddShapeOptions) => void;
   addText: () => void;
   beginFreehand: () => void;
   beginHighlighter: () => void;
@@ -90,6 +74,7 @@ export function tileHandler(
           estimateScale: a.estimateScale,
           plan: a.plan,
           variant: a.variant,
+          name: tileCaption(def.label, def.caption),
         });
     case 'text':
       return actions.addText;

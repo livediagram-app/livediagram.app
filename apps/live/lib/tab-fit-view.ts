@@ -1,9 +1,11 @@
 // The view Fit to Screen lands on (docs/specs/008-canvas/canvas-and-palette.md "Zoom & pan"): every boxed element on
-// the tab in view, clear of the Palette strip over the canvas's top and beside Pages mode's Contents panel. Shared by
+// the tab in view, clear of the Palette strip over the canvas's top, beside Pages mode's Contents panel and clear of
+// the Map (docs/specs/008-canvas/minimap.md "Fit leaves the Map clear"). Shared by
 // the Fit button (hooks/canvas/useEditorViewport) and a double-tap's fit back out to the whole tab
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
 import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/document';
+import { fitClearOfPanel, MAP_PANEL_SELECTOR, type FitInsets } from './fit-clear-of-panel';
 import { sideChromeInsets } from './side-chrome-insets';
 import {
   besideSideInsets,
@@ -37,13 +39,38 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
   // Beside Pages mode's Contents sidebar, never under it (docs/specs/007-editor/pages-mode.md
   // "Contents"): the fit fills what shows beside it.
   const sides = sideChromeInsets(canvas);
-  return besideSideInsets(
-    computeFitToScreen(
-      { width: rect.width - sides.left - sides.right, height: rect.height },
-      bbox,
-      undefined,
-      Math.max(FIT_TO_SCREEN_PADDING, inset),
-    ),
-    sides,
+  const padding = Math.max(FIT_TO_SCREEN_PADDING, inset);
+  const fitIn = (ins: FitInsets) =>
+    besideSideInsets(
+      computeFitToScreen(
+        {
+          width: rect.width - ins.left - ins.right,
+          height: rect.height - ins.top - ins.bottom,
+        },
+        bbox,
+        undefined,
+        padding,
+      ),
+      ins,
+    );
+  return fitClearOfPanel(
+    { width: rect.width, height: rect.height },
+    bbox,
+    mapPanelBox(box),
+    { ...sides, top: 0, bottom: 0 },
+    padding,
+    fitIn,
   );
+}
+
+// The Map panel's box relative to the canvas, or null while it is not showing.
+function mapPanelBox(canvas: { left: number; top: number }) {
+  const panel = document.querySelector<HTMLElement>(MAP_PANEL_SELECTOR)?.getBoundingClientRect();
+  if (!panel || panel.width === 0) return null;
+  return {
+    left: panel.left - canvas.left,
+    right: panel.right - canvas.left,
+    top: panel.top - canvas.top,
+    bottom: panel.bottom - canvas.top,
+  };
 }

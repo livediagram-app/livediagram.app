@@ -3,7 +3,8 @@
 import { pageWritingBars } from '@/lib/article/article-export';
 import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
-import { useDeferredValue, useMemo, useRef } from 'react';
+import { useCallback, useDeferredValue, useMemo, useRef } from 'react';
+import { watchMapBox } from '@/lib/fit-clear-of-panel';
 import {
   boundsOfPoints,
   endpointPosition,
@@ -149,6 +150,12 @@ export function Minimap({
   size,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  // A fit made before the Map showed may have put content under it (docs/specs/008-canvas/minimap.md "Fit leaves
+  // the Map clear"): say so once its drawing has a box, a moment after it mounts (a fit then still finds none).
+  const svgBox = useCallback((svg: SVGSVGElement | null) => {
+    svgRef.current = svg;
+    return svg ? watchMapBox(svg) : undefined;
+  }, []);
   // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md),
   // and deferred: the change that settles them (a drag's release) commits first, and the Map's picture,
   // rebuilt and re-parsed for the whole board, follows as its own render.
@@ -330,6 +337,8 @@ export function Minimap({
   return (
     <MovablePanel
       helpArticle="minimap"
+      // How a fit finds the Map to keep the content clear of it (lib/fit-clear-of-panel.ts).
+      dataTourId="minimap"
       title="Map"
       position={position}
       defaultCorner="bottom-left"
@@ -345,7 +354,7 @@ export function Minimap({
           square off past the border. */}
       <div className="overflow-hidden rounded-b-lg">
         <svg
-          ref={svgRef}
+          ref={svgBox}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
           className={`block w-full cursor-pointer touch-none text-slate-400 ${MAP_HEIGHT[size]}`}

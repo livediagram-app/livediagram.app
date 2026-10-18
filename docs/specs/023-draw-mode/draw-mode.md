@@ -529,7 +529,7 @@ box and does not.
   The top and bottom handles leave its sizing alone. With Shift (the aspect
   ratio rule) the text size scales with the box instead (`textScale`). This
   holds in Diagram mode too: a hugging box keeps hugging.
-- An empty hugging text box left by clicking away is removed.
+- An empty hugging text box is removed when it is left, by clicking away or by Escape.
 - A text box on a whiteboard saved before editor modes hugs as it did: one
   placed with a click fits its words, any other wraps at its width.
 - Existing text boxes keep their size until edited or resized; then they hug.

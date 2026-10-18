@@ -235,8 +235,9 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 ## Mobile drawer
 
 Below the `sm` breakpoint the sidebar is hidden and the pane header's menu button opens it as a drawer from the left:
-the same groups, rows, rules and keyboard model. Picking a view, or New Team, closes the drawer; so do its Close button
-and the backdrop.
+the same groups, rows, rules and keyboard model. Picking a view, or New Team, closes the drawer; so do its Close button,
+the backdrop and Escape. It is a modal dialog named Sections: focus moves into it, Tab stays inside, and closing it
+hands focus back to the button that opened it.
 
 ## The editor's Explorer
 

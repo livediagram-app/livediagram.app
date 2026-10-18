@@ -101,7 +101,12 @@ export function inheritedSizeFor(
   const inherit = keepsOwnSize ? null : donor;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;
-  if (base.type === 'shape' && (base.shape === 'circle' || base.shape === 'diamond')) {
+  // A circle, a diamond and a star are 1:1: squared up from the larger side, never squashed (a star tapped while a
+  // flat process step was selected came out 160 x 56).
+  if (
+    base.type === 'shape' &&
+    (base.shape === 'circle' || base.shape === 'diamond' || base.shape === 'star')
+  ) {
     const side = Math.max(width, height);
     width = side;
     height = side;

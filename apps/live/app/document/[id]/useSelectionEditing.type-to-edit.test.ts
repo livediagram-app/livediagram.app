@@ -48,6 +48,7 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
       tabs: [tab],
       activeTab: tab,
       drawMode: false,
+      editingId: null,
       commit,
       discardLastStep,
       tickTabs: vi.fn(),

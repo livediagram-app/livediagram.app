@@ -69,6 +69,14 @@ lets you jump the viewport anywhere with a tap or drag.
   centred on that spot. The viewport rectangle tracks live as you move. (Drags
   on the header move the panel; drags inside the map navigate the canvas.)
 
+### Fit leaves the Map clear
+
+The Map lies over a corner of the canvas, so Fit to Screen (and the fit a template or a tab
+opens on) never puts content under it. When the plain fit would reach under the Map (with
+16 px to spare), the content fits instead either beside the Map or above it (below it, for a
+Map docked at the top), whichever keeps it larger; a fit that stays clear is left as it is.
+The Map is found by its `data-tour-id="minimap"`; a Map that is not showing changes nothing.
+
 ## Geometry
 
 The canvas transform is `scale(z) translate(o)` about the `<main>` centre
@@ -84,6 +92,9 @@ coords and `getScreenCTM().inverse()` maps a click back to world coords —
 letterboxing handled for free.
 
 ## Implementation
+
+- `lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
+  (above), used by `lib/tab-fit-view.ts`.
 
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is

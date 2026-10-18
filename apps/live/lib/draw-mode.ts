@@ -52,6 +52,9 @@ export type PendingDraw =
       plan?: string;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
+      // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
+      // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).
+      name?: string;
       // A whiteboard shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"): drawn in the board's ink,
       // unfilled, at the default width. Pens never colour it.
       board?: true;
@@ -132,11 +135,18 @@ export type PendingDraw =
   // (usePathDrawGesture) and the tool stays in hand after each path lands.
   | { type: 'path' };
 
+/** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
+export type AddShapeOptions = Pick<
+  Extract<PendingDraw, { type: 'shape' }>,
+  'session' | 'reaction' | 'mode' | 'estimateScale' | 'plan' | 'variant' | 'name'
+>;
+
 // The shape the banner names ("Tap to drop or drag to draw Square"), as the tile the person just picked names it.
 // Draw mode's dock names its own shapes (Rectangle, Ellipse); everywhere else a shape is named as the palette and
 // the selection badge name it (shapeKindLabel: Square, Circle). Its own aliases (square -> Rectangle, circle ->
 // Oval) had drifted from both, so a Circle tile armed an "Oval" and a dock Ellipse did too.
 function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): string {
+  if (intent.name) return intent.name;
   if (intent.board) {
     const dock = WHITEBOARD_SHAPES.find(
       (s) => s.intent.type === 'shape' && s.intent.kind === intent.kind,
@@ -262,7 +272,10 @@ export function drawBannerMessage(
         ? `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']}`
         : `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
     case 'arrow':
-      return 'Tap to drop or drag to draw an arrow';
+      // The Line is the arrow without its heads, and its tile says Line (docs/specs/008-canvas/canvas-and-palette.md).
+      return intent.ends === 'none'
+        ? 'Tap to drop or drag to draw a line'
+        : 'Tap to drop or drag to draw an arrow';
     case 'component':
       return `Tap to drop or drag to draw ${COMPONENT_LABELS[intent.kind]}`;
     case 'freehand':

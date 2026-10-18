@@ -22,7 +22,8 @@ import {
 } from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { glideViewport } from '@/lib/viewport-glide';
+import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
+import { onMapShown } from '@/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
@@ -119,6 +120,15 @@ type EditorViewportApi = {
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
 const FIT_GLIDE_MS = 420;
+
+// Whether two views are the same, to the pixel a view is rounded to.
+function sameView(a: ViewPose, b: ViewPose): boolean {
+  return (
+    Math.abs(a.zoom - b.zoom) < 1e-3 &&
+    Math.abs(a.offset.x - b.offset.x) <= 1 &&
+    Math.abs(a.offset.y - b.offset.y) <= 1
+  );
+}
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
@@ -280,12 +290,37 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     scrollToNew(el.x, el.y, el.width, el.height);
   }, [deps.activeTab.elements, deps]);
 
+  // The view the last fit landed on, and what it fitted: the Map showing up later fits again only while the view is
+  // still this one and the tab still holds what it did (a Map that shows as the fourth element lands moves nothing).
+  const lastFitRef = useRef<{ view: ViewPose; tabId: string; count: number } | null>(null);
   const fitToScreen = useCallback(() => {
-    const view = tabFitView(canvasMainRef.current, depsRef.current.activeTab.elements);
+    const { activeTab } = depsRef.current;
+    const view = tabFitView(canvasMainRef.current, activeTab.elements);
     if (!view) return;
+    lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
     setViewportZoom(view.zoom);
     setViewportOffset(view.offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
+  // docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a template's fit runs before the Map has a box.
+  useEffect(
+    () =>
+      onMapShown(() => {
+        // Looked at a frame later, so a fit on its way in the same frame has landed.
+        requestAnimationFrame(() => {
+          const last = lastFitRef.current;
+          const { activeTab } = depsRef.current;
+          const now = { zoom: zoomRef.current, offset: viewportOffsetRef.current };
+          if (
+            last &&
+            last.tabId === activeTab.id &&
+            last.count === activeTab.elements.length &&
+            sameView(last.view, now)
+          )
+            fitToScreen();
+        });
+      }),
+    [depsRef, fitToScreen, zoomRef, viewportOffsetRef],
+  );
 
   // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
   // the pan moves: the presser's zoom on somebody else's screen size shows a

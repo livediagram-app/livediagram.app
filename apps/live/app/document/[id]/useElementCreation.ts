@@ -33,7 +33,7 @@ import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
-import type { PendingDraw } from '@/lib/draw-mode';
+import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
 import {
   BLANK_SHEET_CHOICE,
@@ -119,17 +119,7 @@ export function useElementCreation(opts: {
   // session tool (docs/specs/012-collaboration/session-button.md), which reaction (docs/specs/009-elements/reaction-pad.md). The palette offers a
   // tile per choice, so it has to survive the draw gesture and land on the
   // element rather than leaving the factory default in place.
-  const addShape = (
-    kind: ShapeKind,
-    opts?: {
-      session?: SessionTool;
-      reaction?: Reaction;
-      mode?: SelectionMode;
-      estimateScale?: EstimateScale;
-      plan?: string;
-      variant?: string;
-    },
-  ) => {
+  const addShape = (kind: ShapeKind, opts?: AddShapeOptions) => {
     if (editsBlocked) return;
     // On a Dashboard a plan view, board or Sheet fills a slot (hooks/plan/dashboard-drop.ts).
     if (placeOnDashboard(dashboardItemOf(kind, opts?.plan))) return;
@@ -142,6 +132,7 @@ export function useElementCreation(opts: {
       ...(opts?.mode ? { mode: opts.mode } : {}),
       ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
       ...(opts?.variant ? { variant: opts.variant } : {}),
+      ...(opts?.name ? { name: opts.name } : {}),
     });
   };
 
