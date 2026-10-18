@@ -893,7 +893,7 @@ Mutating shortcuts (delete, cut, duplicate, the element adds, z-order, lock) are
 
 ## Search panel
 
-A global search modal (`apps/live/components/panels/SearchPanel.tsx`; matching logic in `apps/live/lib/search.ts`, unit-tested in `search.test.ts`). Opened from the Search button in the bottom bar's shared control cluster (`ChromeControls`): the TabBar footer in the editor and the bottom bar on `/explorer`, or with Cmd/Ctrl+K or Cmd/Ctrl+. on both ([Command palette](../007-editor/command-palette.md)). Case-insensitive substring matching; the empty query lists everything (browse-first, narrow by typing). Esc and outside-click close; arrows + Enter drive keyboard selection.
+A global search modal (`apps/live/components/panels/SearchPanel.tsx`; matching logic in `apps/live/lib/search.ts`, unit-tested in `search.test.ts`). The sections that carry search words (Actions, Add to Canvas, Settings, Help) match when **every word typed** is found, case ignored, across the name and its search words, as a template search does: "export png" finds Export…, named Export with png among its words. Opened from the Search button in the bottom bar's shared control cluster (`ChromeControls`): the TabBar footer in the editor and the bottom bar on `/explorer`, or with Cmd/Ctrl+K or Cmd/Ctrl+. on both ([Command palette](../007-editor/command-palette.md)). Case-insensitive substring matching; the empty query lists everything (browse-first, narrow by typing). Esc and outside-click close; arrows + Enter drive keyboard selection.
 
 Result sections, in order, each capped (8 per section, 12 for elements, 10 for Add to canvas and Actions, 6 for Settings and Help):
 

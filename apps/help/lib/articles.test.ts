@@ -121,6 +121,13 @@ describe('searchArticles', () => {
     expect(searchArticles(word.toUpperCase())).toEqual(searchArticles(word.toLowerCase()));
   });
 
+  it('finds an article holding every word of a query, wherever they sit', () => {
+    const titles = searchArticles('export png').map((a) => a.title);
+    expect(titles).toContain('Exporting Diagrams');
+    // Every word must be there: a word no article holds finds nothing.
+    expect(searchArticles('export zzqqxx')).toEqual([]);
+  });
+
   it('finds articles by keyword synonym, not just title (the "opacity" report)', () => {
     // "transparency" appears in no title or description; keywords carry it to
     // both opacity articles.

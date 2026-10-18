@@ -8,6 +8,7 @@
 import { lazy, Suspense, useMemo } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { isInThisBrowser } from '@/lib/document-space';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { track } from '@/lib/telemetry';
 import { useNow } from '@/hooks/ui/useNow';
@@ -191,6 +192,8 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                 documentId={doc.id}
                 version={doc.savedAt}
                 empty={doc.empty}
+                // A document in This Browser has no server snapshot: asking for one only 404s.
+                offline={isInThisBrowser(doc)}
                 className="block h-full w-full"
               />
             </span>

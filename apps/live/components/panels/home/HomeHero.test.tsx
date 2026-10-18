@@ -10,7 +10,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const { track, lensField } = vi.hoisted(() => ({ track: vi.fn(), lensField: vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: (p: { documentId: string }) => <span data-testid={`thumb-${p.documentId}`} />,
+  DocumentThumbnail: (p: { documentId: string; offline?: boolean }) => (
+    <span data-testid={`thumb-${p.documentId}`} data-offline={p.offline ? '' : undefined} />
+  ),
 }));
 vi.mock('@/app/explorer/lens/LensField', () => ({
   HERO_FIELD_LOOK: { wrap: '', box: '', glyph: 18, input: '' },
@@ -144,6 +146,22 @@ describe('HomeHero', () => {
       sheets.map((s) => s.querySelector('[data-testid]')!.getAttribute('data-testid')),
     ).toEqual(['thumb-b', 'thumb-c', 'thumb-a']);
     expect(sheets[0]!.parentElement!.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  // docs/specs/006-document/document-snapshots.md: a document in This Browser has no server snapshot to ask for.
+  it('draws a document in This Browser without asking the server for its snapshot', () => {
+    const { container } = renderHero({
+      documents: [
+        { id: 'a', name: 'A', savedAt: 1, ownerId: 'me' },
+        { id: 'b', name: 'B', savedAt: 3, ownerId: 'offline' },
+      ] as never,
+    });
+    expect(container.querySelector('[data-testid="thumb-b"]')!.hasAttribute('data-offline')).toBe(
+      true,
+    );
+    expect(container.querySelector('[data-testid="thumb-a"]')!.hasAttribute('data-offline')).toBe(
+      false,
+    );
   });
 
   it('welcomes a person with nothing yet: plain pills, the template search, no document sheets', () => {
