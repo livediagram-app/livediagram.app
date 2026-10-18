@@ -95,8 +95,7 @@ The steps, in order, each a line or two. The exact strings live in
 `apps/live/components/tour/sankey-element-tour-steps.ts`.
 
 1. **Bands Carry Amounts** (only with flows): rings the widest band and lifts it, its readout showing as a hover
-   would. "Each band is as wide as the amount it carries, so the widest is where most of it goes. The readout gives
-   its amount and its share."
+   would. "Each band is as wide as its amount, so the biggest flows stand out."
 2. **What Is Left Over** (only when a leftover band is drawn): rings the largest leftover band, lifted. "What a node
    keeps back runs on to Leftover, in grey. It is worked out, never typed, so it follows the amounts."
 3. **Style It** (only while the selection toolbar's More button shows): rings More. "Under Sankey in the menu: band
@@ -107,7 +106,7 @@ The steps, in order, each a line or two. The exact strings live in
    [Show Me](../009-elements/sankey.md#show-me) (Your Nodes, Flows Step by Step, Add a Flow, In and Out Differ, Or
    Type Them, Import a File, Live Preview), left out as Show Me leaves them out. Each opens the dialog again if it
    was closed. Stepping Back onto a canvas step closes it.
-6. **That Is a Sankey** (closing card): "Every change is one undo step. Show Me in the Flows dialog runs this part
+6. **That Is a Sankey** (closing card): "Undo takes back any change. Show Me in the Flows dialog runs this part
    again." with **Done** and a link to the Sankey Diagram article (**Sankey Diagram Help**). Done closes the Flows
    dialog with the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
 

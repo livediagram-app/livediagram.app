@@ -16,12 +16,12 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
     id: 'welcome',
     card: 'welcome',
     title: 'Welcome to Facilitate',
-    body: 'Facilitate is for running a session with your team: a retro, a workshop or a town hall. Want a quick look at where everything is?',
+    body: 'Run a retro, workshop or town hall with your team. A quick look at where everything is?',
   },
   {
     id: 'collaborate',
     title: 'Collaborate',
-    body: 'The session kit sits at the end of the palette: Ask puts a question to the room, and Session holds the timers, reveals, records, reactions, selection modes and places to go.',
+    body: 'Ask puts a question to the room. Session has timers, reveals, reactions and more.',
     // Ask and Session on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
     target: 'bar-collab-ask',
     alsoHighlight: 'bar-session',
@@ -32,20 +32,20 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
   {
     id: 'session-strip',
     title: 'Run the room',
-    body: 'Timer, Vote and Poll run for everyone on the tab, without placing anything on the canvas.',
+    body: 'Timer, Vote and Poll run for everyone at once.',
     target: 'session-tools',
   },
   {
     id: 'share',
     title: 'Bring people in',
-    body: 'Share a Participant link and people can add notes, vote and answer without changing the rest of the board.',
+    body: 'A Participant link lets people add notes and vote, without changing the rest.',
     target: 'share',
   },
   {
     id: 'outro',
     card: 'outro',
     title: "You're ready to facilitate",
-    body: 'Everything a session needs is in the palette and the bottom-right corner. The help centre has more on each tool.',
+    body: 'Everything you need is in the palette and the bottom-right corner.',
   },
 ];
 

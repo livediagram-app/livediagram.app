@@ -19,41 +19,41 @@ const WELCOME: FormTourStep = {
   id: 'welcome',
   card: 'welcome',
   title: 'Getting started with forms?',
-  body: `Want a quick look around your form: building it, where its responses go and sharing it? ${NEVER_CHANGES}`,
+  body: `A quick look at building your form, where responses go and sharing it? ${NEVER_CHANGES}`,
 };
 
 const FORM: FormTourStep = {
   id: 'form',
   title: 'Build It Here',
-  body: 'This is the form as people will see it. Click a question to change its wording, type and settings, right where it is.',
+  body: 'This is your form as people see it. Click a question to edit it.',
   selector: () => '[data-form-page] [data-form-question], [data-form-page] [data-form-add]',
 };
 
 const ADD: FormTourStep = {
   id: 'add',
   title: 'Add Questions',
-  body: 'Add a question of the type in the button, or pick another from its arrow. Add Section starts a new page of questions.',
+  body: 'Add a question, or pick a type from the arrow. Add Section starts a new page.',
   selector: () => '[data-form-page] [data-form-add]',
 };
 
 const STATUS: FormTourStep = {
   id: 'status',
   title: 'Responses and Preview',
-  body: 'See whether the form takes responses and how many it has had (click the count to see them). Preview fills it in as people will.',
+  body: 'How many responses you have. Preview lets you try it out.',
   selector: () => '[data-form-status]',
 };
 
 const SETTINGS: FormTourStep = {
   id: 'settings',
   title: 'Where Responses Go',
-  body: 'The cog chooses where each response lands, as a card on a board or a row in a sheet, and when the form closes.',
+  body: 'The cog sets where responses go (a board or a sheet) and when the form closes.',
   selector: () => '[aria-label="Form Settings"]',
 };
 
 const SHARE: FormTourStep = {
   id: 'share',
   title: 'Share Form',
-  body: 'Publish the form to get a link anyone can fill in. They never see your document.',
+  body: 'Publish to get a link anyone can fill in. They never see your document.',
   target: 'share-form',
   mobileSkip: true,
 };
@@ -62,9 +62,7 @@ const DESTINATION = (kind: 'board' | 'sheet'): FormTourStep => ({
   id: 'destination',
   title: kind === 'sheet' ? 'Responses Land Here' : 'Responses Arrive Here',
   body:
-    kind === 'sheet'
-      ? 'Each response becomes a row in this sheet, a column for every question.'
-      : 'Each response becomes a card on this board, its answers in the card’s fields, ready to move along.',
+    kind === 'sheet' ? 'Each response becomes a row here.' : 'Each response becomes a card here.',
   selector: () => (kind === 'sheet' ? '[data-plan-sheet]' : '[data-plan-board]'),
   prepare: (api) => {
     const to = api.destination();
@@ -77,7 +75,7 @@ const OUTRO: FormTourStep = {
   id: 'outro',
   card: 'outro',
   title: 'That Is a Form',
-  body: 'Show Me Around in the form’s cog runs this tour again whenever you want it.',
+  body: 'Run this again from the cog › Show Me Around.',
 };
 
 // The steps for this form: the destination's own step only when it has one.

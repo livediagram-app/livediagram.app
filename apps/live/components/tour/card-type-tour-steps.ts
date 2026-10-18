@@ -25,14 +25,14 @@ export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
   {
     id: 'general',
     title: 'Name It, Then Give It a Look',
-    body: 'What are these cards? A Customer Call, a Risk, a Request: type its name now, the tour waits. Its colour and glyph mark every card of this type, so they stand out on a busy board.',
+    body: 'Name it (a Risk, a Request) and pick a colour and glyph. Every card of this type wears them.',
     target: 'card-type-general',
     prepare: typeInto('configuration', 'card-type-general'),
   },
   {
     id: 'fields',
     title: 'Lay Out Its Fields',
-    body: 'What its cards hold, laid out as the card panel shows them. Add Field gives it more (a Link to Card ties it to another card); drag a field to move it between tabs and Details.',
+    body: 'The fields its cards hold. Add Field adds one; drag a field to reorder it.',
     target: 'card-type-fields',
     // The engine scrolls the section to the top of the tab's scrolling panel, so a section further down
     // (Configuration's Fields, under General) is in view, read from its heading, when the ring lands on it.
@@ -42,27 +42,27 @@ export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
   {
     id: 'states',
     title: 'Choose Its States',
-    body: 'Cards of this type only ever move into the states ticked here. The Default State is where one made off a board starts.',
+    body: 'Tick the states its cards can move into.',
     target: 'card-type-states',
     prepare: on('statuses'),
   },
   {
     id: 'display',
     title: 'Arrange the Card',
-    body: 'Pick a size, then drag fields onto the example card, or off it. Boards draw its cards just like this.',
+    body: 'Pick a size and drag fields on or off. Boards show its cards like this.',
     target: 'card-type-display',
     prepare: on('display'),
   },
   {
     id: 'save',
     title: 'Save It',
-    body: 'Save, and it is ready: a new type shows in Add a Card on your boards, and an edited one changes its cards at once.',
+    body: 'Save it. It shows in Add a Card on your boards straight away.',
     target: 'card-type-save',
   },
   {
     id: 'outro',
     card: 'outro',
     title: 'That Is a Card Type',
-    body: 'Change it any time from the Edit Cards menu.',
+    body: 'Change it any time from Edit Cards.',
   },
 ];

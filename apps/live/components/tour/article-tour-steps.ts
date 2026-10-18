@@ -8,18 +8,18 @@ export const ARTICLE_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
   title: 'Getting started with articles?',
-  body: 'Want a quick look at writing an article? We will show you the page, its toolbar, and how to give it a look of its own.',
+  body: 'A quick look at writing an article: where to type, the toolbar, and giving it a look of its own.',
 };
 
 const TOOLBAR_BODY =
-  'Styles and headings, bold and italic, colours, lists, alignment, and Insert for images, tables and charts.';
+  'Headings, bold, colours, lists and alignment. Insert adds images, tables and charts.';
 
 export function articleTourSteps(): PageTourStep[] {
   return [
     {
       id: 'write',
       title: 'Write on the Page',
-      body: 'Click to write. Type / for headings, lists, tables, images and charts. When a page fills, the writing flows onto a new one.',
+      body: 'Click and type. Type / to add a heading, list, table, image or chart. Full pages flow onto new ones.',
       // A card on its own, no ring: one round the whole page would light most of the screen.
     },
     {
@@ -34,7 +34,7 @@ export function articleTourSteps(): PageTourStep[] {
     {
       id: 'style',
       title: 'Article Style',
-      body: 'Pick a look (Clean, Classic, Report, Notebook or Bold), an accent colour, margins and page numbers. Every page of the article follows.',
+      body: 'Pick a look, an accent colour, margins and page numbers. Every page follows.',
       selector: (api) => pageOrPopover(api.pageId, 'Style'),
       requires: (api) => pageButton(api.pageId, 'Style'),
       prepare: (api) => openTitlePopover(api.pageId, 'Style'),
@@ -43,7 +43,7 @@ export function articleTourSteps(): PageTourStep[] {
     {
       id: 'text',
       title: 'Fonts and Spacing',
-      body: 'Choose the heading and body fonts, the text size, and the space between lines and paragraphs.',
+      body: 'Fonts for headings and body, text size, and spacing.',
       selector: (api) => pageOrPopover(api.pageId, 'Text'),
       requires: (api) => pageButton(api.pageId, 'Text'),
       prepare: (api) => openTitlePopover(api.pageId, 'Text'),
@@ -53,7 +53,7 @@ export function articleTourSteps(): PageTourStep[] {
       id: 'outro',
       card: 'outro',
       title: "You're ready to write",
-      body: 'Start typing. Export saves your article as a PDF, and the help centre has more on articles.',
+      body: 'Start typing. Export saves it as a PDF.',
     },
   ];
 }

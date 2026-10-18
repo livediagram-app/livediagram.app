@@ -39,7 +39,7 @@ describe('mindNodeTourSteps', () => {
 
   it('names the keys on a keyboard, and only the buttons on a touch screen', () => {
     const keys = mindNodeTourSteps(ctxOf());
-    expect(keys.find((s) => s.id === 'child')!.body).toMatch(/^Tab, or Add Child/);
+    expect(keys.find((s) => s.id === 'child')!.body).toMatch(/^Press Tab, or Add Child/);
     expect(keys.find((s) => s.id === 'sibling')!.body).toContain('Shift+Enter');
     const touch = mindNodeTourSteps(ctxOf({ touch: true }));
     expect(touch.find((s) => s.id === 'child')!.body).not.toContain('Tab');

@@ -89,13 +89,13 @@ const WELCOMES: Record<PlanTourOffer, PlanTourStep> = {
     id: 'welcome',
     card: 'welcome',
     title: 'Getting started with boards?',
-    body: `Want a quick look around your board: its columns, cards and the card panel? ${NEVER_CHANGES}`,
+    body: `A quick look around your board: columns, cards and the card panel? ${NEVER_CHANGES}`,
   },
   sheets: {
     id: 'welcome',
     card: 'welcome',
     title: 'Getting started with sheets?',
-    body: `Want a quick look around your sheet: its cells, formulas and toolbar? ${NEVER_CHANGES}`,
+    body: `A quick look around your sheet: cells, formulas and the toolbar? ${NEVER_CHANGES}`,
   },
   choice: {
     id: 'welcome',
@@ -112,7 +112,7 @@ const BOARD_STEPS: PlanTourStep[] = [
   {
     id: 'board',
     title: 'Your Board',
-    body: 'Columns are the stages work moves through, left to right. Cards move along them as the work gets done.',
+    body: 'Columns are the stages of the work. Cards move left to right as it gets done.',
     // A card on its own, no ring: one round the whole board would light most of the screen. It still brings the
     // board on screen for the steps after it.
     prepare: (api) => api.reveal('boards'),
@@ -120,14 +120,14 @@ const BOARD_STEPS: PlanTourStep[] = [
   {
     id: 'add-cards',
     title: 'Add Cards',
-    body: 'Each column ends in Add card, which adds a card of any type the board takes.',
+    body: 'Add card at the bottom of a column adds a new one.',
     // The first column's Add card, not the column: a ring round a column runs the board's height.
     selector: (api) => onBoard(api.boardId(), ' [data-add-card-trigger]'),
   },
   {
     id: 'move-card',
     title: 'Move Work Along',
-    body: 'Drag a card to the next column as the work moves on, or focus it and press Shift with an arrow key. Everyone in the document sees it move.',
+    body: 'Drag a card to the next column as work moves on. Everyone sees it.',
     selector: (api) => {
       const id = api.firstCardId();
       return id ? onBoard(api.boardId(), ` [data-plan-card="${id}"]`) : null;
@@ -136,7 +136,7 @@ const BOARD_STEPS: PlanTourStep[] = [
   {
     id: 'card-panel',
     title: 'The Card Panel',
-    body: 'Click a card to open it: its description, checklist, who it is on and when it is due, all saved as you type.',
+    body: 'Click a card to open it: description, checklist, who and when. It saves as you type.',
     selector: () => '[role="dialog"][aria-label^="Item #"]',
     prepare: (api) => api.openCard(),
     cleanup: (api) => api.closeCard(),
@@ -151,14 +151,14 @@ const BOARD_STEPS: PlanTourStep[] = [
   {
     id: 'card-types',
     title: 'Card Types',
-    body: 'Tasks, notes, ideas and actions each have their own colour and fields. Change them, or make your own, in Card Types.',
+    body: 'Each kind of card has its own colour and fields. Make your own in Card Types.',
     target: 'card-types',
   },
   {
     id: 'outro',
     card: 'outro',
     title: "You're ready to plan",
-    body: 'That is your board, just as you left it. The help centre has a guide for every part of Plan.',
+    body: 'That is your board, just as you left it.',
   },
 ];
 
@@ -166,7 +166,7 @@ const SHEET_STEPS: PlanTourStep[] = [
   {
     id: 'sheet',
     title: 'Your Sheet',
-    body: 'A sheet is a spreadsheet in your document: cells, formulas and charts, worked on together.',
+    body: 'A spreadsheet in your document, worked on together.',
     // A card on its own, no ring: one round the whole sheet would light most of the screen. It still brings the
     // sheet on screen for the steps after it.
     prepare: (api) => api.reveal('sheets'),
@@ -174,7 +174,7 @@ const SHEET_STEPS: PlanTourStep[] = [
   {
     id: 'cells',
     title: 'Type Into Cells',
-    body: 'Click a cell and type. Enter moves down and Tab moves across; numbers, dates and percentages are read as you type them.',
+    body: 'Click a cell and type. Enter moves down, Tab moves across.',
     // Cell A1 alone, not the grid (SheetCells marks it); scrolled out of view, the step is skipped.
     selector: (api) => onSheet(api.sheetElementId(), ' [data-sheet-a1]'),
   },
@@ -187,7 +187,7 @@ const SHEET_STEPS: PlanTourStep[] = [
   {
     id: 'sheet-toolbar',
     title: 'The Toolbar',
-    body: 'Pick a category on its left (Text, Cells, Numbers, Data, Charts or Functions) and its tools show beside it, acting on the selected cells.',
+    body: 'Pick a category on the left to see its tools for the selected cells.',
     selector: (api) => onSheet(api.sheetElementId(), ' [role="toolbar"]'),
   },
   {
@@ -200,7 +200,7 @@ const SHEET_STEPS: PlanTourStep[] = [
     id: 'outro',
     card: 'outro',
     title: "You're ready to plan",
-    body: 'That is your sheet, just as you left it. The help centre has a guide for every part of Sheets.',
+    body: 'That is your sheet, just as you left it.',
   },
 ];
 

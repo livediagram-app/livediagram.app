@@ -74,8 +74,7 @@ describe('chevronsTourSteps', () => {
 
   it('says every stage shows its bar on a touch screen', () => {
     const touch = chevronsTourSteps(ctxOf({ touch: true })).find((s) => s.id === 'bar')!;
-    expect(touch.body).toMatch(/^Every stage shows a bar/);
-    expect(touch.body).toContain('zoom in if the stages are small');
+    expect(touch.body).toMatch(/^Each stage has a small bar while selected/);
     const mouse = chevronsTourSteps(ctxOf()).find((s) => s.id === 'bar')!;
     expect(mouse.body).toMatch(/^Point at a stage/);
   });

@@ -64,7 +64,7 @@ describe('funnelTourSteps', () => {
 
   it('says tap on a touch screen, and ends on its card', () => {
     const steps = funnelTourSteps(ctxOf({ touch: true }));
-    expect(steps.find((s) => s.id === 'values')!.body).toContain('Tap it to change it');
+    expect(steps.find((s) => s.id === 'values')!.body).toContain('Tap it to edit');
     expect(steps.at(-1)).toMatchObject({ card: 'outro', title: 'That Is a Funnel' });
   });
 });

@@ -19,13 +19,13 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
     onGraphic(
       'entity',
       'A Title Over Its Fields',
-      'One box for a UML class or an ER table: the title bar names it, and each row below is a field.',
+      'A class or table: the title on top, a field on each row.',
       elementSelector(id),
     ),
     onGraphic(
       'title',
       'Rename It',
-      `${doublePressWord(ctx)} its title bar to type over the title. It formats and aligns like any label.`,
+      `${doublePressWord(ctx)} its title bar to edit the title.`,
       elementSelector(id),
     ),
     ...(ctx.hasFields
@@ -33,26 +33,18 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
           onGraphic(
             'rows',
             'name: Type',
-            `Each field is a name, an optional type and a key (PK, FK, UK). ${doublePressWord(ctx)} a field to edit it in place: Enter moves to the next, and past the last adds one.`,
+            `Each field is a name, an optional type and a key. ${doublePressWord(ctx)} one to edit it.`,
             elementSelector(id, '[data-entity-fields]'),
           ),
         ]
       : []),
-    menuStep(
-      ctx,
-      'menu',
-      'Edit the Fields',
-      'Tools, then Fields: a key, a name and a type per row, a cross to remove one, and Add Field for the next, up to forty.',
-    ),
+    menuStep(ctx, 'menu', 'Edit the Fields', 'Tools › Fields adds, edits and removes fields.'),
     onGraphic(
       'relate',
       'Join Them Up',
       'A "+" beside it adds a related entity, already joined. Or drag from the dot beside a field to a field of another entity: the line becomes one to many, and its Cardinality button changes that.',
       elementSelector(id),
     ),
-    conceptOutro(
-      'That Is an Entity',
-      'It exports exactly as drawn, and every change is one undo step.',
-    ),
+    conceptOutro('That Is an Entity', 'It exports as you see it. Undo takes back any change.'),
   ];
 }
