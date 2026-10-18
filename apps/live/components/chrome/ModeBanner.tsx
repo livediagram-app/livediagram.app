@@ -51,7 +51,7 @@ export function ModeBanner({
       className="gap-3 py-1.5 pl-3 pr-1.5 text-sm"
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <span className="flex items-center gap-2">
+      <span data-mode-message="" className="flex items-center gap-2">
         {icon}
         {message}
       </span>

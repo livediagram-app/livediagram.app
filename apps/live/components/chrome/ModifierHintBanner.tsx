@@ -106,7 +106,9 @@ function Hint({ modifier, children }: { modifier: string; children: React.ReactN
     <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
       <TopCenterBanner tone="neutral" className="gap-2 px-3 py-1.5 text-xs">
         <kbd className={KEY_CHIP}>{modifier}</kbd>
-        <span className="font-medium">{children}</span>
+        <span data-mode-message="" className="font-medium">
+          {children}
+        </span>
       </TopCenterBanner>
     </div>
   );

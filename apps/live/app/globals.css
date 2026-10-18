@@ -836,6 +836,13 @@
   will-change: transform;
 }
 
+/* A standing message (an empty tab's Show Templates, StartAgainTray) steps aside while a mode's message (an armed
+   tool's Cancel, a modifier hint) is up: they take the same place under the strip or the Draw dock, and the mode's
+   says what the next click does (docs/specs/007-editor/start-diagramming.md "Bringing it back"). */
+body:has([data-mode-message]) [data-yields-to-mode] {
+  display: none;
+}
+
 /* Frames still settle BELOW the base plane rather than taking their index:
    a frame is a backdrop its contents sit on, and it is often added after the
    things inside it, so paint order alone would float it over them. */

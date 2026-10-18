@@ -106,6 +106,7 @@ export function PaletteTray({
   lead,
   children,
   end,
+  standing = false,
 }: {
   box: StripBox;
   // The leading icon, or a modifier's key chip.
@@ -114,6 +115,9 @@ export function PaletteTray({
   children: ReactNode;
   // Toggles and actions at the end of the row.
   end?: ReactNode;
+  // A standing message (an empty tab's Show Templates) rather than a mode's: it steps aside while a mode message
+  // is on screen, as the two share the tray's slot (`[data-mode-message]` in globals.css).
+  standing?: boolean;
 }) {
   if (typeof document === 'undefined') return null;
   return createPortal(
@@ -127,6 +131,7 @@ export function PaletteTray({
         // Floating UI: the canvas's capture-phase pointerdown leaves its presses alone (as TopCenterBanner).
         data-floating-panel=""
         data-palette-tray=""
+        {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
         role="status"
         className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-b-xl border border-t-0 border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-[0_6px_10px_-6px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         onPointerDown={(e) => e.stopPropagation()}
