@@ -66,7 +66,9 @@ export function TimelineCard({
       // `h-full`: the card fills its grid cell, so a card with a
       // description (a comment) sets the row's height and its neighbours
       // stretch to match rather than ending short.
-      className={`${CARD_SHELL} relative h-full ${
+      // The card wears its button's keyboard focus: the button sits under the card's content, which would hide a ring
+      // of its own.
+      className={`${CARD_SHELL} relative h-full has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-brand-500 has-[>button:focus-visible]:ring-offset-1 dark:has-[>button:focus-visible]:ring-offset-slate-900 ${
         focused ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-offset-slate-900 ' : ''
       }${
         interactive
@@ -87,7 +89,7 @@ export function TimelineCard({
             e.stopPropagation();
             rendered.onClick?.();
           }}
-          className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
         />
       ) : null}
       <div className={`relative ${CARD_PREVIEW}`}>
