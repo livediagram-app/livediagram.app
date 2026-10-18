@@ -27,19 +27,25 @@ proved the better introduction.
 - **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
   the count from the Jump-back-in fetch; `null` = unknown = no offer) creates a document through the wizard
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
-  shows a centred **welcome offer card** once the editor is ready, and once its start is done (a template picked
+  shows a **welcome offer banner** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
   or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
   **No** dismisses it. A document made from a Plan, Draw, Pages or Facilitate template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
-- **The centred cards take the keyboard.** The welcome offer and the last card are dialogs over a dimmed editor, so
-  focus moves to the card when it appears (the card itself, not a button, so a stray Enter accepts nothing) and Tab
-  reaches its buttons; when the card goes, focus returns to wherever it was. A step card leaves focus alone: it points
-  at a real control the person is about to use.
+- **The bookend cards ask nothing of the editor.** The welcome offer and the last card are **banners**, built as the
+  sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
+  there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
+  title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); on a
+  phone they stack, the picture left out. No backdrop, no focus taken, so someone who would rather carry on working simply does, and answers when they like. Tab reaches
+  their buttons. They are the toasts' floor while up, and the sign-in banner, which takes the same place, steps aside
+  meanwhile: the two are never on screen together. A step card leaves focus alone too: it points at a real control
+  the person is about to use.
 - **Escape is each card's way out.** On the offer it declines (as **No**), on a step it skips the tour (as
   **Skip tour**), on the last card it finishes (as its finish button). Every tour's cards are the same card
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
-  element tour asks for Escape to put text back, and when another surface has already taken it.
+  element tour asks for Escape to put text back, and when another surface has already taken it. The offer and the
+  last card take Escape only from inside themselves, as they ask nothing of the editor: Escape elsewhere is the
+  person's own.
 - **Once ever per user.** However the offer ends (declined, skipped mid-tour, or completed), the synced
   `tourSeen` user preference ([User preferences](user-preferences.md)) stops it ever reappearing: the offer
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
@@ -93,7 +99,7 @@ the two dropdown steps; three when it is both), and a closing "you're ready" car
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`):
 
-0. **Getting started with Diagrams?** (the offer): centred card, eyebrow **Diagram tour**, "Want a quick tour of the
+0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "Want a quick tour of the
    editor so you can build mind blowing diagrams in minutes?", then **No** / **Yes**. Yes and No are every tour's
    offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
@@ -135,7 +141,7 @@ menu alone.
 ## Mechanics
 
 - **One engine, three tours.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
-  Skip) and what it draws (`TourStage`: the card backdrop, the ring, `TourPopover`) are shared with the
+  Skip) and what it draws (`TourStage`: the ring, `TourPopover`) are shared with the
   [Plan tour](../026-plan/plan-tour.md) and the [Facilitate tour](../012-collaboration/facilitate-tour.md);
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs

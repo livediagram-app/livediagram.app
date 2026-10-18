@@ -767,7 +767,7 @@ the mode chosen:
 | Filter     | Popular                                                                                                                                                                                   |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Everything | Blank Diagram, Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan, Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Article |
-| Diagram    | Blank Diagram, Flowchart, Mind map, Org chart, SWOT, Timeline, System architecture                                                                                                        |
+| Diagram    | Blank Diagram, Flowchart, Mind map, Org chart, Gantt Chart, Timeline, System architecture                                                                                                 |
 | Draw       | Blank Whiteboard, Sketchnote, Journey Doodle, Comic Strip, Idea Garden, Rich Picture                                                                                                      |
 | Facilitate | Blank Session, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz                                                                                      |
 | Pages      | Blank Illustration, Article, Slide deck, Event Poster, Year in Review, Social Carousel                                                                                                    |

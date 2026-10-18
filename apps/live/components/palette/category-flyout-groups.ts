@@ -61,6 +61,8 @@ const TAGLINES: Readonly<Record<string, string>> = {
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',
+  diagrams: 'Structures that grow as you type.',
+  layout: 'Lanes, frames and the parts that label a diagram.',
   concepts: 'Ideas laid out as one element that arranges itself.',
   icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
@@ -80,8 +82,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
 
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  facilitate: { write: 'Words, notes, tables and frames.' },
-  pages: { build: 'Tables, stacks, timelines and flows.' },
+  facilitate: { write: 'Words, notes, tables and checklists.' },
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
@@ -91,7 +92,7 @@ export function flyoutTagline(categoryId: string, fallback: string, mode?: Edito
 // A group's name, by the tile that starts it: a category splits into groups where a tile ends one (`dividerAfter`,
 // the strip's fixed dividers), and the same tile starts the same kind of group whichever mode's layout it is in.
 // A category shows its groups only when every one is named; otherwise it is one block, so a layout whose dividers
-// fall elsewhere (Facilitate's Write & Build) never shows half its groups headed and half bare.
+// fall elsewhere (Facilitate's Write) never shows half its groups headed and half bare.
 const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',
@@ -103,7 +104,9 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',
   'tools:mind-node': 'Diagrams',
-  'tools:lane': 'Layout and Parts',
+  'tools:lane': 'Containers',
+  'tools:diagram-key': 'Parts',
+  'collab:comment-pin': 'Comments',
   'tools:table': 'Tables',
   'tools:stack': 'Layout',
   'tools:code-block': 'Code and Lists',

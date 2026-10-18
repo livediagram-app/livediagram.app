@@ -1,21 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useRef, type CSSProperties, type Ref } from 'react';
+import { useEffect, useRef, type Ref } from 'react';
 import type { Tab } from '@livediagram/document';
 import { isTextEditFocused } from '@livediagram/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
-import { resolveEditorMode } from '@/lib/editor-mode-store';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@/lib/split-pane-view';
 import { legibleTabAccent } from '@/lib/tab-accent';
-import { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { TabSvgViewport, type TabSvgViewportHandle } from './TabSvgViewport';
 import { useTabSvg } from './useTabSvg';
+import { useTabBackdropPaint } from './useTabBackdropPaint';
 
 // The pane without the editor (docs/specs/007-editor/split-view.md "The other pane"): the other tab
 // of the split, live, on its own paper. It looks like the canvas it is: the editor's toolbars and
@@ -44,30 +41,14 @@ export function SplitStaticPane({
   fitNonce: number;
   onFocus: (via: 'Click' | 'Hover') => void;
 }) {
-  const { editingId, userPreferences } = useEditorContext();
+  const { editingId } = useEditorContext();
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
   const svg = useTabSvg(loaded ? tab : undefined);
   const empty = loaded && tab.elements.length === 0;
 
   // The paper and pattern the editor would paint for this tab, in its mode.
-  const backdrop = useMemo(() => {
-    const { mode } = resolveEditorMode({ tab, canEdit: true });
-    return resolveViewBackdrop(
-      tab,
-      { mode, drawPattern: readDrawPattern(userPreferences) },
-      appearance,
-    );
-  }, [tab, userPreferences, appearance]);
-  const paint = (origin: { x: number; y: number }, k: number): CSSProperties =>
-    tabBackgroundStyle(
-      backdrop.backgroundPattern ?? 'grid',
-      origin,
-      backdrop.backgroundColor,
-      backdrop.patternColor,
-      backdrop.backgroundOpacity ?? 1,
-      (tab.backgroundPatternScale ?? 1) * k,
-    );
+  const paint = useTabBackdropPaint(tab);
 
   // Resting here hands the editor over; passing through on the way somewhere doesn't. Never while
   // a button is held (a drag crossing the seam), a dialog is up, or text is being typed.

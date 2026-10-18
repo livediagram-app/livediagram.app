@@ -169,6 +169,8 @@ Draws exactly as livediagram did before finishes existed.
 - **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
   glyphs are square and fine, under Sketch they are drawn wobbly and doubled, under Marker they are drawn bold with round ends. Full-colour art (technology icons,
   stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.
+  Under Sketch the tiles **fade in** where the other finishes pop in: a glyph drawn through the sketch filter, inside
+  a tile scaling up from nothing, could stay rasterised at its early size and show as a blurred square.
 
 ## Share roles
 

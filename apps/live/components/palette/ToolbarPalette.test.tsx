@@ -128,8 +128,18 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-    // No Popular, Write and Draw as one, every name one word.
-    expect(barNames()).toEqual(['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech', 'Media']);
+    // No Popular, Write and Draw apart, Build as Diagrams and Layout, every name one word.
+    expect(barNames()).toEqual([
+      'Shapes',
+      'Write',
+      'Draw',
+      'Diagrams',
+      'Concepts',
+      'Layout',
+      'Icons',
+      'Tech',
+      'Media',
+    ]);
     // No tiles of their own on the strip: they are in the flyouts.
     expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
   });
@@ -328,7 +338,6 @@ describe('ToolbarPalette', () => {
     expect(barNames()).toEqual([
       'Shapes',
       'Write',
-      'Build',
       'Concepts',
       'Components',
       'Devices',
@@ -350,7 +359,9 @@ describe('ToolbarPalette', () => {
     show({ mode: 'facilitate' });
     expect(barNames()).toEqual([
       'Shapes',
+      'Write',
       'Draw',
+      'Layout',
       'Icons',
       'Stickers',
       'Media',

@@ -52,7 +52,9 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
 - in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering/leaving zen does **not**
   restart the delay; the timer runs on the stable gate (Clerk / signed
-  in / embed / dismissed) and zen only hides the card at render.
+  in / embed / dismissed) and zen only hides the card at render, and
+- while a **tour's offer or last card** is up ([Editor tour](../007-editor/editor-tour.md)): they take the same place
+  at the bottom, so the banner steps aside until the card goes (`data-tour-card-open` on the body).
 
 The delay is per editor session (per page load); it isn't persisted
 across reloads. Opening document after document in quick succession

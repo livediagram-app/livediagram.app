@@ -4,18 +4,22 @@ import { trustedHtml } from '@livediagram/ui';
 
 // A tab window's drawing (docs/specs/009-elements/tab-window.md "The element"): the tab drawn as the editor shows it
 // (useTabSvg: the export renderer, in this person's appearance, with its photos and the document's cards), zoomed to
-// fit and centred on the tab's paper. Inline rather than an image so the page's typefaces apply, its ids prefixed so
+// fit and centred on the tab's own canvas: its paper and its pattern (dots, grid, lines) at the drawing's fit, lined
+// up with it, as the editor paints them for that tab in its mode (useTabBackdropPaint). Inline rather than an image so the page's typefaces apply, its ids prefixed so
 // its gradients and markers never meet the canvas's. Loaded only once a window is on screen (the renderer is heavy).
-import { useEffect, useMemo, useRef, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { prefixSvgIds, type Tab } from '@livediagram/document';
 import { useTabSvg } from '@/components/split/useTabSvg';
+import { useTabBackdropPaint } from '@/components/split/useTabBackdropPaint';
 import { windowMotion } from './tab-window-motion';
 
 export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: string }) {
   // The drawing moves as the tab does on the canvas ("The drawing"): its elements' animations play in the window.
   const svg = useTabSvg(tab, windowMotion);
+  const paint = useTabBackdropPaint(tab);
   const svgRef = useRef<SVGSVGElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const size = useFrameSize(frameRef, svg != null);
   // Ids prefixed so the drawing's gradients and markers never meet the canvas's. The outer <svg> is JSX, so no
   // markup is built here: only the renderer's own output goes in as HTML.
   const inner = useMemo(
@@ -40,7 +44,10 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
       data-tab-window-drawing=""
       className="pointer-events-none absolute inset-0"
       // Strict containment: a moving element redraws inside the window and never asks the canvas to lay out again.
-      style={{ background: svg.background, contain: 'strict' }}
+      style={{
+        ...(size ? backdropAtFit(paint, size, svg) : { background: svg.background }),
+        contain: 'strict',
+      }}
     >
       <svg
         ref={svgRef}
@@ -50,12 +57,56 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
         viewBox={`0 0 ${svg.width} ${svg.height}`}
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
+        // Its own paper rect is hidden: the frame paints the paper and pattern edge to edge, as the split pane does.
+        className="[&>svg>rect:first-of-type]:hidden"
         style={{ display: 'block' }}
         // Our own renderer's output (every label is xmlEscaped inside it).
         dangerouslySetInnerHTML={{ __html: trustedHtml(inner) }}
       />
     </div>
   );
+}
+
+/** Where the drawing sits in a frame of `size` px, fitted and centred ("meet"): its zoom, and where canvas point (0, 0)
+ *  falls, so the pattern behind it lines up with what is drawn. */
+export function drawingFit(
+  size: { w: number; h: number },
+  svg: { width: number; height: number; origin: { x: number; y: number } },
+): { k: number; origin: { x: number; y: number } } {
+  const k = Math.min(size.w / svg.width, size.h / svg.height);
+  const left = (size.w - svg.width * k) / 2;
+  const top = (size.h - svg.height * k) / 2;
+  return { k, origin: { x: left - svg.origin.x * k, y: top - svg.origin.y * k } };
+}
+
+function backdropAtFit(
+  paint: ReturnType<typeof useTabBackdropPaint>,
+  size: { w: number; h: number },
+  svg: { width: number; height: number; origin: { x: number; y: number } },
+) {
+  const { k, origin } = drawingFit(size, svg);
+  return paint(origin, k);
+}
+
+// The frame's size in px, as the window is resized (or zoomed with the canvas, which scales it by transform and so
+// leaves this alone: the pattern scales with the drawing either way).
+function useFrameSize(ref: RefObject<HTMLDivElement | null>, drawn: boolean) {
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const measure = () => {
+      const w = node.clientWidth;
+      const h = node.clientHeight;
+      setSize((prev) => (prev && prev.w === w && prev.h === h ? prev : w && h ? { w, h } : null));
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ref, drawn]);
+  return size;
 }
 
 // A window scrolled or zoomed off screen holds its drawing still (its loops pause where they are), so a deck of

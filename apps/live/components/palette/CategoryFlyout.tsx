@@ -13,7 +13,6 @@ import {
   flyoutKeyTarget,
   flyoutLayout,
   flyoutTagline,
-  type FlyoutGroup,
 } from './category-flyout-groups';
 import { CardList, InfoFooter, opensSide, TileGrid } from './category-flyout-items';
 import { BrowseLayoutContext } from './PaletteCategoryBrowser';
@@ -32,8 +31,6 @@ export type FlyoutCategory = {
   // Null for a catalogue, whose body is `content`.
   tiles: readonly PaletteTileDef[] | null;
   content: ReactNode;
-  // Its own headed sections, in place of the groups its dividers make (Write and Draw as one).
-  sections?: readonly FlyoutGroup[];
 };
 
 /** Arrow keys walk the flyout's items by position (category-flyout-groups), across its groups. */
@@ -112,13 +109,7 @@ export function CategoryFlyout({
       >
         {tiles ? (
           <div className="flex flex-col gap-3 p-3">
-            {(category.sections
-              ? category.sections.map((g) => ({
-                  ...g,
-                  tiles: visibleTiles([...g.tiles], actions.hasImage),
-                }))
-              : flyoutGroups(category.id, tiles)
-            ).map((group, gi) => (
+            {flyoutGroups(category.id, tiles).map((group, gi) => (
               <section key={group.id} aria-label={group.title ?? category.label}>
                 {group.title ? (
                   <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
