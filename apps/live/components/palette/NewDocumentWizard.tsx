@@ -68,7 +68,7 @@ export function NewDocumentWizard({
         <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
           <HelpArticleLink
             article="templates"
-            className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-500 dark:text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-500 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
+            className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-500 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
           />
           <button
             type="button"
