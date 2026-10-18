@@ -206,7 +206,7 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
   story and slide labels already say which way they face. The kind ends it, but for an infographic
   page, the plain page, which leaves the kind off so its title bar keeps the room for its
-  controls. No `Page n`
+  controls, and for a slide, whose size already says Slide ("Intro · Slide (16:9)", never "Slide (16:9) · Slide"). No `Page n`
   while there is one page and no name.
 
 ## Backgrounds
