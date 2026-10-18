@@ -308,7 +308,7 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 ## Leaving Illustrate
 
 Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
-Illustrate (the mode switch, Shift+D or the tab menu's mode rows) is asked first, in a dialog **Turn Articles
+Illustrate (a start's mode switch or Shift+D) is asked first, in a dialog **Turn Articles
 Into Pages?**:
 
 - **Turn Into Pages** (the default button): every article page becomes a **Page** element
