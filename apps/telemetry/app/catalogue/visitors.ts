@@ -13,6 +13,7 @@ import {
   DRAW_TOUR_OFFERED,
   FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
+  PAGES_TOUR_CHIP_STARTED,
   PAGES_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
@@ -517,8 +518,16 @@ export const PAGES_TOUR_DECLINED = chart(
   'UI',
   'Closed',
   'Pages Tours Declined',
-  'The Pages tour turned down on its welcome card, before it started.',
+  "The Pages tour turned down on its offer (No Thanks, or the chip's ×), before it started.",
   { types: ['PagesTourOffer'], rising: 'neutral' },
+);
+
+export const PAGES_TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Pages Tour Offers Folded',
+  'The Pages tour offer left alone and folded into its tab bar chip.',
+  { types: ['PagesTourOfferFolded'], rising: 'neutral' },
 );
 
 export const PAGES_TOURS_STARTED = chart(
@@ -561,7 +570,9 @@ export const PAGES_TOUR: MetricStack = {
   members: [
     PAGES_TOUR_OFFERED,
     PAGES_TOUR_DECLINED,
+    PAGES_TOUR_FOLDED,
     PAGES_TOURS_STARTED,
+    PAGES_TOUR_CHIP_STARTED,
     PAGES_TOUR_STEPS_VIEWED,
     PAGES_TOURS_COMPLETED,
     PAGES_TOURS_SKIPPED,

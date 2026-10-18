@@ -1068,6 +1068,14 @@ export const PAGES_TOUR_OFFERED = opened(
   (t) => t === 'PagesTourOffer',
 );
 
+// The Pages tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const PAGES_TOUR_CHIP_STARTED = opened(
+  'Pages Tours Started From the Chip',
+  'The Pages tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'PagesTourChip',
+);
+
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
 // the Visitors tab, which names the kinds.
 export const ELEMENT_TOURS_OFFERED = opened(

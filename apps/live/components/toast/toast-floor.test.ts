@@ -63,6 +63,8 @@ describe('toastFloor', () => {
       'data-editor-tabbar',
       'data-zoom-cluster',
       'data-whiteboard-dock',
+      // docs/specs/007-editor/coach-dock.md "Where it sits": toasts stand on a tour's dock.
+      'data-coach-dock',
     ]) {
       expect(TOAST_FLOOR_SELECTOR).toContain(`[${hook}]`);
     }

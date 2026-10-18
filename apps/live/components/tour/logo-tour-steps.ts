@@ -10,8 +10,8 @@ type LogoTourStep = PageTourStep;
 export const LOGO_WELCOME: LogoTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with logos?',
-  body: 'A quick look at logo layouts, guides, mirror drawing and combining shapes?',
+  title: 'New to logos?',
+  body: 'A quick look at logo layouts, guides, mirror drawing and combining shapes, on your own artboard.',
 };
 
 const titleButton = (name: string) => (api: PageTourApi) =>

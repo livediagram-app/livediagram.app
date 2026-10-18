@@ -3,9 +3,14 @@
 // Deck, where the deck is presented. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';
 import {
+  ADD_PAGE_PRESS,
   addPageAnchor,
+  BACKGROUND_CHOICES,
   closeSlideDeck,
   closeTitlePopover,
+  layoutAnchor,
+  layoutTiles,
+  openLayouts,
   openSlideDeck,
   openTitlePopover,
   pageButton,
@@ -18,8 +23,8 @@ import {
 export const SLIDE_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with slides?',
-  body: 'A quick look at slide layouts, backgrounds and presenting? Try anything as we go.',
+  title: 'New to slides?',
+  body: 'A quick look at layouts, backgrounds, the deck and presenting, on your own slide. Try anything as you go.',
 };
 
 export function slideTourSteps(): PageTourStep[] {
@@ -28,10 +33,11 @@ export function slideTourSteps(): PageTourStep[] {
       id: 'layouts',
       title: 'Choose a Layout',
       body: 'Hover a layout to preview it. Press it to use it.',
-      selector: (api) => pageOrPopover(api.pageId, 'Layout'),
+      selector: (api) => layoutAnchor(api.pageId),
       requires: (api) => pageButton(api.pageId, 'Layout'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Layout'),
+      prepare: (api) => openLayouts(api.pageId),
       cleanup: (api) => closeTitlePopover(api.pageId, 'Layout'),
+      tryIt: { label: 'Pick any layout', pressed: (api) => layoutTiles(api.pageId) },
     },
     {
       id: 'background',
@@ -41,6 +47,7 @@ export function slideTourSteps(): PageTourStep[] {
       requires: (api) => pageButton(api.pageId, 'Background'),
       prepare: (api) => openTitlePopover(api.pageId, 'Background'),
       cleanup: (api) => closeTitlePopover(api.pageId, 'Background'),
+      tryIt: { label: 'Pick a background', pressed: () => BACKGROUND_CHOICES },
     },
     {
       id: 'deck',
@@ -53,6 +60,7 @@ export function slideTourSteps(): PageTourStep[] {
       title: 'Add Another Slide',
       body: '+ adds the next slide.',
       selector: addPageAnchor,
+      tryIt: { label: 'Press +', pressed: () => ADD_PAGE_PRESS },
     },
     {
       id: 'present',

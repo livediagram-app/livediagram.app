@@ -47,6 +47,8 @@ A new Show Me surface is added to this table, and its own spec says its steps.
 - The shared tour (the step card with Back, Next and Skip, the ring around what it points at with room to
   breathe, the dim around it). It starts straight on its first step: no welcome card. Steps count from 1, and
   a closing card ends it, with **Done** and a link to the surface's help article ("<Topic> Help").
+- **A page's Show Me speaks through the [Coach dock](coach-dock.md)** instead: its steps, Try it, ring and
+  closing sit in the strip above the tab bar, with no card over the page and no dim.
 - **Live controls.** Each step points at a real control, which stays usable while the step is up: the person
   can type, pick or press as the tour goes, and what they do is kept. A step never changes anything on its own
   beyond opening the tab, section or selection it is about.

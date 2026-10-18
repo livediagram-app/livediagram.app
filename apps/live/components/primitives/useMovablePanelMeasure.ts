@@ -79,7 +79,9 @@ export function useMovablePanelMeasure({
         );
         return;
       }
-      const tabbar = document.querySelector('[data-editor-tabbar]');
+      // The coach dock, while a tour shows in it, stands on the tab bar: a panel stops above whichever is higher
+      // (docs/specs/007-editor/coach-dock.md "Where it sits"). It comes first in the document, so it wins.
+      const tabbar = document.querySelector('[data-coach-dock], [data-editor-tabbar]');
       let bottomLimit = tabbar ? tabbar.getBoundingClientRect().top : window.innerHeight;
       const zoom = document.querySelector('[data-zoom-controls]');
       if (zoom) {

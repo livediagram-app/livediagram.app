@@ -55,6 +55,7 @@ import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
+import { CoachDockSlot } from '@/components/tour/coach-dock/CoachDockSlots';
 import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
@@ -583,6 +584,9 @@ export function EditorView() {
                                         ended={workbench.ended}
                                       />
                                     ) : null}
+                                    {/* The coach dock's row (docs/specs/007-editor/coach-dock.md): empty until a tour draws into
+          it, then the canvas above gives up exactly its height. */}
+                                    <CoachDockSlot />
                                     {footerInColumn}
                                     {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
               a selection. Stands down in zen / embeds / presenting and while an

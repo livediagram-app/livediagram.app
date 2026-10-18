@@ -581,7 +581,7 @@ export function CanvasPages({
           }
         />
       ) : null}
-      <PageTourStage tour={pageTour.tour} kind={pageTour.kind} />
+      <PageTourStage tour={pageTour.tour} kind={pageTour.kind} pageId={pageTour.pageId} />
     </>
   );
 }

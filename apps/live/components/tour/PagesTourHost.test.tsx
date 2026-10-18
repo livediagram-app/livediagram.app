@@ -23,18 +23,25 @@ const stage = vi.hoisted(() => ({
   engine: null as TourEngine<PageTourApi> | null,
   helpHref: '' as string | undefined,
   eyebrow: '' as string | undefined,
+  chip: undefined as { label: string; about: string } | undefined,
+  onFolded: undefined as (() => void) | undefined,
+  onChipStart: undefined as (() => void) | undefined,
 }));
-vi.mock('./TourStage', () => ({
-  TourStage: ({
-    engine,
-    copy,
-  }: {
+vi.mock('./coach-dock/CoachDockStage', () => ({
+  CoachDockStage: (props: {
     engine: TourEngine<PageTourApi>;
-    copy: { helpHref?: string; welcomeEyebrow?: string };
+    help: { href: string };
+    eyebrow: string;
+    chip?: { label: string; about: string };
+    onFolded?: () => void;
+    onChipStart?: () => void;
   }) => {
-    stage.engine = engine;
-    stage.helpHref = copy.helpHref;
-    stage.eyebrow = copy.welcomeEyebrow;
+    stage.engine = props.engine;
+    stage.helpHref = props.help.href;
+    stage.eyebrow = props.eyebrow;
+    stage.chip = props.chip;
+    stage.onFolded = props.onFolded;
+    stage.onChipStart = props.onChipStart;
     return null;
   },
 }));
@@ -118,7 +125,7 @@ describe('PagesTourHost offer', () => {
     await wait(1);
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with slides?');
+    expect(stage.engine?.step?.title).toBe('New to slides?');
     expect(stage.helpHref).toBe('/help/canvas/pages-mode/slide-pages/');
   });
 
@@ -261,9 +268,28 @@ describe('PagesTourHost end', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PagesTourOffer');
   });
 
-  it('names the page kind on its welcome card, never the mode', async () => {
+  it('names the page kind on its offer and its chip, never the mode', async () => {
     await start();
     expect(stage.eyebrow).toBe('Slides tour');
+    expect(stage.chip?.label).toBe('Slides Tour');
+  });
+
+  it('a folded offer is no answer: it sends the fold and marks nothing seen', async () => {
+    await start();
+    act(() => stage.onFolded!());
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'PagesTourOfferFolded');
+    expect(writeUserPreferences).not.toHaveBeenCalled();
+    expect(stage.engine?.active).toBe(true);
+  });
+
+  it('a start from the chip sends the chip, then the tour starts as it would from the dock', async () => {
+    await start();
+    act(() => {
+      stage.onChipStart!();
+      stage.engine!.next();
+    });
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PagesTourChip');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'PagesTour');
   });
 
   it('runs the track of the tour page’s kind', async () => {
@@ -271,7 +297,7 @@ describe('PagesTourHost end', () => {
     await start({
       activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p2', kind: 'article', flow: 'f' }] },
     });
-    expect(stage.engine?.step?.title).toBe('Getting started with articles?');
+    expect(stage.engine?.step?.title).toBe('New to articles?');
     expect(stage.helpHref).toBe('/help/canvas/pages-mode/articles/');
     expect(stage.engine!.countableSteps).toBe(4);
   });
@@ -345,7 +371,7 @@ describe('PagesTourHost per kind', () => {
     rerender(<PagesTourHost />);
     await wait(800);
     expect(offered()).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with logos?');
+    expect(stage.engine?.step?.title).toBe('New to logos?');
   });
 
   it('waits out the first page’s kind choice', async () => {

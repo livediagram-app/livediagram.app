@@ -7,11 +7,12 @@
 import { useEffect, useState } from 'react';
 import type { PageKind } from '@livediagram/document';
 import { useLatest } from '@/hooks/ui/useLatest';
-import type { HelpArticleKey } from '@/lib/help-articles';
+import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
 import { requestPagePanel } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
-import { ShowMeButton, ShowMeStage } from './ShowMe';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { ShowMeButton } from './ShowMe';
 import { isOnScreen } from './tour-dom';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
@@ -50,6 +51,8 @@ export function usePageTour(editable: (pageId: string) => boolean): {
   tour: TourEngine<PageTourApi>;
   // The kind of the page it last ran on, for its closing card's help link.
   kind: PageKind;
+  // The page it runs on, for a step's Try it.
+  pageId: string;
   freeze: (pageId: string, kind: PageKind) => Promise<void>;
 } {
   const [frozen, setFrozen] = useState<Frozen>({ pageId: '', kind: 'infographic' });
@@ -81,7 +84,7 @@ export function usePageTour(editable: (pageId: string) => boolean): {
     setFrozen({ pageId, kind });
     setSteps(next);
   };
-  return { tour, kind: frozen.kind, freeze };
+  return { tour, kind: frozen.kind, pageId: frozen.pageId, freeze };
 }
 
 export function PageShowMeButton({
@@ -112,15 +115,33 @@ export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey; label: 
   logo: { article: 'logoPages', label: 'Logo Pages Help' },
 };
 
-export function PageTourStage({ tour, kind }: { tour: TourEngine<PageTourApi>; kind: PageKind }) {
+// Each kind's Show Me names its kind beside the surface's name.
+const SHOW_ME_EYEBROW: Record<PageKind, string> = {
+  slide: 'Show Me · Slides',
+  infographic: 'Show Me · Infographics',
+  article: 'Show Me · Articles',
+  logo: 'Show Me · Logos',
+};
+
+// A page's Show Me speaks through the coach dock (docs/specs/007-editor/coach-dock.md, show-me.md "The tour"): its
+// steps sit in the strip above the tab bar, so they never cover the page, ending on Done and the kind's help.
+export function PageTourStage({
+  tour,
+  kind,
+  pageId,
+}: {
+  tour: TourEngine<PageTourApi>;
+  kind: PageKind;
+  pageId: string;
+}) {
   const help = PAGE_TOUR_HELP[kind];
   return (
-    <ShowMeStage
-      tour={tour}
-      article={help.article}
-      helpLabel={help.label}
-      layer="overlay"
-      pad={8}
+    <CoachDockStage
+      engine={tour}
+      api={{ pageId, ...PAGE_PANEL }}
+      eyebrow={SHOW_ME_EYEBROW[kind]}
+      help={{ href: helpArticleHref(help.article), label: help.label }}
+      finish="Done"
     />
   );
 }

@@ -7,7 +7,7 @@ import { closeTitlePopover, openTitlePopover, pageButton, pageOrPopover } from '
 export const ARTICLE_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with articles?',
+  title: 'New to articles?',
   body: 'A quick look at writing an article: where to type, the toolbar, and giving it a look of its own.',
 };
 

@@ -1,3 +1,4 @@
+import { CoachChipSlot } from '@/components/tour/coach-dock/CoachDockSlots';
 import { useButtonLabelsSetting } from '@/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { tabDataRows } from './tab-data-rows';
@@ -395,6 +396,8 @@ export function TabBar({
             lives in the Explorer panel's ⋯ menu here),
             reused by the Explorer's bottom bar (docs/specs/007-editor/live-app.md). Labelled here on
             desktop; icon-only on a phone. */}
+        {/* A folded tour offer's chip (docs/specs/007-editor/coach-dock.md "The offer"), before Search. */}
+        <CoachChipSlot />
         <ChromeControls
           onOpenSearch={onOpenSearch}
           onOpenSettings={onOpenSettings}

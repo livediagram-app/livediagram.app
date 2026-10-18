@@ -17,7 +17,8 @@ import { combineShowing, PAGE_PANEL, PAGE_TOUR_HELP } from './PageTour';
 import { isOnScreen } from './tour-dom';
 import { stepTelemetryType } from './tour-step';
 import { PagesTourArt } from './art/pages-tour-art';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { helpArticleHref } from '@/lib/help-articles';
@@ -33,12 +34,26 @@ export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): stri
   return stepTelemetryType('PagesTourStep', `${kind}-${stepId}`);
 }
 
-// Each welcome card names its page kind's track, never the mode.
+// Each offer names its page kind's track, never the mode.
 const EYEBROW: Record<PageKind, string> = {
   slide: 'Slides tour',
   infographic: 'Infographic tour',
   article: 'Article tour',
   logo: 'Logo tour',
+};
+
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP: Record<PageKind, { label: string; about: string }> = {
+  slide: { label: 'Slides Tour', about: 'A short tour of making slides, on your own slide.' },
+  infographic: {
+    label: 'Infographic Tour',
+    about: 'A short tour of laying out an infographic, on your own page.',
+  },
+  article: {
+    label: 'Article Tour',
+    about: 'A short tour of writing an article, on your own page.',
+  },
+  logo: { label: 'Logo Tour', about: 'A short tour of making a logo, on your own artboard.' },
 };
 
 // Orchestrates the Pages tour (docs/specs/007-editor/pages-tour.md). Mounted once in EditorView beside
@@ -202,15 +217,18 @@ export function PagesTourHost() {
 
   useEffect(() => () => setActiveTour('pages', false), []);
 
+  const help = PAGE_TOUR_HELP[subject.kind];
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix={EYEBROW[subject.kind]}
-      copy={{
-        welcomeEyebrow: EYEBROW[subject.kind],
-        helpHref: helpArticleHref(PAGE_TOUR_HELP[subject.kind].article),
-      }}
-      welcomeArt={<PagesTourArt kind={subject.kind} />}
+      api={{ pageId: subject.pageId, ...PAGE_PANEL }}
+      eyebrow={EYEBROW[subject.kind]}
+      art={<PagesTourArt kind={subject.kind} />}
+      help={{ href: helpArticleHref(help.article), label: help.label }}
+      finish={TOUR_FINISH}
+      chip={CHIP[subject.kind]}
+      onFolded={() => track('UI', 'Closed', 'PagesTourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'PagesTourChip')}
     />
   );
 }

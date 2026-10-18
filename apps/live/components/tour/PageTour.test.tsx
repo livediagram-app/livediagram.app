@@ -58,9 +58,16 @@ function TitlePopover({ name }: { name: string }) {
       <button type="button" aria-label={name} aria-expanded={open} onClick={() => setOpen(!open)} />
       {open ? (
         <div role="dialog" aria-label={name} data-anchored-popover="">
-          <button type="button" onClick={() => setOpen(false)}>
-            Pick {name}
-          </button>
+          {/* A pick: a layout tile in Layout, a choice in a radio group in Background (what Try it listens for). */}
+          <div role={name === 'Background' ? 'radiogroup' : undefined}>
+            <button
+              type="button"
+              data-layout-tile={name === 'Layout' ? 'title-and-body' : undefined}
+              onClick={() => setOpen(false)}
+            >
+              Pick {name}
+            </button>
+          </div>
         </div>
       ) : null}
     </>
@@ -85,13 +92,23 @@ function SlidesButton() {
 }
 
 // CanvasPages' wiring, cut down: the page and its title bar, the + and Slides, its panel, and the tour.
-function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
+function Page({
+  of,
+  deleted = false,
+  emptyCard = false,
+}: {
+  of: Page;
+  deleted?: boolean;
+  // The page's own Start From a Layout card (EmptyPageLayouts), gone once a layout is picked from it.
+  emptyCard?: boolean;
+}) {
+  const [card, setCard] = useState(emptyCard);
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>({
     id: of.id,
     tab: of.kind === 'logo' ? 'background' : 'page',
   });
   useFollowPagePanelRequests(setOpened);
-  const { tour, kind, freeze } = usePageTour((id) => id === of.id && !deleted);
+  const { tour, kind, pageId, freeze } = usePageTour((id) => id === of.id && !deleted);
   const laid = layOutPages([of])[0]!;
   const ofKind = pageKindOf(of);
   return (
@@ -101,6 +118,13 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
           <button type="button" data-tour-id="page-name">
             Page
           </button>
+          {card ? (
+            <div role="group" data-empty-page-layouts={of.id}>
+              <button type="button" data-layout-tile="title-only" onClick={() => setCard(false)}>
+                Card Layout
+              </button>
+            </div>
+          ) : null}
           <TitlePopover name="Layout" />
           <TitlePopover name="Background" />
           <TitlePopover name="Style" />
@@ -135,23 +159,29 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
           }}
         />
       ) : null}
-      <PageTourStage tour={tour} kind={kind} />
+      <PageTourStage tour={tour} kind={kind} pageId={pageId} />
     </div>
   );
 }
 
 const settle = (ms = 30) => act(async () => new Promise((r) => setTimeout(r, ms)));
 const next = async () => {
-  fireEvent.click(screen.getByRole('button', { name: /next/i }));
+  fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ }));
   await settle();
 };
-// The steps load at the press: wait for the first step card.
+// The coach dock, and what it announces of its step ("Show Me · Slides, step 1 of 5: Choose a Layout").
+const dock = () => document.querySelector<HTMLElement>('[data-coach-dock]');
+const announced = () => dock()?.querySelector('[aria-live]')?.textContent ?? '';
+// The steps load at the press: wait for the first step in the dock.
 const showMe = async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
-  await waitFor(() => expect(screen.getByRole('dialog', { name: /^Show Me step 1/ })).toBeTruthy());
+  await waitFor(() => expect(announced()).toMatch(/step 1 of/));
   await settle();
 };
-const stepDialog = (title: RegExp) => screen.getByRole('dialog', { name: title });
+const stepDialog = (title: RegExp) => {
+  expect(announced()).toMatch(title);
+  return dock()!;
+};
 // Under load a step lands a beat after Next: wait for what it shows.
 const shows = (check: () => void) => waitFor(check);
 const popover = (name: string) =>
@@ -178,7 +208,7 @@ describe('a slide’s Show Me', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'SlideTour');
     // The panel it was pressed in makes way for the page.
     await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());
-    await shows(() => expect(stepDialog(/^Show Me step 1 of 5: Choose a Layout/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/step 1 of 5: Choose a Layout/)).toBeTruthy());
     await shows(() => expect(popover('Layout')).not.toBeNull());
     await next();
     await shows(() => expect(popover('Layout')).toBeNull());
@@ -201,7 +231,6 @@ describe('a slide’s Show Me', () => {
   it('keeps a pick, and never reopens the popover it closed', async () => {
     render(<Page of={page('slide')} />);
     await showMe();
-    // The tour's card is modal to assistive tech, so the popover's pick is pressed by its node.
     fireEvent.click(popover('Layout')!.querySelector('button')!);
     // Past the engine's tracking tick, which re-prepares a step whose target went.
     await settle(400);
@@ -213,10 +242,59 @@ describe('a slide’s Show Me', () => {
     render(<Page of={page('slide')} />);
     await showMe();
     await shows(() => expect(popover('Layout')).not.toBeNull());
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'End Tour' }));
     await settle();
     await shows(() => expect(popover('Layout')).toBeNull());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SlideTourSkipped');
+  });
+});
+
+describe('Try it on a slide', () => {
+  it('ticks a layout picked in the popover, then moves on to Background a beat later', async () => {
+    render(<Page of={page('slide')} />);
+    await showMe();
+    await shows(() => expect(popover('Layout')).not.toBeNull());
+    expect(dock()!.textContent).toContain('Try it: Pick any layout');
+    fireEvent.click(popover('Layout')!.querySelector('[data-layout-tile]')!);
+    await shows(() => expect(dock()!.querySelector('[data-try-it="done"]')).not.toBeNull());
+    expect(announced()).toMatch(/Choose a Layout/);
+    await shows(() => expect(announced()).toMatch(/step 2 of 5: Change the Background/));
+    // Background's own Try it starts undone.
+    expect(dock()!.querySelector('[data-try-it="todo"]')).not.toBeNull();
+  });
+
+  it('ticks a background, and leaves a step without a Try it to Next', async () => {
+    render(<Page of={page('slide')} />);
+    await showMe();
+    await next();
+    await shows(() => expect(popover('Background')).not.toBeNull());
+    fireEvent.click(popover('Background')!.querySelector('[role="radiogroup"] button')!);
+    await shows(() => expect(announced()).toMatch(/Add It to the Deck/));
+    expect(dock()!.querySelector('[data-try-it]')).toBeNull();
+  });
+
+  it('a press elsewhere does not count', async () => {
+    render(<Page of={page('slide')} />);
+    await showMe();
+    fireEvent.click(screen.getByRole('button', { name: 'Page' }));
+    await settle(1200);
+    expect(dock()!.querySelector('[data-try-it="todo"]')).not.toBeNull();
+    expect(announced()).toMatch(/Choose a Layout/);
+  });
+});
+
+describe('teach what is on screen', () => {
+  it('rings the page’s own Start From a Layout card and opens no popover, before or after a pick', async () => {
+    render(<Page of={page('slide')} emptyCard />);
+    await showMe();
+    await settle(300);
+    expect(popover('Layout')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Card Layout' }));
+    // The card goes with the pick; the engine's tracking tick re-prepares the step, which must not open the popover.
+    await settle(400);
+    expect(popover('Layout')).toBeNull();
+    await shows(() => expect(announced()).toMatch(/Change the Background/));
+    await shows(() => expect(popover('Background')).not.toBeNull());
   });
 });
 
@@ -225,7 +303,7 @@ describe('an infographic’s Show Me', () => {
     render(<Page of={page('infographic')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'InfographicTour');
-    await shows(() => expect(stepDialog(/^Show Me step 1 of 6: Your Page/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/step 1 of 6: Your Page/)).toBeTruthy());
     await next(); // Layout
     await next(); // Background
     await next();
@@ -275,9 +353,7 @@ describe('a logo page’s Show Me', () => {
     render(<Page of={page('logo')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'LogoTour');
-    await shows(() =>
-      expect(stepDialog(/^Show Me step 1 of 4: Start From a Logo Layout/)).toBeTruthy(),
-    );
+    await shows(() => expect(stepDialog(/step 1 of 4: Start From a Logo Layout/)).toBeTruthy());
     expect(screen.getByRole('button', { name: 'Layouts' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
@@ -300,7 +376,7 @@ describe('a logo page’s Show Me', () => {
     await shows(() => expect(stepDialog(/Draw on Guides/)).toBeTruthy());
     rerender(<Page of={page('logo')} deleted />);
     await settle();
-    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(dock()).toBeNull();
     expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
   });
 });

@@ -3,9 +3,11 @@
 A short, optional guided tour of one [page kind](pages-mode.md#page-kinds) in Pages mode: a slide, an
 infographic, an article or a logo. Each kind has its own **track**, which shows how that kind of page is made by
 opening the real controls on the person's own page (a slide's Layout and Background popovers, its deck button,
-the Slide Deck and Present) rather than only pointing at them. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s
-sibling: the same welcome card, anchored step cards, glide, dimming ring, Skip, Back and outro card, driven by the
-same engine. Where this spec is silent, the Draw tour's rules hold.
+the Slide Deck and Present) rather than only pointing at them. It speaks through the [Coach dock](coach-dock.md):
+its offer, steps and closing sit in a strip above the tab bar that the canvas makes room for, so it never covers
+the page it teaches, and a ring (no dim) points at each control. It is driven by the engine the
+[Draw tour](../023-draw-mode/draw-tour.md) uses; where this spec and the dock's are silent, the Draw tour's rules
+hold.
 
 ## Domain language
 
@@ -31,7 +33,9 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
   waits until a template is picked or the panel closed ([Start Diagramming](start-diagramming.md) "The tours
   wait"), or the page's kind is chosen.
 - **On its own, never at the same time as another tour.**
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
+- **Optional.** The offer is the opt-in: **Take the Tour** starts it, **No Thanks** declines it. Left alone it
+  folds into the tour chip in the tab bar ([Coach dock](coach-dock.md#the-offer)), which is not an answer: the
+  offer comes back on the next visit.
 - **Once ever per kind, per person**, through the synced `pagesTourKinds` user preference
   ([User preferences](user-preferences.md)): the kinds whose track has been taken, skipped mid-way or declined.
   Each never offers itself again, on any device; a page of another kind still offers its own.
@@ -53,13 +57,22 @@ while its step is up is theirs, kept as any pick is (one edit, undoable).
 
 ## The steps
 
-A welcome card, then the track's steps, then its outro card; the bookend cards sit outside the step count. Each
-step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's,
-never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
-on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
+The offer, then the track's steps, then its closing; offer and closing sit outside the step count. Each step
+rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's, never
+the whole page: a ring that size would light most of the screen, so a step about the page itself has no ring, and
+a popover step rings its title-bar button until the popover shows.
 
-The welcome card names its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour**, **Article
-tour** or **Logo tour**, over an illustration of that kind (`components/tour/art/pages-tour-art.tsx`): a
+**Try it.** The steps whose control is a pick carry one thing to do, ticked when it is done on the page
+([Coach dock](coach-dock.md#a-step)): **Pick any layout** (a layout tile, on the page's own Start From a Layout card
+or in the Layout popover), **Pick a background** (a choice in the Background popover), **Press +** (the + that adds
+a page). The other steps have none.
+
+**Teach what is on screen.** On a page showing its own Start From a Layout card, the layout step rings that card
+and opens no popover ([Coach dock](coach-dock.md#teach-what-is-on-screen)).
+
+The offer names its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour**, **Article
+tour** or **Logo tour**, its question (**New to slides?**, **New to infographics?**, **New to articles?**, **New to
+logos?**) and its length ("4 stops, about a minute"), beside an illustration of that kind (`components/tour/art/pages-tour-art.tsx`): a
 slide whose words and picture trade sides as layouts are picked beside it, with a Present button; an infographic
 page whose band, headline, bars and ring chart fill in; an article page written line by line, its next page
 behind; a logo's two shapes meeting on the page's guides, its wordmark appearing.
@@ -75,9 +88,9 @@ Layouts) and closes it on leaving.
 
 ### Slides track
 
-0. **Getting started with slides?** (offer): a quick look at making a slide, choosing its layout and background,
+0. **New to slides?** (offer): a quick look at making a slide, choosing its layout and background,
    adding it to the deck and presenting.
-1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it;
+1. **Choose a Layout** (the slide's own Start From a Layout card while it shows, else its Layout popover, opened): hover a layout to preview it, press to place it;
    Change Theme restyles every page.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
@@ -89,9 +102,9 @@ Layouts) and closes it on leaving.
 
 ### Infographic track
 
-0. **Getting started with infographics?** (offer): a quick look at laying out a page.
+0. **New to infographics?** (offer): a quick look at laying out a page.
 1. **Your Page** (the page's name): press it to fit the page to the screen, drag it to reorder.
-2. **Start From a Layout** (the Layout popover, opened).
+2. **Start From a Layout** (the page's own Start From a Layout card while it shows, else the Layout popover, opened).
 3. **Change the Background** (the Background popover, opened).
 4. **Page Size** (the page's panel, opened on Page): size and orientation; duplicate, move or delete below.
 5. **Add a Page** (the +).
@@ -100,7 +113,7 @@ Layouts) and closes it on leaving.
 
 ### Article track
 
-0. **Getting started with articles?** (offer): a quick look at writing an article.
+0. **New to articles?** (offer): a quick look at writing an article.
 1. **Write on the Page** (a centred card, no ring): click to write, `/` for blocks; full pages flow onto the next.
 2. **The Page Toolbar** (the article's page toolbar, held up on the tour page through the step: it otherwise shows
    only while a page is hovered or written on).
@@ -111,8 +124,7 @@ Layouts) and closes it on leaving.
 
 ### Logo track
 
-The logo page's Show Me steps ([Logo pages](logo-pages.md#show-me)) behind the offer **Getting started with
-logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on Guides**, **Mirror As You Draw**,
+The logo page's Show Me steps ([Logo pages](logo-pages.md#show-me)) behind the offer **New to logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on Guides**, **Mirror As You Draw**,
 **Combine Shapes**, then **That Is a Logo Page**.
 
 ### Filtering
@@ -132,8 +144,9 @@ Only someone who may edit the tab is offered the tour, or sees Show Me: an **Edi
 
 The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
 
-- **Offer**: `UI` · `Opened` · `PagesTourOffer` when its welcome card shows; `UI` · `Closed` ·
-  `PagesTourOffer` on No.
+- **Offer**: `UI` · `Opened` · `PagesTourOffer` when the offer shows; `UI` · `Closed` · `PagesTourOffer` on
+  No Thanks (in the dock or the chip's ×); `UI` · `Closed` · `PagesTourOfferFolded` when it folds into the chip;
+  `UI` · `Opened` · `PagesTourChip` when the chip starts it.
 - **Start**: `UI` · `Started` · `PagesTour`.
 - **Stage views**: `UI` · `View` · `PagesTourStep<Kind><Id>` once per step entry, `<Kind>` the track
   (`Slide`, `Infographic`, `Article`, `Logo`): `PagesTourStepSlideLayouts`,
@@ -154,5 +167,6 @@ is on) alongside the Diagram, Plan, Workshop and Draw tours.
   `PageTourApi` (`page-tour-api.ts`); `page-tour-dom.ts` opens and closes a page's title-bar popovers and finds
   its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the offer or the press so the
   copy stays out of the editor's first load.
-- `PagesTourHost.tsx`: the offer, the tour page and the seen-guard. `PageTour.tsx`: the page panel's Show Me.
+- `PagesTourHost.tsx`: the offer, the tour page and the seen-guard. `PageTour.tsx`: the page panel's Show Me. Both
+  draw through `coach-dock/CoachDockStage.tsx`.
 - `apps/live/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.

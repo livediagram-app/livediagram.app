@@ -1232,7 +1232,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer':
     "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
-  'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
+  'UI|Closed|PagesTourOffer':
+    "Someone turned the Pages tour down with No Thanks, in its dock or with the tab bar chip's ×.",
+  'UI|Closed|PagesTourOfferFolded':
+    "The Pages tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
   'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|WorkshopTourOffer':
@@ -1482,8 +1485,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
+  'UI|Opened|PagesTourChip':
+    'Someone started the Pages tour from the tab bar chip its offer folded into.',
   'UI|Opened|PagesTourOffer':
-    'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
+    'The Pages tour was offered: in its dock above the tab bar the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
   'UI|Opened|AvatarTourOffer':
     'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
   'UI|Opened|AvatarPanel':

@@ -57,6 +57,37 @@ export function closeTitlePopover(pageId: string, name: string): void {
   if (button?.getAttribute('aria-expanded') === 'true') button.click();
 }
 
+/** The tour page's own Start From a Layout card (EmptyPageLayouts), shown while the page is empty. */
+export const emptyPageLayouts = (pageId: string) =>
+  `[data-empty-page-layouts="${CSS.escape(pageId)}"]`;
+
+/** Where a layout step points (docs/specs/007-editor/coach-dock.md "Teach what is on screen"): the page's own Start
+ *  From a Layout card while it shows, else the Layout popover or its button. */
+export function layoutAnchor(pageId: string): string {
+  const card = emptyPageLayouts(pageId);
+  return document.querySelector(card) ? card : pageOrPopover(pageId, 'Layout');
+}
+
+/** Opens the layouts a step teaches: none while the page shows its own card, which is already open. Layout then
+ *  counts as opened for the step, so a pick that takes the card away never opens the popover behind it. */
+export async function openLayouts(pageId: string): Promise<void> {
+  if (document.querySelector(emptyPageLayouts(pageId))) {
+    opened.add('Layout');
+    return;
+  }
+  await openTitlePopover(pageId, 'Layout');
+}
+
+/** A layout picked (Try it): a layout tile on the page's card or in the Layout popover. */
+export const layoutTiles = (pageId: string) =>
+  `${emptyPageLayouts(pageId)} [data-layout-tile], ${titlePopover('Layout')} [data-layout-tile]`;
+
+/** A background picked (Try it): a choice in one of the Background popover's groups. */
+export const BACKGROUND_CHOICES = `${titlePopover('Background')} [role="radiogroup"] button`;
+
+/** The + pressed (Try it): the one after the last page, or the Toolbar strip's. */
+export const ADD_PAGE_PRESS = '[data-tour-id="add-page"], [data-tour-id="add-page-strip"]';
+
 /** The popover while it is open, else the tour page: after a pick closes it, the ring shows what landed. */
 export function pageOrPopover(pageId: string, name: string): string {
   // Before the popover shows (or once a pick closed it), its title-bar button: never the whole page, whose ring
