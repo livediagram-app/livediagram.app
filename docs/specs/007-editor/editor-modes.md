@@ -121,8 +121,8 @@ switch lists every mode unlocked, and Shift+D steps through all five. The first 
 - **The mode is the tab's, the same for everyone.** A general tab stores its editor mode
   (`Tab.opensIn`, `diagram` when absent; the field keeps its stored name). Everyone on the tab
   works in that mode at once: a view that differed from person to person would be inconsistent.
-- **Switching is a tab edit.** The start's switch, Shift+D on an empty tab, a start's template from another mode
-  and a sheet's **Switch to Plan** ([Sheet](../029-sheets/sheet.md)), used by an editor on a general, unlocked tab, set the tab's mode: **one tab edit** (one undo step,
+- **Switching is a tab edit.** The start's switch, Shift+D on an empty tab and a start's template from another
+  mode, used by an editor on a general, unlocked tab, set the tab's mode: **one tab edit** (one undo step,
   synced to everyone). Everything the switch brings with it lands in the same edit: entering
   Pages puts a board that does not fit its first page onto a page made around it
   ([Pages](pages-mode.md) "Into pages"), and leaving Pages with **Turn Into

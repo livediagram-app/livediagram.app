@@ -54,8 +54,6 @@ export type SheetsBridge = {
     make: (x: number, y: number) => BoxedElement,
     opts?: { select?: boolean },
   ) => void;
-  // Switch this person to Plan mode (a Sheet double-clicked in another mode offers it).
-  switchToPlan: () => void;
   // Select an element on the canvas (Escape out of a Sheet's grid selects the Sheet).
   selectElement: (id: string) => void;
   // A sheet's title changed (renamed here, by a collaborator, an agent or an undo): a Sheet tab it fills takes the
@@ -89,7 +87,6 @@ export function useSheetsBridge(opts: {
   commitElements: (map: (els: Element[]) => Element[]) => void;
   placeElement: SheetsBridge['placeElement'];
   tickElements: (map: (els: Element[]) => Element[]) => void;
-  switchToPlan: () => void;
   selectElement: (id: string) => void;
   sheetRetitled: (sheetId: string, title: string) => void;
 }) {
@@ -101,7 +98,6 @@ export function useSheetsBridge(opts: {
   const commitElements = useLatest(opts.commitElements);
   const placeElement = useLatest(opts.placeElement);
   const tickElements = useLatest(opts.tickElements);
-  const switchToPlan = useLatest(opts.switchToPlan);
   const selectElement = useLatest(opts.selectElement);
   const sheetRetitled = useLatest(opts.sheetRetitled);
   const attach = useCallback((h: SheetsHandlers) => {
@@ -128,7 +124,6 @@ export function useSheetsBridge(opts: {
       commitElements: (map) => commitElements.current(map),
       placeElement: (at, make, opts) => placeElement.current(at, make, opts),
       tickElements: (map) => tickElements.current(map),
-      switchToPlan: () => switchToPlan.current(),
       selectElement: (id) => selectElement.current(id),
       sheetRetitled: (sheetId, title) => sheetRetitled.current(sheetId, title),
       attach,
@@ -150,7 +145,6 @@ export function useSheetsBridge(opts: {
       commitElements,
       placeElement,
       tickElements,
-      switchToPlan,
       selectElement,
       sheetRetitled,
       attach,

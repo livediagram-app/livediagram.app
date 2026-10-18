@@ -149,6 +149,15 @@ export function elementLocked(operation: number, el: Element, lock: LockReason):
   };
 }
 
+// A Sheet element left on a tab not in Plan (docs/specs/029-sheets/sheet.md "Only in Plan"), by id.
+export function sheetOutsidePlan(ids: readonly string[]): EditRejection {
+  return {
+    code: 'invalid_value',
+    details: [`a Sheet goes only on a tab in Plan: ${ids.join(', ')}`],
+    hint: 'add a Sheet tab with add_tab and template "blank-spreadsheet", then fill it with change_sheet',
+  };
+}
+
 export function invalidResult(
   subject: string,
   kind: string | undefined,

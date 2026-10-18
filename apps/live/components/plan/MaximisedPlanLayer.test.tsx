@@ -312,6 +312,8 @@ describe('the canvas cover', () => {
     );
     expect(main.style.getPropertyValue('--plan-strip-end')).toBe('300px');
     expect(main.style.getPropertyValue('--plan-strip-align')).toBe('flex-end');
+    // The strip goes flush on the header while it is in the band (BAND_STRIP_FLUSH).
+    expect(main.hasAttribute('data-strip-in-band')).toBe(true);
     const inner = container.querySelector<HTMLElement>('[data-header-band]')!;
     expect(inner.style.getPropertyValue('--plan-band-h')).toBe('53px');
     expect(inner.style.getPropertyValue('--plan-band-left')).toBe('124px');
@@ -327,6 +329,7 @@ describe('the canvas cover', () => {
     expect(plain.style.getPropertyValue('--plan-band-h')).toBe('');
     // No band: the strip is centred again.
     expect(main.style.getPropertyValue('--plan-strip-end')).toBe('');
+    expect(main.hasAttribute('data-strip-in-band')).toBe(false);
     main.remove();
   });
 

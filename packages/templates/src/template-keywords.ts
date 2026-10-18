@@ -350,7 +350,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   ],
   // Presentations.
   'slide-deck': ['presentation', 'slides', 'deck', 'pitch', 'powerpoint', 'keynote'],
-  article: ['document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
+  article: ['article', 'project', 'document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
   'how-it-works': ['steps', 'explainer', 'onboarding', 'guide', 'infographic'],
   'data-story': ['infographic', 'statistics', 'numbers', 'charts', 'report'],
   'year-in-review': ['annual report', 'recap', 'wrapped', 'review', 'highlights'],

@@ -129,7 +129,7 @@ describe('Start Making Pages', () => {
       logos: 'blank-logo',
     });
     // Recommended leads with Blank Infographic and Blank Article, then Blank Slide Deck in the Slide Deck's place;
-    // Blank Illustration and the Article template are left out of it, and Blank Logo stays in its group alone.
+    // Blank Illustration and the Project Brief template are left out of it, and Blank Logo stays in its group alone.
     const recommended = TEMPLATE_STARTS.pages.groups[0]!.kinds;
     expect(recommended.slice(0, 3)).toEqual([
       'blank-infographic',

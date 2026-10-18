@@ -303,7 +303,9 @@ describe('registerTools', () => {
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      const result = (await tool.handler(ARGS, AUTHED)) as { isError?: boolean };
+      // A Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is in Pages.
+      const args = tool.name === 'add_sheet' ? { ...ARGS, tabId: 'f_1' } : ARGS;
+      const result = (await tool.handler(args, AUTHED)) as { isError?: boolean };
       // Guards the harness itself: a tool that failed here would pass the
       // "no emit" half vacuously.
       expect(result.isError, tool.name).not.toBe(true);
