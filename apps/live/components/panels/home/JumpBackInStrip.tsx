@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CompactEmptyState } from '@livediagram/ui';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { phoneOrder, stripFade, type JumpBackInSet } from '@/app/explorer/home/home-model';
+import type { JumpBackInMenuFor } from './JumpBackInMenu';
 import { JumpBackInTile, SeeMoreTile } from './JumpBackInTile';
 import { JumpBackInEmptyIcon } from './home-icons';
 import { STRIP_HEIGHT, STRIP_THUMB, STRIP_TILE } from './home-styles';
@@ -19,12 +20,15 @@ export function JumpBackInStrip({
   recentHref,
   onSeeMore,
   labelledBy,
+  menuFor,
 }: {
   ownerId: string;
   set: JumpBackInSet;
   recentHref: string;
   onSeeMore: () => void;
   labelledBy: string;
+  /** Each document's Explorer menu (explorer-home.md "Jump Back In"); omitted, no tile has one. */
+  menuFor?: JumpBackInMenuFor;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [fade, setFade] = useState(false);
@@ -69,6 +73,7 @@ export function JumpBackInStrip({
                   item={item}
                   group={group}
                   thumbClassName={STRIP_THUMB}
+                  entry={menuFor?.(item.documentId) ?? null}
                 />
               </li>
             ))}

@@ -21,7 +21,8 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import { useExplorer } from '../ExplorerContext';
-import { folderMenuHandlers, sharedToPaneDocument, type PaneDocument } from '../views';
+import { folderMenuHandlers } from '../views';
+import { useExplorerDocumentsById } from '../useDocumentEntryFor';
 import { TimelineCardMenu } from './TimelineCardMenu';
 import type { TimelineEntityMenuFor } from './useTimelineEntityMenus';
 
@@ -58,9 +59,6 @@ export function useTimelineCardSlots({
 }): TimelineCardSlotsFor {
   const {
     ownerId,
-    documents: liveDocs,
-    teamDocuments,
-    shared,
     renamingDocumentId,
     setRenamingDocumentId,
     renameDocument,
@@ -79,13 +77,7 @@ export function useTimelineCardSlots({
     commitRenameFolder,
   } = useExplorer();
 
-  const byId = useMemo(() => {
-    const map = new Map<string, PaneDocument>();
-    for (const d of liveDocs) map.set(d.id, d);
-    for (const d of teamDocuments) map.set(d.id, d);
-    for (const s of shared) map.set(s.id, sharedToPaneDocument(s));
-    return map;
-  }, [liveDocs, teamDocuments, shared]);
+  const byId = useExplorerDocumentsById();
 
   // Memoised: a fresh `?? []` each render would make the slot callback
   // below a new function every render.

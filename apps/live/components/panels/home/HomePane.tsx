@@ -11,6 +11,7 @@ import { ARRIVED_ON_HOME } from '@/app/explorer/entry-path';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useHome } from '@/app/explorer/home/useHome';
 import { useFirstRun } from '@/app/explorer/home/useFirstRun';
+import type { DocumentEntryFor } from '@/app/explorer/useDocumentEntryFor';
 import { JumpBackIn } from './JumpBackIn';
 import { WhatHappened } from './WhatHappened';
 import { FOCUS_RING, MUTED } from './home-styles';
@@ -29,6 +30,7 @@ export function HomePane({
   recentHref,
   onSeeMore,
   importToolbar,
+  documentMenus,
 }: {
   ownerId: string;
   /** Home's read moved the Timeline feed's unread mark: clear the sidebar badge. */
@@ -39,6 +41,8 @@ export function HomePane({
   onSeeMore: () => void;
   /** The Explorer's Import From control, for the first run's Bring It With You. */
   importToolbar?: ReactNode;
+  /** Each Jump Back In document's Explorer ⋯ menu (explorer-home.md "Jump Back In"). */
+  documentMenus?: DocumentEntryFor;
 }) {
   const home = useHome(ownerId, onSeen);
   const { firstRun, offerSignIn } = useFirstRun();
@@ -81,6 +85,7 @@ export function HomePane({
         loading={loading}
         recentHref={recentHref}
         onSeeMore={onSeeMore}
+        documentMenus={documentMenus}
       />
       <WhatHappened
         groups={home.whatHappened}

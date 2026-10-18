@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useCallback, useMemo } from 'react';
 import { useExplorer } from './ExplorerContext';
+import { useDocumentEntryFor } from './useDocumentEntryFor';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
@@ -213,6 +214,9 @@ export function ExplorerPane() {
   const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
   // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
+  // Home's Jump Back In cards carry each document's Explorer menu (docs/specs/013-workspace/explorer-home.md).
+  const showHistory = useCallback((id: string, name: string) => setHistoryFor({ id, name }), []);
+  const homeDocumentMenus = useDocumentEntryFor({ onShowHistory: showHistory });
 
   // Which of New document, New folder and Import from this section offers (pane-header-actions.ts).
   const offers = paneHeaderActions(selected.kind);
@@ -328,6 +332,7 @@ export function ExplorerPane() {
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
             importToolbar={imports.toolbar}
+            documentMenus={homeDocumentMenus}
           />
         ) : null
       ) : selected.kind === 'timeline' ? (
