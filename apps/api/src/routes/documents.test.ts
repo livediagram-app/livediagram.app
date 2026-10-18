@@ -824,6 +824,14 @@ describe('a tab-scoped visitor', () => {
     expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
   });
 
+  it('copies with a JSON null body as with none, never a 500', async () => {
+    db.copyDocument.mockResolvedValue({ id: 'd2' });
+    const res = await handleDocuments(
+      makeCtx('POST', '/api/documents/d1/copy', { ...visitor, body: null }),
+    );
+    expect(res.status).toBe(201);
+  });
+
   it('copies its tab only through its Shared-with-you row too', async () => {
     resolveDocumentGrant.mockResolvedValue(null);
     db.listSharedWith.mockResolvedValue([{ id: 'd1', tabId: 't2' }]);

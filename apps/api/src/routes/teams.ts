@@ -82,6 +82,8 @@ import type { RouteContext } from './context';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TEAM_NAME_MAX = 80;
+// A team id is client-minted (a UUID); anything far past one is not an id.
+const TEAM_ID_MAX = 64;
 const ORGANISATION_MAX = 120;
 
 function normaliseEmail(raw: string): string {
@@ -160,17 +162,23 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     }
     if (request.method === 'POST') {
       const body = (await request.json().catch(() => null)) as {
-        id?: string;
-        name?: string;
-        organisation?: string | null;
+        id?: unknown;
+        name?: unknown;
+        organisation?: unknown;
       } | null;
-      const name = body?.name?.trim();
-      if (!body?.id || !name) return badRequest('missing id/name');
+      const name = typeof body?.name === 'string' ? body.name.trim() : '';
+      if (typeof body?.id !== 'string' || !body.id || !name) return badRequest('missing id/name');
+      if (body.id.length > TEAM_ID_MAX) return badRequest('invalid id');
       if (name.length > TEAM_NAME_MAX) return badRequest('name too long');
-      const organisation = body.organisation?.trim() || null;
+      const rawOrganisation = body.organisation ?? null;
+      if (rawOrganisation !== null && typeof rawOrganisation !== 'string')
+        return badRequest('invalid organisation');
+      const organisation = rawOrganisation?.trim() || null;
       if (organisation && organisation.length > ORGANISATION_MAX) {
         return badRequest('organisation too long');
       }
+      // A client-chosen id already taken (a retried create) is the caller's conflict, not a 500.
+      if (await getTeam(env, body.id)) return conflict('team_exists');
       const team = await createTeam(
         env,
         { id: body.id, name, organisation },
@@ -255,19 +263,23 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'PUT') {
       if (!isAdmin) return adminRequired();
       const body = (await request.json().catch(() => null)) as {
-        name?: string;
-        organisation?: string | null;
+        name?: unknown;
+        organisation?: unknown;
       } | null;
-      if (!body) return badRequest('missing body');
+      if (!body || typeof body !== 'object') return badRequest('missing body');
+      const { name: rawName, organisation: rawOrganisation } = body;
+      if (rawName !== undefined && typeof rawName !== 'string') return badRequest('invalid name');
+      if (rawOrganisation != null && typeof rawOrganisation !== 'string')
+        return badRequest('invalid organisation');
       const patch: { name?: string; organisation?: string | null } = {};
-      if (body.name !== undefined) {
-        const name = body.name.trim();
+      if (rawName !== undefined) {
+        const name = rawName.trim();
         if (!name) return badRequest('empty name');
         if (name.length > TEAM_NAME_MAX) return badRequest('name too long');
         patch.name = name;
       }
-      if (body.organisation !== undefined) {
-        const organisation = body.organisation?.trim() || null;
+      if (rawOrganisation !== undefined) {
+        const organisation = rawOrganisation?.trim() || null;
         if (organisation && organisation.length > ORGANISATION_MAX) {
           return badRequest('organisation too long');
         }
@@ -335,7 +347,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       if (!isAdmin) return adminRequired();
       const body = (await request.json().catch(() => null)) as { email?: string } | null;
-      const email = body?.email ? normaliseEmail(body.email) : '';
+      const email = typeof body?.email === 'string' ? normaliseEmail(body.email) : '';
       if (!email || !EMAIL_PATTERN.test(email)) return badRequest('invalid email');
       if (await teamHasEmail(env, teamId, email)) return conflict('already_member');
       const { member, declineToken } = await addTeamMember(env, { teamId, email });
