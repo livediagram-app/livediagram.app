@@ -5,7 +5,8 @@ import type { TourStepOf } from './tour-step';
 import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Entity tour (docs/specs/007-editor/element-tours.md "The Entity tour"), on a selected entity: a title over
-// `name: Type` rows, renaming it, its fields, the Fields menu that edits them, and joining entities with ER ends.
+// `name: Type` rows with their keys, renaming it, editing a field where it stands, the Fields menu, and growing a
+// model: related entities, field-to-field relationships and their cardinality.
 
 type EntityTourContext = MenuTourEnv & {
   // It has fields to ring (`data-entity-fields`).
@@ -24,7 +25,7 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
     onGraphic(
       'title',
       'Rename It',
-      `${doublePressWord(ctx)} it to edit the title.`,
+      `${doublePressWord(ctx)} its title bar to edit the title.`,
       elementSelector(id),
     ),
     ...(ctx.hasFields
@@ -32,7 +33,7 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
           onGraphic(
             'rows',
             'name: Type',
-            'Each row is a name and an optional type.',
+            `Each field is a name, an optional type and a key. ${doublePressWord(ctx)} one to edit it.`,
             elementSelector(id, '[data-entity-fields]'),
           ),
         ]
@@ -41,7 +42,7 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
     onGraphic(
       'relate',
       'Join Them Up',
-      "Draw a line from one entity to another, then give its ends the ER marks (one, many, zero or many) from the line's own menu.",
+      'A "+" beside it adds a related entity, already joined. Or drag from the dot beside a field to a field of another entity: the line becomes one to many, and its Cardinality button changes that.',
       elementSelector(id),
     ),
     conceptOutro('That Is an Entity', 'It exports as you see it. Undo takes back any change.'),

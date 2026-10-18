@@ -9,9 +9,9 @@ import type { AccessLevel } from '@livediagram/api-schema';
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md), in two shapes
 // (docs/specs/007-editor/live-app.md#role-pill): the title bar's pill, and Minimal chrome's
-// status bar icon (docs/specs/007-editor/power-user-mode.md). Both toggle the local view
-// preview when `onToggle` is given, i.e. when your role allows editing. A Participant's
-// pill is static, as a Viewer's.
+// status bar icon (docs/specs/007-editor/power-user-mode.md). Both step the local preview (Editing, Participating,
+// Viewing, back to Editing) when `onToggle` is given, i.e. when your role allows editing. A Participant's pill is
+// static, as a Viewer's.
 
 export type Role = AccessLevel;
 
@@ -22,9 +22,10 @@ const ROLE_WORD: Record<Role, string> = {
   participate: 'Participating',
   view: 'Viewing',
 };
+// What a press does, for someone whose role allows editing: the next step of Editing, Participating, Viewing.
 const TOGGLE_HINT: Record<Role, string> = {
-  edit: 'Switch to viewing (read-only)',
-  participate: 'Switch to editing',
+  edit: 'Switch to participating (as a Participant sees it)',
+  participate: 'Switch to viewing (read-only)',
   view: 'Switch to editing',
 };
 

@@ -51,21 +51,26 @@ Three regions stacked vertically, filling the viewport:
 
 ## Role pill
 
-The **role pill** says whether you are editing or viewing this document. Everyone sees it, owner included.
+The **role pill** says whether you are editing, participating in or viewing this document. Everyone sees it, owner included.
 
 - **Where.** In the title bar, after the visibility badge. From `sm` up, like the visibility badge: a phone's title
   bar has no room. Under [Minimal chrome](power-user-mode.md#minimal-chrome) it becomes an icon at the start of the
   status bar instead.
-- **What it reads.** "Editing" (emerald) or "Viewing" (amber).
+- **What it reads.** "Editing" (emerald), "Participating" (teal) or "Viewing" (amber).
 - **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
 - **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
   badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
 - **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
-  button: clicking it switches between Editing and **Viewing**, a read-only preview of the document as a view-link
-  visitor sees it. The preview is local to this tab and this visit: it changes nothing on the server, nothing other
-  participants see, and a reload returns to Editing. The pill's accessible description says what a click does
-  ("Switch to viewing (read-only)" / "Switch to editing").
+  button: each click steps **Editing**, then **Participating**, a preview of the document as a Participant sees and
+  works it ([Share roles](../013-workspace/share-roles.md)), then **Viewing**, a read-only preview as a view-link
+  visitor sees it, then back to Editing. The preview is local to this tab and this visit: it changes no one's role on
+  the server, nothing other participants see of you, and a reload returns to Editing. Participating works as a
+  Participant does: the Participate palette and its limits, adding stickies and text, and moving, rewriting and
+  deleting only what you added while previewing. An Editor has no adder key from the room, so the preview stamps
+  what it adds with its own (`preview-<participant id>`); what you add stays in the document, and no real
+  Participant's key matches it. The pill's accessible description says what a click does ("Switch to participating
+  (as a Participant sees it)" / "Switch to viewing (read-only)" / "Switch to editing").
 - **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
   can be read by keyboard.
 - Zen mode and embeds hide it with the rest of the header.

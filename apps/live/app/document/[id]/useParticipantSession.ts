@@ -13,8 +13,14 @@ const HELD_BACK_NOTICE_MS = 4000;
 export const HELD_BACK_NOTICE =
   'As a participant you can add and write, move stickies, and remove what you added.';
 
-export function useParticipantSession(level: AccessLevel, notify?: (message: string) => void) {
-  const [adderKey, setAdderKey] = useState<string | null>(null);
+export function useParticipantSession(
+  level: AccessLevel,
+  notify?: (message: string) => void,
+  // An Editor previewing as a Participant has no key from the room: its preview's own (useViewPreview).
+  previewKey: string | null = null,
+) {
+  const [roomAdderKey, setAdderKey] = useState<string | null>(null);
+  const adderKey = roomAdderKey ?? previewKey;
   const can = useMemo(() => resolveEditorCapabilities({ level, adderKey }), [level, adderKey]);
   const participating = level === 'participate';
   const lastNoticeRef = useRef(0);

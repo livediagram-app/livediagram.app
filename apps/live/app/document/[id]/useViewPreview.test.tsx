@@ -13,17 +13,28 @@ afterEach(() => {
 });
 
 describe('useViewPreview', () => {
-  it('lets an edit session, owner or edit-link visitor, switch to viewing and back', () => {
+  it('steps an edit session, owner or edit-link visitor, through Participating and Viewing and back', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const onEnter = vi.fn();
     const { result } = renderHook(() => useViewPreview('edit', onEnter));
     expect(result.current.canToggleRole).toBe(true);
+    expect(result.current.previewLevel).toBe('edit');
     act(() => result.current.toggleViewPreview());
+    expect(result.current.previewLevel).toBe('participate');
     expect(result.current.viewPreview).toBe(true);
     expect(onEnter).toHaveBeenCalledTimes(1);
     act(() => result.current.toggleViewPreview());
+    expect(result.current.previewLevel).toBe('view');
+    expect(onEnter).toHaveBeenCalledTimes(2);
+    act(() => result.current.toggleViewPreview());
+    expect(result.current.previewLevel).toBe('edit');
     expect(result.current.viewPreview).toBe(false);
-    expect(onEnter).toHaveBeenCalledTimes(1);
+    expect(onEnter).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives the Participant preview a key of its own, never a real Participant’s', async () => {
+    const { previewAdderKey } = await import('./useViewPreview');
+    expect(previewAdderKey('p1')).toBe('preview-p1');
   });
 
   it('gives a view-link visitor no toggle', () => {
@@ -32,6 +43,7 @@ describe('useViewPreview', () => {
     expect(result.current.canToggleRole).toBe(false);
     act(() => result.current.toggleViewPreview());
     expect(result.current.viewPreview).toBe(false);
+    expect(result.current.previewLevel).toBe('view');
     expect(onEnter).not.toHaveBeenCalled();
   });
 
@@ -41,6 +53,8 @@ describe('useViewPreview', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const edit = renderHook(() => useViewPreview('edit', vi.fn()));
     expect(edit.result.current.canEdit).toBe(true);
+    act(() => edit.result.current.toggleViewPreview());
+    expect(edit.result.current.canEdit).toBe(false);
     act(() => edit.result.current.toggleViewPreview());
     expect(edit.result.current.canEdit).toBe(false);
     expect(renderHook(() => useViewPreview('view', vi.fn())).result.current.canEdit).toBe(false);

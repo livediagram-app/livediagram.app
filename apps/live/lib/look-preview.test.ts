@@ -44,9 +44,12 @@ describe('lookPreviewSvg', () => {
     expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
   });
 
-  it('draws the Sketch looks sketched', () => {
-    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'whiteboard')!)).toContain(
+  it('draws the Sketch looks sketched, and the Marker looks in marker', () => {
+    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'notebook')!)).toContain(
       'data-finish="sketch"',
+    );
+    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'whiteboard')!)).toContain(
+      'data-finish="marker"',
     );
   });
 });

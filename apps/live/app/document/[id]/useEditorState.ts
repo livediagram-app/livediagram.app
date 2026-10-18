@@ -125,7 +125,7 @@ import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
-import { useViewPreview } from './useViewPreview';
+import { previewAdderKey, useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
 import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
@@ -222,6 +222,7 @@ import { useMindGrowth } from './useMindGrowth';
 import { useFlowchartGrowth } from './useFlowchartGrowth';
 import { routeGrowth } from './growth-routing';
 import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
+import { useEntityActions } from '@/hooks/canvas/useEntityActions';
 import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
@@ -863,7 +864,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/live-app.md#role-pill).
   // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
-  const { viewPreview, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
+  const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
     workbench?.ended ? 'view' : sessionRole,
     () => {
       setSelectedId(null);
@@ -874,9 +875,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const isReadOnly = !canEdit;
   // A Participant's adder key, what it may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md).
   // `isReadOnly` stays true for a Participant: its content gestures open through `participant.can` alone.
+  // Previewing as a Participant, an Editor has no adder key of its own (a room ticket carries one only for a
+  // participate session), so the preview stamps what it adds with a local one and handles it as a Participant would.
   const participant = useParticipantSession(
-    viewPreview || workbench?.ended ? 'view' : sessionRole,
+    workbench?.ended ? 'view' : previewLevel,
     toast.info,
+    previewLevel === 'participate' && canToggleRole ? previewAdderKey(selfParticipant.id) : null,
   );
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
@@ -3671,6 +3675,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
 
+  // The entity's verbs (docs/specs/009-elements/entity.md): fields saved from the canvas, relationships drawn
+  // from a field, the ring's Add Field and Add Related Entity, and the Cardinality presets.
+  const entityActions = useEntityActions({
+    activeTab,
+    readSelection,
+    commit,
+    styleNewElement: styleMemory.styleNewElement,
+    setSelectedId,
+    setEditingId,
+    beginAnchorDrag,
+    editsBlocked,
+  });
+
   // Copy / paste (in-app element clipboard + OS-clipboard image
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
@@ -4360,6 +4377,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     growMindNode,
     abandonMindNode,
     flowchartActions,
+    entityActions,
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,

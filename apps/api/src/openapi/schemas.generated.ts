@@ -6511,6 +6511,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "elementId": {
             "$ref": "#/components/schemas/ElementId"
           },
+          "field": {
+            "type": "number"
+          },
           "kind": {
             "const": "pinned",
             "type": "string"
@@ -6549,6 +6552,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "EntityField": {
     "additionalProperties": false,
     "properties": {
+      "key": {
+        "$ref": "#/components/schemas/EntityKey"
+      },
       "name": {
         "type": "string"
       },
@@ -6560,6 +6566,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name"
     ],
     "type": "object"
+  },
+  "EntityKey": {
+    "enum": [
+      "pk",
+      "fk",
+      "pk-fk",
+      "uk"
+    ],
+    "type": "string"
   },
   "EstimateScale": {
     "enum": [

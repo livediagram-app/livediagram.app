@@ -17,7 +17,7 @@ const BARE_EMPTY = [
 ];
 // A canvas element's drawn face keeps its own look ("What is not an empty state").
 const DRAWN_FACES = [
-  'components/canvas/EntityView.tsx',
+  'components/canvas/entity/EntityView.tsx',
   'components/canvas/collab/estimate/EstimateEmpty.tsx',
   'components/canvas/collab/temperature/MoodMeter.tsx',
   'components/plan/widgets/BoardWidgetView.tsx',
