@@ -119,7 +119,7 @@ export function ClientPicker() {
                 <p
                   aria-hidden
                   id={groupId(client.group)}
-                  className={`hidden px-3 text-xs font-semibold tracking-wider text-slate-500 uppercase lg:block dark:text-slate-400 ${
+                  className={`hidden px-3 text-xs font-semibold tracking-wider text-slate-600 uppercase lg:block dark:text-slate-400 ${
                     i === 0 ? '' : 'mt-4'
                   }`}
                 >
