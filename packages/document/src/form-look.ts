@@ -1,7 +1,7 @@
 // A form's look (docs/specs/030-forms/forms.md "Look"): its tab's theme, finish, font and canvas style, as the builder
 // and the form link's page both draw it. Its colour is always the theme's own; each half (light, dark) is worked out so the page
 // can follow the respondent's system.
-import { deriveTextColorForBg } from './colors';
+import { contrastRatio } from './colors';
 import { resolveFinish, type Finish } from './finish';
 import { resolveFontStack } from './fonts';
 import { themeAccent } from './page-default-background';
@@ -86,9 +86,19 @@ function formCanvas(tab: CanvasTab): FormCanvas | undefined {
   };
 }
 
-// The Default theme leaves its colours to the type defaults; a form on it is drawn in the brand blue of each half, which
-// carries a light label (the shared theme accent's lighter fallback would not).
-const BRAND: FormHalves = { light: '#0284c7', dark: '#38bdf8' };
+// The Default theme leaves its colours to the type defaults; a form on it is drawn in the brand blue of each half. The
+// light half is sky-700, which carries a white label at 5.9:1: sky-600 reached neither white (4.1:1) nor dark (4.4:1).
+const BRAND: FormHalves = { light: '#0369a1', dark: '#38bdf8' };
+
+// A filled button's label: whichever of white and slate-900 reads better on the accent. A brightness cut-off picked
+// light text on mid-tones it could not carry (Pumpkin's orange and Evergreen's coral, 2.5:1).
+const LABEL_LIGHT = '#ffffff';
+const LABEL_DARK = '#0f172a';
+export function formLabelOn(accent: string): string {
+  return contrastRatio(LABEL_LIGHT, accent) >= contrastRatio(LABEL_DARK, accent)
+    ? LABEL_LIGHT
+    : LABEL_DARK;
+}
 
 const accentOf = (theme: ThemeDefinition, appearance: Appearance) =>
   theme.elementStroke || theme.palette?.length ? themeAccent(theme) : BRAND[appearance];
@@ -104,10 +114,7 @@ export function formLook(tab: CanvasTab & { finish?: unknown; font?: string }): 
   return {
     backdrop: { light: light.backgroundColor, dark: dark.backgroundColor },
     accent,
-    onAccent: {
-      light: deriveTextColorForBg(accent.light),
-      dark: deriveTextColorForBg(accent.dark),
-    },
+    onAccent: { light: formLabelOn(accent.light), dark: formLabelOn(accent.dark) },
     finish: resolveFinish(undefined, tab.finish),
     ...(resolveFontStack(tab.font) ? { font: tab.font } : {}),
     ...(canvas ? { canvas } : {}),
