@@ -31,7 +31,7 @@ anything.
 
 ## Which documents take tags
 
-The reader's own documents (My Documents, This browser) and their teams' documents. A document **shared with you**
+The reader's own documents (My Documents, This Browser) and their teams' documents. A document **shared with you**
 takes none: it lives in the sharer's library, its menu offers Open and Dismiss only, the same rule as Favourites.
 
 ## Putting tags on a document
@@ -72,7 +72,7 @@ A small panel (an anchored popover named "Tags for <document>") that stays open 
   Pressing a chip opens that tag's page; it never opens the document. On a phone a list row shows the dots below
   instead, so the name keeps its room; cards keep their chips. When a row is squeezed its name truncates first and
   the chips then truncate their names too, each down to its dot and a few letters, so they never run over the badges
-  beside them (Local only, Made by AI, the folder).
+  beside them (This Browser, Made by AI, the folder).
 - **In the editor's Explorer panel** a row shows up to three **dots** after its name (the panel row is narrow), with a
   tooltip naming the tags. They are not buttons.
 
@@ -117,7 +117,7 @@ unless a Tags page is the current view, which opens both. Tags' expanded state i
 
 ## The editor's Explorer panel
 
-The rail's More group gains **Tags** between This browser and Library. Its pane shows each tag as a section heading
+The rail's More group gains **Tags** between This Browser and Library. Its pane shows each tag as a section heading
 (the chip and its count) over its documents as panel rows, with the panel's compact empty state ("No tags yet") when
 there are none, and **Open Page** to the Tags page.
 

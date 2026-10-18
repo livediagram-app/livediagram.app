@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// This browser's Trash rows carry the Local only pill (docs/specs/006-document/offline-mode.md#local-only-pill).
+// This Browser's Trash rows carry the This Browser pill (docs/specs/006-document/offline-mode.md#this-browser-pill).
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -19,7 +19,7 @@ const row = (id: string, name: string) => ({
 });
 
 describe('TrashPane', () => {
-  it('marks only the rows in this browser as Local only', () => {
+  it('marks only the rows in this browser as This Browser', () => {
     render(
       <TrashPane
         trash={{
@@ -30,7 +30,7 @@ describe('TrashPane', () => {
         }}
       />,
     );
-    const pills = screen.getAllByRole('link', { name: /Local only/ });
+    const pills = screen.getAllByRole('link', { name: /This Browser/ });
     expect(pills).toHaveLength(1);
     expect(pills[0]!.closest('li')?.textContent).toContain('Workshop notes');
   });

@@ -22,7 +22,7 @@ vi.mock('@/lib/article/article-editor-store', () => ({
   forgetZonesReleased: vi.fn(),
 }));
 
-// docs/specs/007-editor/illustrate-pages.md "Locking a page": locking any page of an article makes
+// docs/specs/007-editor/pages-mode.md "Locking a page": locking any page of an article makes
 // its writing read-only, holds its page count and zones, from every way into the writing.
 const blocks: ArticleBlock[] = [
   { id: 'p', type: 'paragraph', runs: [{ text: 'Hello' }] },

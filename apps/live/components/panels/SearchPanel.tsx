@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { NoMatches, SearchIcon, useEscape } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
@@ -343,7 +343,7 @@ export function SearchPanel({
                         </span>
                         {/* A plain label: a link cannot sit inside this result button. */}
                         {item.kind === 'document' && item.localOnly ? (
-                          <LocalOnlyPill asLabel />
+                          <ThisBrowserPill asLabel />
                         ) : null}
                         {item.kind === 'element' ? (
                           <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">

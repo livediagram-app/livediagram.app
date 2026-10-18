@@ -1,14 +1,14 @@
 'use client';
 
 // One document of Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): its
-// snapshot thumbnail with its name below, one link named by the document (plus Local only for one
+// snapshot thumbnail with its name below, one link named by the document (plus This Browser for one
 // stored here), the full name as its tooltip. Grid and strip draw the same tile at their own size.
 // Which half of the set it came from is tracked, never shown (Calm by default). The strip ends in
 // the See More tile, the same size as a thumbnail.
 
 import { ChevronRightIcon, Tooltip } from '@livediagram/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
-import { LocalOnlyPill, LOCAL_ONLY_LABEL } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill, THIS_BROWSER_LABEL } from '@/components/primitives/ThisBrowserPill';
 import { track } from '@/lib/telemetry';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import type { JumpBackInGroup, JumpBackInItem } from '@/app/explorer/home/home-model';
@@ -34,7 +34,7 @@ export function JumpBackInTile({
     <Tooltip label={item.name}>
       <a
         href={item.href}
-        aria-label={item.localOnly ? `${item.name}, ${LOCAL_ONLY_LABEL}` : item.name}
+        aria-label={item.localOnly ? `${item.name}, ${THIS_BROWSER_LABEL}` : item.name}
         onClick={() =>
           group === 'mostUsed'
             ? track('Home', 'Selected', 'JumpBackIn.MostUsed')
@@ -54,7 +54,7 @@ export function JumpBackInTile({
           />
           {item.localOnly ? (
             <span className="absolute bottom-1 left-1">
-              <LocalOnlyPill asLabel />
+              <ThisBrowserPill asLabel />
             </span>
           ) : null}
         </span>

@@ -9,8 +9,8 @@
 
 import {
   hasPageLook,
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   opensInOf,
   type LaidOutPage,
   type PageRect,
@@ -31,7 +31,7 @@ type FocusView = {
 // tenth of a canvas at 10% zoom is not a difference anybody can see.
 const CENTRE_SLACK = 0.1;
 
-/** The page a press on an Illustrate tab points at (docs/specs/012-collaboration/bring-focus.md "On a
+/** The page a press on a Pages tab points at (docs/specs/012-collaboration/bring-focus.md "On a
  *  page"): the one the point sits on, while the tab is in a mode that shows pages. Null anywhere else,
  *  including the surround between pages, where taking it centres the point as on any canvas. */
 export function focusPageAt(
@@ -40,7 +40,7 @@ export function focusPageAt(
 ): LaidOutPage | null {
   if (!tab || !hasPageLook(opensInOf(tab))) return null;
   return (
-    layOutIllustratePages(illustratePagesOf(tab)).find(
+    layOutPages(pagesOf(tab)).find(
       ({ rect }) =>
         at.x >= rect.x &&
         at.x <= rect.x + rect.width &&
@@ -68,7 +68,7 @@ function viewFramesPage(view: FocusView, page: PageRect) {
   );
 }
 
-/** Is that canvas point already at the middle of this view? With the page it is on (an Illustrate
+/** Is that canvas point already at the middle of this view? With the page it is on (a Pages
  *  tab), is that page framed instead, since that is where taking it lands. */
 export function viewIsCentredOn(
   view: FocusView,
@@ -116,7 +116,7 @@ export function focusPressOutcome({
   viewports: Map<string, RemoteViewport>;
   tabId: string;
   at: { x: number; y: number };
-  /** The page the point is on, on an Illustrate tab (focusPageAt): judged as framed, not centred. */
+  /** The page the point is on, on a Pages tab (focusPageAt): judged as framed, not centred. */
   page?: PageRect | null;
 }): FocusPressOutcome {
   if (!sent || peerIds.length === 0) return 'alone';

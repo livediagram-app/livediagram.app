@@ -1,5 +1,5 @@
 // Feature art for the Documents & slides category (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/007-editor/article-pages.md, illustrate-pages.md): writing that flows onto a new
+// docs/specs/007-editor/article-pages.md, pages-mode.md): writing that flows onto a new
 // page, a picture and a drawing set in the text, and a comment in the margin (the five looks are in
 // ./article-looks, the slide page in ./slide-layouts). Each is a finished spread at rest; the fa-f-* loops type the
 // lines, turn the pages and move the hands (mode-parts.tsx).

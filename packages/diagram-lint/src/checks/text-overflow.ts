@@ -1,4 +1,4 @@
-// `text-overflow` (warning): on a page (an Illustrate tab) text is the content rather than a caption, so a text
+// `text-overflow` (warning): on a page (a Pages tab) text is the content rather than a caption, so a text
 // element whose words, wrapped as every headless render wraps them, need more lines than its box holds runs into what
 // is under it. On every tab, two text elements whose lines are drawn over each other print over each other (a board's
 // column heading wrapped onto its subtitle): `textOverprint` alone, as a caption's own box is not linted elsewhere.

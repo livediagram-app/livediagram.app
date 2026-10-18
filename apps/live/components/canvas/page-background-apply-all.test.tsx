@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApplyBackgroundToAll } from './page-background-apply-all';
 
-// docs/specs/007-editor/illustrate-pages.md "Copying a background": the Background tab's Apply to All.
+// docs/specs/007-editor/pages-mode.md "Copying a background": the Background tab's Apply to All.
 
 afterEach(cleanup);
 

@@ -1,4 +1,4 @@
-// Every page's own elements, found in one walk over the tab (docs/specs/007-editor/illustrate-pages.md
+// Every page's own elements, found in one walk over the tab (docs/specs/007-editor/pages-mode.md
 // "Contents" "Cost"): what each page's thumbnail draws from, rather than every page scanning the whole
 // tab (which made a 100-page tab's pictures cost pages × elements). An element is on the page its
 // anchor point lies on, exactly as elementIdsOnPage reads it. A page's arrows bring the elements

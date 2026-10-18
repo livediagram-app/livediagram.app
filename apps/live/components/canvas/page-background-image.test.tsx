@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 
-// The Background section's Image category (docs/specs/007-editor/illustrate-pages.md "Image
+// The Background section's Image category (docs/specs/007-editor/pages-mode.md "Image
 // backgrounds"): offered but on a logo page, the search asking for the page's shape, a hovered
 // result previewed, a pick one edit with a readable overlay, and the overlay, strength and position.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { IllustratePage, PageFill, PageImageFill } from '@livediagram/document';
+import type { Page, PageFill, PageImageFill } from '@livediagram/document';
 import type { OpenverseImage } from '@/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
 
@@ -56,10 +56,7 @@ const result = {
   height: 1200,
 } as OpenverseImage;
 
-function show(
-  page: Partial<IllustratePage> & { fill?: PageFill },
-  surface: 'light' | 'dark' = 'light',
-) {
+function show(page: Partial<Page> & { fill?: PageFill }, surface: 'light' | 'dark' = 'light') {
   const { fill, ...rest } = page;
   const onBackground = vi.fn();
   const onPreview = vi.fn();

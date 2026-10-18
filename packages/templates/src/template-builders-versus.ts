@@ -1,4 +1,4 @@
-// Versus template (kind `versus`, docs/specs/007-editor/templates-by-mode.md "Illustrate
+// Versus template (kind `versus`, docs/specs/007-editor/templates-by-mode.md "Pages
 // templates"): one Portrait post (4:5) page that sets two options side by side, the great office
 // debate of Tea against Coffee, ready to post. The page is split down the middle, each half in
 // its option's colour and bleeding off its edges:
@@ -13,7 +13,7 @@
 //
 // Pure: () -> Element[], placed on the post's page (versusPages) whatever centre is passed.
 
-import { pageMargin, type Element, type IllustratePage } from '@livediagram/document';
+import { pageMargin, type Element, type Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -72,7 +72,7 @@ const VERSUS_PAGE = templatePage(1, 'social', 'portrait', 'Versus', {
 });
 
 /** The post's page: one Portrait post (4:5) page, split between the two sides' washes. */
-export function versusPages(): IllustratePage[] {
+export function versusPages(): Page[] {
   return [VERSUS_PAGE];
 }
 

@@ -5,7 +5,7 @@ import { themeHalf } from './theme-halves';
 import { isLightColor } from './colors';
 import type { Element } from './index';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": a placed layout takes its tab's theme where it sets no colour.
+// docs/specs/007-editor/pages-mode.md "Layouts": a placed layout takes its tab's theme where it sets no colour.
 describe('a layout in its tab’s theme', () => {
   const bare = { ...createShape('circle', 0, 0), id: 'c' } as Element;
   const accented = { ...createShape('square', 0, 0), id: 's', fillColor: '#ff0000' } as Element;

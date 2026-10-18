@@ -1,4 +1,4 @@
-// Which layouts a page offers (docs/specs/007-editor/illustrate-pages.md "Layouts", "Slide
+// Which layouts a page offers (docs/specs/007-editor/pages-mode.md "Layouts", "Slide
 // layouts", docs/specs/007-editor/logo-pages.md "Logo layouts"): an infographic page the page
 // layouts, a slide page the slide layouts, a logo page the logo layouts, each by its own
 // categories; and any layout by its id, for placing it.

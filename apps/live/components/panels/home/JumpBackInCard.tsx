@@ -3,13 +3,13 @@
 // One document of Jump Back In on a desktop or tablet (docs/specs/013-workspace/explorer-home.md "Jump Back In"): a
 // card with its snapshot thumbnail, its name and the quiet line that says why it is there. Large for a most used
 // document (the thumbnail over the words), compact for a recent one (the thumbnail beside them). One link named by
-// the document (plus Local only for one stored here), the quiet line its description. No tooltip: the name is
+// the document (plus This Browser for one stored here), the quiet line its description. No tooltip: the name is
 // already written under the picture.
 // The phone's strip keeps JumpBackInTile.
 
 import { useId } from 'react';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
-import { LocalOnlyPill, LOCAL_ONLY_LABEL } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill, THIS_BROWSER_LABEL } from '@/components/primitives/ThisBrowserPill';
 import { track } from '@/lib/telemetry';
 import {
   jumpBackInLine,
@@ -56,7 +56,7 @@ export function JumpBackInCard({
       />
       {item.localOnly ? (
         <span className="absolute bottom-1 left-1">
-          <LocalOnlyPill asLabel />
+          <ThisBrowserPill asLabel />
         </span>
       ) : null}
     </span>
@@ -81,7 +81,7 @@ export function JumpBackInCard({
   return (
     <a
       href={item.href}
-      aria-label={item.localOnly ? `${item.name}, ${LOCAL_ONLY_LABEL}` : item.name}
+      aria-label={item.localOnly ? `${item.name}, ${THIS_BROWSER_LABEL}` : item.name}
       aria-describedby={lineId}
       data-jump-back-in-card={large ? 'large' : 'compact'}
       onClick={() =>

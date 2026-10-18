@@ -95,7 +95,7 @@ function slideMaxZoom(config: PresentationConfig): number {
 }
 
 /** How a slide is fitted to the screen: a page slide fills it edge to edge (its page is the
- *  slide, docs/specs/007-editor/illustrate-pages.md "Slides"); any other keeps the fit's margin. */
+ *  slide, docs/specs/007-editor/pages-mode.md "Slides"); any other keeps the fit's margin. */
 export function slideFitOptions(
   slide: { pageId?: string },
   config: PresentationConfig,

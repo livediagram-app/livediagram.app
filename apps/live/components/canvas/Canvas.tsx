@@ -84,15 +84,15 @@ import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import {
   loadArticleFlows,
   loadAvatarSpeechLayer,
-  loadIllustratePages,
+  loadCanvasPages,
 } from '@/lib/editor-deferred-code';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
-// Illustrate's pages and their writing draw only on a tab that has pages, so their code loads on demand
+// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
-const IllustratePages = dynamic(loadIllustratePages, { ssr: false });
+const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
 const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
@@ -167,7 +167,7 @@ function CanvasView(props: CanvasProps) {
     viewportOffset,
     viewportZoom,
     mainRef,
-    props.illustratePages?.pages,
+    props.pagesMode?.pages,
   );
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
@@ -263,7 +263,7 @@ function CanvasView(props: CanvasProps) {
   // An object in an article's writing (a chart, an image, a table) connects to nothing: no
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
   // selection derivation applies, so the canvas itself still doesn't read the selection.
-  const articlePages = props.illustratePages?.pages;
+  const articlePages = props.pagesMode?.pages;
   const plusBlocked = useMemo(
     () => articlePlusBlocked(articlePages, elements),
     [articlePages, elements],
@@ -572,7 +572,7 @@ function CanvasView(props: CanvasProps) {
                 // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
                 // add-text double-click while the intent is armed.
                 if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-                // Off an Illustrate page nothing is made, but a finger's double-tap still zooms there.
+                // Off a page nothing is made, but a finger's double-tap still zooms there.
                 if (offPage(e) && !surface.pressedByFinger()) return;
                 surface.onWrapperDoubleClick(e);
               }}
@@ -638,15 +638,15 @@ function CanvasView(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
               {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-              {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
-              {props.illustratePages ? (
+              {/* Pages mode's A4 pages, under every element (CanvasPages). */}
+              {props.pagesMode ? (
                 // The image store's access, for the pages' pictures (page-image-access).
                 <PageImageAccessProvider access={props.imageContext}>
-                  <IllustratePages
+                  <CanvasPages
                     // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
                     // tab's own: page ids repeat across tabs.
                     key={props.activeTabId}
-                    view={props.illustratePages}
+                    view={props.pagesMode}
                     zoom={viewportZoom}
                     // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
                     // layout invites or add button.
@@ -657,9 +657,9 @@ function CanvasView(props: CanvasProps) {
               ) : null}
               {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}
-              {props.illustratePages?.articles && canvasTool !== 'isometric' ? (
+              {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
                 <ArticleFlows
-                  view={props.illustratePages}
+                  view={props.pagesMode}
                   zoom={viewportZoom}
                   interactive={
                     !pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'
@@ -732,9 +732,9 @@ function CanvasView(props: CanvasProps) {
                 {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
                 {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
                 {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
-                {props.illustratePages ? (
+                {props.pagesMode ? (
                   <LogoCanvasOverlays
-                    view={props.illustratePages}
+                    view={props.pagesMode}
                     bare={props.zenMode === true || canvasTool === 'isometric'}
                     pendingDraw={pendingDraw}
                     penStroke={penStroke}

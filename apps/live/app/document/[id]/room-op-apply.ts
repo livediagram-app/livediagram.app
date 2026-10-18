@@ -1,6 +1,6 @@
 import {
   applyArticleOps,
-  illustratePagesOf,
+  pagesOf,
   isArticleId,
   parseArticleOps,
   applyElementDelta,
@@ -133,7 +133,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
           const known =
             Object.hasOwn(articles, op.flow) ||
             op.created === true ||
-            illustratePagesOf(tab).some((p) => p.flow === op.flow);
+            pagesOf(tab).some((p) => p.flow === op.flow);
           if (!known) return tab;
           articles[op.flow] = applyArticleOps(articles[op.flow], ops);
           // An agent's writing has no writer here to add the pages it needs: the next lay-out may.

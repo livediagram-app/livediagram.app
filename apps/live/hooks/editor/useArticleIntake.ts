@@ -13,8 +13,8 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import {
   articlesOf,
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   looseOnArticles,
   objectsDraggedOut,
   withNoteMarksRemoved,
@@ -87,10 +87,10 @@ export function useArticleIntake({
     if (was.tabId !== tabId || !on || !editable || !pages) return;
     if (!local) return;
     if (was.elements === activeTab.elements && was.articles === activeTab.articles) return;
-    // An article with a locked page is held as it is (docs/specs/007-editor/illustrate-pages.md
+    // An article with a locked page is held as it is (docs/specs/007-editor/pages-mode.md
     // "Locking a page"): nothing goes into its writing, none of its zones move or refit. Asked
     // before the editors are touched, since an insert or a move changes the writing at once.
-    const held = lockedArticleFlows(illustratePagesOf(activeTab));
+    const held = lockedArticleFlows(pagesOf(activeTab));
 
     // Objects dragged off their zones onto their own article: the writing moves their zones there.
     // Only an edit that moved elements can drag one out (a typing commit changes the writing alone).
@@ -163,9 +163,7 @@ export function useArticleIntake({
           const zone = articlesOf(next)[r.flow]?.blocks.find(
             (b): b is ArticleZoneBlock => b.id === r.zoneId && b.type === 'zone',
           );
-          const own = layOutIllustratePages(illustratePagesOf(next)).filter(
-            (p) => p.flow === r.flow,
-          );
+          const own = layOutPages(pagesOf(next)).filter((p) => p.flow === r.flow);
           const rect = landed?.rect ?? (zone ? zoneCanvasRect(own, zone) : null);
           if (!rect) continue;
           next = {
@@ -214,8 +212,8 @@ export function useArticleIntake({
             count: ids.length,
           });
         }
-        const laid = layOutIllustratePages(illustratePagesOf(next));
-        const heldNow = lockedArticleFlows(illustratePagesOf(next));
+        const laid = layOutPages(pagesOf(next));
+        const heldNow = lockedArticleFlows(pagesOf(next));
         for (const [flow, doc] of Object.entries(articlesOf(next)))
           if (!heldNow.has(flow)) next = withZonesFitted(next, flow, textWidthOf(laid, flow, doc));
         return next;

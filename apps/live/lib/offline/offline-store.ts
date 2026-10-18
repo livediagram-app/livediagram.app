@@ -67,7 +67,7 @@ export type OfflineDocumentRecord = {
   // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
-  // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
+  // This Browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump Back In; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
   // The document's item store (docs/specs/026-plan/items.md "Offline documents"): its items, the

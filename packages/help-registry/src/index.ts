@@ -627,7 +627,7 @@ export const articles: Article[] = [
     title: 'Plan Items, Sheets and Images',
     description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload illustrate pages article render svg copy shape libraries custom themes api',
+      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy shape libraries custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -1137,7 +1137,7 @@ export const articles: Article[] = [
     title: 'Components',
     description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps illustrate mode',
+      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1340,7 +1340,7 @@ export const articles: Article[] = [
     title: 'Embeds on the canvas',
     description: 'Play a video, or open a Figma file, Google Doc or any website, on the canvas.',
     keywords:
-      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame illustrate',
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1372,7 +1372,7 @@ export const articles: Article[] = [
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
     keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device illustrate mode',
+      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device pages mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1497,7 +1497,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1506,9 +1506,9 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Facilitate, Illustrate and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
+      'Diagram, Draw, Facilitate, Pages and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
     keywords:
-      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw illustrate plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
+      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw pages plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1676,12 +1676,12 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
-    slug: 'illustrate',
-    title: 'Illustrate Mode',
+    slug: 'pages-mode',
+    title: 'Pages Mode',
     description:
       'Work on a tab as pages: sizes for print and social, layouts, colour and photo backgrounds, then export or present.',
     keywords:
-      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1705,8 +1705,8 @@ export const articles: Article[] = [
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster layout button replace undo covers posters data explainers cover report cover annual report magazine book cover proposal case study newsletter contents certificate award gig concert research poster academic coming soon movie film exhibition travel workshop hiring job sale discount notice warning motivational kpi dashboard metrics trend market share pie doughnut stat mosaic staircase customer journey project plan gantt decision flow flowchart how-to recipe versus vs pricing price plans tiers swot effort impact matrix quadrant scorecard rating spectrum venn options org chart organisation organization testimonials reviews speakers spotlight employee values idea board brainstorm persona user persona shout-outs kudos thank you social media carousel instagram tip of the day milestone followers behind the scenes countdown product launch giveaway contest welcome onboarding webinar how it works anatomy diagram key concepts cheat sheet shortcuts glossary definitions myths facts fact file lesson summary quiz formula equation explainer education',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
     slug: 'logo-pages',
@@ -1716,8 +1716,8 @@ export const articles: Article[] = [
     keywords:
       'logo logos brand branding mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
     slug: 'articles',
@@ -1725,31 +1725,31 @@ export const articles: Article[] = [
     description:
       'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
     keywords:
-      'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave illustrate',
+      'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave pages',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
-    slug: 'illustrate-tour',
-    title: 'The Illustrate Tour',
+    slug: 'pages-tour',
+    title: 'The Pages Tour',
     description:
       'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
     keywords:
-      'illustrate tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn illustrate mode pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
+      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages mode pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
     slug: 'exporting-pages',
     title: 'Exporting and Presenting Pages',
     description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
     keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page illustrate infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
     slug: 'tab-windows',
@@ -1758,8 +1758,8 @@ export const articles: Article[] = [
     keywords:
       'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
     slug: 'slide-pages',
@@ -1768,8 +1768,8 @@ export const articles: Article[] = [
     keywords:
       'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you add to slide deck hide show eye presenter',
     category: 'Canvas',
-    categorySlug: 'canvas/illustrate',
-    parentSlug: 'illustrate',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
   },
   {
     slug: 'using-tabs',
@@ -1990,7 +1990,7 @@ export const articles: Article[] = [
     description:
       'What is outstanding for you across every document: open actions and comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -2029,7 +2029,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents new document wizard illustrate plan',
+      'default folder where new documents go automatic placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents new document wizard pages plan',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -2040,7 +2040,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results illustrate plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

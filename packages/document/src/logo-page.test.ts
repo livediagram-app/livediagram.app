@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, newLogoPage, newSlidePage } from './illustrate-page';
+import { layOutPages, newLogoPage, newSlidePage } from './page';
 import { logoGuides, logoPageAt, logoPageSnapBoxes } from './logo-page';
 
 // docs/specs/007-editor/logo-pages.md "Construction guides".
@@ -29,7 +29,7 @@ describe('logo construction guides', () => {
   });
 
   it('snap to the inner circle and the keyline square of logo pages only', () => {
-    const pages = layOutIllustratePages([newSlidePage('s'), newLogoPage('l')]);
+    const pages = layOutPages([newSlidePage('s'), newLogoPage('l')]);
     const boxes = logoPageSnapBoxes(pages);
     expect(boxes.map((b) => b.id)).toEqual(['logo-inner:l', 'logo-keyline:l']);
     const l = pages[1]!;
@@ -38,7 +38,7 @@ describe('logo construction guides', () => {
   });
 
   it('finds the logo page under a point', () => {
-    const pages = layOutIllustratePages([newSlidePage('s'), newLogoPage('l')]);
+    const pages = layOutPages([newSlidePage('s'), newLogoPage('l')]);
     expect(logoPageAt(pages, { x: 0, y: 0 })).toBeUndefined();
     expect(logoPageAt(pages, { x: pages[1]!.rect.x + 10, y: 0 })?.id).toBe('l');
   });

@@ -365,7 +365,7 @@ export function EditorCanvasHost() {
     whiteboardDock,
     drag,
     editorMode,
-    illustratePages,
+    pagesMode,
     presentArticles,
     loadedTabIds,
     autoAlignTab,
@@ -541,11 +541,11 @@ export function EditorCanvasHost() {
   // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
   // preview. Resolved here rather than in the panel so the panel stays a
   // renderer and never reaches into the tab.
-  // A page's background in the brush (docs/specs/007-editor/illustrate-pages.md "Copying a background").
-  const brushedPage = illustratePages?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
+  // A page's background in the brush (docs/specs/007-editor/pages-mode.md "Copying a background").
+  const brushedPage = pagesMode?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
   useDeadPageBrush(
     formatSourceId,
-    illustratePages?.pages.map((pg) => pg.id),
+    pagesMode?.pages.map((pg) => pg.id),
     setFormatSourceId,
   );
   const formatSource = formatSourceId
@@ -662,8 +662,8 @@ export function EditorCanvasHost() {
               isPinchingRef={isPinchingRef}
               setViewportZoom={setViewportZoom}
               onFitToScreen={() => {
-                // In Illustrate, Fit frames the page you are nearest, not the whole tab.
-                if (illustratePages) illustratePages.fitPageInView();
+                // In Pages, Fit frames the page you are nearest, not the whole tab.
+                if (pagesMode) pagesMode.fitPageInView();
                 else fitToScreen();
                 track('Canvas', 'Zoomed', 'Fit');
               }}
@@ -676,12 +676,12 @@ export function EditorCanvasHost() {
               tabLayers={activeTab.layers}
               tabKind={activeTab.kind}
               editorMode={editorMode.mode}
-              // No page while Start Illustrating is open (docs/specs/007-editor/start-diagramming.md "Start Illustrating"):
+              // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
               // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-              illustratePages={
-                startPanelOpen && editorMode.mode === 'illustrate'
+              pagesMode={
+                startPanelOpen && editorMode.mode === 'pages'
                   ? null
-                  : presentedPages(illustratePages, activeTab, presentingPageId, presentArticles)
+                  : presentedPages(pagesMode, activeTab, presentingPageId, presentArticles)
               }
               whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
               whiteboardInk={PEN_INK[surface]}
@@ -836,10 +836,10 @@ export function EditorCanvasHost() {
               editCursorAtEnd={editCursorAtEnd}
               formatSourceId={formatSourceId}
               onFormatPagePress={
-                canvasTool === 'format' && illustratePages?.edit
+                canvasTool === 'format' && pagesMode?.edit
                   ? (pageId) => {
                       // A page's background as the brush, painted page to page (docs/specs/007-editor/
-                      // illustrate-pages.md "Copying a background").
+                      // pages-mode.md "Copying a background").
                       // A brush whose page has gone is emptied as the page goes (useDeadPageBrush), so this
                       // press arms the pressed page at once.
                       const press = pagePaintPress(
@@ -851,7 +851,7 @@ export function EditorCanvasHost() {
                       // only a paint empties a Paint once brush.
                       if (
                         press.paint &&
-                        !illustratePages.edit?.copyBackground(press.paint.from, press.paint.to)
+                        !pagesMode.edit?.copyBackground(press.paint.from, press.paint.to)
                       )
                         return;
                       if (press.next !== formatSourceId) setFormatSourceId(press.next);

@@ -1,7 +1,7 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Facilitate**, **Illustrate** or **Plan**. The New Document wizard asks for the mode itself
+**Facilitate**, **Pages** or **Plan**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
 its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to make a poster sees only
 what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
@@ -14,9 +14,9 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Illustrate templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
+- Pages templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
   Slide deck, Logo design, Group card and the
-  eight [Illustrate templates](#illustrate-templates) below.
+  eight [Pages templates](#pages-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
@@ -43,7 +43,7 @@ start ([Template starts](start-diagramming.md)), and is what the New Document wi
 | Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                                          |
 | Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                                  |
 | Blank Session      | `blank-session`      | Facilitate | An empty tab in Facilitate, named "Untitled Session".                          |
-| Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
+| Blank Illustration | `blank-illustration` | Pages      | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
 | Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
 
 **Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
@@ -56,7 +56,7 @@ shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-sit
 
 ### Blanks of a page kind
 
-Blank Illustration's one page asks what it is for. Four more Illustrate blanks have already answered, for someone
+Blank Illustration's one page asks what it is for. Four more Pages blanks have already answered, for someone
 who knows they are making a deck, an article, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
 Spreadsheet):
 
@@ -70,17 +70,17 @@ Spreadsheet):
 - **Exactly one page and nothing else**: no elements, the page's kind already chosen. The page is made the way the
   first page's **What Is This Page For?** makes it (`withPageKindChosen` on an unchosen page, through
   `blankPageTemplateOverrides`), so a blank of a kind and a chosen Blank Illustration are the same page.
-- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Illustrating does not
+- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Making Pages does not
   show over it ([Template starts](start-diagramming.md) "When it shows").
 - **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
   Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
-  page of that kind does ([Illustrate pages](illustrate-pages.md)); an article page never shows one.
+  page of that kind does ([Pages](pages-mode.md)); an article page never shows one.
 - **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
   `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
-  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Illustrate's
-  Popular (so in Start Illustrating's Recommended, after Blank Illustration and Article), since a deck is most often
+  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Pages mode's
+  Popular (so in Start Making Pages' Recommended, after Blank Illustration and Article), since a deck is most often
   built from its own slides; the others are found in their groups or by search.
-- **Each leads its group in Start Illustrating**: Blank Slide Deck first in **Slides**, Blank Infographic in
+- **Each leads its group in Start Making Pages**: Blank Slide Deck first in **Slides**, Blank Infographic in
   **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
   **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
   (posters, cards and social posts to print, pin up or share).
@@ -122,7 +122,7 @@ draw over, not an empty frame.
 - **Idea Garden** _(Brainstorm)_: ideas grown as a drawn tree: the question at the roots, themes as
   branches, ideas as leaves, the best ones as fruit, and a legend.
 
-## Illustrate templates
+## Pages templates
 
 Each opens on pages of its own ([Templates on pages](../008-canvas/canvas-and-palette.md#templates-on-pages)),
 already infographic pages, built with the page layouts' kit.
@@ -151,10 +151,10 @@ already infographic pages, built with the page layouts' kit.
 
 ### Design templates
 
-Five templates for showing a design open in Illustrate, each on one infographic page sized for what it is
+Five templates for showing a design open in Pages, each on one infographic page sized for what it is
 (`template-design-pages.ts`). Their drawings are the ones they had as Diagram templates, built by the same builders
 at the same size (the Floor plan is drawn to a captioned metric scale, so none is scaled) and centred on the page.
-Start Illustrating lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
+Start Making Pages lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
 show."), after Logos; their catalogue category stays Design.
 
 | Template           | Kind id             | Page                                                         |
@@ -250,6 +250,6 @@ change) and sets the slides between on a soft still gradient, so they read and p
 - **Workshop Kickoff** (Waves): a design workshop's opening: Keynote Title, Objectives, Agenda Grid,
   Process Flow (how each round runs), Key Takeaway (the one rule), Call to Action.
 
-They sit in Start Illustrating's **Slides** group after the Slide Deck, and in the Presentations
+They sit in Start Making Pages' **Slides** group after the Slide Deck, and in the Presentations
 category. A test pins each slide's text to its layout one for one, so a layout change that adds or
 drops a line fails until the deck follows.

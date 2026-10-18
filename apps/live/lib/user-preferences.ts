@@ -222,12 +222,12 @@ export type UserPreferences = {
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
-  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `planTourSeen`: true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Illustrate Tour".
-  illustrateTourSeen?: boolean;
-  // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
-  illustrateTourKinds?: PageKind[];
+  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
+  // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Pages Tour".
+  pagesTourSeen?: boolean;
+  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
+  // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
+  pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Element Tours, one switch
   // per kind (inverted). Read through lib/element-tours.
@@ -279,7 +279,7 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // How Illustrate's Contents shows on a desktop (docs/specs/007-editor/illustrate-pages.md
+  // How Pages mode's Contents shows on a desktop (docs/specs/007-editor/pages-mode.md
   // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
   // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
   contentsPlacement?: 'sidebar' | 'button';
@@ -368,7 +368,7 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   }
   // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame. Nor under the 'self'
-  // placeholder a Local only document opens with before the reader is known
+  // placeholder a document in This Browser opens with before the reader is known
   // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
   if (ownerId && ownerId !== 'self' && !getWorkbenchConfinement()) savePreferences(ownerId, fitted);
 }

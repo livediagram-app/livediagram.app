@@ -2,7 +2,7 @@
 
 // docs/specs/012-collaboration/bring-focus.md "Where it takes you": on your own tab only the pan moves; on
 // another tab the tab enters fitted, as any tab does, and the point lands at that fitted zoom. Where it lands
-// (a point, or an Illustrate page) is `land`'s call, given the tab.
+// (a point, or a page) is `land`'s call, given the tab.
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -38,7 +38,7 @@ describe('useFocusLanding', () => {
     // Not yet: centring now would aim the canvas being left, at the zoom fitted to it.
     expect(land).not.toHaveBeenCalled();
     act(() => hook.result.current.afterTabFit('tab-b'));
-    // Landed on the tab it was for, so an Illustrate tab can frame the page the point is on.
+    // Landed on the tab it was for, so a Pages tab can frame the page the point is on.
     expect(land).toHaveBeenCalledWith('tab-b', AT);
     // Once: a later fit of the same tab is an ordinary one.
     act(() => hook.result.current.afterTabFit('tab-b'));

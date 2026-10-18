@@ -18,7 +18,7 @@ const windowOn = (extra: Partial<ShapeElement> = {}) =>
 
 describe('which tabs a window may show', () => {
   const tabs = [
-    { id: 'slides', opensIn: 'illustrate' },
+    { id: 'slides', opensIn: 'pages' },
     { id: 'diagram' },
     { id: 'es', kind: 'event-storming' },
     { id: 'board', kind: 'board' },

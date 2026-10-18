@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   defaultPageBackground,
   getBuiltInTheme,
-  illustratePagesOf,
+  pagesOf,
   type PageFill,
   type Tab,
 } from '@livediagram/document';
-import { themeBackgroundPresets } from './illustrate-page-paint';
+import { themeBackgroundPresets } from './page-paint';
 import { motionFill } from './page-motion';
 import { followedFill, withPageBackgroundsFollowingTheme } from './page-theme-follow';
 import { themePresetColors } from './themes';
 
-// docs/specs/007-editor/illustrate-pages.md "Backgrounds": a page on a fill of the theme's own
+// docs/specs/007-editor/pages-mode.md "Backgrounds": a page on a fill of the theme's own
 // follows a theme change; a colour someone picked stays.
 const ocean = getBuiltInTheme('ocean');
 const forest = getBuiltInTheme('forest');
@@ -33,7 +33,7 @@ const tabOn = (fill: PageFill) =>
     ],
     pages: [{ id: 'p', orientation: 'portrait', kind: 'infographic', background: { fill } }],
   }) as unknown as Tab;
-const fillOf = (t: Tab) => illustratePagesOf(t)[0]!.background?.fill;
+const fillOf = (t: Tab) => pagesOf(t)[0]!.background?.fill;
 
 describe('page backgrounds follow the theme', () => {
   it('moves a theme gradient to the same one of the new theme', () => {

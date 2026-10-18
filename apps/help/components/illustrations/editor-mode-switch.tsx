@@ -1,4 +1,4 @@
-// Editor-mode illustrations for the Canvas articles on Draw mode and Illustrate Mode
+// Editor-mode illustrations for the Canvas articles on Draw mode and Pages Mode
 // (docs/specs/018-help/help-app.md): the mode switch at the top of an empty tab's start with its menu open,
 // the list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
@@ -13,7 +13,7 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
   { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
   { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
   { mode: 'Facilitate', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
-  { mode: 'Illustrate', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
+  { mode: 'Pages', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
   { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
 ];
 

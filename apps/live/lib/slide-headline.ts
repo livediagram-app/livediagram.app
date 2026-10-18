@@ -5,7 +5,7 @@
 // statement outweighs a small eyebrow; the topmost on a tie. On one line, cut to
 // SLIDE_HEADLINE_MAX characters. Pure.
 import {
-  illustratePagesOf,
+  pagesOf,
   LABEL_FONT_PX,
   resolveSlide,
   type Deck,
@@ -72,8 +72,7 @@ export function presentedSlideName(
   if (cardTitle?.trim()) return cardTitle.trim();
   const headline = slideHeadline(slide, tab);
   if (headline) return headline;
-  const page =
-    slide.pageId && tab ? illustratePagesOf(tab).find((p) => p.id === slide.pageId) : undefined;
+  const page = slide.pageId && tab ? pagesOf(tab).find((p) => p.id === slide.pageId) : undefined;
   if (page?.name?.trim()) return page.name.trim();
   if (tab?.name?.trim()) return tab.name.trim();
   return `Slide ${index + 1}`;

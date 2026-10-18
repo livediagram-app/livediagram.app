@@ -1,6 +1,6 @@
 // Slide page illustrations for the Canvas article on Slide Pages (docs/specs/018-help/help-app.md).
 // Draws the real surface with its real labels: two slide pages in a row, each with its label
-// ("Page 1 · Slide (16:9) · Slide") and its title-bar buttons (IllustratePages.tsx), as icons at
+// ("Page 1 · Slide (16:9) · Slide") and its title-bar buttons (CanvasPages.tsx), as icons at
 // this size: the deck button first (PageDeckButton.tsx, its tooltip shown), Add Notes once the page is in the deck
 // (PageNotesButton.tsx), Layout, Background (page-title-bar.tsx), the padlock and the cog, then the + after the
 // last page. The first page is in the deck (an open eye, Hide in Slides); the second is not yet (the Slide Deck

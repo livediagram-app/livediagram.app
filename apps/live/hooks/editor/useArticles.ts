@@ -8,8 +8,8 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import {
   articleMarginPx,
   articlesOf,
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   withArticleFlow,
   withZoneLanded,
   withZoneSize,
@@ -136,7 +136,7 @@ export type ZoneAction =
 const NEW_DRAWING_HEIGHT = 240;
 
 // Whether an edit of an article is refused: no rights, the tab locked, or any page of the article
-// locked (docs/specs/007-editor/illustrate-pages.md "Locking a page": the lock holds the writing,
+// locked (docs/specs/007-editor/pages-mode.md "Locking a page": the lock holds the writing,
 // its page count and its zones as they are). Every entry point into an article's writing asks this,
 // so a toolbar hovered over a locked page, or a drop beside it, changes nothing.
 export function articleEditRefused(canEdit: boolean, tab: Tab, flow: string): boolean {
@@ -146,7 +146,7 @@ export function articleEditRefused(canEdit: boolean, tab: Tab, flow: string): bo
 export function useArticles(deps: {
   activeTab: Tab;
   on: boolean;
-  // The pages laid out (null outside Illustrate mode).
+  // The pages laid out (null outside Pages mode).
   pages: readonly LaidOutPage[] | null;
   // This person's own edits, counted (useArticleIntake settles after each).
   localEditSeq: RefObject<number>;
@@ -206,7 +206,7 @@ export function useArticles(deps: {
   );
 
   // An article no writer here is settling: grown once, after an agent's write or as the tab loads
-  // (docs/specs/024-agents/illustrate-for-agents.md "Pages for the writing"). Measured only once the
+  // (docs/specs/024-agents/pages-for-agents.md "Pages for the writing"). Measured only once the
   // web fonts are in, so a fallback font's longer lines never add a page.
   const growForAbsentWriter = useCallback(
     (layout: FlowLayout) => {
@@ -218,7 +218,7 @@ export function useArticles(deps: {
       d.tickTabs((ts) => {
         const out = ts.map((t) => {
           if (t.id !== tabId || t.locked === true || !articlesOf(t)[layout.flow]) return t;
-          const own = illustratePagesOf(t).filter((p) => p.flow === layout.flow);
+          const own = pagesOf(t).filter((p) => p.flow === layout.flow);
           const grow = shouldGrowForAbsentWriter({
             local: false,
             pending: true,
@@ -291,7 +291,7 @@ export function useArticles(deps: {
   });
 
   const textWidth = (t: Tab, flow: string) =>
-    articleTextWidth(layOutIllustratePages(illustratePagesOf(t)), flow, articlesOf(t)[flow]?.style);
+    articleTextWidth(layOutPages(pagesOf(t)), flow, articlesOf(t)[flow]?.style);
 
   const insertObject = useCallback(
     (flow: string, what: ArticleInsert) => {
@@ -396,9 +396,7 @@ export function useArticles(deps: {
         ts.map((t) => {
           if (t.id !== tabId) return t;
           const doc = articlesOf(t)[flow];
-          const page = layOutIllustratePages(illustratePagesOf(t)).filter((p) => p.flow === flow)[
-            res.place.index
-          ];
+          const page = layOutPages(pagesOf(t)).filter((p) => p.flow === flow)[res.place.index];
           if (!doc || !page) return t;
           const corner = articleNoteCorner(page, articleMarginPx(doc.style), res.place);
           const written = withArticleFlow(

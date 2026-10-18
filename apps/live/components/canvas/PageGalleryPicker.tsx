@@ -1,6 +1,6 @@
 'use client';
 
-// Choose From My Images (docs/specs/007-editor/illustrate-pages.md "Image backgrounds"): a page's picture picked
+// Choose From My Images (docs/specs/007-editor/pages-mode.md "Image backgrounds"): a page's picture picked
 // from the person's own gallery, in a popover that opens beside the panel it is pressed in (the page panel, or the
 // Background popover beside the cog), so the panel stays in view. One press picks; the popover closes.
 import { useState } from 'react';

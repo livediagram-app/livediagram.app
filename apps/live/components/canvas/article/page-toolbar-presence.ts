@@ -13,7 +13,7 @@ const HOVER_SLACK = 12;
 const HOVER_GRACE_MS = 250;
 
 const sheetOf = (pageId: string) =>
-  document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
+  document.querySelector(`[data-page-id="${CSS.escape(pageId)}"]`);
 
 const onSheet = (pageId: string, x: number, y: number, slack: number) => {
   const r = sheetOf(pageId)?.getBoundingClientRect();
@@ -27,7 +27,7 @@ const onSheet = (pageId: string, x: number, y: number, slack: number) => {
 };
 
 // A page the toolbar is held on while nothing points at it: the Article tour's toolbar step pins its page so the
-// toolbar stays up through the step (docs/specs/007-editor/illustrate-tour.md "Article track"). Null = none.
+// toolbar stays up through the step (docs/specs/007-editor/pages-tour.md "Article track"). Null = none.
 let pinnedPage: string | null = null;
 const pinListeners = new Set<() => void>();
 export function pinPageToolbar(pageId: string | null): void {

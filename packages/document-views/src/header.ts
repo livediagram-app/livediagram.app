@@ -47,15 +47,12 @@ export function headerSegments(facts: HeaderFacts): string {
   // A Form tab's content is its form, read with read_form (docs/specs/030-forms/forms.md "Agents").
   if (facts.tab.kind === 'form') segments.push('kind=form (read_form)');
   else if (facts.tab.kind !== 'diagram') segments.push(`kind=${facts.tab.kind}`);
-  // An Illustrate tab says so in its pages segment.
-  if (facts.mode && !facts.illustrate) segments.push(`mode=${facts.mode}`);
+  if (facts.mode) segments.push(`mode=${facts.mode}`);
   if (facts.finish) segments.push(`finish=${facts.finish}`);
-  if (facts.illustrate) {
-    const { pages, kinds } = facts.illustrate;
+  if (facts.pages) {
+    const { pages, kinds } = facts.pages;
     const byKind = Object.entries(kinds).map(([kind, n]) => `${n} ${kind}`);
-    segments.push(
-      `illustrate ${plural(pages, 'page', 'pages')}: ${byKind.join(', ')} (view pages)`,
-    );
+    segments.push(`${plural(pages, 'page', 'pages')}: ${byKind.join(', ')} (view pages)`);
   }
   if (facts.hidden > 0) segments.push(`${facts.hidden} hidden`);
   if (facts.unknown > 0) segments.push(`${facts.unknown} unknown`);

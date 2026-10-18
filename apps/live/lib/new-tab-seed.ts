@@ -21,9 +21,9 @@ export function newTabSeed(source: Tab | undefined): Partial<Tab> {
 
 // How a new tab opens for its maker (docs/specs/007-editor/editor-modes.md "A new tab opens in the mode it was made
 // from"). Asked for in a `mode` (a Plan tab offering a new tab in another mode, plan-tabs.md), it opens in that mode;
-// otherwise in `creatorMode`, the mode of the tab its maker was on, for everyone: an Illustrate tab's + makes an
-// Illustrate tab. Diagram is left unwritten (an absent `opensIn` reads as Diagram). Every mode's empty tab starts on
-// its own chooser (Start Diagramming, Start Drawing, Start Facilitating, Start Illustrating, Start Planning:
+// otherwise in `creatorMode`, the mode of the tab its maker was on, for everyone: a Pages tab's + makes an
+// Pages tab. Diagram is left unwritten (an absent `opensIn` reads as Diagram). Every mode's empty tab starts on
+// its own chooser (Start Diagramming, Start Drawing, Start Facilitating, Start Making Pages, Start Planning:
 // start-diagramming.md).
 export function newTabOpening(
   creatorMode: EditorMode,

@@ -9,7 +9,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleMarginPx,
-  MAX_ILLUSTRATE_PAGES,
+  MAX_PAGES,
   articleTopMarginPx,
   drawingZoneClips,
   isBoxed,
@@ -23,8 +23,8 @@ import {
   type LaidOutPage,
   type PageRect,
 } from '@livediagram/document';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
-import { pagesClipPath } from '@/components/canvas/IllustratePageClip';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
+import { pagesClipPath } from '@/components/canvas/PageClip';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { ArticleInk } from '@/lib/article/article-style-vars';
 import {
@@ -59,7 +59,7 @@ export function ArticleFlows({
   interactive,
   elements,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   zoom: number;
   // Whether presses on the writing are the writing's (no drawing tool in hand, not zen).
   interactive: boolean;
@@ -85,7 +85,7 @@ export function ArticleFlows({
     }
     return out;
   }, [row]);
-  // An article with a locked page is read-only (docs/specs/007-editor/illustrate-pages.md
+  // An article with a locked page is read-only (docs/specs/007-editor/pages-mode.md
   // "Locking a page"): no toolbar, zone bar or floating-object bar is offered for it.
   const held = useMemo(() => lockedArticleFlows(row), [row]);
   const openByFlow = useMemo(() => {
@@ -156,7 +156,7 @@ export function ArticleFlows({
   const writable = (flow: string) => articles.editable && !held.has(flow);
   return (
     <>
-      {/* Cut off at the shown sheets' edges, as the elements are (IllustratePageClip): writing that
+      {/* Cut off at the shown sheets' edges, as the elements are (PageClip): writing that
           reaches past the last page waits there unseen for its page. */}
       <div
         data-page-clip=""
@@ -207,7 +207,7 @@ export function ArticleFlows({
                 key={flow}
                 flow={flow}
                 pages={pages}
-                atPageLimit={row.length >= MAX_ILLUSTRATE_PAGES}
+                atPageLimit={row.length >= MAX_PAGES}
                 doc={doc}
                 editable={writable(flow)}
                 interactive={interactive}

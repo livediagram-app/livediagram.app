@@ -49,7 +49,7 @@ Scope, by file:
 | Purge              | `purgeDocuments`, `apiPurgeDocument`, `offlinePurgeDocument`  | Remove for good, through `documentRemovalStatements` |
 | Empty Trash        | `apiEmptyTrash(scope)`, `DELETE /api/trash[?team=]`           | Purge one group                                      |
 | Group / scope      | `TrashGroup`, `TrashScope` (`personal`, `team`, `local`)      | One Trash in the view; one Empty Trash               |
-| Local Trash        | `offline-trash.ts`                                            | This browser's, for Offline Mode records             |
+| Local Trash        | `offline-trash.ts`                                            | This Browser's, for Offline Mode records             |
 | Retention          | `TRASH_RETENTION_DAYS` / `TRASH_RETENTION_MS`                 | 30 days                                              |
 | Days left          | `trashDaysLeft`, `daysLeftLabel`                              | Whole days to the purge, rounded up, floor 0         |
 | Deleted state      | `DOCUMENT_TRASHED_ERROR` (`document_trashed`), 410            | What a door answers an authorised caller             |
@@ -188,7 +188,7 @@ room`; open sessions still stop at their next save (I5).
 - Settings › Account, section "Your Data", row "Trash" with an "Open Trash" link and the footnote "Deleted
   documents wait here for 30 days before they are removed for good. Restore one to put it back where it was."
 - Trash view: intro, in an `InfoNote` (the small info-glyph note the Explorer's views use), "Deleted documents wait here for 30 days, then they are removed for good. Restoring one
-  puts it back where it was." Groups "Your documents", each team by name (A to Z), "This browser only" with
+  puts it back where it was." Groups "Your documents", each team by name (A to Z), "This Browser only" with
   "Offline documents, kept only in this browser." Row: name, "Deleted {d MMM} · {n} days left" ("1 day left",
   "Removed at the next clean-up" at 0). Actions "Restore" (no confirmation), "Delete permanently" and
   "Empty Trash" (confirm popovers: "Delete "{name}" for good? This cannot be undone." / "Delete {n}

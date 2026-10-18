@@ -1,4 +1,4 @@
-// Slide data (docs/specs/007-editor/illustrate-pages.md "Slide layouts", Data): numbers sized for
+// Slide data (docs/specs/007-editor/pages-mode.md "Slide layouts", Data): numbers sized for
 // a room, besides Big Number, Key Stats, Chart Story, Comparison, KPI Dashboard and Market Share.
 // Every one owes its source a line at the foot. Pure builders on the slide kit, in units of the
 // slide's height.

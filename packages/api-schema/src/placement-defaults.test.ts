@@ -8,6 +8,8 @@ import {
   creationIntentOf,
   defaultKeysFor,
   isPlacementDefaultKey,
+  legacyPlacementDefaultKeys,
+  parsePlacementDefaultKey,
   placementDefaultTelemetryType,
   readCreationIntent,
 } from './placement-defaults';
@@ -21,7 +23,7 @@ describe('PLACEMENT_DEFAULT_KEYS', () => {
       'mode:diagram',
       'mode:draw',
       'mode:facilitate',
-      'mode:illustrate',
+      'mode:pages',
       'mode:plan',
       'kind:event-storming',
       'template:retrospective',
@@ -128,6 +130,14 @@ describe('readCreationIntent', () => {
     });
   });
 
+  it("reads a mode by either of Pages mode's old names as Pages", () => {
+    for (const mode of ['illustrate', 'infographic'])
+      expect(readCreationIntent({ mode })).toEqual({
+        ok: true,
+        intent: { mode: 'pages', tabKind: 'diagram' },
+      });
+  });
+
   it('reads every field', () => {
     expect(
       readCreationIntent({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' }),
@@ -154,6 +164,22 @@ describe('readCreationIntent', () => {
     ['a template family that is not a string', { mode: 'diagram', templateFamily: 3 }],
   ])('refuses %s', (_label, value) => {
     expect(readCreationIntent(value)).toEqual({ ok: false });
+  });
+});
+
+describe('parsePlacementDefaultKey', () => {
+  it("reads a key stored under either of Pages mode's old names as today's", () => {
+    expect(parsePlacementDefaultKey('mode:illustrate')).toBe('mode:pages');
+    expect(parsePlacementDefaultKey('mode:infographic')).toBe('mode:pages');
+    expect(parsePlacementDefaultKey('mode:pages')).toBe('mode:pages');
+    expect(parsePlacementDefaultKey('mode:pixel')).toBeNull();
+  });
+
+  it('clears every old name with the key', () => {
+    expect(legacyPlacementDefaultKeys('mode:pages').sort()).toEqual([
+      'mode:illustrate',
+      'mode:infographic',
+    ]);
   });
 });
 
@@ -194,7 +220,7 @@ describe('placementDefaultTelemetryType', () => {
       'DefaultModeDiagram',
       'DefaultModeDraw',
       'DefaultModeFacilitate',
-      'DefaultModeIllustrate',
+      'DefaultModePages',
       'DefaultModePlan',
       'DefaultKindEventStorming',
       'DefaultTemplateRetrospective',

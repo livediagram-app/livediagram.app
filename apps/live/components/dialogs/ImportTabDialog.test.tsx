@@ -93,7 +93,7 @@ describe('ImportTabDialog, offered formats', () => {
     }
   });
 
-  // Illustrate mode and a Dashboard tab (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
+  // Pages mode and a Dashboard tab (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
   it('opens straight at the one format it offers, with no way back to a list', () => {
     render(<ImportTabDialog {...props} formats={['json']} />);
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();

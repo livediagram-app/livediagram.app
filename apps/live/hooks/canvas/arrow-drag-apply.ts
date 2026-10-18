@@ -55,7 +55,7 @@ export type ArrowDragMoveArgs = {
   elements: Element[];
   // The alignment-guides preference (docs/specs/008-canvas/snap-override.md). Off means no guide lines.
   guidesOn: boolean;
-  // Illustrate mode's pages: an endpoint joins nothing on another page (resolveArrowEndpointDrag).
+  // Pages mode's pages: an endpoint joins nothing on another page (resolveArrowEndpointDrag).
   pages?: readonly LaidOutPage[] | null;
   tick: (mapper: (els: Element[]) => Element[]) => void;
   scheduleGuides: (align: AlignmentGuide[], dist?: DistributionGuide[]) => void;

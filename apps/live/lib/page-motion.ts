@@ -1,4 +1,4 @@
-// A slide's animated backgrounds (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds"):
+// A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated backgrounds"):
 // the motions offered, the theme colourings they come in, and the colours a motion layer paints
 // its moving parts in. Pure: the Animated tab and the motion layer both read it.
 import {

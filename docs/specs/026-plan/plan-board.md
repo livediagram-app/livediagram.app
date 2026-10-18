@@ -371,7 +371,7 @@ In Plan mode:
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
   the **Add a Card** menu (the shared anchored menu with an option list and no header, since it opens under its
   own button; a bottom sheet titled "Add a Card" on a phone), as
-  Illustrate's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
+  Pages mode's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
@@ -780,7 +780,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   work as they do with a mouse. Held still on a card (`LONG_PRESS_MS`), a finger opens the card's menu at the
   finger, as a right-click does, for someone who may edit; lifting it then neither opens the card nor drags it.
 - A tap on a column's header (not its cog) frames that column: the view glides to fit it, header to the board's
-  foot, below the top strip, as a tap on a page does in Illustrate (`frameBoardColumn`). Not while the board is
+  foot, below the top strip, as a tap on a page does in Pages (`frameBoardColumn`). Not while the board is
   maximised.
 - A board's header buttons (the ⋯, the settings cog, Maximise) stay on screen: when the board runs past the
   canvas's right edge (zoomed in on a phone, or panned), they slide left to stay 8 px inside it, on the board's

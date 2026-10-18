@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, newSlidePage } from '@livediagram/document';
+import { layOutPages, newSlidePage } from '@livediagram/document';
 import { buildPageLayout } from './page-layout-build';
 import {
   buildLayoutDeck,
@@ -10,7 +10,7 @@ import {
 
 // docs/specs/007-editor/templates-by-mode.md "Slide deck templates".
 const kinds = Object.keys(LAYOUT_DECKS) as LayoutDeckKind[];
-const [page] = layOutIllustratePages([newSlidePage('s', 'slide')]);
+const [page] = layOutPages([newSlidePage('s', 'slide')]);
 
 describe('the slide deck templates built from layouts', () => {
   for (const kind of kinds) {

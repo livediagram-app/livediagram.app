@@ -1,9 +1,9 @@
-// Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): a locked page and
+// Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): a locked page and
 // what is on it stay where they are. Which elements a locked page holds (their centre on it), and
 // the guard a local edit passes through so nothing is added to, moved onto or moved on a locked
 // page. Pure.
 import { elementBounds } from './geometry';
-import { layOutIllustratePages, type IllustratePage, type LaidOutPage } from './illustrate-page';
+import { layOutPages, type Page, type LaidOutPage } from './page';
 import type { Element } from './index';
 
 type Point = { x: number; y: number };
@@ -17,7 +17,7 @@ const inside = (p: Point, r: LaidOutPage['rect']) =>
   p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
 
 /** Whether any page is locked. */
-export const hasLockedPage = (pages: readonly IllustratePage[]): boolean =>
+export const hasLockedPage = (pages: readonly Page[]): boolean =>
   pages.some((p) => p.locked === true);
 
 /** The ids of the elements whose centre lies on a locked page. */
@@ -77,12 +77,12 @@ function putBack(prev: Element, next: Element): Element {
 export function guardLockedPages(
   prev: Element[],
   next: Element[],
-  prevPages: readonly IllustratePage[],
-  nextPages: readonly IllustratePage[],
+  prevPages: readonly Page[],
+  nextPages: readonly Page[],
 ): { elements: Element[]; blocked: boolean } {
   if (!hasLockedPage(nextPages) || prev === next) return { elements: next, blocked: false };
-  const before = layOutIllustratePages(prevPages);
-  const after = layOutIllustratePages(nextPages);
+  const before = layOutPages(prevPages);
+  const after = layOutPages(nextPages);
   if (layoutKey(before) !== layoutKey(after)) return { elements: next, blocked: false };
   const held = elementsOnLockedPages(prev, before);
   const prevById = new Map(prev.map((el) => [el.id, el]));

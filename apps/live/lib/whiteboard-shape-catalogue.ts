@@ -57,7 +57,7 @@ const EXCLUDED_CATEGORIES = new Set([
 ]);
 
 // The palette tile behind each flyout shape that has one; Line and Arrow have none.
-// Kinds that are not board ink: a tab window (docs/specs/009-elements/tab-window.md) shows another tab, an Illustrate
+// Kinds that are not board ink: a tab window (docs/specs/009-elements/tab-window.md) shows another tab, a Pages
 // element a whiteboard pen never draws.
 const EXCLUDED_KINDS = new Set<string>(['tab-window']);
 

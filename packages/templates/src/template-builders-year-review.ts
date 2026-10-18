@@ -1,6 +1,6 @@
 // Year in Review template (kind `year-in-review`, docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): a four-page A4 report for a made-up eight-person design team, Harbour
-// Studio, looking back on 2026, that opens in Illustrate ready to export and send round.
+// "Pages templates"): a four-page A4 report for a made-up eight-person design team, Harbour
+// Studio, looking back on 2026, that opens in Pages ready to export and send round.
 //
 //   1. Cover: a deep teal-to-navy sheet with the year set huge, the report's title, a one-line
 //      summary and a team-photo slot.
@@ -18,7 +18,7 @@
 // Pure: () -> Element[], placed on the report's pages (yearInReviewPages) whatever centre is
 // passed.
 
-import type { Element, IllustratePage } from '@livediagram/document';
+import type { Element, Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -32,7 +32,7 @@ const PAPER = '#ffffff';
 const QUARTER_TEALS = ['#5eead4', '#2dd4bf', '#14b8a6', '#0f766e'];
 
 /** The report's pages: four A4 portrait sheets, the cover dark, the thanks warm. */
-export function yearInReviewPages(): IllustratePage[] {
+export function yearInReviewPages(): Page[] {
   return [
     templatePage(1, 'a4', 'portrait', 'Cover', {
       fill: { kind: 'gradient', from: '#134e4a', to: '#1e1b4b', angle: 160 },

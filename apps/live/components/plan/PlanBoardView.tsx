@@ -152,7 +152,7 @@ export function PlanBoardView({
     tabCardVote && isCardVotableInVote(element, tabCardVote.vote, tabCardVote.layers, false)
       ? tabCardVote
       : null;
-  // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Illustrate.
+  // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Pages.
   const viewport = useViewportStoreIfAny();
   const frameColumn =
     phone && interactive && !maximised && !filled && viewport

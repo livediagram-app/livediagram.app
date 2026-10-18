@@ -1,6 +1,6 @@
 // Event Poster template (kind `event-poster`, docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): one A3 portrait page advertising a made-up community event, the
-// Riverside Night Market, that opens in Illustrate ready to print. The page reads top to bottom
+// "Pages templates"): one A3 portrait page advertising a made-up community event, the
+// Riverside Night Market, that opens in Pages ready to print. The page reads top to bottom
 // the way a poster is read from across a street: a night-sky band bleeding off the top edge with a
 // string of festoon lights, the organiser, the big title and the promise; then three cards for
 // when, what time and where, lifted half over the band's edge; a photo slot with a "last year"
@@ -13,7 +13,7 @@
 //
 // Pure: () -> Element[], placed on the poster's page (eventPosterPages) whatever centre is passed.
 
-import { pageMargin, type Element, type IllustratePage } from '@livediagram/document';
+import { pageMargin, type Element, type Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -59,7 +59,7 @@ const POSTER_PAGE = templatePage(1, 'a3', 'portrait', 'Poster', {
 });
 
 /** The poster's page: one A3 portrait sheet on cream. */
-export function eventPosterPages(): IllustratePage[] {
+export function eventPosterPages(): Page[] {
   return [POSTER_PAGE];
 }
 

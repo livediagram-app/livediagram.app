@@ -1,6 +1,6 @@
 'use client';
 
-// Every page's picture for the Contents popover (docs/specs/007-editor/illustrate-pages.md
+// Every page's picture for the Contents popover (docs/specs/007-editor/pages-mode.md
 // "Contents"): each page drawn as a page slide is drawn in the Slide Deck, so a page looks the same
 // in both. Only while the list is on screen (the caller mounts this then); redrawn when the tab's
 // elements or pages change, with the tab's arrow labels laid out once rather than once a page.
@@ -10,8 +10,8 @@
 // elements and page are unchanged keeps its picture: an edit redraws the page it touched, not the tab.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   type Element,
   type LaidOutPage,
   type Slide,
@@ -63,7 +63,7 @@ export function usePageThumbnails(
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
       : new Map<string, Drawn>();
-    const laid = layOutIllustratePages(illustratePagesOf(full));
+    const laid = layOutPages(pagesOf(full));
     const buckets = pageElementBuckets(full.elements, laid);
     let labels: ReturnType<typeof tabArrowLabels> | undefined;
     const next = new Map<string, Drawn>();

@@ -12,7 +12,7 @@ import {
   type GuideLine,
   type LaidOutPage,
 } from '@livediagram/document';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { LOGO_GUIDE_ALPHA } from '@/lib/logo-guide-prefs';
 
@@ -25,7 +25,7 @@ function Line({ l, ...rest }: { l: GuideLine } & React.SVGProps<SVGLineElement>)
 
 /** Whether a logo page's guides are drawn for this viewer: Show Guides on for the page (it is per
  *  page), an editor, and not zen, presenting or the isometric view. */
-export function showsLogoGuides(view: IllustratePagesView, bare: boolean, pageId: string): boolean {
+export function showsLogoGuides(view: PagesModeView, bare: boolean, pageId: string): boolean {
   return !bare && !!view.edit && !!view.logo?.guidesOn(pageId);
 }
 
@@ -97,7 +97,7 @@ export function LogoGuidesSvg({ page, tools }: { page: LaidOutPage; tools: LogoT
 }
 
 /** The guides of every logo page with content, over the artwork (mounted after the elements). */
-export function LogoPageGuides({ view, bare }: { view: IllustratePagesView; bare: boolean }) {
+export function LogoPageGuides({ view, bare }: { view: PagesModeView; bare: boolean }) {
   const pages = view.pages.filter(
     (p) =>
       p.kind === 'logo' && showsLogoGuides(view, bare, p.id) && view.edit!.contentCount(p.id) > 0,

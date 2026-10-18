@@ -4,7 +4,7 @@
 // (PageContentsPanel, PageContentsSidebar) end on.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MAX_ILLUSTRATE_PAGES, type PageKind } from '@livediagram/document';
+import { MAX_PAGES, type PageKind } from '@livediagram/document';
 import {
   lucideFileText,
   lucidePanelsTopLeft,
@@ -163,11 +163,7 @@ export function ContentsAddPage({ contents }: { contents: PageContents }) {
             document.body,
           )
         : null}
-      {full ? (
-        <Tooltip label={`A tab holds up to ${MAX_ILLUSTRATE_PAGES} pages`}>{button}</Tooltip>
-      ) : (
-        button
-      )}
+      {full ? <Tooltip label={`A tab holds up to ${MAX_PAGES} pages`}>{button}</Tooltip> : button}
     </div>
   );
 }

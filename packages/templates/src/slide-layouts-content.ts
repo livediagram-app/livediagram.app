@@ -1,4 +1,4 @@
-// Slide content (docs/specs/007-editor/illustrate-pages.md "Slide layouts", Content): the slides a
+// Slide content (docs/specs/007-editor/pages-mode.md "Slide layouts", Content): the slides a
 // talk's body is made of, besides Title and Bullets, Two Columns, Image and Text, Statement and
 // Quote. Pure builders on the slide kit, in units of the slide's height.
 import type { Element } from '@livediagram/document';

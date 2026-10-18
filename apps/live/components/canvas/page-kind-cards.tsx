@@ -1,6 +1,6 @@
 'use client';
 
-// The four kinds of page as cards (docs/specs/007-editor/illustrate-pages.md "Page kinds"): a
+// The four kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
 // miniature of the page above its name and a line on what it is for. Shared by the add-a-page
 // popover and the first page's own choice.
 import type { PageKind } from '@livediagram/document';

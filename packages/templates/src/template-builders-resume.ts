@@ -1,6 +1,6 @@
-// Résumé template (kind `resume`, docs/specs/007-editor/templates-by-mode.md "Illustrate
+// Résumé template (kind `resume`, docs/specs/007-editor/templates-by-mode.md "Pages
 // templates"): a one-page A4 CV for a made-up product designer, Maya Lindqvist, that opens in
-// Illustrate ready to export as a PDF. It follows the shape recruiters skim fastest:
+// Pages ready to export as a PDF. It follows the shape recruiters skim fastest:
 //
 //   - a navy header bleeding off the top with a photo slot, the name, the role and a two-by-two
 //     contact block, each detail on its own glyph;
@@ -15,7 +15,7 @@
 //
 // Pure: () -> Element[], placed on the résumé's page (resumePages) whatever centre is passed.
 
-import { pageMargin, type Element, type IllustratePage } from '@livediagram/document';
+import { pageMargin, type Element, type Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -44,7 +44,7 @@ const RESUME_PAGE = templatePage(1, 'a4', 'portrait', 'Résumé', {
 });
 
 /** The résumé's page: one A4 portrait sheet. */
-export function resumePages(): IllustratePage[] {
+export function resumePages(): Page[] {
   return [RESUME_PAGE];
 }
 
