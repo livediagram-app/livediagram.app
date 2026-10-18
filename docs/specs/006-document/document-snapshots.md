@@ -228,8 +228,9 @@ of those gets a 404 and the row falls back to its icon.
 ### List / card view
 
 The browse views (Recent / My Documents / folders / Search results / This browser)
-have a **List / Card / Details** toggle at the far right of the header (device-
-local preference, `livediagram:explorer-view`). **Card is the default**:
+have a **List / Card / Details** toggle in the header's actions, left of Help and
+Create, which always sit further right (device-local preference,
+`livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read
 every line to find the one you would have recognised on sight. Somebody who
 prefers the density of rows knows where the toggle is; somebody opening the
