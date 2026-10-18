@@ -149,7 +149,9 @@ test.describe('menus by keyboard', () => {
     await more.focus();
     await page.keyboard.press('Enter');
     await expect(elementMenu).toBeVisible();
-    await expect(elementMenu.getByRole('button', { name: 'Layer' })).toBeFocused();
+    // Focus lands on the menu's first control: the quick bar's first button, above the categories
+    // (docs/specs/008-canvas/element-menu-quick-bar.md).
+    await expect(elementMenu.getByRole('button').first()).toBeFocused();
     await shot(page, 'after-element-menu-focus');
     // Arrows in the menu never nudge the element; Delete never deletes it. Measured once its entry
     // animation has finished: mid-animation the box is still growing to its size.

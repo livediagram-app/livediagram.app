@@ -5,8 +5,8 @@ import { createShape, type Element } from '@livediagram/document';
 import { EditorContextMenu } from './EditorContextMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-// docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items": a Plan item's element menu offers no Collaborate
-// or Resources (Assign Action, Add Comment, Add Link, Add Note), whoever opens it; any other element keeps them.
+// docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items": a Plan item's element menu offers no Assign
+// Action, Add Comment, Add Link or Add Note on its quick bar, whoever opens it; any other element keeps them.
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
     observe() {}
@@ -36,10 +36,11 @@ function open(target: Element) {
 const collaborate = () =>
   screen
     .queryAllByRole('button')
-    .filter((b) => /^(Collaborate|Resources)$/.test(b.textContent?.trim() ?? ''));
+    .map((b) => b.getAttribute('aria-label') ?? '')
+    .filter((name) => /^(Assign Action|Add Comment|Add Link|Add Note)$/.test(name));
 
 describe('a Plan item’s element menu', () => {
-  it('has no Collaborate or Resources on a board, view, card or Sheet', () => {
+  it('has none of them on a board, view, card or Sheet', () => {
     for (const kind of ['plan-board', 'plan-view', 'plan-card', 'plan-sheet'] as const) {
       open({ ...createShape(kind, 0, 0), id: kind });
       expect(collaborate()).toHaveLength(0);
@@ -49,6 +50,12 @@ describe('a Plan item’s element menu', () => {
 
   it('keeps them on any other element', () => {
     open({ ...createShape('square', 0, 0), id: 'sq' });
-    expect(collaborate().map((b) => b.textContent?.trim())).toEqual(['Collaborate', 'Resources']);
+    expect(collaborate()).toEqual(['Assign Action', 'Add Comment', 'Add Link', 'Add Note']);
+    // And no categories of their own any more: the quick bar is their one place.
+    expect(
+      screen
+        .queryAllByRole('button')
+        .filter((b) => /^(Collaborate|Resources)$/.test(b.textContent?.trim() ?? '')),
+    ).toHaveLength(0);
   });
 });
