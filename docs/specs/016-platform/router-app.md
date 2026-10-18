@@ -27,6 +27,14 @@ The one thing that keeps a `/live` prefix is the live app's bundled **`_next` as
 
 **Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) used to fall through to marketing and 404, which is the wrong answer to an unambiguous address: every help article lives under one of the registry's category slugs, and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`. Still routing, not logic: a table of segments and a destination.
 
+**Not found.** An address no site has a page for gets that site's own not-found page, never the framework's bare
+"404 | This page could not be found.": the site's header and footer around one card (`PageNotFound` in
+`@livediagram/ui`) titled **Page not found**, "There is no page at this address. It may have moved, or the link may
+have a typo.", with a way back to the site's home (marketing: **Go to the Home Page**; the help centre: **Browse Help
+Centre** and **Troubleshooting**; Community: **Back to Community**), then **Help Centre**. It is still a 404, so search
+engines drop it. The editor answers an unknown address with its own card instead
+([New document route](../007-editor/new-document-route.md) "Unknown addresses").
+
 Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the live app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
 ## Implementation
