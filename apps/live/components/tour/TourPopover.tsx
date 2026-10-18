@@ -9,63 +9,14 @@ import {
   type ReactNode,
 } from 'react';
 import { clamp, type PlanPalette } from '@livediagram/document';
-import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
-import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { tourColourVars } from './tour-colours';
 import { placeTourPopover } from './tour-position';
-import { TourHelpArt } from './TourHelpArt';
-import { TourWelcomeArt } from './TourWelcomeArt';
 import type { TourTargetRect } from './useTourEngine';
 
-// The bookend cards' words, so a second tour (the Plan tour, docs/specs/026-plan/plan-tour.md) wears the
-// same card with its own eyebrow, finish button and help link. The defaults are the Diagram tour's.
-export type TourCardCopy = {
-  welcomeEyebrow: string;
-  accept: string;
-  decline: string;
-  outroEyebrow: string;
-  helpHref: string;
-  helpLabel: string;
-  finish: string;
-};
+export { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
 
-// A welcome card offering more than one way in (the Plan tour's Boards and Spreadsheets): each starts the tour
-// its own way, in place of the single accept button.
-export type TourWelcomeChoice = { id: string; label: string; onPick: () => void };
-
-const WELCOME_TOUR_COPY: TourCardCopy = {
-  welcomeEyebrow: 'Diagram tour',
-  accept: 'Yes',
-  decline: 'No',
-  outroEyebrow: 'Tour complete',
-  helpHref: '/help',
-  helpLabel: 'Visit Help Centre',
-  finish: 'Start diagramming',
-};
-
-// The bookend card's width (w-[21rem]), the column it must clear the bottom chrome in.
-const BOOKEND_WIDTH_PX = 336;
-// On the body while a bookend card is up (SignInBanner steps aside).
-export const TOUR_CARD_ATTR = 'data-tour-card-open';
-
-/** Where a bookend card stands: centred, its bottom on the chrome floor (`floor` px above the viewport's bottom). */
-export function bookendPlace(
-  size: { width: number; height: number },
-  viewport: { width: number; height: number },
-  floor: number,
-): { left: number; top: number } {
-  return {
-    left: (viewport.width - size.width) / 2,
-    top: Math.max(0, viewport.height - floor - size.height),
-  };
-}
-
-// The tour's step card (docs/specs/007-editor/editor-tour.md). Two faces:
-// - welcome: the offer card ("Yes" / "No"), no step count, dots, or Back: declining must be one obvious click. It
-//   and the last card stand at the bottom centre on the bottom chrome, as the sign-in banner does, and ask nothing of
-//   the editor: no backdrop, no focus taken, so someone who carries on working simply leaves them there.
-// - step: step count, title, copy, dots, Back / Next / Skip, anchored to
-//   the highlighted target.
+// The tour's step card (docs/specs/007-editor/editor-tour.md): step count, title, copy, dots, Back / Next / Skip,
+// anchored to the highlighted target. The bookend cards (the offer and the last card) are TourBanner's.
 // Positioning is measured two-pass (render off-screen, measure, place)
 // against the current target rect; once placed, left/top transitions are
 // enabled so the card GLIDES between steps instead of teleporting, and
@@ -79,29 +30,22 @@ export function TourPopover({
   stepCount,
   stepId,
   stepDir,
-  card,
   title,
   body,
   targetRect,
   ariaPrefix = 'Tour',
-  copy: copyOverrides,
-  welcomeArt,
-  welcomeChoices,
   palette,
   onBack,
   onNext,
   onSkip,
 }: {
-  // 1-based within the countable steps; 0 for the welcome card.
+  // 1-based within the countable steps.
   stepNumber: number;
   stepCount: number;
   // Stable step id — keys the content wrapper so the slide animation
   // replays exactly once per step change.
   stepId: string;
   stepDir: 'forward' | 'backward';
-  // Bookend cards ('welcome' / 'outro'): at the bottom, no count/dots/Back,
-  // with their own illustration + button set. Undefined = a normal step.
-  card?: 'welcome' | 'outro';
   title: string;
   body: string;
   // Viewport rect of the highlighted target; null while the step is still
@@ -109,17 +53,12 @@ export function TourPopover({
   targetRect: TourTargetRect | null;
   // The dialog label's lead ("Tour step 2 of 7: ...").
   ariaPrefix?: string;
-  copy?: Partial<TourCardCopy>;
-  // The welcome card's illustration; the Diagram tour's own by default.
-  welcomeArt?: ReactNode;
-  welcomeChoices?: readonly TourWelcomeChoice[];
   // The active tab's colours (tour-colours.ts): the card, its text and its accent wear them.
   palette: PlanPalette;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
 }) {
-  const copy = { ...WELCOME_TOUR_COPY, ...copyOverrides };
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{
     left: number;
@@ -134,33 +73,15 @@ export function TourPopover({
   // from the corner (a first-paint animation gate).
   const [animatePos, setAnimatePos] = useState(false);
 
-  // The bookend cards stand at the bottom centre, on whatever chrome is there (the tab bar, the bottom-right
-  // cluster), and are the toasts' floor while up (docs/specs/004-interface-design/toasts.md "Placement"). The body
-  // says one is up, so the sign-in banner, which takes the same place, steps aside meanwhile (SignInBanner).
-  const floor = useChromeFloor(!!card, 0, BOTTOM_CHROME_SELECTOR, BOOKEND_WIDTH_PX);
-  useEffect(() => {
-    if (!card) return;
-    document.body.setAttribute(TOUR_CARD_ATTR, '');
-    announceToastFloorChange();
-    return () => {
-      document.body.removeAttribute(TOUR_CARD_ATTR);
-      announceToastFloorChange();
-    };
-  }, [card]);
-
-  // Escape is the card's way out (docs/specs/007-editor/editor-tour.md): it declines the offer, skips the tour from
-  // a step and finishes it from the last card, as their buttons do. Not while the key is editing something, where
-  // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it. A
-  // bookend card asks nothing of the editor, so there it takes Escape only from inside itself: someone working past
-  // the offer keeps Escape for their own work.
+  // Escape is the card's way out (docs/specs/007-editor/editor-tour.md): from a step it skips the tour, as Skip tour
+  // does (the bookend banners take it from inside themselves, TourBanner). Not while the key is editing something, where
+  // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it.
   const onEscape = useEffectEvent((e: KeyboardEvent) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    if (card && !ref.current?.contains(document.activeElement)) return;
     const t = e.target;
     if (t instanceof HTMLElement && (t.isContentEditable || t.closest('input, textarea, select')))
       return;
-    if (card === 'outro') onNext();
-    else onSkip();
+    onSkip();
   });
   useEffect(() => {
     const listener = (e: KeyboardEvent) => onEscape(e);
@@ -174,10 +95,6 @@ export function TourPopover({
     const place = () => {
       const size = { width: node.offsetWidth, height: node.offsetHeight };
       const viewport = { width: window.innerWidth, height: window.innerHeight };
-      if (card) {
-        setPos({ ...bookendPlace(size, viewport, floor), caret: null });
-        return;
-      }
       if (!targetRect) {
         setPos({
           left: (viewport.width - size.width) / 2,
@@ -208,19 +125,16 @@ export function TourPopover({
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', place);
     };
-  }, [targetRect, stepId, card, floor]);
+  }, [targetRect, stepId]);
 
   return (
     <div
       ref={ref}
       data-tour-popover=""
-      {...(card ? { 'data-toast-floor': '' } : {})}
       role="dialog"
-      aria-label={card ? title : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
+      aria-label={`${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`pointer-events-auto fixed z-[var(--z-toast)] flex outline-none max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${
-        card ? 'w-[21rem] animate-fly-up-in' : 'w-80'
-      } ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
+      className={`pointer-events-auto fixed z-[var(--z-toast)] flex outline-none max-w-[calc(100vw-1.5rem)] w-80 flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
       style={{
         ...tourColourVars(palette),
         ...(pos
@@ -261,100 +175,51 @@ export function TourPopover({
         key={stepId}
         className={`flex flex-col gap-2 [&_button]:relative [&_button]:touch-target-y ${stepDir === 'forward' ? 'animate-tip-next' : 'animate-tip-prev'}`}
       >
-        {card ? (
-          <>
-            {card === 'welcome' ? (welcomeArt ?? <TourWelcomeArt />) : <TourHelpArt />}
-            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
-              {card === 'welcome' ? copy.welcomeEyebrow : copy.outroEyebrow}
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
+              {stepNumber} of {stepCount}
             </span>
-            <h3 className="text-base font-semibold">{title}</h3>
-            <p className="text-xs leading-relaxed text-[var(--tour-muted)]">{body}</p>
-            {card === 'welcome' ? (
-              <div className="mt-2 flex items-center justify-end gap-2">
-                {/* Declining is a first-class, same-weight choice — the offer
-                    must never feel like a trap. It also never comes back. */}
+            <button
+              type="button"
+              onClick={onSkip}
+              className="text-[11px] font-medium text-[var(--tour-muted)] transition hover:text-[var(--tour-text)]"
+            >
+              Skip tour
+            </button>
+          </div>
+          <h3 className="text-sm font-semibold">{title}</h3>
+          <p className="text-xs leading-relaxed text-[var(--tour-muted)]">{body}</p>
+          <div className="mt-1 flex items-center justify-between gap-2">
+            {/* Progress dots keep place without reading like pagination. */}
+            <div className="flex items-center gap-1" aria-hidden>
+              {Array.from({ length: stepCount }, (_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    i < stepNumber
+                      ? 'bg-[var(--tour-accent)]'
+                      : 'bg-[var(--tour-border)] opacity-50'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              {onBack ? (
                 <button
                   type="button"
-                  onClick={onSkip}
-                  className="rounded-md px-3 py-1.5 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
+                  onClick={onBack}
+                  className="rounded-md px-2 py-1 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
                 >
-                  {copy.decline}
+                  Back
                 </button>
-                {welcomeChoices ? (
-                  welcomeChoices.map((choice) => (
-                    <AccentButton key={choice.id} onClick={choice.onPick}>
-                      {choice.label}
-                    </AccentButton>
-                  ))
-                ) : (
-                  <AccentButton onClick={onNext}>{copy.accept}</AccentButton>
-                )}
-              </div>
-            ) : (
-              // The finish button never breaks mid-label: it takes its own right-aligned row under the help
-              // link when the card is too narrow for both.
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <a
-                  href={copy.helpHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-medium text-[var(--tour-accent)] underline-offset-2 transition hover:underline"
-                >
-                  {copy.helpLabel}
-                </a>
-                <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
-                  <AccentButton onClick={onNext}>{copy.finish}</AccentButton>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
-                {stepNumber} of {stepCount}
-              </span>
-              <button
-                type="button"
-                onClick={onSkip}
-                className="text-[11px] font-medium text-[var(--tour-muted)] transition hover:text-[var(--tour-text)]"
-              >
-                Skip tour
-              </button>
-            </div>
-            <h3 className="text-sm font-semibold">{title}</h3>
-            <p className="text-xs leading-relaxed text-[var(--tour-muted)]">{body}</p>
-            <div className="mt-1 flex items-center justify-between gap-2">
-              {/* Progress dots keep place without reading like pagination. */}
-              <div className="flex items-center gap-1" aria-hidden>
-                {Array.from({ length: stepCount }, (_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      i < stepNumber
-                        ? 'bg-[var(--tour-accent)]'
-                        : 'bg-[var(--tour-border)] opacity-50'
-                    }`}
-                  />
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                {onBack ? (
-                  <button
-                    type="button"
-                    onClick={onBack}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
-                  >
-                    Back
-                  </button>
-                ) : null}
-                {/* The outro card always follows the counted steps, so a
+              ) : null}
+              {/* The outro card always follows the counted steps, so a
                     counted step never ends the tour — no 'Done' state. */}
-                <AccentButton onClick={onNext}>Next</AccentButton>
-              </div>
+              <AccentButton onClick={onNext}>Next</AccentButton>
             </div>
-          </>
-        )}
+          </div>
+        </>
       </div>
     </div>
   );

@@ -27,14 +27,16 @@ proved the better introduction.
 - **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
   the count from the Jump-back-in fetch; `null` = unknown = no offer) creates a document through the wizard
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
-  shows a **welcome offer card** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
+  shows a **welcome offer banner** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
   or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
   **No** dismisses it. A document made from a Plan, Draw, Pages or Facilitate template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
-- **The bookend cards ask nothing of the editor.** The welcome offer and the last card stand at the bottom centre,
-  on whatever chrome is there (the tab bar, the bottom-right cluster), as the sign-in banner does: no backdrop, no
-  focus taken, so someone who would rather carry on working simply does, and answers when they like. Tab reaches
+- **The bookend cards ask nothing of the editor.** The welcome offer and the last card are **banners**, built as the
+  sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
+  there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
+  title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); on a
+  phone they stack, the picture left out. No backdrop, no focus taken, so someone who would rather carry on working simply does, and answers when they like. Tab reaches
   their buttons. They are the toasts' floor while up, and the sign-in banner, which takes the same place, steps aside
   meanwhile: the two are never on screen together. A step card leaves focus alone too: it points at a real control
   the person is about to use.
@@ -97,7 +99,7 @@ the two dropdown steps; three when it is both), and a closing "you're ready" car
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`):
 
-0. **Getting started with Diagrams?** (the offer): the card at the bottom, eyebrow **Diagram tour**, "Want a quick tour of the
+0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "Want a quick tour of the
    editor so you can build mind blowing diagrams in minutes?", then **No** / **Yes**. Yes and No are every tour's
    offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.

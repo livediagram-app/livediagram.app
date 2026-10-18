@@ -26,7 +26,7 @@ describe('SignInBanner', () => {
 
   // docs/specs/014-identity/sign-in-encouragement.md: a tour's offer takes the same place, so the banner steps aside.
   it('hides while a tour card is up', async () => {
-    const { TOUR_CARD_ATTR } = await import('@/components/tour/TourPopover');
+    const { TOUR_CARD_ATTR } = await import('@/components/tour/TourBanner');
     render(<SignInBanner surface="Editor" onDismiss={() => {}} />);
     const wrapper = screen.getByText('Sign in to access Teams & AI').closest('.fixed')!;
     expect(wrapper.className).toContain(`[body[${TOUR_CARD_ATTR}]_&]:hidden`);

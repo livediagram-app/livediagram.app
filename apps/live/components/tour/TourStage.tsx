@@ -3,7 +3,9 @@
 import type { ReactNode } from 'react';
 import { Portal } from '@livediagram/ui';
 import { useStartPalette } from '@/components/start/useStartPalette';
-import { TourPopover, type TourCardCopy, type TourWelcomeChoice } from './TourPopover';
+import { TourBanner } from './TourBanner';
+import { TourPopover } from './TourPopover';
+import { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
 import type { TourEngine } from './useTourEngine';
 
 // What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), shared by every tour:
@@ -39,7 +41,7 @@ export function TourStage<Api>({
   const ringLayer = step.layer ?? layer;
   return (
     <Portal>
-      {/* The bookend cards ask nothing of the editor (TourPopover): no backdrop behind them. */}
+      {/* The bookend cards ask nothing of the editor (TourBanner): no backdrop behind them. */}
       {targetRect ? (
         // The spotlight: a ring around the target whose giant box-shadow
         // dims everything else. pointer-events-none so the user can still
@@ -60,26 +62,37 @@ export function TourStage<Api>({
           }}
         />
       ) : null}
-      <TourPopover
-        // The bookend cards have no number; real steps count from 1 (welcome occupies index 0, so a step's
-        // index IS its number; a tour without one counts from its first step).
-        stepNumber={step.card ? 0 : stepIndex + (engine.hasWelcome ? 0 : 1)}
-        stepCount={engine.countableSteps}
-        stepId={step.id}
-        stepDir={engine.stepDir}
-        card={step.card}
-        title={step.title}
-        body={step.body}
-        targetRect={targetRect}
-        palette={palette}
-        {...(ariaPrefix ? { ariaPrefix } : {})}
-        {...(copy ? { copy } : {})}
-        {...(welcomeArt ? { welcomeArt } : {})}
-        {...(welcomeChoices ? { welcomeChoices } : {})}
-        onBack={stepIndex > (engine.hasWelcome ? 1 : 0) && !step.card ? engine.back : undefined}
-        onNext={engine.next}
-        onSkip={engine.skip}
-      />
+      {step.card ? (
+        // The offer and the last card: a banner at the bottom, as the sign-in banner is (TourBanner).
+        <TourBanner
+          card={step.card}
+          title={step.title}
+          body={step.body}
+          copy={{ ...WELCOME_TOUR_COPY, ...copy }}
+          palette={palette}
+          {...(welcomeArt ? { welcomeArt } : {})}
+          {...(welcomeChoices ? { welcomeChoices } : {})}
+          onNext={engine.next}
+          onSkip={engine.skip}
+        />
+      ) : (
+        <TourPopover
+          // Real steps count from 1 (welcome occupies index 0, so a step's index IS its number; a tour without one
+          // counts from its first step).
+          stepNumber={stepIndex + (engine.hasWelcome ? 0 : 1)}
+          stepCount={engine.countableSteps}
+          stepId={step.id}
+          stepDir={engine.stepDir}
+          title={step.title}
+          body={step.body}
+          targetRect={targetRect}
+          palette={palette}
+          {...(ariaPrefix ? { ariaPrefix } : {})}
+          onBack={stepIndex > (engine.hasWelcome ? 1 : 0) ? engine.back : undefined}
+          onNext={engine.next}
+          onSkip={engine.skip}
+        />
+      )}
     </Portal>
   );
 }
