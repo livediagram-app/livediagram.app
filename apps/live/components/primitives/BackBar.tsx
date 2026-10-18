@@ -12,9 +12,17 @@ import { Glyph } from '@livediagram/ui';
 // Without `onClick` there is nowhere to go back to, and the bar becomes a
 // static heading in the same shape ("Choose a Space"): a browse that keeps
 // the bar at every level never has it appear and disappear under the rows.
+//
+// It is sticky: however far the rows below scroll (a long list of colours on
+// a phone), the way back stays pinned to the top of the scroll area. Its host
+// must not clip with `overflow: hidden` between the bar and the scroller (that
+// makes its own scroll box and pins the bar to it); `overflow-clip` does not.
+// Sticky pins below the scroller's top padding, which would leave a strip the
+// rows show through above the bar, so the bar lifts itself by that padding
+// (stickToScrollerEdge) and sits flush with the scroller's edge in any host.
 
 const SHELL =
-  'flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
+  'sticky top-0 z-10 flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
 const WELL =
   'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-200';
 
@@ -48,7 +56,7 @@ export function BackBar({
   ) : null;
   if (!onClick) {
     return (
-      <div className={shell}>
+      <div ref={stickToScrollerEdge} className={shell}>
         <span className={WELL}>
           <DotsGlyph />
         </span>
@@ -59,6 +67,7 @@ export function BackBar({
   }
   return (
     <button
+      ref={stickToScrollerEdge}
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -73,6 +82,20 @@ export function BackBar({
       {chip}
     </button>
   );
+}
+
+// Sets the bar's sticky `top` to minus its scroll box's top padding, read once as it mounts (a walk up a few
+// ancestors; the padding is fixed per host). The scroll box is the first ancestor that does not let overflow through:
+// a `hidden` one (a capped AnimatedHeightBox before it overflows) keeps `top: 0`, as does having none.
+function stickToScrollerEdge(el: HTMLElement | null) {
+  if (!el) return;
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const { overflowY, paddingTop } = getComputedStyle(p);
+    if (overflowY === 'visible' || overflowY === 'clip') continue;
+    if (overflowY === 'auto' || overflowY === 'scroll')
+      el.style.top = `${-(parseFloat(paddingTop) || 0)}px`;
+    return;
+  }
 }
 
 function ChevronGlyph() {
