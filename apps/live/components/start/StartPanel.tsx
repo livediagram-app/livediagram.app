@@ -268,11 +268,12 @@ export function StartPanel<C extends string>({
           pillColor={palette.border}
         />
         <header
-          // Room on the right for the help and × pinned in the corner.
-          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pt-1"
+          // Room on the right for the help and × pinned in the corner. On a phone only the title's row needs it: the
+          // search below runs the full width, so a long placeholder ("Find a board, sheet, form or layout") fits.
+          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pr-5 max-sm:pt-1"
           style={{ borderColor: palette.border }}
         >
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 max-sm:pr-20">
             <h2
               id={titleId}
               className="text-[20px] font-semibold tracking-tight max-sm:text-[18px]"
