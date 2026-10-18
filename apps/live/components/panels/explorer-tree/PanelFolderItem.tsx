@@ -100,6 +100,7 @@ export function PanelFolderItem({
         editing ? (
           <InlineRenameInput
             initial={folder.name}
+            ariaLabel={`Rename ${folder.name}`}
             onCommit={commitRename}
             onCancel={() => setEditing(false)}
             className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-[13px] dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
