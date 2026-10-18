@@ -5,19 +5,25 @@ import { err, isError, scalarOf, type Value } from '../values';
 import { criteriaMask, ifsNumbers, maskedNumbers, sameSizeAs } from './conditional';
 import { dims } from '../values';
 
+// A whole number of steps of 10^digits back to the value's scale. Negative digits multiply by a whole power of ten
+// rather than divide by an inexact fraction (987654321 to -4 digits is 987650000, not 987650000.0000001).
+function unscale(steps: number, digits: number): number {
+  return digits >= 0 ? steps / 10 ** digits : steps * 10 ** -digits;
+}
+
 // Round half away from zero, as spreadsheets do, without float drift (2.675 → 2.68).
 function roundHalfAway(x: number, digits: number): number {
   const m = 10 ** digits;
   const scaled = Math.abs(x) * m;
   const r = Math.round(Number(scaled.toPrecision(15)));
-  return (Math.sign(x) * r) / m;
+  return unscale(Math.sign(x) * r, digits);
 }
 
 function roundDir(x: number, digits: number, up: boolean): number {
   const m = 10 ** digits;
   const scaled = Number((Math.abs(x) * m).toPrecision(15));
   const r = up ? Math.ceil(scaled) : Math.floor(scaled);
-  return (Math.sign(x) * r) / m;
+  return unscale(Math.sign(x) * r, digits);
 }
 
 function gcd(a: number, b: number): number {
@@ -31,7 +37,8 @@ function toMultiple(x: number, factor: number, up: boolean): Value {
   if (factor === 0) return 0;
   if (x > 0 && factor < 0) return err('#NUM!', 'The factor must have the same sign as the value');
   const q = Number((x / factor).toPrecision(15));
-  return (up ? Math.ceil(q) : Math.floor(q)) * factor;
+  // To 15 significant digits, so CEILING(0.3, 0.1) is 0.3 rather than 0.30000000000000004.
+  return Number(((up ? Math.ceil(q) : Math.floor(q)) * factor).toPrecision(15));
 }
 
 function sum(ns: number[]): number {
@@ -110,7 +117,7 @@ export const MATH_FUNCTIONS: Record<string, FnDef> = {
   MROUND: numFn(2, 2, ([x, m]) => {
     if (m === 0) return 0;
     if (Math.sign(x!) !== Math.sign(m!) && x !== 0) return err('#NUM!');
-    return roundHalfAway(x! / m!, 0) * m!;
+    return Number((roundHalfAway(x! / m!, 0) * m!).toPrecision(15));
   }),
   QUOTIENT: numFn(2, 2, ([a, b]) => (b === 0 ? err('#DIV/0!') : Math.trunc(a! / b!))),
   GCD: fn(1, MANY, (args, f) => {

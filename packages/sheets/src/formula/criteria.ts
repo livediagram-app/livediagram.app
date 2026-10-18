@@ -6,18 +6,52 @@ import { compareScalars, isError, type Scalar } from './values';
 
 export type Criterion = (v: Scalar) => boolean;
 
-function wildcardRe(pattern: string): RegExp | null {
+// One step of a wildcard pattern: a character to equal (folded to lower case), any one character, or any run.
+type WildStep = string | typeof ANY_ONE | typeof ANY_RUN;
+const ANY_ONE = Symbol('?');
+const ANY_RUN = Symbol('*');
+
+// A criterion's wildcard pattern as steps, or null when it has no unescaped wildcard.
+function wildcardSteps(pattern: string): WildStep[] | null {
   if (!/[*?]/.test(pattern.replace(/~[*?~]/g, ''))) return null;
-  let re = '';
+  const steps: WildStep[] = [];
   for (let i = 0; i < pattern.length; i++) {
     const ch = pattern[i]!;
     if (ch === '~' && i + 1 < pattern.length && '*?~'.includes(pattern[i + 1]!)) {
-      re += `\\${pattern[++i]}`;
-    } else if (ch === '*') re += '[\\s\\S]*';
-    else if (ch === '?') re += '[\\s\\S]';
-    else re += ch.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+      steps.push(pattern[++i]!);
+    } else if (ch === '*') steps.push(ANY_RUN);
+    else if (ch === '?') steps.push(ANY_ONE);
+    // Folded as the text is (whole, then read a code unit at a time), so a letter whose lower case is longer still
+    // lines up with it.
+    else steps.push(...ch.toLowerCase().split(''));
   }
-  return new RegExp(`^${re}$`, 'i');
+  return steps;
+}
+
+// Whether the whole of `text` matches the steps, ignoring case. Matched by hand rather than as a regular expression:
+// each `*` only ever resumes from the last one, so a match costs at most text × pattern steps, where a backtracking
+// regex of a few stars (`*a*a*a*a*b`) could run for minutes on every cell of a range.
+function wildcardMatch(steps: readonly WildStep[], text: string): boolean {
+  const t = text.toLowerCase();
+  let ti = 0;
+  let si = 0;
+  let starAt = -1;
+  let resumeAt = 0;
+  while (ti < t.length) {
+    const step = steps[si];
+    if (step === ANY_RUN) {
+      starAt = si++;
+      resumeAt = ti;
+    } else if (step !== undefined && (step === ANY_ONE || step === t[ti])) {
+      si++;
+      ti++;
+    } else if (starAt >= 0) {
+      si = starAt + 1;
+      ti = ++resumeAt;
+    } else return false;
+  }
+  while (steps[si] === ANY_RUN) si++;
+  return si === steps.length;
 }
 
 function unescape(text: string): string {
@@ -43,10 +77,10 @@ export function makeCriterion(criterion: Scalar): Criterion {
     let eq: Criterion;
     if (rest === '') eq = (v) => v === null || v === '';
     else if (typeof operand === 'string') {
-      const re = wildcardRe(operand);
+      const steps = wildcardSteps(operand);
       const plain = unescape(operand).toLowerCase();
-      eq = re
-        ? (v) => typeof v === 'string' && re.test(v)
+      eq = steps
+        ? (v) => typeof v === 'string' && wildcardMatch(steps, v)
         : (v) => typeof v === 'string' && v.toLowerCase() === plain;
     } else {
       eq = (v) =>

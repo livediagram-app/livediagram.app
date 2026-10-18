@@ -185,7 +185,11 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   `"mmm yyyy"`, `"hh:mm"`, `"[h]:mm"`, `"£#,##0.00"`, `"@"`).
 - `HYPERLINK(url, [label])` shows the label as a link; Ctrl/⌘ and a click opens it in a new tab (http, https and
   mailto only).
-- `REGEX…` functions take JavaScript regular expressions, and stop with `#VALUE!` after 50 ms on one cell.
+- `REGEX…` functions take JavaScript regular expressions. A regular expression cannot be stopped once it runs, so
+  its cost is bounded before it starts: a pattern whose repeats could backtrack for more than a moment on the cell's
+  text (a repeat of a repeat such as `(a+)+`, or three or more open-ended repeats side by side on long text) answers
+  `#VALUE!` "This pattern is too costly to run on this text" instead of freezing the sheet for everyone on it.
+  `SEARCH`'s `*` wildcards are held to the same bound.
 - `TODAY`, `NOW`, `RAND`, `RANDBETWEEN`, `OFFSET` and `INDIRECT` are **volatile**: they recalculate on every
   change to the sheet, and `TODAY`/`NOW` also once a minute while the sheet is in view. `RAND` is worked out in
   each browser, so two people see different numbers, as in a spreadsheet shared live.

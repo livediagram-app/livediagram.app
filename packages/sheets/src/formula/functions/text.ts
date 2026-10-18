@@ -1,6 +1,7 @@
 // Text functions (docs/specs/029-sheets/formulas.md "Functions": Text). Results are bounded by TEXT_RESULT_MAX;
 // REGEX functions by a work estimate, since a regular expression cannot be interrupted.
-import { REGEX_WORK_MAX, TEXT_RESULT_MAX } from '../../limits';
+import { REGEX_BACKTRACK_MAX, REGEX_WORK_MAX, TEXT_RESULT_MAX } from '../../limits';
+import { regexShape, regexWork } from '../regex-cost';
 import { textFormat } from '../../number-format';
 import { parseLocaleNumber } from '../../input';
 import { localeDayFirst, parseDateText, parseTimeText } from '../../dates';
@@ -53,7 +54,12 @@ function textFn(
 }
 
 function regex(pattern: string, text: string, flags = 'u'): RegExp | Value {
-  if (pattern.length * Math.max(1, text.length) > REGEX_WORK_MAX)
+  // Two bounds: the plain pass over the text, and the backtracking the pattern's repeats allow (regex-cost.ts), which
+  // a pattern only a few characters long can make run for minutes.
+  if (
+    pattern.length * Math.max(1, text.length) > REGEX_WORK_MAX ||
+    regexWork(regexShape(pattern), text.length) > REGEX_BACKTRACK_MAX
+  )
     return err('#VALUE!', 'This pattern is too costly to run on this text');
   try {
     return new RegExp(pattern, flags);
