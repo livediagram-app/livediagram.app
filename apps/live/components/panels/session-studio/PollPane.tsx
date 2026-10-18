@@ -184,7 +184,7 @@ export function PollComposerBody({
         <div className="flex flex-col gap-1">
           {options.map((opt, i) => (
             <div key={i} className="flex items-center gap-1.5">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 <span className="text-optical-centre">{String.fromCharCode(65 + i)}</span>
               </span>
               <input
@@ -236,7 +236,7 @@ export function PollComposerBody({
       <StudioButton variant="primary" onClick={start} disabled={missing !== null}>
         {missing ?? 'Ask everyone'}
       </StudioButton>
-      <p className="text-center text-[10px] leading-snug text-slate-400">
+      <p className="text-center text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         Everyone here who can take part is asked; view-only visitors are not. Answers are anonymous
         and nothing is saved to the document.
       </p>
@@ -270,7 +270,7 @@ function RosterPreview({ options }: { options: string[] }) {
           </li>
         ))}
       </ul>
-      <p className="text-[10px] text-slate-400">
+      <p className="text-[10px] text-slate-500 dark:text-slate-400">
         Taken when you ask, so anyone who joins after won&rsquo;t be on the list.
       </p>
     </div>

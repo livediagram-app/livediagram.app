@@ -24,7 +24,7 @@ export const SHARE_STATE_META: Record<
     label: 'Private',
     description: 'Only visible to you.',
     badge:
-      'bg-slate-100 px-2 text-[10px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700',
+      'bg-slate-100 px-2 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700',
     dot: 'text-slate-400',
   },
   shared: {

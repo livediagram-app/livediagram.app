@@ -59,7 +59,7 @@ const PanelIcons = {
 };
 
 const Keys = ({ k }: { k?: string }) =>
-  k ? <span className="text-[10px] text-slate-400 dark:text-slate-400">{keyLabel(k)}</span> : null;
+  k ? <span className="text-[10px] text-slate-500 dark:text-slate-400">{keyLabel(k)}</span> : null;
 
 const Row = ({
   label,

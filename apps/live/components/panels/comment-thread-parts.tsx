@@ -219,7 +219,7 @@ export function CommentComposer({
           }`}
         />
         <div className="mt-1.5 flex min-h-6 items-center justify-between gap-2">
-          <p className="text-[11px] text-slate-400 dark:text-slate-400" aria-live="polite">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400" aria-live="polite">
             {focused ? sendShortcutLabel() : ''}
           </p>
           <Button
@@ -284,7 +284,7 @@ function CommentRow({
               dateTime={new Date(comment.createdAt).toISOString()}
               aria-label={when}
               tabIndex={0}
-              className="shrink-0 text-[11px] text-slate-400 outline-none focus-visible:underline dark:text-slate-400"
+              className="shrink-0 text-[11px] text-slate-500 outline-none focus-visible:underline dark:text-slate-400"
             >
               {formatRelativeTimeCompact(now - comment.createdAt)}
             </time>

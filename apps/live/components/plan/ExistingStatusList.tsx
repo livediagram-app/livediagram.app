@@ -72,7 +72,7 @@ export function ExistingStatusList({
       <div className="flex min-h-6 items-center justify-between gap-2">
         <p id={`${listId}-label`} className={`${HEADING} flex items-center gap-1.5`}>
           Existing Statuses
-          <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
             {total}
           </span>
         </p>

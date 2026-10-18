@@ -170,7 +170,7 @@ function Composer({
               </button>
             </div>
             {coolingDown || draft ? (
-              <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-slate-400">
+              <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400">
                 <span>{coolingDown ? 'One moment…' : 'Enter to send, Esc to cancel'}</span>
                 <SpeechCounter text={draft} />
               </div>

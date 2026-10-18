@@ -200,7 +200,7 @@ function GalleryCard({
       </div>
       <div className="mt-1">
         {usage.length === 0 ? (
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
             Not used
           </span>
         ) : (

@@ -125,7 +125,7 @@ export function NumberStepper({
         />
         {unit ? (
           <span
-            className={`pl-0.5 text-[11px] ${tone ? '' : 'text-slate-400'}`}
+            className={`pl-0.5 text-[11px] ${tone ? '' : 'text-slate-500 dark:text-slate-400'}`}
             style={tone ? { color: tone.muted } : undefined}
           >
             {unit}

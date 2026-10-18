@@ -185,7 +185,7 @@ export function ArrowLineControls({
               <span className="text-[11px] text-slate-600 dark:text-slate-300">
                 Pass Behind Boxes
               </span>
-              <span className="text-[10px] leading-snug text-slate-400">
+              <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
                 Break the line where it crosses another box.
               </span>
             </span>
@@ -203,7 +203,7 @@ export function ArrowLineControls({
             <span className="text-[11px] text-slate-600 dark:text-slate-300">
               Start at Exact Anchor
             </span>
-            <span className="text-[10px] leading-snug text-slate-400">
+            <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
               Start where you connected it, not spread out from other arrows there.
             </span>
           </span>

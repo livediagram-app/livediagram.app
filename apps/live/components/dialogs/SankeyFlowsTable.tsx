@@ -370,7 +370,7 @@ export function SankeyFlowsTable({
           >
             Add a Flow
           </h3>
-          <span className="text-[11px] text-slate-400 tabular-nums dark:text-slate-400">
+          <span className="text-[11px] text-slate-500 tabular-nums dark:text-slate-400">
             {filled} of {SANKEY_MAX_FLOWS}
           </span>
         </div>

@@ -267,7 +267,7 @@ export function MenuActionRow({
       <span
         aria-disabled
         {...itemProps}
-        className="flex w-full cursor-not-allowed items-center gap-2.5 px-3 py-2 text-[13px] text-slate-300 dark:text-slate-600"
+        className="flex w-full cursor-not-allowed items-center gap-2.5 px-3 py-2 text-[13px] text-slate-500 dark:text-slate-600"
       >
         <span className="flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4">
           {icon}
@@ -282,7 +282,7 @@ export function MenuActionRow({
       <span
         aria-disabled
         {...itemProps}
-        className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-slate-600"
+        className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-600"
       >
         <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
         {label}

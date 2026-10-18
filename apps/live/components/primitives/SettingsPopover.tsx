@@ -157,7 +157,7 @@ export function SettingsPopoverResetRow({
         <ResetPositionGlyph />
         <span className="flex flex-col">
           <span>Reset position</span>
-          <span className="text-[10px] font-normal leading-snug text-slate-400">
+          <span className="text-[10px] font-normal leading-snug text-slate-500 dark:text-slate-400">
             {resettable ? 'Snap back to the default corner.' : 'Already at the default corner.'}
           </span>
         </span>

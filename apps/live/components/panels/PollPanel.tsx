@@ -103,7 +103,7 @@ export function PollPanel({
           )}
         </div>
 
-        <p className="text-[10px] text-slate-400">
+        <p className="text-[10px] text-slate-500 dark:text-slate-400">
           {answered} answered &middot; {skipped} skipped
         </p>
 

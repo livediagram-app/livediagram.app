@@ -42,7 +42,7 @@ export function ExpiredSharePass({
           value={shareUrlFor(link.code)}
           onFocus={(e) => e.currentTarget.select()}
           aria-label="Expired pass link"
-          className="min-w-0 flex-1 truncate bg-transparent px-1 py-0.5 font-mono text-[11px] text-slate-400 line-through outline-none"
+          className="min-w-0 flex-1 truncate bg-transparent px-1 py-0.5 font-mono text-[11px] text-slate-500 dark:text-slate-400 line-through outline-none"
         />
       </div>
       <div className="flex items-center gap-1.5">

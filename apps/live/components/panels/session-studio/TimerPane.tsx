@@ -195,7 +195,7 @@ function TimerControls({
         )}
         <TransportButton label="End" icon={<StopGlyph />} onClick={onClearTimer} />
       </div>
-      <p className="text-center text-[10px] leading-snug text-slate-400">
+      <p className="text-center text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         A tab runs one timer. End this one to start a different kind.
       </p>
     </>

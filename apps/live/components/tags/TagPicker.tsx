@@ -113,7 +113,9 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
           onKeyDown={(e) => moveFocus(e, panel.current, field.current)}
         >
           {status === 'loading' && tags.length === 0 ? (
-            <p className="px-3 py-3 text-[12px] text-slate-400">Loading your tags…</p>
+            <p className="px-3 py-3 text-[12px] text-slate-500 dark:text-slate-400">
+              Loading your tags…
+            </p>
           ) : null}
           {status !== 'loading' && tags.length === 0 && !clean ? (
             <CompactEmptyState

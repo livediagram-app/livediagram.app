@@ -157,7 +157,7 @@ export function NotePopover({
               onCancel={onClose}
             />
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-slate-400 dark:text-slate-400">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
                 Cmd-Enter saves, Esc cancels.
               </span>
               <button

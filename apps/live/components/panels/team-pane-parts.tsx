@@ -125,7 +125,7 @@ export function TeamMemberRow({
             {name}
           </span>
           {isSelf ? (
-            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600">
+            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600">
               you
             </span>
           ) : null}

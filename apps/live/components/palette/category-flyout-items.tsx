@@ -114,7 +114,7 @@ export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
             </span>
           </div>
           {def.shortcut ? (
-            <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-slate-400">
+            <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
               Press
               <Kbd>{def.shortcut}</Kbd>
             </span>

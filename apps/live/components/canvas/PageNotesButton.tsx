@@ -61,7 +61,7 @@ function NotesBody({
         placeholder="What you'll say over this slide…"
         className="w-full resize-y rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs leading-snug text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
       />
-      <span className="text-[11px] text-slate-400">
+      <span className="text-[11px] text-slate-500 dark:text-slate-400">
         Shown to you in the presenter view; never on the slide.
       </span>
     </label>
