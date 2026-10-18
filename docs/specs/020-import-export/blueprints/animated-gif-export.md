@@ -73,12 +73,12 @@ longSide)`, at least 1.
 
 `snapshotPage(pageId, { width, height, fontCss, css, images })`, called once per page per export. Steps:
 
-1. The page node is `[data-illustrate-page-id="<id>"]`; its canvas root is `node.closest('[data-canvas-root]')`;
+1. The page node is `[data-page-id="<id>"]`; its canvas root is `node.closest('[data-canvas-root]')`;
    the content is `root.querySelector('[data-canvas-content]')`. Missing: `GifExportError('page-missing')`.
 2. **Clone** the content (`cloneNode(true)`). The live tree and the clone are listed in document order
    (`[content, ...querySelectorAll('*')]`), so a live node and its twin share an index.
 3. **Leave out** (live nodes, a parent before its children, so everything inside goes too): every other
-   `[data-illustrate-page-id]`; every outermost `[data-element-id]` whose screen box misses this page's (a frame then
+   `[data-page-id]`; every outermost `[data-element-id]` whose screen box misses this page's (a frame then
    draws one page's DOM, not the whole deck's); and every node matching `GIF_OMIT_SELECTOR`: `[data-gif-omit]`
    (the `GifOmit` wrapper round the drafts, cursors, laser, agent overlays and avatars; the page navigator, the
    first-page kind choice, the in-page layout card and an empty logo page's guides), `[data-selection-grips]` and
@@ -186,8 +186,8 @@ pages.length > 1`; the transition is `config.transition`, its length `SLIDE_SPEE
 
 ## Interfaces and contracts
 
-- `ExportFormatKey` (`packages/plan-art/src/plan-export-formats.ts`) gains `'gif'`; `ILLUSTRATE_FORMATS`
-  (`ExportTabDialog.tsx`) becomes `['pdf', 'png', 'svg', 'gif', 'file']`. Off Illustrate the card list leaves out
+- `ExportFormatKey` (`packages/plan-art/src/plan-export-formats.ts`) gains `'gif'`; `PAGES_FORMATS`
+  (`ExportTabDialog.tsx`) becomes `['pdf', 'png', 'svg', 'gif', 'file']`. Off Pages the card list leaves out
   `'gif'` with `'logo-kit'`, and `PLAN_TAB_FORMATS` never includes it.
 - `GifExportError` codes: `'page-missing' | 'tainted' | 'failed'`; the panel maps them to the spec's three lines
   (`GIF_ERROR_COPY`).
@@ -269,29 +269,29 @@ frames=<n>`, `done frames=<written> bytes=<n> ms=<n>`, `cancelled`, `failed <cod
 
 ## Testing
 
-| Rule                                                                      | Test                                                                 |
-| ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| 15 fps, exact centisecond holds                                           | `gif-timeline.test.ts`                                               |
-| Transition frames, easing, outgoing clock, loop seam                      | `gif-timeline.test.ts`                                               |
-| Still page is one frame (plus transition)                                 | `gif-timeline.test.ts`, `make-gif.test.ts`                           |
-| One page: no transition                                                   | `gif-timeline.test.ts`                                               |
-| Hold default from Auto-advance, clamped                                   | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`                    |
-| 3 minute cap                                                              | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`                    |
-| Frame size by long side; size label                                       | `gif-timeline.test.ts`                                               |
-| Pin rules; reduced-motion CSS dropped or unwrapped; grouping rules kept   | `snapshot-css.test.ts`                                               |
-| Full motion for the read, restored after                                  | `snapshot-css.test.ts`                                               |
-| Other pages, off-page elements and editor chrome left out; class stripped | `page-snapshot.test.ts` (jsdom)                                      |
-| Crop transform, delay parsing, page-missing                               | `page-snapshot.test.ts`                                              |
-| Pictures, canvases, embeds and style URLs inlined; one read a URL         | `snapshot-media.test.ts` (jsdom)                                     |
-| White paper; Fade / Slide / None composition                              | `page-frames.test.ts` (a fake 2D context)                            |
-| Loop extension, frames, merge of equal frames, sample size                | `gif-encode-core.test.ts`                                            |
-| Shared page palette; a colour always the same entry                       | `gif-encode-core.test.ts`, `gif-encode.worker.test.ts`               |
-| Palette samples per page; transition frames keep their own                | `make-gif.test.ts`, `gif-encoder.test.ts`                            |
-| Worker session: transfer, done, failed, error, cancel; on-page fallback   | `gif-encoder.test.ts`                                                |
-| Make: progress, finish, cancel between frames, error mapping              | `make-gif.test.ts`                                                   |
-| GIF card only in Illustrate, after SVG; never on Plan/diagram tabs        | `ExportTabDialog.illustrate.test.tsx`, `plan-export-formats.test.ts` |
-| Panel: defaults, transition line, estimate + warning, Too long, download  | `GifExportPanel.test.tsx`                                            |
-| Panel: name, telemetry (both labels), progress + Cancel, the three errors | `GifExportPanel.test.tsx`                                            |
+| Rule                                                                      | Test                                                            |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| 15 fps, exact centisecond holds                                           | `gif-timeline.test.ts`                                          |
+| Transition frames, easing, outgoing clock, loop seam                      | `gif-timeline.test.ts`                                          |
+| Still page is one frame (plus transition)                                 | `gif-timeline.test.ts`, `make-gif.test.ts`                      |
+| One page: no transition                                                   | `gif-timeline.test.ts`                                          |
+| Hold default from Auto-advance, clamped                                   | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`               |
+| 3 minute cap                                                              | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`               |
+| Frame size by long side; size label                                       | `gif-timeline.test.ts`                                          |
+| Pin rules; reduced-motion CSS dropped or unwrapped; grouping rules kept   | `snapshot-css.test.ts`                                          |
+| Full motion for the read, restored after                                  | `snapshot-css.test.ts`                                          |
+| Other pages, off-page elements and editor chrome left out; class stripped | `page-snapshot.test.ts` (jsdom)                                 |
+| Crop transform, delay parsing, page-missing                               | `page-snapshot.test.ts`                                         |
+| Pictures, canvases, embeds and style URLs inlined; one read a URL         | `snapshot-media.test.ts` (jsdom)                                |
+| White paper; Fade / Slide / None composition                              | `page-frames.test.ts` (a fake 2D context)                       |
+| Loop extension, frames, merge of equal frames, sample size                | `gif-encode-core.test.ts`                                       |
+| Shared page palette; a colour always the same entry                       | `gif-encode-core.test.ts`, `gif-encode.worker.test.ts`          |
+| Palette samples per page; transition frames keep their own                | `make-gif.test.ts`, `gif-encoder.test.ts`                       |
+| Worker session: transfer, done, failed, error, cancel; on-page fallback   | `gif-encoder.test.ts`                                           |
+| Make: progress, finish, cancel between frames, error mapping              | `make-gif.test.ts`                                              |
+| GIF card only in Pages, after SVG; never on Plan/diagram tabs             | `ExportTabDialog.pages.test.tsx`, `plan-export-formats.test.ts` |
+| Panel: defaults, transition line, estimate + warning, Too long, download  | `GifExportPanel.test.tsx`                                       |
+| Panel: name, telemetry (both labels), progress + Cancel, the three errors | `GifExportPanel.test.tsx`                                       |
 
 ## Assets and external resources
 

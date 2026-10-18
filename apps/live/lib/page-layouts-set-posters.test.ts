@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the Posters category's layouts.
+// docs/specs/007-editor/pages-mode.md "Layouts": the Posters category's layouts.
 const POSTER_IDS = [
   'poster',
   'gig-poster',

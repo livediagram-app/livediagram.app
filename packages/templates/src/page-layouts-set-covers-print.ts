@@ -1,4 +1,4 @@
-// The Covers set's print fronts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a magazine
+// The Covers set's print fronts (docs/specs/007-editor/pages-mode.md "Layouts"): a magazine
 // cover, a book cover, a newsletter's front page and a certificate. Same contract as
 // page-layouts.ts: the page's content box in, uncoloured elements out, a tall page stacking and a
 // wide one setting side by side.

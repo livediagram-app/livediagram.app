@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FirstPageChoice } from './FirstPageChoice';
 
-// docs/specs/007-editor/illustrate-pages.md "Page kinds": the first page's own choice.
+// docs/specs/007-editor/pages-mode.md "Page kinds": the first page's own choice.
 afterEach(() => cleanup());
 
 describe('FirstPageChoice', () => {

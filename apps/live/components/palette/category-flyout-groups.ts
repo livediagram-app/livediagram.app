@@ -6,12 +6,12 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 import type { EditorMode } from '@livediagram/document';
 
-/** The modes whose strip is a category bar: Diagram, Facilitate and Illustrate. Plan keeps the category picker and
+/** The modes whose strip is a category bar: Diagram, Facilitate and Pages. Plan keeps the category picker and
  *  its tiles (its boards and cards are a different palette). */
 export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
   'diagram',
   'facilitate',
-  'illustrate',
+  'pages',
 ]);
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
@@ -81,7 +81,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
   facilitate: { write: 'Words, notes, tables and frames.' },
-  illustrate: { build: 'Tables, stacks, timelines and flows.' },
+  pages: { build: 'Tables, stacks, timelines and flows.' },
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {

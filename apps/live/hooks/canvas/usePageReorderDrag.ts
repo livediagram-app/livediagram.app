@@ -1,5 +1,5 @@
-// Dragging an Illustrate page's label to reorder the pages (docs/specs/007-editor/
-// illustrate-pages.md "Getting around the pages"). A press that travels less than the drag
+// Dragging a page's label to reorder the pages (docs/specs/007-editor/
+// pages-mode.md "Getting around the pages"). A press that travels less than the drag
 // threshold stays a click (the label frames its page); past it, the gesture is a reorder: the drop
 // slot follows the pointer (where the dragged page's centre would land among the others), drawn
 // as a marker in the gap, and the release moves the page there with its content. Escape cancels.

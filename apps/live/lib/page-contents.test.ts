@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, type IllustratePage } from '@livediagram/document';
+import { layOutPages, type Page } from '@livediagram/document';
 import { contentsRows, filterContents, pageInView } from './page-contents';
 import { contentsDropUnit } from './page-contents';
 
-// docs/specs/007-editor/illustrate-pages.md "Contents".
-const pages = layOutIllustratePages([
+// docs/specs/007-editor/pages-mode.md "Contents".
+const pages = layOutPages([
   { id: 'a', orientation: 'portrait', kind: 'infographic', name: 'Cover' },
   { id: 'b', orientation: 'landscape', kind: 'slide', size: 'slide' },
   { id: 'c', orientation: 'portrait', kind: 'article', flow: 'f1', locked: true },
   { id: 'd', orientation: 'portrait', kind: 'logo', size: 'logo' },
-] as IllustratePage[]);
+] as Page[]);
 
 describe('the Contents list', () => {
   const rows = contentsRows(pages, {

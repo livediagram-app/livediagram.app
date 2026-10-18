@@ -1,20 +1,15 @@
 // @vitest-environment jsdom
 
-// The Background section (docs/specs/007-editor/illustrate-pages.md "Backgrounds").
+// The Background section (docs/specs/007-editor/pages-mode.md "Backgrounds").
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  penColourHex,
-  standardColours,
-  type IllustratePage,
-  type PageFill,
-} from '@livediagram/document';
+import { penColourHex, standardColours, type Page, type PageFill } from '@livediagram/document';
 import {
   backgroundCategoryOf,
   customGradientSeed,
   isCustomGradient,
   type ThemeBackgroundPreset,
-} from '@/lib/illustrate-page-paint';
+} from '@/lib/page-paint';
 import { BackgroundSection, pageThemeColours } from './page-background-section';
 
 afterEach(() => cleanup());
@@ -35,7 +30,7 @@ function show(fill?: PageFill, presets: ThemeBackgroundPreset[] = theme) {
   onPreview = vi.fn();
   render(
     <BackgroundSection
-      page={page as IllustratePage}
+      page={page as Page}
       themePresets={presets}
       onBackground={onBackground}
       onPreview={onPreview}
@@ -239,7 +234,7 @@ describe('the Animated category', () => {
     onPreview = vi.fn();
     render(
       <BackgroundSection
-        page={page as IllustratePage}
+        page={page as Page}
         themePresets={theme}
         onBackground={onBackground}
         onPreview={onPreview}
@@ -290,7 +285,7 @@ describe('the Animated speed', () => {
     onPreview = vi.fn();
     render(
       <BackgroundSection
-        page={page as IllustratePage}
+        page={page as Page}
         themePresets={theme}
         onBackground={onBackground}
         onPreview={onPreview}

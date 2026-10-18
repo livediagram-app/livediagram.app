@@ -2,7 +2,7 @@
 
 import { trustedHtml } from '@livediagram/ui';
 
-// A layout's tile art, every page kind's (docs/specs/007-editor/illustrate-pages.md "Layouts",
+// A layout's tile art, every page kind's (docs/specs/007-editor/pages-mode.md "Layouts",
 // logo-pages.md "Logo layouts"): the layout built for this page and drawn by the export renderer,
 // in the tab's theme and font on the page's own background, so the tile is exactly what pressing
 // it puts on the page rather than a wireframe of it. The SVG is our own rendering of the

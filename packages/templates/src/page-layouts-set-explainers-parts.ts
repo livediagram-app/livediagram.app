@@ -1,4 +1,4 @@
-// Parts the Explainers layouts share (docs/specs/007-editor/illustrate-pages.md "Layouts"): the
+// Parts the Explainers layouts share (docs/specs/007-editor/pages-mode.md "Layouts"): the
 // room a source line takes, a heading that keeps its lead line only where the page has height to
 // spare, a leader line, a section's label over its accent rule, and the page type a line of words
 // fits in.

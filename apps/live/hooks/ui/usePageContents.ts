@@ -1,13 +1,13 @@
 'use client';
 
-// Illustrate's Contents as state (docs/specs/007-editor/illustrate-pages.md "Contents"), shared by
+// Pages mode's Contents as state (docs/specs/007-editor/pages-mode.md "Contents"), shared by
 // its two homes: the popover (a bottom sheet on a phone) and the sidebar docked down the canvas's
 // left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
 // keyboard, reordering by drag and adding a page live here once; each home lays them out.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { MAX_ILLUSTRATE_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
+import { MAX_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
   contentsDropUnit,
   contentsRows,
@@ -29,7 +29,7 @@ export function usePageContents({
   slidesTool = true,
   onWent,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   tab: PageThumbTab;
   // The page in view as the list opens, scrolled to and marked.
   here: string | undefined;
@@ -165,7 +165,7 @@ export function usePageContents({
     e.preventDefault();
     buttons.current.get(order[to]!)?.focus();
   };
-  const full = pages.length >= MAX_ILLUSTRATE_PAGES;
+  const full = pages.length >= MAX_PAGES;
   // The last page's kind leads the footer, highlighted: the next page is most often the same.
   const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add =

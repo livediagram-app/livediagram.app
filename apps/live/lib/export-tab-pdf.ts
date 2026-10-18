@@ -1,5 +1,5 @@
 // PDF export (docs/specs/013-workspace/folders.md export menu). Wraps the rendered canvas into a minimal,
-// hand-rolled PDF (one page, or one per Illustrate page) (raw RGB pixels, FlateDecode-compressed) so we
+// hand-rolled PDF (one page, or one per page) (raw RGB pixels, FlateDecode-compressed) so we
 // don't pull in a multi-hundred-KB pdf library for a single-image export.
 // Split out of export-tab.ts: the PDF container format is a self-contained
 // concern, distinct from the canvas/SVG renderers; it just needs the rendered
@@ -37,7 +37,7 @@ export function singlePageMedia(
   return { mediaW: pt(w), mediaH: pt(h) };
 }
 
-/** An Illustrate tab's pages as one PDF (docs/specs/007-editor/illustrate-pages.md "Export"):
+/** A Pages tab's pages as one PDF (docs/specs/007-editor/pages-mode.md "Export"):
  *  every page in row order, one PDF page each at its own size and orientation in print points,
  *  each exactly its sheet. */
 export async function exportPagesAsPdf(

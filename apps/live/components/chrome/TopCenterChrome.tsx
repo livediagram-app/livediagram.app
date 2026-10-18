@@ -26,7 +26,7 @@ type TopCenterChromeProps = Pick<
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
-  | 'illustratePages'
+  | 'pagesMode'
 > & {
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
@@ -49,7 +49,7 @@ export function TopCenterChrome({
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  illustratePages,
+  pagesMode,
   dockOnTop = false,
   followingName,
   onStopFollowing,
@@ -111,7 +111,7 @@ export function TopCenterChrome({
         {canvasTool === 'format' ? (
           <ModeBanner
             icon={<FormatPainterIcon />}
-            message={formatBannerMessage(formatSourceId, !!illustratePages)}
+            message={formatBannerMessage(formatSourceId, !!pagesMode)}
             actionLabel="Done"
             onAction={onExitFormatTool}
             tray={tray}

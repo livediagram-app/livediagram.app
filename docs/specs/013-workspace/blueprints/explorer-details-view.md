@@ -156,7 +156,7 @@ CREATE TABLE tab_stats (
 | Document with no tabs                | `stats: null`, cells `–`                                  |
 | Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
 | Event-storming board                 | Mode Diagram (`opensInOf`)                                |
-| Legacy mode `infographic`            | Illustrate (`opensInOf` reads through `parseEditorMode`)  |
+| Legacy mode `infographic`            | Pages (`opensInOf` reads through `parseEditorMode`)       |
 | Corrupt tab body in the backfill     | Counted empty, warned                                     |
 | Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
 | Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |

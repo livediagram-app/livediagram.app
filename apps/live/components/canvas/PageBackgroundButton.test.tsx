@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 
-// An infographic or slide page's Background beside its cog (docs/specs/007-editor/illustrate-pages.md
+// An infographic or slide page's Background beside its cog (docs/specs/007-editor/pages-mode.md
 // "Beside the cog").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { IllustratePage } from '@livediagram/document';
+import type { Page } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { PageBackgroundButton, pageBackgroundRoom } from './PageBackgroundButton';
 
@@ -12,7 +12,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 afterEach(() => cleanup());
 
-const page: IllustratePage = { id: 'p', orientation: 'portrait' };
+const page: Page = { id: 'p', orientation: 'portrait' };
 
 function show(labelled = true) {
   const onBackground = vi.fn();

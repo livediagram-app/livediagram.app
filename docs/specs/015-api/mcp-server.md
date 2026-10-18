@@ -176,7 +176,7 @@ browser. A token minted for the CLI is named "livediagram CLI".
 ## 4. Tools
 
 Twenty-eight tools: thirteen for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
-([§4.9c](#49c-the-sheet-tools)), two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)) and four
+([§4.9c](#49c-the-sheet-tools)), two for pages and articles ([§4.9d](#49d-the-pages-tools)) and four
 for forms ([§4.9e](#49e-the-form-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
@@ -885,12 +885,12 @@ scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation]
 - **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
   to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
 
-### 4.9d The Illustrate tools
+### 4.9d The Pages tools
 
-The pages of a tab in Illustrate mode and the articles written on them ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).
+The pages of a tab in Pages mode and the articles written on them ([Pages for agents](../024-agents/pages-for-agents.md)).
 Pages are named by id, place (`2`) or name; articles by flow id or title. Both tools go through one api route
-(`POST /api/documents/:id/tabs/:tabId/illustrate`, `apps/mcp/src/illustrate-tools.ts` over
-`packages/agent-verbs/src/illustrate/`) and the editor's own page edits, switch the tab into Illustrate when it is
+(`POST /api/documents/:id/tabs/:tabId/pages`, `apps/mcp/src/pages-tools.ts` over
+`packages/agent-verbs/src/pages/`) and the editor's own page edits, switch the tab into Pages when it is
 not, and reach open editors at once.
 
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
@@ -1175,8 +1175,8 @@ name>: ...`).
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
 <!-- /legacy-names -->
 
-- **Previews**: `read_document` with `image` draws an Illustrate tab as its pages, each as the editor exports it
-  (`svg-render-pages.ts` over `illustrate-page-frame.ts`): its background, gradient, pattern or picture, the elements
+- **Previews**: `read_document` with `image` draws a Pages tab as its pages, each as the editor exports it
+  (`svg-render-pages.ts` over `page-frame.ts`): its background, gradient, pattern or picture, the elements
   reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
   under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
   estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,

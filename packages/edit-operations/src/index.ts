@@ -56,4 +56,4 @@ export {
   type FieldChange,
   type ResultLine,
 } from '@livediagram/api-schema';
-export * from './illustrate';
+export * from './pages';

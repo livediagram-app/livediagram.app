@@ -83,9 +83,9 @@ describe('labels a pick sank', () => {
     );
   });
 
-  it('follows the canvas on every tab but an Illustrate one', () => {
+  it('follows the canvas on every tab but a Pages one', () => {
     expect(labelsFollowCanvas({})).toBe(true);
-    expect(labelsFollowCanvas({ opensIn: 'illustrate' })).toBe(false);
+    expect(labelsFollowCanvas({ opensIn: 'pages' })).toBe(false);
     expect(labelsFollowCanvas({ pages: [{ id: 'p', orientation: 'portrait' }] })).toBe(false);
   });
 });

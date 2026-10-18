@@ -194,7 +194,7 @@ export function ElementFaceRouter({
   labelFrame,
 }: ElementFaceRouterProps) {
   // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md):
-  // its Illustrate page's when the page has a fill of its own (illustrate-pages.md "A dark page has
+  // its page's when the page has a fill of its own (pages-mode.md "A dark page has
   // light ink"), as the label's ink already is, else the canvas's.
   const surface = useElementSurface(element.id);
   // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours

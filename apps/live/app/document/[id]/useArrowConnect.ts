@@ -49,7 +49,7 @@ export function useArrowConnect({
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): the connecting arrow is user-drawn.
   styleNewElement: <T extends Element>(el: T) => T;
-  // Illustrate mode's laid-out pages, null outside it: an element on another page is not joined.
+  // Pages mode's laid-out pages, null outside it: an element on another page is not joined.
   pages?: readonly LaidOutPage[] | null;
 }) {
   // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): when the arrow tool is picked WITH a
@@ -92,7 +92,7 @@ export function useArrowConnect({
     const from = activeTab.elements.find((e) => e.id === fromId);
     const to = activeTab.elements.find((e) => e.id === toId);
     if (!from || !to || !isBoxed(from) || !isBoxed(to)) return;
-    // Arrows stay on one page (docs/specs/007-editor/illustrate-pages.md).
+    // Arrows stay on one page (docs/specs/007-editor/pages-mode.md).
     if (pages) {
       const els = activeTab.elements;
       if (crossesPages(pageIdOf(from, els, pages), pageIdOf(to, els, pages))) {

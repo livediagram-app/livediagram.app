@@ -37,8 +37,8 @@ describe('NewDocumentWizard', () => {
   });
 
   it("creates the preset mode's blank from Create, else a Blank Diagram", () => {
-    const p = wizard({ initialMode: 'illustrate' });
-    expect(screen.getByRole('button', { name: /^Illustrate:/ }).getAttribute('aria-pressed')).toBe(
+    const p = wizard({ initialMode: 'pages' });
+    expect(screen.getByRole('button', { name: /^Pages:/ }).getAttribute('aria-pressed')).toBe(
       'true',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));

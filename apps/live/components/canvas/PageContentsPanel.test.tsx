@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, type IllustratePage } from '@livediagram/document';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import { layOutPages, type Page } from '@livediagram/document';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageContentsPanel } from './PageContentsPanel';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/illustrate-pages.md "Contents".
+// docs/specs/007-editor/pages-mode.md "Contents".
 afterEach(cleanup);
 beforeAll(() => {
   Element.prototype.scrollIntoView = () => {};
@@ -19,8 +19,8 @@ beforeAll(() => {
 });
 
 const pages = (n: number) =>
-  layOutIllustratePages(
-    Array.from({ length: n }, (_, i): IllustratePage => ({
+  layOutPages(
+    Array.from({ length: n }, (_, i): Page => ({
       id: `p${i + 1}`,
       orientation: 'portrait',
       kind: i % 2 ? 'slide' : 'infographic',
@@ -49,7 +49,7 @@ function show(n: number, canEdit = true, onDock?: () => void) {
           },
         }
       : {}),
-  } as unknown as IllustratePagesView;
+  } as unknown as PagesModeView;
   const onClose = vi.fn();
   render(
     <PageContentsPanel
@@ -99,7 +99,7 @@ describe('PageContentsPanel', () => {
   });
 
   it('docks back as the sidebar from its header, where a sidebar is offered', () => {
-    // docs/specs/007-editor/illustrate-pages.md "Contents": the popover's Dock as Sidebar.
+    // docs/specs/007-editor/pages-mode.md "Contents": the popover's Dock as Sidebar.
     const onDock = vi.fn();
     show(3, true, onDock);
     fireEvent.click(screen.getByRole('button', { name: 'Dock Contents as a sidebar' }));

@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  layOutIllustratePages,
+  layOutPages,
   newLogoPage,
   type Element,
   type LaidOutPage,
@@ -12,8 +12,8 @@ import { useArrowConnect } from './useArrowConnect';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page": Connect never joins two pages.
-const pages = layOutIllustratePages([newLogoPage('a'), newLogoPage('b')]);
+// docs/specs/007-editor/pages-mode.md "Arrows stay on one page": Connect never joins two pages.
+const pages = layOutPages([newLogoPage('a'), newLogoPage('b')]);
 const box = (id: string, page: number) => {
   const r = pages[page]!.rect;
   return {
@@ -64,7 +64,7 @@ describe('useArrowConnect across pages', () => {
     expect(armed).toBeNull();
   });
 
-  it('joins any two elements outside Illustrate mode', () => {
+  it('joins any two elements outside Pages mode', () => {
     expect(connect(null, 'other').commitTabs).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { illustratePagesOf, offersPageKindChoice } from '@livediagram/document';
+import { pagesOf, offersPageKindChoice } from '@livediagram/document';
 import { BLANK_PAGE_TEMPLATE_KINDS, blankPageTemplateOverrides } from './blank-page-templates';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
@@ -11,12 +11,12 @@ import { untitledNameForTemplate } from './templates';
 const KINDS = Object.keys(BLANK_PAGE_TEMPLATE_KINDS) as (keyof typeof BLANK_PAGE_TEMPLATE_KINDS)[];
 
 describe('blanks of a page kind', () => {
-  it.each(KINDS)('%s opens in Illustrate on exactly one empty page of its kind', (kind) => {
+  it.each(KINDS)('%s opens in Pages on exactly one empty page of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
-    expect(o.opensIn).toBe('illustrate');
-    expect(templateEditorMode(kind)).toBe('illustrate');
+    expect(o.opensIn).toBe('pages');
+    expect(templateEditorMode(kind)).toBe('pages');
     expect(buildTemplate(kind, 0, 0)).toEqual([]);
-    const pages = illustratePagesOf(o);
+    const pages = pagesOf(o);
     expect(pages).toHaveLength(1);
     expect(pages[0]!.kind).toBe(BLANK_PAGE_TEMPLATE_KINDS[kind]);
     // Its kind is chosen, so it never asks What Is This Page For?.
@@ -68,13 +68,11 @@ describe('blanks of a page kind', () => {
 describe('a blank infographic on its theme', () => {
   it("starts its page on the theme's default background; other templates keep theirs", async () => {
     const { buildTemplateTab } = await import('./template-tab');
-    const { defaultPageBackground, getBuiltInTheme, illustratePagesOf } =
+    const { defaultPageBackground, getBuiltInTheme, pagesOf } =
       await import('@livediagram/document');
     const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
-    expect(illustratePagesOf(tab)[0]!.background).toEqual(
-      defaultPageBackground(getBuiltInTheme('ocean')),
-    );
+    expect(pagesOf(tab)[0]!.background).toEqual(defaultPageBackground(getBuiltInTheme('ocean')));
     const slides = buildTemplateTab('s', 'S', 'blank-slide-deck', 'ocean');
-    expect(illustratePagesOf(slides)[0]!.background).toBeUndefined();
+    expect(pagesOf(slides)[0]!.background).toBeUndefined();
   });
 });

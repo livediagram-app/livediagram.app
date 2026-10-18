@@ -128,7 +128,7 @@ export function useEditorCommands(open: boolean): {
     workbenchMode,
     canCombine,
     combineSelected,
-    illustratePages,
+    pagesMode,
   } = ctx;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
@@ -149,7 +149,7 @@ export function useEditorCommands(open: boolean): {
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
   const combinable = isMulti && canCombine();
-  const mirrorable = selectionCount > 0 && !!illustratePages?.logo?.canMirrorCopy();
+  const mirrorable = selectionCount > 0 && !!pagesMode?.logo?.canMirrorCopy();
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single
     ? single.type === 'arrow'
@@ -234,7 +234,7 @@ export function useEditorCommands(open: boolean): {
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
     combine: (op) => void combineSelected(op),
-    mirrorCopy: () => illustratePages?.logo?.mirrorCopy(),
+    mirrorCopy: () => pagesMode?.logo?.mirrorCopy(),
     clearAnimation: () =>
       single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,

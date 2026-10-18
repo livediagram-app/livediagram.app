@@ -1,4 +1,4 @@
-// A chart's ink on a page (docs/specs/007-editor/illustrate-pages.md "Re-inking", "Charts adapt
+// A chart's ink on a page (docs/specs/007-editor/pages-mode.md "Re-inking", "Charts adapt
 // as they are drawn"): a chart's series take their colours from a palette (the tab theme's, the
 // chart's own, a slice's own), not from fields re-inking writes, so a page's fill can leave a
 // series unreadable (Boardroom's dark slate line on a dark page). Each colour is instead adapted
@@ -8,8 +8,8 @@
 // match. Pure.
 import { canvasSurface, type CanvasSurface } from './colors';
 import { elementIndexFor } from './geometry';
-import { illustratePageAt, type LaidOutPage } from './illustrate-page';
-import { elementAnchorPoint, pageFillTone } from './illustrate-page-content';
+import { pageAt, type LaidOutPage } from './page';
+import { elementAnchorPoint, pageFillTone } from './page-content';
 import { isChartShape } from './data-shapes';
 import { isSankeyShape } from './sankey-model';
 import { layerBands } from './layers';
@@ -96,7 +96,7 @@ export function chartPageGrounds(
   const pageOf = new Map<string, LaidOutPage>();
   const walked = new Set<LaidOutPage>();
   for (const el of elements) {
-    const page = illustratePageAt(pages, elementAnchorPoint(el, index));
+    const page = pageAt(pages, elementAnchorPoint(el, index));
     if (!page?.background?.fill) continue;
     pageOf.set(el.id, page);
     if (isPaletteChart(el)) walked.add(page);

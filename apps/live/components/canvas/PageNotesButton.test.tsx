@@ -6,7 +6,7 @@ import { PageNotesButton } from './PageNotesButton';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": a slide page's notes, the deck slide's own.
+// docs/specs/007-editor/pages-mode.md "Slides": a slide page's notes, the deck slide's own.
 afterEach(cleanup);
 
 const controls = (slide?: { id: string; hidden: boolean; notes: string }) => ({

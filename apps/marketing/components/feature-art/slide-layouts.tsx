@@ -1,4 +1,4 @@
-// Feature art for the Documents & slides category's slide card (docs/specs/007-editor/illustrate-pages.md):
+// Feature art for the Documents & slides category's slide card (docs/specs/007-editor/pages-mode.md):
 // a 16:9 slide page taking a layout from the picker. Split from ./documents; built on ./mode-parts like it.
 
 import { at, BAR, Cursor, INK, MUTED, Pill, Stage, SURFACE, TextLines, YOU } from './mode-parts';

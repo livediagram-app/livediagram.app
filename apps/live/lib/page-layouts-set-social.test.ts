@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement, TextElement } from '@livediagram/document';
 import { PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the further Social layouts, posts built
+// docs/specs/007-editor/pages-mode.md "Layouts": the further Social layouts, posts built
 // first for Square, Portrait post (4:5) and Story (9:16) pages, a wide page setting the picture,
 // chart or tiles beside the words.
 const SQUARE = { x: 0, y: 0, width: 928, height: 928 };

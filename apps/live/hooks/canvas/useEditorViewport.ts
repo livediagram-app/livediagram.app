@@ -113,7 +113,7 @@ type EditorViewportApi = {
   ) => void;
   // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
   centreOn: (at: { x: number; y: number }) => void;
-  // Is that point already in the middle of this view? With its page (Illustrate), is that page framed?
+  // Is that point already in the middle of this view? With its page (Pages), is that page framed?
   isCentredOn: (at: { x: number; y: number }, page?: PageRect | null) => boolean;
 };
 

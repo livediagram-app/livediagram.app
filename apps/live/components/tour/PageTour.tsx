@@ -1,7 +1,7 @@
 'use client';
 
-// Show Me on a page (docs/specs/007-editor/show-me.md; illustrate-tour.md "Where it appears"; logo-pages.md "Show
-// Me"): the page kind's track of the Illustrate tour, run on demand from the page's panel and drawn over the page.
+// Show Me on a page (docs/specs/007-editor/show-me.md; pages-tour.md "Where it appears"; logo-pages.md "Show
+// Me"): the page kind's track of the Pages tour, run on demand from the page's panel and drawn over the page.
 // Never offered: only the button in the page panel runs it. Each kind sends its own literal telemetry, so the
 // dashboard's emitter scan reads every event.
 import { useEffect, useState } from 'react';
@@ -15,7 +15,7 @@ import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { isOnScreen } from './tour-dom';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
-/** The page's panel, opened on a tab or closed, through the request IllustratePages follows. */
+/** The page's panel, opened on a tab or closed, through the request CanvasPages follows. */
 export const PAGE_PANEL: Pick<PageTourApi, 'openPanel' | 'closePanel'> = {
   openPanel: (pageId, tab) => requestPagePanel(pageId, tab),
   closePanel: () => requestPagePanel(null),

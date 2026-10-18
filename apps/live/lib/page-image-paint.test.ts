@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PageImageFill } from '@livediagram/document';
-import { backgroundCategoryOf, fillCss, pageSheetStyle } from './illustrate-page-paint';
+import { backgroundCategoryOf, fillCss, pageSheetStyle } from './page-paint';
 import {
   pageImageCssUrl,
   pageImageOverlayCss,
@@ -8,7 +8,7 @@ import {
   pageImageSrc,
 } from './page-image-paint';
 
-// docs/specs/007-editor/illustrate-pages.md "Image backgrounds": the overlay, the crop, and the
+// docs/specs/007-editor/pages-mode.md "Image backgrounds": the overlay, the crop, and the
 // same paint on the sheet and in the exports.
 const fill = (over: Partial<PageImageFill> = {}): PageImageFill => ({
   kind: 'image',

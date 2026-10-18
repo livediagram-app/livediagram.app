@@ -1,4 +1,4 @@
-// More Social layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"), category 'social':
+// More Social layouts (docs/specs/007-editor/pages-mode.md "Layouts"), category 'social':
 // pure builders on the shared kit (page-layout-kit.ts), laid out in proportions of the page's
 // content box so each fits every size and orientation, in the tab's theme. Posts for Instagram,
 // LinkedIn, X and stories: one clear message each, in big type, built first for Square, Portrait

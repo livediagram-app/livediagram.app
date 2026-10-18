@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MIRROR,
   freehandCanvasPoints,
-  layOutIllustratePages,
+  layOutPages,
   mapElement,
   newLogoPage,
   symmetryMaps,
@@ -15,7 +15,7 @@ import {
   type MirrorSettings,
 } from './index';
 
-const [laid] = layOutIllustratePages([newLogoPage('l')]);
+const [laid] = layOutPages([newLogoPage('l')]);
 const r = laid!.rect;
 const cx = r.x + r.width / 2;
 const cy = r.y + r.height / 2;

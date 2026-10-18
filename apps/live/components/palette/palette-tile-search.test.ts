@@ -34,7 +34,7 @@ describe('elementTileSections', () => {
 
   it('puts the tiles only another mode offers in the other section, never in both', () => {
     const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: true });
-    // Charts and devices are Illustrate's; the event-storming notation is a board's.
+    // Charts and devices are Pages mode's; the event-storming notation is a board's.
     expect(ids(elsewhere)).toEqual(
       expect.arrayContaining(['data:pie', 'devices:phone', 'tools:es-domain-event']),
     );
@@ -44,7 +44,7 @@ describe('elementTileSections', () => {
   });
 
   it('flips with the mode', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'illustrate', hasImage: true });
+    const { here, elsewhere } = elementTileSections({ mode: 'pages', hasImage: true });
     expect(ids(here)).toContain('data:pie');
     expect(ids(elsewhere)).not.toContain('data:pie');
   });
@@ -52,7 +52,7 @@ describe('elementTileSections', () => {
   it('covers every tile of every mode between its two sections', () => {
     const { here, elsewhere } = elementTileSections({ mode: 'plan', hasImage: true });
     const all = new Set([...ids(here), ...ids(elsewhere)]);
-    for (const mode of ['diagram', 'illustrate', 'plan'] as const) {
+    for (const mode of ['diagram', 'pages', 'plan'] as const) {
       for (const t of modeElementTiles(mode)) expect(all.has(t.id), t.id).toBe(true);
     }
   });
@@ -65,7 +65,7 @@ describe('elementTileSections', () => {
 
   it("keeps Plan's own tiles out of other modes, greyed out with the reason", () => {
     const planOwn = (t: { section: string }) => t.section.startsWith('plan-');
-    for (const mode of ['diagram', 'illustrate', 'facilitate'] as const) {
+    for (const mode of ['diagram', 'pages', 'facilitate'] as const) {
       const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
       expect([...here, ...elsewhere].filter(planOwn), mode).toEqual([]);
       expect(ids(unavailable), mode).toEqual(

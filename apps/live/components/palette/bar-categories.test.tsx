@@ -56,14 +56,14 @@ describe('the category bar’s categories', () => {
   });
 
   it('leaves a mode with no Draw or session tools as it is, names shortened', () => {
-    const cats = bar('illustrate');
+    const cats = bar('pages');
     expect(cats.map((c) => c.id)).not.toContain(WRITE_DRAW_ID);
     expect(cats.map((c) => c.id)).not.toContain(SESSION_CATEGORY_ID);
     expect(cats.find((c) => c.id === 'write')?.label).toBe('Write');
   });
 
   it('names every category in one word', () => {
-    for (const mode of ['diagram', 'facilitate', 'illustrate'] as const)
+    for (const mode of ['diagram', 'facilitate', 'pages'] as const)
       for (const c of bar(mode)) expect(c.label, `${mode} ${c.id}`).not.toMatch(/\s|&/);
   });
 });

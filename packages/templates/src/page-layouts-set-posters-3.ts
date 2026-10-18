@@ -1,4 +1,4 @@
-// Posters layouts, part two (docs/specs/007-editor/illustrate-pages.md "Layouts"): a research
+// Posters layouts, part two (docs/specs/007-editor/pages-mode.md "Layouts"): a research
 // poster and a we're hiring poster. Pure builders on the shared kit: the page's content box in,
 // uncoloured elements out, a tall page stacking and a squarer or wide one setting side by side.
 import type { Element } from '@livediagram/document';

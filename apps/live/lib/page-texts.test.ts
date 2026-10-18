@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, layOutIllustratePages, type IllustratePage } from '@livediagram/document';
+import { createShape, layOutPages, type Page } from '@livediagram/document';
 import { contentsRows, filterContents } from './page-contents';
 import { pageTexts } from './page-texts';
 
-// docs/specs/007-editor/illustrate-pages.md "Contents": Find a Page finds the words on the pages.
-const pages = layOutIllustratePages([
+// docs/specs/007-editor/pages-mode.md "Contents": Find a Page finds the words on the pages.
+const pages = layOutPages([
   { id: 'a', orientation: 'portrait', kind: 'infographic' },
   { id: 'b', orientation: 'portrait', kind: 'article', flow: 'f1' },
-] as IllustratePage[]);
+] as Page[]);
 const box = {
   ...createShape('square', pages[0]!.rect.x + 40, pages[0]!.rect.y + 40),
   id: 'box',

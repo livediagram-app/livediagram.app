@@ -40,7 +40,7 @@ describe('isRetiredEvent', () => {
       'TemplateModeDiagram',
       'TemplateModeDraw',
       'TemplateModeFacilitate',
-      'TemplateModeIllustrate',
+      'TemplateModePages',
       'TemplateModePlan',
     ])
       expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
@@ -51,8 +51,8 @@ describe('isRetiredEvent', () => {
 
   it('retires Settings › Experimental and its mode switches, not the modes', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsExperimental')).toBe(true);
-    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOn')).toBe(true);
-    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
     expect(isRetiredEvent('Editor', 'Changed', 'ModePlan')).toBe(false);

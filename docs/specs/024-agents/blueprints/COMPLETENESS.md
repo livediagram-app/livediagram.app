@@ -78,7 +78,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## illustrate-for-agents
+## pages-for-agents
 
 - [x] Domain and naming
 - [x] Behaviour and state

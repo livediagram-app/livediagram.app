@@ -54,19 +54,19 @@ describe('resolveViewBackdrop', () => {
     );
   });
 
-  // Illustrate and Plan each have a default canvas of their own, shown while the tab keeps its theme's pattern.
-  it('paints Illustrate plain and Plan graph paper while the tab keeps its theme’s pattern', () => {
+  // Pages and Plan each have a default canvas of their own, shown while the tab keeps its theme's pattern.
+  it('paints Pages plain and Plan graph paper while the tab keeps its theme’s pattern', () => {
     const t = tab({ theme: 'slate', backgroundPattern: 'grid' });
-    const view = (mode: 'illustrate' | 'plan') => ({ mode, drawPattern: 'graph' as const });
-    expect(MODE_PATTERNS).toEqual({ illustrate: 'blank', plan: 'blank' });
-    expect(resolveViewBackdrop(t, view('illustrate')).backgroundPattern).toBe('blank');
+    const view = (mode: 'pages' | 'plan') => ({ mode, drawPattern: 'graph' as const });
+    expect(MODE_PATTERNS).toEqual({ pages: 'blank', plan: 'blank' });
+    expect(resolveViewBackdrop(t, view('pages')).backgroundPattern).toBe('blank');
     expect(resolveViewBackdrop(t, view('plan')).backgroundPattern).toBe('blank');
     expect(resolveViewBackdrop(tab(), view('plan')).backgroundPattern).toBe('blank');
   });
 
-  it('shows a pattern someone picked in Illustrate and Plan, as in Diagram', () => {
+  it('shows a pattern someone picked in Pages and Plan, as in Diagram', () => {
     const t = tab({ theme: 'slate', backgroundPattern: 'hexagonal' });
-    for (const mode of ['illustrate', 'plan'] as const)
+    for (const mode of ['pages', 'plan'] as const)
       expect(resolveViewBackdrop(t, { mode, drawPattern: 'graph' })).toEqual(resolveTabBackdrop(t));
   });
 });

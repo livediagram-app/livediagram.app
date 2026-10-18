@@ -61,7 +61,7 @@ describe('SettingsPlacementDefaultRow', () => {
       'Diagrams',
       'Whiteboards',
       'Sessions',
-      'Illustrate Pages',
+      'Pages Documents',
       'Plan Boards',
       'Event Storming Boards',
       'Retrospectives',

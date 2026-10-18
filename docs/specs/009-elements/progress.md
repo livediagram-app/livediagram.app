@@ -24,7 +24,7 @@ They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-r
 - **Ring** — an SVG track circle plus a progress arc (`pathLength={100}`, `stroke-dasharray="<pct> 100"`, round cap, starting at 12 o'clock).
 - Both render a centred **percentage label** and therefore **suppress the standard editable element label**.
 
-Colours map to the existing controls: the **fill colour** is the track, the **stroke colour** is the filled portion. A track with no fill of its own follows the paper the element is drawn on: a pale slate (`#e2e8f0`) on light paper, the dark-ink shape fill on dark paper (a dark canvas, or an Illustrate page with a dark fill), on the canvas and in every export alike.
+Colours map to the existing controls: the **fill colour** is the track, the **stroke colour** is the filled portion. A track with no fill of its own follows the paper the element is drawn on: a pale slate (`#e2e8f0`) on light paper, the dark-ink shape fill on dark paper (a dark canvas, or a page with a dark fill), on the canvas and in every export alike.
 
 ### The percentage stays legible
 

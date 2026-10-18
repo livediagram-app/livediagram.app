@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement } from '@livediagram/document';
 import { PAGE_LAYOUTS, type PageLayout } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the Steps and Time category's further
+// docs/specs/007-editor/pages-mode.md "Layouts": the Steps and Time category's further
 // layouts (Staircase, Customer Journey, Project Plan, Decision Flow, How-To).
 const TALL = { x: 0, y: 0, width: 682, height: 1011 };
 const WIDE = { x: 0, y: 0, width: 1011, height: 682 };

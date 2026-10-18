@@ -59,7 +59,7 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 - A synced user preference, `elementTourKinds`, lists the toured kinds whose offer has been answered (Play or
   Cancel), so an answer follows the account ([User preferences](user-preferences.md)).
 - `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as answered
-  while the mode is on, as `illustrateTourSeen` does for its kinds.
+  while the mode is on, as `pagesTourSeen` does for its kinds.
 
 ## Settings
 

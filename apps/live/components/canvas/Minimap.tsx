@@ -58,7 +58,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
-  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Getting around the
+  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Getting around the
   // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
   pages?: readonly LaidOutPage[];
   // The articles' writing, by identity: the picture redraws a page's lines of text as it changes.

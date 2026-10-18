@@ -264,10 +264,10 @@ describe('templateCanvasOverrides', () => {
     });
   });
 
-  it('makes an article that opens in Illustrate on one article page of writing', () => {
+  it('makes an article that opens in Pages on one article page of writing', () => {
     // docs/specs/007-editor/article-pages.md: the template's page and writing are tab data.
     const o = templateCanvasOverrides('article');
-    expect(o.opensIn).toBe('illustrate');
+    expect(o.opensIn).toBe('pages');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
     expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
   });
@@ -275,7 +275,7 @@ describe('templateCanvasOverrides', () => {
   // docs/specs/008-canvas/canvas-and-palette.md "Templates": Working Backwards is a PR/FAQ article in the Report look.
   it('makes Working Backwards a PR/FAQ article: press release, a page break, both FAQs and a review list', () => {
     const o = templateCanvasOverrides('working-backwards');
-    expect(o.opensIn).toBe('illustrate');
+    expect(o.opensIn).toBe('pages');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
     const flow = o.articles!['art-prfaq']!;
     expect(flow.style).toEqual({ look: 'report' });
@@ -348,12 +348,12 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('opens the slide deck in Illustrate on six 16:9 slide pages, keeping its layers', () => {
+  it('opens the slide deck in Pages on six 16:9 slide pages, keeping its layers', () => {
     // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
     const o = templateCanvasOverrides('slide-deck');
     expect(o).toMatchObject({
       backgroundPattern: 'blank',
-      opensIn: 'illustrate',
+      opensIn: 'pages',
       layers: templateLayers('slide-deck'),
     });
     expect(o.pages).toHaveLength(6);
@@ -374,7 +374,7 @@ describe('templateCanvasOverrides', () => {
 
   it('opens the logo exploration on Logo pages, and timelines get ruled lines', () => {
     const o = templateCanvasOverrides('logo-design');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
+    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
     // Six lockup artboards, then the palette.
     expect(o.pages?.map((p) => p.name)).toEqual([
       'Horizontal',
@@ -403,7 +403,7 @@ describe('templateCanvasOverrides', () => {
 
   it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
     const o = templateCanvasOverrides('live-card');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
+    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
     expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
       ['Cover', 'social', 'portrait', 'infographic'],
       ['Inside', 'social', 'portrait', 'infographic'],
@@ -511,7 +511,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Frames: the browser, the how-to and the Notes heading.
     'browser-wireframe': { names: ['Frames', 'UI'], scaffold: 3, content: 55 },
     // Frames: the footer (deck name + page number) of the five content slides; the slides
-    // themselves are Illustrate pages. Content: the title slide's nine pieces, each other
+    // themselves are pages. Content: the title slide's nine pieces, each other
     // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
     'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
     // Frames: six panel cards, their number chips and the how-to.
@@ -1096,10 +1096,9 @@ describe('templateEditorMode', () => {
     }
   });
 
-  it('opens every paged template in Illustrate', () => {
+  it('opens every paged template in Pages', () => {
     for (const t of TEMPLATES) {
-      if (templateCanvasOverrides(t.kind).pages)
-        expect(templateEditorMode(t.kind)).toBe('illustrate');
+      if (templateCanvasOverrides(t.kind).pages) expect(templateEditorMode(t.kind)).toBe('pages');
     }
   });
 

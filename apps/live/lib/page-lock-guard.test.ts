@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, type Element, type Tab } from '@livediagram/document';
+import { layOutPages, type Element, type Tab } from '@livediagram/document';
 import { announcePageLocked, guardLockedPagesIn } from './page-lock-guard';
 
-// docs/specs/007-editor/illustrate-pages.md "Locking a page": the commit choke point's guard.
+// docs/specs/007-editor/pages-mode.md "Locking a page": the commit choke point's guard.
 const pages = [{ id: 'a', orientation: 'portrait' as const, locked: true as const }];
-const r = layOutIllustratePages(pages)[0]!.rect;
+const r = layOutPages(pages)[0]!.rect;
 const tab = (elements: Element[]): Tab => ({ id: 't', name: 'T', elements, pages });
 const box = {
   id: 'x',
@@ -24,7 +24,7 @@ describe('guardLockedPagesIn', () => {
     expect(onBlocked).toHaveBeenCalled();
   });
 
-  it('passes edits through with no guard (outside Illustrate) or on another tab', () => {
+  it('passes edits through with no guard (outside Pages) or on another tab', () => {
     const next = [tab([box])];
     expect(guardLockedPagesIn([tab([])], next, null)).toBe(next);
     expect(guardLockedPagesIn([tab([])], next, { tabId: 'other', onBlocked: vi.fn() })).toBe(next);

@@ -1,10 +1,10 @@
 'use client';
 
-// The pieces of Illustrate's Contents (docs/specs/007-editor/illustrate-pages.md "Contents"), laid
+// The pieces of Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is usePageContents.
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
-import { MAX_ILLUSTRATE_PAGES, type PageKind } from '@livediagram/document';
+import { MAX_PAGES, type PageKind } from '@livediagram/document';
 import {
   lucideFileText,
   lucideGripVertical,
@@ -581,11 +581,7 @@ export function ContentsAddPage({ contents }: { contents: PageContents }) {
           ))}
         </div>
       ) : null}
-      {full ? (
-        <Tooltip label={`A tab holds up to ${MAX_ILLUSTRATE_PAGES} pages`}>{button}</Tooltip>
-      ) : (
-        button
-      )}
+      {full ? <Tooltip label={`A tab holds up to ${MAX_PAGES} pages`}>{button}</Tooltip> : button}
     </div>
   );
 }

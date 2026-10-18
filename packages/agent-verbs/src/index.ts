@@ -96,6 +96,6 @@ export {
   type SheetRead,
   type SheetRefusal,
 } from './sheets';
-export * from './illustrate';
+export * from './pages';
 export * from './forms';
 export * from './images';

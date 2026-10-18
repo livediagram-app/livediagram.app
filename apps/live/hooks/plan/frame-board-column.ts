@@ -1,5 +1,5 @@
 // A tap on a board column's header on a phone frames that column (docs/specs/026-plan/plan-board.md "On a
-// phone"), as a tap on a page does in Illustrate: the view glides to fit the column, header to the board's foot,
+// phone"), as a tap on a page does in Pages: the view glides to fit the column, header to the board's foot,
 // below the top strip. The column's box is read off the screen and turned into canvas coordinates through the
 // board element's own place and size (the board is never rotated), then fitted as a page is (computeFitBelow).
 import { computeFitBelow } from '@/lib/viewport';

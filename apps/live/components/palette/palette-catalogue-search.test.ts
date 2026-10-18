@@ -37,10 +37,10 @@ describe('searchCatalogueTiles', () => {
   });
 
   it("puts a catalogue the mode does not offer in the other modes' section", () => {
-    // Illustrate offers Icons and Stickers but not Technology; Plan offers none of them.
-    const illustrate = searchCatalogueTiles({ query: 'database', mode: 'illustrate' });
-    expect(from(illustrate.here, 'tech:')).toEqual([]);
-    expect(from(illustrate.elsewhere, 'tech:').length).toBeGreaterThan(0);
+    // Pages offers Icons and Stickers but not Technology; Plan offers none of them.
+    const pages = searchCatalogueTiles({ query: 'database', mode: 'pages' });
+    expect(from(pages.here, 'tech:')).toEqual([]);
+    expect(from(pages.elsewhere, 'tech:').length).toBeGreaterThan(0);
     const plan = searchCatalogueTiles({ query: 'database', mode: 'plan' });
     expect(plan.here).toEqual([]);
   });

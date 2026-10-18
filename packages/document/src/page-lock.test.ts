@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { illustratePagesOf, layOutIllustratePages, type IllustratePage } from './illustrate-page';
+import { pagesOf, layOutPages, type Page } from './page';
 import { elementsOnLockedPages, guardLockedPages, hasLockedPage } from './page-lock';
 import type { Element, ShapeElement } from './index';
 
-// docs/specs/007-editor/illustrate-pages.md "Locking a page".
-const pages: IllustratePage[] = [
+// docs/specs/007-editor/pages-mode.md "Locking a page".
+const pages: Page[] = [
   { id: 'a', orientation: 'portrait', locked: true },
   { id: 'b', orientation: 'portrait' },
 ];
-const [pa, pb] = layOutIllustratePages(pages);
+const [pa, pb] = layOutPages(pages);
 const box = (id: string, x: number, y: number): ShapeElement => ({
   id,
   type: 'shape',
@@ -24,7 +24,7 @@ const onB = box('on-b', pb!.rect.x + 100, pb!.rect.y + 100);
 describe('page lock', () => {
   it('knows which elements a locked page holds', () => {
     expect(hasLockedPage(pages)).toBe(true);
-    expect([...elementsOnLockedPages([onA, onB], layOutIllustratePages(pages))]).toEqual(['on-a']);
+    expect([...elementsOnLockedPages([onA, onB], layOutPages(pages))]).toEqual(['on-a']);
   });
 
   it('keeps a new element off a locked page, and lets one onto an open page', () => {
@@ -65,7 +65,7 @@ describe('page lock', () => {
   });
 
   it('reads a stored lock, and only `true`', () => {
-    const laid = layOutIllustratePages([{ id: 'x', orientation: 'portrait', locked: true }]);
+    const laid = layOutPages([{ id: 'x', orientation: 'portrait', locked: true }]);
     expect(laid[0]!.locked).toBe(true);
   });
 
@@ -76,7 +76,7 @@ describe('page lock', () => {
         { id: 'y', orientation: 'portrait', locked: 'yes', startedBlank: 1 },
       ],
     } as never;
-    const [x, y] = illustratePagesOf(tab);
+    const [x, y] = pagesOf(tab);
     expect(x).toMatchObject({ locked: true, startedBlank: true });
     expect(y!.locked).toBeUndefined();
     expect(y!.startedBlank).toBeUndefined();
