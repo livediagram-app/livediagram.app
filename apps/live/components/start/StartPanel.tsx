@@ -25,6 +25,7 @@ import {
   useSheetDrag,
 } from '@livediagram/ui';
 import { lucideSearch, lucideX } from '@livediagram/icons/lucide';
+import { useChromeFloor } from '@/components/toast/useToastFloor';
 import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -35,6 +36,8 @@ import { takeStartQuery } from './start-query';
 import { liftBestMatch } from './best-match';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
+
+const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
@@ -118,6 +121,8 @@ export function StartPanel<C extends string>({
   // On a phone the panel is a sheet risen from the bottom edge; one that can close drags down to close (Dialog's
   // phoneSheet, BottomSheet).
   const sheet = useSheetDrag(onClose ?? (() => {}));
+  // Where the tab bar stands, for the phone and short-window sheet to stand on (useChromeFloor, as toasts do).
+  const tabBarFloor = useChromeFloor(true, 0, TAB_BAR_SELECTOR);
   const searching = query.trim().length > 0;
   // A title match leads, under Best Match, lifted out of its group (start-diagramming.md "A title match leads").
   const { best, groups: results } = searching
@@ -236,11 +241,11 @@ export function StartPanel<C extends string>({
     // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster, clear of the home
     // indicator, the one place it still meets the bottom edge.
     <div
-      className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[var(--start-floor)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16"
-      // On a phone the sheet stands on the tab bar (its 48px row and the bottom inset, as TabBar sizes itself), so
-      // the tabs stay in reach: Start Planning cannot close, and over the bar it left a new tab no way back to the
-      // others but a template.
-      style={{ '--start-floor': `calc(3rem + ${safeInset('bottom')})` } as CSSProperties}
+      className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[calc(var(--start-floor)-8px)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-[var(--start-floor)] short-window:pt-16"
+      // On a phone, and on a short window, the sheet stands on the tab bar while it shows (measured as the toast stack
+      // measures its floor; a sideways phone folds its bars away), so the tabs stay in reach: Start Planning cannot
+      // close, and over the bar it left a new tab no way back to the others but a template. Flush on a phone.
+      style={{ '--start-floor': `${tabBarFloor}px` } as CSSProperties}
     >
       <section
         aria-labelledby={titleId}

@@ -63,14 +63,33 @@ describe('StartFromTemplates', () => {
   });
 });
 
-// docs/specs/007-editor/start-diagramming.md "On a phone": the sheet stands on the tab bar, so the tabs stay in reach.
+// docs/specs/007-editor/start-diagramming.md "On a phone": the sheet stands on the tab bar while it shows, so the tabs
+// stay in reach; with the bars folded away (a sideways phone) there is nothing to stand on.
 describe('StartFromTemplates on a phone', () => {
-  it('stands its sheet on the tab bar rather than over it', () => {
+  const frameOf = () =>
+    screen.getByRole('heading', { name: 'Start Diagramming' }).closest('section')!.parentElement!;
+
+  it('stands on the edge with no tab bar showing', () => {
     mount('diagram');
-    const panel = screen.getByRole('heading', { name: 'Start Diagramming' }).closest('section')!;
-    const frame = panel.parentElement!;
-    expect(frame.className).toContain('max-sm:pb-[var(--start-floor)]');
-    expect(frame.style.getPropertyValue('--start-floor')).toMatch(/^calc\(3rem \+ /);
+    expect(frameOf().className).toContain('max-sm:pb-[calc(var(--start-floor)-8px)]');
+    expect(frameOf().style.getPropertyValue('--start-floor')).toBe('16px');
+  });
+
+  it('stands on the tab bar where it shows', () => {
+    const bar = document.createElement('div');
+    bar.setAttribute('data-editor-tabbar', '');
+    bar.getBoundingClientRect = () =>
+      ({ top: 616, left: 0, right: 390, width: 390, height: 48 }) as DOMRect;
+    document.body.appendChild(bar);
+    vi.stubGlobal('innerWidth', 390);
+    vi.stubGlobal('innerHeight', 664);
+    try {
+      mount('diagram');
+      expect(frameOf().style.getPropertyValue('--start-floor')).toBe('56px');
+    } finally {
+      vi.unstubAllGlobals();
+      bar.remove();
+    }
   });
 });
 
