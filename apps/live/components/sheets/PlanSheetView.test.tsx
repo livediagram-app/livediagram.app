@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The Sheet element (docs/specs/029-sheets/sheet.md; blueprint sheet-element.md "Editor components"): its faces
 // while it cannot show the grid (loading, an error with Try Again, gone with Remove for an editor), the grid in
-// Plan mode, drawn only elsewhere with a Switch to Plan hint on double-click, Import CSV (an empty sheet replaced at
+// Plan mode, drawn only elsewhere with nothing offered on double-click, Import CSV (an empty sheet replaced at
 // once, a filled one asking first), and maximising without losing anything.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -77,7 +77,6 @@ function bridge(over: Partial<SheetsBridge> = {}) {
     commitElements: vi.fn(),
     placeElement: vi.fn(),
     tickElements: vi.fn(),
-    switchToPlan: vi.fn(),
     selectElement: vi.fn(),
     sheetRetitled: vi.fn(),
     attach: vi.fn(() => () => {}),
@@ -200,24 +199,17 @@ describe('the grid', () => {
     expect(document.body.textContent).toContain('A');
     // Double-clicking a Sheet in Plan mode offers nothing.
     fireEvent.doubleClick(screen.getByText('Budget'));
-    expect(screen.queryByRole('dialog', { name: 'Switch to Plan' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('offers Plan on a double-click outside Plan mode', async () => {
+  // A Sheet goes only on a tab in Plan (sheet.md "Only in Plan"), so nothing offers to switch.
+  it('offers nothing on a double-click outside Plan mode', async () => {
     fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
-    const b = bridge();
-    draw(element({ sheetId: 'sheetAAAA' }), b, plan(false));
+    draw(element({ sheetId: 'sheetAAAA' }), bridge(), plan(false));
     await screen.findByText('Budget');
     fireEvent.doubleClick(screen.getByText('Budget'));
-    const hint = screen.getByRole('dialog', { name: 'Switch to Plan' });
-    expect(hint.textContent).toContain('Switch to Plan to edit this sheet');
-    fireEvent.click(screen.getByRole('button', { name: 'Not Now' }));
-    expect(screen.queryByRole('dialog', { name: 'Switch to Plan' })).toBeNull();
-    expect(b.switchToPlan).not.toHaveBeenCalled();
-    fireEvent.doubleClick(screen.getByText('Budget'));
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to Plan' }));
-    expect(b.switchToPlan).toHaveBeenCalledOnce();
-    expect(screen.queryByRole('dialog', { name: 'Switch to Plan' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Switch to Plan' })).toBeNull();
   });
 
   it('draws a read-only Sheet without the toolbar', async () => {
@@ -300,20 +292,6 @@ describe('pointing into a formula', () => {
     const target = pointingTargetFor('sheetBBBB', 't1')!;
     document.querySelector('[data-sheet-editor="sheetAAAA"]')!.remove();
     expect(() => target.refocus()).not.toThrow();
-  });
-});
-
-describe('the Switch to Plan hint and the import prompt', () => {
-  it('keep a press inside them from reaching the canvas', async () => {
-    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
-    draw(element({ sheetId: 'sheetAAAA' }), bridge(), plan(false));
-    await screen.findByText('Budget');
-    fireEvent.doubleClick(screen.getByText('Budget'));
-    const outer = vi.fn();
-    document.body.addEventListener('pointerdown', outer);
-    fireEvent.pointerDown(screen.getByRole('dialog', { name: 'Switch to Plan' }));
-    document.body.removeEventListener('pointerdown', outer);
-    expect(outer).not.toHaveBeenCalled();
   });
 });
 

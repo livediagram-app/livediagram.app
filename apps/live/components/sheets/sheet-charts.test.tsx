@@ -78,7 +78,6 @@ function bridge(over: Partial<SheetsBridge> = {}): SheetsBridge & { elements: El
       b.elements = map(b.elements);
     }),
     commitElements: vi.fn(),
-    switchToPlan: vi.fn(),
     selectElement: vi.fn(),
     sheetRetitled: vi.fn(),
     attach: vi.fn(() => () => {}),

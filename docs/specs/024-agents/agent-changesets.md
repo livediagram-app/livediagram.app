@@ -147,6 +147,13 @@ A changeset on a tab bound to a source in strict compatibility
 capabilities before the write; a result holding residue is refused `422 not_expressible`, naming each element and
 field, and nothing is applied. A relaxed tab is never refused for residue.
 
+## Sheets only in Plan
+
+A Sheet element goes only on a tab in Plan ([Sheet](../029-sheets/sheet.md#only-in-plan)). A changeset, operations or
+replace, whose result holds a Sheet element the tab did not hold before, on a tab not in Plan, is refused
+`422 invalid_value`, naming each such element, with the hint to add a Sheet tab with `add_tab` instead; nothing is
+applied. Sheets a tab already holds are left alone, and a replace that makes a Plan tab (a Sheet template) passes.
+
 ## Revert
 
 - `POST /api/documents/:id/changesets/:changesetId/revert` applies the changeset's inverse as a new changeset by the

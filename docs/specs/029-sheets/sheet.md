@@ -875,13 +875,23 @@ not in Sheet Settings, not anywhere.
 - **Edit** with edit access: everything else, the sheet's validation and format rules included.
 - Someone who may only view sees no toolbar, the formula bar read-only, and no menus that change anything.
 
-## Other modes
+## Only in Plan
 
-- In Diagram, Illustrate and Draw a Sheet element is an element like any other: drawn with its header and grid
-  (its values, formats, frozen rows and merges, scrolled to the top left), live as cells change, and selected,
-  moved, resized, copied, styled and deleted as any element. Its grid does not take the pointer or the keys; a
-  double-click on it says "Switch to Plan to edit this sheet", with a **Switch to Plan** button, which switches
-  the tab to Plan for everyone on it ([Editor modes](../007-editor/editor-modes.md) "Where the mode lives").
+A Sheet is Plan's, so a Sheet element is only ever placed on a tab in Plan (`opensInOf(tab) === 'plan'`: a Sheet tab,
+a Dashboard, or a general tab in Plan). A tab's mode is kept once it has content
+([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), so a Sheet on a Diagram, Draw, Facilitate or
+Illustrate tab could never be edited there. Every way in keeps to it (`tabTakesSheets`, `sheetsAddedOutsidePlan` in
+`packages/document/src/sheet-placement.ts`):
+
+- **The palette and a dropped CSV** are Plan mode's already.
+- **A paste** onto a tab in another mode leaves out every Sheet element it holds, and the charts those Sheets draw,
+  and pastes the rest. It says so: "Sheets stay on Plan tabs, so the sheet was left out" (or "...the sheets were
+  left out"). A paste holding nothing else pastes nothing, with the same notice. Logged as `[clipboard] sheets left
+out` with the count.
+- **An agent** is refused: `add_sheet` onto a tab in another mode answers `tab_not_plan` before any sheet is made
+  ([Sheet store](sheet-store.md#agents)), and any changeset (`update_document`, the api) that would leave a new
+  Sheet element on such a tab is refused `invalid_value`, naming the elements, with the hint to add a Sheet tab
+  instead ([Agent changesets](../024-agents/agent-changesets.md)).
 - A Sheet element is never added to another document by a tab's **Add to Document**, as a board's tab is not.
 
 ## Copying a Sheet element

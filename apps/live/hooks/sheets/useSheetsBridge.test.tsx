@@ -32,7 +32,6 @@ function opts(over: Partial<Opts> = {}): Opts {
     commitElements: vi.fn(),
     placeElement: vi.fn(),
     tickElements: vi.fn(),
-    switchToPlan: vi.fn(),
     selectElement: vi.fn(),
     sheetRetitled: vi.fn(),
     ...over,
@@ -99,7 +98,6 @@ describe('useSheetsBridge', () => {
     const make = () => ({}) as never;
     b.placeElement({ x: 1, y: 2 }, make, { select: false });
     b.tickElements(map);
-    b.switchToPlan();
     b.selectElement('el1');
     expect(next.pushUndo).toHaveBeenCalledWith(step);
     expect(next.toast).toHaveBeenCalledWith('t');
@@ -108,7 +106,6 @@ describe('useSheetsBridge', () => {
     expect(next.commitElements).toHaveBeenCalledWith(map);
     expect(next.placeElement).toHaveBeenCalledWith({ x: 1, y: 2 }, make, { select: false });
     expect(next.tickElements).toHaveBeenCalledWith(map);
-    expect(next.switchToPlan).toHaveBeenCalledOnce();
     expect(next.selectElement).toHaveBeenCalledWith('el1');
     for (const f of [first.pushUndo, first.toast, first.send, first.selectElement])
       expect(f).not.toHaveBeenCalled();

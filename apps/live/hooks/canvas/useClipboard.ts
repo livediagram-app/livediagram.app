@@ -34,9 +34,11 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   duplicateElements,
   sheetDrawnChartIds,
+  tabTakesSheets,
   withMindBranches,
   withSheetCharts,
   withAttached,
+  withoutSheets,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -232,15 +234,28 @@ export function useClipboard(deps: ClipboardDeps) {
     track('Element', 'Copied');
   };
 
+  // A Sheet goes only on a tab in Plan (docs/specs/029-sheets/sheet.md "Only in Plan"): onto any other tab a paste
+  // leaves out its Sheets and the charts they draw, and says so.
+  const onlyWhatTheTabTakes = (copied: Element[]): Element[] => {
+    if (tabTakesSheets(activeTab)) return copied;
+    const { kept, sheets } = withoutSheets(copied);
+    if (sheets === 0) return copied;
+    console.info('[clipboard] sheets left out', { sheets });
+    toast.info(sheetsLeftOutMessage(sheets));
+    return kept;
+  };
+
   // `source` is what the OS clipboard carried, when it carried ours. Absent
   // for a paste that found nothing on the system clipboard, which falls back
   // to the in-app buffer. `at` is where the paste was asked for (the canvas
   // menu's right-click point); absent, the live canvas pointer decides.
   const pasteFromClipboard = (source?: Element[], at?: { x: number; y: number } | null) => {
     if (isReadOnly) return;
-    const pasting = source && source.length > 0 ? source : clipboard;
-    if (!pasting || pasting.length === 0) return;
+    const copied = source && source.length > 0 ? source : clipboard;
+    if (!copied || copied.length === 0) return;
     if (refuseCreate()) return;
+    const pasting = onlyWhatTheTabTakes(copied);
+    if (pasting.length === 0) return;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
     const { dx, dy, atPointer } = pasteTranslation(
       pasting,
@@ -597,4 +612,10 @@ export function useClipboard(deps: ClipboardDeps) {
     dropBoardFile,
     hasClipboard: (clipboard?.length ?? 0) > 0,
   };
+}
+
+export function sheetsLeftOutMessage(sheets: number): string {
+  return sheets === 1
+    ? 'Sheets stay on Plan tabs, so the sheet was left out'
+    : 'Sheets stay on Plan tabs, so the sheets were left out';
 }

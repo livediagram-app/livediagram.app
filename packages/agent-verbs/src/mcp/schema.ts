@@ -313,7 +313,7 @@ theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A
 (inputs, worked-out values and what they show), change_sheet sets, clears and
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
-and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.
+and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
 Illustrate tabs hold pages: infographics, slides, logo artboards and articles
 (documents of text on pages). change_pages adds, changes, lays out (from a
 ready-made layout), moves, copies and deletes infographic, slide and logo pages

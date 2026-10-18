@@ -138,7 +138,8 @@ describe('a template’s Sheets', () => {
     const res = await submitChangeset({
       env: db.env,
       document: (await getDocument(db.env, 'D'))!,
-      tabId: 't1',
+      // A new tab: the template makes it a Sheet tab, in Plan.
+      tabId: 't-sheet',
       request: parsed.value,
       dryRun: false,
       author: { id: 'user_o', name: 'W', color: '#000' },
@@ -154,11 +155,32 @@ describe('a template’s Sheets', () => {
       title: string;
     }[];
     expect(sheets).toHaveLength(1);
-    expect(sheets[0]).toMatchObject({ tab_id: 't1', title: 'Timesheet' });
+    expect(sheets[0]).toMatchObject({ tab_id: 't-sheet', title: 'Timesheet' });
     const { elements: els } = JSON.parse(
-      db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+      db.sql.prepare("SELECT data FROM tabs WHERE id = 't-sheet'").get()!.data as string,
     ) as { elements: { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[] };
     const ref = els.find((e) => e.planSheet)!.planSheet!;
     expect(ref).toEqual({ sheetId: sheets[0]!.id, fillTab: true });
+  });
+
+  // docs/specs/024-agents/agent-changesets.md "Sheets only in Plan".
+  it('refuses one landing on a tab not in Plan, making no sheet', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await setUp();
+    const parsed = parseChangesetRequest({ replace: { template: 'timesheet' } });
+    if (!parsed.ok) throw new Error('bad request');
+    const res = await submitChangeset({
+      env: db.env,
+      document: (await getDocument(db.env, 'D'))!,
+      tabId: 't1',
+      request: parsed.value,
+      dryRun: false,
+      author: { id: 'user_o', name: 'W', color: '#000' },
+      tokenId: 'tok_1',
+      frontDoor: 'Api',
+    });
+    expect(res.status).toBe(422);
+    expect(res.body).toMatchObject({ error: 'invalid_value' });
+    expect(db.sql.prepare("SELECT id FROM sheets WHERE document_id = 'D'").all()).toEqual([]);
   });
 });
