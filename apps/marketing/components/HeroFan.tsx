@@ -6,6 +6,7 @@ import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
+  HERO_FAN_FULL_MIN_PX,
   HERO_FAN_OPENING,
   HERO_FAN_SLOTS,
   heroTemplate,
@@ -30,24 +31,30 @@ import { useRecentDiagrams } from './useRecentDiagrams';
 export const HERO_FAN_SWAP_MS = 3200;
 const HERO_FAN_OUT_MS = 380;
 
-// Each slot's resting pose, left to right, mirrored about the middle; the outer two hide on a phone.
+// Each slot's resting pose, left to right, mirrored about the middle: the outer pair shows only on a
+// very wide screen (HERO_FAN_FULL_MIN_PX; Tailwind needs the width written out), the next pair hides
+// on a phone. The middle five keep the poses the five-card fan has always had.
 const POSE = [
+  'max-[1800px]:hidden [transform:translateY(4rem)_rotate(-9.5deg)]',
   'max-sm:hidden [transform:translateY(2.5rem)_rotate(-7deg)]',
   '[transform:translateY(0.5rem)_rotate(-4deg)] sm:[transform:translateY(0.75rem)_rotate(-3.5deg)]',
   '[transform:translateY(0)_rotate(0deg)]',
   '[transform:translateY(0.5rem)_rotate(4deg)] sm:[transform:translateY(0.75rem)_rotate(3.5deg)]',
   'max-sm:hidden [transform:translateY(2.5rem)_rotate(7deg)]',
+  'max-[1800px]:hidden [transform:translateY(4rem)_rotate(9.5deg)]',
 ];
 // Which way each slot's card leans as it flicks out: away from the middle.
-const FLICK = ['-16deg', '-12deg', '12deg', '12deg', '16deg'];
-// The order the slots swap in: the middle first, then out to the sides, never two neighbours running.
-const ORDER_WIDE = [2, 0, 3, 1, 4];
-const ORDER_PHONE = [2, 1, 3];
+const FLICK = ['-18deg', '-16deg', '-12deg', '12deg', '12deg', '16deg', '18deg'];
+// The order the slots swap in, by how many show: the middle first, then out to the sides, never two
+// neighbours running. A slot out of sight is never swapped, so nothing changes where nobody looks.
+const ORDER_FULL = [3, 1, 5, 0, 4, 2, 6];
+const ORDER_WIDE = [3, 1, 4, 2, 5];
+const ORDER_PHONE = [3, 2, 4];
 
 export function HeroFan() {
   const [slots, setSlots] = useState<TemplateKind[]>(() => [...HERO_FAN_OPENING]);
   // Whether the shuffled hand has been dealt (the static opening hand shows until it is), and whether
-  // its five are still springing in (until the first swap).
+  // its cards are still springing in (until the first swap).
   const [dealt, setDealt] = useState(false);
   const [firstDeal, setFirstDeal] = useState(false);
   const [leaving, setLeaving] = useState<number | null>(null);
@@ -56,6 +63,7 @@ export function HeroFan() {
   const [onScreen, setOnScreen] = useState(true);
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
   const wide = useMediaQuery('(min-width: 640px)');
+  const full = useMediaQuery(`(min-width: ${HERO_FAN_FULL_MIN_PX}px)`);
   const rootRef = useRef<HTMLDivElement>(null);
   // This visit's shuffled pool, where the deal has got to in it, and how many swaps so far.
   const pool = useRef<TemplateKind[]>([...HERO_FAN_OPENING]);
@@ -69,7 +77,7 @@ export function HeroFan() {
   const mine = recent && recent.length >= RECENT_FAN_MIN ? recent.slice(0, 4) : null;
   const returning = mine !== null;
 
-  // Deal this visit's hand: shuffle the whole pool and lay its first five in, each springing up.
+  // Deal this visit's hand: shuffle the whole pool and lay its first HERO_FAN_SLOTS in, each springing up.
   useEffect(() => {
     pool.current = shuffleFan(Math.random);
     shown.current = pool.current.slice(0, HERO_FAN_SLOTS);
@@ -95,7 +103,7 @@ export function HeroFan() {
     let out: number | undefined;
     const tick = window.setInterval(() => {
       if (document.visibilityState === 'hidden') return;
-      const order = wide ? ORDER_WIDE : ORDER_PHONE;
+      const order = full ? ORDER_FULL : wide ? ORDER_WIDE : ORDER_PHONE;
       const slot = order[swaps.current % order.length]!;
       swaps.current += 1;
       setFirstDeal(false);
@@ -116,7 +124,7 @@ export function HeroFan() {
       window.clearTimeout(out);
       setLeaving(null);
     };
-  }, [dealt, returning, held, onScreen, reduceMotion, wide]);
+  }, [dealt, returning, held, onScreen, reduceMotion, wide, full]);
 
   return (
     <div
