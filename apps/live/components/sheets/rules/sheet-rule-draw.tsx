@@ -2,7 +2,7 @@
 // dropdown's chip or arrow, and the invalid mark. Pure parts for SheetCells, which stays pointer-free: the presses
 // on a box, chip or arrow are the grid pointer's (useSheetPointer, via ruleTargetAt).
 import type { CSSProperties, ReactNode } from 'react';
-import { isLightColor } from '@livediagram/document';
+import { bestInk } from '@livediagram/document';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideCheck, lucideChevronDown } from '@livediagram/icons/lucide';
 import {
@@ -185,7 +185,7 @@ export function ruleCellDraw(opts: {
   const option =
     rule.is === 'list' && v !== null && !isError(v) && v !== '' ? optionFor(rule, v) : null;
   const fill = option?.c ?? palette.column;
-  const ink = option?.c ? (isLightColor(fill) ? '#1f2937' : '#ffffff') : opts.ink;
+  const ink = option?.c ? bestInk(fill, '#1f2937', '#ffffff') : opts.ink;
   const empty = v === null || v === '';
   const chip = chipBox(box, empty ? 0 : opts.textWidth, opts.px);
   nodes.push(

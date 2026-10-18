@@ -146,14 +146,17 @@ export function deriveShapeColours(
   };
 }
 
-// For new text elements: whichever of slate-800 and slate-100 contrasts more with the bg. A brightness cut-off picked
-// slate-100 on mid-tones it could not carry (an orange paper, #f97316, at 2.6:1 where slate-800 reads 5.4:1); off the
-// mid-tones the two rules agree. An unparseable colour reads as light, as isLightColor has it.
+// Whichever of a dark and a light ink contrasts more with `fill`. A brightness cut-off (isLightColor) gave mid-tones
+// light text they could not carry (orange, #f97316, at 2.6:1 under slate-100 where slate-800 reads 5.4:1); off the
+// mid-tones the two rules agree. An unparseable colour reads as light, as isLightColor has it, so it takes the dark ink.
+export function bestInk(fill: string, dark: string, light: string): string {
+  if (!hexToRgb(fill)) return dark;
+  return contrastRatio(dark, fill) >= contrastRatio(light, fill) ? dark : light;
+}
+
+// For new text elements: a label colour that contrasts with the bg (slate-800 or slate-100).
 export function deriveTextColorForBg(backgroundColor: string): string {
-  if (!hexToRgb(backgroundColor)) return '#1e293b';
-  return contrastRatio('#1e293b', backgroundColor) >= contrastRatio('#f1f5f9', backgroundColor)
-    ? '#1e293b'
-    : '#f1f5f9';
+  return bestInk(backgroundColor, '#1e293b', '#f1f5f9');
 }
 
 // Which paper an element is being drawn on. NOT the same thing as the
@@ -170,13 +173,12 @@ export function canvasSurface(backgroundColor: string | undefined | null): Canva
   return isLightColor(backgroundColor) ? 'light' : 'dark';
 }
 
-// The ink that reads on a SOLID fill of `color`: white on a dark fill, the
-// app's near-black on a light one. The Collaborate cards' accent buttons use
+// The ink that reads on a SOLID fill of `color`: whichever of white and the app's near-black reads better (bestInk). The Collaborate cards' accent buttons use
 // it on the canvas (CollabAccentScope) and in the export
 // (svg-render-panel-faces), so a pale theme accent never carries white text in
 // either.
 export function inkOn(color: string): string {
-  return canvasSurface(color) === 'dark' ? '#ffffff' : '#0f172a';
+  return bestInk(color, '#0f172a', '#ffffff');
 }
 
 // The green that means FINISHED on the Collaborate cards: a resolved comment

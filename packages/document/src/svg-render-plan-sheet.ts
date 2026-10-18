@@ -3,7 +3,7 @@
 // window with their formats, from a render model the caller worked out with the sheets engine. The document
 // package never imports the engine: the model's shape is restated here, structurally.
 import type { BoxedElement } from './index';
-import { isLightColor, type CanvasSurface } from './colors';
+import { bestInk, type CanvasSurface } from './colors';
 import { resolveFontStack } from './fonts';
 import { planOwnColoursOf, planPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -155,7 +155,7 @@ export function svgPlanSheet(
         ),
       );
       const fill = cell.chip.color ?? p.column;
-      if (cell.chip.color) ink = isLightColor(fill) ? '#1f2937' : '#ffffff';
+      if (cell.chip.color) ink = bestInk(fill, '#1f2937', '#ffffff');
       const top = cy + (ch - chipH) / 2;
       out += `<rect x="${r2(cx + CHIP_INSET)}" y="${r2(top)}" width="${r2(chipW)}" height="${r2(chipH)}" rx="${r2(chipH / 2)}" fill="${fill}"/>`;
       out += chevron(cx + CHIP_INSET + chipW - 10, top + chipH / 2, ink);

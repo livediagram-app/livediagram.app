@@ -17,6 +17,8 @@ import {
   createShape,
   deriveShapeColours,
   deriveTextColorForBg,
+  inkOn,
+  bestInk,
   hexToRgb,
   isLightColor,
   rgbToHex,
@@ -102,6 +104,16 @@ describe('deriveTextColorForBg', () => {
     for (const paper of ['#f97316', '#f87171', '#8f8f97', '#0ea5e9'])
       expect(contrastRatio(deriveTextColorForBg(paper), paper)).toBeGreaterThanOrEqual(4.5);
     expect(deriveTextColorForBg('not a colour')).toBe('#1e293b');
+  });
+
+  it('gives a mid-tone button and chip the ink that reads on it too (inkOn, bestInk)', () => {
+    for (const fill of ['#f97316', '#0ea5e9', '#ef4444', '#10b981']) {
+      expect(contrastRatio(inkOn(fill), fill)).toBeGreaterThanOrEqual(4.5);
+      // The better of the two, whatever the pair: no fill gets the weaker ink.
+      const ink = bestInk(fill, '#1f2937', '#ffffff');
+      const other = ink === '#ffffff' ? '#1f2937' : '#ffffff';
+      expect(contrastRatio(ink, fill)).toBeGreaterThanOrEqual(contrastRatio(other, fill));
+    }
   });
 });
 
