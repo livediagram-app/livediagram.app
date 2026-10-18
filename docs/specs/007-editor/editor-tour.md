@@ -196,6 +196,12 @@ menu alone.
   (the tab's accent) all follow it, so a tour on a dark or coloured tab reads as part of that tab.
 - **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
   accent.
+- **The banners (the offer and the last card) are the sign-in banner's look in the tab's hue**: a deep gradient, in
+  white, in light and dark alike. The accent keeps its hue and saturation and is deepened until white reads on it at
+  5.9:1, the gradient's far end at 7.6:1 (sign-in's own `brand-700` and `brand-800`), so the eyebrow and words, at 90%
+  white, still clear AA. A dark tab's pale accent is never painted as it is: it drew a washed-out banner with its words
+  in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
+  banner stacks, as the sign-in banner does: the words, then the buttons at the right.
 - **The ring** around a step's target is drawn in the same accent; the dim around it is unchanged.
 - This holds for the Diagram, Plan, Workshop, Draw and Pages tours and the card type editor's Show Me,
   which all draw through `TourStage` and `TourPopover`.

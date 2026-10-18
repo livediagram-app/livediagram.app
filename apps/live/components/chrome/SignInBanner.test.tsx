@@ -24,6 +24,16 @@ describe('SignInBanner', () => {
     ).toBeTruthy();
   });
 
+  // docs/specs/014-identity/sign-in-encouragement.md "Banner": white reads on it in light and dark alike. brand-500 and
+  // brand-600 drew the words at 2.8:1 and 4.1:1, and the copy at 85% white under 3.4:1.
+  it('is brand-700 to brand-800 in either appearance, its copy at 90% white', () => {
+    const view = render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
+    const card = view.container.querySelector('[data-toast-floor]')!;
+    expect(card.className).toContain('from-brand-700 to-brand-800');
+    expect(card.className).not.toMatch(/(from|to)-brand-[56]00/);
+    expect(view.getByText(/Share with your team/).className).toContain('text-white/90');
+  });
+
   // docs/specs/014-identity/sign-in-encouragement.md: a tour's offer takes the same place, so the banner steps aside.
   // docs/specs/014-identity/sign-in-encouragement.md "Banner": a sideways phone has little height to give.
   it('is one slim row on a phone held sideways', () => {

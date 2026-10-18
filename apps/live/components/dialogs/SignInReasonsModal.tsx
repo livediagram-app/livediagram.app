@@ -108,24 +108,25 @@ export function SignInReasonsModal({
           className="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg animate-fly-up-in flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl outline-none dark:border-slate-700 dark:bg-slate-900"
         >
           {/* Header with a brand gradient wash so the modal reads as a
-              celebratory upsell, not a system dialog. */}
-          <div className="relative shrink-0 bg-gradient-to-br from-brand-500 to-brand-600 px-6 pb-5 pt-6 text-white dark:from-brand-600 dark:to-brand-700">
+              celebratory upsell, not a system dialog. The sign-in banner's own brand-700 to brand-800, which white
+              (and its 90% copy) reads on (docs/specs/004-interface-design/color-scheme.md). */}
+          <div className="relative shrink-0 bg-gradient-to-br from-brand-700 to-brand-800 px-6 pb-5 pt-6 text-white">
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/15 hover:text-white"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
             >
               <CloseIcon size={16} />
             </button>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/80">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/90">
               <SparkleIcon className="opacity-90" />
               Free account
             </div>
             <h2 id="signin-reasons-title" className="mt-1.5 text-xl font-bold">
               Why sign in?
             </h2>
-            <p className="mt-1 text-sm text-white/85">
+            <p className="mt-1 text-sm text-white/90">
               livediagram always works without an account, but a free one unlocks a lot.
             </p>
           </div>

@@ -90,28 +90,29 @@ export function TourBanner({
         // No focus taken by a press either: a click on No or Yes leaves the focus where the person was working (a
         // Sheet's grid, a field), where it would otherwise fall to the page as the banner goes.
         onMouseDown={(e) => e.preventDefault()}
-        // The sign-in banner's look in the tab's own accent: a gradient from it to a deeper shade, in the ink that
-        // reads on it (tour-colours inkOn).
+        // The sign-in banner's look in the tab's own hue: a deep gradient white reads on, in light and dark alike
+        // (tour-colours bannerColours).
         style={{
           ...tourColourVars(palette),
           backgroundImage:
-            'linear-gradient(135deg, var(--tour-accent), color-mix(in srgb, var(--tour-accent) 78%, #0f172a))',
+            'linear-gradient(135deg, var(--tour-banner-from), var(--tour-banner-to))',
         }}
-        className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 p-4 text-[var(--tour-on-accent)] shadow-2xl shadow-slate-900/30 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-3 sm:pr-4 dark:shadow-black/40 [&_button]:relative [&_button]:touch-target-y"
+        className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 p-4 text-white shadow-2xl shadow-slate-900/30 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-3 sm:pr-4 dark:shadow-black/40 [&_button]:relative [&_button]:touch-target-y"
       >
-        {/* The tour's own picture, small: what it is about at a glance, as the sign-in banner's glyph tile is. */}
+        {/* The tour's own picture, small: what it is about at a glance, as the sign-in banner's glyph tile is. On a
+            ground of its own appearance: the art draws its dark frame in dark mode, which over white went a dull grey. */}
         <div
           aria-hidden
-          className="hidden w-36 shrink-0 overflow-hidden rounded-xl bg-white/90 sm:block [&_svg]:h-auto [&_svg]:w-full"
+          className="hidden w-36 shrink-0 overflow-hidden rounded-xl bg-white/90 sm:block dark:bg-slate-900/80 [&_svg]:h-auto [&_svg]:w-full"
         >
           {welcome ? (welcomeArt ?? <TourWelcomeArt />) : <TourHelpArt />}
         </div>
         <div className="min-w-0 flex-1">
-          <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/90">
             {welcome ? copy.welcomeEyebrow : copy.outroEyebrow}
           </span>
           <p className="text-sm font-semibold sm:text-base">{title}</p>
-          <p className="mt-0.5 text-xs leading-relaxed opacity-85 sm:text-sm">{body}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-white/90 sm:text-sm">{body}</p>
         </div>
         {welcome ? (
           <div className="flex shrink-0 items-center justify-end gap-2">
@@ -120,7 +121,7 @@ export function TourBanner({
             <button
               type="button"
               onClick={onSkip}
-              className="cursor-pointer rounded-lg border border-current/40 px-3 py-2 text-sm font-medium transition hover:bg-white/15"
+              className="cursor-pointer rounded-lg border border-white/40 px-3 py-2 text-sm font-medium transition hover:bg-white/15"
             >
               {copy.decline}
             </button>
@@ -140,7 +141,7 @@ export function TourBanner({
               href={copy.helpHref}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-2 opacity-90 transition hover:opacity-100"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 underline underline-offset-2 transition hover:text-white"
             >
               <HelpIcon aria-hidden />
               {copy.helpLabel}
@@ -153,14 +154,14 @@ export function TourBanner({
   );
 }
 
-// The banner's primary button, as the sign-in banner's: a white button with its label in the accent (deepened where the
-// accent alone would not read on white, tour-colours accentOnWhite).
+// The banner's primary button, as the sign-in banner's: a white button with its label in the banner's own deep colour
+// (5.9:1 or more on white, tour-colours bannerColours).
 function BannerButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[var(--tour-accent-on-white)] shadow-sm transition hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[var(--tour-banner-from)] shadow-sm transition hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
       {children}
     </button>

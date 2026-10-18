@@ -68,6 +68,10 @@ never triggers it; staying in one for 5+ minutes does.
 - Fixed to the bottom of the viewport, a centred floating card with a
   max width, rounded corners, shadow, and a brand gradient, visually a
   peer of the app's other branded surfaces, not chrome.
+- Its gradient is `brand-700` to `brand-800` in light and dark alike, in white: the words read on it
+  at 5.9:1 and 7.6:1, and the supporting line, at 90% white, at 5.1:1 (WCAG 2.2 AA,
+  [Colour scheme](../004-interface-design/color-scheme.md)). The lighter brand steps fail it. The
+  reasons modal's header wears the same gradient.
 - Contents: a small icon/illustration, a headline ("Sign in to access
   Teams & AI"), one line of supporting copy saying what those give and
   that documents sync ("Share with your team, build with AI, sync across

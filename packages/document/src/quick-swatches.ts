@@ -168,10 +168,22 @@ function visibleOn(
 // A palette colour kept to its hue and saturation, stepped until text in it
 // reads on the canvas (D50).
 function readableOn(hex: string, background: string, surface: 'light' | 'dark'): string {
+  return toneToContrast(hex, background, surface, MIN_TEXT_CONTRAST);
+}
+
+// A colour kept to its hue and saturation, its lightness stepped away from `background` (darker on a light one,
+// lighter on a dark one) until the two contrast at `min` or more. A colour that already does is returned as it is;
+// one that cannot be read as hex too.
+export function toneToContrast(
+  hex: string,
+  background: string,
+  surface: 'light' | 'dark',
+  min: number,
+): string {
   const rgb = hexToRgb(hex);
-  if (!rgb || contrastRatio(hex, background) >= MIN_TEXT_CONTRAST) return hex;
+  if (!rgb || contrastRatio(hex, background) >= min) return hex;
   const { h, s, l } = rgbToHsl(rgb);
-  return visibleOn(h, s, l, background, surface, MIN_TEXT_CONTRAST);
+  return visibleOn(h, s, l, background, surface, min);
 }
 
 // A wash of the hue over the theme's fill, thinned until the label reads.

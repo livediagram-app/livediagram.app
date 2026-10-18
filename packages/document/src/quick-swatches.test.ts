@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  hueName,
+  toneToContrast,
   QUICK_SWATCH_SLOTS,
   isQuickSwatchSlot,
   quickSwatchColor,
@@ -160,5 +162,23 @@ describe('quickSwatches: the Text colour row', () => {
       if (!t.palette) expect(text, t.id).toEqual(stroke);
       else expect(text.length, t.id).toBe(6);
     }
+  });
+});
+
+describe('toneToContrast', () => {
+  it('deepens a colour on a light background, keeping its hue, until the two reach the contrast asked for', () => {
+    const toned = toneToContrast('#93c5fd', '#ffffff', 'light', 6);
+    expect(contrastRatio(toned, '#ffffff')).toBeGreaterThanOrEqual(6);
+    expect(hueName(toned)).toBe(hueName('#93c5fd'));
+  });
+
+  it('lightens on a dark background', () => {
+    const toned = toneToContrast('#1e3a8a', '#0f172a', 'dark', 4.5);
+    expect(contrastRatio(toned, '#0f172a')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('keeps a colour that already reads, and one it cannot read as hex', () => {
+    expect(toneToContrast('#075985', '#ffffff', 'light', 4.5)).toBe('#075985');
+    expect(toneToContrast('rebeccapurple', '#ffffff', 'light', 4.5)).toBe('rebeccapurple');
   });
 });

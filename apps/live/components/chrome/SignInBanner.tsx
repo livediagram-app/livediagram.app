@@ -82,7 +82,10 @@ export function SignInBanner({
       >
         <div
           data-toast-floor=""
-          className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-600 dark:to-brand-700 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5 landscape-phone:py-2"
+          // brand-700 to brand-800 in light and dark alike: white reads on them at 5.9:1 and 7.6:1, and the copy at 90%
+          // white at 5.1:1 (docs/specs/004-interface-design/color-scheme.md). brand-500 and brand-600 drew it at 2.8:1
+          // and 4.1:1.
+          className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-700 to-brand-800 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5 landscape-phone:py-2"
         >
           {/* Decorative glyph tile */}
           <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 sm:flex">
@@ -92,7 +95,7 @@ export function SignInBanner({
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
             {/* A sideways phone has little height to give: the headline and the buttons say enough. */}
-            <p className="mt-0.5 text-xs text-white/85 sm:text-sm landscape-phone:hidden">
+            <p className="mt-0.5 text-xs text-white/90 sm:text-sm landscape-phone:hidden">
               Share with your team, build with AI, sync across devices.
             </p>
           </div>
@@ -123,7 +126,7 @@ export function SignInBanner({
                 onDismiss();
               }}
               aria-label="Dismiss"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/15 hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
             >
               <CloseIcon size={16} />
             </button>
