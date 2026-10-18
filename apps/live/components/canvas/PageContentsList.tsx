@@ -1,6 +1,6 @@
 'use client';
 
-// The pieces of Illustrate's Contents (docs/specs/007-editor/illustrate-pages.md "Contents"), laid
+// The pieces of Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is usePageContents.
 import { Fragment, type CSSProperties } from 'react';

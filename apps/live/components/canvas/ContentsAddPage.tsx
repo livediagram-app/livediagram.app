@@ -1,6 +1,6 @@
 'use client';
 
-// Contents' Add Page (docs/specs/007-editor/illustrate-pages.md "Contents"): the footer both of its homes
+// Contents' Add Page (docs/specs/007-editor/pages-mode.md "Contents"): the footer both of its homes
 // (PageContentsPanel, PageContentsSidebar) end on.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

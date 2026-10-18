@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 import { addMenuPlace, ContentsAddPage } from './ContentsAddPage';
 
-// docs/specs/007-editor/illustrate-pages.md "Contents": Add Page opens the four kinds above it.
+// docs/specs/007-editor/pages-mode.md "Contents": Add Page opens the four kinds above it.
 afterEach(cleanup);
 
 function contents(over: Partial<PageContents> = {}): PageContents {
