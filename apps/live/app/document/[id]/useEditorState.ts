@@ -880,7 +880,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const participant = useParticipantSession(
     workbench?.ended ? 'view' : previewLevel,
     toast.info,
-    previewLevel === 'participate' && canToggleRole ? previewAdderKey(selfParticipant.id) : null,
+    previewLevel === 'participate' && canToggleRole ? previewAdderKey() : null,
   );
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped

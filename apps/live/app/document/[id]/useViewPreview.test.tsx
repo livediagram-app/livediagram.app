@@ -32,9 +32,20 @@ describe('useViewPreview', () => {
     expect(onEnter).toHaveBeenCalledTimes(2);
   });
 
-  it('gives the Participant preview a key of its own, never a real Participant’s', async () => {
+  it('gives the Participant preview a key of its own, shaped so the Participant rule takes its adds', async () => {
     const { previewAdderKey } = await import('./useViewPreview');
-    expect(previewAdderKey('p1')).toBe('preview-p1');
+    const { applyParticipantOp, createSticky } = await import('@livediagram/document');
+    const key = previewAdderKey();
+    // A random key of the room's shape, the same for the whole visit, and nothing of the person's id in it.
+    expect(key).toMatch(/^[0-9a-f]{32}$/);
+    expect(previewAdderKey()).toBe(key);
+    const sticky = createSticky(0, 0);
+    const added = applyParticipantOp(
+      { id: 't', name: 'T', elements: [] },
+      { kind: 'add', element: sticky, at: 0 },
+      key,
+    );
+    expect(added.result).toBe('applied');
   });
 
   it('gives a view-link visitor no toggle', () => {

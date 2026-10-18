@@ -353,7 +353,9 @@ export class SheetStore {
   ): void {
     this.enqueue(create.id, async () => {
       try {
-        const stored = await this.api.createSheet(this.deps.scope, create, this.by());
+        const stored = await this.api.createSheet(this.deps.scope, create, this.by(), {
+          tabMayBeUnsaved: attempt < CREATE_TAB_RETRIES,
+        });
         this.adopt(stored);
         this.notify();
         opts.onCreated?.();

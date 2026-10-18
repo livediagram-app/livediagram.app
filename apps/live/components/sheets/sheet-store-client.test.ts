@@ -358,6 +358,10 @@ describe('the sheet store client', () => {
       await vi.advanceTimersByTimeAsync(1000);
       await s.settle();
       expect(srv.api.createSheet).toHaveBeenCalledTimes(2);
+      // Each try before the last says its tab may not be saved yet, so the race is not reported as an error.
+      expect((srv.api.createSheet.mock.calls[0] as unknown[])[3]).toEqual({
+        tabMayBeUnsaved: true,
+      });
       expect(s.sheet('sheet0004')).toBeTruthy();
     } finally {
       vi.useRealTimers();

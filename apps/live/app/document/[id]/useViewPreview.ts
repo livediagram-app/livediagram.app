@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AccessLevel, ShareRole } from '@livediagram/api-schema';
+import { ADDER_KEY_LENGTH } from '@livediagram/document';
 import { debugLog } from '@/lib/debug-log';
 
 // The role pill's toggle (docs/specs/007-editor/live-app.md#role-pill): someone whose role allows editing can preview
@@ -37,7 +38,14 @@ export function useViewPreview(sessionRole: ShareRole, onEnterPreview: () => voi
 }
 
 // The adder key an Editor's Participant preview stamps what it adds with: its own, so the preview may move, rewrite and
-// delete what it added and nothing else, as a Participant may. No real Participant's key matches it.
-export function previewAdderKey(selfId: string): string {
-  return `preview-${selfId}`;
+// delete what it added and nothing else, as a Participant may. Shaped as the room mints one (ADDER_KEY_LENGTH hex
+// characters), since the Participant rule refuses an add whose stamp is not a valid key; random for this visit, so it
+// matches no real Participant's and, being saved on what it adds, carries nothing of the person's own id.
+let previewKey: string | null = null;
+export function previewAdderKey(): string {
+  if (previewKey === null) {
+    const bytes = crypto.getRandomValues(new Uint8Array(ADDER_KEY_LENGTH / 2));
+    previewKey = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  return previewKey;
 }

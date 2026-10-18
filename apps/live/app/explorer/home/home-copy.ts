@@ -19,6 +19,9 @@ export const HOME_COPY = {
   seeTimeline: 'See Timeline',
   jumpBackInEmptyTitle: 'No documents yet',
   jumpBackInEmpty: 'The documents you use most and last will gather here.',
+  // The editor pane leaves out the open document; when it was the only one, there is a document, just no other.
+  jumpBackInOnlyOpenTitle: 'Nothing else yet',
+  jumpBackInOnlyOpen: 'The other documents you use most and last will gather here.',
   readFailed: 'Home could not load. Check your connection and try again.',
   tryAgain: 'Try again',
 } as const;

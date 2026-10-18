@@ -156,6 +156,7 @@ describe('a placed sheet', () => {
       expect.anything(),
       expect.objectContaining({ id: sheetId, tabId: 't1', title: 'Sheet 2' }),
       by,
+      { tabMayBeUnsaved: true },
     );
   });
 
@@ -259,6 +260,7 @@ describe('a sheet deleted with its element', () => {
       expect.anything(),
       expect.objectContaining({ id: 'sheetDEL1', title: 'Costs', restore: true }),
       by,
+      { tabMayBeUnsaved: true },
     );
   });
 });
@@ -279,6 +281,7 @@ describe('a template’s Sheet not yet made', () => {
       expect.anything(),
       expect.objectContaining({ id: 'sheetTPL1', tabId: 't1', title: 'Budget' }),
       by,
+      { tabMayBeUnsaved: true },
     );
     // The mark dropped at once; the Budget's spending chart, anchored in the Sheet, once the server took the sheet.
     await waitFor(() => expect(tickElements).toHaveBeenCalledTimes(2));
@@ -342,6 +345,7 @@ describe('a copied sheet', () => {
       expect.anything(),
       { id: 'sheetCOPY', tabId: 't1', title: 'Costs (copy)', copyOf: 'sheetSRC1' },
       by,
+      { tabMayBeUnsaved: true },
     );
     const [mine, theirs] = b.elements as ShapeElement[];
     expect(mine!.planSheet).toEqual({ sheetId: 'sheetCOPY' });
@@ -366,6 +370,7 @@ describe('a copied sheet', () => {
         cells: seed.cells,
       },
       by,
+      { tabMayBeUnsaved: true },
     );
   });
 
@@ -377,6 +382,7 @@ describe('a copied sheet', () => {
       expect.anything(),
       { id: 'sheetSRV1', tabId: 't1', title: 'Sheet (copy)', copyOf: 'notLoaded1' },
       by,
+      { tabMayBeUnsaved: true },
     );
     expect(b.toast).not.toHaveBeenCalled();
   });

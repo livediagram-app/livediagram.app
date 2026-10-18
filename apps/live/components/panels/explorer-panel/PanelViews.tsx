@@ -183,6 +183,13 @@ export function HomeSection({
     return <PaneFailed message={HOME_COPY.readFailed} onRetry={home.retry} />;
   if (home.status === 'loading') return <PaneSkeleton rows={6} />;
   const recent = paneJumpBackIn(home.jumpBackIn, currentDocumentId, JUMP_BACK_IN_ROWS);
+  // Empty only because the open document is left out: the person has a document, so "No documents yet" would be
+  // wrong (explorer-structure.md "Home").
+  const onlyOpen =
+    recent.length === 0 &&
+    [...home.jumpBackIn.mostUsed, ...home.jumpBackIn.recent].some(
+      (d) => d.documentId === currentDocumentId,
+    );
   return (
     <div className="flex flex-col gap-6">
       <PaneSection
@@ -208,8 +215,8 @@ export function HomeSection({
         ) : (
           <PaneEmpty
             icon={<ClockIcon />}
-            title={HOME_COPY.jumpBackInEmptyTitle}
-            description={HOME_COPY.jumpBackInEmpty}
+            title={onlyOpen ? HOME_COPY.jumpBackInOnlyOpenTitle : HOME_COPY.jumpBackInEmptyTitle}
+            description={onlyOpen ? HOME_COPY.jumpBackInOnlyOpen : HOME_COPY.jumpBackInEmpty}
           />
         )}
       </PaneSection>
