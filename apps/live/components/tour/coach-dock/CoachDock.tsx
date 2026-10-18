@@ -123,7 +123,11 @@ function CoachDockBody({
       onPointerDown={(e) => e.stopPropagation()}
       // A press never takes focus: it stays where the person was working (a field, a sheet's grid).
       onMouseDown={(e) => e.preventDefault()}
-      onPointerEnter={() => setPointerIn(true)}
+      // A mouse moving over the dock holds it; one merely resting where the dock appeared does not, nor does a
+      // touch (a tap that opened a template must not hold the offer up for good).
+      onPointerMove={(e) => {
+        if (e.pointerType === 'mouse' && !pointerIn) setPointerIn(true);
+      }}
       onPointerLeave={() => setPointerIn(false)}
       onFocus={() => setFocusIn(true)}
       onBlur={(e) => {

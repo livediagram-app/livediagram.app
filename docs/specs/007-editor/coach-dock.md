@@ -39,7 +39,8 @@ banner and anchored card ([Diagram tour](editor-tour.md)) until it moves over.
 - The tour's picture (desktop only), its eyebrow ("Slides tour"), a question ("New to slides?") and one line of
   what it covers, with its length: "4 stops, about a minute".
 - **Take the Tour** (primary) starts it. **No Thanks** declines it for good, as the old No did.
-- **Left alone, it folds.** After 12 seconds with no pointer over it and no focus in it, the offer folds into the
+- **Left alone, it folds.** After 12 seconds with no mouse moving over it and no focus in it (a pointer merely
+  resting where the dock appeared, or a touch, does not count), the offer folds into the
   tour chip in the tab bar. The chip's **▶ Slides Tour** starts the tour at its first step; its **×** declines
   it for good. A folded offer is not an answer: the chip stays for this visit, and the offer comes back on the
   next visit until it is answered.

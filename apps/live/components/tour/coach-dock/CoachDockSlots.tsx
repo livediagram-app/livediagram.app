@@ -24,7 +24,7 @@ export function CoachChipSlot() {
   return (
     <span
       data-coach-chip-slot=""
-      className="flex shrink-0 items-center empty:hidden"
+      className="ml-1 flex shrink-0 items-center empty:hidden"
       ref={(el) => {
         if (!el) return;
         setCoachSlot('chip', el);

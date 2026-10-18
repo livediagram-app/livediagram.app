@@ -168,5 +168,5 @@ is on) alongside the Diagram, Plan, Workshop and Draw tours.
   its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the offer or the press so the
   copy stays out of the editor's first load.
 - `PagesTourHost.tsx`: the offer, the tour page and the seen-guard. `PageTour.tsx`: the page panel's Show Me. Both
-  draw through `coach-dock/CoachDockStage.tsx`.
+  draw through `apps/live/components/tour/coach-dock/CoachDockStage.tsx`.
 - `apps/live/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.

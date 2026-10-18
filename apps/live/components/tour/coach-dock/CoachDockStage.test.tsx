@@ -117,12 +117,18 @@ describe('the offer', () => {
     expect(e.skip).not.toHaveBeenCalled();
   });
 
-  it('waits while a pointer is over it, then gives a full fold time again', () => {
+  it('waits while a mouse moves over it, then gives a full fold time again', () => {
     render(<Stage e={engine()} />);
     act(() => {
       vi.advanceTimersByTime(OFFER_FOLD_MS - 100);
     });
+    // A pointer resting where the dock appeared, or a touch, holds nothing.
     fireEvent.pointerEnter(dock()!);
+    fireEvent.pointerMove(dock()!, { pointerType: 'touch' });
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+    fireEvent.pointerMove(dock()!, { pointerType: 'mouse' });
     act(() => {
       vi.advanceTimersByTime(OFFER_FOLD_MS * 2);
     });
@@ -371,5 +377,67 @@ describe('without slots', () => {
       vi.advanceTimersByTime(OFFER_FOLD_MS);
     });
     expect(chip()?.closest('[data-coach-dock-slot]')).not.toBeNull();
+  });
+});
+
+describe('keyboard and focus', () => {
+  const escapeFrom = (name: string) => {
+    screen.getByRole('button', { name }).focus();
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+  };
+
+  it('Escape from inside ends a step, and finishes from the closing', () => {
+    const e = engine({ step: layouts, stepIndex: 1 });
+    const { rerender } = render(<Stage e={e} />);
+    escapeFrom('Next');
+    expect(e.skip).toHaveBeenCalledTimes(1);
+    const f = engine({ step: outro, stepIndex: 3 });
+    rerender(<Stage e={f} />);
+    escapeFrom('Start');
+    expect(f.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('an Escape something else already took is left alone', () => {
+    const e = engine();
+    render(<Stage e={e} />);
+    const button = screen.getByRole('button', { name: 'Take the Tour' });
+    button.focus();
+    const taken = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    taken.preventDefault();
+    button.dispatchEvent(taken);
+    expect(e.skip).not.toHaveBeenCalled();
+  });
+
+  it('focus inside the dock holds the fold, and moving within it keeps holding', () => {
+    render(<Stage e={engine()} />);
+    const take = screen.getByRole('button', { name: 'Take the Tour' });
+    const no = screen.getByRole('button', { name: 'No Thanks' });
+    fireEvent.focus(take);
+    act(() => {
+      vi.advanceTimersByTime(OFFER_FOLD_MS * 2);
+    });
+    fireEvent.blur(take, { relatedTarget: no });
+    act(() => {
+      vi.advanceTimersByTime(OFFER_FOLD_MS * 2);
+    });
+    expect(dock()).not.toBeNull();
+    fireEvent.blur(no, { relatedTarget: document.body });
+    act(() => {
+      vi.advanceTimersByTime(OFFER_FOLD_MS);
+    });
+    expect(chip()).not.toBeNull();
+  });
+
+  it('a press on the dock or the chip is the tour’s, never the page’s', () => {
+    const outside = vi.fn();
+    document.addEventListener('pointerdown', outside);
+    render(<Stage e={engine()} />);
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Take the Tour' }));
+    act(() => {
+      vi.advanceTimersByTime(OFFER_FOLD_MS);
+    });
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Slides Tour' }));
+    document.removeEventListener('pointerdown', outside);
+    expect(outside).not.toHaveBeenCalled();
   });
 });

@@ -45,7 +45,9 @@ Transitions:
 - `folded` resets to false whenever the engine becomes active (a new offer).
 
 Fold timer (`useFoldTimer(armed, hold, onFold)`): one `setTimeout(OFFER_FOLD_MS)` while `armed && !hold`; any
-change of `hold` (pointer over the dock, focus inside it) clears it and, on release, starts it again from full.
+change of `hold` clears it and, on release, starts it again from full. `hold` is a `pointermove` of
+`pointerType` mouse over the dock (until `pointerleave`) or focus inside it: a pointer resting where the dock
+appeared, or a touch, holds nothing.
 
 Try it (`useTryIt(selector, stepKey, onDone)`): `done` is false on every new `stepKey`; one `click` listener on
 `document` in the capture phase marks it true when the event target `closest(selector)` matches; once true, a
