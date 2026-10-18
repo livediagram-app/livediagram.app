@@ -35,10 +35,17 @@ export function CoachChip({
         <button
           type="button"
           onClick={onStart}
+          aria-label={label}
           className="relative flex h-7 touch-target-y cursor-pointer items-center gap-1.5 rounded-l-full pl-2.5 pr-2 text-xs font-semibold transition hover:bg-brand-100 dark:hover:bg-brand-500/25"
         >
           <PlayIcon size={10} />
-          {label}
+          {/* A phone's tab bar is narrow: "Tour" there, so the tabs keep their room. */}
+          <span aria-hidden className="max-sm:hidden">
+            {label}
+          </span>
+          <span aria-hidden className="sm:hidden">
+            Tour
+          </span>
         </button>
       </HoverCard>
       <span aria-hidden className="h-4 w-px bg-brand-200 dark:bg-brand-500/40" />

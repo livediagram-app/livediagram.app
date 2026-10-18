@@ -15,7 +15,7 @@ banner and anchored card ([Diagram tour](editor-tour.md)) until it moves over.
 | **Coach dock**   | The strip itself, between the canvas and the tab bar                                                    |
 | **Offer**        | The dock asking whether to take the tour: Take the Tour or No Thanks                                    |
 | **Folded offer** | An offer left alone, folded into the **tour chip** in the tab bar                                       |
-| **Tour chip**    | The tab bar's small "Slides Tour" pill with its own dismiss, standing for a folded offer                |
+| **Tour chip**    | The tab bar's small "Slides Tour" pill ("Tour" on a phone) with its own dismiss, for a folded offer     |
 | **Pointer**      | The ring around a step's control, with the step's number on a badge at its corner                       |
 | **Try it**       | A step's one thing to do on the page ("Pick any layout"); doing it ticks the step and moves the tour on |
 | **Closing**      | The dock's last state: the tour is done, with its help link and Start                                   |
