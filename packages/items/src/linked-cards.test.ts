@@ -12,7 +12,7 @@ import {
   healLinkedCards,
   linkString,
   linkedCardCreate,
-  linkedCardGonePatch,
+  linkedCardLeftPatch,
   linkedCardId,
   linkedCardsTrashedBy,
   unlinkedFields,
@@ -242,18 +242,40 @@ describe('linkedCardsTrashedBy', () => {
   });
 });
 
-describe('linkedCardGonePatch', () => {
-  it('trashes the card, keeping its status and marking it as the link’s doing', () => {
-    expect(linkedCardGonePatch(inSync(record(), { status: 'done' }))).toEqual({
+describe('linkedCardLeftPatch', () => {
+  it('keeps the card on the board, where it is, as a card of its own', () => {
+    const left = linkedCardLeftPatch(inSync(record(), { status: 'done' }))!;
+    expect(left).toEqual({
       id: inSync().id,
-      patch: { set: { status: 'trash', trashedFrom: 'done', [LINKED_GONE_FIELD]: true } },
+      patch: { clear: ['linked', 'linkedAt', 'linkedRev'] },
     });
-    const { status: _s, ...noStatus } = inSync().fields;
-    expect(linkedCardGonePatch(card(noStatus))!.patch.set).toEqual({
-      status: 'trash',
-      [LINKED_GONE_FIELD]: true,
+    expect(left.patch.set).toBeUndefined();
+  });
+
+  it('clears an old trashed-by-link mark too', () => {
+    expect(
+      linkedCardLeftPatch(inSync(record(), { [LINKED_GONE_FIELD]: true }))!.patch.clear,
+    ).toContain(LINKED_GONE_FIELD);
+  });
+
+  it('leaves a card in the Trash, and one with no link, alone', () => {
+    expect(linkedCardLeftPatch(inSync(record(), { status: 'trash' }))).toBeUndefined();
+    expect(linkedCardLeftPatch(card(unlinkedFields(inSync().fields)))).toBeUndefined();
+  });
+
+  it('is linked again by the heal when its action comes back (an undo)', () => {
+    const was = inSync(record());
+    const kept = card(unlinkedFields(was.fields));
+    const heal = healLinkedCards({
+      kind: 'actions',
+      records: [record()],
+      items: new Map([[kept.id, kept]]),
+      setup,
+      typeId: 'action',
+      now: 9,
     });
-    expect(linkedCardGonePatch(inSync(record(), { status: 'trash' }))).toBeUndefined();
+    expect(heal.creates).toEqual([]);
+    expect(heal.patches[0]!.patch.set?.['linked']).toBe(was.fields['linked']);
   });
 });
 

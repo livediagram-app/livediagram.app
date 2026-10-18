@@ -6,7 +6,6 @@ import {
   EMPTY_ITEM_STORE,
   LINKED_AT_FIELD,
   LINKED_FIELD,
-  LINKED_GONE_FIELD,
   LINKED_REV_FIELD,
   itemPersonId,
   linkedCardId,
@@ -288,7 +287,7 @@ describe('useLinkedActionCards', () => {
     expect(panelNow().actions.map((x) => x.id)).toEqual(['a1']);
   });
 
-  it('trashes the card of an action that went, marked as the link’s doing', async () => {
+  it('keeps the card of an action that went on the board, as a card of its own', async () => {
     const a = action('a1');
     const h = setUp({ tabs: [canvas([a]), boardTab], items: [cardFor(a)] });
     act(() =>
@@ -304,7 +303,7 @@ describe('useLinkedActionCards', () => {
         patches: [
           {
             id: linkedCardId('actions', 'a1'),
-            patch: { set: { status: 'trash', trashedFrom: 'new', [LINKED_GONE_FIELD]: true } },
+            patch: { clear: ['linked', 'linkedAt', 'linkedRev'] },
           },
         ],
       },
