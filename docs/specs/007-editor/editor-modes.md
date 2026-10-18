@@ -297,7 +297,7 @@ holds.
   own, such as Popular, is a tile grid.
 - **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram, Facilitate,
   Pages: [The category bar](toolbar-layout.md#the-category-bar), which shows the layout without Popular, with
-  one-word names, Write and Draw as one, and Facilitate's session tools as Session) and its More popover (Plan).
+  one-word names, Write and Draw apart, and Facilitate's session tools as Session) and its More popover (Plan).
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
@@ -305,42 +305,46 @@ Today the layouts differ as below. Diagram offers no **Stickers** and no **Colla
 **Sankey** sits in **Concepts**, after the concept graphics, in Diagram and Pages: a flow drawn as wide as
 what it carries explains an idea the way a funnel or a cycle does. Facilitate offers no **Concepts**: concept
 graphics lay out an idea for a diagram, which a session does not stop to draw.
-Pages mode's **Write** leaves out **Page** (the page is the canvas there) and
-**Annotation**, its **Build** leaves out **Mind Node**, **Lane** and **Frame**
-(they organise a diagram, not a visual page), and its **Components** leaves
-out **Entity**; Diagram's
+Pages's **Write** leaves out **Page** (the page is the canvas there) and
+**Annotation**, it offers **no Build** (mind maps, flowcharts, lanes and frames organise a diagram, not a visual
+page: its **Components** ends with the **Stack**, and its **Data** with the **Timeline** and the **Table**), and its
+**Components** leaves out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar; its **Build** adds the **Card**, **Badge**, **Step Number**, **Entity** (Popular's alone until the category bar had no
-Popular) and
-**Boundary** ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
-[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), and its **Write** adds the **Callout** from Components (a headed
-note belongs to a diagram as much as a page) ahead of the Comment panel and Action card. Facilitate joins **Write** and **Build** as one category, **Write &
-Build** (Text, Sticky note, Table, Checklist, Frame: no Page, Annotation, Mind node, Flowchart, Lane, Timeline or Sankey), and
-its **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them. Facilitate offers the Collaborate elements as
+Docs, Website), keeping Image and Avatar; it offers Build's tiles as two categories, **Diagrams** (Mind node, Org
+chart, Flowchart, Sequence, Table and the **Entity**, Popular's alone until the category bar had no Popular) and
+**Layout** (Lane, Frame, Stack, **Boundary**, Timeline, then Diagram key and the **Card**, **Badge** and **Step
+Number** from Components: [The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), so what is built
+sits apart from what it is laid out in ([Toolbar layout](toolbar-layout.md#the-category-bar)); and its **Write**
+adds the **Callout** from Components (a headed note belongs to a diagram as much as a page) ahead of the Comment
+panel and Action card, which close it as their own Comments group. Facilitate's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
+**Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them, and it shares Diagram's **Layout**. Facilitate offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
 ("Collaborate's six" below), and shares Pages mode's **Data**: every chart and meter, since a session reads results
 and sets targets as often as a page reports them.
 
-| Category          | Diagram | Pages     | Plan | Facilitate          |
-| ----------------- | ------- | --------- | ---- | ------------------- |
-| Popular           | yes     | yes       | no   | yes                 |
-| Plan's seven      | no      | no        | yes  | no                  |
-| Logo              | no      | logo page | no   | no                  |
-| Shapes            | yes     | yes       | no   | yes                 |
-| My shapes         | yes     | yes       | no   | yes                 |
-| Write             | yes     | yes       | no   | yes (Write & Build) |
-| Draw              | yes     | no        | no   | yes                 |
-| Build             | yes     | yes       | no   | in Write            |
-| Components        | no      | yes       | no   | no                  |
-| Concepts          | yes     | yes       | no   | no                  |
-| Devices           | no      | yes       | no   | no                  |
-| Event Storming    | board   | no        | no   | no                  |
-| Icons             | yes     | yes       | no   | yes                 |
-| Stickers          | no      | yes       | no   | yes                 |
-| Tech              | yes     | no        | no   | no                  |
-| Media             | yes     | yes       | no   | yes                 |
-| Data              | no      | yes       | no   | yes                 |
-| Collaborate's six | no      | no        | no   | yes                 |
+| Category          | Diagram | Pages | Plan | Facilitate          |
+| ----------------- | ------- | ---------- | ---- | ------------------- |
+| Popular           | yes     | yes        | no   | yes                 |
+| Plan's seven      | no      | no         | yes  | no                  |
+| Logo              | no      | logo page  | no   | no                  |
+| Shapes            | yes     | yes        | no   | yes                 |
+| My shapes         | yes     | yes        | no   | yes                 |
+| Write             | yes     | yes        | no   | yes                 |
+| Draw              | yes     | no         | no   | yes                 |
+| Build             | no      | no         | no   | no                  |
+| Diagrams          | yes     | no         | no   | no                  |
+| Layout            | yes     | no         | no   | yes                 |
+| Components        | no      | yes        | no   | no                  |
+| Concepts          | yes     | yes        | no   | no                  |
+| Devices           | no      | yes        | no   | no                  |
+| Event Storming    | board   | no         | no   | no                  |
+| Icons             | yes     | yes        | no   | yes                 |
+| Stickers          | no      | yes        | no   | yes                 |
+| Tech              | yes     | no         | no   | no                  |
+| Media             | yes     | yes        | no   | yes                 |
+| Data              | no      | yes        | no   | yes                 |
+| Collaborate's six | no      | no         | no   | yes                 |
 
 Pages offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).

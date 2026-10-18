@@ -58,7 +58,7 @@ describe('a flyout’s layout', () => {
 
   it('words a line its own way where a mode fills the category differently', () => {
     expect(flyoutTagline('write', 'fallback', 'facilitate')).toBe(
-      'Words, notes, tables and frames.',
+      'Words, notes, tables and checklists.',
     );
     expect(flyoutTagline('write', 'fallback', 'diagram')).toBe(
       'Words on the canvas: text, notes and comments.',
@@ -68,7 +68,7 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('heads Shapes, Draw and Build by the tile that starts each group', () => {
+  it('heads Shapes, Draw, Layout, Data and Components by the tile that starts each group', () => {
     expect(flyoutGroups('shapes', tiles('diagram', 'shapes')).map((g) => g.title)).toEqual([
       'Basics',
       'Flowchart',
@@ -79,10 +79,18 @@ describe('a flyout’s groups', () => {
       'Outlines',
       'Connectors',
     ]);
-    expect(flyoutGroups('build', tiles('diagram', 'build')).map((g) => g.title)).toEqual([
-      'Diagrams',
-      'Layout and Parts',
+    expect(flyoutGroups('layout', tiles('diagram', 'layout')).map((g) => g.title)).toEqual([
+      'Containers',
+      'Parts',
     ]);
+    expect(flyoutGroups('data', tiles('pages', 'data')).map((g) => g.title)).toEqual([
+      'Charts',
+      'Meters',
+      'Timelines and Tables',
+    ]);
+    expect(
+      flyoutGroups('components', tiles('pages', 'components')).map((g) => g.title),
+    ).toEqual(['Code and Lists', 'Page Blocks', 'Layout']);
     expect(flyoutGroups('data', tiles('facilitate', 'data')).map((g) => g.title)).toEqual([
       'Charts',
       'Meters',

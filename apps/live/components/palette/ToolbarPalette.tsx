@@ -234,7 +234,7 @@ export function ToolbarPalette(props: Props) {
     [tabs],
   );
   // The bar has no Popular: with every category one press away, a pick from across them adds nothing.
-  // The bar's categories (bar-categories): no Popular, one-word names, Write and Draw as one, Session.
+  // The bar's categories (bar-categories): no Popular, one-word names, Session.
   const barCategories = useMemo(
     () =>
       barCategoriesFor(tabs, (groups) => (

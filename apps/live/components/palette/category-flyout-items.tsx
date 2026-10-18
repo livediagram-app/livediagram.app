@@ -83,20 +83,27 @@ export function Kbd({ children, small }: { children: ReactNode; small?: boolean 
   );
 }
 
+// The footer's one height (docs/specs/007-editor/toolbar-layout.md "The category bar"): the name's line and two of
+// description (16 px each), 10 px above and below, and the 1 px top border. Fixed, so pointing along the tiles never
+// grows or shrinks the flyout under the pointer; a longer description clamps to its two lines.
+export const FLYOUT_FOOTER_HEIGHT = 16 * 3 + 10 * 2 + 1;
+
 /** What the pointed-at tile does, and its key: the hover card's job, without the wait. */
 export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
   return (
     <footer
       aria-live="polite"
-      className="flex min-h-[52px] items-center gap-3 rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 py-2.5 dark:border-slate-800 dark:bg-slate-950/40"
+      data-flyout-footer
+      style={{ height: FLYOUT_FOOTER_HEIGHT }}
+      className="flex shrink-0 items-center gap-3 overflow-hidden rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 dark:border-slate-800 dark:bg-slate-950/40"
     >
       {def ? (
         <>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-[12px] font-semibold text-slate-800 dark:text-slate-100">
+            <span className="truncate text-[12px] leading-4 font-semibold text-slate-800 dark:text-slate-100">
               {tileDisplayName(def)}
             </span>
-            <span className="line-clamp-2 text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
+            <span className="line-clamp-2 text-[11.5px] leading-4 text-slate-500 dark:text-slate-400">
               {def.variants?.length
                 ? 'Choose a preset to start from.'
                 : def.action.type === 'open'

@@ -46,8 +46,9 @@ describe('palette layouts', () => {
       'my-shapes',
       'write',
       'draw',
-      'build',
+      'diagrams',
       'concepts',
+      'layout',
       'icons',
       'technology',
       'media',
@@ -60,15 +61,10 @@ describe('palette layouts', () => {
     expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
   });
 
-  it('offers every Data tile in Facilitate and Pages', () => {
+  it('offers every Data tile in Facilitate and Pages, Pages adding the Table and the Timeline', () => {
     const data = tilesForCategory('data').map((t) => t.id);
-    for (const mode of ['facilitate', 'pages'] as const)
-      expect(
-        paletteCategoriesFor(mode)
-          .find((c) => c.id === 'data')!
-          .tiles!.map((t) => t.id),
-        mode,
-      ).toEqual(data);
+    expect(tileIds('facilitate', 'data')).toEqual(data);
+    expect(tileIds('pages', 'data')).toEqual([...data, 'tools:timeline', 'tools:table']);
   });
 
   // Comments and assigned actions belong to every mode (docs/specs/012-collaboration/facilitate-mode.md).
@@ -81,13 +77,14 @@ describe('palette layouts', () => {
   });
 
   // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('gives Facilitate Popular, the drawing basics (Write & Build as one), the decorations, the charts and the six Collaborate categories', () => {
+  it('gives Facilitate Popular, the drawing basics, Layout, the decorations, the charts and the six Collaborate categories', () => {
     expect(ids('facilitate')).toEqual([
       'popular',
       'shapes',
       'my-shapes',
       'write',
       'draw',
+      'layout',
       'icons',
       'stickers',
       'media',
@@ -148,22 +145,21 @@ describe('palette layouts', () => {
     );
   });
 
-  it("leaves Page, Annotation, Shape Pen, Polygon, Mind node, Flowchart, Lane and Timeline out of Facilitate's Write, Draw and Build", () => {
+  it("leaves Page, Annotation, Shape Pen and Polygon out of Facilitate's Write and Draw, and gives it Diagram's Layout", () => {
     const tilesOf = (id: string) =>
       paletteCategoriesFor('facilitate')
         .find((c) => c.id === id)!
         .tiles!.map((t) => t.id);
-    // Write and Build as one, "Write & Build".
     const write = paletteCategoriesFor('facilitate').find((c) => c.id === 'write')!;
-    expect(write.label).toBe('Write & Build');
+    expect(write.label).toBe('Write');
     expect(tilesOf('write')).toEqual([
       'tools:text',
       'tools:sticky',
       'tools:pointer-note',
       'tools:table',
       'tools:checklist',
-      'tools:frame',
     ]);
+    expect(tilesOf('layout')).toEqual(tileIds('diagram', 'layout'));
     expect(tilesOf('draw')).toEqual([
       'tools:pencil',
       'tools:highlighter',
@@ -191,7 +187,6 @@ describe('palette layouts', () => {
       'shapes',
       'my-shapes',
       'write',
-      'build',
       'concepts',
       'components',
       'devices',
@@ -228,10 +223,9 @@ describe('palette layouts', () => {
   });
 
   it('files the Sankey under Concepts, not Build, in Diagram and Pages', () => {
-    for (const mode of ['diagram', 'pages'] as const) {
+    for (const mode of ['diagram', 'pages'] as const)
       expect(tileIds(mode, 'concepts').at(-1), mode).toBe('tools:sankey');
-      expect(tileIds(mode, 'build'), mode).not.toContain('tools:sankey');
-    }
+    expect(tileIds('diagram', 'diagrams')).not.toContain('tools:sankey');
   });
 
   it('leaves mind nodes, lanes, frames, annotations and entities out of Pages', () => {
@@ -247,8 +241,10 @@ describe('palette layouts', () => {
     ]) {
       expect(everywhere, id).not.toContain(id);
     }
-    expect(tileIds('pages', 'build')).toEqual(['tools:table', 'tools:stack', 'tools:timeline']);
-    expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
+    // No Build: its three page tiles sit in Components and Data.
+    expect(ids('pages')).not.toContain('build');
+    expect(tileIds('pages', 'components').at(-1)).toBe('tools:stack');
+    expect(tileIds('diagram', 'diagrams')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });
 
