@@ -86,6 +86,7 @@ describe('Start Facilitating', () => {
       'user-story-map',
     ]);
     expect(group('strategy')).toEqual([
+      'swot',
       'business-model-canvas',
       'value-proposition-canvas',
       'stakeholder-map',

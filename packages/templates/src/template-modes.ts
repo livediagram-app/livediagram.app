@@ -115,6 +115,11 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'value-proposition-canvas': 'facilitate',
   'opportunity-solution-tree': 'facilitate',
   'user-persona': 'facilitate',
+  // Sticky-note boards a group fills in together (docs/specs/007-editor/templates-by-mode.md "A template's mode"):
+  // a note per voice is the room's work, not a diagram one person draws.
+  swot: 'facilitate',
+  'empathy-map': 'facilitate',
+  journey: 'facilitate',
 };
 
 /** The mode a template's tab opens in. */

@@ -186,12 +186,15 @@ unchanged; only the mode they open in moved from Diagram.
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
   session tool opens in Facilitate.
 - The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
-  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User Persona** (`user-persona`, under
-  Workshops), the **Planning** group's **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`),
-  **RACI Matrix** (`raci-matrix`) and **User Story Map** (`user-story-map`), and the **Strategy** group's **Business
+  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User Persona** (`user-persona`),
+  **Empathy Map** (`empathy-map`) and **User Journey** (`journey`), under Workshops, the **Planning** group's **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`),
+  **RACI Matrix** (`raci-matrix`) and **User Story Map** (`user-story-map`), and the **Strategy** group's **SWOT** (`swot`), **Business
   Model Canvas** (`business-model-canvas`), **Value Proposition Canvas** (`value-proposition-canvas`), **Stakeholder
   map** (`stakeholder-map`) and **Opportunity Solution Tree** (`opportunity-solution-tree`). Their catalogue
-  categories are unchanged.
+  categories are unchanged. **A board built from sticky notes for a group to add theirs to is a Facilitate
+  template**: a note per voice is the room's work. SWOT, Empathy Map and User Journey moved from Diagram for it; a
+  Diagram template may still carry a sticky or two as an annotation (Family Tree, Flywheel, Sequence Diagram) and
+  stays a diagram. Event Storming is its own kind of tab and keeps its own mode.
 - The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
   (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
   round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
