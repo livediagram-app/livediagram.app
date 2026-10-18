@@ -37,6 +37,8 @@ import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { iconMakesRoomForLabel } from '@/components/primitives/icon-band';
 import { StickerView } from '@/components/canvas/StickerView';
 import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
+import { SketchArtPicture } from '@/components/canvas/SketchArtPicture';
+import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { ProgressView } from '@/components/canvas/ProgressView';
 import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
@@ -176,14 +178,17 @@ export function ShapeContentRouter({
   // unset border.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
   // Icons and stickers under Sketch draw through the shared hand-drawn wobble (SketchFilterDefs), their art kept.
+  // WebKit runs that filter again on every repaint, so there the art is drawn into still pictures instead.
   const wobble = finish === 'sketch' && finishWobblesArt(element);
   const art = (node: ReactNode) =>
-    wobble ? (
+    !wobble ? (
+      node
+    ) : liveFiltersRedrawOnRepaint() ? (
+      <SketchArtPicture>{node}</SketchArtPicture>
+    ) : (
       <div className="h-full w-full" style={{ filter: `url(#${SKETCH_TILE_FILTER_ID})` }}>
         {node}
       </div>
-    ) : (
-      node
     );
   return element.type === 'shape' && element.shape === 'sticker' ? (
     // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
