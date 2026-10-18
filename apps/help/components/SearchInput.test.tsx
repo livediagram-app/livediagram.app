@@ -100,8 +100,8 @@ describe('SearchInput results', () => {
       input.focus();
       type(input, 'export');
     });
-    await settle();
-    await settle();
+    // The article index loads on first focus; under coverage it can take a while, so wait for the answer.
+    for (let i = 0; i < 100 && !status(); i++) await settle();
     expect(status()).toMatch(/^\d+ articles? found$/);
     expect(document.querySelector('[role="region"][aria-label="Search results"]')).not.toBeNull();
     act(() => type(input, 'zzqqxx'));
