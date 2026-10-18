@@ -153,7 +153,14 @@ function mintClerkToken(sub, email) {
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(JSON.stringify({ alg: 'RS256', kid: CLERK_KID, typ: 'JWT' }));
   const payload = b64url(
-    JSON.stringify({ sub, sid: `sess_${sub}`, iat: now, nbf: now - 5, exp: now + 3600, ...(email ? { email } : {}) }),
+    JSON.stringify({
+      sub,
+      sid: `sess_${sub}`,
+      iat: now,
+      nbf: now - 5,
+      exp: now + 3600,
+      ...(email ? { email } : {}),
+    }),
   );
   const signature = sign('sha256', Buffer.from(`${header}.${payload}`), clerkKey.privateKey);
   return `${header}.${payload}.${b64url(signature)}`;
