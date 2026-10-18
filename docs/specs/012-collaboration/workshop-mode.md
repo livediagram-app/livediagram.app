@@ -17,16 +17,16 @@ boards.
 
 ## Domain language
 
-| Term              | Means                                                                                         | Not                                                            |
-| ----------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| **Workshop mode** | The editor mode for running a session with a team (`EditorMode` `'workshop'`)                 | Facilitate mode (its old name), Session mode, Collaborate mode |
-| **session**       | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                                    |
-| **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Workshop mode                                        |
-| **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole                            |
-| **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                  |
+| Term              | Means                                                                                         | Not                                                          |
+| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Workshop mode** | The editor mode for running a session with a team (`EditorMode` `'workshop'`)                 | Workshop mode (its old name), Session mode, Collaborate mode |
+| **session**       | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                                  |
+| **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Workshop mode                                      |
+| **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole                          |
+| **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                |
 
 - The interface says **Workshop**; specs and code say **Workshop mode** or `'workshop'`.
-- It was called **Facilitate** until October 2026. "Facilitate" was jargon for what a team calls running a
+- It was called **Workshop** until October 2026. "Workshop" was jargon for what a team calls running a
   workshop, and it blurred the mode with the **facilitator**, the person holding the baton, who is unrelated
   to who is in the mode. "Workshop" names the activity everyone on the tab shares, as Plan and Draw do. The
   facilitator keeps its name: a workshop has a facilitator. Every stored trace of the old name reads as
@@ -91,9 +91,9 @@ stop to draw):
 | _(none)_    | Popular                                               |
 | Common      | Shapes, My shapes (with a shape library), Write, Draw |
 | Structure   | Layout                                                |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 | Decorate    | Icons, Stickers, Media                                |
 | Dynamic     | Data                                                  |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
   **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
@@ -118,7 +118,7 @@ stop to draw):
   - **Selection Mode**: one button per selection mode.
   - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
-  layout as **Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session**: no Popular; and Tools, Record, React, Selection Mode
+  layout as **Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data**: no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
   them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 

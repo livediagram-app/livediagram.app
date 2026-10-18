@@ -72,12 +72,12 @@ describe('the category bar’s categories', () => {
       'write',
       'draw',
       'layout',
+      'collab-ask',
+      SESSION_CATEGORY_ID,
       'icons',
       'stickers',
       'media',
       'data',
-      'collab-ask',
-      SESSION_CATEGORY_ID,
     ]);
     const session = cats.find((c) => c.id === SESSION_CATEGORY_ID)!;
     expect(session.tiles).toBeNull();

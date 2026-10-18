@@ -73,7 +73,7 @@ under the pointer as a category is switched.
   | Mode     | Bar                                                                                   |
   | -------- | ------------------------------------------------------------------------------------- |
   | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media                 |
-  | Workshop | Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session           |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data           |
   | Pages    | (Logo,) Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
 
   Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place

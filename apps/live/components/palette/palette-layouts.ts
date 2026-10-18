@@ -232,8 +232,8 @@ const PAGES: PaletteLayout = {
 
 // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
-// Polygon), Diagram's Layout, the decorations a room reaches for, and the Collaborate elements as
-// six categories, one per group, plus the charts; no tech icons, mock-up kit or workshop notation.
+// Polygon), Diagram's Layout, the Collaborate elements as six categories, one per group, ahead of the
+// decorations a room reaches for and the charts; no tech icons, mock-up kit or workshop notation.
 const WORKSHOP: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -274,6 +274,14 @@ const WORKSHOP: PaletteLayout = {
     // Diagram's Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its
     // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Workshop has no Concepts).
     { id: 'layout', tiles: WORKSHOP_LAYOUT_TILES },
+    // The session kit next, before the decorations: running the room is what the mode is for, so Ask and Session
+    // (the other five, gathered on the bar) come right after the board's structure.
+    { id: 'collab-ask' },
+    { id: 'collab-tools' },
+    { id: 'collab-record' },
+    { id: 'collab-react' },
+    { id: 'collab-mode' },
+    { id: 'collab-navigate' },
     // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
     // which a session does not stop to draw.
     { id: 'icons' },
@@ -281,12 +289,6 @@ const WORKSHOP: PaletteLayout = {
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
     // The charts and meters: a session reads results and sets targets as often as a page reports them.
     { id: 'data' },
-    { id: 'collab-ask' },
-    { id: 'collab-tools' },
-    { id: 'collab-record' },
-    { id: 'collab-react' },
-    { id: 'collab-mode' },
-    { id: 'collab-navigate' },
   ],
 };
 

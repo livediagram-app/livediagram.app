@@ -131,15 +131,15 @@ export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[]
       { key: 'draw', label: 'Draw', Icon: DrawTabIcon },
     ],
     [
+      { key: 'ask', label: 'Ask', Icon: AskGroupIcon },
+      { key: 'session', label: 'Session', Icon: BehaviourTabIcon },
+    ],
+    [
       { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
       { key: 'stickers', label: 'Stickers', Icon: StickersTabIcon },
       { key: 'media', label: 'Media', Icon: MediaTabIcon },
     ],
     [{ key: 'data', label: 'Data', Icon: DataTabIcon }],
-    [
-      { key: 'ask', label: 'Ask', Icon: AskGroupIcon },
-      { key: 'session', label: 'Session', Icon: BehaviourTabIcon },
-    ],
   ],
   pages: [
     [
