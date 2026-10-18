@@ -3,7 +3,21 @@
 // aria-labels and live announcements read the same names everywhere, so
 // they can't drift.
 
-import type { BoxedElement, Element, ShapeKind } from '@livediagram/document';
+import {
+  DEFAULT_SESSION_TOOL,
+  type BoxedElement,
+  type Element,
+  type SessionTool,
+  type ShapeKind,
+} from '@livediagram/document';
+
+// The tool a session button starts, as its kind reads (docs/specs/012-collaboration/session-button.md).
+const SESSION_TOOL_KIND: Record<SessionTool, string> = {
+  timer: 'Timer',
+  stopwatch: 'Stopwatch',
+  vote: 'Dot vote',
+  poll: 'Poll',
+};
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
@@ -25,6 +39,9 @@ export function kindLabel(el: Element): string {
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
+  // A session button names the tool it starts ('Timer', 'Poll'), not the generic kind, which said nothing about it.
+  if (el.type === 'shape' && el.shape === 'session-button')
+    return SESSION_TOOL_KIND[el.session?.tool ?? DEFAULT_SESSION_TOOL];
   if (el.type === 'shape') return shapeKindLabel(el.shape);
   return 'Element';
 }

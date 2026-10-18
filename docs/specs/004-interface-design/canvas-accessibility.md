@@ -49,6 +49,8 @@ delete, undo, label edit via Space) that already work on a selection.
   reveals, decision records and mode buttons, an embed, a link card, and an image still waiting for its picture. An
   img's children are presentational, so as pictures their Start, tick and Ask buttons and the Q&A note field could
   not be reached with a screen reader.
+- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`, `Poll`), never the generic
+  "Session button".
 
 ## Live announcements
 
