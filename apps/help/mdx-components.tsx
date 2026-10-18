@@ -1,4 +1,5 @@
 import type { MDXComponents } from 'mdx/types';
+import { headingId } from '@/lib/heading-id';
 import type { ComponentProps, ReactNode } from 'react';
 import Link from 'next/link';
 import { articles, categories, articleHref, categoryHref } from '@/lib/articles';
@@ -123,15 +124,10 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </h1>
     ),
-    h2: ({ children }) => {
-      const text = typeof children === 'string' ? children : String(children ?? '');
-      const id = text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+    h2: ({ children }: { children?: ReactNode }) => {
       return (
         <h2
-          id={id}
+          id={headingId(children)}
           className="mb-4 mt-10 flex items-center gap-3 text-xl font-bold text-slate-900 md:text-2xl dark:text-slate-100"
         >
           <span className="section-number flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300" />
@@ -139,8 +135,11 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         </h2>
       );
     },
-    h3: ({ children }) => (
-      <h3 className="mb-2 mt-6 text-lg font-semibold text-slate-800 dark:text-slate-100">
+    h3: ({ children }: { children?: ReactNode }) => (
+      <h3
+        id={headingId(children)}
+        className="mb-2 mt-6 text-lg font-semibold text-slate-800 dark:text-slate-100"
+      >
         {children}
       </h3>
     ),
