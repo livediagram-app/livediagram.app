@@ -1,26 +1,23 @@
-// What one tab contributes to the collaboration index (docs/specs/013-workspace/inbox.md §2).
+// What one tab contributes to the collaboration index (docs/specs/013-workspace/inbox.md §2), and what
+// a Local only document's tab contributes to the Inbox read in the browser (§2.6).
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
 // and `collab_threads` hold: one per element carrying an action, one per
-// element carrying a thread with at least one comment. The db layer
-// turns these into statements; every tab write path goes through it.
+// element carrying a thread with at least one comment. The api's db layer
+// turns these into statements (every tab write path goes through it); the
+// editor's offline Inbox read filters them directly.
 //
-// Kept apart from timeline/tab-diff.ts on purpose. That module answers
+// Kept apart from the api's timeline/tab-diff.ts on purpose. That module answers
 // "what CHANGED in this save" for the feed; this one answers "what IS
 // on this tab now" for the index, and a full snapshot is what lets a
 // save be a replace rather than a diff.
 
-import {
-  ACTION_CARD_MAX,
-  elementActions,
-  elementDisplayLabel,
-  isBoxed,
-  isClosedAction,
-  type Comment,
-  type Element,
-} from '@livediagram/document';
+import type { Comment } from './comments';
+import { ACTION_CARD_MAX, elementActions, isClosedAction } from './element-action';
+import { elementDisplayLabel } from './element-display-label';
+import { isBoxed, type Element } from './index';
 
-type CollabActionRow = {
+export type CollabActionRow = {
   elementId: string;
   actionId: string;
   elementLabel: string;
@@ -37,7 +34,7 @@ type CollabActionRow = {
   updatedAt: number;
 };
 
-type CollabThreadRow = {
+export type CollabThreadRow = {
   elementId: string;
   elementLabel: string;
   resolved: boolean;
@@ -56,7 +53,7 @@ type CollabThreadRow = {
   latestAt: number;
 };
 
-type CollabIndexRows = {
+export type CollabIndexRows = {
   actions: CollabActionRow[];
   threads: CollabThreadRow[];
 };

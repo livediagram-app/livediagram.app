@@ -193,12 +193,15 @@ Explorer lists follow after the paint.
   sent anywhere, so Home's Jump Back In places it among the reader's other
   documents by the same rule, with the **Local only** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
+- **Inbox.** The Inbox reads offline documents in the browser and lists their open actions, Plan cards and comment
+  threads among the cloud ones, each row with the **Local only** pill
+  ([Inbox §2.6](../013-workspace/inbox.md#26-local-only-documents)).
 
 ### Local only pill
 
 Every row and card of an offline document carries a **Local only** pill,
 wherever the document is listed: the list and card views (folders, Search results,
-This browser, Recent, Favourites), Home's Jump Back In, the folder previews' tiles excepted (they
+This browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Document card, and the Trash.
 
@@ -212,7 +215,7 @@ rows and its Current Document card, and the Trash.
 - **The guide is one click away.** The pill is a link to the Offline Mode help
   article (new tab, the editor's help-link telemetry), with its own focus ring.
   Where the row is itself a single control (a search result, the panel's
-  Current Document row), the pill is a plain label inside it, carrying the same
+  Current Document row, an Inbox row), the pill is a plain label inside it, carrying the same
   description: a link cannot sit inside a button. In a tree (the editor's
   Explorer), the pill is a link out of the tab order, since the tree owns
   the one tab stop, and the row itself carries the description. The Trash row's

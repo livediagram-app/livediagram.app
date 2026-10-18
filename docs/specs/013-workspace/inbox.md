@@ -45,8 +45,6 @@ outstanding for me right now.**
 - Done actions and resolved threads are not listed. The page is an
   inbox of what is outstanding, not a history; the Timeline and the
   Collaborate Panel's Resolved side already cover the past.
-- Offline Mode documents ([Offline Mode](../006-document/offline-mode.md)) never reach the worker, so their
-  actions and threads never appear here, the same as on the Timeline.
 
 ## 1. What the user sees
 
@@ -148,6 +146,13 @@ States:
   ([Timeline](timeline.md) §2.4): "we couldn't ask" and "there is nothing" are
   different answers.
 
+**Local only rows.** A row from a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md))
+carries the [Local only pill](../006-document/offline-mode.md#local-only-pill) in its "where" line, after the document
+chip, as a label (the row is already a link): the same amber words and glyph, and on hover "Lives only in this browser.
+Clearing this browser's site data deletes it." Nobody reads such a row as saved on livediagram or visible to anyone
+else. Its rows are found in the browser (§2.6) and listed among the server's, in the same sections and the same
+order; the badge counts them.
+
 Coming back to a tab that has been open a while re-reads the list
 (`useReturnToTab`, as the Timeline does), merging in place.
 
@@ -228,7 +233,7 @@ by accident without also forgetting to write the tab:
 | tab link into another document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
-(`collabIndexRowsFromElements`), which reuses the element-label rule
+(`collabIndexRowsFromElements` in `packages/document`, shared with the browser's read of Local only documents, §2.6), which reuses the element-label rule
 the Collaborate Panel already applies (`elementDisplayLabel`, moved
 into `packages/document` so the panel and the index cannot disagree on
 what a row is called).
@@ -357,6 +362,30 @@ It is placed on a board exactly as §2.4 places a card. The read takes the newes
 comment. Migration 0074 adds a partial index, `items_open_threads ON items (document_id) WHERE
 json_extract(fields, '$.comments.resolved') = 0`, so the read seeks only cards with an open thread in each
 visible document (measured: 20,000 cards, 2,000 open 20-comment threads, ~106ms; ~200ms without it). Author ids never leave the worker: the row carries the latest author's name and colour only.
+
+### 2.6 Local only documents
+
+A Local only document ([Offline Mode](../006-document/offline-mode.md)) never reaches the worker, so the index above
+never holds it. The editor reads those documents itself, from the browser's offline store, and lists what it finds with
+the server's rows (`readOfflineActivity`, `apps/live/lib/offline/offline-activity.ts`):
+
+- **The same derivation.** Actions and element threads come from `collabIndexRowsFromElements`, Plan boards' statuses
+  from `planBoardRowsFromElements` (both in `packages/document`), so a Local only document lists exactly what the same
+  document would list once synced.
+- **Who "me" is.** The reader's owner id and, when this browser still holds one, its guest participant id: a guest's
+  self-assignments and comments carry the guest id, and stay theirs after signing in on the same browser. Cards match
+  the hashes of those ids (`itemPersonId`), as §2.4 does. There are no team members offline, so no member-id match.
+- **What is listed.** The rules of §2.4, §2.5 and §4 with the reader as the owner of every Local only document: an open
+  action assigned to or by the reader; every unresolved thread, an element's or a card's ("Your document"); an open card
+  assigned to the reader that is not linked, not archived, not in the Trash and in no Done column, placed on a board by
+  the same preference (a board holding its status, then an All Cards board, then any board, by tab then board order).
+  Documents in the local Trash are skipped. Forms take responses through the worker, so a Local only document has none
+  to list.
+- **The shape.** The same wire types, `via: 'own'`, no team and no share code (the plain document URL opens it), marked
+  local in the editor so the row shows the pill (§1). Capped at `ACTIVITY_LIST_MAX` per kind, like the server read.
+- **Failure.** The offline store failing to answer is logged (`[inbox] offline-read-failed`) and lists nothing local;
+  the page's failed state stays the server read's. A browser with no Local only documents reads nothing more than the
+  index of ids it already holds.
 
 ## 3. API
 
@@ -497,7 +526,7 @@ Never an action name, comment text, document name, or any identity.
 
 ## 7. Testing
 
-- `collab-index-rows.test.ts`: the pure derivation (labels, statuses,
+- `collab-index-rows.test.ts` (`packages/document`): the pure derivation (labels, statuses,
   participant sets, latest-comment selection, tables' first-cell rule).
 - `activity.test.ts` (routes): owner gate, the db call is scoped to the
   resolved owner, backfill is dispatched only when unseeded, the
@@ -516,7 +545,10 @@ Never an action name, comment text, document name, or any identity.
   board, stray status still open, place preference, scoped share,
   a document the reader cannot open.
 - `useActivityFeed.test.tsx`: sections split from one read, error vs
-  empty, retry.
+  empty, retry, Local only rows merged in order and counted.
+- `offline-activity.test.ts`: the browser read of Local only documents (§2.6): assigned to and by the reader, the
+  guest id, threads, open and finished cards, linked cards, trashed documents, placement, the cap.
+- `collab-index-rows.test.ts` and `plan-board-rows.test.ts` live in `packages/document` with the functions.
 - Help: the registry / icon / colour / articleCount tests pick the new
   article up automatically.
 

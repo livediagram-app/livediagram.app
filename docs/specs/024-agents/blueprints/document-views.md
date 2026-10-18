@@ -850,36 +850,36 @@ view (above), beside the front doors' `Mcp·Used` and `Cli·Used`.
 
 Every rule maps to a deterministic test; the spec's rules are numbered here.
 
-| Rule                                                                 | Test                                                                                                                            |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                    |
-| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                 |
-| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                          |
-| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                      |
-| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                |
-| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                  |
-| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `apps/api/src/collab-index/rows.test.ts` |
-| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                    |
-| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                             |
-| R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                  |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                        |
-| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                 |
-| R13 Reading order                                                    | `reading-order.test.ts`                                                                                                         |
-| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                  |
-| R15 Bare strokes fold into one counted line                          | `freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                                        |
-| R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                             |
-| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                     |
-| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                 |
-| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                  |
-| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-document.test.ts` (8,000)  |
-| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                         |
-| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                             |
-| R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                       |
-| R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                          |
-| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                               |
-| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite            |
-| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                      |
-| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                |
+| Rule                                                                 | Test                                                                                                                                     |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                             |
+| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                          |
+| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                                   |
+| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                               |
+| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                         |
+| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                           |
+| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/document/src/collab-index-rows.test.ts` |
+| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
+| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
+| R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                           |
+| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
+| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
+| R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                  |
+| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
+| R15 Bare strokes fold into one counted line                          | `freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                                                 |
+| R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                                      |
+| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                              |
+| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                          |
+| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                           |
+| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-document.test.ts` (8,000)           |
+| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                  |
+| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                      |
+| R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                |
+| R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                                   |
+| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                        |
+| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                     |
+| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                               |
+| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                         |
 
 Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 `packages/document-views/src/__fixtures__/golden/`:

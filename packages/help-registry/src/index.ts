@@ -1990,7 +1990,7 @@ export const articles: Article[] = [
     description:
       'What is outstanding for you across every document: open actions and comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

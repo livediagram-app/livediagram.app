@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import type { Element } from './index';
 import { describe, expect, it } from 'vitest';
 import { ALL_CARDS_STATUS, planBoardRowsFromElements } from './plan-board-rows';
 
