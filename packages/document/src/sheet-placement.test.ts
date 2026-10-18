@@ -7,19 +7,25 @@ import {
 } from './sheet-placement';
 import type { Element } from './index';
 
-const box = (id: string): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 }) as Element;
-const sheet = (id: string, sheetId = `sh-${id}`): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'plan-sheet',
-    x: 0,
-    y: 0,
-    width: 960,
-    height: 560,
-    planSheet: { sheetId },
-  }) as Element;
+const box = (id: string): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 60,
+});
+const sheet = (id: string, sheetId = `sh-${id}`): Element => ({
+  id,
+  type: 'shape',
+  shape: 'plan-sheet',
+  x: 0,
+  y: 0,
+  width: 960,
+  height: 560,
+  planSheet: { sheetId },
+});
 const chart = (id: string, sheetId: string): Element =>
   ({
     id,

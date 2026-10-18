@@ -76,7 +76,11 @@ describe('replace', () => {
     const tab = checkoutFlow();
     expect(
       refused(
-        applyReplace(tab, { elements: [...tab.elements, sheet('s1')], layout: 'preserve' }, options),
+        applyReplace(
+          tab,
+          { elements: [...tab.elements, sheet('s1')], layout: 'preserve' },
+          options,
+        ),
       ),
     ).toEqual(rejection);
   });
