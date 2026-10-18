@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   arrowheadShapeOf,
+  arrowheadStartShapeOf,
   arrowheadSizeOf,
   arrowStyleOf,
   arrowThicknessOf,
@@ -65,5 +66,21 @@ describe('arrowhead + style resolvers (default when unset, pass through when set
   it('arrowStyleOf defaults to straight', () => {
     expect(arrowStyleOf(arrow())).toBe('straight');
     expect(arrowStyleOf(arrow({ arrowStyle: 'curved' }))).toBe('curved');
+  });
+
+  it('reads a stored head shape, size or style this build does not know as the default', () => {
+    const odd = arrow({
+      arrowheadShape: 'star' as never,
+      arrowheadStartShape: 'moon' as never,
+      arrowheadSize: 'huge' as never,
+      arrowStyle: 'wavy' as never,
+    });
+    expect(arrowheadShapeOf(odd)).toBe('triangle');
+    expect(arrowheadStartShapeOf(odd)).toBe('triangle');
+    expect(arrowheadSizeOf(odd)).toBe('medium');
+    expect(arrowStyleOf(odd)).toBe('straight');
+    expect(
+      arrowheadStartShapeOf(arrow({ arrowheadShape: 'many', arrowheadStartShape: 'x' as never })),
+    ).toBe('many');
   });
 });

@@ -62,8 +62,12 @@ export function arrowheadLengthPx(size: ArrowheadSize, strokeWidth: number): num
   return ARROWHEAD_SIZE_PX[size] * strokeWidth;
 }
 
+// An unknown stored size draws as the default, as an unknown head shape does (arrowheadShapeOf).
 export function arrowheadSizeOf(arrow: ArrowElement): ArrowheadSize {
-  return arrow.arrowheadSize ?? DEFAULT_ARROWHEAD_SIZE;
+  const size = arrow.arrowheadSize;
+  return size !== undefined && Object.hasOwn(ARROWHEAD_SIZE_PX, size)
+    ? size
+    : DEFAULT_ARROWHEAD_SIZE;
 }
 
 // Arrowhead head-shape preset. `triangle` (the filled classic) is the
@@ -103,12 +107,18 @@ export const ARROWHEAD_SHAPES: ArrowheadShape[] = [
   'one-or-many',
 ];
 export const DEFAULT_ARROWHEAD_SHAPE: ArrowheadShape = 'triangle';
+const isArrowheadShape = (v: unknown): v is ArrowheadShape =>
+  (ARROWHEAD_SHAPES as readonly unknown[]).includes(v);
+// The head an arrow draws. A stored shape this build does not know (a newer build's, or a hand-edited file) draws
+// as the default, as the validator leaves cosmetic values for the renderer to read.
 export function arrowheadShapeOf(arrow: ArrowElement): ArrowheadShape {
-  return arrow.arrowheadShape ?? DEFAULT_ARROWHEAD_SHAPE;
+  return isArrowheadShape(arrow.arrowheadShape) ? arrow.arrowheadShape : DEFAULT_ARROWHEAD_SHAPE;
 }
 // The start's head: its own when it differs (an ER relationship's two cardinalities), else the end's.
 export function arrowheadStartShapeOf(arrow: ArrowElement): ArrowheadShape {
-  return arrow.arrowheadStartShape ?? arrowheadShapeOf(arrow);
+  return isArrowheadShape(arrow.arrowheadStartShape)
+    ? arrow.arrowheadStartShape
+    : arrowheadShapeOf(arrow);
 }
 
 // Path geometry preset. Straight is the existing behaviour; curved
@@ -119,5 +129,6 @@ export function arrowheadStartShapeOf(arrow: ArrowElement): ArrowheadShape {
 export type ArrowStyle = 'straight' | 'curved' | 'angled';
 const DEFAULT_ARROW_STYLE: ArrowStyle = 'straight';
 export function arrowStyleOf(arrow: ArrowElement): ArrowStyle {
-  return arrow.arrowStyle ?? DEFAULT_ARROW_STYLE;
+  const style = arrow.arrowStyle;
+  return style === 'curved' || style === 'angled' ? style : DEFAULT_ARROW_STYLE;
 }
