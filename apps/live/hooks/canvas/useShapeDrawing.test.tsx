@@ -15,7 +15,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 
 type Commit = Parameters<typeof useShapeDrawing>[0]['commit'];
 
-function setup(commit = vi.fn<Commit>()) {
+function setup(commit = vi.fn<Commit>(), setCanvasTool = vi.fn()) {
   const selection = createSelectionStore();
   selection.setSelection({ selectedId: 'el-1', multiSelectedIds: new Set(['el-2']) });
   return renderHook(
@@ -25,7 +25,7 @@ function setup(commit = vi.fn<Commit>()) {
         editsBlocked: false,
         readSelection: selection.get,
         canvasTool: tool,
-        setCanvasTool: vi.fn(),
+        setCanvasTool,
         activeTab: { id: 't1', name: 'Tab', elements: [] },
         drawMode: false,
         commit,
@@ -180,5 +180,33 @@ describe('placing a badge preset', () => {
     );
     const [placed] = commit.mock.calls[0]![0]([]);
     expect(placed).toMatchObject({ shape: 'badge', label: 'PII', strokeColor: '#e11d48' });
+  });
+});
+
+// An armed draw puts down a tool that acts on a press: the eraser held while A armed the arrow erased what the drag
+// crossed instead of drawing it.
+describe('arming a draw over a press tool', () => {
+  it.each([
+    ['eraser', 'select'],
+    ['format', 'select'],
+    ['laser', 'pan'],
+  ] as const)('puts the %s down for %s', (tool, next) => {
+    const setCanvasTool = vi.fn();
+    const { result, rerender } = setup(vi.fn<Commit>(), setCanvasTool);
+    rerender({ tool });
+    act(() => result.current.drawing.beginDraw({ type: 'arrow', ends: 'to' }));
+    expect(setCanvasTool).toHaveBeenCalledWith(next);
+    setCanvasTool.mockClear();
+    act(() => result.current.drawing.beginFreehand());
+    expect(setCanvasTool).toHaveBeenCalledWith(next);
+  });
+
+  it('leaves select and the hand as they are', () => {
+    const setCanvasTool = vi.fn();
+    const { result, rerender } = setup(vi.fn<Commit>(), setCanvasTool);
+    act(() => result.current.drawing.beginDraw({ type: 'arrow', ends: 'to' }));
+    rerender({ tool: 'pan' });
+    act(() => result.current.drawing.beginPolygon());
+    expect(setCanvasTool).not.toHaveBeenCalled();
   });
 });

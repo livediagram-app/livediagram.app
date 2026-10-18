@@ -231,6 +231,15 @@ describe('dropping a file on the canvas', () => {
     expect(upload).not.toHaveBeenCalled();
   });
 
+  it('points a dropped file the Import dialog reads at Import', () => {
+    const h = harness();
+    h.dropBoardFile(new File(['<mxfile/>'], 'flow.drawio', { type: '' }), at);
+    expect(h.toast.info).toHaveBeenCalledWith(
+      'To bring in a draw.io file, use Import in the tab menu.',
+    );
+    expect(h.insertBoardScene).not.toHaveBeenCalled();
+  });
+
   it('does nothing when read-only', async () => {
     const h = harness({ isReadOnly: true });
     h.dropBoardFile(new File([copy()], 'board.excalidraw'), at);

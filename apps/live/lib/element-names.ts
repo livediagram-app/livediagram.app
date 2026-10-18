@@ -64,6 +64,28 @@ export function describeOne(el: Element): string {
   return `${article(k)} ${k}`;
 }
 
+// What a selection announcement names one element by (docs/specs/004-interface-design/canvas-accessibility.md
+// "Live announcements"): describeOne, and for an arrow pinned to labelled elements what it joins, "an Arrow from
+// 'Travel' to 'Hotel'", so walking a mind map's or a flowchart's connectors says where each one runs. An end
+// left free, or on an element with no label, is left out.
+export function describeSelected(el: Element, elements: readonly Element[]): string {
+  const one = describeOne(el);
+  if (el.type !== 'arrow') return one;
+  const endName = (end: (typeof el)['from']): string | null => {
+    if (end.kind !== 'pinned') return null;
+    const target = elements.find((x) => x.id === end.elementId);
+    return target && target.type !== 'arrow' && target.type !== 'table' && target.type !== 'image'
+      ? ((target as BoxedElement).label ?? '').replace(/\s+/g, ' ').trim() || null
+      : null;
+  };
+  const label = (el.label ?? '').trim();
+  const from = endName(el.from);
+  const to = endName(el.to);
+  return [one, label ? `'${label}'` : '', from ? `from '${from}'` : '', to ? `to '${to}'` : '']
+    .filter(Boolean)
+    .join(' ');
+}
+
 // Multi-element description grouping by kind: "a Square & an Arrow",
 // "3 Squares, 2 Arrows & a Circle". Order follows first-seen so the
 // summary stays stable across renders.

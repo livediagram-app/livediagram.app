@@ -266,6 +266,34 @@ describe('parseMermaid', () => {
   });
 });
 
+// docs/specs/020-import-export/mermaid.md: a real-world paste imports its graph and skips the decoration.
+describe('parseMermaid real-world forms', () => {
+  const edgesOf = (text: string) => {
+    const r = parseMermaid(text);
+    if (!r.ok) throw new Error(r.error);
+    return r.graph.edges.map((e) => `${e.from}>${e.to}${e.label ? `[${e.label}]` : ''}`);
+  };
+
+  it('reads statements separated by semicolons, as Mermaid does', () => {
+    expect(edgesOf('graph TD; A-->B; B-->C;')).toEqual(['A>B', 'B>C']);
+    expect(startsWithMermaidHeader('graph LR; a-->b')).toBe(true);
+  });
+
+  it('keeps a semicolon inside a label as label text', () => {
+    expect(edgesOf('graph TD\n A["x; y"] -->|a;b| B[c;d]')).toEqual(['A>B[a;b]']);
+  });
+
+  it('skips a node class written on the node, keeping the edge after it', () => {
+    expect(edgesOf('flowchart TD\n a:::hot --> b')).toEqual(['a>b']);
+    expect(edgesOf('flowchart TD\n a[Label]:::hot --> b:::cold & c')).toEqual(['a>b', 'a>c']);
+  });
+
+  it("reads a markdown string's words without its backticks and emphasis", () => {
+    const r = parseMermaid('flowchart TD\n A["`**Bold** and _soft_ text`"] --> B');
+    expect(r.ok && r.graph.nodes.find((n) => n.id === 'A')!.label).toBe('Bold and soft text');
+  });
+});
+
 describe('parseMermaid %% comments', () => {
   it('keeps a %% inside a quoted label and still drops a trailing comment', () => {
     const r = parseMermaid('flowchart TD\n  A["50%% done"] --> B %% the tail\n  %% a whole line');

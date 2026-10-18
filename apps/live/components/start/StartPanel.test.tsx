@@ -172,7 +172,8 @@ describe('the start panel on a short window', () => {
     const panel = screen.getByRole('textbox', { name: 'Find a template' }).closest('section')!;
     const wrapper = panel.parentElement!;
     expect(wrapper.className).toContain('short-window:pt-16');
-    expect(wrapper.className).toContain('short-window:pb-2');
+    // Over the bottom cluster, but on the tab bar while it shows (the measured floor).
+    expect(wrapper.className).toContain('short-window:pb-[var(--start-floor)]');
     expect(wrapper.className).toContain('short-window:z-[var(--z-overlay)]');
     expect(wrapper.className).not.toContain('landscape-phone:');
   });

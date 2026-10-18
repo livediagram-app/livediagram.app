@@ -94,13 +94,21 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
+  // The canvas tool an armed draw cannot share the pointer with: laser goes to pan (it swallows pointer-down to paint
+  // trail dots and would block the draw), and the eraser and the format painter to select, as a whiteboard's pens
+  // put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
+  // erased what it crossed.
+  const putDownPressTool = () => {
+    if (canvasTool === 'laser') setCanvasTool('pan');
+    else if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
+  };
+
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and
   // drag-to-draw are one combined gesture now (no setting): picking an
   // element stashes the intent, and the canvas resolves the next pointer
   // gesture — a tap drops it at its inherited / default size, a drag sizes
   // it (see commitDraw). Clears the current selection so the popover
-  // doesn't float over the about-to-be-drawn box, and bumps laser to pan
-  // (laser swallows pointer-down to paint trail dots and would block it).
+  // doesn't float over the about-to-be-drawn box, and puts down a tool that acts on a press (putDownPressTool).
   const beginDraw = (intent: PendingDraw): void => {
     // Capture the selection's size BEFORE clearing it so commitDraw's
     // tap branch can inherit it.
@@ -111,7 +119,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
-    if (canvasTool === 'laser') setCanvasTool('pan');
+    putDownPressTool();
     setPendingDraw(intent);
   };
 
@@ -271,7 +279,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
-    if (canvasTool === 'laser') setCanvasTool('pan');
+    putDownPressTool();
     setPendingDraw(intent);
   };
   const beginFreehand = () => armFreehand({ type: 'freehand' });
@@ -324,7 +332,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
-    if (canvasTool === 'laser') setCanvasTool('pan');
+    putDownPressTool();
     setPendingDraw({ type: 'polygon' });
   };
 
