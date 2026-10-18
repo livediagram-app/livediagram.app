@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { illustratePagesOf, layOutIllustratePages, type Tab } from '@livediagram/document';
+import { pagesOf, layOutPages, type Tab } from '@livediagram/document';
 import { focusPageAt, focusPressOutcome, viewIsCentredOn } from './focus-audience';
 
 const SIZE = { width: 1200, height: 800 };
@@ -117,20 +117,20 @@ describe('focusPressOutcome', () => {
   });
 });
 
-// docs/specs/012-collaboration/bring-focus.md "On a page": on an Illustrate tab the press points at the page.
+// docs/specs/012-collaboration/bring-focus.md "On a page": on a Pages tab the press points at the page.
 describe('focusPageAt', () => {
   const tab = (over: Partial<Tab> = {}): Tab => ({
     id: 'tab-a',
     name: 'Pages',
     elements: [],
-    opensIn: 'illustrate',
+    opensIn: 'pages',
     pages: [
       { id: 'p1', orientation: 'portrait' },
       { id: 'p2', orientation: 'landscape' },
     ],
     ...over,
   });
-  const rects = () => layOutIllustratePages(illustratePagesOf(tab()));
+  const rects = () => layOutPages(pagesOf(tab()));
   const middleOf = (r: { x: number; y: number; width: number; height: number }) => ({
     x: r.x + r.width / 2,
     y: r.y + r.height / 2,

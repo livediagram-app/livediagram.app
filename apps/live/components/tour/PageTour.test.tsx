@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
-// Show Me on a page (docs/specs/007-editor/illustrate-tour.md, show-me.md, logo-pages.md "Show Me"): every page's panel
+// Show Me on a page (docs/specs/007-editor/pages-tour.md, show-me.md, logo-pages.md "Show Me"): every page's panel
 // runs its kind's track on that page, opening the real controls a step is about and closing them again.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, pageKindOf, type IllustratePage } from '@livediagram/document';
-import type { IllustratePageEdits } from '@/hooks/editor/useIllustratePages';
+import { layOutPages, pageKindOf, type Page } from '@livediagram/document';
+import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';
-import { IllustratePagePanel, type PagePanelTab } from '@/components/canvas/IllustratePagePanel';
+import { PagePanel, type PagePanelTab } from '@/components/canvas/PagePanel';
 import { PAGE_TOUR_HELP, PageShowMeButton, PageTourStage, usePageTour } from './PageTour';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -24,10 +24,7 @@ afterEach(() => {
   vi.mocked(track).mockClear();
 });
 
-const page = (
-  kind: IllustratePage['kind'],
-  over: Partial<IllustratePage> = {},
-): IllustratePage => ({
+const page = (kind: Page['kind'], over: Partial<Page> = {}): Page => ({
   id: `${kind}-1`,
   orientation: kind === 'slide' ? 'landscape' : 'portrait',
   kind,
@@ -36,7 +33,7 @@ const page = (
   ...over,
 });
 
-const edits = (): IllustratePageEdits =>
+const edits = (): PageEdits =>
   ({
     rename: vi.fn(),
     setBackground: vi.fn(),
@@ -51,7 +48,7 @@ const edits = (): IllustratePageEdits =>
     contentCount: () => 0,
     isLocked: () => false,
     removePage: vi.fn(),
-  }) as unknown as IllustratePageEdits;
+  }) as unknown as PageEdits;
 
 // A title-bar popover, cut down: its button toggles it, and a pick closes it.
 function TitlePopover({ name }: { name: string }) {
@@ -87,20 +84,20 @@ function SlidesButton() {
   );
 }
 
-// IllustratePages' wiring, cut down: the page and its title bar, the + and Slides, its panel, and the tour.
-function Page({ of, deleted = false }: { of: IllustratePage; deleted?: boolean }) {
+// CanvasPages' wiring, cut down: the page and its title bar, the + and Slides, its panel, and the tour.
+function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>({
     id: of.id,
     tab: of.kind === 'logo' ? 'background' : 'page',
   });
   useFollowPagePanelRequests(setOpened);
   const { tour, kind, freeze } = usePageTour((id) => id === of.id && !deleted);
-  const laid = layOutIllustratePages([of])[0]!;
+  const laid = layOutPages([of])[0]!;
   const ofKind = pageKindOf(of);
   return (
     <div>
       {deleted ? null : (
-        <div data-illustrate-page-id={of.id} data-illustrate-page-kind={ofKind}>
+        <div data-page-id={of.id} data-page-kind={ofKind}>
           <button type="button" data-tour-id="page-name">
             Page
           </button>
@@ -119,7 +116,7 @@ function Page({ of, deleted = false }: { of: IllustratePage; deleted?: boolean }
       <button type="button" data-tour-id="add-page" aria-label="Add Page" />
       <SlidesButton />
       {opened && !deleted ? (
-        <IllustratePagePanel
+        <PagePanel
           key={opened.seq ?? 0}
           page={laid}
           count={1}
@@ -162,10 +159,10 @@ const popover = (name: string) =>
 
 describe('Show Me on every page', () => {
   it.each([
-    ['slide', '/help/canvas/illustrate/slide-pages/'],
-    ['infographic', '/help/canvas/illustrate/infographic-layouts/'],
-    ['article', '/help/canvas/illustrate/articles/'],
-    ['logo', '/help/canvas/illustrate/logo-pages/'],
+    ['slide', '/help/canvas/pages-mode/slide-pages/'],
+    ['infographic', '/help/canvas/pages-mode/infographic-layouts/'],
+    ['article', '/help/canvas/pages-mode/articles/'],
+    ['logo', '/help/canvas/pages-mode/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();

@@ -32,7 +32,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 | `FACILITATE` Popular tiles           | `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:session-timer`, `tools:session-vote`, `tools:session-poll`, `tools:reveal`, `collab:agenda`, `collab:idea-box`, `collab:qa-board`, `collab:temperature` (12, as every Popular)                                                                                                                                                                                        | spec "The palette"                |
 | `FACILITATE` categories              | `popular`, `shapes`, `my-shapes`, `write` (less `tools:page`, `tools:annotation`), `draw` (less `tools:shape-pen`, `tools:polygon`), `build` (less `tools:lane`, `tools:timeline`), `icons`, `stickers`, `media` (Diagram's: no embeds, D8), `collab-ask`, `collab-tools`, `collab-record`, `collab-react`, `collab-mode`, `collab-navigate`                                                                                             | spec "The palette"; D3            |
 | `DIAGRAM` categories                 | as today less `stickers` and the Collaborate elements; `write` = its own tiles then `collab:comment-pin`, `collab:action-card` (D4)                                                                                                                                                                                                                                                                                                      | spec "What Diagram gives up"      |
-| `sessionStripTools`                  | `facilitate` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; `illustrate` → vote and poll with `runningOnly` (the strip gets `canStart` false and `offersTimer` false); else `null`                                                                                                                                                                                                                     | spec "The Session strip per mode" |
+| `sessionStripTools`                  | `facilitate` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; `pages` → vote and poll with `runningOnly` (the strip gets `canStart` false and `offersTimer` false); else `null`                                                                                                                                                                                                                          | spec "The Session strip per mode" |
 | `TEMPLATE_MODES` additions           | `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`, `sailboat`, `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, `affinity-map`, `prioritization-matrix`, `risk-matrix`, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`, `blank-session` → `'facilitate'` | spec "Templates"                  |
 | `BLANK_TEMPLATE_FOR_MODE.facilitate` | `'blank-session'`                                                                                                                                                                                                                                                                                                                                                                                                                        | spec "Templates"                  |
 | `POPULAR_BY_MODE.facilitate`         | `blank-session`, `sailboat`, `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights`, `pub-quiz` (D5)                                                                                                                                                                                                                                                                                                                                | templates-by-mode spec            |
@@ -54,7 +54,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 - **Strip:** `CanvasChrome` mounts the strip only when `sessionStripTools(mode, esBoard)` is
   non-null, and `useCanvasChromePanels` closes a session popover whose mode no longer offers it;
   both pass `props.esBoard`, so Diagram's strip vanishes, running tool or not, while an
-  event-storming board keeps it. Under `runningOnly` (Illustrate) a session popover also closes once
+  event-storming board keeps it. Under `runningOnly` (Pages) a session popover also closes once
   its vote or poll stops running, as a view-role visitor's does.
 - **Elements:** no change to faces, menus or quick menus; they never read the mode.
 - **Templates:** `templateCanvasOverrides` sets `opensIn` from `templateEditorMode(kind)`, so the
@@ -63,9 +63,9 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 ## Interfaces and contracts
 
 ```ts
-export type EditorMode = 'diagram' | 'draw' | 'illustrate' | 'plan' | 'facilitate';
+export type EditorMode = 'diagram' | 'draw' | 'pages' | 'plan' | 'facilitate';
 export function sessionStripTools(mode: EditorMode): readonly SessionStripTool[] | null;
-export const PALETTE_LAYOUTS: { diagram; illustrate; plan; facilitate };
+export const PALETTE_LAYOUTS: { diagram; pages; plan; facilitate };
 export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type derived from EditorMode
 ```
 

@@ -53,10 +53,10 @@ import {
   FullScreenSlideArt,
   HiddenVotesArt,
   IconsArt,
-  IllustrateBackgroundsArt,
-  IllustrateExportArt,
-  IllustrateIntoPagesArt,
-  IllustratePagesArt,
+  PagesBackgroundsArt,
+  PagesExportArt,
+  IntoPagesArt,
+  PagesArt,
   ImagesArt,
   InfographicLayoutArt,
   IsometricArt,
@@ -153,7 +153,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, Illustrate's infographics, its
+ * then each way of working on a tab (Diagram, Draw, Pages mode's infographics, its
  * slide decks and its documents, Plan's boards, then its sheets and forms). `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
@@ -886,7 +886,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore infographics',
     title: 'Posters, social posts and logos',
     description:
-      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
+      'Switch a tab to Pages and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
     metaDescription:
       'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
     highlights: [
@@ -897,64 +897,64 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     items: [
       {
-        art: <IllustratePagesArt />,
-        href: '/help/canvas/illustrate/',
+        art: <PagesArt />,
+        href: '/help/canvas/pages-mode/',
         title: 'Pages for print and social',
         description:
           'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
       },
       {
         art: <InfographicLayoutArt />,
-        href: '/help/canvas/illustrate/infographic-layouts/',
+        href: '/help/canvas/pages-mode/infographic-layouts/',
         title: 'Start a page from a layout',
         description:
           'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
         art: <TidyPageArt />,
-        href: '/help/canvas/illustrate/',
+        href: '/help/canvas/pages-mode/',
         title: 'Tidy a page in one press',
         description:
           'Press the broom on a page and it straightens itself: anything poking past the margins comes back inside, edges that nearly line up do, and gaps that are nearly even become even. It keeps your layout and never moves anything far.',
       },
       {
-        art: <IllustrateBackgroundsArt />,
-        href: '/help/canvas/illustrate/',
+        art: <PagesBackgroundsArt />,
+        href: '/help/canvas/pages-mode/',
         title: 'Backgrounds from your theme',
         description:
           'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
       },
       {
-        art: <IllustrateIntoPagesArt />,
-        href: '/help/canvas/illustrate/',
+        art: <IntoPagesArt />,
+        href: '/help/canvas/pages-mode/',
         title: 'Turn any diagram into pages',
         description:
-          'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
+          'Switch a diagram, mind map or sketch to Pages mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
       },
       {
         art: <TabWindowArt />,
-        href: '/help/canvas/illustrate/tab-windows/',
+        href: '/help/canvas/pages-mode/tab-windows/',
         title: 'A live window onto another tab',
         description:
           'Draw the diagram on its own tab, then put a window onto it on a slide or a poster. The window follows every change you or a collaborator make, so there is never a stale copy to paste again. Open jumps straight to the tab.',
       },
       {
         art: <LogoPageArt />,
-        href: '/help/canvas/illustrate/logo-pages/',
+        href: '/help/canvas/pages-mode/logo-pages/',
         title: 'Design a logo',
         description:
           'A logo page is a square artboard with construction guides to build on. Start from twenty-five logo layouts or a blank board, draw with Mirror for a symmetrical mark, combine shapes into one, set the name in wordmark type, then download a logo kit: SVG, PNGs from 16 to 1024 pixels and a favicon.',
       },
       {
-        art: <IllustrateExportArt />,
-        href: '/help/canvas/illustrate/exporting-pages/',
+        art: <PagesExportArt />,
+        href: '/help/canvas/pages-mode/exporting-pages/',
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
       },
       {
         art: <PagesGifArt />,
-        href: '/help/canvas/illustrate/exporting-pages/',
+        href: '/help/canvas/pages-mode/exporting-pages/',
         title: 'Pages as an animated GIF',
         description:
           'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
@@ -980,7 +980,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <SlideLayoutsArt />,
-        href: '/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides',
+        href: '/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides',
         title: 'Slide pages, ready-made layouts',
         description:
           'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
@@ -1048,7 +1048,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <ArticlePagesArt />,
-        href: '/help/canvas/illustrate/articles/',
+        href: '/help/canvas/pages-mode/articles/',
         group: 'Write',
         title: 'Write like a doc',
         description:
@@ -1056,7 +1056,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <ArticleFlowArt />,
-        href: '/help/canvas/illustrate/articles/#pages-that-grow',
+        href: '/help/canvas/pages-mode/articles/#pages-that-grow',
         group: 'Write',
         title: 'Pages that grow',
         description:
@@ -1064,14 +1064,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <ContentsSidebarArt />,
-        href: '/help/canvas/illustrate/',
+        href: '/help/canvas/pages-mode/',
         title: 'Every page in the Contents',
         description:
           'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
       },
       {
         art: <ArticleWrapArt />,
-        href: '/help/canvas/illustrate/articles/',
+        href: '/help/canvas/pages-mode/articles/',
         group: 'Write',
         title: 'Pictures and drawings in the text',
         description:
@@ -1079,7 +1079,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <MarginCommentsArt />,
-        href: '/help/canvas/illustrate/articles/#comments-and-actions-on-words',
+        href: '/help/canvas/pages-mode/articles/#comments-and-actions-on-words',
         group: 'Write',
         title: 'Comments in the margin',
         description:
@@ -1087,7 +1087,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <ArticleLooksArt />,
-        href: '/help/canvas/illustrate/articles/#the-articles-style',
+        href: '/help/canvas/pages-mode/articles/#the-articles-style',
         group: 'Write',
         title: 'Five looks for an article',
         description:

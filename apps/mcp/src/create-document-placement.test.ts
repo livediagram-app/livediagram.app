@@ -83,7 +83,7 @@ describe('create_document intent', () => {
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'facilitate', tabKind: 'diagram' }],
-    ['floor-plan', { mode: 'illustrate', tabKind: 'diagram' }],
+    ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'facilitate', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],

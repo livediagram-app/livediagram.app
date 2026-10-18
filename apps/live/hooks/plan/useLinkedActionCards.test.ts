@@ -238,9 +238,14 @@ describe('useLinkedActionCards', () => {
     });
     h.rerenderWith([]);
     await settle();
-    const create = h.spies.writeQuiet.mock.calls.find(([w]) => w.kind === 'create')?.[0];
-    expect(create).toMatchObject({
-      creates: [{ fields: { assignee: { id: await itemPersonId('u-sam'), name: 'Sam' } } }],
+    // The person id is a SHA-256 (itemPersonId) that resolves on a real thread, not on the fake
+    // clock, so on a busy runner the card is written after one settle: wait for it, advancing time.
+    const personId = await itemPersonId('u-sam');
+    await vi.waitFor(() => {
+      const create = h.spies.writeQuiet.mock.calls.find(([w]) => w.kind === 'create')?.[0];
+      expect(create).toMatchObject({
+        creates: [{ fields: { assignee: { id: personId, name: 'Sam' } } }],
+      });
     });
   });
 

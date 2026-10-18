@@ -1,7 +1,7 @@
 'use client';
 
-// The page panel's Background section (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), for
-// every page kind: a category control (Solid, Gradient, and Image but on a logo page,
+// The page panel's Background section (docs/specs/007-editor/pages-mode.md "Backgrounds"), for
+// every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, and Image but on a logo page,
 // page-background-image, and Animated on a slide page, page-background-animated) over that
 // category's choices: Solid is the
 // one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
@@ -15,13 +15,12 @@ import {
   PAGE_PATTERNS,
   pageKindOf,
   pageIsDark,
-  type IllustratePage,
+  type Page,
   type PageBackground,
   type PageFill,
   type PagePattern,
 } from '@livediagram/document';
-import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Tooltip } from '@livediagram/ui';
-import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import { CheckIcon, Tooltip } from '@livediagram/ui';
 import {
   backgroundCategoryOf,
   customGradientSeed,
@@ -35,10 +34,11 @@ import {
   themePresetAccent,
   type BackgroundCategory,
   type ThemeBackgroundPreset,
-} from '@/lib/illustrate-page-paint';
-import { PanelSection, tileClass } from './illustrate-page-panel-sections';
+} from '@/lib/page-paint';
+import { PanelSection, tileClass } from './page-panel-sections';
 import { CustomGradientEditor, PAGE_COLOUR_GROUPS, RAINBOW } from './page-background-custom';
 import { AnimatedBackgroundChoices } from './page-background-animated';
+import { BackgroundKinds } from './page-background-kinds';
 import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, type ColourOption } from '@/components/colour/colour-options';
@@ -133,55 +133,6 @@ const PATTERN_PREVIEW: Record<PagePattern | 'none', PageBackground> = {
   lines: { pattern: 'lines' },
 };
 
-const CATEGORY_LABEL: Record<BackgroundCategory, string> = {
-  solid: 'Solid',
-  gradient: 'Gradient',
-  image: 'Image',
-  animated: 'Animated',
-};
-
-// Solid, Gradient: the shared segmented control, its highlight sliding between them.
-function CategoryControl({
-  categories,
-  value,
-  onChange,
-}: {
-  categories: readonly BackgroundCategory[];
-  value: BackgroundCategory;
-  onChange: (c: BackgroundCategory) => void;
-}) {
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Background kind"
-      className={`relative mb-2 grid rounded-lg p-0.5 ${SEGMENT_TRACK}`}
-      style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}
-    >
-      <SegmentSlider
-        count={categories.length}
-        index={categories.indexOf(value)}
-        className={ACTIVE_SEGMENT}
-      />
-      {categories.map((c) => (
-        <button
-          key={c}
-          type="button"
-          role="radio"
-          aria-checked={c === value}
-          onClick={() => onChange(c)}
-          className={`relative z-10 rounded-md py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
-            c === value
-              ? 'text-white'
-              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
-          }`}
-        >
-          {CATEGORY_LABEL[c]}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function BackgroundSection({
   page,
   themePresets,
@@ -190,7 +141,7 @@ export function BackgroundSection({
   only,
   motionNote,
 }: {
-  page: IllustratePage;
+  page: Page;
   // The categories offered, narrowing the page kind's own (a form's cover takes no picture).
   only?: readonly BackgroundCategory[];
   // The Animated category's note on when it moves, for something that is not a slide.
@@ -203,7 +154,7 @@ export function BackgroundSection({
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
   // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
-  // A slide page alone moves (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+  // A slide page alone moves (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
   const kind = pageKindOf(page);
   const offered: BackgroundCategory[] =
     kind === 'logo'
@@ -253,9 +204,13 @@ export function BackgroundSection({
       }}
     >
       <PanelSection title="Background">
-        <CategoryControl
+        <BackgroundKinds
           categories={categories}
           value={category}
+          current={opened}
+          fill={fill}
+          accent={themePresetAccent(themePresets)}
+          themeGradient={themePresets.find((t) => t.id === 'theme-bright')?.fill}
           onChange={(c) => {
             setCustomOpen(false);
             setChosen(c);

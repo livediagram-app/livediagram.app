@@ -1,6 +1,6 @@
 'use client';
 
-// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): every page of the Illustrate
+// Contents (docs/specs/007-editor/pages-mode.md "Contents"): every page of the Pages
 // tab, a live thumbnail each, the page in view marked; a press glides there. An Editor adds a page
 // from its footer. A popover over its cluster button on a desktop (it stays open so a reader can
 // hop from page to page, and its header docks it back as the sidebar), a bottom sheet on a phone
@@ -14,7 +14,7 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
@@ -29,7 +29,7 @@ export function PageContentsPanel({
   onClose,
   onDock,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   tab: PageThumbTab;
   anchor?: DockAnchor;
   onClose: () => void;

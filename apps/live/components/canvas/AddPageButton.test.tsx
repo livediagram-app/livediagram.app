@@ -5,7 +5,7 @@ import { AddPageButton } from './AddPageButton';
 
 afterEach(cleanup);
 
-// docs/specs/007-editor/illustrate-pages.md "Adding a page": the + sits beside the last page, level with its middle,
+// docs/specs/007-editor/pages-mode.md "Adding a page": the + sits beside the last page, level with its middle,
 // whether or not the page sits on the row's axis (a page sized to its content need not).
 describe('AddPageButton', () => {
   it('sits level with the last page’s middle', () => {
@@ -17,7 +17,7 @@ describe('AddPageButton', () => {
   });
 });
 
-// docs/specs/007-editor/illustrate-pages.md "Adding a page": the last page's kind first.
+// docs/specs/007-editor/pages-mode.md "Adding a page": the last page's kind first.
 describe('Add a Page, the last kind first', () => {
   it('offers the last page’s kind first, tagged and focused, and adds it', () => {
     const onAdd = vi.fn();

@@ -20,7 +20,7 @@ document.
 | ------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
 | **Form tab**        | A tab of kind `form`: one form, filling the tab                                               | form page, survey tab         |
 | **form**            | The definition a Form tab holds: its heading, sections, questions, look and where answers go  | survey, questionnaire         |
-| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Illustrate's), step     |
+| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Pages mode's), step     |
 | **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)      |
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
@@ -124,7 +124,7 @@ previewing), the help link and the form's **cog**.
 ### The form card, top to bottom
 
 - **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a slide background in
-  colour, picked and drawn exactly as a slide's ([Illustrate pages](../007-editor/illustrate-pages.md)
+  colour, picked and drawn exactly as a slide's ([Pages](../007-editor/pages-mode.md)
   "Backgrounds", "Animated backgrounds"): the slide's **Background** section with **Solid**, **Gradient** (the tab
   theme's gradients first) and **Animated** (the slide motions, moving on screen; still under reduced motion), then
   **Pattern**. No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
@@ -386,7 +386,7 @@ Tour** stack beside the Draw tour's.
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
   - A document kept on this device only (an offline document) cannot publish until it is synced, so Share Form offers
-    the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-local-only-document)):
+    the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-document-in-this-browser)):
     the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is Offline**,
     "It is saved only in this browser, so this form can't be published yet. Sync it to livediagram to publish it: the
     form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
@@ -586,7 +586,7 @@ board settings, for switching back.
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
-| Sync a Local only document from Share Form               | ✓                                      |             |        |
+| Sync a document in This Browser from Share Form          | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no

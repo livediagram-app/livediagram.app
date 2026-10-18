@@ -1,4 +1,4 @@
-// Re-inking a page's content for a new fill (docs/specs/007-editor/illustrate-pages.md
+// Re-inking a page's content for a new fill (docs/specs/007-editor/pages-mode.md
 // "Re-inking"): every colour of its own on the page measured against what it sits on (its card,
 // else the page), and only what falls under its floor moved, the least that reaches its target,
 // keeping its hue. With a memory of what earlier re-inking replaced, a colour still as re-inking
@@ -11,14 +11,8 @@ import {
   type CanvasSurface,
 } from './colors';
 import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
-import {
-  illustratePagesOf,
-  rowPageAt,
-  layOutIllustratePages,
-  type IllustratePage,
-  type PageRect,
-} from './illustrate-page';
-import { elementAnchorPoint, pageFillTone } from './illustrate-page-content';
+import { pagesOf, rowPageAt, layOutPages, type Page, type PageRect } from './page';
+import { elementAnchorPoint, pageFillTone } from './page-content';
 import { layerBands } from './layers';
 import { inkToward, isOpaqueHex, worstContrast } from './page-ink-contrast';
 import { PAPER_TONE, pageGroundUnder, type PageGround } from './page-ink-ground';
@@ -72,7 +66,7 @@ type TabLike = Pick<Tab, 'elements'> & {
 };
 
 /** A page and the background it now wears, for pagesInkFor. */
-export type PageInk = { pageId: string; background: IllustratePage['background'] };
+export type PageInk = { pageId: string; background: Page['background'] };
 
 /**
  * The tab re-inked for page `pageId`'s background `background` (its background after the change),
@@ -82,7 +76,7 @@ export type PageInk = { pageId: string; background: IllustratePage['background']
 export function pageInkFor<T extends TabLike>(
   tab: T,
   pageId: string,
-  background: IllustratePage['background'],
+  background: Page['background'],
   memory: InkMemory = EMPTY_INK_MEMORY,
 ): { tab: T; memory: InkMemory } {
   return pagesInkFor(tab, [{ pageId, background }], memory);
@@ -102,7 +96,7 @@ export function pagesInkFor<T extends TabLike>(
   memory: InkMemory = EMPTY_INK_MEMORY,
 ): { tab: T; memory: InkMemory } {
   if (inks.length === 0) return { tab, memory };
-  const pages = layOutIllustratePages(illustratePagesOf(tab));
+  const pages = layOutPages(pagesOf(tab));
   const index = elementIndexFor(tab.elements);
   const wanted = new Set(inks.map((i) => i.pageId));
   // Each wanted page's elements, in the tab's order: one walk over the tab.
@@ -164,7 +158,7 @@ function pruned(
 export function withPageInkFor<T extends TabLike>(
   tab: T,
   pageId: string,
-  background: IllustratePage['background'],
+  background: Page['background'],
   memory?: InkMemory,
 ): T {
   return pageInkFor(tab, pageId, background, memory).tab;
@@ -174,7 +168,7 @@ export function withPageInkFor<T extends TabLike>(
 function inkPass(
   all: ElementIndex,
   rect: PageRect,
-  background: IllustratePage['background'],
+  background: Page['background'],
   surface: CanvasSurface,
   // The call's memory, written as the pass goes (pagesInkFor copies it first).
   memory: Map<string, Partial<Record<InkField, InkRecall>>>,

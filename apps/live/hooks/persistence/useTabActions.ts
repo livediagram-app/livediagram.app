@@ -113,7 +113,7 @@ export function useTabActions(deps: TabActionsDeps) {
   } = deps;
 
   // `mode`: open it in that mode (a Plan tab's switch offering a new tab instead, plan-tabs.md); else in the active
-  // tab's mode, so an Illustrate tab's + makes an Illustrate tab (newTabOpening).
+  // tab's mode, so a Pages tab's + makes a Pages tab (newTabOpening).
   const addTab = (mode?: EditorMode) => {
     // A session that cannot change the document's tabs adds none, whichever control asked.
     if (!deps.canEditStructure) return;

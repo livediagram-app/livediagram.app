@@ -112,7 +112,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     setPasswordRetry,
   } = state;
   // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
-  // which a Local only document opens under (docs/specs/006-document/offline-mode.md "Instant open").
+  // which a document in This Browser opens under (docs/specs/006-document/offline-mode.md "Instant open").
   const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
   // The full Explorer panel that sits behind the error / not-found status
   // screens (identical in both), built once from state. Just a React
@@ -266,7 +266,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           </ShapeLibraryProvider>
         </MentionContext.Provider>
       </CustomThemeProvider>
-      {/* Moving this browser's Local only documents after signing in
+      {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}
     </EditorContext.Provider>

@@ -8,7 +8,7 @@ import { ArticlePage } from './hero-article-page';
 import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { FormBoard } from './hero-form-board';
-import { InfographicPages } from './hero-illustrate-page';
+import { InfographicPages } from './hero-page';
 import { MindMapBoard } from './hero-mindmap-board';
 import { PlanBoard } from './hero-plan-board';
 import { SheetBoard } from './hero-sheet-board';

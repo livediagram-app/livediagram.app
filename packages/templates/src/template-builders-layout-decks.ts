@@ -2,15 +2,15 @@
 // "Templates on pages", docs/specs/007-editor/templates-by-mode.md "Slide deck templates"): each a
 // handful of slide pages, each page one slide layout (slide-layouts-*.ts) with its sample text
 // replaced by the deck's own, in the order the layout writes it. Each opens and closes on an
-// animated background of its own colours (docs/specs/007-editor/illustrate-pages.md "Animated
+// animated background of its own colours (docs/specs/007-editor/pages-mode.md "Animated
 // backgrounds"); the slides between sit on a soft still gradient, so they read and print plainly.
 // Pure: the pages are declared once and the elements built on them.
 import {
-  layOutIllustratePages,
+  layOutPages,
   pageInkFor,
   PAGE_GRADIENT_ANGLE,
   type Element,
-  type IllustratePage,
+  type Page,
   type PageBackground,
   type PageMotion,
 } from '@livediagram/document';
@@ -407,7 +407,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
 };
 
 /** A deck's pages: one 16:9 slide page per slide, the first and last on its animated background. */
-export function layoutDeckPages(kind: LayoutDeckKind): IllustratePage[] {
+export function layoutDeckPages(kind: LayoutDeckKind): Page[] {
   const deck = LAYOUT_DECKS[kind];
   const last = deck.slides.length - 1;
   return deck.slides.map((s, i) =>
@@ -419,7 +419,7 @@ export function layoutDeckPages(kind: LayoutDeckKind): IllustratePage[] {
 export function buildLayoutDeck(kind: LayoutDeckKind): Element[] {
   const deck = LAYOUT_DECKS[kind];
   const declared = layoutDeckPages(kind);
-  const pages = layOutIllustratePages(declared);
+  const pages = layOutPages(declared);
   const built = pages.flatMap((page, i) => {
     const slide = deck.slides[i]!;
     let at = 0;

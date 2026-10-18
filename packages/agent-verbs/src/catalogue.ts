@@ -49,7 +49,7 @@ import { itemVerbs } from './verbs/item';
 import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
-import { illustrateVerbs } from './verbs/illustrate';
+import { pagesVerbs } from './verbs/pages';
 import { formVerbs } from './verbs/form';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
@@ -75,7 +75,7 @@ export const VERBS: readonly Verb[] = [
   ...boardVerbs,
   ...cardTypeVerbs,
   ...sheetVerbs,
-  ...illustrateVerbs,
+  ...pagesVerbs,
   ...formVerbs,
   changesetApply,
   changesetLs,
@@ -129,7 +129,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'board', summary: 'Plan boards: add one' },
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
-  { name: 'page', summary: 'Illustrate pages: slides, logos, infographics' },
+  { name: 'page', summary: 'Pages: slides, logos, infographics' },
   { name: 'article', summary: 'Articles as Markdown' },
   { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },

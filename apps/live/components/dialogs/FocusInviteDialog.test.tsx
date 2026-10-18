@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Bring Focus invitation's promise (docs/specs/012-collaboration/bring-focus.md): a point keeps your zoom,
-// a page of an Illustrate tab is fitted to your screen ("On a page"), so the copy says which.
+// a page of a Pages tab is fitted to your screen ("On a page"), so the copy says which.
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -30,11 +30,11 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /export any tab[^.]*mermaid/i,
-    why: 'Illustrate tabs export PDF, PNG, SVG and JSON only',
+    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
   },
   {
     pattern: /any tab (?:out )?as[^.]*(?:markdown|excalidraw)/i,
-    why: 'Illustrate tabs export PDF, PNG, SVG and JSON only',
+    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
   },
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,

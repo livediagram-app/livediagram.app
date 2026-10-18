@@ -1,5 +1,5 @@
-// A page kind's track (docs/specs/007-editor/illustrate-tour.md "The steps"): its steps as Show Me runs them, or behind
-// its welcome card as the Illustrate tour offers them. Loaded at the offer or the press (`import('./page-tour-steps')`),
+// A page kind's track (docs/specs/007-editor/pages-tour.md "The steps"): its steps as Show Me runs them, or behind
+// its welcome card as the Pages tour offers them. Loaded at the offer or the press (`import('./page-tour-steps')`),
 // so the copy stays out of the editor's first load.
 import type { PageKind } from '@livediagram/document';
 import { ARTICLE_WELCOME, articleTourSteps } from './article-tour-steps';
@@ -59,7 +59,7 @@ export function shownPageTourSteps(
 }
 
 /** The offered track: its welcome card, then its steps whose controls are on screen. */
-export function illustrateTourSteps(
+export function pagesTourSteps(
   kind: PageKind,
   now: PageTourNow,
   api: PageTourApi,
@@ -68,7 +68,7 @@ export function illustrateTourSteps(
   return [WELCOMES[kind], ...shownPageTourSteps(kind, now, api, exists)];
 }
 
-/** The telemetry `type` of a step view: ('slide', 'add-page') → 'IllustrateTourStepSlideAddPage'. */
-export function illustrateTourStepTelemetryType(kind: PageKind, stepId: string): string {
-  return stepTelemetryType('IllustrateTourStep', `${kind}-${stepId}`);
+/** The telemetry `type` of a step view: ('slide', 'add-page') → 'PagesTourStepSlideAddPage'. */
+export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): string {
+  return stepTelemetryType('PagesTourStep', `${kind}-${stepId}`);
 }

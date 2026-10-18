@@ -795,7 +795,7 @@ export const SLIDES_ADDED = chart(
   'UI',
   'Added',
   'Slides Added',
-  'A slide added to a deck: from a selection, an Illustrate page, a Plan card or a whole Plan board as a slide.',
+  'A slide added to a deck: from a selection, a page, a Plan card or a whole Plan board as a slide.',
   { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide', 'AllPageSlides'] },
 );
 

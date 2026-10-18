@@ -46,7 +46,7 @@ export function ImageExportPanel({
   // rasteriser + telemetry; this panel just collects the options.
   onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
-  // An Illustrate page export (docs/specs/007-editor/illustrate-pages.md "Export"): the page is
+  // A page export (docs/specs/007-editor/pages-mode.md "Export"): the page is
   // its own background and is never tilted, so neither the isometric nor the pattern toggle shows.
   pageExport?: boolean;
   // The page choice (ExportPagePicker), under the back bar and above the preview.

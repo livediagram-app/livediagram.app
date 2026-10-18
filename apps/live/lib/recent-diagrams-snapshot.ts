@@ -109,7 +109,7 @@ async function syncThumbnails(
   }
   syncing = true;
   try {
-    // The v1 cache held "no preview" for every Local only document; v2 draws them (lib/local-snapshot.ts).
+    // The v1 cache held "no preview" for every document in This Browser; v2 draws them (lib/local-snapshot.ts).
     // On its own, so a refusal here never stops the sync.
     await dropLegacyCache();
     const cache = await caches.open(RECENT_THUMBS_CACHE);

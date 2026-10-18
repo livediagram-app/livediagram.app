@@ -1,18 +1,18 @@
 'use client';
 
-// Apply to All at the foot of a page's Background tab (docs/specs/007-editor/illustrate-pages.md
+// Apply to All at the foot of a page's Background tab (docs/specs/007-editor/pages-mode.md
 // "Copying a background"): the page's background, its fill and its pattern, onto every other page
 // of its kind in one edit. Shown only while there is another page of the kind to reach.
-import { pageKindOf, type IllustratePage } from '@livediagram/document';
+import { pageKindOf, type Page } from '@livediagram/document';
 import { Button } from '@livediagram/ui';
-import { KIND_PAGES } from '@/hooks/editor/illustrate-background-copy-edits';
+import { KIND_PAGES } from '@/hooks/editor/pages-background-copy-edits';
 
 export function ApplyBackgroundToAll({
   page,
   reach,
   onApply,
 }: {
-  page: Pick<IllustratePage, 'kind'>;
+  page: Pick<Page, 'kind'>;
   // How many other pages of its kind it would reach.
   reach: number;
   onApply: () => void;

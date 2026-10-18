@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Settings > Editor > Illustrate > Guides Shown (docs/specs/007-editor/user-preferences.md "Toggle
+// Settings > Editor > Pages > Guides Shown (docs/specs/007-editor/user-preferences.md "Toggle
 // groups"): one label and description over a chip per logo guide, each its own preference.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
@@ -11,7 +11,7 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 import { SETTINGS_CATEGORIES, type SettingsToggleGroupRowSpec } from './settings-catalogue';
 import { SettingsToggleGroupRow } from './SettingsToggleGroupRow';
 
-const row = SETTINGS_CATEGORIES.find((c) => c.id === 'illustrate')!.rows.find(
+const row = SETTINGS_CATEGORIES.find((c) => c.id === 'pages')!.rows.find(
   (r) => r.key === 'logoGuideParts',
 ) as SettingsToggleGroupRowSpec;
 

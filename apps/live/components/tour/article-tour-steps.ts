@@ -1,4 +1,4 @@
-// The Article track of the Illustrate tour (docs/specs/007-editor/illustrate-tour.md "Article track"): on the person's
+// The Article track of the Pages tour (docs/specs/007-editor/pages-tour.md "Article track"): on the person's
 // own article page, where to write, its page toolbar, and its Style and Text beside the cog (PageArticleButtons).
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourStep } from './page-tour-api';

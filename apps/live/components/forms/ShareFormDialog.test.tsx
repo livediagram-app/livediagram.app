@@ -135,7 +135,7 @@ describe('Share Form, published and closed (forms.md "A live form is locked")', 
   });
 });
 
-describe('Share Form on a Local only document (forms.md "Publishing and the form link")', () => {
+describe('Share Form on a document in This Browser (forms.md "Publishing and the form link")', () => {
   const offline = () => link({ link: null, status: 'offline' });
 
   it("offers Sync Document, the Share dialog's move, and syncs nothing by itself", () => {

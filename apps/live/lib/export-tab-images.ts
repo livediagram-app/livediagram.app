@@ -24,7 +24,7 @@ export type ExportImageMap = Map<string, ExportImageEntry>;
 const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/;
 
 /** The image ids a tab draws, once each: its image elements' and its pages' pictures
- *  (docs/specs/007-editor/illustrate-pages.md "Image backgrounds"). */
+ *  (docs/specs/007-editor/pages-mode.md "Image backgrounds"). */
 export function tabImageIds(tab: Pick<Tab, 'elements' | 'pages'>): string[] {
   return Array.from(
     new Set([

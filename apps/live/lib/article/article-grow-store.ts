@@ -1,5 +1,5 @@
 // The articles an editor that is not their writer may still grow (docs/specs/024-agents/
-// illustrate-for-agents.md "Pages for the writing"): one an agent just wrote (its relayed `article`
+// pages-for-agents.md "Pages for the writing"): one an agent just wrote (its relayed `article`
 // op says `agent`), and every article of a tab as it loads (a writer who left before settling). The
 // next lay-out of each takes its mark, growing it if its writing reaches past its pages.
 const pending = new Set<string>();

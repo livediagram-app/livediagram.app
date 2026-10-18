@@ -47,7 +47,7 @@ export function useLayersState(opts: {
   // hidden / locked — the block itself is silent by design.
   toastInfo: (message: string) => void;
   // Elements inert for another reason than their layer: those on a locked page
-  // (docs/specs/007-editor/illustrate-pages.md "Locking a page").
+  // (docs/specs/007-editor/pages-mode.md "Locking a page").
   extraInertIds?: ReadonlySet<string>;
 }) {
   const {

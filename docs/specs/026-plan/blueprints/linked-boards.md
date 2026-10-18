@@ -28,7 +28,7 @@ packages/items/src/presets.ts                 freshSetup (freshBoardSetup's colu
 packages/items/src/linked-cards.ts            ids, links, status mapping, linkedCardCreate, healLinkedCards,
                                               linkedCardGonePatch, linkedCardsTrashedBy, unlinkedFields (pure)
 packages/templates/src/linked-board-start.ts  actionsBoardSetup, actionsBoardTab, ACTIONS_BOARD_TITLE
-apps/api/src/collab-index/rows.ts             a Won't Do action indexes as 'done' (closed)
+packages/document/src/collab-index-rows.ts    a Won't Do action indexes as 'done' (closed)
 apps/api/src/db/plan-board-index.ts           CARDS_CTES: `json_extract(i.fields, '$.linked') IS NULL`
 apps/live/hooks/plan/linked-actions.ts        placedActions, actionsBoardIn, unloadedTabIds, applyActionChanges,
                                               removeAction, restoreAction, goneActionIds (pure)
@@ -162,7 +162,7 @@ narrows a read; it widens nothing.
 | Only an Editor heals or makes the board         | useLinkedActionCards.test.ts "never makes…", "heals nothing…"                                    |
 | Canvas writes                                   | apps/live/hooks/plan/linked-actions.test.ts                                                      |
 | Won't Do on the panel, the Board chip           | apps/live/components/canvas/ActionPanelFace.test.tsx                                             |
-| Won't Do indexed closed                         | apps/api/src/collab-index/rows.test.ts                                                           |
+| Won't Do indexed closed                         | packages/document/src/collab-index-rows.test.ts                                                  |
 | Linked cards off the Inbox                      | apps/api/src/db/activity-cards.test.ts                                                           |
 
 ## Defaults ledger

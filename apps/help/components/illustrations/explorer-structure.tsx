@@ -981,7 +981,7 @@ export function UseAsDefaultScene() {
   const kinds = [
     'Diagrams',
     'Whiteboards',
-    'Illustrate pages',
+    'Pages documents',
     'Plan boards',
     'Event Storming boards',
     'Retrospectives',

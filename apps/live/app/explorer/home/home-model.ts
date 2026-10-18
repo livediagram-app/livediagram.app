@@ -28,7 +28,7 @@ export type JumpBackInItem = {
   useDays: number;
   /** The later of the last open and the last edit: the recent measure. */
   lastUsedAt: number;
-  /** Stored only in this browser: carries the Local only pill. */
+  /** Stored only in this browser: carries the This Browser pill. */
   localOnly: boolean;
 };
 

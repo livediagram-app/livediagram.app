@@ -49,7 +49,7 @@ test.describe('explorer sidebar', () => {
     // A guest on a deployment without sign-in: My Documents only, no teams, no New Team.
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
     await expect(row(page, 'New Team')).toHaveCount(0);
-    // This browser holds nothing yet, so it is hidden.
+    // This Browser holds nothing yet, so it is hidden.
     expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
     // My Documents starts open on its root folders: no Unsorted or Generated bucket.
     const myDocuments = row(page, 'My Documents');

@@ -17,7 +17,7 @@ import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
-import type { IllustratePage, PageOrientation } from './illustrate-page';
+import type { Page, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
@@ -355,16 +355,16 @@ export type Tab = {
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
   opensIn?: EditorMode;
-  // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `illustratePagesOf`).
-  pages?: IllustratePage[];
+  // (read via `pagesOf`).
+  pages?: Page[];
   // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
-  // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
+  // each document's blocks and style, shared by its pages (`Page.flow`). Read via
   // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
   articles?: Record<string, ArticleFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withIllustratePages`).
+  // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
@@ -479,9 +479,9 @@ export * from './shape-variants';
 export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
-export * from './illustrate-page';
-export * from './illustrate-page-fit';
-export * from './illustrate-page-image';
+export * from './page';
+export * from './page-fit';
+export * from './page-image';
 export * from './page-lock';
 export * from './page-of';
 export * from './logo-page';
@@ -489,13 +489,13 @@ export * from './element-mirror';
 export * from './element-symmetry';
 export * from './logo-guide-snap';
 export * from './wordmark';
-export * from './illustrate-page-content';
-export * from './illustrate-page-frame';
+export * from './page-content';
+export * from './page-frame';
 export * from './page-ink';
 export * from './page-ink-contrast';
 export * from './page-ink-ground';
 export * from './page-ink-rules';
-export * from './illustrate-paginate';
+export * from './paginate';
 export * from './editor-mode-switch';
 export * from './article-flow';
 export * from './article-flow-ops';
@@ -507,10 +507,10 @@ export * from './article-to-page';
 export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
-export * from './illustrate-page-paint';
+export * from './page-paint';
 export * from './page-default-background';
-export * from './illustrate-edits';
-export * from './illustrate-background-copy';
+export * from './pages-edits';
+export * from './pages-background-copy';
 export * from './tab-window';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
@@ -614,6 +614,8 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './collab-index-rows';
+export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';

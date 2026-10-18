@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   freehandCanvasPoints,
-  layOutIllustratePages,
+  layOutPages,
   newLogoPage,
   packFreehandPoints,
   type Element,
@@ -10,7 +10,7 @@ import {
 import { logoGuideSnapper, logoTidyGuides, snapNewStrokes } from './logo-guide-snapping';
 
 // docs/specs/007-editor/logo-pages.md "Construction guides": drawing snaps onto the shown guides.
-const pages = layOutIllustratePages([newLogoPage('l')]);
+const pages = layOutPages([newLogoPage('l')]);
 const page = pages[0]!.rect;
 const cx = page.x + page.width / 2;
 const cy = page.y + page.height / 2;

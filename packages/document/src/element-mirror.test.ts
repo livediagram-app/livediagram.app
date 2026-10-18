@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FreehandElement, PathElement, ShapeElement, TextElement } from './element-types';
-import { layOutIllustratePages, newLogoPage } from './illustrate-page';
+import { layOutPages, newLogoPage } from './page';
 import { mirrorElement, twinFor } from './element-mirror';
 import { decodeStrokePoints } from './stroke-points-cache';
 import { encodeStrokePoints } from './stroke-points';
@@ -70,7 +70,7 @@ describe('mirrorElement', () => {
 });
 
 describe('twinFor', () => {
-  const pages = layOutIllustratePages([newLogoPage('l')]);
+  const pages = layOutPages([newLogoPage('l')]);
   const shape = (x: number): ShapeElement => ({
     id: 's',
     type: 'shape',

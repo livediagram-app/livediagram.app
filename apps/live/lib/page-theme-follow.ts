@@ -1,18 +1,18 @@
-// Page backgrounds follow the theme (docs/specs/007-editor/illustrate-pages.md "Backgrounds"): a
+// Page backgrounds follow the theme (docs/specs/007-editor/pages-mode.md "Backgrounds"): a
 // page whose fill is one of the old theme's own (a Theme gradient, the default Mist, an animated
 // colouring, a Theme Palette colour) takes the same one from the new theme when the tab's theme
 // changes. A colour someone picked that is not the theme's stays as it is, as an element's does.
 // Content on a page whose fill changed is re-inked for it, as any fill change re-inks. Pure.
 import {
-  illustratePagesOf,
+  pagesOf,
   pagesInkFor,
   sameFill,
-  withIllustratePages,
+  withPages,
   type PageFill,
   type Tab,
   type ThemeDefinition,
 } from '@livediagram/document';
-import { themeBackgroundPresets } from './illustrate-page-paint';
+import { themeBackgroundPresets } from './page-paint';
 import { colouringOf, motionFill } from './page-motion';
 import { themePresetColors } from './themes';
 
@@ -43,7 +43,7 @@ export function followedFill(fill: PageFill, prev: Theme, next: Theme): PageFill
 /** The tab with every page on a fill of the old theme's own moved to the new theme's, its content
  *  re-inked; the same tab when no page changes. */
 export function withPageBackgroundsFollowingTheme(tab: Tab, prev: Theme, next: Theme): Tab {
-  const pages = illustratePagesOf(tab);
+  const pages = pagesOf(tab);
   if (!pages.some((p) => p.background?.fill)) return tab;
   const moved: string[] = [];
   const nextPages = pages.map((p) => {
@@ -59,5 +59,5 @@ export function withPageBackgroundsFollowingTheme(tab: Tab, prev: Theme, next: T
     pageId: id,
     background: nextPages.find((p) => p.id === id)!.background,
   }));
-  return pagesInkFor(withIllustratePages(tab, nextPages) as Tab, inks).tab;
+  return pagesInkFor(withPages(tab, nextPages) as Tab, inks).tab;
 }

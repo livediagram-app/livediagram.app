@@ -5,7 +5,7 @@ import { applyDeltaToTabs, type PendingIdeaIds } from '@/app/document/[id]/room-
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 
-// This browser's idea posts, from the press until the room answers them
+// This Browser's idea posts, from the press until the room answers them
 // (docs/specs/012-collaboration/idea-box.md "Racing for the last card", blueprint idea-box-race.md).
 //
 // A post applies its card at once, with a fresh random id, and goes to the room through `sequence`, whose

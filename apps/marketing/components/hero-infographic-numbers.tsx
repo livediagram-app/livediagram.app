@@ -19,7 +19,7 @@ import {
 // Page 2 of the hero's Infographic window, the template's numbers page: four tinted stat tiles,
 // each with its glyph on a disc, land in turn; then the chart card, whose bars grow from the axis
 // and whose ring fills to its share. A teammate's cursor comes in and selects the card, outline,
-// handles and all, as Illustrate selects an element.
+// handles and all, as Pages selects an element.
 
 type Stat = {
   value: string;

@@ -77,7 +77,7 @@ export type PaletteProps = {
   // Board-level switches shown above the notation on one of those boards
   // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Omitted everywhere else.
   esBoardControls?: EsBoardControls;
-  // The tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo palette"): Illustrate's
+  // The tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo palette"): Pages mode's
   // palette offers its Logo category.
   logoPages?: boolean;
   // Drop a 3x3 editable table at the viewport centre.

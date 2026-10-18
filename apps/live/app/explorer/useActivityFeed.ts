@@ -2,7 +2,8 @@
 
 // The Inbox's data (docs/specs/013-workspace/inbox.md §1, §5): one read, split into the
 // three sections the pane shows, plus the count the sidebar badge draws. Assigned to You holds actions and
-// Plan cards (§2.4) in one list.
+// Plan cards (§2.4) in one list. The read is the server's and, beside it, this browser's documents in This Browser
+// (§2.6), whose rows are marked `local` so they show the This Browser pill.
 //
 // Held in Explorer state (like favourites) rather than gated to the
 // section, because the sidebar badge renders on every Explorer section
@@ -19,21 +20,49 @@ import type {
   ActivityFormResponses,
 } from '@livediagram/api-schema';
 import { apiListActivity } from '@/lib/api-client';
+import { getGuestSelfId } from '@/lib/local-identity';
+import { readOfflineActivity, type OfflineActivity } from '@/lib/offline/offline-activity';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
+/** A row, marked `local` when it comes from a document saved only in this browser (§2.6). */
+export type Located<T> = T & { local?: true };
+
 /** One Assigned to You row: an action or a Plan card, told apart by `kind`. */
-export type AssignedRow = ({ kind: 'action' } & ActivityAction) | ({ kind: 'card' } & ActivityCard);
+export type AssignedRow =
+  Located<{ kind: 'action' } & ActivityAction> | Located<{ kind: 'card' } & ActivityCard>;
 
 /** One Open Comment Threads row: an element's thread or a Plan card's (§2.5), told apart by `kind`. */
 export type ThreadRow =
-  ({ kind: 'thread' } & ActivityThread) | ({ kind: 'card' } & ActivityCardThread);
+  Located<{ kind: 'thread' } & ActivityThread> | Located<{ kind: 'card' } & ActivityCardThread>;
+
+const NO_LOCAL: OfflineActivity = { actions: [], threads: [], cards: [], cardThreads: [] };
+
+const markLocal = <T extends object>(rows: T[]): Located<T>[] =>
+  rows.map((r) => ({ ...r, local: true as const }));
+
+// This Browser's documents in This Browser (§2.6), read beside the server's index. The store failing lists nothing
+// local, never the page's failed state: that is the server read's to report.
+function readLocal(owner: string): Promise<OfflineActivity> {
+  return readOfflineActivity([owner, getGuestSelfId()]).then(
+    (local) => ({
+      actions: markLocal(local.actions),
+      threads: markLocal(local.threads),
+      cards: markLocal(local.cards),
+      cardThreads: markLocal(local.cardThreads),
+    }),
+    (err: unknown) => {
+      console.warn('[inbox] offline-read-failed', err);
+      return NO_LOCAL;
+    },
+  );
+}
 
 export type ActivityFeed = {
   /** Open actions (self-assignments included) and open Plan cards on the reader, newest first. */
   assignedToMe: AssignedRow[];
   /** Open actions the reader assigned to somebody ELSE. */
-  youAssigned: ActivityAction[];
+  youAssigned: Located<ActivityAction>[];
   /** Unresolved threads the reader is in, on elements and on Plan cards, newest comment first. */
   threads: ThreadRow[];
   /** Forms with responses the reader has not seen (docs/specs/030-forms/forms.md), newest response first. */
@@ -45,10 +74,10 @@ export type ActivityFeed = {
 };
 
 export function useActivityFeed(ownerId: string | null): ActivityFeed {
-  const [actions, setActions] = useState<ActivityAction[]>([]);
-  const [threads, setThreads] = useState<ActivityThread[]>([]);
-  const [cards, setCards] = useState<ActivityCard[]>([]);
-  const [cardThreads, setCardThreads] = useState<ActivityCardThread[]>([]);
+  const [actions, setActions] = useState<Located<ActivityAction>[]>([]);
+  const [threads, setThreads] = useState<Located<ActivityThread>[]>([]);
+  const [cards, setCards] = useState<Located<ActivityCard>[]>([]);
+  const [cardThreads, setCardThreads] = useState<Located<ActivityCardThread>[]>([]);
   const [formResponses, setFormResponses] = useState<ActivityFormResponses[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -60,7 +89,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
   // below only starts it.
   const fetchFeed = useCallback((owner: string, mode: 'replace' | 'merge') => {
     const id = (requestId.current += 1);
-    return apiListActivity(owner).then((result) => {
+    return Promise.all([apiListActivity(owner), readLocal(owner)]).then(([result, local]) => {
       if (id !== requestId.current) return;
       if (!result) {
         // A 'merge' (returning to the tab) keeps what it had: a stale
@@ -77,10 +106,10 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
         return;
       }
       setError(false);
-      setActions(result.actions);
-      setThreads(result.threads);
-      setCards(result.cards);
-      setCardThreads(result.cardThreads ?? []);
+      setActions([...result.actions, ...local.actions]);
+      setThreads([...result.threads, ...local.threads]);
+      setCards([...result.cards, ...local.cards]);
+      setCardThreads([...(result.cardThreads ?? []), ...local.cardThreads]);
       setFormResponses(result.formResponses ?? []);
       setLoading(false);
     });
@@ -126,7 +155,10 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
     [actions, cards],
   );
   const youAssigned = useMemo(
-    () => actions.filter((a) => a.createdByMe && !a.assignedToMe),
+    () =>
+      actions
+        .filter((a) => a.createdByMe && !a.assignedToMe)
+        .sort((a, b) => b.updatedAt - a.updatedAt),
     [actions],
   );
 

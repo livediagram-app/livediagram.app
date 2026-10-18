@@ -27,21 +27,21 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-async function switchToIllustrate(page: import('@playwright/test').Page) {
+async function switchToPages(page: import('@playwright/test').Page) {
   await createInMode(page, 'diagram');
   const chip = page
     .locator('[data-start-mode-switch]')
     .getByRole('button', { name: /^Tab mode: Diagram/ });
   await chip.click();
-  await page.getByRole('menuitemradio', { name: /Illustrate/ }).click();
+  await page.getByRole('menuitemradio', { name: /Pages/ }).click();
   await expect(
-    page.locator('[data-start-mode-switch]').getByRole('button', { name: /^Tab mode: Illustrate/ }),
+    page.locator('[data-start-mode-switch]').getByRole('button', { name: /^Tab mode: Pages/ }),
   ).toBeVisible();
   return page.evaluate(() => (window as unknown as { __vt: Probe }).__vt);
 }
 
 test('a mode change turns the start in place, and only the start', async ({ page, pageErrors }) => {
-  const vt = await switchToIllustrate(page);
+  const vt = await switchToPages(page);
   expect(vt.calls).toBe(1);
   // The pictures the browser animates: the start's own, never the page root's, on the short token. (React's own
   // zero-length animations on `::view-transition-group(root)` and `::view-transition` are how it keeps the root
@@ -57,7 +57,7 @@ test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
   test('a mode change starts no View Transition', async ({ page, pageErrors }) => {
-    const vt = await switchToIllustrate(page);
+    const vt = await switchToPages(page);
     expect(vt.calls).toBe(0);
     expectNoPageErrors(pageErrors);
   });

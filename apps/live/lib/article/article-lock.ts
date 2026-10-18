@@ -1,9 +1,9 @@
-// Which articles a page lock holds (docs/specs/007-editor/illustrate-pages.md "Locking a page"):
+// Which articles a page lock holds (docs/specs/007-editor/pages-mode.md "Locking a page"):
 // locking any page of an article makes the whole article's writing read-only, holds its page count
 // and zones as they are, and refuses the edits its pages share, from any of its pages. Pure, so the
 // writing's entry points (useArticles, useArticleIntake), its chrome (ArticleFlows) and the page
 // panel ask the same question the same way.
-import { illustratePagesOf } from '@livediagram/document';
+import { pagesOf } from '@livediagram/document';
 
 type LockablePage = { readonly id: string; readonly flow?: string; readonly locked?: true };
 
@@ -25,5 +25,5 @@ export function isArticleLocked(pages: readonly LockablePage[], pageId: string):
 
 /** Whether an article on a tab has any of its pages locked. */
 export function articleLocked(tab: { pages?: unknown }, flow: string): boolean {
-  return illustratePagesOf(tab).some((p) => p.flow === flow && p.locked === true);
+  return pagesOf(tab).some((p) => p.flow === flow && p.locked === true);
 }

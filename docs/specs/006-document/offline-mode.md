@@ -22,13 +22,13 @@ Nobody is asked when creating a document; the default decides:
 
 - The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
   asks only for a mode and creates the document in the default location for who is creating
-  ([Save Locations](save-locations.md)): **Local Browser** for a guest, **livediagram** for a signed-in person.
-  Either moves later: **Take Offline** makes a cloud document Local only, **Sync Document** puts a Local only one on
+  ([Save Locations](save-locations.md)): **This Browser** for a guest, **livediagram** for a signed-in person.
+  Either moves later: **Take Offline** makes a cloud document This Browser, **Sync Document** puts a one in This Browser on
   livediagram.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
   take the same default, so a guest following a template from the landing page
-  gets a Local only document.
+  gets a document in This Browser.
 - The location only changes _where the document is stored_; the mode, templates and theme work identically.
 
 No global "offline mode" switch: the choice is **per document**, so a person can
@@ -111,7 +111,7 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
 
-A Local only document lives in this browser, so opening it waits on nothing the
+A document in This Browser lives in this browser, so opening it waits on nothing the
 server says. The editor bootstrap ([Dedicated route for new-document creation → In-place handoff](../007-editor/new-document-route.md#in-place-handoff-to-the-editor),
 `app/document/[id]/useIdentityBootstrap.ts`) takes an **early open** when, before
 auth has settled, the path names a document registered in the local index
@@ -132,7 +132,7 @@ auth has settled, the path names a document registered in the local index
   nudge. The document is not reloaded: an offline document is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers))
-  creating Local only, the create writes to IndexedDB and hands off without
+  creating This Browser, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewDocument` in `app/new/page.tsx`).
 - The editor reads back the record `/new` has just written rather than taking
@@ -143,20 +143,20 @@ auth has settled, the path names a document registered in the local index
 same way with the local api (headless Chromium, 10 runs each, interleaved; a
 fresh browser profile per first visit), guest create to first canvas paint:
 
-| Link                   | Before (cloud) first / return | After (Local only) first / return | API requests |
-| ---------------------- | ----------------------------- | --------------------------------- | ------------ |
-| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                      | 24 → 1       |
-| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                    | 20 → 1       |
+| Link                   | Before (cloud) first / return | After (This Browser) first / return | API requests |
+| ---------------------- | ----------------------------- | ----------------------------------- | ------------ |
+| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                        | 24 → 1       |
+| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                      | 20 → 1       |
 
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
 
-## "Local only" badge + Explorer
+## "This Browser" badge + Explorer
 
 - **Editor header badge.** The status pill reads Private / Shared / Team
   (the `SharedBadge` in `EditorHeader`). For an offline document it reads
-  **"Local only"** (a state that supersedes "Private" for these documents),
-  matching the [Local only pill](#local-only-pill): the same words, the same
+  **"This Browser"** (a state that supersedes "Private" for these documents),
+  matching the [This Browser pill](#this-browser-pill): the same words, the same
   browser-window icon, the same amber tone and contrast, and the same sentence,
   "Lives only in this browser. Clearing this browser's site data deletes it.",
   shown in the badge's visibility legend on hover and focus and given to
@@ -170,49 +170,52 @@ Explorer lists follow after the paint.
   to Everyone**: the audiences on one scale, **Just you** (a lock), **Link** (a link), **Team** (people),
   **Everyone** (a globe), the track filled to the current stop, which is larger, filled in its tone and
   bold. Hovering a stop shows that audience in the hero, eyebrow **If It Were**, and tints the stop;
-  leaving the scale puts the current state back. **Local only** (its browser-window icon, amber) stands
-  apart below as "Or Local only: never leaves this browser." (when current: "Local only: saved only here,
+  leaving the scale puts the current state back. **This Browser** (its browser-window icon, amber) stands
+  apart below as "Or This Browser: never leaves this browser." (when current: "This Browser: saved only here,
   never on our servers.", tinted amber). For someone who may share, **Change Who Can See This** at the
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
 - **Explorer.** Offline documents appear in Recent (and the other lists)
-  alongside cloud documents, each with the **Local only** pill (below) and the
-  fixed offline thumbnail, so a local-only document is recognisable at a glance.
+  alongside cloud documents, each with the **This Browser** pill (below) and the
+  fixed offline thumbnail, so a document in This Browser is recognisable at a glance.
   The Explorer view merges the API-fetched cloud list with the local index of
   offline documents; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
 - **The reader's own.** An offline document counts as one of the reader's own
   documents: Space `mine` and owner "You", like a document in My Documents
-  ([Explorer structure: Local only documents](../013-workspace/explorer-structure.md#local-only-documents)).
+  ([Explorer structure: documents in This Browser](../013-workspace/explorer-structure.md#documents-in-this-browser)).
 - **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
   `/explorer/offline`, the list of every offline document, titled **This
   browser**; the row shows while this browser holds at least one.
 - **Home.** An offline document's opens are counted in its own local record, never
   sent anywhere, so Home's Jump Back In places it among the reader's other
-  documents by the same rule, with the **Local only** pill on its thumbnail
+  documents by the same rule, with the **This Browser** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
+- **Inbox.** The Inbox reads offline documents in the browser and lists their open actions, Plan cards and comment
+  threads among the cloud ones, each row with the **This Browser** pill
+  ([Inbox §2.6](../013-workspace/inbox.md#26-documents-in-this-browser)).
 
-### Local only pill
+### This Browser pill
 
-Every row and card of an offline document carries a **Local only** pill,
+Every row and card of an offline document carries a **This Browser** pill,
 wherever the document is listed: the list and card views (folders, Search results,
-This browser, Recent, Favourites), Home's Jump Back In, the folder previews' tiles excepted (they
+This Browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Document card, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
-  "Local only", in an amber tone whose text meets 4.5:1 on its fill in light and
+  "This Browser", in an amber tone whose text meets 4.5:1 on its fill in light and
   dark mode; the ring meets 3:1 against the row.
-- **What it means, on hover and focus.** Its hover card reads "Local only" over
+- **What it means, on hover and focus.** Its hover card reads "This Browser" over
   "Lives only in this browser. Clearing this browser's site data deletes it."
   The same sentence is the pill's accessible description (`aria-describedby`),
   so a screen reader hears it without hovering.
 - **The guide is one click away.** The pill is a link to the Offline Mode help
   article (new tab, the editor's help-link telemetry), with its own focus ring.
   Where the row is itself a single control (a search result, the panel's
-  Current Document row), the pill is a plain label inside it, carrying the same
+  Current Document row, an Inbox row), the pill is a plain label inside it, carrying the same
   description: a link cannot sit inside a button. In a tree (the editor's
   Explorer), the pill is a link out of the tab order, since the tree owns
   the one tab stop, and the row itself carries the description. The Trash row's
@@ -227,15 +230,15 @@ rows and its Current Document card, and the Trash.
 Conversion works **both directions**, from the Explorer row menu (in both the
 in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
-the move prompt ([Auth + guest access → Moving Local only documents after signing in](../014-identity/auth-and-guest-access.md#moving-local-only-documents-after-signing-in)).
+the move prompt ([Auth + guest access → Moving documents in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-documents-in-this-browser-after-signing-in)).
 
-### Sharing a Local only document
+### Sharing a document in This Browser
 
 Share is how most people find out a document needs the server. Pressing it never
 uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
-- **The gate.** Share on a Local only document opens the Share dialog on its
+- **The gate.** Share on a document in This Browser opens the Share dialog on its
   offline gate (`ShareOfflineGate`): **This Document Is Offline**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to livediagram to
   share it: share links, real-time collaboration and the live image all need it
@@ -248,7 +251,7 @@ signed-in person alike:
   cloud document.
 - The button waits for the reader to be known (an early open runs under the
   `'self'` placeholder, [Instant open](#instant-open)).
-- A failed sync keeps the document Local only, says why in a toast
+- A failed sync keeps the document This Browser, says why in a toast
   (`syncFailureMessage`) and leaves the button to try again; nothing is
   half-uploaded (see below).
 - **Share Form** on a Form tab offers the same prompt (`SyncDocumentPrompt`, which
@@ -345,7 +348,7 @@ confirmation:
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **Local only**. Referenced R2 images are downloaded and embedded
+  badge flips to **This Browser**. Referenced R2 images are downloaded and embedded
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
@@ -394,9 +397,9 @@ Offline Mode is independent of sign-in:
   an offline document never touches the server at all.
 - Sign-in / sign-out never migrates offline documents by itself (the migrate flow, [Auth + guest access](../014-identity/auth-and-guest-access.md),
   only moves guest _cloud_ documents to the account). After signing in, a prompt
-  **offers** to move them ([Moving Local only documents after signing in](../014-identity/auth-and-guest-access.md#moving-local-only-documents-after-signing-in));
+  **offers** to move them ([Moving documents in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-documents-in-this-browser-after-signing-in));
   a document the person leaves stays put.
-- The "Local only" badge and pill read the same for a guest as for anyone: the
+- The "This Browser" badge and pill read the same for a guest as for anyone: the
   sentence about clearing site data is the one a guest most needs to see.
 
 ## Persistence architecture
@@ -421,7 +424,7 @@ target:
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
   to dispatch on yet: the New Document wizard calls `offlineCreateDocument`
-  directly when the location is Local Browser (picked, or a guest's default), and
+  directly when the location is This Browser (picked, or a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the document/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
@@ -498,10 +501,10 @@ Track adoption without content, reusing the closed vocabulary:
   dispatch via a local index.
 - New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
-  Local Browser tile) + data-loss warning + contextual help link.
-- `EditorHeader` (`SharedBadge`) — the **Local only** badge state.
-- Explorer (row + card components, `LocalOnlyPill`): merge the local index,
-  show the **Local only** pill wherever an offline document is listed plus a
+  This Browser tile) + data-loss warning + contextual help link.
+- `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
+- Explorer (row + card components, `ThisBrowserPill`): merge the local index,
+  show the **This Browser** pill wherever an offline document is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - Guest default + instant open: `lib/save-locations.ts` (`defaultSaveLocationFor`),
   `lib/signed-in-hint.ts`, `app/new/useNewDocumentLocation.ts`, the early open in

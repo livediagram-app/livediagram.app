@@ -1,6 +1,6 @@
 // Social Carousel template (kind `social-carousel`, docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): five Square slides for a LinkedIn or Instagram carousel by a made-up
-// team lead, Maya Okafor, on running better one-to-ones, that opens in Illustrate ready to export
+// "Pages templates"): five Square slides for a LinkedIn or Instagram carousel by a made-up
+// team lead, Maya Okafor, on running better one-to-ones, that opens in Pages ready to export
 // slide by slide.
 //
 //   1. The hook: a kicker pill, the promise set large over two lines in two colours, a lead and
@@ -18,7 +18,7 @@
 // Pure: () -> Element[], placed on the carousel's pages (socialCarouselPages) whatever centre is
 // passed.
 
-import type { Element, IllustratePage, PageBackground } from '@livediagram/document';
+import type { Element, Page, PageBackground } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -69,7 +69,7 @@ const WASH: PageBackground = {
 };
 
 /** The carousel's pages: five Square slides, the hook and the close on the brand gradient. */
-export function socialCarouselPages(): IllustratePage[] {
+export function socialCarouselPages(): Page[] {
   return [
     templatePage(1, 'square', 'portrait', 'Hook', GRADIENT),
     ...TIPS.map((_, i) => templatePage(i + 2, 'square', 'portrait', `Tip ${i + 1}`, WASH)),

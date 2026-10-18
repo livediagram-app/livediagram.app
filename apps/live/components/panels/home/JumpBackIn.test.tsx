@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): on a desktop or tablet the
 // Most Used cards then the Recent cards, each group under its label, each card saying why it is
 // there, See More in the heading row; on a phone a strip that alternates, labels neither group and
-// ends in a See More tile. A local document carries the Local only pill.
+// ends in a See More tile. A local document carries the This Browser pill.
 
 const { track, wide } = vi.hoisted(() => ({ track: vi.fn(), wide: { value: true } }));
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -143,8 +143,8 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('marks a document stored only in this browser', () => {
     renderIt({ mostUsed: [item('l', { localOnly: true })], recent: [] });
-    const link = screen.getByRole('link', { name: 'Doc l, Local only' });
-    expect(within(link).getByText('Local only')).toBeTruthy();
+    const link = screen.getByRole('link', { name: 'Doc l, This Browser' });
+    expect(within(link).getByText('This Browser')).toBeTruthy();
     expect(screen.getByTestId('thumb-l').dataset.offline).toBe('true');
   });
 

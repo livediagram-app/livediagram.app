@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { averageTone } from './page-image-tone';
 
-// docs/specs/007-editor/illustrate-pages.md "Image backgrounds": Tone and ink.
+// docs/specs/007-editor/pages-mode.md "Image backgrounds": Tone and ink.
 describe('averageTone', () => {
   it('averages the pixels, weighted by their opacity', () => {
     expect(averageTone([0, 0, 0, 255, 255, 255, 255, 255])).toBe('#808080');

@@ -1,4 +1,4 @@
-// A page's title-bar room (docs/specs/007-editor/illustrate-pages.md "Beside the cog": named while
+// A page's title-bar room (docs/specs/007-editor/pages-mode.md "Beside the cog": named while
 // there is room).
 import { describe, expect, it } from 'vitest';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';

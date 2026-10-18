@@ -35,9 +35,9 @@ export function AboutArt() {
           ))}
         </Window>
       </g>
-      {/* Illustrate: a page, tilted forward on the right. */}
+      {/* Pages: a page, tilted forward on the right. */}
       <g transform="rotate(7 308 120)">
-        <Window x={232} y={52} w={150} h={118} title="Illustrate">
+        <Window x={232} y={52} w={150} h={118} title="Pages">
           <rect x={244} y={84} width={126} height={74} rx={6} className="fill-brand-500" />
           <rect
             x={254}
@@ -72,7 +72,7 @@ export function AboutArt() {
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Diagram · Draw · Plan · Facilitate · Illustrate
+        Diagram · Draw · Plan · Facilitate · Pages
       </Label>
     </Stage>
   );

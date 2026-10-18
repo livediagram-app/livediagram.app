@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement } from '@livediagram/document';
 import { PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the People and Ideas set.
+// docs/specs/007-editor/pages-mode.md "Layouts": the People and Ideas set.
 const TALL = { x: 0, y: 0, width: 683, height: 1000 };
 const WIDE = { x: 0, y: 0, width: 1000, height: 683 };
 const STORY = { x: 0, y: 0, width: 929, height: 1769 };

@@ -24,7 +24,7 @@ export function FocusInviteDialog({
   // The name of whoever pressed, resolved from presence by the caller. Null
   // when there is no invitation, which renders nothing.
   from: string | null;
-  // It points at a page of an Illustrate tab, which taking it frames whole (bring-focus.md "On a page"),
+  // It points at a page of a Pages tab, which taking it frames whole (bring-focus.md "On a page"),
   // so the zoom is not kept and the copy must not promise it.
   toPage?: boolean;
   onAccept: () => void;
