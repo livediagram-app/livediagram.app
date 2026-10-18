@@ -92,4 +92,26 @@ describe('dropUnsafeColours', () => {
     const migrated = migrateStoredElements([{ ...els[0]!, strokeColor: 'url(x)' }]);
     expect(migrated[0]).not.toHaveProperty('strokeColor');
   });
+
+  it('drops a colour field that is not a string, and keeps a page background fill object', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const el = {
+      id: 'a',
+      type: 'shape',
+      shape: 'page',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      fillColor: 7,
+      strokeColor: { a: 1 },
+      textColor: null,
+      background: { fill: { kind: 'solid', color: '#fff' } },
+    } as unknown as Element;
+    const [clean] = dropUnsafeColours([el]) as unknown as Record<string, unknown>[];
+    expect(clean).not.toHaveProperty('fillColor');
+    expect(clean).not.toHaveProperty('strokeColor');
+    expect(clean!.textColor).toBeNull();
+    expect(clean!.background).toEqual({ fill: { kind: 'solid', color: '#fff' } });
+  });
 });

@@ -42,6 +42,15 @@ export function isSafeColourValue(value: string): boolean {
   return !NOT_A_COLOUR.test(value);
 }
 
+// A colour field's value as the renderers read it: a safe colour string, or none. A number or a list in one (a
+// malformed write) threw in every export that escaped or measured it. A page background's `fill` is the one
+// colour-named field that holds an object (its kind and colours), walked like any other.
+function colourFieldOk(key: string, field: unknown): boolean {
+  if (field === null || field === undefined) return true;
+  if (typeof field === 'string') return isSafeColourValue(field);
+  return key === 'fill' && typeof field === 'object' && !Array.isArray(field);
+}
+
 // How deep the walk looks into an element's own objects (its rows, its series): colours sit one or two levels down.
 const MAX_DEPTH = 4;
 
@@ -61,13 +70,12 @@ function withoutUnsafeColours<T>(value: T, depth: number): T {
   }
   let out: Record<string, unknown> | null = null;
   for (const [key, field] of Object.entries(value as Record<string, unknown>)) {
-    if (typeof field === 'string') {
-      if (COLOUR_FIELDS.has(key) && !isSafeColourValue(field)) {
-        out ??= { ...(value as Record<string, unknown>) };
-        delete out[key];
-      }
+    if (COLOUR_FIELDS.has(key) && !colourFieldOk(key, field)) {
+      out ??= { ...(value as Record<string, unknown>) };
+      delete out[key];
       continue;
     }
+    if (typeof field === 'string') continue;
     if (typeof field !== 'object' || field === null) continue;
     const clean = withoutUnsafeColours(field, depth + 1);
     if (clean !== field) {
@@ -86,6 +94,6 @@ export function dropUnsafeColours(elements: Element[]): Element[] {
     return clean;
   });
   if (!changed) return elements;
-  console.warn('[colours] unsafe colour dropped');
+  console.warn('[colours] unsafe or malformed colour dropped');
   return next;
 }

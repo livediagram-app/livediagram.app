@@ -457,7 +457,11 @@ function sliceRuns(runs: TextRun[], start: number, end: number): TextRun[] {
  * whole-element render path applies).
  */
 export function hasRichFormatting(runs: TextRun[] | undefined): boolean {
-  if (!runs || runs.length === 0) return false;
+  // A stored value that is not a list of runs (a hand-edited file, a malformed write) reads as plain text, as the
+  // validator leaves cosmetic fields for the reader to judge.
+  if (!Array.isArray(runs) || runs.length === 0) return false;
+  if (!runs.every((r) => typeof r === 'object' && r !== null && typeof r.text === 'string'))
+    return false;
   if (runs.length === 1) {
     const only = runs[0];
     return !!only && ATTR_KEYS.some((k) => only[k] !== undefined);
