@@ -271,9 +271,17 @@ export function foreignKeyName(title: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
-  // A plural table name (`customers`) keys as its singular (`customer_id`), as a schema writes it.
-  const singular = snake.length > 3 && /[^s]s$/.test(snake) ? snake.slice(0, -1) : snake;
-  return `${singular || 'parent'}_id`.slice(0, ENTITY_MAX_TEXT);
+  return `${singularOf(snake) || 'parent'}_id`.slice(0, ENTITY_MAX_TEXT);
+}
+
+// A plural table name (`customers`, `categories`, `boxes`) keys as its singular, as a schema writes it.
+// A word that only ends in s (`status`, `address`, `analysis`) is already singular and stays as it is.
+function singularOf(snake: string): string {
+  if (snake.length <= 3) return snake;
+  if (/[^aeiou]ies$/.test(snake)) return `${snake.slice(0, -3)}y`;
+  if (/(?:ss|sh|ch|x|z)es$/.test(snake)) return snake.slice(0, -2);
+  if (/(?:ss|us|is)$/.test(snake)) return snake;
+  return /s$/.test(snake) ? snake.slice(0, -1) : snake;
 }
 
 // The source's primary key field: the first field that is a primary key, by its own key or its type text.

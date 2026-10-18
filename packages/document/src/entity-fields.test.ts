@@ -290,6 +290,15 @@ describe('Add Related Entity', () => {
     expect(foreignKeyName('OrderLine')).toBe('order_line_id');
     expect(foreignKeyName('Café')).toBe('cafe_id');
     expect(foreignKeyName('Address')).toBe('address_id');
+    expect(foreignKeyName('Status')).toBe('status_id');
+    expect(foreignKeyName('Order status')).toBe('order_status_id');
+    expect(foreignKeyName('Analysis')).toBe('analysis_id');
+    expect(foreignKeyName('Categories')).toBe('category_id');
+    expect(foreignKeyName('Addresses')).toBe('address_id');
+    expect(foreignKeyName('Boxes')).toBe('box_id');
+    expect(foreignKeyName('Matches')).toBe('match_id');
+    expect(foreignKeyName('Keys')).toBe('key_id');
+    expect(foreignKeyName('Shoes')).toBe('shoe_id');
     expect(foreignKeyName('')).toBe('parent_id');
   });
 
