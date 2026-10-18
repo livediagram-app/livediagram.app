@@ -1,4 +1,4 @@
-// The room a page's title bar takes on screen (docs/specs/007-editor/illustrate-pages.md "Beside the
+// The room a page's title bar takes on screen (docs/specs/007-editor/pages-mode.md "Beside the
 // cog", "The label fits its page"): its fixed buttons, named or as icons, and whether they can be
 // named at all, so the page's label and an empty logo page's invite share what is left.
 import { logoTitleBarRoom } from './LogoTitleBar';

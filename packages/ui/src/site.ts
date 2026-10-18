@@ -18,7 +18,7 @@ export const SITE_NAME = 'livediagram';
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
 // and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'livediagram: Diagram, draw and illustrate together, live';
+export const SITE_TITLE = 'livediagram: Diagram, draw and make pages together, live';
 export const SITE_DESCRIPTION =
   'A free, real-time canvas for diagrams, whiteboards, mind maps, infographics and documents. Built for teams who think visually.';
 // Lower case: it follows "livediagram: " or starts a sentence through sentencePitch.

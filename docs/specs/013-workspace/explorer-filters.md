@@ -32,7 +32,7 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
 | My Documents, and each of its folders                    | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
 | A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
-| This browser                                             | `/explorer/offline`                                                                | Scoped                            |
+| This Browser                                             | `/explorer/offline`                                                                | Scoped                            |
 | Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
 | Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
 
@@ -47,7 +47,7 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
   [Recent folder chip](recent-folder-chip.md)).
 - **Recent** lists the 12 newest documents that match.
 - **This Browser**'s documents are the reader's own: they read as Space `mine` and People `me`, and keep their
-  **Local only** pill ([Explorer structure](explorer-structure.md#local-only-documents)).
+  **This Browser** pill ([Explorer structure](explorer-structure.md#documents-in-this-browser)).
 
 ## The chip row
 
@@ -68,16 +68,16 @@ Each dimension is a closed list of values. The interface says what a value means
 kind or a template family a "type", and it keeps "board type" for what it means elsewhere: a board that leaves the
 general diagram tab's environment.
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                                                            |
-| --------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text      | (none)     | (the field) | Free words                                                                                                                                         |
-| Opens in  | `opens-in` | Opens in    | `diagram` Diagram, `draw` Draw, `illustrate` Illustrate, `plan` Plan, `facilitate` Facilitate: the editor mode the document was created to open in |
-| Kind      | `kind`     | Kind        | `event-storming` Event Storming: the first tab's kind when the document was created                                                                |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                                                     |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI)                                    |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                                                   |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                                                   |
-| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                                                    |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                                                  |
+| --------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Text      | (none)     | (the field) | Free words                                                                                                                               |
+| Opens in  | `opens-in` | Opens in    | `diagram` Diagram, `draw` Draw, `pages` Pages, `plan` Plan, `facilitate` Facilitate: the editor mode the document was created to open in |
+| Kind      | `kind`     | Kind        | `event-storming` Event Storming: the first tab's kind when the document was created                                                      |
+| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                                           |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI)                          |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                                         |
+| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                                         |
+| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                                          |
 
 - **Opens in**, **Kind** and **Template** read the creation intent recorded on the document
   (Default folders: `opensIn`, `tabKind`, `templateFamily` on the document
@@ -96,7 +96,7 @@ general diagram tab's environment.
 - **People** on a document is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
   is `others`.
 - **Space** on a document is `mine` for one in My Documents or in this browser ([Offline Mode](../006-document/offline-mode.md),
-  the documents the sidebar marks "Local only"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
+  the documents the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
 - A row that cannot answer a dimension (a Shared With Me row carries no provenance, mode, kind or family) matches no
   value of it.

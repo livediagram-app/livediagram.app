@@ -60,7 +60,7 @@ export function SlideRowMenu({
   onToggleHidden: () => void;
   onDuplicate: () => void;
   /** Absent where the slide cannot be deleted: a slide page's own slide, which the deck would put straight back
-   *  (docs/specs/007-editor/illustrate-pages.md "Slides"); Hide leaves it out of the show. */
+   *  (docs/specs/007-editor/pages-mode.md "Slides"); Hide leaves it out of the show. */
   onDelete?: (anchor: HTMLElement | null) => void;
 }) {
   const [open, setOpen] = useState(false);

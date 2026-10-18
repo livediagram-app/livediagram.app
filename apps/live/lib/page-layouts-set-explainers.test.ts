@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the Explainers category's layouts, each a
+// docs/specs/007-editor/pages-mode.md "Layouts": the Explainers category's layouts, each a
 // page that teaches one thing. A4's content boxes, portrait and landscape, and a story's.
 const TALL = { x: 0, y: 0, width: 682, height: 1011 };
 const WIDE = { x: 0, y: 0, width: 1011, height: 682 };

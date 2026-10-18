@@ -190,11 +190,11 @@ export type TemplateKind =
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
   | 'whiteboard'
-  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
+  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Pages mode on one
   // article page, written as a short project brief.
   | 'article'
   // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Five blanks"): a tab that opens
-  // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
+  // in Pages on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
   // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
@@ -213,8 +213,8 @@ export type TemplateKind =
   | 'journey-doodle'
   | 'pre-mortem'
   | 'idea-garden'
-  // Illustrate templates (docs/specs/007-editor/templates-by-mode.md "Illustrate templates"):
-  // documents of pages, opening in Illustrate on pages of their own (template-pages.ts).
+  // Pages templates (docs/specs/007-editor/templates-by-mode.md "Pages templates"):
+  // documents of pages, opening in Pages on pages of their own (template-pages.ts).
   | 'event-poster'
   | 'year-in-review'
   | 'resume'

@@ -79,9 +79,10 @@ export function isPlacementDefaultKey(value: unknown): value is PlacementDefault
   return isMember(PLACEMENT_DEFAULT_KEYS, value);
 }
 
-// Keys stored under a name since retired: Illustrate mode was Infographic mode.
+// Keys stored under a name since retired: Pages mode was Illustrate mode, and Infographic mode before.
 const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
-  'mode:infographic': 'mode:illustrate',
+  'mode:illustrate': 'mode:pages',
+  'mode:infographic': 'mode:pages',
 };
 
 /** A stored or requested key as today's key: a current key as it is, a retired one renamed,
@@ -147,7 +148,7 @@ export function readCreationIntent(
     tabKind?: unknown;
     templateFamily?: unknown;
   };
-  // A create from a client from before Illustrate mode's rename still names it `infographic`.
+  // A create from a client from before Pages mode's renames still names it `illustrate` or `infographic`.
   const parsedMode = parseEditorMode(mode);
   if (!parsedMode) return { ok: false };
   const kind = tabKind ?? DEFAULT_TAB_KIND;

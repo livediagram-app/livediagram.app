@@ -25,7 +25,7 @@ import type { TemplateKind } from './templates';
 //     pyramid) where the shapes should carry the page,
 //   - a crosshatch backdrop for the storyboard, so its scene frames
 //     read as cards lifted off a textured surface,
-//   - a blank surround for the templates that open on Illustrate pages
+//   - a blank surround for the templates that open on pages
 //     (Article, Slide deck, Logo design, Group card and the rest): the pages are the paper,
 //   - horizontal rules for the time-ordered timeline / journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
@@ -175,7 +175,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'meeting-agenda': 'grid',
   // An article's surround stays plain: the page is the paper.
   article: 'blank',
-  // The other Illustrate templates: their pages are the paper.
+  // The other Pages templates: their pages are the paper.
   'blank-illustration': 'blank',
   'blank-slide-deck': 'blank',
   'blank-article': 'blank',
@@ -249,19 +249,19 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // /new, and the MCP worker all go through here.
   // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
   // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
-  // whiteboarding is no kind), the Illustrate ones open in Illustrate (their pages below).
+  // whiteboarding is no kind), the Pages ones open in Pages (their pages below).
   if (mode !== 'diagram') overrides.opensIn = mode;
-  // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).
+  // The Article opens in Pages on its one article page (docs/specs/007-editor/article-pages.md).
   if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
   // Working Backwards is an article too: its PR/FAQ flows onto pages in the Report look (template-working-backwards.ts).
   if (kind === 'working-backwards') Object.assign(overrides, workingBackwardsOverrides());
-  // A blank of a page kind opens in Illustrate on its one page, its kind already chosen (blank-page-templates.ts).
+  // A blank of a page kind opens in Pages on its one page, its kind already chosen (blank-page-templates.ts).
   const blankPage = blankPageTemplateOverrides(kind);
   if (blankPage) Object.assign(overrides, blankPage);
-  // The Slide deck, Logo design and Group card open in Illustrate on their own pages
+  // The Slide deck, Logo design and Group card open in Pages on their own pages
   // (canvas-and-palette.md "Templates on pages"); their builders place every element on them.
   const pages = templatePages(kind);
-  if (pages) Object.assign(overrides, { opensIn: 'illustrate', pages });
+  if (pages) Object.assign(overrides, { opensIn: 'pages', pages });
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

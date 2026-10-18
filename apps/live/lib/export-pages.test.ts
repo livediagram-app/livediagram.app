@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages } from '@livediagram/document';
+import { layOutPages } from '@livediagram/document';
 import { DEFAULT_PAGE_SCOPE, sanitizeFilename, zipEntryName } from './export-pages';
 
-// docs/specs/007-editor/illustrate-pages.md "Export".
+// docs/specs/007-editor/pages-mode.md "Export".
 describe('page export', () => {
   it('starts a PDF on all pages and an image on one', () => {
     expect(DEFAULT_PAGE_SCOPE).toEqual({ pdf: 'all', png: 'one', svg: 'one' });
   });
 
   it('names zip entries by place then label, filesystem-safe', () => {
-    const pages = layOutIllustratePages([
+    const pages = layOutPages([
       { id: 'a', orientation: 'portrait', name: 'Intro: why?' },
       { id: 'b', orientation: 'landscape' },
     ]);

@@ -1,11 +1,11 @@
 // The slide deck template (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"): a
-// six-slide seed pitch that opens in Illustrate, one slide page (16:9) per slide. The storyboard,
+// six-slide seed pitch that opens in Pages, one slide page (16:9) per slide. The storyboard,
 // which used to share this file as the other framed-panel design template, moved to
 // ./template-builders-storyboard once each grew its own narrative.
 //
 // Pure: () -> Element[], placed on the deck's pages (slideDeckPages) whatever centre is passed.
 
-import type { Element, IllustratePage } from '@livediagram/document';
+import type { Element, Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { slideType } from './slide-layouts';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
@@ -63,7 +63,7 @@ const ASK_BACKGROUND = {
 };
 
 /** The deck's pages: one slide page (16:9) per slide. */
-export function slideDeckPages(): IllustratePage[] {
+export function slideDeckPages(): Page[] {
   return SLIDES.map((s, i) =>
     templateSlidePage(
       i + 1,

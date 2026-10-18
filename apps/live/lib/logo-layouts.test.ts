@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   hasWordmarkType,
-  layOutIllustratePages,
+  layOutPages,
   newLogoPage,
   pageMargin,
   type Element,
@@ -43,7 +43,7 @@ describe('logo layouts', () => {
     expect(pageLayoutById('logo-badge').label).toBe('Badge');
   });
 
-  const [page] = layOutIllustratePages([newLogoPage('l')]);
+  const [page] = layOutPages([newLogoPage('l')]);
   const m = pageMargin(page!);
   const safe = {
     x: page!.rect.x + m,

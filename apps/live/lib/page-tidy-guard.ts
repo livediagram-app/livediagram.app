@@ -1,4 +1,4 @@
-// The guard of an infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy";
+// The guard of an infographic page's Tidy Up (docs/specs/007-editor/pages-mode.md "Tidy";
 // lib/page-tidy.ts): nothing comes to overlap what it did not.
 import { overlaps, sameRect, shift, type Block, type Rect } from './page-tidy-blocks';
 

@@ -18,7 +18,7 @@ export type TrashListing = {
   // The api's rows, or null when the cloud Trash couldn't be reached: the
   // view still shows this browser's Trash rather than failing whole.
   cloud: TrashedDocument[] | null;
-  // This browser only (Offline Mode).
+  // This Browser only (Offline Mode).
   local: TrashedDocument[];
 };
 

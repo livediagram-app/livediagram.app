@@ -3,7 +3,7 @@ import {
   DEFAULT_MIRROR,
   encodeStrokePoints,
   isValidElement,
-  layOutIllustratePages,
+  layOutPages,
   newLogoPage,
   type BoxedElement,
   type FreehandElement,
@@ -22,7 +22,7 @@ beforeAll(async () => {
   await combineElements([disc, { ...disc, id: 'b' }] as BoxedElement[], 'unite', 'x');
 });
 
-const pages = layOutIllustratePages([newLogoPage('l')]).map((p) => ({
+const pages = layOutPages([newLogoPage('l')]).map((p) => ({
   ...p,
   mirror: DEFAULT_MIRROR,
 }));

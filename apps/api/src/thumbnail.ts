@@ -269,8 +269,8 @@ async function renderTabBodyToSvg(
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
   const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
   const tab = community ? redactTabForCommunity(stored) : stored;
-  // An Illustrate tab previews as its first page alone, drawn as an export draws it
-  // (docs/specs/006-document/document-snapshots.md "Illustrate tabs"): every page side by
+  // A Pages tab previews as its first page alone, drawn as an export draws it
+  // (docs/specs/006-document/document-snapshots.md "Pages tabs"): every page side by
   // side on the canvas shrinks to a row of slivers nobody can read at thumbnail size.
   const pages = laidOutPagesOf(tab);
   const firstPage = pages[0];
@@ -344,7 +344,7 @@ async function loadEmbeddedImages(
 ): Promise<Map<string, string>> {
   const images = env.IMAGES;
   if (!images) return new Map();
-  // The elements' images and any Illustrate page's picture background, as embedTabImages reads them.
+  // The elements' images and any page's picture background, as embedTabImages reads them.
   const ids = imageRefIds(tab.elements, tab.pages);
   const servable = await servableImageIds(env, documentId, ids);
   if (servable.size < ids.length) {

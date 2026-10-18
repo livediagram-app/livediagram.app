@@ -1,14 +1,14 @@
 'use client';
 
-// An infographic or slide page's Background beside its cog (docs/specs/007-editor/illustrate-pages.md
+// An infographic or slide page's Background beside its cog (docs/specs/007-editor/pages-mode.md
 // "Beside the cog"): the page panel's Background and Pattern sections in a popover anchored to the
 // button, as a logo page's Guides open theirs. Hovers preview on the page; a press commits and the
 // popover stays for another pick; closing it drops any preview.
 import { useEffect, useRef } from 'react';
 import { lucidePaintRoller } from '@livediagram/icons/lucide';
-import type { IllustratePage, PageBackground } from '@livediagram/document';
+import type { Page, PageBackground } from '@livediagram/document';
 import { lucideGlyph } from '@livediagram/ui';
-import type { ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
+import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import { track } from '@/lib/telemetry';
 import { BackgroundSection } from './page-background-section';
 import { ApplyBackgroundToAll } from './page-background-apply-all';
@@ -36,7 +36,7 @@ function Body({
   onPreview,
   applyToAll,
 }: {
-  page: IllustratePage;
+  page: Page;
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
   onPreview: (patch: Partial<PageBackground> | null) => void;
@@ -81,8 +81,8 @@ export function PageBackgroundButton({
   onPreview,
   applyToAll,
 }: {
-  page: IllustratePage;
-  // Apply to All at its foot (docs/specs/007-editor/illustrate-pages.md "Copying a background"): how
+  page: Page;
+  // Apply to All at its foot (docs/specs/007-editor/pages-mode.md "Copying a background"): how
   // many other pages of its kind it reaches, and the edit.
   applyToAll?: { reach: number; onApply: () => void };
   // Named beside its icon (a desktop).

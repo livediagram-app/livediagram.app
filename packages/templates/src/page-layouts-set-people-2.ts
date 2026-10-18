@@ -1,4 +1,4 @@
-// People and Ideas layouts, part one (docs/specs/007-editor/illustrate-pages.md "Layouts"): an org
+// People and Ideas layouts, part one (docs/specs/007-editor/pages-mode.md "Layouts"): an org
 // chart, testimonials, a speaker line-up and an employee spotlight. Pure builders on the shared kit,
 // laid out in proportions of the page's content box so each fits every size and orientation.
 import type { Element } from '@livediagram/document';

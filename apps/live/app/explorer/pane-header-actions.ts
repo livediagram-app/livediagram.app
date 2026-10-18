@@ -20,7 +20,7 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'trash',
   'team',
   'invites',
-  // This browser is a read-through view; offline documents come from the /new wizard.
+  // This Browser is a read-through view; offline documents come from the /new wizard.
   'offline',
   // Tags gather documents from every place; a new one lands in none of them (docs/specs/013-workspace/tags.md).
   'tags',

@@ -1,5 +1,5 @@
 // Logo-design template (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"): a
-// brand exploration for a made-up coffee roaster that opens in Illustrate, one Logo page (the 1024
+// brand exploration for a made-up coffee roaster that opens in Pages, one Logo page (the 1024
 // artboard, docs/specs/007-editor/logo-pages.md) per lockup, so the guides, mirror, Combine,
 // previews and Logo Kit all work on it. Six lockup pages show the compositions a designer actually weighs up: horizontal and
 // stacked lockups with and without a tagline, the mark alone as an app icon, and a one-colour
@@ -13,7 +13,7 @@
 // Pure: () -> Element[], placed on the exploration's pages (logoDesignPages) whatever centre is
 // passed.
 
-import { createShape, createText, type Element, type IllustratePage } from '@livediagram/document';
+import { createShape, createText, type Element, type Page } from '@livediagram/document';
 import { heading, type Kit } from './page-layout-kit';
 import { pageKits, templateLogoPage, templatePage } from './template-page-kit';
 
@@ -187,7 +187,7 @@ const SWATCHES = [
 
 /** The exploration's pages: a Logo page per lockup, then the palette on a Square infographic page.
  *  The app icon sits on Crema, the way a launcher would show it. */
-export function logoDesignPages(): IllustratePage[] {
+export function logoDesignPages(): Page[] {
   return [
     ...BOARDS.map((b, i) =>
       templateLogoPage(

@@ -3,7 +3,7 @@ import type { Tab } from '@livediagram/document';
 import type { ArticlesView } from '@/hooks/editor/useArticles';
 import { presentedPages } from './presented-pages';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": a presenting page slide shows its page alone.
+// docs/specs/007-editor/pages-mode.md "Slides": a presenting page slide shows its page alone.
 const tab = {
   id: 't',
   name: 'T',
@@ -19,7 +19,7 @@ describe('presentedPages', () => {
     expect(presentedPages(null, tab, null)).toBeNull();
   });
 
-  it('builds the presented sheet from the tab outside Illustrate mode', () => {
+  it('builds the presented sheet from the tab outside Pages mode', () => {
     const view = presentedPages(null, tab, 'b')!;
     expect(view.pages.map((p) => p.id)).toEqual(['b']);
     expect(view.edit).toBeUndefined();
@@ -27,7 +27,7 @@ describe('presentedPages', () => {
     expect(view.letterbox).toBe(true);
   });
 
-  it('outside Illustrate, presents an article page with its writing, read only', () => {
+  it('outside Pages, presents an article page with its writing, read only', () => {
     const articles = { editable: true, flows: { f: { blocks: [] } } } as unknown as ArticlesView;
     const withArticle = {
       ...tab,

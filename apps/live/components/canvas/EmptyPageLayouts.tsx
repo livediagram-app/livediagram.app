@@ -1,6 +1,6 @@
 'use client';
 
-// An empty infographic page's own invitation (docs/specs/007-editor/illustrate-pages.md "Layouts"):
+// An empty infographic page's own invitation (docs/specs/007-editor/pages-mode.md "Layouts"):
 // the page panel's Layouts, on a card centred inside the page, held at one screen size like the
 // first page's kind choice. A layout pressed lands on the page at once. No hover preview here: drawn
 // over the page the card sits on, it hid the very tiles being pointed at. Hide puts the card away

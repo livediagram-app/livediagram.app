@@ -181,17 +181,17 @@ describe('pagesOf', () => {
 });
 
 describe('parseTabHeader', () => {
-  it('reads a kind and mode, or an Illustrate tab’s pages', () => {
+  it('reads a kind and mode, or a Pages tab’s pages', () => {
     expect(
       parseTabHeader('tab 6cb1 "RSVP" · 0 elements · kind=form (read_form) · mode=plan · rev 1'),
     ).toEqual({ kind: 'form', mode: 'plan' });
     expect(
       parseTabHeader(
-        'tab 3be5 "Deck" · 53 elements: 53 boxes · illustrate 6 pages: 5 slide, 1 infographic (view pages) · rev 5',
+        'tab 3be5 "Deck" · 53 elements: 53 boxes · mode=pages · 6 pages: 5 slide, 1 infographic (view pages) · rev 5',
       ),
     ).toEqual({
       kind: null,
-      mode: 'illustrate',
+      mode: 'pages',
       pageCount: 6,
       pageKinds: { slide: 5, infographic: 1 },
     });

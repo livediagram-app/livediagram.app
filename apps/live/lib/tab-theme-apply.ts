@@ -75,7 +75,7 @@ export function withThemeApplied(
   // theme change instead of being reset to the theme's backdrop.
   const backdrop = switchThemeBackdrop(t, prevTheme, theme);
   // A label the pick sank into what is behind it gets an ink that reads there (docs/specs/011-theme/light-and-dark.md
-  // "A theme never sinks a label into what is behind it"); not on Illustrate pages, which have their own paper.
+  // "A theme never sinks a label into what is behind it"); not on pages, which have their own paper.
   const elements = labelsFollowCanvas(t)
     ? [
         ...withReadableLabelInks(
@@ -86,7 +86,7 @@ export function withThemeApplied(
         ),
       ]
     : switched;
-  // Illustrate pages on a fill of the old theme's own take the new theme's (page-theme-follow).
+  // Pages on a fill of the old theme's own take the new theme's (page-theme-follow).
   return withPageBackgroundsFollowingTheme(
     { ...t, elements, theme: id, ...backdrop },
     prevTheme,
@@ -94,11 +94,11 @@ export function withThemeApplied(
   );
 }
 
-/** Whether a tab's labels sit on its canvas and panels: not an Illustrate tab's, whose pages have their own paper. */
+/** Whether a tab's labels sit on its canvas and panels: not a Pages tab's, whose pages have their own paper. */
 export function labelsFollowCanvas(
   tab: Pick<Tab, 'opensIn' | 'kind' | 'layers' | 'pages'>,
 ): boolean {
-  return opensInOf(tab) !== 'illustrate' && !(Array.isArray(tab.pages) && tab.pages.length > 0);
+  return opensInOf(tab) !== 'pages' && !(Array.isArray(tab.pages) && tab.pages.length > 0);
 }
 
 // A stored canvas colour as the applier sees it: the theme's, in their half; any other colour as it is.

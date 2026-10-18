@@ -35,7 +35,7 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
   8 px) tinted in the row's **tone**: Home and My Documents sky, Inbox violet, Timeline amber, Shared With Me emerald,
-  a team indigo, Invites rose. New Team and the rows of More (This browser, Tags, Library, Trash) keep a bare slate
+  a team indigo, Invites rose. New Team and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
 - **The current row** is a raised pill: white, a hairline sky edge and a soft sky shadow, its label in semibold deep
@@ -99,13 +99,13 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 | Row          | Opens                                  | Children                                     | Badge                     |
 | ------------ | -------------------------------------- | -------------------------------------------- | ------------------------- |
-| This browser | `/explorer/offline`                    | None                                         | Documents in this browser |
+| This Browser | `/explorer/offline`                    | None                                         | Documents in this browser |
 | Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Themes, Shape Libraries | None                      |
 | Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                         | None                      |
 
 - **This Browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
-  ([Local only documents](#local-only-documents)).
+  ([documents in This Browser](#documents-in-this-browser)).
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
   pages is the current view, the Tags pages included.
 - **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
@@ -154,7 +154,7 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Home            | `/explorer/home`            | Home            |
 | Shared With Me  | `/explorer/shared`          | Shared With Me  |
 | My Documents    | `/explorer/all`             | My Documents    |
-| This browser    | `/explorer/offline`         | This browser    |
+| This Browser    | `/explorer/offline`         | This Browser    |
 | Image gallery   | `/explorer/images`          | Image gallery   |
 | Shape libraries | `/explorer/shape-libraries` | Shape libraries |
 
@@ -173,7 +173,7 @@ its own (**Timeline**).
 | Invites       | No                         | No                            | While one is pending     |
 | New Team      | No                         | No                            | Yes                      |
 | Sign-in nudge | Yes                        | No                            | No                       |
-| This browser  | While it holds documents   | While it holds documents      | While it holds documents |
+| This Browser  | While it holds documents   | While it holds documents      | While it holds documents |
 | Library       | Yes                        | Yes                           | Yes                      |
 | Trash         | Yes                        | Yes                           | Yes                      |
 
@@ -252,7 +252,7 @@ Top to bottom:
    a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
    document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
-   Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
+   Private, Shared, Team, Public or This Browser, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
    at the right of the label's row and its `⋯` (the document menu) at the right of the date's, so the name has the
    card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
    by the panel.
@@ -277,7 +277,7 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Document** (one click to a new document; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared With Me; My Documents and each team; This browser, Tags, Library and Trash. Shared With Me and This browser carry
+Shared With Me; My Documents and each team; This Browser, Tags, Library and Trash. Shared With Me and This Browser carry
 their counts (the panel reads no other feed until its section is shown). No
 Invites, New Team or sign-in nudge: those are the Explorer page's.
 
@@ -306,7 +306,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | My Documents   | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
 | A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                                                                   | New Folder |
 | Tags           | Each tag as a heading (its chip and count) over its documents as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                     | None       |
-| This browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                               | None       |
+| This Browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                               | None       |
 | Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                             | None       |
 | Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                | None       |
 
@@ -315,7 +315,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
   `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with documents**: a document row shows its thumbnail and "Updated <relative time>"; activating it opens the
   document; it carries the document menu, its favourite star and, for an offline
-  document, the Local only pill; the open document's row is the current one. A folder row shows its counts ("2
+  document, the This Browser pill; the open document's row is the current one. A folder row shows its counts ("2
   folders · 5 documents") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row (resting on it opens it), or onto
   the My Documents rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
@@ -350,16 +350,16 @@ opens its menu. A folder's breadcrumb is a `nav` named "Folder path". The footer
 The panel is the reader's own: it lists their documents and views whatever the open document's share role. Renaming
 from the card follows the editor's rename (an Editor only); a Participant or Viewer sees the name as text.
 
-## Local only documents
+## documents in This Browser
 
 A document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)) is the reader's own: it counts
 wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My Documents. Every
-row and card of one, wherever it is listed (folders, This browser, Recent and Favourites, Search results, the
-editor's Explorer, the Trash), carries the **Local only** pill
-([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
+row and card of one, wherever it is listed (folders, This Browser, Recent and Favourites, Search results, the
+editor's Explorer, the Trash), carries the **This Browser** pill
+([Offline Mode: This Browser pill](../006-document/offline-mode.md#this-browser-pill)).
 
-The editor header names such a document with the matching **Local only** badge. Home's "Jump Back In" carries the
-same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
+The editor header names such a document with the matching **This Browser** badge. Home's "Jump Back In" carries the
+same pill (`ThisBrowserPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
 
 ## Telemetry
 

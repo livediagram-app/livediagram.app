@@ -154,7 +154,7 @@ describe('isContentOffScreen', () => {
   });
 });
 
-// Illustrate mode centres its page below the Toolbar layout's strip
+// Pages mode centres its page below the Toolbar layout's strip
 // (docs/specs/007-editor/editor-modes.md "The pages").
 describe('besideSideInsets', () => {
   // A canvas x on screen, with the centred transform (lib/viewport.ts).

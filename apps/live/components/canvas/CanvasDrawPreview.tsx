@@ -33,7 +33,7 @@ type CanvasDrawPreviewProps = {
   // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
-  // The Illustrate pages while Mirror While Drawing is on (docs/specs/007-editor/logo-pages.md
+  // The pages while Mirror While Drawing is on (docs/specs/007-editor/logo-pages.md
   // "Mirror"): a drawing on a logo page previews its twin too. Absent otherwise.
   mirrorPages?: readonly MirroredPage[] | null;
 };

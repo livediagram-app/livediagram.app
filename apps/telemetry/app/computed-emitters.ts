@@ -314,21 +314,21 @@ const AVATAR_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live IllustrateTourHost.tsx,
-// docs/specs/007-editor/illustrate-tour.md): each page kind's track names its kind before the step. The welcome card
+// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
+// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
 // sends no step view.
 const camel = (id: string) =>
   id
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
+const PAGES_TOUR_STEP_SOURCE: string[] = (
   ['slide', 'infographic', 'article', 'logo'] as const
 ).flatMap((kind) =>
   [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
     .map((m) => m[1]!)
     .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `IllustrateTourStep${camel(`${kind}-${id}`)}`),
+    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
 );
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
@@ -687,8 +687,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
-    values: ILLUSTRATE_TOUR_STEP_SOURCE,
+  'apps/live/components/tour/PagesTourHost.tsx UI·View': {
+    values: PAGES_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {

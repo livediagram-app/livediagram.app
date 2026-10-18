@@ -5,7 +5,7 @@
 // in hand, and, while Mirror While Drawing is on, the live twin of a marker stroke or a path being
 // drawn. One mount in Canvas; each part draws nothing when it does not apply.
 import type { RefObject } from 'react';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
 import type { LiveStroke } from '@/lib/live-stroke';
@@ -25,7 +25,7 @@ export function LogoCanvasOverlays({
   wrapperRef,
   zoom,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   // Zen, presenting or the isometric view: no guides.
   bare: boolean;
   pendingDraw: PendingDraw | null;

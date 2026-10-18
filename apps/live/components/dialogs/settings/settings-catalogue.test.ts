@@ -32,12 +32,12 @@ describe('settings catalogue', () => {
   it("points the logo guide rows at a logo page's Guides button, where they live, not its panel", () => {
     // docs/specs/007-editor/logo-pages.md: the guides moved out of the page panel into the Guides popover.
     // The master switch says so once; the strength and the guides nest under it, so they do not repeat it.
-    const illustrate = SETTINGS_CATEGORIES.find((c) => c.id === 'illustrate')!;
-    expect(illustrate.rows.find((r) => r.key === 'logoGuides')!.alsoIn).toBe(
+    const pages = SETTINGS_CATEGORIES.find((c) => c.id === 'pages')!;
+    expect(pages.rows.find((r) => r.key === 'logoGuides')!.alsoIn).toBe(
       "a logo page's Guides button",
     );
     expect(
-      illustrate.rows
+      pages.rows
         .filter((r) => r.key !== 'logoGuides' && r.key !== 'contentsPlacement')
         .map((r) => [r.key, r.parent]),
     ).toEqual([
@@ -77,10 +77,10 @@ describe('settings catalogue', () => {
     expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
   });
 
-  it("offers where Illustrate's Contents sits, the sidebar until chosen otherwise", () => {
-    // docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar by default, the button by choice.
-    const illustrate = SETTINGS_CATEGORIES.find((c) => c.id === 'illustrate')!;
-    const row = illustrate.rows.find((r) => r.key === 'contentsPlacement');
+  it("offers where Pages mode's Contents sits, the sidebar until chosen otherwise", () => {
+    // docs/specs/007-editor/pages-mode.md "Contents": the sidebar by default, the button by choice.
+    const pages = SETTINGS_CATEGORIES.find((c) => c.id === 'pages')!;
+    const row = pages.rows.find((r) => r.key === 'contentsPlacement');
     if (row?.kind !== 'choice') throw new Error('no Contents choice row');
     expect(row.label).toBe('Contents');
     expect(row.options.map((o) => [o.id, o.label])).toEqual([
@@ -171,7 +171,7 @@ describe('settings catalogue', () => {
       ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
-      ['illustrateTourSeen', 'toggle', 'Illustrate Tour', 'illustrateTour'],
+      ['pagesTourSeen', 'toggle', 'Pages Tour', 'pagesTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Element Tours', undefined],
@@ -212,7 +212,7 @@ describe('settings catalogue', () => {
         ['DrawTourSeenOff', 'DrawTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
-        ['IllustrateTourSeenOff', 'IllustrateTourSeenOn'],
+        ['PagesTourSeenOff', 'PagesTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -280,7 +280,7 @@ describe('settings catalogue', () => {
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
       planTourSeen: ['planTourSeen', 'planTourTracks'],
-      illustrateTourSeen: ['illustrateTourSeen', 'illustrateTourKinds'],
+      pagesTourSeen: ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],
@@ -317,19 +317,19 @@ describe('settings catalogue', () => {
     }
   });
 
-  // docs/specs/007-editor/illustrate-tour.md "Where it appears": one switch over every page kind's track.
-  it('turns the Illustrate tour back on for every page kind', () => {
-    const row = TOGGLES.find((r) => r.key === 'illustrateTourSeen')!;
+  // docs/specs/007-editor/pages-tour.md "Where it appears": one switch over every page kind's track.
+  it('turns the Pages tour back on for every page kind', () => {
+    const row = TOGGLES.find((r) => r.key === 'pagesTourSeen')!;
     const seen: UserPreferences = {
-      illustrateTourSeen: true,
-      illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+      pagesTourSeen: true,
+      pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
     };
     expect(row.read(seen)).toBe(false);
-    expect(row.write(seen, true)).toEqual({ illustrateTourSeen: false });
+    expect(row.write(seen, true)).toEqual({ pagesTourSeen: false });
     expect(row.read(row.write(seen, true))).toBe(true);
     expect(row.write({}, false)).toEqual({
-      illustrateTourSeen: true,
-      illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+      pagesTourSeen: true,
+      pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
     });
   });
 
@@ -492,10 +492,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor (Draw, Illustrate; no Diagram yet), then Presenting', () => {
+  it('nests one sub-category per mode with settings of its own under Editor (Draw, Pages; no Diagram yet), then Presenting', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'illustrate', 'presenting']);
+    expect(children).toEqual(['draw', 'pages', 'presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

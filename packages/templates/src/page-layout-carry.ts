@@ -1,4 +1,4 @@
-// A page's content carried into a new layout (docs/specs/007-editor/illustrate-pages.md "Content
+// A page's content carried into a new layout (docs/specs/007-editor/pages-mode.md "Content
 // carries over"): the words, pictures and figures a person put on a page move into the matching
 // places of the layout replacing it, each taking its new place's position, size and look. Pure:
 // the page's elements and the layout's freshly built ones in, the layout's elements (same ids, so

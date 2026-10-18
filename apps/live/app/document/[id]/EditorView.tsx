@@ -105,7 +105,7 @@ const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
-  // "Local only" header badge and hides server-only actions (Share).
+  // "This Browser" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
   // A full page load the app starts itself (a stale build, a chunk recovery) waits for these edits
   // to be saved (docs/specs/016-platform/stale-builds.md).

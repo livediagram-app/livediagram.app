@@ -877,7 +877,7 @@ not in Sheet Settings, not anywhere.
 
 ## Other modes
 
-- In Diagram, Illustrate and Draw a Sheet element is an element like any other: drawn with its header and grid
+- In Diagram, Pages and Draw a Sheet element is an element like any other: drawn with its header and grid
   (its values, formats, frozen rows and merges, scrolled to the top left), live as cells change, and selected,
   moved, resized, copied, styled and deleted as any element. Its grid does not take the pointer or the keys; a
   double-click on it says "Switch to Plan to edit this sheet", with a **Switch to Plan** button, which switches

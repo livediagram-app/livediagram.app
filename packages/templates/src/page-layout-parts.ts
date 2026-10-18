@@ -1,4 +1,4 @@
-// Parts the compare, social and figures layouts share (docs/specs/007-editor/illustrate-pages.md
+// Parts the compare, social and figures layouts share (docs/specs/007-editor/pages-mode.md
 // "Layouts"): the source line a figure owes, a row of an icon beside a line, and the two colours
 // that carry meaning (a tick is green, a cross rose) rather than following the theme.
 import type { Element, TextElement } from '@livediagram/document';

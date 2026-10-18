@@ -1,13 +1,13 @@
 'use client';
 
 // A slide page's speaker notes, in its title bar once the page is in the slide deck
-// (docs/specs/007-editor/illustrate-pages.md "Slides"): Add Notes while the slide has none, Notes
+// (docs/specs/007-editor/pages-mode.md "Slides"): Add Notes while the slide has none, Notes
 // (pressed) once it has. A popover holds the slide's notes, the same notes the Slide Deck panel
 // writes and the presenter view shows: they belong to the deck's slide, not to the page.
 import { useRef } from 'react';
 import { lucideFileText } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
-import type { PageDeckControls } from '@/hooks/editor/useIllustratePages';
+import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import { track } from '@/lib/telemetry';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 

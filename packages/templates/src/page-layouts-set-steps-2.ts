@@ -1,4 +1,4 @@
-// Steps and Time layouts, part 2 (docs/specs/007-editor/illustrate-pages.md "Layouts"): a
+// Steps and Time layouts, part 2 (docs/specs/007-editor/pages-mode.md "Layouts"): a
 // staircase of rising levels and a customer journey map. Same contract as page-layouts.ts: the
 // page's content box in, uncoloured elements out, a tall page stacking and a wide one setting side
 // by side. Only the journey's mood faces (stickers) paint their own colours, since there the

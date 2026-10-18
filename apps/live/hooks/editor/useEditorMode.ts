@@ -42,7 +42,7 @@ export type EditorModeState = {
 const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
   draw: 'ModeDraw',
-  illustrate: 'ModeIllustrate',
+  pages: 'ModePages',
   plan: 'ModePlan',
   facilitate: 'ModeFacilitate',
 };
@@ -54,7 +54,7 @@ export function trackModeSwitch(next: EditorMode): void {
 }
 
 /** The tab switched as one edit: `alsoChange` first, then the mode and what it brings. Whether
- *  entering Illustrate put the board onto a page comes back with it. */
+ *  entering Pages put the board onto a page comes back with it. */
 export function switchedTab(
   tab: Tab,
   next: EditorMode,

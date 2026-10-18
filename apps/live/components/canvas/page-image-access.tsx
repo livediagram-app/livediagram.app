@@ -1,6 +1,6 @@
 'use client';
 
-// Who is asking for a page's picture (docs/specs/007-editor/illustrate-pages.md "Image
+// Who is asking for a page's picture (docs/specs/007-editor/pages-mode.md "Image
 // backgrounds"): the identity and share code the image store needs, handed to the pages by the
 // canvas, and the pictures the sheets paint, each fetched once while it is on a page.
 import {
@@ -99,7 +99,7 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
       })
         .then((url) => {
           if (!url) {
-            console.warn('[illustrate-page] picture unavailable', { imageId: id });
+            console.warn('[page] picture unavailable', { imageId: id });
             return;
           }
           // Dropped (or the access changed) while it was on its way.
@@ -107,7 +107,7 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
           mine.set(id, url);
           setSources((prev) => new Map(prev).set(id, url));
         })
-        .catch(() => console.warn('[illustrate-page] picture failed', { imageId: id }));
+        .catch(() => console.warn('[page] picture failed', { imageId: id }));
     }
     // The access is read through its key: a fresh object with the same values refetches nothing.
     // oxlint-disable-next-line react/exhaustive-deps

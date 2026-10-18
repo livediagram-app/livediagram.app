@@ -1,5 +1,5 @@
-// Feature art for Illustrate's pages (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/007-editor/illustrate-pages.md, article-pages.md): pages in three formats, a page
+// Feature art for Pages mode's pages (docs/specs/019-marketing/marketing-site.md,
+// docs/specs/007-editor/pages-mode.md, article-pages.md): pages in three formats, a page
 // placed from the layout picker and backgrounds painted from the theme (splitting a diagram onto
 // pages and the export are in ./infographics-export, the article page in ./article). Each is a small mock of the real surface, built on
 // ./page-kit so a page reads as paper on the canvas in light and in dark.
@@ -26,7 +26,7 @@ import {
 const TRACK = 'stroke-slate-200 dark:stroke-slate-600';
 
 /** Pages for print and social: an A4 report, a 16:9 slide and a square post, side by side. */
-export function IllustratePagesArt() {
+export function PagesArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
@@ -339,7 +339,7 @@ export function InfographicLayoutArt() {
 }
 
 /** Backgrounds from your theme: a tint with a grid, a gradient with dots, a dark page whose ink follows it. */
-export function IllustrateBackgroundsArt() {
+export function PagesBackgroundsArt() {
   const pages: {
     x: number;
     label: string;

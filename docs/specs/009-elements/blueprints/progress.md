@@ -61,7 +61,7 @@ fill animation).
 1. `ShapeContentRouter` sends a progress shape to `ProgressView`, with `accent` (the resolved
    stroke), `track = progressTrackColour(element, surface)` (the element's fill, else
    `PROGRESS_TRACK_DEFAULT` on light paper and `defaultFillColor(element, 'dark')` on dark paper;
-   `surface` is `useElementSurface`, so a dark Illustrate page counts) and `textColor`.
+   `surface` is `useElementSurface`, so a dark page counts) and `textColor`.
 2. `pct = clampPercent(element.progress ?? 50)`.
 3. **Bar**: a fully rounded track `div` in the track colour, an inner fill `div` of width `pct%`
    in the accent, and the class from `barFillClass`: `fill → lvd-prog-grow`,

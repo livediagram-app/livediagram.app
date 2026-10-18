@@ -95,7 +95,7 @@ describe('theme counts in marketing copy', () => {
   });
 });
 
-// Slide layout counts are written out too, as digits or a word; each must match Illustrate's catalogue.
+// Slide layout counts are written out too, as digits or a word; each must match Pages mode's catalogue.
 describe('slide layout counts in marketing copy', () => {
   const WORDS: Record<string, number> = { seventeen: 17 };
   const countsIn = (copy: string) =>

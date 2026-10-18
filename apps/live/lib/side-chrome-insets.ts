@@ -1,5 +1,5 @@
-// How far Illustrate's Contents panel reaches in over the canvas from its left or right edge
-// (docs/specs/007-editor/illustrate-pages.md "Contents"), wherever it is docked or dragged: a page
+// How far Pages mode's Contents panel reaches in over the canvas from its left or right edge
+// (docs/specs/007-editor/pages-mode.md "Contents"), wherever it is docked or dragged: a page
 // framed on screen, and Zoom to Fit, centre in what shows beside it rather than under it.
 import { CONTENTS_SIDEBAR_SELECTOR } from './contents-placement';
 

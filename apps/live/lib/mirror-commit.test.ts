@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_MIRROR,
-  layOutIllustratePages,
+  layOutPages,
   newLogoPage,
   type Element,
   type MirrorSettings,
@@ -12,7 +12,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // docs/specs/007-editor/logo-pages.md "Mirror": a drawn element gets its twin in the same commit.
 describe('mirror while drawing', () => {
-  const pages = layOutIllustratePages([newLogoPage('l')]);
+  const pages = layOutPages([newLogoPage('l')]);
   const mirrored = pages.map((p) => ({ ...p, mirror: DEFAULT_MIRROR }));
   const shape = (id: string, x: number): Element => ({
     id,
@@ -39,7 +39,7 @@ describe('mirror while drawing', () => {
     expect(withTwinsAdded(prev, edited, mirrored)).toBe(edited);
   });
 
-  it('commits as it was given while mirror is off for the page, or off Illustrate', async () => {
+  it('commits as it was given while mirror is off for the page, or off Pages', async () => {
     const { track } = await import('@/lib/telemetry');
     let els: Element[] = [];
     const commit = (map: (e: Element[]) => Element[]) => {

@@ -55,7 +55,7 @@ describe('useOffscreenContent', () => {
     expect(offscreen([arrow], { x: -5000, y: 0 }).result.current).toBe(false);
   });
 
-  it('counts an Illustrate page in view as something to see', () => {
+  it('counts a page in view as something to see', () => {
     const ref = main();
     const page = { rect: { x: 5000, y: -400, width: 800, height: 1200 } };
     const at = { x: -5000, y: 0 };

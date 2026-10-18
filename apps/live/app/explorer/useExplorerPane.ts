@@ -5,7 +5,7 @@ import type { Lens, LensSubject } from '@livediagram/explorer-lens';
 import { leadsBackHome, VIEW_TITLES } from './view-titles';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { groupDocumentsByFolder } from '@/lib/folder-tree';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 import type { TeamDocumentRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from './views';
 import {
@@ -69,20 +69,20 @@ export function useExplorerPane({
   viewerId: string;
   now: number;
 }) {
-  // A document saved only in this browser lives in This browser, not at the root of My Documents
+  // A document saved only in this browser lives in This Browser, not at the root of My Documents
   // (docs/specs/013-workspace/explorer-structure.md); filed in one of the reader's folders, it is
   // listed there.
   const documentsByFolder = useMemo(
     () =>
       groupDocumentsByFolder(liveDocs, {
-        exclude: (d) => d.folderId === null && isLocalOnly(d),
+        exclude: (d) => d.folderId === null && isInThisBrowser(d),
       }),
     [liveDocs],
   );
 
   // Every document saved only in this browser, wherever its local record files it.
   const offlineDocuments = useMemo(
-    () => newestFirst(liveDocs.filter((d) => isLocalOnly(d))),
+    () => newestFirst(liveDocs.filter((d) => isInThisBrowser(d))),
     [liveDocs],
   );
 

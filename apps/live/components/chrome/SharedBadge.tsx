@@ -9,11 +9,11 @@ import { VisibilityLegend } from './VisibilityLegend';
 // The visibility pill rendered beside the document title, split out of
 // EditorHeader. Share links win: a shared team document reads "Shared" as
 // normal; "Team" covers the team-but-unshared case where "Private" would be a
-// lie (every joined member can open it); "Local only" (docs/specs/006-document/offline-mode.md)
-// supersedes "Private" for browser-only documents, matching the Explorer's Local only pill. Hovering (or focusing) the pill opens a
+// lie (every joined member can open it); "This Browser" (docs/specs/006-document/offline-mode.md)
+// supersedes "Private" for browser-only documents, matching the Explorer's This Browser pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
 // the states can be compared in place instead of hunting each hover card. "Public" (listed in the Community,
-// docs/specs/025-community/community.md) wins over the rest but Local only: a document listed in the public
+// docs/specs/025-community/community.md) wins over the rest but This Browser: a document listed in the public
 // Community is the widest audience there is, so "Private" or "Shared" would understate it.
 
 // How long the legend stays after the pointer leaves the pill or the legend (a timer, docs/specs/004-interface-design/motion.md).

@@ -1,7 +1,7 @@
 // What a reference to a gallery image is (docs/specs/009-elements/images.md, "Reference index"):
 // a top-level `type: 'image'` element whose `imageId` names a gallery row, or a top-level
-// Illustrate page whose `background.fill` is a picture (`kind: 'image'`) naming one
-// (docs/specs/007-editor/illustrate-pages.md "Image backgrounds").
+// Page whose `background.fill` is a picture (`kind: 'image'`) naming one
+// (docs/specs/007-editor/pages-mode.md "Image backgrounds").
 // The SQL twin of this extractor lives in db/image-refs.ts; a parity test
 // holds the two to one corpus, because a reference either one misses is an
 // image the retention sweep would reap.

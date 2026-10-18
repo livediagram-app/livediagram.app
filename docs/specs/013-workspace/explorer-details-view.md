@@ -19,15 +19,15 @@ by any column.
 
 ## Columns
 
-| Column   | A document shows                                                                 | A folder shows                          |
-| -------- | -------------------------------------------------------------------------------- | --------------------------------------- |
-| Name     | Its name (a link that opens it), favourite star, Local only and Made by AI pills | Its name (opens it), default marker     |
-| Type     | The mode its most recently written tab is in, as the mode's icon                 | The folder icon                         |
-| Comments | A speech bubble holding how many comments its tabs hold; empty for none          | Empty                                   |
-| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer    | Empty                                   |
-| Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs | "N items": its subfolders and documents |
-| Created  | Date and time it was created                                                     | Date and time it was created            |
-| Updated  | Date and time it was last saved                                                  | Date and time it was last changed       |
+| Column   | A document shows                                                                   | A folder shows                          |
+| -------- | ---------------------------------------------------------------------------------- | --------------------------------------- |
+| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker     |
+| Type     | The mode its most recently written tab is in, as the mode's icon                   | The folder icon                         |
+| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                   |
+| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                   |
+| Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs   | "N items": its subfolders and documents |
+| Created  | Date and time it was created                                                       | Date and time it was created            |
+| Updated  | Date and time it was last saved                                                    | Date and time it was last changed       |
 
 - **Icon columns.** Type, Comments and Access are narrow columns of one icon each, with no words: their
   headers show the column's icon (shapes, a speech bubble, a key) in place of a title, still sortable,
@@ -51,7 +51,7 @@ by any column.
   from") shows **–** in Type, Comments and Size, with the tooltip "Not counted yet". So does a document
   with no tabs, and a document shared with the reader, whose library is not the reader's.
 - **Documents in this browser** are counted in the browser from their own tabs, by the same rule.
-  This browser keeps no time per tab, so their Type is the mode of their first tab.
+  This Browser keeps no time per tab, so their Type is the mode of their first tab.
 - A Created date the list does not carry (a document shared with the reader) shows **–** with the
   tooltip "Not known".
 - A `⋯` ends every row, shown on hover or keyboard focus (always on touch), opening the same menu

@@ -1,4 +1,4 @@
-// Feature art for Illustrate's last steps (docs/specs/007-editor/illustrate-pages.md): a diagram split
+// Feature art for Pages mode's last steps (docs/specs/007-editor/pages-mode.md): a diagram split
 // onto pages, and every page exported print-ready. Split from ./infographics; built on ./page-kit like it.
 
 import { Frame } from './shared';
@@ -46,8 +46,8 @@ function Node({ x, y, w = 22, label }: { x: number; y: number; w?: number; label
   );
 }
 
-/** Turn any diagram into pages: a flow on the canvas, switched to Illustrate and split, a page per part. */
-export function IllustrateIntoPagesArt() {
+/** Turn any diagram into pages: a flow on the canvas, switched to Pages and split, a page per part. */
+export function IntoPagesArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
@@ -93,7 +93,7 @@ export function IllustrateIntoPagesArt() {
             />
             <path d="M84.5 47h2M84.5 49h2" stroke={VIOLET} strokeWidth="0.6" />
             <text x="91" y="50" fontSize="4.6" fontWeight="700" fill={VIOLET}>
-              Illustrate
+              Pages
             </text>
           </g>
           <path
@@ -145,7 +145,7 @@ export function IllustrateIntoPagesArt() {
 }
 
 /** Every page, print-ready: the pages, the export panel set to PDF, and the file it makes. */
-export function IllustrateExportArt() {
+export function PagesExportArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">

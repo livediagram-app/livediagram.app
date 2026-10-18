@@ -191,7 +191,7 @@ export const PALETTE_CATEGORIES: {
     icon: <WriteTabIcon />,
   },
   {
-    // Illustrate mode, while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
+    // Pages mode, while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
     // palette").
     id: 'logo',
     label: 'Logo',
@@ -279,7 +279,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Media',
     group: 2,
     description:
-      'Pictures and figures: an uploaded image or a circular avatar; in Illustrate, embeds and a Tab Window onto another tab.',
+      'Pictures and figures: an uploaded image or a circular avatar; in Pages, embeds and a Tab Window onto another tab.',
     icon: <MediaTabIcon />,
   },
   {

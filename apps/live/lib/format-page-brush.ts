@@ -1,4 +1,4 @@
-// The Format tool on Illustrate pages (docs/specs/007-editor/illustrate-pages.md "Copying a
+// The Format tool on pages (docs/specs/007-editor/pages-mode.md "Copying a
 // background"): a press on a page's paper arms that page's background as the brush, and each later
 // press on another page paints it there. The brush is the Format tool's one source, so a page is
 // held in the same slot as an element, marked so the two never meet: leaving the tool, Done or an
@@ -16,10 +16,10 @@ export function brushPageId(sourceId: string | null): string | null {
 }
 
 /** The Format banner's line: what to press next. */
-export function formatBannerMessage(sourceId: string | null, illustrate: boolean): string {
+export function formatBannerMessage(sourceId: string | null, pages: boolean): string {
   if (brushPageId(sourceId)) return 'Tap pages to paint this background onto them';
   if (sourceId) return 'Tap elements to paint this style onto them';
-  return illustrate
+  return pages
     ? 'Select a base element or page to copy its style'
     : 'Select a base element to copy its style';
 }

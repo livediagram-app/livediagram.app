@@ -17,6 +17,26 @@ describe('upgradeLegacyPreferences', () => {
     });
   });
 
+  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Illustrate mode became Pages mode.
+  it("carries the Illustrate tour's seen-guard and tracks to the Pages names", () => {
+    expect(
+      upgradeLegacyPreferences({ illustrateTourSeen: true, illustrateTourKinds: ['slide'] }),
+    ).toEqual({ pagesTourSeen: true, pagesTourKinds: ['slide'] });
+    expect(upgradeLegacyPreferences({ illustrateTourSeen: true, pagesTourSeen: false })).toEqual({
+      pagesTourSeen: false,
+    });
+  });
+
+  it('drops the retired mode switches under every name', () => {
+    expect(
+      upgradeLegacyPreferences({
+        illustrateModeEnabled: true,
+        infographicModeEnabled: true,
+        theme: 'dark',
+      }),
+    ).toEqual({ theme: 'dark' });
+  });
+
   it('drops the retired Activity panel keys', () => {
     expect(
       upgradeLegacyPreferences({

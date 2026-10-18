@@ -21,9 +21,7 @@ const askForLogo = () => ask('logo');
 const LOGO_PALETTE_OPEN_RETRY_MS = 400;
 
 const sheetRect = (pageId: string) =>
-  document
-    .querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`)
-    ?.getBoundingClientRect();
+  document.querySelector(`[data-page-id="${CSS.escape(pageId)}"]`)?.getBoundingClientRect();
 
 // A press target on the canvas: inside its content layer, or the bare canvas itself.
 function onCanvas(target: EventTarget | null): boolean {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sideInsetsOf } from './side-chrome-insets';
 
-// docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar's width is kept clear on its side.
+// docs/specs/007-editor/pages-mode.md "Contents": the sidebar's width is kept clear on its side.
 const canvas = { left: 0, right: 1200, top: 60, bottom: 860 };
 
 describe('sideInsetsOf', () => {

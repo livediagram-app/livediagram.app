@@ -72,10 +72,10 @@ describe('the editor’s first load', () => {
   // The page layouts, the template builders and the sticky-photo detector loaded with every editor until 2026-10-13
   // (about 130 KiB compressed of the document page's first load): each came in through one small import.
   it('loads the page layout builders only when a layout is applied', () => {
-    expect(staticImports(read('hooks/editor/illustrate-page-edits.ts'))).not.toContain(
+    expect(staticImports(read('hooks/editor/page-edits.ts'))).not.toContain(
       '@livediagram/templates/page-layout-build',
     );
-    expect(read('hooks/editor/illustrate-page-edits.ts')).toContain(
+    expect(read('hooks/editor/page-edits.ts')).toContain(
       "import('@livediagram/templates/page-layout-build')",
     );
   });

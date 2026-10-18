@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A slide's animated background on screen (docs/specs/007-editor/illustrate-pages.md "Animated
+// A slide's animated background on screen (docs/specs/007-editor/pages-mode.md "Animated
 // backgrounds"): the parts of lib/page-motion-parts.ts drawn as moving DOM.
 
 import { cleanup, render } from '@testing-library/react';

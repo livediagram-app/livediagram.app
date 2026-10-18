@@ -16,9 +16,9 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 import {
   DocumentEntryMenu,
   documentDragProps,
@@ -163,7 +163,7 @@ function DocumentCard(
         {/* One line: the badges keep their size, the time gives way with an
             ellipsis, the sync mark holds the right edge. */}
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
-          {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
+          {isInThisBrowser(liveDoc) ? <ThisBrowserPill /> : null}
           {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
           {showVisibilityBadge ? (
             <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />

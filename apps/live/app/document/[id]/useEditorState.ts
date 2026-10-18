@@ -55,8 +55,8 @@ import {
   useEffectEvent,
 } from 'react';
 import {
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
@@ -95,14 +95,14 @@ import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
-import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
+import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
-import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
+import { useLeavePages } from '@/hooks/editor/useLeavePages';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -309,7 +309,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
   // take in what was just added to a page (useArticleIntake) without taking a peer's.
   const localEditSeqRef = useRef(0);
-  // Set once Illustrate mode's pages are known (below): the tab the lock guard applies to, and how
+  // Set once Pages mode's pages are known (below): the tab the lock guard applies to, and how
   // it says something was held back.
   const pageLockGuardRef = useRef<PageLockGuard | null>(null);
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
@@ -351,7 +351,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
           : t.elements;
         return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
       });
-      // Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): in Illustrate
+      // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
       // their hosts.
@@ -1040,7 +1040,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useEffect(() => {
     // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
-    // a Local only document opens before the reader is known (docs/specs/006-document/offline-mode.md
+    // a document in This Browser opens before the reader is known (docs/specs/006-document/offline-mode.md
     // "Instant open"), and 'self' is nobody's row.
     if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;
@@ -1413,10 +1413,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
+  // Leaving Pages on a tab with articles asks first (turn them into Page elements, or keep).
   // Plan asks nothing: a board outside Plan is an element like any other
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(rawEditorMode, {
+  const { editorMode, leave: leavePages } = useLeavePages(rawEditorMode, {
     tab: activeTab,
     canEdit,
   });
@@ -1784,7 +1784,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
-  // On an Illustrate tab a point on a page lands on that page, framed whole like its label's press frames
+  // On a Pages tab a point on a page lands on that page, framed whole like its label's press frames
   // it (docs/specs/012-collaboration/bring-focus.md "On a page"); anywhere else the point is centred.
   const landFocus = useCallback(
     (tabId: string, at: { x: number; y: number }) => {
@@ -1840,7 +1840,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects. A tab showing pages frames the page you were
-  // last on (else its first) instead (set by useIllustratePages below), never the whole row.
+  // last on (else its first) instead (set by usePagesMode below), never the whole row.
   const frameFirstPageRef = useRef<(() => void) | null>(null);
   const { requestFit } = useTabEntryEffects({
     hydrated,
@@ -2021,10 +2021,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // Illustrate mode's pages: their edits, and the view centred on them.
+  // Pages mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
   const articleFocusRef = useRef<((flow: string) => void) | null>(null);
-  const illustratePages = useIllustratePages({
+  const pagesMode = usePagesMode({
     activeTab,
     mode: editorMode.mode,
     canEdit: !isReadOnly,
@@ -2045,15 +2045,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId: documentId ?? undefined,
     viewport,
   });
-  // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
-  const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
+  // What a locked page holds is inert, as on a locked layer (Pages mode only).
+  const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode?.pages ?? null);
   const { inertIds: canvasInertIds, chartIds: sheetChartIds } = useSheetChartInertIds(
     activeTab.elements,
     pageLockedIds,
   );
   useAssignRef(
     pageLockGuardRef,
-    illustratePages
+    pagesMode
       ? {
           tabId: activeId,
           // Said after the commit: the guard runs inside a state update, where no toast may be set.
@@ -2415,20 +2415,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
   // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
-  // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
+  // Pages mode, and while a page slide presents in any mode (read only, then: nothing is
   // edited while presenting).
   const presentingPage = presentingStep?.slide.pageId ?? null;
   const presentPages = useMemo(
-    () =>
-      !illustratePages && presentingPage
-        ? layOutIllustratePages(illustratePagesOf(activeTab))
-        : null,
-    [illustratePages, presentingPage, activeTab],
+    () => (!pagesMode && presentingPage ? layOutPages(pagesOf(activeTab)) : null),
+    [pagesMode, presentingPage, activeTab],
   );
   const articles = useArticles({
     activeTab,
-    on: illustratePages !== null || presentingPage !== null,
-    pages: illustratePages?.pages ?? presentPages,
+    on: pagesMode !== null || presentingPage !== null,
+    pages: pagesMode?.pages ?? presentPages,
     localEditSeq: localEditSeqRef,
     placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
     canEdit: !isReadOnly,
@@ -2465,12 +2462,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }),
     [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
   );
-  const illustrateView = useMemo(
+  const pagesModeView = useMemo(
     () =>
-      illustratePages
-        ? { ...illustratePages, ...(articles ? { articles } : {}), deck: pageDeck }
-        : illustratePages,
-    [illustratePages, articles, pageDeck],
+      pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck } : pagesMode,
+    [pagesMode, articles, pageDeck],
   );
   // --- Placement helpers ---------------------------------------------------
 
@@ -2946,8 +2941,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Logo pages (docs/specs/007-editor/logo-pages.md): the mirror-aware draw commit, the logo tools,
   // previews, Combine and the keyline snaps. See useLogoEditor.
   const logo = useLogoEditor({
-    illustrateView,
-    pages: illustratePages?.pages ?? null,
+    pagesModeView,
+    pages: pagesMode?.pages ?? null,
     activeTab,
     commit,
     currentSelectionIds,
@@ -3075,7 +3070,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
-    pages: illustratePages?.pages ?? null,
+    pages: pagesMode?.pages ?? null,
   });
   useAssignRef(placeIntentAtRef, placeIntentAt);
 
@@ -3666,7 +3661,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     alignmentGuidesRef,
     // Every page's edges and margin, and a logo page's keylines (useLogoEditor).
     pageSnapBoxes: logo.snapBoxes,
-    illustratePages: illustratePages?.pages ?? null,
+    pagesMode: pagesMode?.pages ?? null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -3822,8 +3817,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
-    // In Illustrate, Fit frames the page you are nearest, not the whole tab.
-    onFitToScreen: illustratePages ? illustratePages.fitPageInView : fitToScreen,
+    // In Pages, Fit frames the page you are nearest, not the whole tab.
+    onFitToScreen: pagesMode ? pagesMode.fitPageInView : fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
     onDeselect: () => {
       setSelectedId(null);
@@ -3912,15 +3907,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    leaveIllustrate,
-    illustratePages: logo.view,
+    leavePages,
+    pagesMode: logo.view,
     canCombine,
     combineSelected,
     canTidyUp,
     tidyUpSelected,
     // Arms a draw tool: the Logo palette's markers, from the live pen (PaletteLogoTab).
     beginDraw,
-    // A page slide presenting outside Illustrate draws its article's writing from these.
+    // A page slide presenting outside Pages draws its article's writing from these.
     presentArticles: articles,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
@@ -4196,7 +4191,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
-    // The page a page slide is presenting (docs/specs/007-editor/illustrate-pages.md "Slides"):
+    // The page a page slide is presenting (docs/specs/007-editor/pages-mode.md "Slides"):
     // the canvas then shows that sheet alone, as it shows the slide's elements alone.
     presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,

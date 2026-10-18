@@ -96,10 +96,10 @@ describe('upsertTab and upsertTabAtRev', () => {
 describe('seedTabs', () => {
   it('writes every seeded tab its stats', async () => {
     const db = withDocument();
-    await seedTabs(db.env, 'A', [tab('t1', undefined, 1), tab('t2', 'illustrate')]);
+    await seedTabs(db.env, 'A', [tab('t1', undefined, 1), tab('t2', 'pages')]);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't2')).toEqual(expected(db.sql, 't2'));
-    expect(statsRow(db.sql, 't2')?.mode).toBe('illustrate');
+    expect(statsRow(db.sql, 't2')?.mode).toBe('pages');
   });
 });
 

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, newLogoPage, type Element } from '@livediagram/document';
+import { layOutPages, newLogoPage, type Element } from '@livediagram/document';
 import { mirrorCopies } from './useLogoTools';
 
 // docs/specs/007-editor/logo-pages.md "Mirror": Mirror Copy reflects fresh copies.
 describe('mirrorCopies', () => {
-  const pages = layOutIllustratePages([newLogoPage('l')]);
+  const pages = layOutPages([newLogoPage('l')]);
   const els: Element[] = [
     { id: 's', type: 'shape', shape: 'circle', x: -300, y: 0, width: 100, height: 100, note: 'n' },
     { id: 't', type: 'text', x: -300, y: 200, width: 100, height: 20, label: 'Hi' },

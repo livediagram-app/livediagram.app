@@ -22,7 +22,7 @@ export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 // all three in Facilitate (docs/specs/012-collaboration/facilitate-mode.md), and on an event-storming
 // board, a workshop that is always Diagram and cannot switch; Timer and Vote in Plan, where cards take
 // the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
-// in Illustrate, Vote and Poll only while one runs (`runningOnly`), so a vote or poll started from a
+// in Pages, Vote and Poll only while one runs (`runningOnly`), so a vote or poll started from a
 // session button there can be watched and ended; none in Diagram or Draw, even while a tool runs.
 export type SessionStripTools = {
   timer: boolean;
@@ -39,7 +39,7 @@ export function sessionStripTools(
 ): SessionStripTools | null {
   if (mode === 'facilitate' || esBoard) return { timer: true, vote: true, poll: true };
   if (mode === 'plan') return planVoting ? { timer: true, vote: true, poll: false } : null;
-  if (mode === 'illustrate') return { timer: false, vote: true, poll: true, runningOnly: true };
+  if (mode === 'pages') return { timer: false, vote: true, poll: true, runningOnly: true };
   return null;
 }
 
@@ -51,7 +51,7 @@ export function stripCanStart(tools: SessionStripTools, readOnly: boolean): bool
 
 // Has the button under an open strip popover gone? Then the popover closes rather than float with nothing
 // under it: the mode offers no strip or not that tool (a mode switch), or the strip shows only running tools
-// (a view-role visitor's, or Illustrate's for everyone) and that tool's activity has ended. `running.poll`
+// (a view-role visitor's, or Pages mode's for everyone) and that tool's activity has ended. `running.poll`
 // is a poll whose results are ours to see, which is when its button shows.
 export function stripSegmentGone({
   segment,
@@ -105,7 +105,7 @@ export function SessionClusterStrip({
   pollRunning: boolean;
   // An editor: the idle tools are offered too, to start one.
   canStart: boolean;
-  // The mode has a Timer button (not in Illustrate).
+  // The mode has a Timer button (not in Pages).
   offersTimer?: boolean;
   // The mode has a Poll button (not in Plan).
   offersPoll?: boolean;

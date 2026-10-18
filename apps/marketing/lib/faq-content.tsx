@@ -36,9 +36,9 @@ const ICON = 18;
 export const TEMPLATE_COUNT = 140;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
-// Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
+// Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 46;
-// Illustrate's infographic page layouts and logo layouts, pinned the same way.
+// Pages mode's infographic page layouts and logo layouts, pinned the same way.
 export const PAGE_LAYOUT_COUNT = 92;
 export const LOGO_LAYOUT_COUNT = 25;
 
@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Facilitate for running a session with your team, Pages for slides, articles and posters, and Plan for boards of cards. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -168,7 +168,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Facilitate runs a session with your team, with timers, dot votes, polls and reveals to hand. Illustrate lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Facilitate runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -265,28 +265,28 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I write documents in it?',
         a: (
           <>
-            Yes. Switch a tab to Illustrate and write an article straight onto pages: Markdown
-            shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and
-            Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the
-            text, and teammates comment on the words themselves. Pick one of five looks, then export
-            every page as a PDF. See <a href="/help/canvas/illustrate/articles/">Articles</a>.
+            Yes. Switch a tab to Pages and write an article straight onto pages: Markdown shortcuts,
+            a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing
+            flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and
+            teammates comment on the words themselves. Pick one of five looks, then export every
+            page as a PDF. See <a href="/help/canvas/pages-mode/articles/">Articles</a>.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Illustrate and write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
+          'Yes. Switch a tab to Pages and write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
       },
       {
         q: 'Can I design infographics, posters or a logo?',
         a: (
           <>
-            Yes, in Illustrate. Lay out pages in print sizes (A4, US Letter, A3) or social sizes,
+            Yes, in Pages. Lay out pages in print sizes (A4, US Letter, A3) or social sizes,
             starting from one of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF,
             PNG or SVG. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
             construction guides, mirror drawing and wordmark type, and it exports a logo kit. See{' '}
-            <a href="/help/canvas/illustrate/">Illustrate mode</a>.
+            <a href="/help/canvas/pages-mode/">Pages mode</a>.
           </>
         ),
-        aText: `Yes, in Illustrate. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Illustrate mode.`,
+        aText: `Yes, in Pages. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Pages mode.`,
       },
       {
         q: 'Can I use it as a whiteboard?',
@@ -319,7 +319,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Illustrate adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
+        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Pages adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
       },
       {
         q: 'Can I undo a mistake?',
@@ -527,7 +527,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',
@@ -557,16 +557,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Documents saved to your account are stored in our database on Cloudflare, and Local only
-            documents stay in your browser. There are no tracking pixels, no advertising and no
-            third-party analytics. We do record anonymous, first-party usage (which features get
+            Documents saved to your account are stored in our database on Cloudflare, and documents
+            in This Browser stay in your browser. There are no tracking pixels, no advertising and
+            no third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
             <a href="/help/policies/privacy-policy/">privacy policy</a> for the details.
           </>
         ),
         aText:
-          'Documents saved to your account are stored in our database on Cloudflare, and Local only documents stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Documents saved to your account are stored in our database on Cloudflare, and documents in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
         q: 'Can I keep a document off your servers entirely?',

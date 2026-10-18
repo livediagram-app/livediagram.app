@@ -154,7 +154,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The element plane
 
 - `CanvasElementList` renders every element inside one `<div data-element-plane class="contents">`:
-  no box, so layout, hit testing, paint order and the isometric 3D stack are as before (Illustrate's
+  no box, so layout, hit testing, paint order and the isometric 3D stack are as before (Pages mode's
   page clip already wraps the elements the same way).
 - `globals.css` gives `[data-element-plane]` `cursor: auto`. The canvas world's cursor (its
   `canvasCursorClass` class, or a draw tool's inline cursor) then stops there, so a change of it
@@ -169,7 +169,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
     zoom (the pen's cursor follows its width on screen) or a path hover still restyles the board;
   - the eraser and the spotlight, whose own rules match every `[data-element-id]`, so switching to or from them
     restyles each element once;
-  - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `IllustratePages`, `LogoCanvasOverlays`),
+  - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `CanvasPages`, `LogoCanvasOverlays`),
     which sit outside the plane and inherit the world's cursor (pages rely on it: no cursor of their own), so a
     pan restyles isometric depth blocks and an article's text.
 

@@ -4,20 +4,20 @@ import { render } from '@testing-library/react';
 import {
   contrastRatio,
   createShape,
-  layOutIllustratePages,
+  layOutPages,
   CHART_MARK_CONTRAST,
   type ShapeElement,
 } from '@livediagram/document';
 import { useChartGround } from './CanvasSurfaceContext';
-import { IllustratePageClip } from './IllustratePageClip';
+import { PageClip } from './PageClip';
 import { LineChartView } from './LineChartView';
 import { PieChartView } from './PieChartView';
 import { exportChartInk } from '@/lib/export-chart-ink';
 
-// docs/specs/007-editor/illustrate-pages.md "Charts adapt as they are drawn": the canvas finds what
+// docs/specs/007-editor/pages-mode.md "Charts adapt as they are drawn": the canvas finds what
 // each chart on a filled page sits on and draws its series adapted to it, as the export does.
 const DARK = '#0f172a';
-const pages = layOutIllustratePages([
+const pages = layOutPages([
   { id: 'p', orientation: 'portrait', background: { fill: { kind: 'solid', color: DARK } } },
 ]);
 const page = pages[0]!;
@@ -37,18 +37,18 @@ function Ground({ id }: { id: string }) {
 describe('chart grounds on the canvas', () => {
   it('the page clip hands each chart on a filled page its ground', () => {
     const { container } = render(
-      <IllustratePageClip pages={pages} elements={[chart]}>
+      <PageClip pages={pages} elements={[chart]}>
         <Ground id="c" />
-      </IllustratePageClip>,
+      </PageClip>,
     );
     expect(container.querySelector('span')!.getAttribute('data-ground')).toBe(DARK);
   });
 
-  it('outside Illustrate mode a chart has none', () => {
+  it('outside Pages mode a chart has none', () => {
     const { container } = render(
-      <IllustratePageClip pages={null} elements={[chart]}>
+      <PageClip pages={null} elements={[chart]}>
         <Ground id="c" />
-      </IllustratePageClip>,
+      </PageClip>,
     );
     expect(container.querySelector('span')!.getAttribute('data-ground')).toBe('');
   });

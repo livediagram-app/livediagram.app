@@ -88,10 +88,10 @@ const DIAGRAM_BUILD_EXTRAS = [
   'tools:entity',
 ];
 
-// The concept graphics, then the Sankey (Diagram's and Illustrate's Concepts).
+// The concept graphics, then the Sankey (Diagram's and Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-// Image and Avatar; no embedded pages, and no Tab Window (an Illustrate element, docs/specs/009-elements/tab-window.md).
+// Image and Avatar; no embedded pages, and no Tab Window (a Pages element, docs/specs/009-elements/tab-window.md).
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
 
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
@@ -140,9 +140,9 @@ const DIAGRAM: PaletteLayout = {
   ],
 };
 
-// Illustrate mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
+// Pages mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
 // icons, behaviours or workshop notation.
-const ILLUSTRATE: PaletteLayout = {
+const PAGES: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
@@ -300,7 +300,7 @@ const PLAN: PaletteLayout = {
 
 export const PALETTE_LAYOUTS = {
   diagram: DIAGRAM,
-  illustrate: ILLUSTRATE,
+  pages: PAGES,
   plan: PLAN,
   facilitate: FACILITATE,
 } as const;

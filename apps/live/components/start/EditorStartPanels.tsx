@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { illustratePagesOf, readDashboard, type EditorMode } from '@livediagram/document';
+import { pagesOf, readDashboard, type EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
@@ -67,7 +67,7 @@ export function EditorStartPanels() {
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
   });
-  // An editor's empty Diagram, Facilitate or Illustrate tab: its template start (docs/specs/007-editor/start-diagramming.md).
+  // An editor's empty Diagram, Facilitate or Pages tab: its template start (docs/specs/007-editor/start-diagramming.md).
   // A template picked from a start screen on a document /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
@@ -85,11 +85,9 @@ export function EditorStartPanels() {
     drawToolArmed: !!pendingDraw,
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
-    // Read only for an empty Illustrate tab: EditorView renders often, and a tab with content shows no start.
+    // Read only for an empty Pages tab: EditorView renders often, and a tab with content shows no start.
     pages:
-      ctx.editorMode.mode === 'illustrate' && activeTab.elements.length === 0
-        ? illustratePagesOf(activeTab)
-        : [],
+      ctx.editorMode.mode === 'pages' && activeTab.elements.length === 0 ? pagesOf(activeTab) : [],
   });
   // An empty Plan tab: the board types, in the middle of the canvas. Anything already drawn (a board, a shape, a
   // view) hides it; the palette's Boards still add one.
@@ -157,7 +155,7 @@ export function EditorStartPanels() {
           ownerId={ctx.selfParticipant.id}
           share={ctx.sessionShareCode}
           online={!isOffline}
-          // Share Form on a Local only document syncs it first (docs/specs/030-forms/forms.md), never as the
+          // Share Form on a document in This Browser syncs it first (docs/specs/030-forms/forms.md), never as the
           // 'self' placeholder an early open runs under.
           onSyncToCloud={ctx.syncToCloud}
           syncReady={ctx.selfParticipant.id !== 'self'}
@@ -203,7 +201,7 @@ export function EditorStartPanels() {
         ) : null}
         {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
       middle of an empty canvas, so a blank document reads as intentionally blank. */}
-        {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
+        {/* An editor's empty Diagram, Facilitate or Pages tab offers its template start, in
       the card's place (docs/specs/007-editor/start-diagramming.md). */}
         {templateStart ? (
           <>

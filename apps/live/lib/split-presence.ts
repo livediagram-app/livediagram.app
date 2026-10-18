@@ -29,7 +29,7 @@ function createStore<T>(initial: T) {
 const local = createStore<string | null>(null);
 const remote = createStore<ReadonlyMap<string, string>>(new Map());
 
-// This browser's other pane, or null with no split showing.
+// This Browser's other pane, or null with no split showing.
 export const setLocalBesideTab = (tabId: string | null) => local.set(tabId);
 
 export function useLocalBesideTab(): string | null {

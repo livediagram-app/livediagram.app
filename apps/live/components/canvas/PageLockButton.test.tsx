@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PageLockButton, pageLockRoom } from './PageLockButton';
 
-// docs/specs/007-editor/illustrate-pages.md "Locking a page": the padlock before the cog.
+// docs/specs/007-editor/pages-mode.md "Locking a page": the padlock before the cog.
 afterEach(() => cleanup());
 
 describe('PageLockButton', () => {

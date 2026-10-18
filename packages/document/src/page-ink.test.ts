@@ -2,26 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { contrastRatio, defaultStrokeColor, defaultTextColor, hexToRgb } from './colors';
 import { createArrow, createShape, createSticky, createTable, createText } from './index';
 import type { Element, ShapeElement, TextElement } from './index';
-import {
-  illustratePagesOf,
-  layOutIllustratePages,
-  type IllustratePage,
-  type PageFill,
-} from './illustrate-page';
-import { pageBackgroundSet } from './illustrate-edits';
+import { pagesOf, layOutPages, type Page, type PageFill } from './page';
+import { pageBackgroundSet } from './pages-edits';
 import { worstContrast } from './page-ink-contrast';
 import { pageGroundUnder } from './page-ink-ground';
 import { pageInkFor, pagesInkFor, withPageInkFor, type InkMemory } from './page-ink';
 
-// docs/specs/007-editor/illustrate-pages.md "Re-inking": nothing on a page becomes hard to read
+// docs/specs/007-editor/pages-mode.md "Re-inking": nothing on a page becomes hard to read
 // when its fill changes, and only what falls under its floor moves.
 
 const PAGE = { id: 'p', orientation: 'portrait' } as const;
-const rect = layOutIllustratePages([PAGE])[0]!.rect;
+const rect = layOutPages([PAGE])[0]!.rect;
 const at = (dx: number, dy: number) => ({ x: rect.x + dx, y: rect.y + dy });
 const tabOf = (elements: Element[], extra: object = {}) => ({
   elements,
-  pages: [{ ...PAGE }] as IllustratePage[],
+  pages: [{ ...PAGE }] as Page[],
   ...extra,
 });
 // The colours a test reads back.
@@ -391,7 +386,7 @@ describe('re-inking a page', () => {
 
   it('touches only the page whose fill changed', () => {
     const pages = [{ ...PAGE }, { id: 'q', orientation: 'portrait' as const }];
-    const second = layOutIllustratePages(pages)[1]!.rect;
+    const second = layOutPages(pages)[1]!.rect;
     const other = {
       ...createText(second.x + 20, second.y + 20),
       id: 'other',
@@ -625,7 +620,7 @@ describe('going back', () => {
 
 describe('several pages in one walk', () => {
   const pages = [{ ...PAGE }, { id: 'q', orientation: 'portrait' as const }];
-  const second = layOutIllustratePages(pages)[1]!.rect;
+  const second = layOutPages(pages)[1]!.rect;
   const onSecond = {
     ...createText(second.x + 20, second.y + 20),
     id: 'q-text',
@@ -670,7 +665,7 @@ describe('re-inking as part of the fill edit', () => {
     const tab = tabOf([text('t', 20, 20, '#1e293b')]);
     const out = pageBackgroundSet(tab, 'p', { fill: FILLS.dark });
     if (!('tab' in out)) throw new Error('refused');
-    expect(illustratePagesOf(out.tab)[0]!.background?.fill).toEqual(FILLS.dark);
+    expect(pagesOf(out.tab)[0]!.background?.fill).toEqual(FILLS.dark);
     expect(contrastRatio(byId(out.tab.elements, 't').textColor, '#0f172a')).toBeGreaterThanOrEqual(
       4.5,
     );

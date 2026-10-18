@@ -1,4 +1,4 @@
-// More Compare layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"), category 'compare':
+// More Compare layouts (docs/specs/007-editor/pages-mode.md "Layouts"), category 'compare':
 // pure builders on the shared kit (page-layout-kit.ts), laid out in proportions of the page's
 // content box so each fits every size and orientation, in the tab's theme. The builders live in
 // page-layouts-set-compare-2.ts to -5.ts, two each; this file names and lists them.

@@ -7,7 +7,7 @@
 import { articleMarginPx } from './article-style';
 import { articlesOf, normaliseRuns } from './article-flow';
 import { withArticleFlow } from './article-pages';
-import { illustratePagesOf, layOutIllustratePages, type LaidOutPage } from './illustrate-page';
+import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import type { AnnotationElement, Tab } from './index';
 
 /** A margin note's marker size, canvas px: small enough for the narrowest margin (48 px). */
@@ -64,7 +64,7 @@ export function withNotesSettled<T extends NotesTab>(
 ): T {
   const doc = articlesOf(tab)[flow];
   if (!doc || places.length === 0) return tab;
-  const own = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const own = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
   const margin = articleMarginPx(doc.style);
   // In the writing's order, each beside its text; several close together on a page stack down
   // the margin, ARTICLE_NOTE_GAP apart, rather than covering each other.

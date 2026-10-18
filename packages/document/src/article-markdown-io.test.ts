@@ -9,7 +9,7 @@ import {
 } from './article-markdown-io';
 import { parseInline } from './article-markdown';
 
-// docs/specs/024-agents/illustrate-for-agents.md "write_article", "Reading: the pages view".
+// docs/specs/024-agents/pages-for-agents.md "write_article", "Reading: the pages view".
 
 const blocksOf = (text: string, current?: ArticleFlow): ArticleBlock[] => {
   const out = articleFromMarkdown(text, current);

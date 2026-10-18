@@ -1,5 +1,5 @@
 // A template's Sheets made in the browser (docs/specs/029-sheets/sheet-store.md "Template starts"), for the paths
-// that make tabs without the api's create: a Local only document from the wizard, and Quick Start. The sheets engine
+// that make tabs without the api's create: a document in This Browser from the wizard, and Quick Start. The sheets engine
 // loads only when a tab holds such a Sheet (hasTemplateSheets is engine-free), so no other template pays for it.
 import { hasTemplateSheets } from '@livediagram/templates';
 import type { SheetCreateRequest } from '@livediagram/api-schema';
