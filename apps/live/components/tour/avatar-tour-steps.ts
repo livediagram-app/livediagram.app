@@ -47,7 +47,7 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
     id: 'welcome',
     card: 'welcome',
     title: 'Meet Your Avatar',
-    body: 'Want a quick tour of dressing up your character, reacting, saying something and giving someone a push?',
+    body: 'A quick look at dressing up your character, reacting, talking and pushing?',
     prepare: () => {
       panelOpenAtStart = panelOpen();
     },
@@ -55,32 +55,31 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
   {
     id: 'avatar-button',
     title: 'Your Avatar',
-    body: 'Your character sheet lives here, along with everything your character can do.',
+    body: 'Your character sheet, and everything your character can do.',
     target: 'avatar-button',
   },
   {
     id: 'character',
     title: 'Make It Yours',
-    body: 'Pick a gender, outfit, hair and size, or roll the dice for a whole new look, and set a status so people know if you are free. Right-click your character to swap gender. The shirt is always your colour, so people know which one is you.',
+    body: 'Pick an outfit, hair and size, or roll the dice. Set a status so people know if you are free. Right-click your character to swap gender. Your shirt is always your colour.',
     // No right-click on a phone.
     mobileBody:
-      'Pick a gender, outfit, hair and size, or roll the dice for a whole new look, and set a status so people know if you are free. The shirt is always your colour, so people know which one is you.',
+      'Pick an outfit, hair and size, or roll the dice. Set a status so people know if you are free. Your shirt is always your colour.',
     target: 'avatar-character',
     prepare: openPanel,
   },
   {
     id: 'actions',
     title: 'Behaviour and Reactions',
-    body: 'Do jumping jacks, wave, spin, cheer or dance, or throw confetti, hearts and more around you. Everyone sees your moves.',
+    body: 'Wave, spin, dance or throw confetti. Everyone sees it.',
     target: 'avatar-actions',
     prepare: openPanel,
   },
   {
     id: 'message',
     title: 'Say Something',
-    body: 'Press Enter to type above your head, or use this button. Your words float up for everyone to see, up to 50 words.',
-    mobileBody:
-      'Type a message here and it floats up above your head for everyone to see, up to 50 words.',
+    body: 'Press Enter, or this button, to say something. It floats above your head for everyone.',
+    mobileBody: 'Type a message and it floats above your head for everyone.',
     target: 'avatar-message',
     speaks: true,
     prepare: openPanel,
@@ -97,7 +96,7 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
     id: 'outro',
     card: 'outro',
     title: "You're Ready to Roam",
-    body: 'Walk anywhere on the canvas and say hello. The help centre has more on Avatar mode.',
+    body: 'Walk around and say hello.',
     // Leave the panel as the tour found it.
     prepare: restorePanel,
   },

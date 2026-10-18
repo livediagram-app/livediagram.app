@@ -93,8 +93,6 @@ export type BoxedElementViewProps = {
       >
     >,
   ) => void;
-  // Edit a timeline-rail point's label (docs/specs/009-elements/timeline-rail.md). Omitted in read-only mode.
-  onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
   chartPalette?: readonly string[];
   onCancelEdit: () => void;

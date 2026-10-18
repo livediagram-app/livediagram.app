@@ -15,33 +15,33 @@ export function laneTourSteps(ctx: LaneTourContext): TourStepOf<ElementTourApi>[
     onGraphic(
       'lane',
       'A Band for Each Role',
-      'A swimlane: a role, a team or a system per lane, with its steps inside. Stack lanes edge to edge; they snap together.',
+      'One lane per role or team. Stack lanes and they snap together.',
       elementSelector(id),
     ),
     onGraphic(
       'gutter',
       'The Title Gutter',
-      `${doublePressWord(ctx)} the lane to name it; the name sits in this gutter. Its colour is Heading, under Colours.`,
+      `${doublePressWord(ctx)} the lane to name it.`,
       elementSelector(id, '[data-lane-gutter]'),
     ),
     onGraphic(
       'seam',
       'Drag the Seam',
-      'Drag where the gutter meets the body to give the title more room or less. It snaps to the seams of the lanes around it, so they line up.',
+      'Drag this edge to give the title more or less room.',
       elementSelector(id, '[data-lane-seam]'),
     ),
     onGraphic(
       'carry',
       'Carries Its Steps',
-      'Drag the lane and everything inside it comes too, as with a frame.',
+      'Drag the lane and everything in it comes too.',
       elementSelector(id),
     ),
     menuStep(
       ctx,
       'menu',
       'Rows or Columns',
-      'Text: centre the title at the top and the lane turns into a column with a header band. Upright Title turns a side title to read from bottom to top.',
+      'Text: put the title on top to make the lane a column.',
     ),
-    conceptOutro('That Is a Lane', 'Every change is one undo step, a whole seam drag included.'),
+    conceptOutro('That Is a Lane', 'Undo takes back any change.'),
   ];
 }

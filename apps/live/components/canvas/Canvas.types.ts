@@ -645,15 +645,10 @@ export type CanvasProps = {
     >,
   ) => void;
   onCancelEdit: () => void;
-  // Append a point to the selected timeline rail (docs/specs/009-elements/timeline-rail.md) — the rail's
-  // "Add Point" action on the quick-connect "+".
-  onAddRailPoint: () => void;
   // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
   // selected table from the bottom / right plus.
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
-  // Edit one timeline-rail point's label (docs/specs/009-elements/timeline-rail.md). Omitted in read-only.
-  onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
   // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,

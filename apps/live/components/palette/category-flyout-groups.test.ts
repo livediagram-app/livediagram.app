@@ -86,7 +86,7 @@ describe('a flyout’s groups', () => {
     expect(flyoutGroups('data', tiles('pages', 'data')).map((g) => g.title)).toEqual([
       'Charts',
       'Meters',
-      'Timelines and Tables',
+      'Tables',
     ]);
     expect(flyoutGroups('components', tiles('pages', 'components')).map((g) => g.title)).toEqual([
       'Code and Lists',

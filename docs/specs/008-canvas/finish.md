@@ -82,7 +82,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Sequence diagrams** draw their participants' boxes and their message lines by hand too, since they are the
   same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
-  layers: charts, legends, progress, rating, timeline rails, checklists, code blocks, concept graphics, Sankey,
+  layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
   and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
   a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's

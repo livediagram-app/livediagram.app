@@ -45,7 +45,6 @@ export {
   PieAnimTiles,
   ProgressAnimTiles,
   ProgressRow,
-  RailPointsRow,
   RatingAnimTiles,
   RatingMenuGlyph,
   RatingPickerRow,

@@ -19,7 +19,7 @@ export const SLIDE_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
   title: 'Getting started with slides?',
-  body: 'Want a quick look at making a slide? We will open its layouts and backgrounds, add it to the deck and show you where to present. Try anything as we go.',
+  body: 'A quick look at slide layouts, backgrounds and presenting? Try anything as we go.',
 };
 
 export function slideTourSteps(): PageTourStep[] {
@@ -27,7 +27,7 @@ export function slideTourSteps(): PageTourStep[] {
     {
       id: 'layouts',
       title: 'Choose a Layout',
-      body: 'Hover a layout to see it on your slide, then press one to place it. Change Theme, at the top, restyles every page at once.',
+      body: 'Hover a layout to preview it. Press it to use it.',
       selector: (api) => pageOrPopover(api.pageId, 'Layout'),
       requires: (api) => pageButton(api.pageId, 'Layout'),
       prepare: (api) => openTitlePopover(api.pageId, 'Layout'),
@@ -36,7 +36,7 @@ export function slideTourSteps(): PageTourStep[] {
     {
       id: 'background',
       title: 'Change the Background',
-      body: 'Colours, gradients, animated backgrounds and pictures, with a pattern on top if you like. Hover one to preview it, press to keep it.',
+      body: 'Colours, gradients, pictures or animated backgrounds. Hover to preview, press to keep.',
       selector: (api) => pageOrPopover(api.pageId, 'Background'),
       requires: (api) => pageButton(api.pageId, 'Background'),
       prepare: (api) => openTitlePopover(api.pageId, 'Background'),
@@ -45,19 +45,19 @@ export function slideTourSteps(): PageTourStep[] {
     {
       id: 'deck',
       title: 'Add It to the Deck',
-      body: 'Add to Slides puts this slide in the deck. Once it is in, the eye hides it from the presentation or shows it again, and Notes beside it holds what to say.',
+      body: 'Add to Slides puts it in your deck. Notes holds what you want to say.',
       selector: (api) => `${pageSheet(api.pageId)} [data-page-deck-button]`,
     },
     {
       id: 'add-page',
       title: 'Add Another Slide',
-      body: 'The + adds the next page. Slide comes first in its list, so Enter adds another slide straight away.',
+      body: '+ adds the next slide.',
       selector: addPageAnchor,
     },
     {
       id: 'present',
       title: 'Present',
-      body: 'Your deck: drag the slides into order, then press Present to show them full screen, one at a time. Arrow keys move through them.',
+      body: 'Drag slides into order, then Present. Arrow keys move through them.',
       selector: () => SLIDE_DECK,
       requires: () => SLIDES_BUTTON,
       prepare: openSlideDeck,
@@ -67,7 +67,7 @@ export function slideTourSteps(): PageTourStep[] {
       id: 'outro',
       card: 'outro',
       title: "You're ready to present",
-      body: 'Make the next slide, and the deck is ready when you are. The help centre has more on slide pages and presenting.',
+      body: 'Make your next slide. Present when you are ready.',
     },
   ];
 }

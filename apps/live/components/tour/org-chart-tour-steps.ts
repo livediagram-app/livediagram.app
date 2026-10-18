@@ -25,13 +25,13 @@ export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementT
     onGraphic(
       'person',
       'A Person in the Chart',
-      `Each node is a person: their name, their role, and their initials in the disc. ${ctx.touch ? 'Double-tap' : 'Double-click'} to change the name.`,
+      `Each box is a person. ${ctx.touch ? 'Double-tap' : 'Double-click'} to change their name.`,
       elementSelector(id),
     ),
     onGraphic(
       'role',
       'Their Role',
-      `${click} the line under the name to write their role: Head of Engineering, Designer, On call.`,
+      `${click} under the name to add their role.`,
       elementSelector(id, '[data-tour-part="person-role"]'),
     ),
     onGraphic(
@@ -44,14 +44,14 @@ export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementT
       'report',
       'Add a Report',
       ctx.touch
-        ? 'Add Child hangs a new person under this one, on the same trunk, ready to name.'
-        : 'Tab, or Add Child here, hangs a new person under this one, on the same trunk. Just start typing their name.',
+        ? 'Add Child adds someone who reports to this person.'
+        : 'Press Tab, or Add Child, for someone who reports here. Then type their name.',
       toolbarButton('Add Child'),
     ),
     onGraphic(
       'peer',
       'Add a Peer',
-      `${ctx.touch ? 'Add Sibling' : 'Enter, or Add Sibling,'} puts a new person beside this one, reporting to the same manager.`,
+      `${ctx.touch ? 'Add Sibling' : 'Press Enter, or Add Sibling,'} for a teammate with the same manager.`,
       toolbarButton('Add Sibling'),
     ),
     onGraphic(
@@ -65,15 +65,15 @@ export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementT
           inTheMenu(
             'menu',
             'The Mind Map Menu',
-            'An org chart is a mind map flowing down. Under Mind Map: Tidy Map lays it out again, Spacing, and Edit Outline writes the whole tree as a list.',
+            'In its menu, Mind Map tidies the chart or lets you edit it as a list.',
           ),
         ]
       : []),
     conceptOutro(
       'That Is an Org Chart',
       ctx.touch
-        ? 'Every change is one undo step.'
-        : 'Tab, type, Enter, type: a whole team without touching the mouse.',
+        ? 'Undo takes back any change.'
+        : 'Tab, type, Enter, type: a whole team without the mouse.',
     ),
   ];
 }

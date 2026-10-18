@@ -109,7 +109,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     animation === 'trace' ||
     animation === 'gradient';
   // An ANNOTATION is a drawn pin in a transparent box, the same case again.
-  // A TIMELINE RAIL is dots on a line over a transparent box, the same case.
   const isDrawnArt =
     element.type === 'annotation' ||
     (element.type === 'shape' &&
@@ -117,7 +116,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
         isSeatingShape(element.shape) ||
         element.shape === 'fence' ||
         element.shape === 'avatar-pad' ||
-        element.shape === 'timeline-rail' ||
         // An office's furniture, rooms and rugs (docs/specs/009-elements/office.md), drawn as a chair is.
         isOfficeShape(element.shape)));
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;

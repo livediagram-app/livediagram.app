@@ -24,19 +24,19 @@ export function pyramidTourSteps(
     onGraphic(
       'tiers',
       'Tiers Cut From One Triangle',
-      `${apex}. Every tier is cut from one triangle, so their edges line up as one silhouette however many there are.`,
+      `${apex}. The tiers always line up as one shape.`,
       elementSelector(id),
     ),
     onGraphic(
       'edit',
       'Type Over a Tier',
-      `${click} a tier's name to type over it. A name too long for its tier is shortened, never spilling out.`,
+      `${click} a tier's name to edit it.`,
       elementSelector(id, '[data-concept-row="0"]'),
     ),
     addRowStep(
       'add',
       'Add a Tier',
-      `Add Tier puts a new tier at the ${ctx.inverted ? 'point' : 'base'}, up to six. The triangle is cut again to fit.`,
+      `Add Tier adds one at the ${ctx.inverted ? 'point' : 'base'}, up to six.`,
       'Add Tier',
     ),
     ...(ctx.hasMore
@@ -44,26 +44,26 @@ export function pyramidTourSteps(
           inTheMenu(
             'shape',
             'Pyramid, Inverted or Funnel',
-            'In the menu, Shape switches between Pyramid, Inverted and Funnel, keeping every tier; Rows reorders them.',
+            'In its menu, Shape switches between Pyramid, Inverted and Funnel.',
           ),
         ]
       : []),
     onGraphic(
       'colours',
       'From the Accent Down',
-      `The ${ctx.inverted ? 'top' : 'apex'} takes the accent and each tier after it steps toward the fill, its words kept readable.`,
+      `Colours shade from the ${ctx.inverted ? 'top' : 'apex'} down. Change the colour and they all follow.`,
       elementSelector(id, `[data-concept-row="${Math.max(0, base)}"]`),
     ),
     onGraphic(
       'animate',
       ctx.inverted ? 'Build It Down' : 'Build It Up',
-      `Animation, then Concept: Build lays the tiers ${ctx.inverted ? 'from the top down' : 'from the base up'}, as here. Pulse lights each in turn.`,
+      `Animation › Concept builds the tiers ${ctx.inverted ? 'from the top down' : 'from the base up'}, as here, or pulses through them.`,
       elementSelector(id),
       'build',
     ),
     conceptOutro(
       ctx.inverted ? 'That Is an Inverted Pyramid' : 'That Is a Pyramid',
-      'It exports exactly as drawn, and every change is one undo step.',
+      'It exports as you see it. Undo takes back any change.',
     ),
   ];
 }

@@ -58,7 +58,7 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
       canvasStep(
         'bands',
         'Bands Carry Amounts',
-        'Each band is as wide as the amount it carries, so the widest is where most of it goes. The readout gives its amount and its share.',
+        'Each band is as wide as its amount, so the biggest flows stand out.',
         elementSelector(id, `[data-sankey-band="${ctx.band}"]`),
         { part: 'band', index: ctx.band },
       ),
@@ -68,7 +68,7 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
       canvasStep(
         'leftover',
         'What Is Left Over',
-        'What a node keeps back runs on to Leftover, in grey. It is worked out, never typed, so it follows the amounts.',
+        'Grey Leftover is what a node keeps. It is worked out for you.',
         elementSelector(id, `[data-sankey-band="${ctx.leftover}"]`),
         { part: 'band', index: ctx.leftover },
       ),
@@ -78,7 +78,7 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
       canvasStep(
         'style',
         'Style It',
-        'Under Sankey in the menu: band colours, columns, labels, the unit, and an animation.',
+        'In its menu, Sankey sets colours, labels and the unit.',
         '#selection-more-actions',
       ),
     );
@@ -86,7 +86,7 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
     canvasStep(
       'flows',
       'Write the Flows',
-      `${ctx.touch ? 'Double-tap' : 'Double-click'} a Sankey to open its flows. Next opens them for you.`,
+      `${ctx.touch ? 'Double-tap' : 'Double-click'} it to edit its flows. Next opens them for you.`,
       elementSelector(id),
     ),
   );
@@ -108,7 +108,7 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
     id: 'outro',
     card: 'outro',
     title: 'That Is a Sankey',
-    body: 'Every change is one undo step. Show Me in the Flows dialog runs its part again.',
+    body: 'Undo takes back any change.',
   });
   return steps;
 }

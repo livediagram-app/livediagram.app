@@ -19,15 +19,15 @@ export function boundaryTourSteps(ctx: BoundaryTourContext): TourStepOf<ElementT
     onGraphic(
       'zone',
       'A Zone That Holds Things',
-      'A region, a VPC, a cluster, a trust zone: everything whose centre is inside moves with it. Nest one in another and the tint deepens.',
+      'A region, a VPC, a trust zone. Whatever sits inside moves with it. Nest them for deeper zones.',
       elementSelector(id),
     ),
     onGraphic(
       'title',
       'Its Title',
       ctx.style === 'c4'
-        ? `${doublePressWord(ctx)} it to rename it. In the C4 style the title sits bold in the bottom-left corner.`
-        : `${doublePressWord(ctx)} it to rename it. Drop an icon from the palette onto it and the icon goes before the title.`,
+        ? `${doublePressWord(ctx)} it to rename it.`
+        : `${doublePressWord(ctx)} it to rename it. Drop an icon on it to put one before the name.`,
       elementSelector(id),
     ),
     ...(ctx.hasMeta
@@ -35,20 +35,15 @@ export function boundaryTourSteps(ctx: BoundaryTourContext): TourStepOf<ElementT
           onGraphic(
             'meta',
             'The Meta Line',
-            `A second line: a CIDR range, or a C4 type. ${pressWord(ctx)} it to type over it.`,
+            `An optional second line, like a CIDR range. ${pressWord(ctx)} it to edit.`,
             elementSelector(id, '[aria-label="Boundary meta line"]'),
           ),
         ]
       : []),
-    menuStep(
-      ctx,
-      'menu',
-      'Three Styles',
-      'Tools, then Boundary: Tab (the cloud look), Inset (for a zone inside another) or C4, and Meta Line on or off.',
-    ),
+    menuStep(ctx, 'menu', 'Three Styles', 'Tools › Boundary picks the style: Tab, Inset or C4.'),
     conceptOutro(
       'That Is a Boundary',
-      'Arrows join it like any shape (Internet to VPC), and every change is one undo step.',
+      'Arrows connect to it like any shape. Undo takes back any change.',
     ),
   ];
 }

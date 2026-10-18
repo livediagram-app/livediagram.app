@@ -474,6 +474,7 @@ export { sequenceDrawing, type SequenceLook } from './svg-render-sequence';
 export * from './person-node';
 export * from './boundary';
 export * from './concept';
+export * from './concept-timeline';
 export * from './concept-ramp';
 export * from './shape-variants';
 export * from './title-caption';

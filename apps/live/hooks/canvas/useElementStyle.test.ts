@@ -112,41 +112,6 @@ describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.m
   });
 });
 
-describe('useElementStyle timeline rail (docs/specs/009-elements/timeline-rail.md)', () => {
-  it('sets the point count and resizes to keep spacing constant', () => {
-    const a = createShape('timeline-rail', 0, 0);
-    const { style, result } = harness([a], new Set([a.id]));
-
-    style.setRailCountSelected(5);
-    const el = result()[0] as { railCount?: number; width: number };
-    expect(el.railCount).toBe(5);
-    expect(el.width).toBe(5 * 120); // RAIL_POINT_STEP_PX
-  });
-
-  it('clamps the count to the allowed range', () => {
-    const a = createShape('timeline-rail', 0, 0);
-    const { style, result } = harness([a], new Set([a.id]));
-    style.setRailCountSelected(99);
-    expect((result()[0] as { railCount?: number }).railCount).toBe(12); // RAIL_MAX_POINTS
-  });
-
-  it('appends a point via addRailPointSelected', () => {
-    const a = createShape('timeline-rail', 0, 0); // default 3
-    const { style, result } = harness([a], new Set([a.id]));
-    style.addRailPointSelected();
-    const el = result()[0] as { railCount?: number; width: number };
-    expect(el.railCount).toBe(4);
-    expect(el.width).toBe(4 * 120);
-  });
-
-  it('leaves non-rail shapes untouched', () => {
-    const a = createShape('square', 0, 0);
-    const { style, result } = harness([a], new Set([a.id]));
-    style.setRailCountSelected(5);
-    expect((result()[0] as { railCount?: number }).railCount).toBeUndefined();
-  });
-});
-
 describe('useElementStyle rating (docs/specs/009-elements/rating.md)', () => {
   it('sets the star score (clamped 0..5) on the rating shape', () => {
     const a = createShape('rating', 0, 0);

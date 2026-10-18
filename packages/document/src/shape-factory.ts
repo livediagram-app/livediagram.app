@@ -22,8 +22,6 @@ import {
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
-  RAIL_DEFAULT_POINTS,
-  RAIL_POINT_STEP_PX,
   RATING_DEFAULT,
   REACTION_DEFAULT,
 } from './data-shapes';
@@ -147,9 +145,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
   'progress-ring': { width: 130, height: 130 },
-  // Timeline rail: width carries the default points at RAIL_POINT_STEP_PX
-  // spacing; height leaves room for the dots + ticks above the line.
-  'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
+  // Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): four milestones, words above and below.
+  'timeline-rail': { width: 720, height: 240 },
   // Rating: a row of five stars.
   rating: { width: 200, height: 44 },
   // Charts default their legend BELOW the plot (docs/specs/009-elements/pie-chart.md), so the starting box
@@ -620,11 +617,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'progress-bar') {
     return { ...base, progress: 50, progressAnim: 'fill' };
   }
-  // Timeline rail: starts with the default number of points; no label inside
-  // (the rail draws its own dots + line). See docs/specs/009-elements/timeline-rail.md.
-  if (kind === 'timeline-rail') {
-    return { ...base, railCount: RAIL_DEFAULT_POINTS, strokeColor: '#64748b' };
-  }
   // Rating: a row of stars, three filled by default, amber accent. See docs/specs/009-elements/rating.md.
   if (kind === 'rating') {
     return { ...base, rating: RATING_DEFAULT, strokeColor: '#f59e0b' };
@@ -736,6 +728,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         { label: 'Build', note: '2 min' },
         { label: 'Test', note: '8,400 tests' },
         { label: 'Release', note: 'manual gate' },
+      ],
+    };
+  // A Timeline's milestones, each with its when (docs/specs/009-elements/concept-graphics.md "Timeline").
+  if (kind === 'timeline-rail')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Kick-off', note: 'Jan' },
+        { label: 'First prototype', note: 'Mar' },
+        { label: 'Beta with customers', note: 'Jun' },
+        { label: 'Launch', note: 'Sep' },
       ],
     };
   // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.

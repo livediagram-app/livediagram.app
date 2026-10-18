@@ -27,8 +27,8 @@ export function chevronsTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
     id: 'bar',
     title: "Each Stage's Own Bar",
     body: ctx.touch
-      ? 'Every stage shows a bar while the process is selected (zoom in if the stages are small): move it left or right, or delete it. With no notes yet, it offers Add Note.'
-      : 'Point at a stage for its bar: move it left or right, or delete it. With no notes yet, it offers Add Note.',
+      ? 'Each stage has a small bar while selected: move the stage, delete it, or add a note.'
+      : 'Point at a stage for its bar: move the stage, delete it, or add a note.',
     selector: () =>
       document.querySelector(barSelector)
         ? barSelector
@@ -44,7 +44,7 @@ export function chevronsTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
     onGraphic(
       'stages',
       'Stages, Left to Right',
-      `Its ${ctx.rows.length} stages each point into the next, read left to right: a pipeline, a value chain, a lifecycle.`,
+      `Stages read left to right, each pointing to the next.`,
       elementSelector(id),
     ),
     onGraphic(
@@ -59,27 +59,22 @@ export function chevronsTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
           onGraphic(
             'notes',
             'A Note Under Each',
-            `A note sits under its stage: how long it takes, who owns it, the gate it waits on. ${click} it to change it.`,
+            `A note under a stage, like who owns it. ${click} it to edit.`,
             elementSelector(id, `[data-concept-note="${noted}"]`),
           ),
         ]
       : []),
-    addRowStep(
-      'add',
-      'Add a Stage',
-      'Add Stage puts a new one at the end, up to eight. The others narrow to fit.',
-      'Add Stage',
-    ),
+    addRowStep('add', 'Add a Stage', 'Add Stage adds one at the end, up to eight.', 'Add Stage'),
     onGraphic(
       'animate',
       'Run the Pipeline',
-      'Animation, then Concept: Pulse runs along the stages, as here. Build brings them in left to right.',
+      'Animation › Concept brings the stages in or pulses along them.',
       elementSelector(id),
       'pulse',
     ),
     conceptOutro(
       'That Is a Chevron Process',
-      'It exports exactly as drawn, and every change is one undo step.',
+      'It exports as you see it. Undo takes back any change.',
     ),
   ];
 }

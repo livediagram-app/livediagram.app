@@ -1308,9 +1308,9 @@ export const articles: Article[] = [
     slug: 'concept-graphics',
     title: 'Concept Graphics',
     description:
-      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons that lay out their rows.',
+      'Stacks, pyramids, funnels, cycles, hubs, onions, chevrons and timelines that lay out their rows.',
     keywords:
-      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages',
+      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages timeline milestones roadmap',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',
@@ -3028,12 +3028,14 @@ export const articles: Article[] = [
   },
   {
     slug: 'timeline-rail',
-    title: 'Timeline Rail',
-    description: 'A horizontal rail of evenly spaced, labelled points for roadmaps and processes.',
-    keywords: 'roadmap milestones process steps schedule phases history',
+    title: 'Timeline',
+    description:
+      'Milestones along a line, each with when and what, for roadmaps, plans and histories.',
+    keywords:
+      'timeline rail roadmap milestones dates when quarter sprint plan project phases schedule history journey concept',
     category: 'Palette',
-    categorySlug: 'palette/tools/data-elements',
-    parentSlug: 'data-elements',
+    categorySlug: 'palette/concept-graphics',
+    parentSlug: 'concept-graphics',
   },
 
   // ---- Sub-articles: Layout Cleanup ----

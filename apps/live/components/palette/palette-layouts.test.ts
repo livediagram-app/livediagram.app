@@ -61,10 +61,13 @@ describe('palette layouts', () => {
     expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
   });
 
-  it('offers every Data tile in Facilitate and Pages, Pages adding the Table and the Timeline', () => {
+  it('offers every Data tile in Facilitate and Pages, Pages adding the Table', () => {
     const data = tilesForCategory('data').map((t) => t.id);
     expect(tileIds('facilitate', 'data')).toEqual(data);
-    expect(tileIds('pages', 'data')).toEqual([...data, 'tools:timeline', 'tools:table']);
+    expect(tileIds('pages', 'data')).toEqual([...data, 'tools:table']);
+    // The Timeline is a concept graphic (docs/specs/009-elements/concept-graphics.md "Timeline"), in Concepts.
+    expect(tileIds('pages', 'concepts')).toContain('tools:timeline');
+    expect(tileIds('diagram', 'concepts')).toContain('tools:timeline');
   });
 
   // Comments and assigned actions belong to every mode (docs/specs/012-collaboration/facilitate-mode.md).
@@ -159,7 +162,14 @@ describe('palette layouts', () => {
       'tools:table',
       'tools:checklist',
     ]);
-    expect(tilesOf('layout')).toEqual(tileIds('diagram', 'layout'));
+    // Diagram's Layout, with the Timeline after the containers: Facilitate has no Concepts to find it in.
+    const layout = tileIds('diagram', 'layout');
+    expect(layout).not.toContain('tools:timeline');
+    expect(tilesOf('layout')).toEqual([
+      ...layout.slice(0, layout.indexOf('tools:boundary') + 1),
+      'tools:timeline',
+      ...layout.slice(layout.indexOf('tools:boundary') + 1),
+    ]);
     expect(tilesOf('draw')).toEqual([
       'tools:pencil',
       'tools:highlighter',

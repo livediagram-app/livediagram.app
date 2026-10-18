@@ -21,12 +21,12 @@ export const DRAW_TOUR_STEPS: DrawTourStep[] = [
     id: 'welcome',
     card: 'welcome',
     title: 'Getting started with Draw?',
-    body: 'Want a quick tour of the pens, shapes and tools so you can sketch ideas in minutes?',
+    body: 'A quick look at the pens, shapes and tools?',
   },
   {
     id: 'drawing-tools',
     title: 'Pens and Tools',
-    body: 'Select, three markers, Text, the Path tool and the Eraser. Press the marker in your hand again to change its colour and width.',
+    body: 'Your tools. Press the marker you hold again to change its colour and width.',
     target: 'dock-drawing',
   },
   {
@@ -54,7 +54,7 @@ export const DRAW_TOUR_STEPS: DrawTourStep[] = [
   {
     id: 'shapes',
     title: 'Shapes',
-    body: 'Sticky notes and shapes pinned for one tap. Shapes opens every shape and a search, and you can pin your favourites to the dock.',
+    body: 'Stickies and shapes, one tap away. Shapes has the rest, and you can pin favourites.',
     target: 'dock-shapes',
   },
   {
@@ -67,7 +67,7 @@ export const DRAW_TOUR_STEPS: DrawTourStep[] = [
     id: 'outro',
     card: 'outro',
     title: "You're ready to draw",
-    body: 'Pick up a marker and start sketching. The help centre has more on every tool.',
+    body: 'Pick up a marker and start sketching.',
   },
 ];
 

@@ -123,7 +123,8 @@ const CONTENT_KINDS =
   '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
   'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
   'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +
-  'rings from the core out, "chevrons" 2 to 8 stages left to right. They draw their own rows in the colour ramp; ' +
+  'rings from the core out, "chevrons" 2 to 8 stages left to right, "timeline-rail" 2 to 8 milestones ' +
+  'left to right (label = what, note = when: a date, a quarter). They draw their own rows in the colour ramp; ' +
   'do not draw them from separate shapes. ' +
   // Round 2 (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "pointer-note": a note ("label") with a leader to a tip; "pointerTip" { x, y } is relative to its ' +

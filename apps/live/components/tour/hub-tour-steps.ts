@@ -18,13 +18,13 @@ export function hubTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourApi
     onGraphic(
       'hub',
       'One Thing in the Middle',
-      `The hub is what everything touches: a service, a team, a product. ${ctx.touch ? 'Double-tap' : 'Double-click'} it to name it.`,
+      `The hub is what everything connects to. ${ctx.touch ? 'Double-tap' : 'Double-click'} it to name it.`,
       elementSelector(id, '[data-tour-part="concept-centre"]'),
     ),
     onGraphic(
       'satellites',
       'Round It, Clockwise',
-      `Its ${ctx.rows.length} satellites sit evenly round the hub, the first at twelve o'clock and the rest clockwise, each on its spoke.`,
+      `Its ${ctx.rows.length} satellites sit evenly round the hub, clockwise from the top.`,
       elementSelector(id),
     ),
     onGraphic(
@@ -33,31 +33,20 @@ export function hubTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourApi
       `${click} a satellite's name to type over it. Enter keeps it, Escape puts it back.`,
       elementSelector(id, '[data-concept-row="0"]'),
     ),
-    addRowStep(
-      'add',
-      'Add a Satellite',
-      'Add Satellite puts a new one on the ring, up to eight. The rest spread out evenly again.',
-      'Add Satellite',
-    ),
+    addRowStep('add', 'Add a Satellite', 'Add Satellite adds one, up to eight.', 'Add Satellite'),
     ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'spokes',
-            'Spokes or None',
-            'In the menu, Spokes turns the lines off, leaving the satellites floating round the hub; Rows reorders them.',
-          ),
-        ]
+      ? [inTheMenu('spokes', 'Spokes or None', 'In its menu, Spokes turns the lines on or off.')]
       : []),
     onGraphic(
       'animate',
       'Light Them Up',
-      'Animation, then Concept: Pulse travels round the satellites, as here. Build brings in the hub, then each satellite with its spoke.',
+      'Animation › Concept pulses round the satellites or builds them in.',
       elementSelector(id),
       'pulse',
     ),
     conceptOutro(
       'That Is a Hub and Spoke',
-      'It exports exactly as drawn, and every change is one undo step.',
+      'It exports as you see it. Undo takes back any change.',
     ),
   ];
 }

@@ -119,7 +119,6 @@ export function EditorContextMenuHost() {
     previewMarker,
     commitMarkerSize,
     previewMarkerSize,
-    setRailCountSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -419,7 +418,6 @@ export function EditorContextMenuHost() {
       onPreviewMarker={previewMarker}
       onSetMarkerSize={commitMarkerSize}
       onPreviewMarkerSize={previewMarkerSize}
-      onSetRailCount={setRailCountSelected}
       onSetRating={setRatingSelected}
       onSetRatingAnim={setRatingAnimSelected}
       onSetRatingAnimSpeed={setRatingAnimSpeedSelected}

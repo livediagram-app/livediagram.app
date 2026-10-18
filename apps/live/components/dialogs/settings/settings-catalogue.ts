@@ -1277,6 +1277,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a chevron process.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('timeline', {
+        label: 'Timeline Tour',
+        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
+        description: 'The first time you select a timeline.',
+        helpArticle: 'conceptGraphics',
+      }),
       elementTourSwitch('mind-node', {
         label: 'Mind Map Tour',
         event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },

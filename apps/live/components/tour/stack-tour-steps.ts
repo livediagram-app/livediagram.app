@@ -26,37 +26,34 @@ export function stackTourSteps(ctx: StackTourContext): TourStepOf<ElementTourApi
     onGraphic(
       'stack',
       'It Lays Itself Out',
-      `A stack keeps what it holds ${ARRANGED[ctx.direction]}, an even gap apart, and hugs it: add, remove or resize anything and it reflows. No nudging into line.`,
+      `A stack keeps things ${ARRANGED[ctx.direction]}, evenly spaced, and reflows as they change.`,
       elementSelector(id),
     ),
     ctx.firstChildId
       ? onGraphic(
           'child',
           'Drag to Reorder',
-          `Drag one past its neighbour and it takes that slot; the rest slide along to make room.`,
+          `Drag an item past its neighbour to reorder.`,
           elementSelector(ctx.firstChildId),
         )
       : onGraphic(
           'drop',
           'Drop Things In',
-          'Drag a card, a shape or a sticky inside it and it takes the next slot. Empty, it keeps its size as a target.',
+          'Drag anything in and it joins the stack.',
           elementSelector(id),
         ),
     onGraphic(
       'carry',
       'Carries What It Holds',
-      'Drag the stack and everything inside comes too, as with a frame. Stacks nest, in frames, boundaries or each other.',
+      'Drag the stack and everything in it comes too.',
       elementSelector(id),
     ),
     menuStep(
       ctx,
       'menu',
       'The Stack Menu',
-      'Tools, then Stack: Row, Column or Grid (with its Columns), the Gap between, the Padding inside, and Align.',
+      'Tools › Stack picks row, column or grid, and the spacing.',
     ),
-    conceptOutro(
-      'That Is a Stack',
-      'Every reflow belongs to the change that caused it, so one undo puts both back.',
-    ),
+    conceptOutro('That Is a Stack', 'Undo takes back any change, reflow included.'),
   ];
 }

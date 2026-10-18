@@ -19,7 +19,7 @@ export function layerStackTourSteps(ctx: ConceptTourContext): TourStepOf<Element
     onGraphic(
       'layers',
       'One Element, Many Layers',
-      'Each band is a layer, top to bottom. Resize it and the bands share the height again; the words re-wrap, never stretch.',
+      'Each band is a layer, top to bottom. Resize freely; the text never stretches.',
       elementSelector(id),
     ),
     onGraphic(
@@ -33,42 +33,34 @@ export function layerStackTourSteps(ctx: ConceptTourContext): TourStepOf<Element
           onGraphic(
             'notes',
             'Side Notes',
-            'A note sits beside its layer, joined by a rule: the tool, the team, the detail. Clear every note and the bands take the full width.',
+            'Add a note beside any layer, like the tool or team behind it.',
             elementSelector(id, `[data-concept-note="${noted}"]`),
           ),
         ]
       : []),
-    addRowStep(
-      'add',
-      'Add a Layer',
-      'Add Layer puts a new band at the bottom, up to eight. The others make room.',
-      'Add Layer',
-    ),
+    addRowStep('add', 'Add a Layer', 'Add Layer adds one at the bottom, up to eight.', 'Add Layer'),
     ...(ctx.hasMore
       ? [
           inTheMenu(
             'rows',
             'Reorder in the Menu',
-            'Under Tools, Rows lists every layer: rename it, give it a note, move it up or down, or remove it (two stay).',
+            'In its menu, Tools › Rows lets you rename, reorder or remove layers.',
           ),
         ]
       : []),
     onGraphic(
       'colours',
       'One Colour, a Whole Ramp',
-      `The top layer takes the accent and each one below steps toward the fill. Change the colour and all ${ctx.rows.length} follow, their words kept readable.`,
+      `Colours shade from the top layer down. Change the colour and all ${ctx.rows.length} follow.`,
       elementSelector(id, `[data-concept-row="${Math.max(0, last)}"]`),
     ),
     onGraphic(
       'animate',
       'Build It Up',
-      'Animation, then Concept: Build brings the layers in top to bottom, as here. Pulse lights each in turn.',
+      'Animation › Concept builds the layers in or pulses through them.',
       elementSelector(id),
       'build',
     ),
-    conceptOutro(
-      'That Is a Layer Stack',
-      'It exports exactly as drawn, and every change is one undo step.',
-    ),
+    conceptOutro('That Is a Layer Stack', 'It exports as you see it. Undo takes back any change.'),
   ];
 }

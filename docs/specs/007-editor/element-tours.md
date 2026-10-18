@@ -95,8 +95,7 @@ The steps, in order, each a line or two. The exact strings live in
 `apps/live/components/tour/sankey-element-tour-steps.ts`.
 
 1. **Bands Carry Amounts** (only with flows): rings the widest band and lifts it, its readout showing as a hover
-   would. "Each band is as wide as the amount it carries, so the widest is where most of it goes. The readout gives
-   its amount and its share."
+   would. "Each band is as wide as its amount, so the biggest flows stand out."
 2. **What Is Left Over** (only when a leftover band is drawn): rings the largest leftover band, lifted. "What a node
    keeps back runs on to Leftover, in grey. It is worked out, never typed, so it follows the amounts."
 3. **Style It** (only while the selection toolbar's More button shows): rings More. "Under Sankey in the menu: band
@@ -107,7 +106,7 @@ The steps, in order, each a line or two. The exact strings live in
    [Show Me](../009-elements/sankey.md#show-me) (Your Nodes, Flows Step by Step, Add a Flow, In and Out Differ, Or
    Type Them, Import a File, Live Preview), left out as Show Me leaves them out. Each opens the dialog again if it
    was closed. Stepping Back onto a canvas step closes it.
-6. **That Is a Sankey** (closing card): "Every change is one undo step. Show Me in the Flows dialog runs this part
+6. **That Is a Sankey** (closing card): "Undo takes back any change. Show Me in the Flows dialog runs this part
    again." with **Done** and a link to the Sankey Diagram article (**Sankey Diagram Help**). Done closes the Flows
    dialog with the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
 
@@ -212,6 +211,19 @@ On the selected Onion, from `onion-tour-steps.ts`.
 5. **Reorder in the Menu** (only while More shows): rings More; Rows from the core out, two at least.
 6. **Ripple Outward**: plays **Pulse** from the core outward as a preview while the step is up.
 7. **That Is an Onion**: the closing card.
+
+## The Timeline tour
+
+On the selected Timeline, from `timeline-tour-steps.ts`.
+
+1. **Along One Line**: rings the timeline, counting its milestones; they read left to right toward the arrow, taking
+   turns above and below.
+2. **What Happens**: rings the first milestone's name; click (tap) to type over it.
+3. **And When**: rings the first milestone's when; click (tap) to change it.
+4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
+5. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
+6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
+7. **That Is a Timeline**: the closing card.
 
 ## The Chevrons tour
 
@@ -435,7 +447,7 @@ its style, its meanings and its link are an Editor's), never `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `TabWindowTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`, `PortalTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `TabWindowTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`, `PortalTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -450,6 +462,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Outro`; the Hub's `HubTourStepHub`, `...Satellites`, `...Edit`, `...Add`, `...Spokes`, `...Animate` and
   `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Chevrons' `ChevronsTourStepStages`, `...Edit`, `...Bar`, `...Notes`, `...Add`, `...Animate` and
+  `...Outro`; the Timeline's `TimelineTourStepLine`, `...Name`, `...When`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Mind Map's `MindMapTourStepNode`, `...Child`, `...Sibling`, `...Branch`, `...Menu` and `...Outro`;
   the Flowchart's `FlowchartTourStepStep`, `...Next`, `...Branch`, `...Type`, `...Lane`, `...Menu` and `...Outro`;
   the Org Chart's `OrgChartTourStepPerson`, `...Role`, `...Initials`, `...Report`, `...Peer`, `...Team`, `...Menu` and
@@ -490,7 +503,7 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
-  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`: each kind's own.
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`, `timeline-tour-steps.ts`: each kind's own.
 - `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`,
   `sequence-tour-steps.ts`: the Mind Map, Flowchart, Org Chart and Sequence tours' steps.
 - `apps/live/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`, `entity-tour-steps.ts`,

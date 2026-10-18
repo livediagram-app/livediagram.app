@@ -25,7 +25,6 @@ export type Option = {
     | QuickConnectKind
     | 'arrow'
     | 'pencil'
-    | 'add-point'
     | 'add-web-row'
     | 'add-row'
     | 'add-column'
@@ -38,14 +37,6 @@ export type Option = {
   label: string;
   description: string;
   icon: ReactNode;
-};
-
-// Rail-only action appended to the menu when onAddRailPoint is set (docs/specs/009-elements/timeline-rail.md).
-export const ADD_POINT_OPTION: Option = {
-  kind: 'add-point',
-  label: 'Add Point',
-  description: 'Add another point to the timeline rail.',
-  icon: <AddPointIcon />,
 };
 
 // Web component rows (docs/specs/009-elements/web-components-and-no-groups.md): a stat row / process / header gains one

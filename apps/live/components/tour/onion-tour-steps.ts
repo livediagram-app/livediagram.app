@@ -19,46 +19,38 @@ export function onionTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourA
     onGraphic(
       'rings',
       'Nested, Not Overlapping',
-      `Its ${ctx.rows.length} rings nest round one core, each wrapping everything inside it. It is not a Venn: nothing overlaps.`,
+      `Its ${ctx.rows.length} rings nest round a core, each wrapping the ones inside.`,
       elementSelector(id),
     ),
     onGraphic(
       'core',
       'The Core',
-      `The first row is the core, in the middle and solid in the accent: the domain, the thing it all protects. ${click} its name to type over it.`,
+      `The core sits in the middle. ${click} its name to edit it.`,
       elementSelector(id, '[data-concept-row="0"]'),
     ),
     onGraphic(
       'outer',
       'Outward From There',
-      'Each ring after it sits further out, its name along the top of its band, its colour stepping toward the fill.',
+      'Each ring sits further out, its name along the top.',
       elementSelector(id, `[data-concept-row="${outer}"]`),
     ),
-    addRowStep(
-      'add',
-      'Add a Ring',
-      'Add Ring puts a new ring round the outside, up to six. The others draw in to fit.',
-      'Add Ring',
-    ),
+    addRowStep('add', 'Add a Ring', 'Add Ring adds one round the outside, up to six.', 'Add Ring'),
     ...(ctx.hasMore
       ? [
           inTheMenu(
             'rows',
             'Reorder in the Menu',
-            'Under Tools, Rows lists every ring from the core out: rename one, move it in or out, or remove it (two stay).',
+            'In its menu, Tools › Rows lets you rename, reorder or remove rings.',
           ),
         ]
       : []),
     onGraphic(
       'animate',
       'Ripple Outward',
-      'Animation, then Concept: Pulse ripples from the core outward, as here. Build grows it ring by ring.',
+      'Animation › Concept ripples outward or builds it ring by ring.',
       elementSelector(id),
       'pulse',
     ),
-    conceptOutro(
-      'That Is an Onion',
-      'It exports exactly as drawn, and every change is one undo step.',
-    ),
+    conceptOutro('That Is an Onion', 'It exports as you see it. Undo takes back any change.'),
   ];
 }

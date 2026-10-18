@@ -1,6 +1,5 @@
 // Data elements in the headless render (docs/specs/009-elements/progress.md, /51, /52, /100, /120):
-// progress bars and rings, ratings, timeline rails, record boxes and a page's
-// masthead.
+// progress bars and rings, and ratings.
 //
 // Every one of these drew NOTHING before: the exporter had no branch for them,
 // so they fell through to the generic box and an exported progress bar was an
@@ -15,7 +14,6 @@
 
 import { capBandBaselineY } from '@livediagram/icons';
 import { clampPercent, clampRating, RATING_DEFAULT, RATING_MAX } from './data-shapes';
-import { RAIL_DEFAULT_POINTS } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { progressLabelInks } from './progress-colours';
@@ -23,7 +21,6 @@ import { progressLabelInks } from './progress-colours';
 type Data = BoxedElement & { type: 'shape' };
 
 const MUTED_RULE = '#cbd5e1';
-const RAIL_LINE = '#94a3b8';
 
 const sans = (fontFamily?: string) =>
   ` font-family="${xmlEscape(fontFamily ?? 'system-ui, sans-serif')}"`;
@@ -140,45 +137,4 @@ export function svgRating(el: Data, accent: string): string {
       `<path d="${STAR_PATH}"${paint} stroke-linejoin="round"/></svg>`
     );
   }).join('');
-}
-
-/** A timeline rail: the line, its evenly spaced points, and their labels. */
-export function svgTimelineRail(
-  el: Data,
-  accent: string,
-  textColor: string,
-  fontFamily?: string,
-): string {
-  const w = Math.max(1, el.width);
-  const h = Math.max(1, el.height);
-  const count = Math.max(1, Math.round(el.railCount ?? RAIL_DEFAULT_POINTS));
-  const labels = el.railLabels ?? [];
-  const padX = Math.min(44, w * 0.12);
-  const labelTop = h * 0.06;
-  const labelH = h * 0.36;
-  const dotY = h * 0.58;
-  const lineY = h * 0.82;
-  const r = Math.max(5, Math.min(9, h * 0.1));
-  const fontSize = Math.max(10, Math.min(16, h * 0.16));
-  const xs =
-    count <= 1
-      ? [(padX + (w - padX)) / 2]
-      : Array.from({ length: count }, (_, i) => padX + ((w - 2 * padX) * i) / (count - 1));
-  const line = `<path d="M ${r2(el.x + padX)} ${r2(el.y + lineY)} L ${r2(el.x + w - padX)} ${r2(el.y + lineY)}" stroke="${RAIL_LINE}" stroke-width="2" stroke-linecap="round"/>`;
-  const points = xs
-    .map((x, i) => {
-      const cx = el.x + x;
-      const stem = `<path d="M ${r2(cx)} ${r2(el.y + dotY + r)} L ${r2(cx)} ${r2(el.y + lineY)}" stroke="${MUTED_RULE}" stroke-width="1.5"/>`;
-      const dot = `<circle cx="${r2(cx)}" cy="${r2(el.y + dotY)}" r="${r2(r)}" fill="${xmlEscape(accent)}"/>`;
-      const text = labels[i];
-      // The label sits in its slot above the dot, bottom-aligned against it,
-      // which is what `items-end` does on the canvas.
-      const caption = text
-        ? `<text x="${r2(cx)}" y="${r2(el.y + labelTop + labelH)}" text-anchor="middle"${sans(fontFamily)}` +
-          ` font-size="${r2(fontSize)}" font-weight="500" fill="${xmlEscape(textColor)}">${xmlEscape(text)}</text>`
-        : '';
-      return stem + dot + caption;
-    })
-    .join('');
-  return line + points;
 }

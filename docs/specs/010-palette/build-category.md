@@ -3,15 +3,15 @@
 A top-level palette category in the **Structure** band holding the elements you
 lay a diagram _out_ with, as opposed to the ones you draw _on_ it:
 
-| Tile          | Came from                      |
-| ------------- | ------------------------------ |
-| **Mind Node** | Write (Tools)                  |
-| **Flowchart** | (new)                          |
-| **Lane**      | Draw (Tools)                   |
-| **Frame**     | Draw (Tools)                   |
-| **Timeline**  | Components                     |
-| **Table**     | Data                           |
-| **Sankey**    | (new; since moved to Concepts) |
+| Tile          | Came from                            |
+| ------------- | ------------------------------------ |
+| **Mind Node** | Write (Tools)                        |
+| **Flowchart** | (new)                                |
+| **Lane**      | Draw (Tools)                         |
+| **Frame**     | Draw (Tools)                         |
+| **Timeline**  | Components (since moved to Concepts) |
+| **Table**     | Data                                 |
+| **Sankey**    | (new; since moved to Concepts)       |
 
 The **Sankey** ([Sankey diagram](../009-elements/sankey.md)) joined later and sits last. It is the one Build
 element that lays itself out from data rather than holding work you place in it; it is here because a
@@ -20,6 +20,10 @@ lanes or a timeline. It is in Diagram and Pages (as an infographic), and left ou
 where a session does not stop to chart a flow. It has since **moved to Concepts**
 ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)): on the category bar a flow drawn as wide as
 what it carries reads as an idea laid out, beside the funnel and the cycle, more than as a structure you build in.
+
+The **Timeline** has **moved to Concepts** too: it is a concept graphic now
+([Concept graphics](../009-elements/concept-graphics.md) "Timeline"), milestones laid out as one idea beside the
+chevrons and the cycle, in Diagram and Pages. Facilitate, which has no Concepts, keeps it in its Layout.
 
 The **Flowchart** ([The flowchart](../009-elements/flowchart.md)) joined later, beside the Mind Node: it
 drops a Start that grows into a chart from the keyboard and lays itself out. Like the Mind Node it is
@@ -30,14 +34,14 @@ in Diagram mode and left out of Pages, where a page, not a process, is being arr
 Diagram mode offers Build as two categories ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)).
 Grown to fifteen tiles there, one Build put the structures you type into beside the containers and labels you set
 them in. **Diagrams** holds the first (Mind node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** the
-second (Lane, Frame, Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number). Tile ids are
-unchanged. Facilitate offers the same **Layout** (no Diagrams).
+second (Lane, Frame, Stack, Boundary, then Diagram key, Card, Badge, Step number). Tile ids are
+unchanged. Facilitate offers the same **Layout** (no Diagrams), with the Timeline after the Boundary.
 
 ## In Pages: no Build
 
-Pages offers no Build. Of its tiles a page uses three, and each sits with its neighbours instead: the **Stack**
-ends **Components** (it lines up the page blocks), the **Timeline** and the **Table** end **Data**, under
-"Timelines and Tables" (a page reports along a track and in rows as often as in a chart). So no mode offers Build
+Pages offers no Build. Of its tiles a page uses two, and each sits with its neighbours instead: the **Stack**
+ends **Components** (it lines up the page blocks), the **Table** ends **Data**, under "Tables" (a page reports in
+rows as often as in a chart). The Timeline is in **Concepts**. So no mode offers Build
 itself today; it remains the catalogue home of these tiles.
 
 ## Why it exists

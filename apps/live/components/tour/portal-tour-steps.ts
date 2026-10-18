@@ -19,37 +19,34 @@ export function portalTourSteps(ctx: PortalTourContext): TourStepOf<ElementTourA
     onGraphic(
       'portal',
       'A Way Through',
-      'Two linked portals are a shortcut: across a big canvas, or to another tab of this document.',
+      'Link two portals for a shortcut across the canvas or to another tab.',
       elementSelector(id),
     ),
     ctx.linked
       ? onGraphic(
           'travel',
           'Step Through',
-          `${pressWord(ctx)} it to come out of the portal it leads to, on this tab or another. Dragging it only moves it.`,
+          `${pressWord(ctx)} it to jump to the other end. Dragging just moves it.`,
           elementSelector(id),
         )
       : onGraphic(
           'unlinked',
           'Not Linked Yet',
-          'A dim ring leads nowhere. Link it to another portal and it lights up.',
+          'A dim portal is not linked yet. Link it and it lights up.',
           elementSelector(id),
         ),
     menuStep(
       ctx,
       'menu',
       'Link It',
-      'Tools, then Portal: give it a Name, pick where it Leads To (a link works both ways), or Create Portal for a linked partner beside it.',
+      'Tools › Portal names it and picks where it leads. Create Portal makes its partner.',
     ),
     onGraphic(
       'walk',
       'Walk Into It',
-      'In Avatar mode, walk your character into a portal and it steps out of the other one.',
+      'In Avatar mode, walk into a portal to come out of the other.',
       elementSelector(id),
     ),
-    conceptOutro(
-      'That Is a Portal',
-      'Recolour one orange for the classic pair. Every change is one undo step.',
-    ),
+    conceptOutro('That Is a Portal', 'Undo takes back any change.'),
   ];
 }

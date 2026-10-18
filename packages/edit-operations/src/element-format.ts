@@ -156,7 +156,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'sankeyLeftoverName',
     'chartPalette',
   ],
-  'timeline-rail': ['railCount', 'railLabels'],
   agenda: ['agendaItems'],
   decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
   quiz: ['quizOptions', 'quizCorrect', 'quizSeconds'],

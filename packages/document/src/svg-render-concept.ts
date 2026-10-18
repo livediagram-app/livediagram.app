@@ -18,6 +18,7 @@ import { conceptDiscInk, conceptRamp } from './concept-ramp';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { line as webLine, label as webLabel } from './svg-render-web';
+import { svgTimeline } from './svg-render-timeline';
 
 type Shape = BoxedElement & { type: 'shape' };
 
@@ -172,6 +173,7 @@ export function svgConcept(
       .join('');
     return discs + labels;
   }
+  if (el.shape === 'timeline-rail') return svgTimeline(el, rows, { ...o, fontFamily });
   if (el.shape === 'chevrons') {
     const notes = rows.some((r) => !!r.note);
     const l = chevronLayout(el.width, el.height, n, notes);

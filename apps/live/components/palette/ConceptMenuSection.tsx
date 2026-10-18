@@ -42,6 +42,7 @@ const CONCEPT_TITLE: Record<ConceptShape, string> = {
   hub: 'Hub and Spoke',
   onion: 'Onion',
   chevrons: 'Chevrons',
+  'timeline-rail': 'Timeline',
 };
 
 // A concept graphic's own section (docs/specs/009-elements/concept-graphics.md): a pyramid's variant, a hub's spokes.
