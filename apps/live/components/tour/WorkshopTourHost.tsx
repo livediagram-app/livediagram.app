@@ -26,7 +26,6 @@ export const OFFER_DELAY_MS = 800;
 const WORKSHOP_TOUR_COPY = {
   welcomeEyebrow: 'Workshop tour',
   helpHref: '/help/canvas/workshop-mode/',
-  finish: 'Start a workshop',
 };
 
 const NO_API: WorkshopTourApi = {};

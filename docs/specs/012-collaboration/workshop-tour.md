@@ -54,7 +54,7 @@ itself is the Diagram tour's, so this tour does not repeat it. The exact strings
 3. **Bring people in**: highlights the header's Share button. A Participant link lets people add notes, vote and
    answer without changing the rest of the board.
 4. **You're ready to run a workshop** (outro): a help-centre link to the Workshop mode article (new tab) and
-   **Start a workshop**, which completes the tour.
+   **Start**, which completes the tour.
 
 - Back from a step goes to the step before. Leaving a step closes what it opened (the category picker).
 - A step whose target is missing on this surface (no Share button for this person, a phone layout without it) is

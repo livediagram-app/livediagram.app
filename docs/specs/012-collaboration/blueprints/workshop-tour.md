@@ -46,7 +46,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 - `WorkshopTourApi = Record<string, never>`: the steps drive only the DOM.
 - `TourStage` gets `ariaPrefix="Workshop tour"`, copy `{ welcomeEyebrow: 'Workshop tour',
-helpHref: '/help/canvas/workshop-mode/', finish: 'Start a workshop' }` and no
+helpHref: '/help/canvas/workshop-mode/', finish: TOUR_FINISH }` and no
   `welcomeChoices` (the default Yes / No).
 
 ## Data and persistence

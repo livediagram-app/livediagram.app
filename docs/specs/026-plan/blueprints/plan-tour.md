@@ -206,7 +206,7 @@ Sheets tour** (`ariaPrefix` the same, the chosen track's after a pick), with `Bo
 one column to the next), `SheetsTourArt` (A1 typed into, the selection stepping across and down) or
 `PlanChoiceTourArt` (a two-column board beside a small sheet), all in `TourArtFrame`'s recipe: inline SVG, Tailwind
 classes for light and dark, looping with `infinite`, still under reduced motion. The outro reuses `TourHelpArt`, with
-**Visit Help Centre** linking `/help/canvas/plan-mode` and **Start Planning**.
+**Help** linking `/help/canvas/plan-mode` and **Start** (`TOUR_FINISH`).
 
 ## Accessibility
 
