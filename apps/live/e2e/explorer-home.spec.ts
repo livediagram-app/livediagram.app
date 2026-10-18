@@ -314,7 +314,7 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
   await page.reload();
   const link = jumpBackIn(page).getByRole('link', { name: 'Kept on this laptop, This Browser' });
   await expect(link).toBeVisible();
-  await expect(link.getByText('This Browser')).toBeVisible();
+  await expect(link.getByText('This Browser', { exact: true })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

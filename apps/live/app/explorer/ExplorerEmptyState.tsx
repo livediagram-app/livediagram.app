@@ -48,8 +48,7 @@ const CONTENT: Record<
   offline: {
     icon: <ThisBrowserIcon />,
     title: 'Nothing in this browser',
-    description:
-      'Take Offline on any of your documents to keep it here instead.',
+    description: 'Take Offline on any of your documents to keep it here instead.',
     cta: 'New Document',
   },
   folder: {
