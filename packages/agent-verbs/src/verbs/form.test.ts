@@ -14,7 +14,7 @@ const LINK = {
   canPublish: true,
 };
 
-function ctxWith(input = '') {
+function ctxWith(input = '', planOf = plan) {
   const writes: string[] = [];
   const base = `/documents/${DOC_A}`;
   const routes: Record<string, unknown> = {
@@ -29,10 +29,10 @@ function ctxWith(input = '') {
       document: {
         id: DOC_A,
         name: 'Auth flow',
-        tabs: plan.tabs!.map((t, i) => ({ id: t.id, name: t.name, orderIndex: i })),
+        tabs: planOf.tabs!.map((t, i) => ({ id: t.id, name: t.name, orderIndex: i })),
       },
     },
-    [`${base}/plan`]: plan,
+    [`${base}/plan`]: planOf,
     [`${base}/tabs/form`]: { tab: formTabBody() },
     [`${base}/tabs/form/form-link`]: (r: Request) => {
       if (r.method !== 'GET') writes.push(`${r.method} form-link`);
@@ -166,6 +166,15 @@ describe('the form verbs, every path', () => {
         formShare.input.parse({ doc: DOC_A, action: 'delete_link', tab: 'Bugs' }),
       ),
     ).rejects.toMatchObject({ status: 400 });
+  });
+
+  it('hints at making a form, not reading one, when the document has no Form tab', async () => {
+    const { ctx } = ctxWith('', { ...plan, tabs: plan.tabs!.filter((t) => t.kind !== 'form') });
+    await expect(formGet.run!(ctx, formGet.input.parse({ doc: DOC_A }))).rejects.toMatchObject({
+      status: 404,
+      code: 'form_tab_none',
+      hint: 'make one with: livediagram form add <doc> --starter contact',
+    });
   });
 
   it('adds a form to a document from a starter, or from a file of add_form input', async () => {
