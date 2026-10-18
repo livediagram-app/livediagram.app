@@ -10,6 +10,8 @@ import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileActive, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
 import { useTileGlyph } from './PaletteIconButton';
+import { tileEnterAnimation } from './palette-tile-finish';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 
 // The category flyout's tiles (CategoryFlyout, CategoryFlyoutSide): a picture tile for the grid categories, a card
 // with its blurb for the rest, and the footer that describes the pointed-at one. Each places, drags and tints as the
@@ -138,6 +140,7 @@ export function TileGrid({
   columns,
   ...rest
 }: Omit<ItemProps, 'def'> & { tiles: readonly PaletteTileDef[]; offset: number; columns: number }) {
+  const enter = tileEnterAnimation(useTabFinish());
   return (
     <ul
       style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
@@ -146,7 +149,7 @@ export function TileGrid({
       {tiles.map((def, i) => (
         <li
           key={def.id}
-          className="stagger-enter flex animate-pop-in"
+          className={`stagger-enter flex ${enter}`}
           style={{ '--stagger-i': offset + i } as React.CSSProperties}
         >
           <GridTile def={def} {...rest} />
