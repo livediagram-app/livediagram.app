@@ -18,7 +18,8 @@ import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
-import { ContentsAddPage, ContentsFind, ContentsList } from './PageContentsList';
+import { ContentsAddPage } from './ContentsAddPage';
+import { ContentsFind, ContentsList } from './PageContentsList';
 
 const DockIcon = lucideGlyph(lucidePanelLeftOpen, 14);
 

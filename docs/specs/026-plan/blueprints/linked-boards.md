@@ -11,7 +11,8 @@ Derived from [Linked boards](../linked-boards.md).
 | linked card     | an item whose `fields.linked` parses (`cardLink`); id `linkedCardId('actions', actionId)`          |
 | link            | `fields.linked = 'actions/<tabId>/<elementId>/<actionId>'` (`LINKED_FIELD`, `linkString`)          |
 | baseline        | `fields.linkedAt` (the action's `updatedAt`) and `fields.linkedRev` (the card's `rev`)             |
-| trashed by link | `fields.linkedGone = true` on a card in the Trash (`LINKED_GONE_FIELD`)                            |
+| trashed by link | `fields.linkedGone = true` on a card in the Trash (`LINKED_GONE_FIELD`), from before an action's   |
+|                 | going left its card; still restored by the heal, never written now                                 |
 | Won't Do        | `ElementAction.status = 'wont-do'` (`ElementActionStatus`); `isClosedAction`                       |
 | record          | `LinkedRecord` (structural: the items package never imports the document model)                    |
 | heal            | `healLinkedCards` (pure), run by `useLinkedActionCards`                                            |
@@ -26,7 +27,7 @@ packages/document/src/svg-render-panel-faces.ts the export's Won't Do row (slash
 packages/items/src/board.ts                   PlanBoardSetup.collects, LINKED_RECORD_KINDS; normaliseBoardSetup keeps it
 packages/items/src/presets.ts                 freshSetup (freshBoardSetup's column naming, for any set-up)
 packages/items/src/linked-cards.ts            ids, links, status mapping, linkedCardCreate, healLinkedCards,
-                                              linkedCardGonePatch, linkedCardsTrashedBy, unlinkedFields (pure)
+                                              linkedCardLeftPatch, linkedCardsTrashedBy, unlinkedFields (pure)
 packages/templates/src/linked-board-start.ts  actionsBoardSetup, actionsBoardTab, ACTIONS_BOARD_TITLE
 packages/document/src/collab-index-rows.ts    a Won't Do action indexes as 'done' (closed)
 apps/api/src/db/plan-board-index.ts           CARDS_CTES: `json_extract(i.fields, '$.linked') IS NULL`
@@ -74,7 +75,9 @@ apps/live/components/dialogs/AssignActionDialog.tsx  the Status row when editing
     items, placed or people: creates in batches of `ITEM_BULK_MAX`, patches likewise, both `writeQuiet(…, { silent })`;
     record changes through `tickTabs(applyActionChanges)` (not undoable, as action writes are).
   - Gone effect: actions in the last render's set and in no loaded tab now (and not taken off by a card trash) get
-    `linkedCardGonePatch`.
+    `linkedCardLeftPatch`: `clear` the card's `linked`, `linkedAt`, `linkedRev` (and an old `linkedGone`), no status
+    change; nothing for a card in the Trash or one with no link. The record's return relinks it through the heal
+    (same id, `healOne` writes the link and a fresh baseline).
   - `noteActionAdded(tabId)` (from `useEditorActions.onCreated`), one at a time (`making` ref): with no board, reads
     every unloaded tab, re-reads the newest tabs, and if still none commits `actionsBoardTab` after the last tab
     (`commitTabs`, the updater re-checking), `markTabLoaded`, `bringCardTypes`, telemetry, the notice. Decided outside
@@ -137,7 +140,7 @@ narrows a read; it widens nothing.
 
 ## Observability
 
-`[linked] heal {creates, patches, records}`, `[linked] board.made {tabId}`, `[linked] action.gone.card.trashed
+`[linked] heal {creates, patches, records}`, `[linked] board.made {tabId}`, `[linked] action.gone.card.unlinked
 {count}`, `[linked] card.trashed.action.removed {actionId}` (debug scope `linked`).
 
 ## Constants and configuration
