@@ -7,7 +7,7 @@ import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
-  REACTION_DEFAULT,
+  reactionOf,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
@@ -386,7 +386,7 @@ export function ElementFaceRouter({
            notices. */
         <ReactionPadFace
           label={label}
-          reaction={element.reaction ?? REACTION_DEFAULT}
+          reaction={reactionOf(element.reaction)}
           textColor={textColor}
           onFire={onFireReaction ? () => onFireReaction(element) : undefined}
         />

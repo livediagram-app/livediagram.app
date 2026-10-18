@@ -338,3 +338,9 @@ export const REACTION_DEFAULT: Reaction = 'confetti';
 export function isReaction(value: unknown): value is Reaction {
   return typeof value === 'string' && (REACTIONS as readonly string[]).includes(value);
 }
+
+/** A pad's reaction as it plays and draws: a stored one this build does not know (a newer build's, or a
+ *  hand-edited file) falls back to the default, as the validator leaves cosmetic values for the renderer to read. */
+export function reactionOf(value: unknown): Reaction {
+  return isReaction(value) ? value : REACTION_DEFAULT;
+}
