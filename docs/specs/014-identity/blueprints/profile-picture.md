@@ -72,7 +72,8 @@ Recomputed on every auth emission and every `PREFERENCES_CHANGED_EVENT`.
 
 Publisher (`usePublishPicture(clerkUserId)`, called from `useEditorState` and `useExplorerState`
 after `useClerkApiBootstrap` registers the token provider): PUT when the published value differs from the last value PUT this page (D2). A 404 (no
-participant row yet) is not retried until the value changes (D3).
+participant row yet) is not retried until the value changes (D3). Clearing (null) with no row yet is answered 200: the
+account has no picture either way, and a fresh account's first page load would otherwise log a 404.
 
 Room:
 
