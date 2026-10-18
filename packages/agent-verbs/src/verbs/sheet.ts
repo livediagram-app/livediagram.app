@@ -189,7 +189,7 @@ export const sheetAdd = defineVerb({
     tab: z
       .string()
       .optional()
-      .describe('The tab id; the first tab with a sheet, else the first tab'),
+      .describe('The tab id, a tab in Plan; the first tab with a sheet, else the first tab'),
     title: z.string().optional().describe('The title (made unique on the tab)'),
     csv: z.string().optional().describe('A CSV file to fill it from, or - for stdin'),
   }),

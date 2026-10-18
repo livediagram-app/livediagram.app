@@ -28,7 +28,9 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 
 ## The tour offer
 
-- **Where.** A separate small toolbar immediately to the right of the selection toolbar, on the same line, 8px apart,
+- **Where.** A separate small toolbar immediately to the left of the selection toolbar, on the same line, 8px apart,
+  so it never sits beside Delete and More at the toolbar's right end, where a reach for Delete would land on it.
+  Where the line is too narrow it wraps onto its own line on the far side from the element.
   styled as that toolbar (white card, border, shadow, 32px buttons). It moves, flips above or below and is nudged
   inside the canvas with the selection toolbar, as one group.
 - **What it holds.** The Tour glyph (footprints, as Show Me's) and the word **Tour**, then **Play** (a play glyph)

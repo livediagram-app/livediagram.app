@@ -289,21 +289,16 @@ function healOne(
   };
 }
 
-// A card whose record went: to the Trash, keeping the status it had, marked as the link's doing. Undefined for a card
-// already in the Trash.
-export function linkedCardGonePatch(card: Item): ItemPatchOf | undefined {
-  if (isTrashed(card)) return undefined;
-  const status = itemStatus(card);
-  return {
-    id: card.id,
-    patch: {
-      set: {
-        status: TRASH_STATUS,
-        ...(status ? { [TRASHED_FROM_FIELD]: status } : {}),
-        [LINKED_GONE_FIELD]: true,
-      },
-    },
-  };
+// A card whose record went (docs/specs/026-plan/linked-boards.md "The link"): it stays on the board where it is, a card
+// of its own from then on, its link and baseline dropped. Undefined for a card with no link, or one in the Trash (a
+// person trashed it, and Restore brings its record back). Should the record come back (an undo), the heal finds the
+// card by its id, fixed by the record's, and links them again.
+export function linkedCardLeftPatch(card: Item): ItemPatchOf | undefined {
+  if (!cardLink(card) || isTrashed(card)) return undefined;
+  const clear = [LINKED_FIELD, LINKED_AT_FIELD, LINKED_REV_FIELD, LINKED_GONE_FIELD].filter(
+    (f) => f in card.fields,
+  );
+  return { id: card.id, patch: { clear } };
 }
 
 // Back from the Trash to the status it had (the board's first column when it had none).

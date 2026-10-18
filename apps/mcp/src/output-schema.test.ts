@@ -420,7 +420,8 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   {
     tool: 'add_sheet',
     output: 'addSheetOutput',
-    args: { documentId: 'd1', title: 'Costs', csv: 'a,b\n1,2' },
+    // A Sheet goes only on a tab in Plan: the Form tab is one.
+    args: { documentId: 'd1', tabId: 'f1', title: 'Costs', csv: 'a,b\n1,2' },
   },
   {
     tool: 'change_pages',

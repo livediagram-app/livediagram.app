@@ -1033,9 +1033,9 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'article',
-    title: 'Article',
+    title: 'Project Brief',
     description:
-      'Write on pages, like a doc: a project brief with headings and lists, room for charts and drawings in the text.',
+      'A project brief, written on pages like a doc: headings and lists to write over, room for charts and drawings in the text.',
     extra: true,
   },
   {

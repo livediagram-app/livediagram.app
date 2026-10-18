@@ -220,17 +220,15 @@ export function SheetToolbar({
       aria-label="Sheet formatting"
       className={
         inBand
-          ? 'flex min-w-0 max-w-full flex-1 items-center gap-0 overflow-hidden rounded-xl border p-1 shadow-md shadow-slate-900/5'
+          ? 'flex min-w-0 max-w-full flex-1 items-center gap-0 overflow-hidden p-1'
           : 'flex shrink-0 items-center gap-0 overflow-hidden border-b px-1'
       }
       style={
         inBand
-          ? // In the Sheet's own colours, as its controls card is (band-controls.ts), so its ink always reads.
+          ? // Straight on the Sheet's header in its ink, no card of its own, as its controls are (band-controls.ts).
             {
               height: `var(--plan-band-card-h, ${BAND_CARD_PX}px)`,
               color: c.palette.text,
-              backgroundColor: c.palette.surface,
-              borderColor: c.palette.border,
             }
           : { height: TOOLBAR_PX, borderColor: c.palette.cardBorder, color: c.palette.text }
       }

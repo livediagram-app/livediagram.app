@@ -156,6 +156,7 @@ export function CanvasCover({
 function setStripEnd(main: HTMLElement, stripEnd: number): void {
   const strip = main.querySelector<HTMLElement>('[data-toolbar-palette]');
   const zoom = strip ? parseFloat(getComputedStyle(strip).zoom) || 1 : 1;
+  main.setAttribute('data-strip-in-band', '');
   main.style.setProperty('--plan-strip-align', 'flex-end');
   main.style.setProperty('--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
 }
@@ -175,6 +176,7 @@ function clearBandTint(main: HTMLElement): void {
 }
 
 function clearStripEnd(main: HTMLElement): void {
+  main.removeAttribute('data-strip-in-band');
   main.style.removeProperty('--plan-strip-align');
   main.style.removeProperty('--plan-strip-end');
 }

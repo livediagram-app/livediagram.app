@@ -86,7 +86,7 @@ edit each. Anything put on the page first (a layout, an element) is choosing Inf
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
 view, nor on a second page (a page added from the + is chosen in the popover).
-The **Article** template in /new starts a tab that opens in Pages mode with one article.
+The **Project Brief** template (kind `article`) in /new starts a tab that opens in Pages mode with one article.
 
 ## The page panel
 
@@ -1128,7 +1128,7 @@ Both show the same list:
   is no reordering (the rows shown are not the whole order). A Participant and a Viewer see no grip
   and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
 - **Adding**: an Editor's footer is one full-width **Add Page** button. Resting the pointer on it
-  (or pressing it, or Up from it) opens the four kinds above it in a popover as wide as the list,
+  (or pressing it, or Up from it) opens the four kinds above it in a popover as wide as the button, standing on the page so nothing clips it,
   one per row (Infographic, Slide, Article, Logo, each its glyph and name), the last page's kind
   first and tinted; Up and Down move between them, Escape closes. A press adds a page of that kind
   after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a new

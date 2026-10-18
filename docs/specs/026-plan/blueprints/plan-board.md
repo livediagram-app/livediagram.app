@@ -274,10 +274,15 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   `--plan-strip-align: flex-end` and `--plan-strip-end` (`setStripEnd`: `stripEnd` over the strip's computed `zoom`) on
   the canvas `main` it is portalled into while it has a band (`clearStripEnd` on going); `ToolbarPalette`'s root reads
   them as `align-items` and `padding-right` (centre and 0 otherwise). `useCanvasLayerInsets` observes the controls card
-  too. **The controls card** (`apps/live/components/plan/band-controls.ts`): `BAND_CONTROLS_CLASS`
-  (`[[data-header-band]_&]:` rounded-xl, border, p-1, shadow-md) and `bandControlsProps(palette)` (`data-band-controls`,
-  `--band-card-bg` the palette's surface, `--band-card-line` its border) on `PlanBoardHeader`'s trailing group,
-  `SheetHeader`'s controls and `ViewFrame`'s aside.
+  too. **The controls** (`apps/live/components/plan/band-controls.ts`): `BAND_CONTROLS_CLASS`
+  (`[[data-header-band]_&]:` the band card height, p-1, 36 px buttons; no border, fill or shadow) and `bandControlsProps()`
+  (`data-band-controls`) on `PlanBoardHeader`'s trailing group, `SheetHeader`'s controls and `ViewFrame`'s aside;
+  `BAND_HEADER_END` (`[[data-header-band]_&]:pr-px`) on those three headers, so the last control's edge is 5 px from the
+  element's right as the menu's first is from its left; `PlanBoardHeader` also takes `[[data-header-band]_&]:border-b`
+  in `palette.border`. The menu box takes `BAND_FLUSH` (`toolbar-surface.ts`: `[[data-band-blend]_&]:` transparent
+  fill and border, important) after `BAND_BLEND`; `ToolbarPalette`'s card and `BoardCardsStrip` take `BAND_STRIP_FLUSH`
+  (`[[data-strip-in-band]_&]:` transparent fill and border, no shadow), `setStripEnd` setting `data-strip-in-band` on
+  the canvas `main` and `clearStripEnd` removing it.
   **The name in the menu box** (`apps/live/components/plan/menu-name-slot.tsx`): `ToolbarExplorerButton` (not inline,
   not a phone) renders `MenuNameSlot` (`data-menu-name-slot`, `max-w-[16rem]`, a hairline, `empty:hidden`), its node a
   module store (`setMenuNameSlot`, `useMenuNameSlot`). `CanvasCover` calls `announceHeaderBand()` when its band comes or

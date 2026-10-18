@@ -41,6 +41,7 @@ function setup(
       [`/documents/${DOC_A}/tabs/${ONE}`]: {
         tab: {
           id: ONE,
+          opensIn: 'plan',
           elements: opts.elements ?? [SHEET_EL],
           rev: 3,
           ...(opts.background ? { backgroundColor: opts.background } : {}),

@@ -1227,7 +1227,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // the lazily loaded sheet chunk through it, once a Sheet is drawn.
   const sheetsCommitRef = useRef<((map: (els: Element[]) => Element[]) => void) | null>(null);
   const sheetsPlaceRef = useRef<SheetsBridge['placeElement'] | null>(null);
-  const sheetsModeRef = useRef<((mode: 'plan') => void) | null>(null);
   const sheets = useSheetsBridge({
     documentId: documentId ?? '',
     ownerId: selfParticipant.id,
@@ -1250,7 +1249,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       tickTabs((ts) =>
         ts.map((t) => (t.id === activeId ? { ...t, elements: map(t.elements) } : t)),
       ),
-    switchToPlan: () => sheetsModeRef.current?.('plan'),
     selectElement: (id) => setSelectedId(id),
     // Quietly (the sheet's own undo holds the rename): a Sheet tab follows its sheet's title.
     sheetRetitled: (sheetId, title) =>
@@ -1411,7 +1409,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Only a session that may add tabs is offered one (a tab-scoped link edits its one tab).
     ...(isStructureReadOnly ? {} : { newTabIn: (mode: EditorMode) => newTabInRef.current?.(mode) }),
   });
-  useAssignRef(sheetsModeRef, rawEditorMode.setMode);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).

@@ -712,6 +712,10 @@ Edge cases:
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
 - **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
   `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
+- **E18** A result holding a Sheet element the tab did not hold, on a tab not in Plan (operations after `finalise`,
+  replace after `nextTab`; `sheetsAddedOutsidePlan`): `invalid_value` (`sheetOutsidePlan`), detail `a Sheet goes only
+on a tab in Plan: <ids>`, hint `add a Sheet tab with add_tab and template "blank-spreadsheet", then fill it with
+change_sheet` ([Agent changesets](../agent-changesets.md#sheets-only-in-plan)). A Sheet the tab already held passes.
 
 ## Security and trust
 

@@ -77,7 +77,7 @@ type SelectionPopoverProps = {
   // read-only, or a kind that shows none (a Plan board or card, an
   // annotation), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
-  // A separate small toolbar to the right of this one (the element tour offer,
+  // A separate small toolbar to the left of this one (the element tour offer, away from Delete at the right end,
   // docs/specs/007-editor/element-tours.md), placed and nudged with it as one group.
   aside?: ReactNode;
 };
@@ -134,9 +134,11 @@ export function SelectionPopover({
     suspended,
   );
 
-  // The toolbar, and any aside beside it, ride one positioned group: placed, flipped and nudged inside the canvas
-  // together. The group is as wide as its content up to the screen less its margins; past that the aside wraps
-  // onto its own line on the far side from the element (above the toolbar when it sits above), never over it.
+  // The toolbar, and any aside before it, ride one positioned group: placed, flipped and nudged inside the canvas
+  // together. The aside leads, at the left, so it never sits beside Delete and the More at the toolbar's right end.
+  // The group is as wide as its content up to the screen less its margins; past that the aside wraps onto its own
+  // line on the far side from the element (above the toolbar when it sits above), never over it: being first, it
+  // takes the first line, which wrap-reverse puts at the bottom when the group sits below the element.
   return (
     <div
       ref={ref}
@@ -147,9 +149,10 @@ export function SelectionPopover({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className={`pointer-events-none absolute z-[var(--z-toolbar)] flex w-max max-w-[calc(100vw-1rem)] items-center justify-center gap-x-2 gap-y-7 ${placeAbove ? 'flex-wrap-reverse' : 'flex-wrap'}`}
+      className={`pointer-events-none absolute z-[var(--z-toolbar)] flex w-max max-w-[calc(100vw-1rem)] items-center justify-center gap-x-2 gap-y-7 ${placeAbove ? 'flex-wrap' : 'flex-wrap-reverse'}`}
       style={style}
     >
+      {aside}
       <div
         data-testid="selection-popover"
         role="toolbar"
@@ -346,7 +349,6 @@ export function SelectionPopover({
           ) : null}
         </div>
       </div>
-      {aside}
     </div>
   );
 }
