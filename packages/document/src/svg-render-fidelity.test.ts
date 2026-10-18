@@ -81,6 +81,11 @@ describe('Behaviour face export', () => {
     expect(drawn).not.toContain('>👏<');
   });
 
+  it('draws a Reaction pad whose stored reaction this build does not know as the default one', () => {
+    const pad = shape('reaction-pad', { reaction: 'stardust' as never, label: 'Pad' });
+    expect(svgOf(pad)).toMatch(/>🎉</);
+  });
+
   it('puts a Reaction pad label in its chip', () => {
     const svg = svgOf(shape('reaction-pad', { label: 'Applause' }));
     expect(svg).toMatch(/fill-opacity="0.07"\/><text[^>]*font-size="10.5"[^>]*>Applause</);

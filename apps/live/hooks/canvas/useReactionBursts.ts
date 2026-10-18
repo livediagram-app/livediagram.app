@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { isReaction, REACTION_DEFAULT, type Reaction } from '@livediagram/document';
+import { reactionOf, type Reaction } from '@livediagram/document';
 
 // The reaction bursts currently playing (docs/specs/009-elements/reaction-pad.md).
 //
@@ -44,7 +44,7 @@ export function useReactionBursts(): {
 
   const play = useCallback(
     (elementId: string, reaction: Reaction | undefined) => {
-      const chosen = reaction ?? REACTION_DEFAULT;
+      const chosen = reactionOf(reaction);
       start(elementId, chosen);
       return chosen;
     },
@@ -56,7 +56,7 @@ export function useReactionBursts(): {
       // A peer on a newer build could name a reaction this one has never heard
       // of. Playing the default beats playing nothing: the point of the press
       // was that something visible happened in the room.
-      start(elementId, isReaction(reaction) ? reaction : REACTION_DEFAULT);
+      start(elementId, reactionOf(reaction));
     },
     [start],
   );

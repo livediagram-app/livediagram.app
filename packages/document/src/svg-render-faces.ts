@@ -39,7 +39,7 @@ import {
 } from './office';
 import { chairSeatFill } from './shape-geometry';
 import type { ResolveEmojiArt } from './svg-render-describe';
-import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
+import { REACTION_EMOJI, REACTION_HUES, reactionOf } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { formatTimerClock } from './session';
 import {
@@ -307,7 +307,7 @@ function reactionPad(
   color: string,
   resolveEmojiArt?: ResolveEmojiArt,
 ): string {
-  const reaction = el.reaction ?? REACTION_DEFAULT;
+  const reaction = reactionOf(el.reaction);
   const [from, to] = REACTION_HUES[reaction];
   const id = xmlEscape(el.id);
   const size = Math.min(el.width * 0.34, el.height * 0.4);
