@@ -49,7 +49,7 @@ const CONTENT: Record<
     icon: <ThisBrowserIcon />,
     title: 'Nothing in this browser',
     description:
-      'Documents saved only in this browser collect here. Take Offline on any document of yours moves it here.',
+      'Take Offline on any of your documents to keep it here instead.',
     cta: 'New Document',
   },
   folder: {
