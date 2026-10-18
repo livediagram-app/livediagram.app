@@ -160,12 +160,12 @@ Plan must cost nothing to a document that does not use it:
 
 ## Switching modes keeps the tab
 
-- **A tab switches into and out of Plan freely, whatever it holds, and nothing on it is lost.** Plan mode is how
-  a person works on the tab, never what the tab is: its boards, cards and views are elements every mode keeps,
-  and their work is items in the document, which no mode touches.
-- **In another mode a board is an element like any other**: it is drawn with its columns and cards, live as
-  items change, and is selected, moved, resized, copied, styled and deleted as any element is. Its cards do not
-  take the pointer or the keyboard there; switching back to Plan makes them work again.
+- **A tab keeps its mode once it has content** ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), so
+  boards and Sheets go only on tabs in Plan ([Plan tabs](plan-tabs.md#only-in-plan)): a paste or an agent never puts
+  one on a tab in another mode. Their work is items in the document, which no mode touches.
+- **A board a tab in another mode already holds** (from before) is drawn with its columns and cards, live as items
+  change, and is selected, moved, resized, copied, styled and deleted as any element is. Its cards do not take the
+  pointer or the keyboard there.
 - **A diagram is welcome in Plan**: a tab's shapes, ink, arrows and pages stay on it in Plan mode, worked the Diagram
   way (Plan's palette offers fewer of them, nothing more).
 - A start's mode switch and **Shift+D** switch an empty tab at once, with no question, as between any two modes;
@@ -234,7 +234,7 @@ with a Board**.
   rejoined connection a new presence id, which carries no hold until it is said). Nobody else sends anything: a
   person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
   drawn only for people in the presence list.
-- Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
+- Everyone on a tab works in its one mode, and sees the boards move as items change.
 - Facilitation on a board (hide writing and reveal) lives in the board's set-up, and voting is the tab's session
   vote on the cards, so a retro needs nothing
   beyond the board and the tab's Vote.

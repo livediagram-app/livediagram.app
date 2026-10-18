@@ -19,7 +19,7 @@ import {
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
   createShape,
-  tabTakesSheets,
+  tabTakesPlanOnly,
 } from '@livediagram/document';
 import { placeBeside } from '@livediagram/items';
 import {
@@ -177,9 +177,9 @@ export async function addSheet(
         code: 'tab_not_found',
         message: `No tab "${tabId}". Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
       };
-    // A Sheet goes only on a tab in Plan (docs/specs/029-sheets/sheet.md "Only in Plan"): refused before a sheet is made.
+    // A Sheet goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"): refused before a sheet is made.
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    if (!tabTakesSheets(tab))
+    if (!tabTakesPlanOnly(tab))
       return {
         ok: false,
         code: 'tab_not_plan',

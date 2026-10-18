@@ -91,7 +91,9 @@ export const addBoardShape = {
   tabId: z
     .string()
     .optional()
-    .describe('The tab to put it on; defaults to the first tab with a board, else the first tab.'),
+    .describe(
+      'The tab to put it on, which must be in Plan; defaults to the first tab with a board, else the first tab.',
+    ),
   preset: z
     .enum(PLAN_BOARD_PRESET_IDS)
     .optional()

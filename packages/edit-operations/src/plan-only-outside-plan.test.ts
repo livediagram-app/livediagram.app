@@ -1,6 +1,6 @@
-// Sheets only in Plan (docs/specs/029-sheets/sheet.md "Only in Plan", docs/specs/024-agents/agent-changesets.md
-// "Sheets only in Plan"): a changeset that would leave a new Sheet element on a tab not in Plan is refused, whatever
-// way it arrives; a tab in Plan takes one, and a Sheet a tab already holds is left alone.
+// Boards and Sheets only in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan", docs/specs/024-agents/agent-changesets.md
+// "Boards and Sheets only in Plan"): a changeset that would leave a new board or Sheet on a tab not in Plan is refused,
+// whatever way it arrives; a tab in Plan takes one, and one a tab already holds is left alone.
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import { applyEditOperations } from './apply';
@@ -19,7 +19,17 @@ const sheet = (id: string) => ({
   height: 560,
   planSheet: { sheetId: `sheet-${id}` },
 });
+const board = (id: string) => ({
+  id,
+  type: 'shape',
+  shape: 'plan-board',
+  x: 600,
+  y: 0,
+  width: 640,
+  height: 420,
+});
 const addSheet = (id: string): EditOperation => ({ op: 'add', element: sheet(id) });
+const addBoard = (id: string): EditOperation => ({ op: 'add', element: board(id) });
 const run = (tab: Tab, operations: EditOperation[]) =>
   applyEditOperations(tab, operations, { makeId: fixedIds() });
 const inPlan = (tab: Tab): Tab => ({ ...tab, opensIn: 'plan' });
@@ -30,8 +40,8 @@ const holding = (tab: Tab, id: string): Tab => ({
 
 const rejection = {
   code: 'invalid_value',
-  details: ['a Sheet goes only on a tab in Plan: s1'],
-  hint: 'add a Sheet tab with add_tab and template "blank-spreadsheet", then fill it with change_sheet',
+  details: ['a board or Sheet goes only on a tab in Plan: s1'],
+  hint: 'add a Board tab or a Sheet tab with add_tab (template "kanban" or "blank-spreadsheet")',
 };
 
 describe('operations', () => {
@@ -48,8 +58,19 @@ describe('operations', () => {
 
   it('names every Sheet it refuses', () => {
     expect(refused(run(checkoutFlow(), [addSheet('s1'), addSheet('s2')])).details).toEqual([
-      'a Sheet goes only on a tab in Plan: s1, s2',
+      'a board or Sheet goes only on a tab in Plan: s1, s2',
     ]);
+  });
+
+  it('refuses a board added to a tab in Diagram, naming it', () => {
+    expect(refused(run(checkoutFlow(), [addBoard('b1')])).details).toEqual([
+      'a board or Sheet goes only on a tab in Plan: b1',
+    ]);
+  });
+
+  it('places a board on a tab in Plan', () => {
+    const { tab } = applied(run(inPlan(checkoutFlow()), [addBoard('b1')]));
+    expect(tab.elements.some((el) => el.id === 'b1')).toBe(true);
   });
 
   it('places a Sheet on a tab in Plan', () => {
@@ -101,6 +122,13 @@ describe('replace', () => {
       applied(applyReplace(tab, { elements: tab.elements, layout: 'preserve' }, options)).tab
         .elements,
     ).toHaveLength(tab.elements.length);
+  });
+
+  it('refuses a board template over a tab not in Plan, and makes a Board tab of a new one', () => {
+    expect(refused(applyReplace(checkoutFlow(), { template: 'kanban' }, options)).code).toBe(
+      'invalid_value',
+    );
+    expect(applied(applyReplace(null, { template: 'kanban' }, options)).tab.kind).toBe('board');
   });
 
   it('makes a new Sheet tab from the blank spreadsheet template', () => {

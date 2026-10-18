@@ -53,7 +53,9 @@ function ctxWith(input = '', extra: Record<string, unknown> = {}) {
     [`/documents/${DOC_A}/plan`]: PLAN,
     [`/documents/${DOC_A}/items`]: { items: [], rev: 0 },
     [`/documents/${DOC_A}/item-types`]: (r: Request) => keep(r, { itemTypes: null }),
-    [`/documents/${DOC_A}/tabs/${TAB}`]: { tab: { id: TAB, elements: [BOARD_EL], rev: 3 } },
+    [`/documents/${DOC_A}/tabs/${TAB}`]: {
+      tab: { id: TAB, opensIn: 'plan', elements: [BOARD_EL], rev: 3 },
+    },
     [`/documents/${DOC_A}/tabs/${TAB}/changesets`]: (r: Request) =>
       keep(r, { changeset: { id: 'cs', rev: 4 } }),
     ...extra,

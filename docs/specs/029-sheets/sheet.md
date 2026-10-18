@@ -878,21 +878,10 @@ not in Sheet Settings, not anywhere.
 
 ## Only in Plan
 
-A Sheet is Plan's, so a Sheet element is only ever placed on a tab in Plan (`opensInOf(tab) === 'plan'`: a Sheet tab,
-a Dashboard, or a general tab in Plan). A tab's mode is kept once it has content
-([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), so a Sheet on a Diagram, Draw, Facilitate or
-Pages tab could never be edited there. Every way in keeps to it (`tabTakesSheets`, `sheetsAddedOutsidePlan` in
-`packages/document/src/sheet-placement.ts`):
+A Sheet element is placed only on a tab in Plan, as a board is ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)):
+a paste onto a tab in another mode leaves out its Sheets and the charts they draw, and an agent's `add_sheet` or
+changeset onto one is refused. Its grid takes no input outside Plan, and a double-click there offers nothing.
 
-- **The palette and a dropped CSV** are Plan mode's already.
-- **A paste** onto a tab in another mode leaves out every Sheet element it holds, and the charts those Sheets draw,
-  and pastes the rest. It says so: "Sheets stay on Plan tabs, so the sheet was left out" (or "...the sheets were
-  left out"). A paste holding nothing else pastes nothing, with the same notice. Logged as `[clipboard] sheets left
-out` with the count.
-- **An agent** is refused: `add_sheet` onto a tab in another mode answers `tab_not_plan` before any sheet is made
-  ([Sheet store](sheet-store.md#agents)), and any changeset (`update_document`, the api) that would leave a new
-  Sheet element on such a tab is refused `invalid_value`, naming the elements, with the hint to add a Sheet tab
-  instead ([Agent changesets](../024-agents/agent-changesets.md)).
 - A Sheet element is never added to another document by a tab's **Add to Document**, as a board's tab is not.
 
 ## Copying a Sheet element

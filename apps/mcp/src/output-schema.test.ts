@@ -378,7 +378,8 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   {
     tool: 'add_board',
     output: 'addBoardOutput',
-    args: { documentId: 'd1', columns: ['Ideas', 'Done'], types: ['Task'] },
+    // A board goes only on a tab in Plan: the Form tab is one.
+    args: { documentId: 'd1', tabId: 'f1', columns: ['Ideas', 'Done'], types: ['Task'] },
   },
   {
     tool: 'change_board',

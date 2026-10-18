@@ -121,7 +121,7 @@ describe('applyReplace on an existing tab', () => {
   });
 
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'kanban' }, options));
+    const { tab } = applied(applyReplace(themed('ocean'), { template: 'swot' }, options));
     expect(tab.elements.length).toBeGreaterThan(0);
     expect(tab.name).toBe('Checkout flow');
   });
