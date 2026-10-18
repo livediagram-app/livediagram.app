@@ -115,7 +115,6 @@ function BoxedElementViewImpl({
   onCommitTable,
   onCommitHeaderSize,
   onSnapSeam,
-  onSetRailLabel,
   onToggleChecklistItem,
   onSetPageHeading,
   onSetWebRows,
@@ -580,7 +579,6 @@ function BoxedElementViewImpl({
           isLocked={isLocked}
           isSelected={isSelected}
           readOnly={readOnly}
-          onSetRailLabel={onSetRailLabel}
           onToggleChecklistItem={onToggleChecklistItem}
           chartPalette={chartPalette}
           fontFamily={fontFamily}

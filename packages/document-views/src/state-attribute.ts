@@ -1,7 +1,6 @@
 // Where a live or structured element stands, in one attribute (docs/specs/024-agents/blueprints/
 // document-views.md "State attributes", VW22).
 import {
-  RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
   agendaTotalMinutes,
   sessionButtonPlan,
@@ -111,7 +110,7 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
     case 'progress-ring':
       return [countAttribute('progress', numberField(el, 'progress') ?? PROGRESS_DEFAULT)];
     case 'timeline-rail':
-      return [countAttribute('points', numberField(el, 'railCount') ?? RAIL_DEFAULT_POINTS)];
+      return [countAttribute('milestones', countOf(el, 'conceptRows'))];
     case 'badge':
     case 'step':
       // Attached to a node (docs/specs/009-elements/badge.md): it moves, copies and deletes with it.

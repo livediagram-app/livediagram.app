@@ -1,5 +1,5 @@
 // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Layer stack, the Pyramid (with its Inverted and
-// Funnel variants), the Cycle, the Hub (and spoke), the Onion and the Chevron process, each one element laying out its own rows. The layouts are PURE so the canvas face
+// Funnel variants), the Cycle, the Hub (and spoke), the Onion, the Chevron process and the Timeline, each one element laying out its own rows. The layouts are PURE so the canvas face
 // and the headless renderer place every row from the same numbers, and an export matches the editor.
 //
 // A LEAF module: types only from './index'.
@@ -8,7 +8,15 @@ import { clamp } from './geometry-primitives';
 import type { AnimationSpeed, Element, ShapeElement } from './index';
 import type { LayoutRect } from './web-components';
 
-export type ConceptShape = 'layer-stack' | 'pyramid' | 'cycle' | 'hub' | 'onion' | 'chevrons';
+export type ConceptShape =
+  | 'layer-stack'
+  | 'pyramid'
+  | 'cycle'
+  | 'hub'
+  | 'onion'
+  | 'chevrons'
+  // The Timeline keeps the kind it was made as, a timeline rail, so every saved one opens as it.
+  | 'timeline-rail';
 export type ConceptRow = { label: string; note?: string };
 export type PyramidVariant = 'pyramid' | 'inverted' | 'funnel';
 export type ConceptAnim = 'build' | 'pulse' | 'flow';
@@ -19,7 +27,7 @@ export const CONCEPT_LABEL_MAX = 60;
 export const CONCEPT_NOTE_MAX = 40;
 
 export const CONCEPT_ROWS: Readonly<
-  Record<ConceptShape, { min: number; max: number; noun: string }>
+  Record<ConceptShape, { min: number; max: number; noun: string; noteNoun?: string }>
 > = {
   'layer-stack': { min: 2, max: 8, noun: 'Layer' },
   pyramid: { min: 2, max: 6, noun: 'Tier' },
@@ -27,6 +35,8 @@ export const CONCEPT_ROWS: Readonly<
   hub: { min: 3, max: 8, noun: 'Satellite' },
   onion: { min: 2, max: 6, noun: 'Ring' },
   chevrons: { min: 2, max: 8, noun: 'Stage' },
+  // A milestone's note is its when: a date, a quarter, a sprint.
+  'timeline-rail': { min: 2, max: 8, noun: 'Milestone', noteNoun: 'When' },
 };
 
 export function isConceptShape(kind: string): kind is ConceptShape {
@@ -56,11 +66,12 @@ export function conceptAnimOf(el: ShapeElement): ConceptAnim | null {
   return conceptAnimsFor(el.shape).includes(el.conceptAnim) ? el.conceptAnim : null;
 }
 
-/** Whether a row draws its note: a layer's side note, a funnel tier's value and a stage's note. */
+/** Whether a row draws its note: a layer's side note, a funnel tier's value, a stage's note and a milestone's when. */
 export function conceptDrawsNotes(el: ShapeElement): boolean {
   return (
     el.shape === 'layer-stack' ||
     el.shape === 'chevrons' ||
+    el.shape === 'timeline-rail' ||
     (el.shape === 'pyramid' && pyramidVariantOf(el) === 'funnel')
   );
 }

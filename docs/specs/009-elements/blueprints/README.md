@@ -29,7 +29,6 @@ Follow the references below only as needed; never upfront.
 - ./rich-text-notes.md - when implementing or changing rich-text notes, the note popover or the block-type picker
 - ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
-- ./timeline-rail.md - when implementing or changing the timeline rail, its points, labels or Add point
 - ./web-components.md - when implementing or changing web components, their rows, or legacy group migration
 - ./DEFAULTS.md - when an elements blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an elements blueprint covers

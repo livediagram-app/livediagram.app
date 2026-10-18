@@ -31,8 +31,8 @@ It is the classic picture for an energy balance, a budget from income to spendin
 
 <Step n={1}>Open the **Concepts** category in the palette.</Step>
 <Step n={2}>
-  Pick **Sankey**, then tap the canvas to drop it, or drag to draw it at a size. It arrives as a small
-  household budget, so every part is there to read and overwrite.
+  Pick **Sankey**, then tap the canvas to drop it, or drag to draw it at a size. It arrives as a
+  small household budget, so every part is there to read and overwrite.
 </Step>
 <Step n={3}>Double-click it to open its flows and make it yours.</Step>
 
@@ -94,12 +94,12 @@ That is the SankeyMATIC format, so a diagram from there pastes straight in. It a
 
 A flow is never dropped silently. The rest of the diagram draws, and the row says why:
 
-| The flow                                 | What it says                                   |
-| ---------------------------------------- | ---------------------------------------------- |
-| Has an empty From or To                  | Needs a From and a To                          |
-| Flows from a node into itself            | Flows into itself                              |
-| Has an amount of zero or less            | Needs an amount above zero                     |
-| Leads back to an earlier node (a loop)   | Loops back to an earlier node, so it is hidden |
+| The flow                               | What it says                                   |
+| -------------------------------------- | ---------------------------------------------- |
+| Has an empty From or To                | Needs a From and a To                          |
+| Flows from a node into itself          | Flows into itself                              |
+| Has an amount of zero or less          | Needs an amount above zero                     |
+| Leads back to an earlier node (a loop) | Loops back to an earlier node, so it is hidden |
 
 A Sankey's columns run one way, so a loop has no column to go back to. Of a loop, it is the flow that closes it that is hidden, so everything you wrote before it keeps drawing. A diagram holds up to 200 flows.
 
@@ -116,8 +116,8 @@ Right-click it and open **Sankey**. Each part of its look has its own section:
 Under **Sankey**, then **Flows**, each node has a colour swatch: pick any colour, or **Palette** to hand it back. **Style**, then **Presets**, switches the whole diagram to another palette, and new nodes keep following it. Under **Animation**, **Grow** sweeps the diagram in once, **Flow** runs a soft current along every band, **Cascade** brings the columns in one after another, **Pulse** sends a slow wave across the bands, and **Rise** grows each column's nodes before fading their bands in. All stay still if your device asks for reduced motion.
 
 <Tip>
-  Keep it to a handful of columns and a dozen or two flows. A Sankey is read for its largest
-  bands; past that, merge the small ones into an "Other" node.
+  Keep it to a handful of columns and a dozen or two flows. A Sankey is read for its largest bands;
+  past that, merge the small ones into an "Other" node.
 </Tip>
 
 ## Sharing it

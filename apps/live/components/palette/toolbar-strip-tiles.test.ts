@@ -81,10 +81,8 @@ describe('stripTilesFor', () => {
     const components = stripTilesFor('components', NONE);
     expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
     expect([...components.dividersAfter]).toEqual([]);
-    // Build fills it too since the Sequence diagram joined (docs/specs/009-elements/sequence-diagram.md).
-    const build = stripTilesFor('build', NONE);
-    expect(build.tiles).toHaveLength(STRIP_TILE_LIMIT);
-    expect([...build.dividersAfter]).toEqual([]);
+    // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
+    expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {

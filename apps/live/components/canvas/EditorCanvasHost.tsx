@@ -129,7 +129,6 @@ export function EditorCanvasHost() {
     addVideo,
     addProcess,
     addFlowchart,
-    addRailPointSelected,
     addShape,
     addStatRow,
     addSticky,
@@ -328,7 +327,6 @@ export function EditorCanvasHost() {
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
-    setRailLabelSelected,
     setSelectedId,
     toggleChecklistItem,
     setPageHeading,
@@ -1226,10 +1224,8 @@ export function EditorCanvasHost() {
               onCommitLabel={commitLabel}
               onCommitTable={commitTable}
               onCommitHeaderSize={commitHeaderSize}
-              onAddRailPoint={addRailPointSelected}
               onAddTableRow={appendTableRowSelected}
               onAddTableColumn={appendTableColumnSelected}
-              onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
               onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
               onSetPageHeading={setPageHeading}
               onSetWebRows={isReadOnly ? undefined : setWebRows}

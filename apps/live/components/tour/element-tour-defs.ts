@@ -18,6 +18,7 @@ import { funnelTourSteps } from './funnel-tour-steps';
 import { cycleTourSteps } from './cycle-tour-steps';
 import { hubTourSteps } from './hub-tour-steps';
 import { onionTourSteps } from './onion-tour-steps';
+import { timelineTourSteps } from './timeline-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
 import { mindNodeTourSteps } from './mind-node-tour-steps';
 import { flowchartTourSteps } from './flowchart-tour-steps';
@@ -139,6 +140,13 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     helpLabel: 'Concept Graphics Help',
     steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  timeline: {
+    token: 'TimelineTour',
+    eyebrow: 'Timeline tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => timelineTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   'mind-node': {
     token: 'MindMapTour',

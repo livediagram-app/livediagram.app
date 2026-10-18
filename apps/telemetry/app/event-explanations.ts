@@ -1301,6 +1301,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Onion tour, offered beside a selected onion.',
   'UI|Ended|OnionTourSkipped':
     'Someone left the Onion tour before its end, or the onion it was on went away.',
+  'UI|Ended|TimelineTourCompleted':
+    'Someone reached the end of the Timeline tour, offered beside a selected timeline.',
+  'UI|Ended|TimelineTourSkipped':
+    'Someone left the Timeline tour before its end, or the timeline it was on went away.',
   'UI|Ended|ChevronsTourCompleted':
     'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
   'UI|Ended|ChevronsTourSkipped':
@@ -1491,6 +1495,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
   'UI|Opened|OnionTourOffer':
     'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
+  'UI|Opened|TimelineTourOffer':
+    'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit).',
   'UI|Opened|ChevronsTourOffer':
     'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
   'UI|Opened|MindMapTourOffer':
@@ -1609,6 +1615,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected hub and spoke, starting its tour.',
   'UI|Started|OnionTour':
     'Someone pressed Play on the Tour toolbar beside a selected onion, starting its tour.',
+  'UI|Started|TimelineTour':
+    'Someone pressed Play on the Tour toolbar beside a selected timeline, starting its tour.',
   'UI|Started|ChevronsTour':
     'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
   'UI|Started|MindMapTour':
@@ -1834,6 +1842,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Onion Tour" in Settings, so it is offered again.',
   'UI|Toggled|OnionTourSeenOn':
     'Someone switched off Tours › Element Tours › "Onion Tour" in Settings, so it is not offered.',
+  'UI|Toggled|TimelineTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Timeline Tour" in Settings, so it is offered again.',
+  'UI|Toggled|TimelineTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Timeline Tour" in Settings, so it is not offered.',
   'UI|Toggled|ChevronsTourSeenOff':
     'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChevronsTourSeenOn':
@@ -2069,6 +2081,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|OnionTourStepAnimate':
     'The Onion tour reached its "Ripple Outward" step, playing the Pulse animation on the onion.',
   'UI|View|OnionTourStepOutro': 'The Onion tour reached its closing "That Is an Onion" card.',
+  'UI|View|TimelineTourStepLine':
+    'The Timeline tour reached its "Along One Line" step, on the whole timeline.',
+  'UI|View|TimelineTourStepName':
+    'The Timeline tour reached its "What Happens" step, on the first milestone\'s name.',
+  'UI|View|TimelineTourStepWhen':
+    'The Timeline tour reached its "And When" step, on the first milestone\'s when.',
+  'UI|View|TimelineTourStepAdd':
+    'The Timeline tour reached its "Add a Milestone" step, the "+" ring open on Add Milestone.',
+  'UI|View|TimelineTourStepRows':
+    'The Timeline tour reached its "Reorder in the Menu" step, on More.',
+  'UI|View|TimelineTourStepAnimate':
+    'The Timeline tour reached its "Play It in Order" step, previewing Build.',
+  'UI|View|TimelineTourStepOutro':
+    'The Timeline tour reached its closing "That Is a Timeline" card.',
   'UI|View|ChevronsTourStepStages':
     'The Chevrons tour reached its "Stages, Left to Right" step, on the whole process.',
   'UI|View|ChevronsTourStepEdit':

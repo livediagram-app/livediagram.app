@@ -247,7 +247,9 @@ describe('palette layouts', () => {
     ]) {
       expect(everywhere, id).not.toContain(id);
     }
-    expect(tileIds('pages', 'build')).toEqual(['tools:table', 'tools:stack', 'tools:timeline']);
+    expect(tileIds('pages', 'build')).toEqual(['tools:table', 'tools:stack']);
+    // The Timeline is a concept graphic now (docs/specs/009-elements/concept-graphics.md), in Concepts on Pages too.
+    expect(tileIds('pages', 'concepts')).toContain('tools:timeline');
     expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });

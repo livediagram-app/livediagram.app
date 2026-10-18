@@ -101,6 +101,7 @@ export function contentSummaryOf(el: Element): string | null {
     case 'hub':
     case 'onion':
     case 'chevrons':
+    case 'timeline-rail':
       return conceptSummary(el);
     case 'sequence':
       return sequenceSummary(el);

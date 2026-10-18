@@ -39,7 +39,7 @@ legend state-legend items=3
 rating state-rating rating=4/5
 progress-bar state-progress-bar progress=40
 progress-ring state-progress-ring progress=50
-timeline-rail state-timeline-rail points=3
+timeline-rail state-timeline-rail rows=Kick-off|First prototype|Beta with customers|Launch milestones=4
 page state-page title="Quarterly review"
 ? hologram nowhere "No geometry"
 arrow free-src free → bare

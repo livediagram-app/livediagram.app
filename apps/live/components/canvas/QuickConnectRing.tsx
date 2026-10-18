@@ -12,7 +12,6 @@ import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import {
   ADD_COLUMN_OPTION,
-  ADD_POINT_OPTION,
   webRowOption,
   ADD_ROW_OPTION,
   FLOWCHART_NEXT_OPTION,
@@ -67,9 +66,6 @@ type QuickConnectRingProps = {
   onArrowPointerDown: (e: ReactPointerEvent) => void;
   // Enter freehand (pencil) draw mode.
   onPencil: () => void;
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): when set (the selected element is a rail), the
-  // ring gains an "Add Point" action that appends a point to the rail.
-  onAddRailPoint?: () => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): when set (the selected element is a stat row,
   // process or header with room for more), the ring gains an action that
   // appends one more stat / step / link, labelled with what it adds.
@@ -163,7 +159,6 @@ export function QuickConnectRing({
   onSpawn,
   onArrowPointerDown,
   onPencil,
-  onAddRailPoint,
   webRow,
   variant = 'default',
   onAddTableRow,
@@ -171,8 +166,6 @@ export function QuickConnectRing({
   growing = 'mind',
   onAddTableColumn,
 }: QuickConnectRingProps) {
-  // The rail "Add Point" action only appears when the selected element is a
-  // timeline rail (onAddRailPoint set), appended after the standard actions.
   // The table variant slims to Arrow + this side's structural add (Add Row
   // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Pencil / Text
   // don't apply to a grid.
@@ -183,22 +176,20 @@ export function QuickConnectRing({
           ...(onAddTableColumn ? [ADD_COLUMN_OPTION] : []),
           OPTIONS.find((o) => o.kind === 'arrow')!,
         ]
-      : onAddRailPoint
-        ? [...OPTIONS, ADD_POINT_OPTION]
-        : webRow
-          ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
-          : onGrowMind
-            ? // A mind node's ring is how a map grows: its two growth actions
-              // and Duplicate. A free arrow, a sketch or a loose label is not
-              // (docs/specs/009-elements/mind-node.md). A flowchart step's is the same, named for steps
-              // (docs/specs/009-elements/flowchart.md).
-              [
-                ...(growing === 'flowchart'
-                  ? [FLOWCHART_NEXT_OPTION, FLOWCHART_PARALLEL_OPTION]
-                  : [MIND_CHILD_OPTION, MIND_SIBLING_OPTION]),
-                ...OPTIONS.filter((o) => o.kind === 'duplicate'),
-              ]
-            : OPTIONS;
+      : webRow
+        ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
+        : onGrowMind
+          ? // A mind node's ring is how a map grows: its two growth actions
+            // and Duplicate. A free arrow, a sketch or a loose label is not
+            // (docs/specs/009-elements/mind-node.md). A flowchart step's is the same, named for steps
+            // (docs/specs/009-elements/flowchart.md).
+            [
+              ...(growing === 'flowchart'
+                ? [FLOWCHART_NEXT_OPTION, FLOWCHART_PARALLEL_OPTION]
+                : [MIND_CHILD_OPTION, MIND_SIBLING_OPTION]),
+              ...OPTIONS.filter((o) => o.kind === 'duplicate'),
+            ]
+          : OPTIONS;
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →
   // off for exit).
@@ -414,7 +405,6 @@ export function QuickConnectRing({
                     onClick={() => {
                       if (isArrow) return;
                       if (option.kind === 'pencil') onPencil();
-                      else if (option.kind === 'add-point') onAddRailPoint?.();
                       else if (option.kind === 'add-web-row') webRow?.onAdd();
                       else if (option.kind === 'add-row') onAddTableRow?.();
                       else if (option.kind === 'add-column') onAddTableColumn?.();

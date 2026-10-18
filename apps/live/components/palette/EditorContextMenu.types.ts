@@ -174,8 +174,6 @@ export type EditorContextMenuProps = {
   onSetMarkerSize: (value: TextSizePreset) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
   onPreviewMarkerSize: (value: TextSizePreset) => void;
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): set the rail's point count.
-  onSetRailCount: (count: number) => void;
   // Rating (docs/specs/009-elements/rating.md): the star score + its animation.
   onSetRating: (value: number) => void;
   onSetRatingAnim: (value: RatingAnim | null) => void;

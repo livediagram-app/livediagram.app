@@ -32,7 +32,6 @@ import {
   chartRamp,
   chartTypeOf,
   PIE_DEFAULT_SLICES,
-  RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
   DEFAULT_BUTTON_MODE,
   SELECTION_MODES,
@@ -96,7 +95,6 @@ import {
   LinkedChartData,
   PieDataEditor,
   ProgressRow,
-  RailPointsRow,
   RatingMenuGlyph,
   RatingPickerRow,
 } from '@/components/palette/context-menu-rows';
@@ -143,7 +141,6 @@ type ElementDataSectionsProps = {
   props: EditorContextMenuProps;
   target: EditorContextMenuProps['elements'][number];
   isProgress: boolean;
-  isRail: boolean;
   isRating: boolean;
   isChart: boolean;
   isLine: boolean;
@@ -195,7 +192,6 @@ export function ElementDataSections({
   props,
   target,
   isProgress,
-  isRail,
   isRating,
   isChart,
   isLine,
@@ -239,7 +235,6 @@ export function ElementDataSections({
     shapeTarget?.shape === 'sequence' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
-    isRail ||
     isRating ||
     isChart ||
     isCodeBlock ||
@@ -302,20 +297,6 @@ export function ElementDataSections({
               {...sectionProps('progress')}
             >
               <ProgressRow value={shapeTarget?.progress ?? 50} onChange={props.onSetProgress} />
-            </MenuAccordionSection>
-          ) : null}
-          {/* Timeline (docs/specs/009-elements/timeline-rail.md) — how many points sit on the rail. The right-end
-            "+" on the canvas adds one too; this is the precise control. */}
-          {isRail ? (
-            <MenuAccordionSection
-              title="Timeline"
-              icon={<ProgressMenuGlyph />}
-              {...sectionProps('timeline')}
-            >
-              <RailPointsRow
-                value={shapeTarget?.railCount ?? RAIL_DEFAULT_POINTS}
-                onChange={props.onSetRailCount}
-              />
             </MenuAccordionSection>
           ) : null}
           {/* Rating (docs/specs/009-elements/rating.md) — the star score; its animation is the Animation row's Rating

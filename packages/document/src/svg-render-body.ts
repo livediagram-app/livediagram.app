@@ -14,7 +14,6 @@ import {
   isBarShape,
   isLineShape,
   isPieShape,
-  isRailShape,
   isRatingShape,
   isSelfDrawingShape,
 } from './data-shapes';
@@ -22,13 +21,7 @@ import { defaultPadding, PADDING_PX } from './index';
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
 import { svgSankey } from './svg-render-sankey';
 import { isSankeyShape } from './sankey-model';
-import {
-  svgEntityRows,
-  svgProgressBar,
-  svgProgressRing,
-  svgRating,
-  svgTimelineRail,
-} from './svg-render-data';
+import { svgEntityRows, svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
 import { svgPageMasthead } from './svg-render-page';
 import { progressTrackColour } from './progress-colours';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
@@ -123,7 +116,6 @@ export function svgElementBody(
   if (el.shape === 'progress-ring')
     return svgProgressRing(el, stroke, track, labelColor, fontFamily);
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
-  if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
   // A layer stack, pyramid or cycle's rows (docs/specs/009-elements/concept-graphics.md).
   if (isConceptShape(el.shape))

@@ -347,12 +347,9 @@ export type ShapeElement = {
   quizStartedAt?: number;
   quizLockedAt?: number;
   quizRevealed?: boolean;
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): how many evenly-spaced points sit above the rail
-  // line. Only meaningful on the 'timeline-rail' kind; clamped to
-  // RAIL_MIN_POINTS..RAIL_MAX_POINTS.
+  // A timeline rail saved before the Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its point count
+  // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
-  // Per-point labels, index-aligned to the points (a short / missing entry is
-  // an empty label). Edited inline above each point. Only on 'timeline-rail'.
   railLabels?: string[];
   // Rating (docs/specs/009-elements/rating.md): the score in filled stars (0..RATING_MAX) + its optional
   // animation. Only meaningful on the 'rating' kind.
