@@ -141,7 +141,9 @@ exposes the custom type only to pages in the same browser engine, so:
 - **Dropped files** (on a tab that is not read-only): the same files land at the point
   they are released. Any other dropped file (a photo, a PNG or SVG without a scene) is
   refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with
-  the scene embedded."_ A photo dropped on
+  the scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livediagram JSON file, by
+  its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
+  replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.) A photo dropped on
   an event-storming board still goes to the wall reader first
   ([Event storming](../021-event-storming/event-storming.md)).
 

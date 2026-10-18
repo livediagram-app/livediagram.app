@@ -68,6 +68,7 @@ import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
+import { dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 // Whether a paste carries something for the canvas rather than words: a file, an Excalidraw scene, or elements
@@ -367,10 +368,14 @@ export function useClipboard(deps: ClipboardDeps) {
   };
 
   // A file dropped on the canvas, at its canvas point: an Excalidraw file or export lands as its
-  // scene there; any other file is not something the canvas takes, and says so.
+  // scene there; a file Import reads is pointed at Import; any other file is not something the canvas takes, and
+  // says so.
   const dropBoardFile = (file: File, at: { x: number; y: number }) => {
     if (isReadOnly || !insertBoardScene) return;
     const refuse = () => toast.info(DROP_NOT_A_SCENE);
+    // A draw.io, Mermaid, Markdown or JSON file replaces the tab through Import, and is told so.
+    const importHint = dropImportHint(file);
+    if (importHint) return toast.info(importHint);
     if (!isExcalidrawFileCandidate(file)) return refuse();
     void pasteExcalidrawFile(file, refuse, at);
   };
