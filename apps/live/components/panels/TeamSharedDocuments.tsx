@@ -279,7 +279,7 @@ export function TeamSharedDocuments({
             <EmptyState
               icon={<TeamIcon />}
               title="Nothing Shared Yet"
-              description="Move a document here from your personal explorer, or create a folder to organise ahead."
+              description="Move a document here from My Documents, or create a folder to organise ahead."
             />
           ) : (
             <EmptyState

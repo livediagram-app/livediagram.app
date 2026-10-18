@@ -48,7 +48,7 @@ describe('teamRemovalCopy', () => {
 
   it('asks to withdraw an invitation, and says the person has not joined', () => {
     const copy = teamRemovalCopy('invite', args);
-    expect(copy.title).toBe('Withdraw invite?');
+    expect(copy.title).toBe('Withdraw Invite?');
     expect(copy.confirmLabel).toBe('Withdraw');
     expect(copy.message).toContain('has not joined');
     expect(copy.failureNotice).toContain('withdraw');
@@ -62,14 +62,14 @@ describe('teamRemovalCopy', () => {
 
   it('asks to remove a member who did join', () => {
     const copy = teamRemovalCopy('member', args);
-    expect(copy.title).toBe('Remove member?');
+    expect(copy.title).toBe('Remove Member?');
     expect(copy.message).toBe('sam will be removed from "Design".');
     expect(copy.confirmLabel).toBe('Remove');
   });
 
   it('addresses the user directly when they are leaving, ignoring the label', () => {
     const copy = teamRemovalCopy('self', { memberLabel: null, teamName: 'Design' });
-    expect(copy.title).toBe('Leave team?');
+    expect(copy.title).toBe('Leave Team?');
     expect(copy.message).toBe('You will no longer be a member of "Design".');
     expect(copy.confirmLabel).toBe('Leave');
     expect(copy.message).not.toContain('null');
@@ -77,7 +77,7 @@ describe('teamRemovalCopy', () => {
 
   it('says why a rejected row is on the list, and that they can be invited again', () => {
     const declined = teamRemovalCopy('rejected', args);
-    expect(declined.title).toBe('Remove from list?');
+    expect(declined.title).toBe('Remove from List?');
     expect(declined.message).toContain('sam declined the invite to "Design".');
     expect(declined.message).toContain('invite them again');
     const expired = teamRemovalCopy('rejected', { ...args, expired: true });

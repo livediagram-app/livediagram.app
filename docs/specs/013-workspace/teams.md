@@ -101,7 +101,7 @@ Two roles: `admin`, `member`. The creating user becomes the team's first Admin.
 | Invite by email                    | ✓     |        |
 | Turn the invite link on / off      | ✓     |        |
 | Change a member's role             | ✓     |        |
-| Edit team (name, organisation)     | ✓     |        |
+| Edit Team (name, organisation)     | ✓     |        |
 | Remove a member / cancel an invite | ✓     |        |
 | Remove a rejected invite           | ✓     |        |
 | Leave the team (remove own row)    | ✓\*   | ✓      |
@@ -143,10 +143,10 @@ In the Explorer sidebar, each team is a root-level folder row in the **Spaces** 
 
 The right-pane team view is **one calm card**, not a stack of panels:
 
-- A header line with the organisation and member count, plus an overflow (⋯) menu holding the rare actions: Edit team and Delete team (admins), Leave team (any member who isn't the last Admin).
+- A header line with the organisation and member count, plus an overflow (⋯) menu holding the rare actions: Edit Team and Delete Team (admins), Leave Team (any member who isn't the last Admin).
 - The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show their resolved display name or the invite email's local part prettified ("anna.smith" → "Anna Smith") — and the member's **email address** on a muted secondary line beneath the name (truncated for long addresses so the row stays tidy on mobile). Pending rows carry an amber **"Invited"** pill next to the name and render their avatar dimmed. Rejected rows (`declined` or `expired`) carry a rose **"Rejected"** pill, a dimmed avatar, and a secondary line that says which: "<email> · Declined" or "<email> · Expired" (no reply within 28 days). A rejected row has no role select (it holds no role worth changing), and for an Admin its Remove control is always visible rather than hover-only, because clearing it is the only thing left to do with it. The header's "N invited" counts `invited` rows only.
 - Roles: admins get a quiet inline role select per row; non-admins see a read-only role pill. Remove actions appear on row hover only.
-- The Remove action reads the row's `status`: an `invited` row has never been a member, so its confirm asks to **Withdraw invite?** and says the person has not joined yet, rather than offering to remove them "from" a team they were never in. A rejected row's confirm asks **Remove from list?** and says the invite was declined (or expired) and that they can be invited again. `components/panels/team-removal.ts` owns that wording alongside the telemetry type, so the two can't disagree.
+- The Remove action reads the row's `status`: an `invited` row has never been a member, so its confirm asks to **Withdraw Invite?** and says the person has not joined yet, rather than offering to remove them "from" a team they were never in. A rejected row's confirm asks **Remove from list?** and says the invite was declined (or expired) and that they can be invited again. `components/panels/team-removal.ts` owns that wording alongside the telemetry type, so the two can't disagree.
 - **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory hover card) instead of a role select. "Only Admin" counts **joined** admins, exactly as the server does (`components/panels/team-last-admin.ts`): an invited row promoted to admin neither keeps the last joined admin's Leave available nor gets pinned itself. The server's `409 last_admin` remains as the backstop for stale UIs.
 - Admins also get a slim invite-by-email footer row. Placeholder copy: "Add your team by email address, they will receive an invite." (The invite lands in their in-app Invites section, and in their inbox when email is configured.)
 

@@ -88,7 +88,7 @@ function LibraryCard({ library, compact = false }: { library: ShapeLibrary; comp
 
   const remove = async () => {
     const ok = await confirm({
-      title: 'Delete this shape library?',
+      title: 'Delete This Shape Library?',
       message: 'Its shapes leave My shapes; documents that use them keep them.',
       confirmLabel: 'Delete',
     });

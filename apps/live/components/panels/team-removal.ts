@@ -45,9 +45,9 @@ export function teamRemovalTelemetryType(
 // pane and the Timeline's team-card menu.
 export function teamDeleteCopy(teamName: string | undefined) {
   return {
-    title: 'Delete team?',
+    title: 'Delete Team?',
     message: `"${teamName}" and its member list will be permanently deleted. Documents are not affected.`,
-    confirmLabel: 'Delete team',
+    confirmLabel: 'Delete Team',
   };
 }
 
@@ -72,7 +72,7 @@ export function teamRemovalCopy(
 ): TeamRemovalCopy {
   if (kind === 'self') {
     return {
-      title: 'Leave team?',
+      title: 'Leave Team?',
       message: `You will no longer be a member of "${teamName}".`,
       confirmLabel: 'Leave',
       failureNotice: 'Could not leave the team. Try again.',
@@ -80,7 +80,7 @@ export function teamRemovalCopy(
   }
   if (kind === 'invite') {
     return {
-      title: 'Withdraw invite?',
+      title: 'Withdraw Invite?',
       message: `${memberLabel} has not joined "${teamName}" yet. Their invitation will be withdrawn.`,
       confirmLabel: 'Withdraw',
       failureNotice: 'Could not withdraw the invite. Try again.',
@@ -91,14 +91,14 @@ export function teamRemovalCopy(
       ? `${memberLabel}'s invite to "${teamName}" expired with no reply.`
       : `${memberLabel} declined the invite to "${teamName}".`;
     return {
-      title: 'Remove from list?',
+      title: 'Remove from List?',
       message: `${why} Removing clears it from the list, and you can invite them again any time.`,
       confirmLabel: 'Remove',
       failureNotice: 'Could not remove the invite. Try again.',
     };
   }
   return {
-    title: 'Remove member?',
+    title: 'Remove Member?',
     message: `${memberLabel} will be removed from "${teamName}".`,
     confirmLabel: 'Remove',
     failureNotice: 'Could not remove the member. Try again.',

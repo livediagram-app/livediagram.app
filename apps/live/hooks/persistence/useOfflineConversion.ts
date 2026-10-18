@@ -48,7 +48,7 @@ export function useOfflineConversion(
     // A shared tab stays in its other documents and forks here (docs/specs/006-document/offline-mode.md).
     const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
     const ok = await confirm({
-      title: `Take “${liveDoc.name}” offline?`,
+      title: `Take “${liveDoc.name}” Offline?`,
       message: [
         'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
         notice,
