@@ -1087,7 +1087,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <ArticleLooksArt />,
-        href: '/help/canvas/pages-mode/articles/#the-articles-style',
+        href: '/help/canvas/pages-mode/articles/#the-article-s-style',
         group: 'Write',
         title: 'Five looks for an article',
         description:

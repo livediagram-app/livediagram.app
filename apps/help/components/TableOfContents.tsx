@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { GlyphDisc } from '@livediagram/ui';
+import { slugOf } from '@/lib/heading-id';
 
 interface TocItem {
   id: string;
@@ -10,12 +11,6 @@ interface TocItem {
 }
 
 const HEADINGS = '.prose-help h2, .prose-help h3';
-
-const slugOf = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
 
 // The article's headings are an external store: the MDX article renders beside this component, so there
 // is no render-time source, and they exist only once the article has committed (on a client-side
