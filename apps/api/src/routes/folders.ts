@@ -20,6 +20,7 @@ import { requireOwner, type RouteContext, readBody } from './context';
 import { recordFolderCreated, recordFolderDeleted } from '../timeline';
 import { readFolderName, readParentId } from './folder-body';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
+import { isClientId } from '../limits';
 
 // Joined-member check for team-scoped folder verbs. Membership is
 // keyed by Clerk user id — carried by a session JWT or an API token
@@ -58,6 +59,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       const body = read;
       const newId = body.id;
       if (typeof newId !== 'string' || !newId) return badRequest('missing id/name');
+      if (!isClientId(newId)) return badRequest('invalid id');
       const name = readFolderName(body.name);
       if (name === undefined) return badRequest('missing id/name');
       if (name instanceof Response) return name;

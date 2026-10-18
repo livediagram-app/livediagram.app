@@ -74,6 +74,7 @@ import { handleTeamActionRoutes } from './team-action-routes';
 import { handleTeamMentionRoutes } from './team-mention-routes';
 import { handleTeamInviteDecline } from './team-invite-decline-route';
 import { memberDisplayName } from './team-member-name';
+import { isClientId } from '../limits';
 import type { RouteContext } from './context';
 
 // Light shape check, not RFC 5322: something@something.tld. The real
@@ -82,8 +83,6 @@ import type { RouteContext } from './context';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TEAM_NAME_MAX = 80;
-// A team id is client-minted (a UUID); anything far past one is not an id.
-const TEAM_ID_MAX = 64;
 const ORGANISATION_MAX = 120;
 
 function normaliseEmail(raw: string): string {
@@ -168,7 +167,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       } | null;
       const name = typeof body?.name === 'string' ? body.name.trim() : '';
       if (typeof body?.id !== 'string' || !body.id || !name) return badRequest('missing id/name');
-      if (body.id.length > TEAM_ID_MAX) return badRequest('invalid id');
+      if (!isClientId(body.id)) return badRequest('invalid id');
       if (name.length > TEAM_NAME_MAX) return badRequest('name too long');
       const rawOrganisation = body.organisation ?? null;
       if (rawOrganisation !== null && typeof rawOrganisation !== 'string')

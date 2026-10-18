@@ -665,6 +665,15 @@ describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document
     );
   const stored = () => db.upsertDocumentMeta.mock.calls[0]![1] as Record<string, unknown>;
 
+  it('refuses an id that is not a plain id, writing nothing', async () => {
+    db.getDocument.mockResolvedValue(null);
+    for (const id of ['../../x', 'a/b', 'x'.repeat(65), 'sp ace']) {
+      const res = await create({ id });
+      expect(res.status).toBe(400);
+    }
+    expect(db.upsertDocumentMeta).not.toHaveBeenCalled();
+  });
+
   it('stores the deck it was sent', async () => {
     db.getDocument.mockResolvedValue(null);
     await create({ presentation: '{"decks":[]}' });

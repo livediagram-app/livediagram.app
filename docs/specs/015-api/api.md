@@ -222,6 +222,13 @@ post's link is minted the same way; its post id stays 10 characters
 | GET    | `/api/preferences` | owner (any path) | Returns `{ prefs }` for the resolved owner (Clerk userId for signed-in users, `X-Owner-Id` for guests). Empty object when no row exists. The blob is opaque to the worker; the client owns the shape (`apps/live/lib/user-preferences.ts`'s `UserPreferences` type).                                                                |
 | PUT    | `/api/preferences` | owner (any path) | Body `{ prefs }`. Upserts the row for the resolved owner. Returns 204. Size-capped at 4 KB to defend against runaway clients; no per-field validation otherwise. Same hybrid auth as `GET`. Last-write-wins per device, the client tolerates failure by keeping its localStorage cache authoritative until the next successful PUT. |
 
+### Ids
+
+A client mints the id of what it creates (a document, a folder, a team, a shape library), a UUID in every client
+the project ships. A create refuses an id that is not 1 to 64 letters, digits, `-` or `_` with 400 `invalid id`:
+an id with a `/` or a `..` could never be addressed in a path again, and the CLI's mirror names files after ids.
+The CLI writes any id it meets (one stored before this rule) with every other character as `-`.
+
 ### Document dates
 
 A document's dates are its `createdAt` (shown as created) and `savedAt` (last

@@ -42,10 +42,15 @@ export function fileSlug(name: string, id: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .slice(0, SLUG_MAX)
     .replace(/^-+|-+$/g, '');
-  return slug || id.slice(0, ID_SLUG_LENGTH);
+  return slug || idSlug(id);
 }
 
-export const idSlug = (id: string) => id.slice(0, ID_SLUG_LENGTH);
+// An id as a file name. Ids are UUIDs, but one is only what the server stored: a `/` or a `..` in it must never
+// become a path segment that leads out of the mirror directory, so anything but a letter, a digit, `-` or `_` is
+// written as `-`.
+export const safeId = (id: string) => id.replace(/[^A-Za-z0-9_-]/g, '-');
+
+export const idSlug = (id: string) => safeId(id).slice(0, ID_SLUG_LENGTH);
 
 export function pullFileText(file: PullFile): string {
   return `${JSON.stringify(file, null, 2)}\n`;

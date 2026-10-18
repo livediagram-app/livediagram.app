@@ -130,3 +130,11 @@ export function declaredBodyBytes(request: Request): number | null {
 export function bodyExceedsCap(request: Request, body: unknown, cap: number): boolean {
   return (declaredBodyBytes(request) ?? byteLength(JSON.stringify(body))) > cap;
 }
+
+// An id a client mints for a new row (a document, a folder, a team, a shape library): a UUID in every client, so
+// letters, digits, `-` and `_` only. Anything else (a `/`, a `..`) could never be addressed in a path again, and a
+// mirror that names files after ids would read it as a path (docs/specs/015-api/api.md "Ids").
+const CLIENT_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+export function isClientId(id: unknown): id is string {
+  return typeof id === 'string' && CLIENT_ID_PATTERN.test(id);
+}

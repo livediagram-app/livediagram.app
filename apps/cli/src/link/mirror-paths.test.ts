@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { folderPathSegments, mirrorPathFor, outlinePathOf } from './mirror-paths';
+import { folderPathSegments, mirrorPathFor, outlinePathOf, type FolderNode } from './mirror-paths';
 
 // Paths (docs/specs/027-repositories/blueprints/repository-link.md "Paths", RL7, CLI27, CLI85).
 
@@ -45,6 +45,33 @@ describe('mirrorPathFor', () => {
     expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
     taken.add('home-screen-abcdef12-3456.livediagram.json');
     expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
+  });
+});
+
+describe('a stored id that is not a plain id', () => {
+  it('never becomes a path out of the mirror directory', () => {
+    const hostile = { id: '../../../.ssh/x', name: '!!!' };
+    const taken = new Set<string>();
+    for (let i = 0; i < 3; i++) {
+      const path = mirrorPathFor(hostile, [], taken);
+      expect(path).not.toContain('/');
+      expect(path.startsWith('..')).toBe(false);
+      taken.add(path);
+    }
+    const deep = new Map<string, FolderNode>([
+      ['a/../..', { id: 'a/../..', name: '###', parentId: 'root-folder' }],
+      ['root-folder', { id: 'root-folder', name: 'Root', parentId: null }],
+    ]);
+    const [segment] = folderPathSegments('a/../..', 'root-folder', deep);
+    expect(segment).toMatch(/^[a-z0-9_-]+$/i);
+  });
+
+  it('answers a folder listing that loops as not below the covered folder', () => {
+    const loop = new Map([
+      ['f1', { id: 'f1', name: 'One', parentId: 'f2' }],
+      ['f2', { id: 'f2', name: 'Two', parentId: 'f1' }],
+    ]);
+    expect(folderPathSegments('f1', 'root-folder', loop)).toEqual([]);
   });
 });
 

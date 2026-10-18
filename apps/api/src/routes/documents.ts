@@ -15,6 +15,7 @@ import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
 import {
+  isClientId,
   MAX_DECK_LEN,
   MAX_TAB_BYTES,
   TabTooLargeError,
@@ -149,6 +150,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!body.id || typeof body.name !== 'string') {
         return badRequest('missing id/name');
       }
+      if (!isClientId(body.id)) return badRequest('invalid id');
       // The document's own dates (docs/specs/015-api/api.md "Document dates"), refused whole when
       // invalid, before anything is written.
       const dates = documentDates(body, Date.now());

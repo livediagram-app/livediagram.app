@@ -77,6 +77,13 @@ describe('handleFolders auth', () => {
     expect(res.status).toBe(400);
   });
 
+  it('400 on create with an id that is not a plain id', async () => {
+    const res = await handleFolders(
+      makeCtx('POST', '/api/folders', { body: { id: '../up', name: 'Sub' } }),
+    );
+    expect(res.status).toBe(400);
+  });
+
   it('404 when the create parent belongs to another owner', async () => {
     db.getFolder.mockResolvedValue({ id: 'p1', ownerId: 'someone-else' });
     const res = await handleFolders(

@@ -4,7 +4,7 @@
 // mirror directory, with POSIX separators.
 
 import { posix } from 'node:path';
-import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
+import { fileSlug, idSlug, PULL_FILE_SUFFIX, safeId } from '../sync/pull-file';
 
 export type FolderNode = { id: string; name: string; parentId: string | null };
 
@@ -18,6 +18,8 @@ export function folderPathSegments(
   const chain: FolderNode[] = [];
   for (let at = folderId === null ? undefined : folders.get(folderId); at;) {
     if (at.id === coveredFolderId) return chain.reverse().map((f) => fileSlug(f.name, f.id));
+    // The api refuses a cycle; a listing that held one anyway is not below the covered folder.
+    if (chain.includes(at)) return [];
     chain.push(at);
     at = at.parentId === null ? undefined : folders.get(at.parentId);
   }
@@ -30,7 +32,7 @@ export function mirrorPathCandidates(
   folderPath: readonly string[],
 ): string[] {
   const slug = fileSlug(document.name, document.id);
-  const candidates = [slug, `${slug}-${idSlug(document.id)}`, `${slug}-${document.id}`];
+  const candidates = [slug, `${slug}-${idSlug(document.id)}`, `${slug}-${safeId(document.id)}`];
   return candidates.map((name) => posix.join(...folderPath, `${name}${PULL_FILE_SUFFIX}`));
 }
 
