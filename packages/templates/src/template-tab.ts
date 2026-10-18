@@ -7,15 +7,21 @@ import { buildTab, getBuiltInTheme, stampTabKind, type Tab } from '@livediagram/
 import { withBlankPageThemed } from './blank-page-templates';
 import { buildTemplate, templateTabs } from './build-template';
 import { TEMPLATES, isTemplateKind, type TemplateKind } from './templates';
+import { formTemplateStarter, isFormTemplateKind } from './form-templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 
-// A template argument resolved against the catalogue; null for an unknown kind, so the caller can
-// answer with the valid kinds and the model corrects itself without another round trip.
+// The templates an agent may build: the catalogue's (templateCatalogue), never an editor-only one. A form template
+// makes an empty Plan tab the editor then starts the form on, so built here it was an empty Plan tab and no form.
+const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden && !t.editorOnly);
+const AGENT_KINDS: ReadonlySet<string> = new Set(AGENT_TEMPLATES.map((t) => t.kind));
+
+// A template argument resolved against the catalogue; null for an unknown kind (or one only the editor makes), so the
+// caller can answer with the valid kinds and the model corrects itself without another round trip.
 export function resolveTemplate(kind: string): TemplateKind | null {
-  return isTemplateKind(kind) ? kind : null;
+  return isTemplateKind(kind) && AGENT_KINDS.has(kind) ? kind : null;
 }
 
-export const validTemplateKinds = () => TEMPLATES.map((t) => t.kind).join(', ');
+export const validTemplateKinds = () => AGENT_TEMPLATES.map((t) => t.kind).join(', ');
 
 // At most this many kinds a refusal offers as close to an unknown one.
 export const CLOSEST_TEMPLATES_MAX = 5;
@@ -29,15 +35,18 @@ const wordsOf = (text: string) => text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 export function closestTemplateKinds(given: string): TemplateKind[] {
   const asked = wordsOf(given).filter((w) => w.length >= 3);
   if (asked.length === 0) return [];
-  return TEMPLATES.filter((t) =>
+  return AGENT_TEMPLATES.filter((t) =>
     [...wordsOf(t.kind), ...wordsOf(t.title)].some((w) => asked.some((a) => w.startsWith(a))),
   )
     .slice(0, CLOSEST_TEMPLATES_MAX)
     .map((t) => t.kind);
 }
 
-/** "Closest: retrospective, team-retro. " for an unknown kind with any, else nothing. */
+/** "Closest: retrospective, team-retro. " for an unknown kind with any, else nothing. A form template says how
+ *  its form is made instead. */
 export function closestTemplatesHint(given: string): string {
+  if (isFormTemplateKind(given))
+    return `"${given}" starts a form, which only the editor makes from a template: make it with add_form (starter "${formTemplateStarter(given)}"). `;
   const closest = closestTemplateKinds(given);
   return closest.length ? `Closest: ${closest.join(', ')}. ` : '';
 }
