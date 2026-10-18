@@ -3,18 +3,21 @@
 // Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): the person's Within reach
 // set of documents. On a desktop or tablet the Most Used cards then the Recent cards, each group under its label,
 // with See More in the heading row; on a phone the alternating strip that ends in its See More tile, which
-// interleaves the groups and so labels neither.
+// interleaves the groups and so labels neither. Each document carries its Explorer ⋯ menu when the Explorer has it,
+// and a document that leaves the Explorer's lists (moved to the Trash, taken off Shared With Me) leaves at once.
 
-import { useId } from 'react';
+import { useId, useMemo } from 'react';
 import { CompactEmptyState, useMediaQuery } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { useRelativeNow } from '@/lib/relative-time';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import type { JumpBackInGroup, JumpBackInSet } from '@/app/explorer/home/home-model';
+import type { DocumentEntryFor } from '@/app/explorer/useDocumentEntryFor';
 import { HomeSection } from './HomeSection';
 import { GridSkeleton, StripSkeleton } from './HomeSkeletons';
 import { JumpBackInStrip } from './JumpBackInStrip';
 import { JumpBackInCard } from './JumpBackInCard';
+import type { JumpBackInMenuFor } from './JumpBackInMenu';
 import {
   EMPTY_SLOT,
   GROUP_LABEL,
@@ -34,10 +37,11 @@ const GROUP_LABELS: Record<JumpBackInGroup, string> = { mostUsed: 'Most Used', r
 
 export function JumpBackIn({
   ownerId,
-  set,
+  set: fullSet,
   loading,
   recentHref,
   onSeeMore,
+  documentMenus,
 }: {
   ownerId: string;
   set: JumpBackInSet;
@@ -46,8 +50,17 @@ export function JumpBackIn({
   recentHref: string;
   /** In-app navigation to the Recent page. */
   onSeeMore: () => void;
+  /** The Explorer's document menus (useDocumentEntryFor); omitted outside the Explorer, no card has one. */
+  documentMenus?: DocumentEntryFor;
 }) {
   const wide = useMediaQuery(HOME_WIDE_QUERY);
+  const set = useMemo(() => {
+    if (!documentMenus) return fullSet;
+    const here = (item: JumpBackInSet['mostUsed'][number]) =>
+      !documentMenus.isGone(item.documentId);
+    return { mostUsed: fullSet.mostUsed.filter(here), recent: fullSet.recent.filter(here) };
+  }, [fullSet, documentMenus]);
+  const menuFor = documentMenus?.entryFor;
   const empty = set.mostUsed.length === 0 && set.recent.length === 0;
   return (
     <HomeSection
@@ -76,6 +89,7 @@ export function JumpBackIn({
             recentHref={recentHref}
             onSeeMore={onSeeMore}
             labelledBy={HEADING_ID}
+            menuFor={menuFor}
           />
         )
       ) : loading ? (
@@ -95,8 +109,8 @@ export function JumpBackIn({
         </div>
       ) : (
         <div className={`flex flex-col gap-4 ${JUMP_BACK_IN_MIN_HEIGHT}`}>
-          <CardGroup ownerId={ownerId} group="mostUsed" items={set.mostUsed} />
-          <CardGroup ownerId={ownerId} group="recent" items={set.recent} />
+          <CardGroup ownerId={ownerId} group="mostUsed" items={set.mostUsed} menuFor={menuFor} />
+          <CardGroup ownerId={ownerId} group="recent" items={set.recent} menuFor={menuFor} />
         </div>
       )}
     </HomeSection>
@@ -108,10 +122,12 @@ function CardGroup({
   ownerId,
   group,
   items,
+  menuFor,
 }: {
   ownerId: string;
   group: JumpBackInGroup;
   items: JumpBackInSet['mostUsed'];
+  menuFor?: JumpBackInMenuFor;
 }) {
   const labelId = useId();
   const now = useRelativeNow();
@@ -124,7 +140,13 @@ function CardGroup({
       <ul aria-labelledby={labelId} className={group === 'mostUsed' ? MOST_USED_GRID : RECENT_GRID}>
         {items.map((item) => (
           <li key={item.documentId} className="min-w-0">
-            <JumpBackInCard ownerId={ownerId} item={item} group={group} now={now} />
+            <JumpBackInCard
+              ownerId={ownerId}
+              item={item}
+              group={group}
+              now={now}
+              entry={menuFor?.(item.documentId) ?? null}
+            />
           </li>
         ))}
       </ul>

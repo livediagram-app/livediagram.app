@@ -38,6 +38,8 @@ Scope, by file:
 | `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See More tile                                       |
 | `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (the strip) and the See More tile                                   |
 | `apps/live/components/panels/home/JumpBackInCard.tsx`                   | One document's card on a desktop or tablet: large (most used) or compact (recent)       |
+| `apps/live/components/panels/home/JumpBackInMenu.tsx`                   | A card's or tile's ⋯: the Explorer's DocumentEntryMenu, right-click, in-place rename    |
+| `apps/live/app/explorer/useDocumentEntryFor.ts`                         | A document id to its Explorer menu props, and whether it has left the Explorer's lists  |
 | `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, display heading row, quiet link) and `InAppLink`                |
 | `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See Timeline, the entries                                    |
 | `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                          |
@@ -173,6 +175,22 @@ Recent label and its `ul` of compact cards; a group with no item draws neither i
 quiet line is `jumpBackInLine(item, group, now)` (`now` from `useRelativeNow`): most used `Used on ${useDays} day(s)`,
 recent `Used ${relativeSince(lastUsedAt, now)}`. The two groups' container holds `JUMP_BACK_IN_MIN_HEIGHT`, so it keeps
 both groups' height with fewer items (`D131`, `D168`).
+
+### The ⋯ menu
+
+`ExplorerPane` builds `useDocumentEntryFor({ onShowHistory })` once and hands it to `HomePane` as `documentMenus`, which
+passes it to `JumpBackIn`. `entryFor(id)` resolves the id against `useExplorerDocumentsById()` (personal, team, then
+`sharedToPaneDocument(shared)`; the Timeline's cards resolve through the same map) and binds the Explorer's actions as
+`documentEntryPropsFor` does; an unloaded id gives `null`. `isGone(id)` is true once an id seen in the map (recorded in
+an effect after each render) is no longer in it; `JumpBackIn` filters both groups through it before drawing, so the
+strip's `phoneOrder` and the grid see the same set. Each `JumpBackInCard` and `JumpBackInTile` takes
+`entry = entryFor(item.documentId)` and wraps its link in `JumpBackInMenu`: a `group relative` box whose
+`onContextMenu` opens the menu (`useRowMenu`, off while renaming), the link, then an `EllipsisTriggerButton` (`reveal`,
+`label="Menu for ${name}"`) absolutely placed as a frosted chip (`bg-white/90 shadow-sm ring-1`, shown on
+`group-focus-within` too): `right-3.5 top-3.5` on a large card, `right-2.5 top-1/2 -translate-y-1/2` on a compact one
+(which gains `pr-11`), `right-1 top-1` on a tile. The menu is `DocumentEntryMenu entry={entry}`. The name drawn is
+`entry.document.name ?? item.name`. While `entry.renaming`, the card is a `div` (no link, no ⋯) whose name is
+`InlineRenameInput` (`ariaLabel="Rename ${name}"`, commit → `onCommitRename`, cancel → `onCancelRename`).
 
 ### Strip (phone)
 
@@ -403,6 +421,10 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
   shows the full name; the quiet line is the link's `aria-describedby`. On a desktop or tablet each group is its own
   `ul aria-labelledby` its label (**Most Used**, **Recent**) inside the section; the strip stays one list named by the
   section's heading.
+- A loaded document's card or tile also holds a `button` "Menu for ${name}" (`aria-haspopup="menu"`,
+  `aria-expanded`), a sibling of the link rather than inside it; Down or Up Arrow on it opens the menu, which takes
+  focus to its first item and gives it back on close (`useRowMenu`, `DocumentEntryMenu`). Under a fine pointer it
+  shows on the card's hover or keyboard focus; on touch it always shows.
 - Hero: a `section aria-labelledby` the greeting `h1`; the pills are links named by their words; the sheets are
   `aria-hidden`; the lens field keeps its combobox; New Document is a button named "New Document".
 - See More: a link named "See More" in the heading row (wide) or as the tile after the list (narrow), never both.
@@ -437,27 +459,29 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 
 ## Testing
 
-| Rule                                                                              | Test                                                                                    |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| The allocation                                                                    | `packages/api-schema/src/within-reach.test.ts`                                          |
-| The use window                                                                    | `packages/api-schema/src/home.test.ts`                                                  |
-| Local opens: first, same day, next day, window, legacy shape, trashed, failure    | `apps/live/lib/offline/offline-opens.test.ts`                                           |
-| A local making starts the record; one with `markUsed: false` has none             | `apps/live/lib/offline/offline-store.test.ts`                                           |
-| A marked local load records; an unmarked one does not                             | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
-| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade          | `apps/live/app/explorer/home/home-model.test.ts`                                        |
-| Sentences, people, verbs, updates, location                                       | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
-| Read, error, retry, stale owner, unread clear, mark kept                          | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
-| A clear outlives an unread count still in flight                                  | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
-| Display headings: the heading row and its link, per section, no rule              | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Greeting by hour, pills' copy, the sheets' documents                              | `apps/live/app/explorer/home/hero-model.test.ts`                                        |
-| Hero: pills open their views, New Document, Help, sheets hidden, one lens field   | `apps/live/components/panels/home/HomeHero.test.tsx`                                    |
-| The hero field hands the focus to the header field on Search results              | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                                |
-| Entries: one-person links, summary disclosure, telemetry, See Timeline            | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
-| One column, two sections, no Timeline, the error state                            | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Routes, titles, crumbs (Recent under Home), the landing 302                       | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
-| Telemetry charted and explained                                                   | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
-| Real browser: guest and signed in, desktop and phone, dark                        | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
+| Rule                                                                                | Test                                                                                    |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| The allocation                                                                      | `packages/api-schema/src/within-reach.test.ts`                                          |
+| The use window                                                                      | `packages/api-schema/src/home.test.ts`                                                  |
+| Local opens: first, same day, next day, window, legacy shape, trashed, failure      | `apps/live/lib/offline/offline-opens.test.ts`                                           |
+| A local making starts the record; one with `markUsed: false` has none               | `apps/live/lib/offline/offline-store.test.ts`                                           |
+| A marked local load records; an unmarked one does not                               | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
+| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade            | `apps/live/app/explorer/home/home-model.test.ts`                                        |
+| Sentences, people, verbs, updates, location                                         | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
+| Read, error, retry, stale owner, unread clear, mark kept                            | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
+| A clear outlives an unread count still in flight                                    | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
+| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry   | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
+| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip | `apps/live/components/panels/home/JumpBackInMenu.test.tsx`                              |
+| Menu props by id: lists, bound actions, shared dismiss, history, gone               | `apps/live/app/explorer/useDocumentEntryFor.test.tsx`                                   |
+| Display headings: the heading row and its link, per section, no rule                | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
+| Greeting by hour, pills' copy, the sheets' documents                                | `apps/live/app/explorer/home/hero-model.test.ts`                                        |
+| Hero: pills open their views, New Document, Help, sheets hidden, one lens field     | `apps/live/components/panels/home/HomeHero.test.tsx`                                    |
+| The hero field hands the focus to the header field on Search results                | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                                |
+| Entries: one-person links, summary disclosure, telemetry, See Timeline              | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| One column, two sections, no Timeline, the error state                              | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
+| Routes, titles, crumbs (Recent under Home), the landing 302                         | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
+| Telemetry charted and explained                                                     | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
+| Real browser: guest and signed in, desktop and phone, dark                          | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
 
 ## Constants and configuration
 

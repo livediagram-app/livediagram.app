@@ -145,6 +145,20 @@ the **4 most used** and the **4 most recent**, no document twice.
   - A most used document's line counts its use days: "Used on 1 day", "Used on N days".
   - A recent document's line says when the person last used it: "Used 2 hours ago", "Used yesterday" (the
     Explorer's relative time).
+- **Each card has the document's ⋯ menu**, the same menu its row and card carry everywhere else in the Explorer
+  (Rename, Duplicate, Move, Favourite, History, Delete and the rest; a document shared with you gets the
+  shared-with-you menu), so it can be changed from Home without opening it. A ⋯ button opens it: at the top right of
+  a large card's thumbnail, at the right end of a compact card, and at the top right of a phone tile's thumbnail. A
+  right-click anywhere on the card opens it too. Under a mouse the button shows while the card is hovered or has
+  keyboard focus; on touch it always shows. It is a button beside the card's link, never inside it.
+  - **Rename** edits the name in place on the card, as on an Explorer card; while renaming, the card does not open.
+  - What changes shows at once: a renamed document shows its new name, and a document moved to the Trash or taken
+    off Shared With Me leaves Jump Back In (and comes back if the move is undone).
+  - The menu is the Explorer's own, so it offers each document what the Explorer does and nothing more
+    ([Share roles](share-roles.md)): your own and your team's documents get the full menu, and one
+    shared with you gets the shared-with-you menu.
+  - A document the Explorer has not loaded (a team library the sidebar has not read yet) has no ⋯: a menu that
+    guesses is worse than none, and the card still opens on click.
 - **Two labelled groups** on a desktop or tablet: a small uppercase label, **Most Used** then **Recent**, over each.
   The documents are one list of links named **Jump Back In**; each group's label is its own list's name.
 - **See More** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
