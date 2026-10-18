@@ -185,7 +185,9 @@ invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
 common case is a tombstone for a folder, theme or team: the emit
 deliberately omits its id, so the renderer has nothing to link and the
 dimming is structural rather than a rule someone has to remember. (A
-deleted document has no tombstone at all; see §3.5.)
+deleted document has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
+button stretched across the card, named by its subject and reason ("Payments, Document Created"); the card itself is
+no button, and the ⋯ menu and an inline rename sit above that button as controls of their own, never nested in it.
 
 ### Colour means what happened, not where
 
