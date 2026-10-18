@@ -6,7 +6,7 @@ import { svgConcept } from './svg-render-concept';
 // docs/specs/009-elements/concept-graphics.md "Timeline"
 describe('the Timeline element', () => {
   it('is a concept graphic, made with four milestones and their whens', () => {
-    const t = createShape('timeline-rail', 0, 0) as ShapeElement;
+    const t = createShape('timeline-rail', 0, 0);
     expect(isConceptShape(t.shape)).toBe(true);
     expect(t.conceptRows).toEqual([
       { label: 'Kick-off', note: 'Jan' },
@@ -47,7 +47,7 @@ describe('the Timeline element', () => {
 
   it('exports its spine, a dot per milestone and every name and when', () => {
     const t = createShape('timeline-rail', 0, 0) as ShapeElement & { type: 'shape' };
-    const svg = svgConcept(t as never, {
+    const svg = svgConcept(t, {
       stroke: '#2563eb',
       fill: '#ffffff',
       labelColor: '#0f172a',
