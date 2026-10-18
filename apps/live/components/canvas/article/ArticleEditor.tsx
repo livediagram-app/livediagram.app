@@ -64,7 +64,7 @@ import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-car
 import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
 import { SLASH_MENU_ID, SlashMenu, slashOptionId } from './SlashMenu';
 import { useArticleLinkHover } from './useArticleLinkHover';
-import { createArticleHandle, writingScale } from './article-editor-handle';
+import { caretCanvasRect, createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import { articlePasteProps } from '@/lib/article/article-paste';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
@@ -131,6 +131,9 @@ export type ArticleEditorProps = {
   focusRequest: FocusRequest;
   // The request was taken (it is spent).
   onFocusTaken?: (seq: number) => void;
+  // Where the caret is, as a canvas rect, after the writer types or moves it: the view keeps it in sight
+  // (docs/specs/007-editor/article-pages.md "Writing").
+  onRevealCaret?: (rect: { x: number; y: number; w: number; h: number }) => void;
 };
 
 export default function ArticleEditor(props: ArticleEditorProps) {
@@ -318,6 +321,20 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   // and its hosts re-render only when something they show changed.
   const caretPageId = useRef<string | null>(null);
   const caretFrame = useRef<number | null>(null);
+  // The caret kept in sight as it is written on, read in a frame after the change (as the caret's page is): the
+  // writing runs onto pages the view does not show, and the caret went with it out of sight.
+  const revealFrame = useRef<number | null>(null);
+  const scheduleReveal = () => {
+    if (revealFrame.current !== null) return;
+    revealFrame.current = requestAnimationFrame(() => {
+      revealFrame.current = null;
+      const v = viewRef.current;
+      const p = latest.current;
+      if (!v || !p.editable || !v.hasFocus() || !p.onRevealCaret) return;
+      const rect = caretCanvasRect(v, p);
+      if (rect) p.onRevealCaret(rect);
+    });
+  };
   const published = useRef<{ pageId: string | null; selection: ArticleSelectionState } | null>(
     null,
   );
@@ -468,6 +485,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           }
           scheduleMeasure();
         }
+        if ((tr.docChanged || tr.selectionSet) && !tr.getMeta('article-remote')) scheduleReveal();
         publish(v);
       },
       handleDOMEvents: {
@@ -539,6 +557,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       measureFrame.current = null;
       if (caretFrame.current !== null) cancelAnimationFrame(caretFrame.current);
       caretFrame.current = null;
+      if (revealFrame.current !== null) cancelAnimationFrame(revealFrame.current);
+      revealFrame.current = null;
       flush();
       if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
       if (process.env.NODE_ENV !== 'production' && Reflect.get(window, '__articleView') === view)
