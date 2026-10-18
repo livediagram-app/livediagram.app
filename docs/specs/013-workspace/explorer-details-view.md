@@ -98,8 +98,10 @@ by any column.
 
 ## Narrow screens
 
+- A phone never shows the table: List and Details are for larger screens, so a phone always shows
+  cards and the toggle is hidden there ([List / card view](../006-document/document-snapshots.md#list--card-view)).
 - Below `md` the table drops Comments, Access and Created; below `sm` it also drops Type and Size,
-  leaving Name, Updated and the `⋯`.
+  leaving Name, Updated and the `⋯` (a guard only, since a screen that narrow is a phone).
 - The header row stays visible and sortable at every width.
 
 ## Where the numbers come from

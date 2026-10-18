@@ -1,12 +1,25 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
+import { PHONE_MEDIA_QUERY } from '@/lib/responsive';
 import { useExplorerViewMode } from './useExplorerViewMode';
 
 const KEY = 'livediagram:explorer-view';
 
-afterEach(() => window.localStorage.clear());
+afterEach(() => {
+  window.localStorage.clear();
+  vi.unstubAllGlobals();
+});
+
+function stubPhone(isPhone: boolean) {
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query === PHONE_MEDIA_QUERY ? isPhone : false,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+}
 
 // List, card or details layout (docs/specs/006-document/document-snapshots.md).
 describe('useExplorerViewMode', () => {
@@ -32,5 +45,14 @@ describe('useExplorerViewMode', () => {
     expect(result.current[0]).toBe('details');
     act(() => result.current[1]('list'));
     expect(window.localStorage.getItem(KEY)).toBe('list');
+  });
+
+  it('always shows cards on a phone, and keeps the saved choice for a wider screen', () => {
+    act(() => writeLocalStorageValue(KEY, 'details'));
+    stubPhone(true);
+    expect(renderHook(() => useExplorerViewMode()).result.current[0]).toBe('card');
+    expect(window.localStorage.getItem(KEY)).toBe('details');
+    stubPhone(false);
+    expect(renderHook(() => useExplorerViewMode()).result.current[0]).toBe('details');
   });
 });

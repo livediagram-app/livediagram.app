@@ -228,8 +228,9 @@ of those gets a 404 and the row falls back to its icon.
 ### List / card view
 
 The browse views (Recent / My Documents / folders / Search results / This browser)
-have a **List / Card / Details** toggle at the far right of the header (device-
-local preference, `livediagram:explorer-view`). **Card is the default**:
+have a **List / Card / Details** toggle in the header's actions, left of Help and
+Create, which always sit further right (device-local preference,
+`livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read
 every line to find the one you would have recognised on sight. Somebody who
 prefers the density of rows knows where the toggle is; somebody opening the
@@ -241,6 +242,11 @@ by width), each with a large snapshot and every column the list shows
 card share one badge module (`document-badges.tsx`) and one actions-menu
 module (`document-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard | ExplorerViewDetails` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The Details view, a sortable table with a snapshot preview on a resting hover, is [Explorer Details view](../013-workspace/explorer-details-view.md).
+
+**On a phone** (the `phone:` breakpoint: narrower than `sm`, or a touch screen under 500px tall)
+List and Details are not offered: they are for larger screens. The browse views and the team
+library always show cards, and the toggle is hidden so it takes no room in the header. The saved
+choice is left alone, so the same device shows it again once the window is wide enough.
 
 **The actions menu** (the ⋯ on a row or card, and on a Timeline document
 card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**
