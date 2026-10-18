@@ -75,7 +75,9 @@ never triggers it; staying in one for 5+ minutes does.
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a
-  phone width.
+  phone width. On a phone held sideways (the `landscape-phone` variant: a touch screen under 500px
+  tall) it is one slim row: the supporting line is left out and the padding tightens, so it covers
+  as little of the short screen as it can.
 
 ## Learn-more modal
 

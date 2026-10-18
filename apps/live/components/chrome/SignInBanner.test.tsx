@@ -25,6 +25,12 @@ describe('SignInBanner', () => {
   });
 
   // docs/specs/014-identity/sign-in-encouragement.md: a tour's offer takes the same place, so the banner steps aside.
+  // docs/specs/014-identity/sign-in-encouragement.md "Banner": a sideways phone has little height to give.
+  it('is one slim row on a phone held sideways', () => {
+    render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
+    expect(screen.getByText(/Share with your team/).className).toContain('landscape-phone:hidden');
+  });
+
   it('hides while a tour card is up', async () => {
     const { TOUR_CARD_ATTR } = await import('@/components/tour/TourBanner');
     render(<SignInBanner surface="Editor" onDismiss={() => {}} />);
