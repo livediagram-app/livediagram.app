@@ -21,7 +21,8 @@ import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { CONTENTS_SIDEBAR_WIDTH, type ContentsSide } from '@/lib/contents-placement';
 import { sideInsetsOf } from '@/lib/side-chrome-insets';
-import { ContentsAddPage, ContentsFind, ContentsList } from './PageContentsList';
+import { ContentsAddPage } from './ContentsAddPage';
+import { ContentsFind, ContentsList } from './PageContentsList';
 
 const ContentsIcon = lucideGlyph(lucideListOrdered, 14);
 const MinimiseLeftIcon = lucideGlyph(lucidePanelLeftClose, 14);
