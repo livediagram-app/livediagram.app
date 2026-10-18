@@ -5,6 +5,7 @@ import type { Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { setElementTourOffer, type ElementTourOffer } from '@/lib/element-tour-offer';
@@ -43,6 +44,8 @@ export function ElementTourHost() {
   const ctx = useEditorContext();
   const selectedId = useSelectionOf(singleOf);
   const touch = useCoarsePointer();
+  // Never offered on a phone (docs/specs/007-editor/element-tours.md "On a phone"): the selection toolbar has no room.
+  const phone = useIsMobileViewport();
   const element = useMemo(
     () => (selectedId ? (ctx.activeTab.elements.find((e) => e.id === selectedId) ?? null) : null),
     [ctx.activeTab.elements, selectedId],
@@ -171,6 +174,7 @@ export function ElementTourHost() {
     !ctx.embedMode;
   const offered =
     usable &&
+    !phone &&
     !active &&
     shown === null &&
     !modalOpen &&
