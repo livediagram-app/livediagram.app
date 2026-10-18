@@ -291,8 +291,9 @@ documented inline on each tool's element argument, so the tool definitions are
 the complete reference for it. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
 "mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
 cycle, a mind map) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
-exit level beside it, loops and skipped ranks routed round the boxes, flowchart roles toned (start, end, decision),
-node tones and icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
+exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a
+stadium starts or ends, a diamond decides; a node's "role" is a person's job title, for an org chart), node tones and
+icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
 mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is its heading (up to 40 characters,
 longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
 express (charts, tables, stickies, free placement). Either way:
