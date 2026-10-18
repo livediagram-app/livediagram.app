@@ -3,19 +3,14 @@
 // The pieces of Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is usePageContents.
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
-import { MAX_PAGES, type PageKind } from '@livediagram/document';
+import { Fragment, type CSSProperties } from 'react';
 import {
-  lucideFileText,
   lucideGripVertical,
   lucideCopy,
   lucideLock,
   lucideLockOpen,
   lucideTrash2,
-  lucidePanelsTopLeft,
-  lucidePlus,
   lucideSearch,
-  lucideShapes,
 } from '@livediagram/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
@@ -39,10 +34,6 @@ const CopyIcon = lucideGlyph(lucideCopy, 14);
 const DeleteIcon = lucideGlyph(lucideTrash2, 14);
 const GripIcon = lucideGlyph(lucideGripVertical, 14);
 const FindIcon = lucideGlyph(lucideSearch, 14);
-const PlusIcon = lucideGlyph(lucidePlus, 14);
-const InfographicIcon = lucideGlyph(lucidePanelsTopLeft, 16);
-const ArticleIcon = lucideGlyph(lucideFileText, 16);
-const LogoIcon = lucideGlyph(lucideShapes, 16);
 
 // The popover's rows: a thumbnail this tall, its width following the page's shape, up to LIST_MAX_W.
 const LIST_THUMB_H = 52;
@@ -50,13 +41,6 @@ const LIST_MAX_W = 92;
 // The sidebar's filmstrip: a picture as wide as the column, up to this tall (a portrait page).
 const FILM_MAX_W = 172;
 const FILM_MAX_H = 124;
-
-const ADD_KINDS: readonly { kind: PageKind; name: string; icon: () => React.ReactNode }[] = [
-  { kind: 'infographic', name: 'Infographic', icon: () => <InfographicIcon /> },
-  { kind: 'slide', name: 'Slide', icon: () => <SlideDeckIcon /> },
-  { kind: 'article', name: 'Article', icon: () => <ArticleIcon /> },
-  { kind: 'logo', name: 'Logo', icon: () => <LogoIcon /> },
-];
 
 // Find a Page, once the tab has more pages than fit at a glance.
 export function ContentsFind({ contents }: { contents: PageContents }) {
@@ -474,117 +458,3 @@ function FilmRow({ row, here, thumb, actions, grip }: RowProps) {
     </>
   );
 }
-
-// An Editor's footer: one full-width Add Page button. Resting the pointer on it (or pressing it, or
-// Up from it) opens the four kinds in a popover above it, as wide as the list, the last page's kind
-// first and highlighted; a press adds that kind after the last page. At the page limit the button is
-// disabled, its Tooltip naming the limit.
-export function ContentsAddPage({ contents }: { contents: PageContents }) {
-  const { canAdd, add, full, lastKind } = contents;
-  const [open, setOpen] = useState(false);
-  const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const menu = useRef<HTMLDivElement>(null);
-  useEffect(() => () => clearTimeout(closing.current ?? undefined), []);
-  if (!canAdd) return null;
-  const kinds = lastKind
-    ? [
-        ...ADD_KINDS.filter((k) => k.kind === lastKind),
-        ...ADD_KINDS.filter((k) => k.kind !== lastKind),
-      ]
-    : ADD_KINDS;
-  const show = () => {
-    if (full) return;
-    clearTimeout(closing.current ?? undefined);
-    setOpen(true);
-  };
-  // A moment's grace, so the pointer can cross from the button to the popover.
-  const hide = () => {
-    clearTimeout(closing.current ?? undefined);
-    closing.current = setTimeout(() => setOpen(false), ADD_PAGE_CLOSE_MS);
-  };
-  const items = () => [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
-  const button = (
-    <button
-      ref={trigger}
-      type="button"
-      disabled={full}
-      aria-haspopup="menu"
-      aria-expanded={open}
-      data-contents-add=""
-      onClick={() => (open ? setOpen(false) : show())}
-      onKeyDown={(e) => {
-        if (e.key !== 'ArrowUp' || full) return;
-        e.preventDefault();
-        show();
-        requestAnimationFrame(() => items()[0]?.focus());
-      }}
-      className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-40 ${
-        open
-          ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100'
-      }`}
-    >
-      <PlusIcon />
-      Add Page
-    </button>
-  );
-  return (
-    <div
-      className="relative border-t border-slate-100 p-3 dark:border-slate-800"
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
-      }}
-    >
-      {open ? (
-        <div
-          ref={menu}
-          role="menu"
-          aria-label="Add a page"
-          data-contents-add-menu=""
-          onKeyDown={(e) => {
-            const all = items();
-            const at = all.indexOf(document.activeElement as HTMLElement);
-            if (e.key === 'Escape') {
-              e.stopPropagation();
-              setOpen(false);
-              trigger.current?.focus();
-            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-              e.preventDefault();
-              const step = e.key === 'ArrowDown' ? 1 : -1;
-              all[(at + step + all.length) % all.length]?.focus();
-            }
-          }}
-          className="absolute inset-x-3 bottom-full z-10 mb-1 flex flex-col gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 motion-safe:transition-[opacity,translate] motion-safe:duration-micro motion-safe:starting:translate-y-1 motion-safe:starting:opacity-0"
-        >
-          {kinds.map(({ kind, name, icon }) => (
-            <button
-              key={kind}
-              type="button"
-              role="menuitem"
-              aria-label={`Add a ${name} page`}
-              onClick={() => {
-                setOpen(false);
-                add?.(kind);
-              }}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
-                kind === lastKind
-                  ? 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-100 dark:hover:bg-brand-500/25'
-                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
-            >
-              {icon()}
-              {name}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {full ? <Tooltip label={`A tab holds up to ${MAX_PAGES} pages`}>{button}</Tooltip> : button}
-    </div>
-  );
-}
-
-// How long the kinds stay up after the pointer leaves the button and the popover, in ms.
-const ADD_PAGE_CLOSE_MS = 150;

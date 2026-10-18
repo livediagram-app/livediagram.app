@@ -3,7 +3,8 @@
 // The Actions board in the editor (docs/specs/026-plan/linked-boards.md): every action in the document has a card on
 // it, and the two stay one thing. The board is made the first time someone adds an action; after that an Editor's
 // editor heals what it can see a moment after things settle (healLinkedCards); a card a person trashes takes its
-// action off the canvas (and an undo or Restore this session puts it back); an action that goes trashes its card.
+// action off the canvas (and an undo or Restore this session puts it back); an action that goes leaves its card on the
+// board as a card of its own (and an undo links them again).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ElementActionAssignee, Tab } from '@livediagram/document';
 import {
@@ -12,7 +13,7 @@ import {
   healLinkedCards,
   isTrashed,
   itemPersonId,
-  linkedCardGonePatch,
+  linkedCardLeftPatch,
   linkedCardId,
   linkedCardsTrashedBy,
   type Item,
@@ -127,7 +128,7 @@ export function useLinkedActionCards(deps: {
   // Actions this session took off the canvas with their trashed card, to put back if the card comes back.
   const removed = useRef(new Map<string, PlacedAction>());
 
-  // An action that went (deleted, or its element or tab was) trashes its card.
+  // An action that went (deleted, or its element or tab was) leaves its card on the board, a card of its own.
   const seen = useRef<ReadonlySet<string>>(new Set());
   useEffect(() => {
     const gone = goneActionIds(seen.current, placed);
@@ -137,10 +138,10 @@ export function useLinkedActionCards(deps: {
     const patches = gone.flatMap((id) => {
       if (removed.current.has(id)) return [];
       const card = now.items.items.get(linkedCardId('actions', id));
-      return card ? (linkedCardGonePatch(card) ?? []) : [];
+      return card ? (linkedCardLeftPatch(card) ?? []) : [];
     });
     if (!patches.length) return;
-    debugLog('[linked] action.gone.card.trashed', { count: patches.length });
+    debugLog('[linked] action.gone.card.unlinked', { count: patches.length });
     void writePatches(now.items.writeQuiet, patches);
   }, [placed, live]);
 
