@@ -147,7 +147,7 @@ already infographic pages, built with the page layouts' kit.
 - **Working Backwards** _(Strategy)_: Amazon's PR/FAQ on article pages (Report look): the press release for a launch
   that is not built yet, then the Customer FAQ and, after a page break, the Internal FAQ, closing on a to-do list
   for the review ([Templates](../008-canvas/canvas-and-palette.md#templates)). It is an article, not infographic
-  pages, as the Article template is.
+  pages, as the Project Brief template is.
 
 ### Design templates
 

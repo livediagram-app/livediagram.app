@@ -81,7 +81,6 @@ function bridge(over: Partial<SheetsBridge> = {}): Fake {
     commitElements: vi.fn((map: (els: Element[]) => Element[]) => {
       b.elements = map(b.elements);
     }),
-    switchToPlan: vi.fn(),
     selectElement: vi.fn(),
     sheetRetitled: vi.fn(),
     handlers: null,

@@ -1,4 +1,4 @@
-// Putting a new Sheet on a tab for an agent (docs/specs/029-sheets/sheet-store.md "Agents", MCP add_sheet and
+// Putting a new Sheet on a tab in Plan for an agent (docs/specs/029-sheets/sheet-store.md "Agents", MCP add_sheet and
 // `sheet add`): the sheet is made in the store first (a title unique on the tab, optionally filled from rows or CSV
 // text read as typed from A1), then a Sheet element framing it is placed beside what the tab holds, as add_board
 // places a board, in one changeset (live to anyone with the tab open). The first cells are checked against the
@@ -19,6 +19,7 @@ import {
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
   createShape,
+  tabTakesSheets,
 } from '@livediagram/document';
 import { placeBeside } from '@livediagram/items';
 import {
@@ -176,6 +177,14 @@ export async function addSheet(
         code: 'tab_not_found',
         message: `No tab "${tabId}". Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
       };
+    // A Sheet goes only on a tab in Plan (docs/specs/029-sheets/sheet.md "Only in Plan"): refused before a sheet is made.
+    const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
+    if (!tabTakesSheets(tab))
+      return {
+        ok: false,
+        code: 'tab_not_plan',
+        message: `"${tab.name}" is not a Plan tab, and a Sheet goes only on a tab in Plan. Add a Sheet tab with add_tab and template "blank-spreadsheet", then fill it with change_sheet.`,
+      };
     const onTab = (all ?? (await readSheets(api, documentId, tabId))).filter(
       (s) => s.tabId === tabId,
     );
@@ -186,10 +195,7 @@ export async function addSheet(
     const layout = emptyLayout(rand);
     const blank = emptySheet({ id: makeSheetId(rand), tabId, title, layout });
     // A design is tinted for the tab's canvas.
-    const background = input.design
-      ? (await api.json<TabResponse>(tabPath(documentId, tabId))).tab.backgroundColor
-      : undefined;
-    const dark = darkCanvas(background);
+    const dark = darkCanvas(input.design ? tab.backgroundColor : undefined);
     const first = firstCells(input, onTab.map(sheetFromJson), blank, dark, rand);
     if ('ok' in first) return first;
     if (first.writes.length) {

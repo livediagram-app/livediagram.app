@@ -87,7 +87,7 @@ csv`.
 ## Editor components (`apps/live/components/sheets/`, the lazy chunk)
 
 ```
-PlanSheetView.tsx        the element body: model, controller, MaximisableSlot, faces, the Switch to Plan hint,
+PlanSheetView.tsx        the element body: model, controller, MaximisableSlot, faces,
                          Import CSV, focus tracking, the Setup Sheet card while setupPending; lays out header /
                          toolbar / formula bar / grid / status bar
 SheetFace.tsx            the frame: loading (SheetBuildAnimation, "Opening Sheet", LoadingSweep), or skeleton grid
@@ -212,8 +212,8 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 ### Input by mode
 
 - `interactive = plan.planInput` (Plan mode) as boards; `canEdit` from the bridge. Not interactive: the grid's
-  `pointer-events: none`, so the element moves and selects as any; a double-click opens the hint popover
-  ("Switch to Plan to edit this sheet", **Switch to Plan** calls `bridge.switchToPlan()`).
+  `pointer-events: none`, so the element moves and selects as any, and a double-click offers nothing (a Sheet goes
+  only on a tab in Plan: [Sheet](../sheet.md#only-in-plan)).
 - In Plan mode the header drags the element (as the board header); the grid takes pointer and wheel (wheel
   `stopPropagation` while the grid can scroll that way, else the canvas pans).
 
@@ -511,7 +511,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Toolbar acts on the selection; overflow; menus              | `apps/live/components/sheets/SheetToolbar.test.tsx`, `SheetMenus.test.tsx`, `SheetHeader.test.tsx`                                             |
 | Formula bar, Find and Replace, status bar, Add Rows         | `SheetFormulaBar.test.tsx`, `SheetFindBar.test.tsx`, `SheetStatusBar.test.ts`, `SheetAddRows.test.tsx`                                         |
 | Clipboard events write the three forms; paste reads them    | `apps/live/components/sheets/useSheetClipboard.test.tsx`                                                                                       |
-| Faces, mode gating, Switch to Plan, Import CSV, maximise    | `apps/live/components/sheets/PlanSheetView.test.tsx`, `SheetFace.test.tsx`                                                                     |
+| Faces, mode gating, Import CSV, maximise                    | `apps/live/components/sheets/PlanSheetView.test.tsx`, `SheetFace.test.tsx`                                                                     |
 | Escape order with menus and Sheet owners; maximise kinds    | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                  |
 | CSV out and in                                              | `apps/live/components/sheets/sheet-csv.test.ts`                                                                                                |
 | The bridge                                                  | `apps/live/hooks/sheets/useSheetsBridge.test.tsx`                                                                                              |
