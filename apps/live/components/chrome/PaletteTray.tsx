@@ -7,6 +7,7 @@
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { EDITOR_VIEWPORT_ATTR } from '@/lib/editor-viewport';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -101,6 +102,20 @@ export function PaletteTrayAction({ label, onAction }: { label: string; onAction
   );
 }
 
+// Where the tray goes on the page: in the editor's own box, beside the strip, so it stacks with the editor's
+// chrome. On the body it stood above the editor's whole stacking context, the header's popovers (who can see
+// this, the account menu) included. A box with a transform (a split pane) holds its fixed children, so the
+// tray's place is measured from that box's corner.
+export function trayHost(): { node: HTMLElement; dx: number; dy: number } {
+  const host = document
+    .querySelector(STRIP_CARD)
+    ?.closest<HTMLElement>(`[${EDITOR_VIEWPORT_ATTR}]`);
+  if (!host) return { node: document.body, dx: 0, dy: 0 };
+  if (getComputedStyle(host).transform === 'none') return { node: host, dx: 0, dy: 0 };
+  const r = host.getBoundingClientRect();
+  return { node: host, dx: r.left, dy: r.top };
+}
+
 export function PaletteTray({
   box,
   lead,
@@ -120,12 +135,13 @@ export function PaletteTray({
   standing?: boolean;
 }) {
   if (typeof document === 'undefined') return null;
+  const host = trayHost();
   return createPortal(
     <div
       // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
       className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       // Up a pixel, so the tray covers the strip's bottom border where they meet and the two read as one.
-      style={{ left: box.left, width: box.width, top: box.bottom - 1 }}
+      style={{ left: box.left - host.dx, width: box.width, top: box.bottom - 1 - host.dy }}
     >
       <div
         // Floating UI: the canvas's capture-phase pointerdown leaves its presses alone (as TopCenterBanner).
@@ -143,6 +159,6 @@ export function PaletteTray({
         {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
       </div>
     </div>,
-    document.body,
+    host.node,
   );
 }
