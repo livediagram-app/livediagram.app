@@ -43,6 +43,9 @@ const SELECTOR_KEYS_OF: ReadonlySet<string> = new Set(['from', 'to', 'above', 'b
 const PLACEMENT_WORDS: ReadonlySet<string> = new Set([...PLACEMENT_RELATIONS, 'at']);
 const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
+// What an `add` placement can be, for a word that reads as one but is not.
+const PLACEMENT_EXPECTED =
+  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>';
 // A whole JSON number, `true` or `false`; `2FA`, `3D` or `1st` are strings (EO19).
 const JSON_LITERAL = /^(-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?|true|false)$/;
 
@@ -242,7 +245,13 @@ export function parseOperationWords(
     }
     const c = collect(name, tail);
     if ('column' in c) return { error: c };
-    if (c.terms.length) return fail(c.terms[0], end, 'key=value or a placement');
+    if (c.terms.length) {
+      // A `word:ref` that is no placement (`right:n3` for `right-of:n3`) is told which ones there are; "quote values
+      // with spaces" said nothing about it.
+      const stray = c.terms[0]!;
+      const keyed = name === 'add' && KEYED.test(unquotedPrefix(stray));
+      return fail(stray, end, keyed ? PLACEMENT_EXPECTED : 'key=value or a placement');
+    }
     const raw: Record<string, unknown> = { op: name, kind: kindWord.value };
     if (c.special.id !== undefined) raw.id = c.special.id;
     if (between) raw.between = between;

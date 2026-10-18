@@ -56,6 +56,7 @@ Or one operation a command; its words are the operation's, and connect needs no 
 
 Operations: add set rm move connect rewire insert wrap unwrap order layout test.
 Select by ref (n3), "label", type:sticky, in:f2, n3->n4, downstream:n3.
+Place an add or a move with right-of:n3, left-of:n3, above:n3, below:n3, after:n3 or inside:f2.
 Values with spaces are quoted: label="Sign in". key= unsets a field.
 --dry-run plans without writing; --summary says what it is for. Every write prints what
 changed, the revision, the lint verdict and the revert command; tab diff --since <rev> shows
