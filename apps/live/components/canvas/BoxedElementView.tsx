@@ -302,10 +302,10 @@ function BoxedElementViewImpl({
   // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
   const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
-  // Accent for the data-element fills (progress bar / ring, rail line, rating
-  // stars): a remote selector colour wins, else the element's own stroke, else
-  // the theme default stroke. Shared by the ProgressView / RailView / RatingView
-  // branches below so they all read the same accent.
+  // Accent for the data-element fills (progress bar / ring, rating stars): a
+  // remote selector colour wins, else the element's own stroke, else the theme
+  // default stroke. Shared by the ProgressView / RatingView branches below so
+  // they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
