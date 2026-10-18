@@ -11,6 +11,7 @@ import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livediagram/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
+import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
@@ -61,9 +62,7 @@ function Consent() {
   if (status === 'cancelled') {
     return (
       <OauthShell>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Connection cancelled
-        </h1>
+        <h1 className={AUTH_TITLE}>Connection cancelled</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           You can close this window.
         </p>
@@ -74,9 +73,7 @@ function Consent() {
   if (!clerkEnabled) {
     return (
       <OauthShell>
-        <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-          Connecting apps isn’t available
-        </h1>
+        <h1 className={AUTH_TITLE}>Connecting apps isn’t available</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           This deployment doesn’t have accounts enabled, so there’s nothing to connect to.
         </p>
@@ -99,9 +96,7 @@ function Consent() {
     const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Sign in to connect {client}
-        </h1>
+        <h1 className={AUTH_TITLE}>Sign in to connect {client}</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           You need to be signed in to connect an app to your documents.
         </p>
@@ -142,9 +137,7 @@ function Consent() {
   if (resolved === null) {
     return (
       <OauthShell>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          This link has expired
-        </h1>
+        <h1 className={AUTH_TITLE}>This link has expired</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           We couldn’t find the connection request this link points to. Start the connection again
           from your app.
@@ -201,7 +194,7 @@ function Consent() {
 
   return (
     <OauthShell>
-      <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Connect {client}</h1>
+      <h1 className={AUTH_TITLE}>Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
         access your livediagram documents on your behalf. Approving creates an API token, which you

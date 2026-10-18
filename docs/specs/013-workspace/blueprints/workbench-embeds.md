@@ -1026,7 +1026,7 @@ Configuration: `APP_BASE_URL` (existing var) builds the URLs; `WORKBENCH_TICKET_
 ## Assets and external resources
 
 No new asset. The external-link glyph and the key glyph already ship in the editor's icon set; the pairing page
-reuses `OauthShell` and `AnimatedLinesBackdrop`.
+reuses `OauthShell`, which stands on `AuthStage` (the Night Band frame).
 
 ## Defaults ledger
 
