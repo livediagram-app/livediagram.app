@@ -16,6 +16,8 @@ import {
   ADD_ROW_OPTION,
   FLOWCHART_NEXT_OPTION,
   FLOWCHART_PARALLEL_OPTION,
+  ADD_ENTITY_FIELD_OPTION,
+  ADD_RELATED_ENTITY_OPTION,
   MIND_CHILD_OPTION,
   MIND_SIBLING_OPTION,
   OPTIONS,
@@ -81,6 +83,9 @@ type QuickConnectRingProps = {
   // What `onGrowMind` grows, which names its two options. Absent: a mind map.
   growing?: 'mind' | 'flowchart';
   onAddTableColumn?: () => void;
+  // An entity (docs/specs/009-elements/entity.md "Growing a model"): Add Related Entity on this side, and
+  // Add Field when this is the bottom ring.
+  entity?: { onAddRelated: () => void; onAddField?: () => void };
 };
 
 // The plus trigger stays in the shared floating-control family (matching
@@ -165,6 +170,7 @@ export function QuickConnectRing({
   onGrowMind,
   growing = 'mind',
   onAddTableColumn,
+  entity,
 }: QuickConnectRingProps) {
   // The table variant slims to Arrow + this side's structural add (Add Row
   // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Pencil / Text
@@ -176,20 +182,27 @@ export function QuickConnectRing({
           ...(onAddTableColumn ? [ADD_COLUMN_OPTION] : []),
           OPTIONS.find((o) => o.kind === 'arrow')!,
         ]
-      : webRow
-        ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
-        : onGrowMind
-          ? // A mind node's ring is how a map grows: its two growth actions
-            // and Duplicate. A free arrow, a sketch or a loose label is not
-            // (docs/specs/009-elements/mind-node.md). A flowchart step's is the same, named for steps
-            // (docs/specs/009-elements/flowchart.md).
-            [
-              ...(growing === 'flowchart'
-                ? [FLOWCHART_NEXT_OPTION, FLOWCHART_PARALLEL_OPTION]
-                : [MIND_CHILD_OPTION, MIND_SIBLING_OPTION]),
-              ...OPTIONS.filter((o) => o.kind === 'duplicate'),
-            ]
-          : OPTIONS;
+      : entity
+        ? // An entity's ring grows a data model: a related entity, a field, then the usual connect and copy.
+          [
+            ADD_RELATED_ENTITY_OPTION,
+            ...(entity.onAddField ? [ADD_ENTITY_FIELD_OPTION] : []),
+            ...OPTIONS.filter((o) => o.kind === 'arrow' || o.kind === 'duplicate'),
+          ]
+        : webRow
+          ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
+          : onGrowMind
+            ? // A mind node's ring is how a map grows: its two growth actions
+              // and Duplicate. A free arrow, a sketch or a loose label is not
+              // (docs/specs/009-elements/mind-node.md). A flowchart step's is the same, named for steps
+              // (docs/specs/009-elements/flowchart.md).
+              [
+                ...(growing === 'flowchart'
+                  ? [FLOWCHART_NEXT_OPTION, FLOWCHART_PARALLEL_OPTION]
+                  : [MIND_CHILD_OPTION, MIND_SIBLING_OPTION]),
+                ...OPTIONS.filter((o) => o.kind === 'duplicate'),
+              ]
+            : OPTIONS;
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →
   // off for exit).
@@ -407,6 +420,8 @@ export function QuickConnectRing({
                       if (option.kind === 'pencil') onPencil();
                       else if (option.kind === 'add-web-row') webRow?.onAdd();
                       else if (option.kind === 'add-row') onAddTableRow?.();
+                      else if (option.kind === 'entity-related') entity?.onAddRelated();
+                      else if (option.kind === 'entity-field') entity?.onAddField?.();
                       else if (option.kind === 'add-column') onAddTableColumn?.();
                       else if (option.kind === 'mind-child' || option.kind === 'flowchart-next')
                         onGrowMind?.('child');

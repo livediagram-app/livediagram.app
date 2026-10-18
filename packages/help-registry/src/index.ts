@@ -1328,9 +1328,10 @@ export const articles: Article[] = [
   {
     slug: 'entities',
     title: 'Entities',
-    description: 'A title over name / type rows, for class diagrams and data models.',
+    description:
+      'A title over fields with keys, joined field to field, for data models and class diagrams.',
     keywords:
-      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular',
+      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',
@@ -2756,7 +2757,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic aurora seasonal holiday christmas halloween easter new year snowflakes',
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',

@@ -6,23 +6,23 @@ import { EntityPair } from '@/components/illustrations/palette-structure-element
 export const metadata = helpMetadata({
   title: 'Entities',
   description:
-    'An entity is a title bar over a list of name and type rows: the UML class box and the ER entity box in one element.',
+    'An entity is a title bar over a list of fields, each a name, a type and a key: the UML class box and the database table in one element, joined field to field.',
   path: '/help/palette/entities/',
 });
 
 <ArticleLayout
   title="Entities"
-  description="A title over name / type rows, for class diagrams and data models."
+  description="A title over fields with keys, joined field to field, for data models and class diagrams."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("entities")}
 >
 
-An **Entity** is a title bar over a list of fields, each a name with an optional type. It is the box at the heart of a UML class diagram and an entity-relationship diagram alike.
+An **Entity** is a title bar over a list of fields, each a name with an optional type and key. It is the box at the heart of an entity-relationship diagram and a UML class diagram alike, and the place a data model grows: entities add fields where they stand and join one another field to field, with the cardinality on each end.
 
 ## Take the tour
 
-The first time you select an entity, a small **Tour** toolbar appears beside its toolbar. Press **Play** for a short tour on your own entity: its title, its fields, the Fields menu that edits them, and joining entities with ER ends. Press the cross if you would rather not; either way it is not offered again. To be offered it again, open **Settings**, then **Tours**, open **Element Tours** and switch **Entity Tour** back on.
+The first time you select an entity, a small **Tour** toolbar appears beside its toolbar. Press **Play** for a short tour on your own entity: its title, its fields and keys, editing them in place and in the Fields menu, and joining entities. Press the cross if you would rather not; either way it is not offered again. To be offered it again, open **Settings**, then **Tours**, open **Element Tours** and switch **Entity Tour** back on.
 
 ## Finding it
 
@@ -31,18 +31,40 @@ In Diagram mode, **Entity** is in the palette's **Diagrams** category, after the
 ## Adding one and filling it in
 
 <Step n={1}>
-  Add an **Entity**. It arrives titled "Entity" with two example fields, `id` and `name`, both typed
-  `string`.
+  Add an **Entity**. It arrives titled "Entity" with two example fields: `id`, the primary key, and
+  `name`, both typed `string`.
 </Step>
 
-<Step n={2}>Double-click its title to rename it: the title is an ordinary element label.</Step>
+<Step n={2}>Double-click its title bar to rename it: the title is an ordinary element label.</Step>
 
 <Step n={3}>
-  Right-click the entity and open **Tools**, then **Fields**, to edit the rows: each has a name, an
-  optional type and a **×** to remove it, with **Add Field** at the foot.
+  Double-click a field to edit it where it stands: the name, then **Tab** to the type. **Enter**
+  saves and moves to the next field, and past the last one it adds a new field, so you can type a
+  whole table without reaching for the mouse. **Escape** cancels, and a field you empty is removed.
 </Step>
 
-An entity holds up to 40 fields, each name and type up to 80 characters. The type column is optional. Leave it blank for a rough sketch or an attribute list where the type does not matter, and the row simply shows the name.
+<Step n={4}>
+  Press the small key at the start of the field you are editing to give it a key: **PK** (primary
+  key), **FK** (foreign key), **PK FK** (both, for a join table) or **UK** (unique). Each key shows
+  as a glyph beside the field.
+</Step>
+
+The box grows and shrinks with its fields, so a new field is never hidden below the bottom. You can also edit every field at once: right-click the entity and open **Tools**, then **Fields**, for a key button, a name, a type and a **×** per field, with **Add Field** at the foot.
+
+An entity holds up to 40 fields, each name and type up to 80 characters. The type is optional: leave it blank for a rough sketch or an attribute list where the type does not matter.
+
+## Growing a model
+
+Select an entity and press the **+** on any side:
+
+- **Add Related Entity** puts a new entity on that side, already joined to this one. It comes with its own `id` primary key and a foreign key named after this entity (`customer_id` beside "Customer"), and its title is ready to type.
+- **Add Field**, on the bottom **+**, starts a new field at the end.
+
+## Joining fields
+
+Hover a field of the selected entity and a small dot appears on each side of it. Drag from a dot to a field of another entity: the line runs from field to field and stays on those fields as you move the entities. Dropping a line on an entity's title joins the whole entity instead.
+
+A line joining two entities becomes a relationship as you let go, with crow's-foot ends: **one** at the table being pointed to, **many** at the end on a foreign key. Select it and press **Cardinality** in its toolbar to choose another pair: One to One, One to Many, Many to One, Many to Many, Zero or One to Many, or One to Zero or Many.
 
 <Figure caption="Two entities joined by a pinned arrow with a hollow triangle head, the UML mark for inheritance.">
   <EntityPair />
@@ -50,9 +72,9 @@ An entity holds up to 40 fields, each name and type up to 80 characters. The typ
 
 ## Modelling with them
 
+- **Data models.** One entity per table, one field per column, with its type and key, and a relationship from each foreign key to the table it points at. The **Database Schema** template is a worked example.
 - **Class diagrams.** Put attributes and methods in the same list; a method reads naturally as `render(): void` in the name column.
-- **Data models.** One entity per table, one row per column, with the type beside it.
-- **Relationships** are ordinary [arrows](/help/palette/arrows/). Pin one to each entity and it stays attached as you move them; the arrowhead styles include the hollow triangle (inheritance) and the filled and hollow diamonds (composition and aggregation) UML uses.
+- **Relationships** are ordinary [arrows](/help/palette/arrows/), so every arrow style applies; the arrowhead styles also include the hollow triangle (inheritance) and the filled and hollow diamonds (composition and aggregation) UML uses.
 
 The title bar grows with the title's text size, so a larger title never collides with the divider under it.
 

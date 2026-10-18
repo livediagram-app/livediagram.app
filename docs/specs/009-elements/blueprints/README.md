@@ -11,7 +11,7 @@ Follow the references below only as needed; never upfront.
 - ./code-block.md - when implementing or changing the code block, its schemes, tokenizer, wrap or edit dialog
 - ./data-charts.md - when implementing or changing pie / bar / line charts, chart palettes, the key or the legend element
 - ./embeds.md - when implementing or changing the embed element, `embedTargetFor`, its providers or the no-load notice
-- ./entity.md - when implementing or changing the entity, its title band or its fields
+- ./entity.md - when implementing or changing the entity, its title band, fields and keys, in-place editing, field-to-field relationships or cardinality
 - ./image-reference-index.md - when implementing or changing `image_refs`, `image_grants`, their writers, backfill, or the image sweep, usage map, share read and render read
 - ./image-search.md - when implementing or changing the picker's Search tab, the Openverse client, the pick download or `ImageElement.credit`
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export

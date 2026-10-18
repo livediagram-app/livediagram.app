@@ -1,6 +1,6 @@
 // What a content kind holds, briefly (docs/specs/024-agents/blueprints/document-views.md "Content
 // summaries", VW18 to VW21).
-import type { Element } from '@livediagram/document';
+import { ENTITY_KEY_LABELS, type Element } from '@livediagram/document';
 import { ENTITY_FIELDS_SHOWN } from './constants';
 import { arrayField, flagField, isObject, listOf, stringField } from './fields';
 import { cellText } from './text';
@@ -11,7 +11,11 @@ function entitySummary(el: Element): string {
   const shown = fields.slice(0, ENTITY_FIELDS_SHOWN).map((field) => {
     const name = cellText(stringField(field, 'name') ?? '', true);
     const type = stringField(field, 'type');
-    return type ? `${name} ${cellText(type, true)}` : name;
+    const key = stringField(field, 'key');
+    const typed = type ? `${name} ${cellText(type, true)}` : name;
+    return key && key in ENTITY_KEY_LABELS
+      ? `${typed} ${ENTITY_KEY_LABELS[key as keyof typeof ENTITY_KEY_LABELS]}`
+      : typed;
   });
   if (fields.length > ENTITY_FIELDS_SHOWN) shown.push(`+${fields.length - ENTITY_FIELDS_SHOWN}`);
   return `{${shown.join('; ')}}`;

@@ -1,6 +1,5 @@
 // Data elements in the headless render (docs/specs/009-elements/progress.md, /51, /52, /100, /120):
-// progress bars and rings, ratings, timeline rails, record boxes and a page's
-// masthead.
+// progress bars and rings, and ratings.
 //
 // Every one of these drew NOTHING before: the exporter had no branch for them,
 // so they fell through to the generic box and an exported progress bar was an
@@ -15,12 +14,6 @@
 
 import { capBandBaselineY } from '@livediagram/icons';
 import { clampPercent, clampRating, RATING_DEFAULT, RATING_MAX } from './data-shapes';
-import {
-  ENTITY_BODY_PAD_PX,
-  ENTITY_ROW_GAP_PX,
-  ENTITY_ROW_TEXT_PX,
-  entityHeaderHeight,
-} from './entity-geometry';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { progressLabelInks } from './progress-colours';
@@ -144,34 +137,4 @@ export function svgRating(el: Data, accent: string): string {
       `<path d="${STAR_PATH}"${paint} stroke-linejoin="round"/></svg>`
     );
   }).join('');
-}
-
-/**
- * A record's header rule + field rows (docs/specs/009-elements/entity.md).
- *
- * The TITLE is the element's ordinary label, so the generic label emitter
- * still draws it; this is the rule under it and the rows below.
- */
-export function svgEntityRows(el: Data, textColor: string, fontFamily?: string): string {
-  const rule = el.strokeColor ?? MUTED_RULE;
-  // The same geometry the canvas draws (entity-geometry.ts).
-  const headerH = entityHeaderHeight(el.textSize);
-  const divider = `<path d="M ${r2(el.x)} ${r2(el.y + headerH)} L ${r2(el.x + el.width)} ${r2(el.y + headerH)}" stroke="${xmlEscape(rule)}" stroke-width="1"/>`;
-  const fields = el.entityFields ?? [];
-  const rowH = ENTITY_ROW_TEXT_PX + ENTITY_ROW_GAP_PX;
-  const top = el.y + headerH + ENTITY_BODY_PAD_PX;
-  const rows = fields
-    .map((f, i) => {
-      const y = top + i * rowH + 8;
-      if (y > el.y + el.height - 2) return '';
-      const name = `<text x="${r2(el.x + 8)}" y="${r2(y)}"${sans(fontFamily)} font-size="11" fill="${xmlEscape(textColor)}">${xmlEscape(f.name)}</text>`;
-      // The type is muted and pushed right: scanning a class is scanning the
-      // NAMES, and a full-strength type column competes with them.
-      const type = f.type
-        ? `<text x="${r2(el.x + el.width - 8)}" y="${r2(y)}" text-anchor="end"${sans(fontFamily)} font-size="10" opacity="0.55" fill="${xmlEscape(textColor)}">${xmlEscape(f.type)}</text>`
-        : '';
-      return name + type;
-    })
-    .join('');
-  return divider + rows;
 }

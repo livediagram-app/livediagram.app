@@ -477,6 +477,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextCase':
     'Someone set a text on a logo page in capitals, lower case or as typed.',
   'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
+  'Element|Created|RelatedEntity':
+    "Someone added an entity from another entity's ring, already joined to it by a foreign key.",
+  'Element|Added|EntityField':
+    "Someone started a new field on an entity from its ring's Add Field.",
+  'Element|Changed|Cardinality': "Someone picked a relationship's cardinality from its toolbar.",
   'Element|Created|MirrorTwin':
     'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
   'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",

@@ -128,10 +128,16 @@ export const PAGE_HEADING_MAX = 200;
 export const ENTITY_MAX_FIELDS = 40;
 export const ENTITY_MAX_TEXT = 80;
 
+// A field's role in a data model (docs/specs/009-elements/entity.md "Keys"): primary, foreign, both (a
+// join table's composite key) or unique. One value, not a set: these four are the combinations a schema
+// uses, and one value is one press to cycle.
+export const ENTITY_KEYS = ['pk', 'fk', 'pk-fk', 'uk'] as const;
+export type EntityKey = (typeof ENTITY_KEYS)[number];
+
 // A row in a record box. `type` is optional because half the uses (an ER
 // entity's attribute list, a rough class sketch) don't carry one, and an empty
-// column reads better than a placeholder.
-export type EntityField = { name: string; type?: string };
+// column reads better than a placeholder. `key` is absent for a field with no key.
+export type EntityField = { name: string; type?: string; key?: EntityKey };
 export const CHECKLIST_MAX_TEXT = 200;
 // All three seed rows are unchecked, per docs/specs/009-elements/checklist.md. A seeded `done: true` made
 // a freshly-dropped checklist render its first row ticked and struck through,

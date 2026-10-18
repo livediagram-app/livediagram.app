@@ -6,8 +6,9 @@ import {
   LEGEND_MAX_TEXT,
   type LegendItem,
   CHECKLIST_MAX_TEXT,
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
+  isEntity,
+  withEntityFields,
+  type FieldRemap,
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
   DECISION_MAX_DRIVERS,
@@ -199,20 +200,17 @@ export function useDataShapeSetters({
 
   // Entity fields (docs/specs/009-elements/entity.md). Bounded on write like the checklist's rows, so
   // a paste into the menu can't produce an element nobody can read.
-  const setEntityFieldsSelected = (fields: EntityField[]) => {
+  // Entity fields (docs/specs/009-elements/entity.md "The Fields menu"): cleaned and bounded, each box refitted
+  // to its fields, and ends pinned to a removed field let go (withEntityFields).
+  const setEntityFieldsSelected = (fields: EntityField[], remap?: FieldRemap) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    const bounded = fields.slice(0, ENTITY_MAX_FIELDS).map((f) => ({
-      name: f.name.slice(0, ENTITY_MAX_TEXT),
-      ...(f.type ? { type: f.type.slice(0, ENTITY_MAX_TEXT) } : {}),
-    }));
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'entity'
-          ? { ...el, entityFields: bounded }
-          : el,
-      ),
-    );
+    commit((els) => {
+      let next = els;
+      for (const el of els)
+        if (ids.has(el.id) && isEntity(el)) next = withEntityFields(next, el.id, fields, remap);
+      return next;
+    });
     track('Element', 'Changed', 'Entity');
   };
 

@@ -363,13 +363,14 @@ On a selected stack, from `stack-tour-steps.ts`.
 On a selected entity, from `entity-tour-steps.ts`. Its fields carry `data-entity-fields` for the tour to ring.
 
 1. **A Title Over Its Fields**: rings the entity; one box for a UML class or an ER table.
-2. **Rename It**: rings the entity; double-click (double-tap) types over the title, which formats like any label.
-3. **name: Type** (an entity with fields): rings the fields; the type sits muted on the right, and a method is a row
-   too (`render(): void`).
-4. **Edit the Fields**: the menu step. Fields: a name and a type per row, a cross to remove one, Add Field, up to
-   forty.
-5. **Join Them Up**: rings the entity; a line between two entities takes the ER ends (one, many, zero or many) from
-   its own menu.
+2. **Rename It**: rings the entity; double-click (double-tap) on the title bar types over the title, which formats
+   like any label.
+3. **name: Type** (an entity with fields): rings the fields; each is a name, an optional type and a key (PK, FK,
+   UK), and a double-click (double-tap) edits one in place, Enter moving to the next and adding one past the last.
+4. **Edit the Fields**: the menu step. Fields: a key, a name and a type per row, a cross to remove one, Add Field, up
+   to forty.
+5. **Join Them Up**: rings the entity; a "+" adds a related entity already joined, or a drag from the dot beside a
+   field to another entity's field draws a one-to-many relationship, which the Cardinality button changes.
 6. **That Is an Entity**: the closing card, with **Entities Help**.
 
 ## The Tab Window tour

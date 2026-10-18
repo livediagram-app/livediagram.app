@@ -163,7 +163,7 @@
 - [x] Presentation and UX
 - [ ] Accessibility
 - [ ] Observability
-- [ ] Testing
+- [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
 

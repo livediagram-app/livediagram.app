@@ -7,8 +7,10 @@ import {
   createPinnedArrow,
   createShape,
   createSticky,
+  entityFieldView,
   entityHeight,
   type Anchor,
+  type ErShape,
   type Element,
 } from '@livediagram/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
@@ -21,16 +23,16 @@ import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 // which point back at the menu item they were ordered as.
 //
 // Each table is one Entity element (docs/specs/009-elements/entity.md): the
-// title is the table name and every row is `column | type`, with the key
-// role written into the type column the way a DBA reads it (`uuid PK`,
-// `uuid FK`, `text UK`, and `PK FK` for order_items' composite key). Boxes
+// title is the table name and every row is `column | type`. The key role is
+// written the way a DBA reads it (`uuid PK`, `uuid FK`, `text UK`, and `PK FK`
+// for order_items' composite key) and stored as the field's key
+// (entityFieldView), so the boxes draw key glyphs. Boxes
 // are exactly as tall as their rows (entityHeight), so none trails empty
 // space.
 //
-// Every relationship is a pinned line from the ONE side to the MANY side:
-// the open fork (the "line" head, the same crow's-foot stand-in the Mermaid
-// ER import draws) lands on the many end, and the label names the verb and
-// both multiplicities, min and max ("places · 1 : 0..*"). The only optional
+// Every relationship is a pinned line from the ONE side to the MANY side,
+// with an ER end at each table (one, zero or one, zero or many, one or many)
+// that says the multiplicity, and the verb as its label. The only optional
 // one-side is the courier (0..1: an order has no courier until pickup).
 //
 // The free corners carry what a schema review needs next to the boxes: the
@@ -115,14 +117,15 @@ const TABLES: Table[] = [
   },
 ];
 
-// One-side -> many-side, with the anchors that keep each line straight.
-const RELATIONSHIPS: [string, Anchor, string, Anchor, string][] = [
-  ['customers', 's', 'orders', 'n', 'places · 1 : 0..*'],
-  ['restaurants', 'e', 'orders', 'w', 'receives · 1 : 0..*'],
-  ['couriers', 'w', 'orders', 'e', 'delivers · 0..1 : 0..*'],
-  ['orders', 's', 'order_items', 'n', 'contains · 1 : 1..*'],
-  ['restaurants', 's', 'menu_items', 'n', 'offers · 1 : 0..*'],
-  ['menu_items', 'e', 'order_items', 'w', 'ordered as · 1 : 0..*'],
+// One-side -> many-side, with the anchors that keep each line straight, the verb, and the ER end at each
+// table (docs/specs/009-elements/entity.md "Cardinality ends").
+const RELATIONSHIPS: [string, Anchor, string, Anchor, string, ErShape, ErShape][] = [
+  ['customers', 's', 'orders', 'n', 'places', 'one', 'zero-or-many'],
+  ['restaurants', 'e', 'orders', 'w', 'receives', 'one', 'zero-or-many'],
+  ['couriers', 'w', 'orders', 'e', 'delivers', 'zero-or-one', 'zero-or-many'],
+  ['orders', 's', 'order_items', 'n', 'contains', 'one', 'one-or-many'],
+  ['restaurants', 's', 'menu_items', 'n', 'offers', 'one', 'zero-or-many'],
+  ['menu_items', 'e', 'order_items', 'w', 'ordered as', 'one', 'zero-or-many'],
 ];
 
 const ORDER_STATUS_SQL = `CREATE TYPE order_status AS ENUM (
@@ -157,7 +160,7 @@ export function buildErDiagram(cx: number, cy: number): Element[] {
     top,
     gridW,
     'Plateful · orders schema',
-    'Every line points from the one side to the many side and is labelled with its min : max multiplicity. PK / FK / UK sit in the type column.',
+    "Every line runs from the one side to the many side; its crow's-foot ends say how many at each table. Keys show beside each column.",
   );
 
   const idByName = new Map<string, string>();
@@ -169,7 +172,7 @@ export function buildErDiagram(cx: number, cy: number): Element[] {
       height: h,
       label: t.name,
       textSize: 'md',
-      entityFields: t.fields.map(([name, type]) => ({ name, type })),
+      entityFields: t.fields.map(([name, type]) => entityFieldView({ name, type })),
       // The hub every relationship meets carries the hero preset.
       ...(t.name === 'orders' ? { colorPreset: 'soft' } : {}),
     };
@@ -177,10 +180,12 @@ export function buildErDiagram(cx: number, cy: number): Element[] {
     elements.push(box);
   }
 
-  for (const [from, fromA, to, toA, label] of RELATIONSHIPS) {
+  for (const [from, fromA, to, toA, label, start, end] of RELATIONSHIPS) {
     elements.push({
       ...createPinnedArrow(idByName.get(from)!, fromA, idByName.get(to)!, toA),
-      arrowheadShape: 'line',
+      arrowEnds: 'both',
+      arrowheadStartShape: start,
+      arrowheadShape: end,
       arrowheadSize: 'large',
       label,
     });
