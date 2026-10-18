@@ -22,7 +22,6 @@ export const OFFER_DELAY_MS = 800;
 const DRAW_TOUR_COPY = {
   welcomeEyebrow: 'Draw tour',
   helpHref: '/help/canvas/draw-mode/',
-  finish: 'Start drawing',
 };
 
 const NO_API: DrawTourApi = {};

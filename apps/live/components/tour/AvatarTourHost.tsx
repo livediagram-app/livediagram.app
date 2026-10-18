@@ -27,7 +27,6 @@ export const OFFER_DELAY_MS = 800;
 const AVATAR_TOUR_COPY = {
   welcomeEyebrow: 'Avatar tour',
   helpHref: '/help/selection-modes/avatar-mode/',
-  finish: 'Start walking',
 };
 
 const NO_API: AvatarTourApi = {};

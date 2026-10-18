@@ -35,7 +35,9 @@ proved the better introduction.
 - **The bookend cards ask nothing of the editor.** The welcome offer and the last card are **banners**, built as the
   sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
   there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
-  title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); on a
+  title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); every
+  mode tour's finish button reads just **Start** (`TOUR_FINISH`), and its help link reads **Help** behind a help icon
+  (an element tour's names its article, "Sankey Diagram Help", behind the same icon); on a
   phone they stack, the picture left out. No backdrop, no focus taken (not even by a press on its buttons, so answering it leaves the focus where the person was working), so someone who would rather carry on working simply does, and answers when they like. Tab reaches
   their buttons. They are the toasts' floor while up, and the sign-in banner, which takes the same place, steps aside
   meanwhile: the two are never on screen together. A step card leaves focus alone too: it points at a real control
@@ -127,8 +129,8 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas
    background dialog. No prepare needed: the button is always in the desktop chrome for an editable session.
    Mobile reaches the same dialog through the canvas menu, so the step is skipped there.
-7. **Outro** (card): "You're ready to diagram": a help-article illustration, a help-centre link (new tab),
-   and a "Start diagramming" button that completes the tour.
+7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Help** link to the help centre
+   (new tab), and a **Start** button that completes the tour.
 
 Retired steps: **Tab Mode** (opening the editor mode switch's menu, step 4 until October 2026) was cut to keep
 the tour on diagramming; each mode now has a tour of its own, offered when the person enters it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the

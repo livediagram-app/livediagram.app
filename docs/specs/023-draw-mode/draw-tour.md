@@ -55,7 +55,7 @@ group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-
    a search, and favourites pin to the dock.
 4. **Board Settings**: rings the Settings cog. The board's background, the cursor, and whether rough shapes snap
    into clean ones.
-5. **You're ready to draw** (outro): a help-centre link to the Draw mode article (new tab) and **Start drawing**,
+5. **You're ready to draw** (outro): a help-centre link to the Draw mode article (new tab) and **Start**,
    which completes the tour.
 
 - The dock shows on every surface, a phone included (its groups scroll sideways); Quick Style, a desktop's panel,
