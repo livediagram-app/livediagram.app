@@ -70,7 +70,7 @@ export function useExplorerViewModel({
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
   // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the My Documents root: they
-  // render under the panel's This browser row instead.
+  // render under the panel's This Browser row instead.
   const documentsByFolder = useMemo(
     () =>
       groupDocumentsByFolder(liveDocs, {
@@ -81,7 +81,7 @@ export function useExplorerViewModel({
 
   // Offline documents (docs/specs/006-document/offline-mode.md): everything saved only in this browser,
   // regardless of any folder placement in the local record, for the panel's
-  // This browser row (mirrors the /explorer route).
+  // This Browser row (mirrors the /explorer route).
   const offlineDocuments = useMemo(
     () =>
       liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),

@@ -217,7 +217,7 @@ choice is document-wide, applying to every share link's image.
 
 The thumbnail shows on **every** Explorer surface that lists a document:
 the full-page `/explorer` rows (Recent / My Documents / folders / Search results /
-This browser), the team library page, the "Shared With Me" list, and the
+This Browser), the team library page, the "Shared With Me" list, and the
 in-editor Explorer. A single shared `DocumentThumbnail`
 component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the document's) plus, for a shared row,
@@ -227,7 +227,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My Documents / folders / Search results / This browser)
+The browse views (Recent / My Documents / folders / Search results / This Browser)
 have a **List / Card / Details** toggle in the header's actions, left of Help and
 Create, which always sit further right (device-local preference,
 `livediagram:explorer-view`). **Card is the default**:

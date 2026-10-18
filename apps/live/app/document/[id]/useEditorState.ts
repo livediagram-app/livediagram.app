@@ -1040,7 +1040,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useEffect(() => {
     // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
-    // a Local only document opens before the reader is known (docs/specs/006-document/offline-mode.md
+    // a document in This Browser opens before the reader is known (docs/specs/006-document/offline-mode.md
     // "Instant open"), and 'self' is nobody's row.
     if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;

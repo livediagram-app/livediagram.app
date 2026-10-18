@@ -11,6 +11,11 @@ const apiListActivity = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api-client', () => ({ apiListActivity }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/hooks/ui/useReturnToTab', () => ({ useReturnToTab: vi.fn() }));
+const readOfflineActivity = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/offline/offline-activity', () => ({ readOfflineActivity }));
+vi.mock('@/lib/local-identity', () => ({ getGuestSelfId: () => 'guest-1' }));
+
+const NO_LOCAL = { actions: [], threads: [], cards: [], cardThreads: [] };
 
 import { useActivityFeed } from './useActivityFeed';
 
@@ -73,6 +78,7 @@ function card(id: string, updatedAt: number): ActivityCard {
 
 beforeEach(() => {
   apiListActivity.mockReset();
+  readOfflineActivity.mockReset().mockResolvedValue(NO_LOCAL);
 });
 
 describe('useActivityFeed', () => {
@@ -134,6 +140,49 @@ describe('useActivityFeed', () => {
       ['card', 'old-card'],
     ]);
     expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
+  });
+
+  // docs/specs/013-workspace/inbox.md §2.6: this browser's documents in This Browser list among the server's rows,
+  // in the same order, marked local, and count toward the badge's list.
+  it('merges rows in This Browser in among the server rows, marked local', async () => {
+    apiListActivity.mockResolvedValue({
+      actions: [{ ...action('cloud', { assignedToMe: true, createdByMe: false }), updatedAt: 2 }],
+      threads: [],
+      cards: [],
+    });
+    readOfflineActivity.mockResolvedValue({
+      ...NO_LOCAL,
+      actions: [
+        { ...action('local', { assignedToMe: true, createdByMe: true }), updatedAt: 5 },
+        { ...action('handed', { assignedToMe: false, createdByMe: true }), updatedAt: 1 },
+      ],
+      threads: [thread],
+    });
+    const { result } = renderHook(() => useActivityFeed('user_me'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(readOfflineActivity).toHaveBeenCalledWith(['user_me', 'guest-1']);
+    expect(result.current.assignedToMe.map((r) => [r.id, r.local ?? false])).toEqual([
+      ['local', true],
+      ['cloud', false],
+    ]);
+    expect(result.current.youAssigned.map((a) => [a.id, a.local])).toEqual([['handed', true]]);
+    expect(result.current.threads.map((t) => t.local)).toEqual([true]);
+  });
+
+  it('lists the server rows alone when the offline store fails', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    apiListActivity.mockResolvedValue({
+      actions: [action('cloud', { assignedToMe: true, createdByMe: false })],
+      threads: [],
+      cards: [],
+    });
+    readOfflineActivity.mockRejectedValue(new Error('no IndexedDB'));
+    const { result } = renderHook(() => useActivityFeed('me'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBe(false);
+    expect(result.current.assignedToMe.map((r) => r.id)).toEqual(['cloud']);
+    expect(warn).toHaveBeenCalledWith('[inbox] offline-read-failed', expect.any(Error));
+    warn.mockRestore();
   });
 
   it('reports a failed read as an error, not as an empty inbox', async () => {

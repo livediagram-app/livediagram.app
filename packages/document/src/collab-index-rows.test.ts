@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
-import { collabIndexRowsFromElements } from './rows';
+import type { Element } from './index';
+import { collabIndexRowsFromElements } from './collab-index-rows';
 
 // The pure projection every tab write feeds the collaboration index
 // with (docs/specs/013-workspace/inbox.md §2.1). What it gets wrong, the Inbox shows

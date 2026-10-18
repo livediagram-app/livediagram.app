@@ -614,6 +614,8 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './collab-index-rows';
+export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   authHrefWithReturn,
+  guestReturnHref,
   POST_AUTH_DEFAULT,
   POST_AUTH_SIGNIN_DEFAULT,
   messageOf,
@@ -260,5 +261,47 @@ describe('ssoCallbackUrl / ssoCallbackDestination', () => {
       expect(ssoCallbackUrl(params(qs))).toBe('/sso-callback');
       expect(ssoCallbackDestination(params(qs))).toBeUndefined();
     }
+  });
+});
+
+// The header's guest way out (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"): back where
+// the visitor came from when that works without an account, else the new-document flow. Wrong here sends a guest
+// off-site (open redirect) or into a loop between a connect page and sign-in.
+describe('guestReturnHref', () => {
+  it('returns to a safe redirect_url', () => {
+    expect(guestReturnHref(params('redirect_url=%2Fd%2Fabc%3Fx%3D1%23t%3D2'))).toBe(
+      '/d/abc?x=1#t=2',
+    );
+  });
+
+  it('falls back to the new-document flow without one', () => {
+    expect(guestReturnHref(params(''))).toBe(POST_AUTH_DEFAULT);
+  });
+
+  it.each([
+    '//evil.example',
+    '/\\evil.example',
+    'https://evil.example/',
+    '/sign-in/',
+    '/get-started',
+  ])('refuses an unsafe or auth-page redirect_url (%s)', (redirect) => {
+    expect(guestReturnHref(params(`redirect_url=${encodeURIComponent(redirect)}`))).toBe(
+      POST_AUTH_DEFAULT,
+    );
+  });
+
+  it.each([
+    '/oauth/consent?session=s',
+    '/oauth/device',
+    '/workbench/pair?code=c',
+    '/OAuth/consent',
+  ])('never sends a guest back to a signed-in-only page (%s)', (redirect) => {
+    expect(guestReturnHref(params(`redirect_url=${encodeURIComponent(redirect)}`))).toBe(
+      POST_AUTH_DEFAULT,
+    );
+  });
+
+  it('keeps a page that only starts with the same letters', () => {
+    expect(guestReturnHref(params('redirect_url=%2Foauthors'))).toBe('/oauthors');
   });
 });

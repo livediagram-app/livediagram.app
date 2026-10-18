@@ -18,6 +18,7 @@ import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { OAUTH_PRIMARY, OauthShell } from '../../oauth/oauth-shell';
+import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 
 type Answer = 'approve' | 'decline';
 
@@ -37,7 +38,7 @@ type Step =
 
 const SECONDARY =
   'rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
-const HEADING = 'text-lg font-semibold text-slate-900 focus:outline-none dark:text-slate-100';
+const HEADING = `${AUTH_TITLE} focus:outline-none`;
 const BODY = 'mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400';
 const STRONG = 'font-medium text-slate-700 dark:text-slate-200';
 const MONO = 'font-mono text-[0.8125rem] break-all text-slate-700 dark:text-slate-200';

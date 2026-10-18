@@ -13,7 +13,7 @@ import { ShapeLibrariesPane } from '@/components/panels/ShapeLibrariesPane';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { ClockIcon, DocumentIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useActivityFeed } from '@/app/explorer/useActivityFeed';
 import { useTimelineFeed } from '@/app/explorer/useTimelineFeed';
@@ -88,7 +88,7 @@ function JumpBackInCard({
       title={item.name || 'Untitled document'}
       meta={
         <span className="flex items-center gap-1.5">
-          {item.localOnly ? <LocalOnlyPill tabbable={false} /> : null}
+          {item.localOnly ? <ThisBrowserPill tabbable={false} /> : null}
           <span className="truncate">Opened {relativeSince(item.lastUsedAt, now)}</span>
         </span>
       }

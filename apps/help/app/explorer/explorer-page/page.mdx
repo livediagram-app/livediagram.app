@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
 
 The full-page [Explorer](/explorer) is the complete library view, modelled on a desktop file browser: a sidebar on the left to navigate, and the page you picked on the right, with its folders and documents. Opening `/explorer` takes you to **Home**. It is where all your documents live, organised into folders by project, customer, or topic. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
 
-The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My Documents**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter documents](/help/explorer/filters/)). Making things happens in the page header: **New Document** is on Home, Timeline, Recent, Favourites and search results, and on My Documents and inside a folder it becomes a **Create** button offering **New Document** and **New Folder** (**New Subfolder** inside a folder). Wherever New Document is (except Home), an **Import from** menu sits beside it. Pages that aren't a place a document lands (Inbox, Shared With Me, Tags, the Library pages, Trash, a team, This browser) have no New Document.
+The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My Documents**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter documents](/help/explorer/filters/)). Making things happens in the page header: **New Document** is on Home, Timeline, Recent, Favourites and search results, and on My Documents and inside a folder it becomes a **Create** button offering **New Document** and **New Folder** (**New Subfolder** inside a folder). Wherever New Document is (except Home), an **Import from** menu sits beside it. Pages that aren't a place a document lands (Inbox, Shared With Me, Tags, the Library pages, Trash, a team, This Browser) have no New Document.
 
 <Figure caption="The full-page Explorer: the sidebar's three groups on the left, and My Documents in the card view on the right.">
   <ExplorerPageLayout />
@@ -47,7 +47,7 @@ Your spaces are the top-level folders of the tree.
 
 ## More
 
-- **This Browser** lists the documents saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). It shows only while there is at least one. They are yours, like everything in My Documents, and every row and card of one carries a **Local only** pill: hover or focus it to read that it lives only in this browser, and click it for the Offline Mode guide. Their menus offer **Sync Document** to move one to your account, while a cloud document's menu offers **Take Offline** to do the reverse.
+- **This Browser** lists the documents saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). It shows only while there is at least one. They are yours, like everything in My Documents, and every row and card of one carries a **This Browser** pill: hover or focus it to read that it lives only in this browser, and click it for the Offline Mode guide. Their menus offer **Sync Document** to move one to your account, while a cloud document's menu offers **Take Offline** to do the reverse.
 - **Tags** opens the [Tags page](/help/explorer/tags/): your documents grouped by the coloured tags you put on them. It expands to a row for each tag, with how many documents carry it.
 - **Library** expands (it has no page of its own) to the [Image gallery](/help/explorer/image-gallery/) (every image you have uploaded, with where each is used), [Themes](/help/explorer/themes-library/) (your custom themes, ready to edit or reuse) and [Shape libraries](/help/explorer/shape-libraries/).
 - **Trash** holds deleted documents for 30 days, ready to restore.
@@ -64,7 +64,7 @@ Each page is named after its row: **Home**, **Shared With Me**, **My Documents**
 
 ## List or card view
 
-Every browse view (My Documents, your folders, Recent, Favourites, Search results, This browser, and a team's shared library) can be shown three ways, switched with the **List view** / **Card view** / **Details view** toggle at the top-right of the pane:
+Every browse view (My Documents, your folders, Recent, Favourites, Search results, This Browser, and a team's shared library) can be shown three ways, switched with the **List view** / **Card view** / **Details view** toggle at the top-right of the pane:
 
 - **List** packs documents into compact rows, best for scanning a long library by name and date.
 - **Card** shows each document as a tile with a thumbnail of its first tab, best for recognising a document by its shape at a glance.
@@ -81,7 +81,7 @@ To make a copy of a document, open its menu (the **⋯** button on its row or ca
 - **Everything comes with it:** every tab, its tab folders, and any Plan cards and Sheets on those tabs.
 - **Links between tabs** point at the copy's own tabs, so clicking one inside the copy stays inside the copy. Links to other documents and to websites are left as they are.
 - **[Default folders](/help/explorer/folders/default-folders/) don't apply.** A copy always goes beside its original, never into the folder you set as a default.
-- **A Local only document** duplicates as another Local only document, so nothing you chose to keep in this browser is uploaded. See [Offline Mode](/help/privacy-and-security/offline-mode/).
+- **A document in This Browser** duplicates as another document in This Browser, so nothing you chose to keep in this browser is uploaded. See [Offline Mode](/help/privacy-and-security/offline-mode/).
 
 If the copy can't be made, a message says so ("Could not duplicate “Roadmap”. Try again.") and nothing is created.
 

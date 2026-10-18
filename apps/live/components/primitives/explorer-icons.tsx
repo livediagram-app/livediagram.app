@@ -176,7 +176,7 @@ export const KeyIcon = lucideGlyph(lucideKey, 13);
 export { TeamIcon } from '@livediagram/ui';
 export const InviteIcon = lucideGlyph(lucideMail, 13);
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
-// documents (a root folder), Library, and This browser (a browser window).
+// documents (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const MyDocumentsIcon = lucideGlyph(lucideFolderRoot, 13);
 export const LibraryIcon = lucideGlyph(lucideLibrary, 13);

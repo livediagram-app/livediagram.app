@@ -1,4 +1,4 @@
-// The landing page's preview of a Local only document (docs/specs/019-marketing/returning-visitor.md): the
+// The landing page's preview of a document in This Browser (docs/specs/019-marketing/returning-visitor.md): the
 // server has no snapshot of a document kept in this browser, so its first tab is drawn here, from the offline
 // store, by the same headless renderer the server's snapshots use (docs/specs/006-document/
 // document-snapshots.md), with the editor's icon and sticker art. Loaded on demand by the recent-diagrams

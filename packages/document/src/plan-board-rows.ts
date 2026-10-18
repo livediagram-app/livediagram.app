@@ -3,16 +3,17 @@
 // after it (the statusPhasesOf rule, docs/specs/026-plan/plan-views.md "What a plan view reads"). The Activity
 // read uses the rows to drop finished cards and to find a board to open a card on.
 //
-// Pure, like rows.ts beside it: the db layer turns these into statements in the tab save's own batch.
+// Pure, like collab-index-rows.ts beside it: the api's db layer turns these into statements in the tab save's
+// own batch, and the editor's offline Inbox read (§2.6) uses them in place of the table.
 
-import type { Element } from '@livediagram/document';
+import type { Element } from './index';
 import { normaliseBoardSetup } from '@livediagram/items';
 
 // The status an All Cards board writes: it shows every card whatever its status, so the read can land a card
 // there when no column holds it. Never a real status (a status is trimmed text a person typed).
 export const ALL_CARDS_STATUS = '*';
 
-type PlanBoardStatusRow = {
+export type PlanBoardStatusRow = {
   elementId: string;
   boardTitle: string;
   status: string;

@@ -10,6 +10,8 @@
 @import './motion-sticky.css';
 @import './motion-media.css';
 @import './motion-page.css';
+/* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
+@import './auth-motion.css';
 @import './motion-drawing.css';
 @import './motion-table.css';
 @import './thumbnail-loader.css';

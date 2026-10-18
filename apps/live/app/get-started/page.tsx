@@ -30,6 +30,7 @@ import {
   OrDivider,
   RedirectingCard,
   authHrefWithReturn,
+  guestReturnHref,
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
@@ -221,11 +222,11 @@ function GetStartedContent() {
 
   return (
     <AuthCard
+      title={phase === 1 ? 'Create your account' : 'Check your email'}
       subtitle={
-        phase === 1
-          ? 'Create a free account to keep your documents and work across multiple devices.'
-          : 'Check your email'
+        phase === 1 ? 'Free, and everything you made as a guest comes with you.' : undefined
       }
+      guestHref={guestReturnHref(searchParams)}
       error={error}
       notice={notice}
       footer={
