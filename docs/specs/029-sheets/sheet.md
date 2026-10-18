@@ -292,8 +292,9 @@ inset, as the menu box's mode tile does), and to its right the chosen category's
   this sheet is called that").
 - **An open edit is saved before the name box moves.** Enter in the name box saves the cell being edited first, as a
   press on another cell does; an edit that cannot be saved (a formula missing its bracket) stays open, back in it
-  with its error, and the selection does not move. Escape there also returns to the edit. Before, the edit was left
-  open while the selection moved, and every key after it went nowhere.
+  with its error, and the selection does not move. Escape there also returns to the edit. Wherever focus lands on the
+  grid while an edit stays open (a toolbar button pressed mid-way through such a formula), a key is the edit's:
+  Escape gives it up and any other key goes on in it (`focusOpenEdit`). Before, every key after went nowhere.
 - **fx** and the bar show the active cell's input (a formula as typed, a number unformatted); editing there edits
   the cell, as typing in it does. It grows to three lines for a long input, then scrolls.
 

@@ -3,6 +3,7 @@
 // The formula bar (docs/specs/029-sheets/sheet.md "Formula bar"): the name box (the selection; a reference or range
 // typed there and Enter selects it) and fx with the active cell's input as typed, edited there as in the cell. A
 // spilled cell shows its formula greyed. Read-only for someone who may not edit.
+import { focusOpenEdit } from './focus-open-edit';
 import { useEffect, useRef, useState } from 'react';
 import {
   findRangeName,
@@ -85,14 +86,7 @@ export function SheetFormulaBar({
   useEffect(() => {
     if (editing?.origin === 'bar') barRef.current?.focus();
   }, [editing?.origin]);
-  // Focus the open edit: the bar's own field, or the cell's editor.
-  const backToEdit = () => {
-    if (editing?.origin === 'bar') barRef.current?.focus();
-    else
-      document
-        .querySelector<HTMLTextAreaElement>(`textarea[data-sheet-editor="${c.sheet.id}"]`)
-        ?.focus();
-  };
+  const backToEdit = () => focusOpenEdit(c.sheet.id);
   return (
     <div
       data-keeps-escape
@@ -125,6 +119,8 @@ export function SheetFormulaBar({
             // missing its bracket) keeps the edit, back in it with its error, rather than stranding it open while the
             // selection moves on and every key after it goes nowhere.
             if (editing && !input.save()) {
+              // The Enter is the name box's: left to the browser, it typed a new line into the edit it returns to.
+              e.preventDefault();
               setBox(null);
               backToEdit();
               return;
@@ -133,6 +129,7 @@ export function SheetFormulaBar({
             setBox(null);
             c.focusGrid();
           } else if (e.key === 'Escape') {
+            e.preventDefault();
             setBox(null);
             if (editing) backToEdit();
             else c.focusGrid();

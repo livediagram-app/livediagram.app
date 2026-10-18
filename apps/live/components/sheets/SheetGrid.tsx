@@ -4,6 +4,7 @@
 // native scroll container over a spacer the size of the whole sheet, with a sticky viewport inside that draws only
 // what is in view: the cells, the headers, the selection, the editor. One tab stop; its keys are the grid's while it
 // has focus, and Escape hands them back to the canvas.
+import { focusOpenEdit } from './focus-open-edit';
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
 import { SheetCardRows } from './SheetCardRows';
@@ -251,7 +252,16 @@ export function SheetGrid({
   }, [c.sheet.layout]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (c.editing || e.target !== e.currentTarget) return;
+    if (e.target !== e.currentTarget) return;
+    // The grid holds focus while an edit stays open (a toolbar button pressed mid-way through a formula it could not
+    // save): the key is the edit's, never lost. Escape gives it up; any other key goes on in it.
+    if (c.editing) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        actions.cancelEdit();
+      } else focusOpenEdit(c.sheet.id);
+      return;
+    }
     // A bare Space is held for Space-drag panning; it types a space on release when no pan used it.
     if (pointer.pan.onKeyDown(e)) return;
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'v') {
