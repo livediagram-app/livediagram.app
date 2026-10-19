@@ -30,6 +30,7 @@ async function land(tab: Tab): Promise<Tab> {
       setSelfParticipant: vi.fn(),
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
+      putToolDown: vi.fn(),
       markTabLoaded: vi.fn(),
       bringCardTypes: vi.fn(),
       seedCards: vi.fn(),
