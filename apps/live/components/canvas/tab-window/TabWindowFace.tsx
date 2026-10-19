@@ -9,6 +9,7 @@ import {
   TAB_WINDOW_EMPTY,
   TAB_WINDOW_HAIRLINE,
   TAB_WINDOW_RADIUS,
+  tabWindowHasDrawing,
   tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
@@ -41,7 +42,7 @@ type TabWindowState =
 
 export function tabWindowState(
   windowTabId: string | undefined,
-  tab: { id: string; name: string; elements: readonly unknown[] } | undefined,
+  tab: (Parameters<typeof tabWindowHasDrawing>[0] & { name: string }) | undefined,
   status: 'loaded' | 'loading' | 'failed',
 ): TabWindowState {
   if (!windowTabId) return { kind: 'unchosen' };
@@ -49,7 +50,7 @@ export function tabWindowState(
   const name = tab.name || 'Untitled tab';
   if (status === 'failed') return { kind: 'failed', name, tabId: tab.id };
   if (status === 'loading') return { kind: 'loading', name };
-  if (tab.elements.length === 0) return { kind: 'empty', name };
+  if (!tabWindowHasDrawing(tab)) return { kind: 'empty', name };
   return { kind: 'drawing', name, tabId: tab.id };
 }
 

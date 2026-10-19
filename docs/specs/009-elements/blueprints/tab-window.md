@@ -4,29 +4,34 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 
 ## Domain and naming
 
-| Term                    | Identifier                                                                                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tab window              | `ShapeElement` with `shape: 'tab-window'` (`ShapeKind`, `packages/document/src/shape-kind.ts`)                                                                 |
-| The tab it shows        | `ShapeElement.windowTabId` (a tab id of the same document)                                                                                                     |
-| A tab a window may show | `tabWindowMayShow(tab, ownTabId)`, `tabWindowOffers(tabs, ownTabId)` (`packages/document/src/tab-window.ts`)                                                   |
-| A drawing in an export  | `TabWindowDrawing`, `TabWindowArt`, `ResolveTabWindow`, `svgTabWindow`, `prefixSvgIds` (`tab-window.ts`)                                                       |
-| The window's state      | `TabWindowState`, `tabWindowState` (`apps/live/components/canvas/tab-window/TabWindowFace.tsx`)                                                                |
-| The windows' context    | `TabWindowContext`, `TabWindowContextValue`, `useTabWindows`, `useTabWindowContextValue` (`tab-window-context.ts`)                                             |
-| The canvas face         | `TabWindowFace`, `TabWindowDrawing`, `TabWindowPicker`, `TabWindowTabList` (`components/canvas/tab-window/`)                                                   |
-| The menu section        | `TabWindowMenuSection` (`components/palette/TabWindowMenuSection.tsx`)                                                                                         |
-| Exporting windows       | `useTabWindowExport`, `tabWindowTargets`, `tabWindowArts` (`components/dialogs/useTabWindowExport.ts`); `ImageExportOpts.resolveTabWindow`, `tabWindowFontIds` |
+| Term                       | Identifier                                                                                                                                                     |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tab window                 | `ShapeElement` with `shape: 'tab-window'` (`ShapeKind`, `packages/document/src/shape-kind.ts`)                                                                 |
+| The tab it shows           | `ShapeElement.windowTabId` (a tab id of the same document)                                                                                                     |
+| A tab a window may show    | `tabWindowMayShow(tab, ownTabId)`, `tabWindowOffers(tabs, ownTabId)` (`packages/document/src/tab-window.ts`)                                                   |
+| Something to draw          | `tabWindowHasDrawing(tab)` (`tab-window.ts`)                                                                                                                   |
+| The tab drawn for a window | `renderTabWindowSvg`, `pageElements`, `tabWindowFontIdsOf` (`apps/live/lib/tab-window-render.ts`); `ImageExportOpts.estimatedWriting`                          |
+| A drawing in an export     | `TabWindowDrawing`, `TabWindowArt`, `ResolveTabWindow`, `svgTabWindow`, `prefixSvgIds` (`tab-window.ts`)                                                       |
+| The window's state         | `TabWindowState`, `tabWindowState` (`apps/live/components/canvas/tab-window/TabWindowFace.tsx`)                                                                |
+| The windows' context       | `TabWindowContext`, `TabWindowContextValue`, `useTabWindows`, `useTabWindowContextValue` (`tab-window-context.ts`)                                             |
+| The canvas face            | `TabWindowFace`, `TabWindowDrawing`, `TabWindowPicker`, `TabWindowTabList` (`components/canvas/tab-window/`)                                                   |
+| The menu section           | `TabWindowMenuSection` (`components/palette/TabWindowMenuSection.tsx`)                                                                                         |
+| Exporting windows          | `useTabWindowExport`, `tabWindowTargets`, `tabWindowArts` (`components/dialogs/useTabWindowExport.ts`); `ImageExportOpts.resolveTabWindow`, `tabWindowFontIds` |
 
 ## Behaviour and state
 
 - **May show**: any tab but `ownTabId`, a Plan tab included. Offers keep tab-bar order.
 - **State** (`tabWindowState(windowTabId, tab, status)`): no `windowTabId` → `unchosen`; no tab with that id among the
-  person's tabs → `unavailable`; status `failed` → `failed`; `loading` → `loading`; no elements → `empty`; else
-  `drawing`. A name is the tab's, or "Untitled tab".
+  person's tabs → `unavailable`; status `failed` → `failed`; `loading` → `loading`; not `tabWindowHasDrawing` (no elements, not in
+  Pages, and not a Form tab with a stored form) → `empty`; else `drawing`. A name is the tab's, or "Untitled tab".
 - **Status** (`useTabWindowContextValue`): the canvas's own tab or one in `loadedTabIds` → `loaded`; a tab being
   retried → `loading`; a tab in the failed set or the editor's `loadErrors` → `failed`; else `loading`. `request(id)`
   fetches a `loading` tab through `loadTabs([id])` once (an in-flight set); a fetch resolving with the id among its
   failures adds it to the failed set, else removes it. `retry(id)` removes it from the failed set, marks it retrying
-  until that fetch settles, and fetches again. Nothing re-asks on a timer.
+  until that fetch settles, and fetches again. Nothing re-asks on a timer. `loadAllTabs` reads the document's tabs
+  from `tabsRef`, mirrored in a layout effect (`useEditorState`) so it is current before a window's first passive
+  effect asks: mirrored passively, a window on the first tab opened asked on the commit its tabs arrived, found none,
+  settled at once and stayed Loading.
 - **Settling** (`usePerTabLoad.loadAllTabs(only?)`): every fetch under way, visit-time or sweep, is recorded with how
   it ends (`'loaded' | 'failed' | 'cancelled'`). A requested tab already being fetched is waited for, not fetched
   again; its `failed` end is reported among the failures; a `cancelled` end (its visit moved on) is followed to the
@@ -36,10 +41,21 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
   undo step); the menu's Shows commits through `ops.commit(..., 'TabWindowTab')` on the selection.
 - **Opening**: `open(tabId)` (face) and the menu's Open row call `useSelectTab()`.
 - **Drawing**: `TabWindowDrawing` → `usePlanImageExport(tab, tabs)` (a Plan tab laid out as its image export, its
-  Sheets' cells and plan-view art) → `useTabSvg(plan.imageTab, windowMotion, plan.opts)` (deferred, the export
-  renderer, appearance, photos, cards) →
+  Sheets' cells and plan-view art) → `useTabSvg(plan.imageTab, windowMotion, plan.opts, renderTabWindowSvg)` (deferred,
+  appearance, photos, cards) →
   inline `<svg width=100% height=100% viewBox="0 0 w h" preserveAspectRatio="xMidYMid meet">` wrapping the markup with
   `prefixSvgIds(markup, 'tw-<elementId>-')`, on a div painted `svg.background`, `pointer-events: none`.
+- **What is drawn** (`renderTabWindowSvg(tab, opts)`): a Form tab whose `readForm(tab.form)` reads → `formArt(form,
+formLook(tab), resolveFontStack(look.font)).svg`. A tab with `laidOutPagesOf(tab)` (in Pages) → a root `<svg>` whose
+  viewBox is the union of the page rects in canvas space, holding each page's `renderTabToSvg({ ...tab, elements:
+pageElements(...)[i] }, { ...opts, page, estimatedWriting })`, its ids `prefixSvgIds(…, 'pg<i>-')` and its root tag
+  placed at `x`/`y` of its rect. `estimatedWriting` is `pagesWithWriting(tab).writing` when any page has a `flow`;
+  `renderTabToSvg` draws it only where `pageWriting` finds no laid-out article (no `articleHandleOf`), with
+  `pageWritingFonts` declared. Anything else → `renderTabToSvg(tab, opts)`.
+- **Page elements** (`pageElements(elements, pages)`): each element's span once (its box; an arrow's resolved ends via
+  `endpointPosition`), kept on each page it overlaps (edges included, as `PageExportFrame.reaches`), with every
+  element or arrow an arrow kept there is pinned to (`keepEnds`, up to 5 hops), in tab order. The renderer still
+  filters by `reaches`.
 - **Motion**: `TabWindowDrawing` passes `windowMotion` (`tab-window-motion.ts`) to `useTabSvg`, which hands
   `renderTabToSvg` an `SvgMotion` for the shown tab's surface. A boxed element that plays (`windowBoxedMotion`:
   `WINDOW_SHAPE_PLAYS` through `wrapperShapeAnimation`, else `WINDOW_BODY_PLAYS` through `setAnimationClass`) is wrapped
@@ -67,9 +83,11 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
   (distinct `windowTabId`s in element order, not the tab itself); when `active` and there are targets it awaits
   `loadTabs` of the targets a window may show (`tabWindowMayShow`, a Plan tab included), then `loadTabImages` for each target tab; `ready` once both settle (photos only with an
   `imageContext`). It returns `resolveTabWindow` (from `tabWindowArts`) and `tabWindowFontIds`
-  (`exportFontIds` of each target). `tabWindowArts` skips a tab `tabWindowMayShow` refuses or that is missing, gives an
-  empty tab its name only, and otherwise renders `renderTabToSvg(tabAsSeen(t), { pattern: false, images,
-resolveTabWindow: names, items })` sized by `svgFrameOf`.
+  (`exportFontIds` of each target). `tabWindowArts` skips a tab `tabWindowMayShow` refuses or that is missing, gives a
+  tab without `tabWindowHasDrawing` its name only, and otherwise lays a Plan tab out with `planImageOf(seen, { tabs,
+now, themeOf: getTheme, renderDiagram })` (no Sheet reads) and renders `renderTabWindowSvg(plan?.tab ?? seen, {
+pattern: false, images, resolveTabWindow: names, resolvePlanArt: plan.art, items })` sized by `svgFrameOf`.
+  `tabWindowFontIds` is `tabWindowFontIdsOf` of each target.
 - The export dialog passes `resolveTabWindow` and `tabWindowFontIds` into the preview and the download, adds them to
   the embedded font ids, and holds the panel `busy` until `ready`.
 
@@ -108,6 +126,9 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
   Measured (six moving elements, Chromium, 1280x800): about 58 ms of main-thread work a second in the window, against
   about 47 ms for the same six on their own canvas; 115 ms before containment. Off screen: about 0.2 ms a second.
 - An export renders each target tab once (`tabWindowArts`), however many windows show it.
+- A Pages tab draws each page from `pageElements`, so its cost is about one drawing of the tab, not one per page.
+  Measured (vitest, Node, load ~26): 80 slides and 3,120 elements 22 to 38 ms against 22 to 60 ms for the whole
+  canvas; 162 ms before narrowing (every page walking every element).
 
 ## Presentation and UX
 
@@ -128,14 +149,16 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
 
 ## Testing
 
-| Rule                                                            | Test                                                                                              |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| May show, offers, ids prefixed, export frame and fill           | `packages/document/src/tab-window.test.ts`                                                        |
-| States, Choose a Tab, Open, Retry, unavailable                  | `apps/live/components/canvas/tab-window/TabWindowFace.test.tsx`                                   |
-| Status, one fetch per tab, retry, choose, open, gate            | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx`                              |
-| Export targets, arts, nesting, drawing in the tab SVG           | `apps/live/components/dialogs/useTabWindowExport.test.ts`                                         |
-| What plays in a window, its classes and style, stills elsewhere | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`                                |
-| Palette tile in Pages mode's Media only, not a whiteboard shape | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
+| Rule                                                                      | Test                                                                                              |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| May show, offers, ids prefixed, export frame and fill                     | `packages/document/src/tab-window.test.ts`                                                        |
+| States, Choose a Tab, Open, Retry, unavailable                            | `apps/live/components/canvas/tab-window/TabWindowFace.test.tsx`                                   |
+| Status, one fetch per tab, retry, choose, open, gate                      | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx`                              |
+| Export targets, arts, nesting, drawing in the tab SVG; Pages, Form, Board | `apps/live/components/dialogs/useTabWindowExport.test.ts`                                         |
+| Pages as laid out, Form as its form, estimated writing, page elements     | `apps/live/lib/tab-window-render.test.ts`                                                         |
+| Something to draw                                                         | `packages/document/src/tab-window.test.ts`                                                        |
+| What plays in a window, its classes and style, stills elsewhere           | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`                                |
+| Palette tile in Pages mode's Media only, not a whiteboard shape           | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
 
 ## Constants and configuration
 

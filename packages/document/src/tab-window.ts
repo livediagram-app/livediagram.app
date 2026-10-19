@@ -5,6 +5,8 @@ import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { SKETCH_FACE_FILTER } from './svg-render-sketch';
+import { opensInOf } from './editor-mode';
+import { tabKindOf } from './tab-kind';
 
 /** A window's size as it lands (16:9). */
 export const TAB_WINDOW_SIZE = { width: 640, height: 360 } as const;
@@ -32,6 +34,16 @@ export function tabWindowOffers<T extends TabLike>(
   ownTabId: string | undefined,
 ): T[] {
   return tabs.filter((t) => tabWindowMayShow(t, ownTabId));
+}
+
+/** Whether a window has anything of this tab to draw: elements, pages (a tab in Pages always has one) or a form.
+ *  Without, it says the tab has nothing on it yet. */
+export function tabWindowHasDrawing(
+  tab: TabLike & { elements: readonly unknown[]; form?: unknown },
+): boolean {
+  if (tab.elements.length > 0) return true;
+  if (tabKindOf(tab) === 'form') return tab.form != null;
+  return opensInOf(tab) === 'pages';
 }
 
 /** Every id in `markup` (and every `url(#…)` and `href="#…"` reaching one) prefixed, so a drawing set inside another
