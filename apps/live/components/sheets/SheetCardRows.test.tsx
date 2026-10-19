@@ -96,6 +96,16 @@ describe('card table rows', () => {
     expect(h.store.sheet(SHEET_ID)!.layout.cardTables![0]!.drafts).toBeUndefined();
   });
 
+  it('puts each row control in a grid row and cell, so the grid holds rows only', () => {
+    renderSheet(h, () => <SheetCardRows />);
+    for (const name of ['Save Card', 'Add Card', 'Open Card']) {
+      const cell = screen.getAllByRole('button', { name })[0]!.closest('[role="gridcell"]');
+      expect(cell?.parentElement?.getAttribute('role')).toBe('row');
+      expect(Number(cell?.parentElement?.getAttribute('aria-rowindex'))).toBeGreaterThan(0);
+    }
+    expect(screen.getAllByRole('row', { name: 'Unsaved card row' })).toHaveLength(2);
+  });
+
   it('picks a state from the active cell’s dropdown, and a date from its date field', () => {
     renderSheet(h, () => <SheetCardRows />);
     act(() => h.select('B2'));

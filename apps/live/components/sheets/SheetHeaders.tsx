@@ -189,15 +189,19 @@ export function SheetHeaders(props: Props) {
       </div>,
     );
   }
+  // The letters and numbers are a picture for a screen reader: the grid speaks the active cell's address with its value
+  // (sheet-element.md "Keyboard and focus"), and headers outside any row were not part of the grid it reads.
   return (
     <>
       <div
+        aria-hidden
         className="pointer-events-none absolute left-0 top-0 overflow-hidden"
         style={{ width: view.width, height: g.headH }}
       >
         {cols}
       </div>
       <div
+        aria-hidden
         className="pointer-events-none absolute left-0 top-0 overflow-hidden"
         style={{ width: g.headW, height: view.height }}
       >

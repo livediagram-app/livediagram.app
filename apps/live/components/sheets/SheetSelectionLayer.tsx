@@ -10,6 +10,7 @@ import type { GridRange, Selection } from '@livediagram/sheets';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { cellBox, mergeAt, type Geometry } from './sheet-geometry';
 import { FilterIcon } from './sheet-icons';
+import { SheetCellSlot } from './SheetCellSlot';
 
 export const FILL_HANDLE_PX = 7;
 
@@ -202,29 +203,30 @@ export function SheetSelectionLayer({
         ? filter.cols.map(({ c, colId, active }) => {
             const box = cellBox(g, filter.r, c, scroll);
             return (
-              <button
-                key={`f${colId}`}
-                type="button"
-                aria-label={`Filter column ${c + 1}`}
-                className="pointer-events-auto absolute flex cursor-pointer items-center justify-center rounded-sm"
-                style={{
-                  left: box.x + box.w - 18,
-                  top: box.y + (box.h - 16) / 2,
-                  width: 16,
-                  height: 16,
-                  zIndex: 6,
-                  backgroundColor: active ? palette.focus : palette.surface,
-                  color: active ? '#ffffff' : palette.muted,
-                  border: `1px solid ${palette.border}`,
-                }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect();
-                  onFilterButton(colId, { x: r.left, y: r.bottom + 2 });
-                }}
-              >
-                <FilterIcon />
-              </button>
+              <SheetCellSlot key={`f${colId}`} r={filter.r} c={c}>
+                <button
+                  type="button"
+                  aria-label={`Filter column ${c + 1}`}
+                  className="pointer-events-auto absolute flex cursor-pointer items-center justify-center rounded-sm"
+                  style={{
+                    left: box.x + box.w - 18,
+                    top: box.y + (box.h - 16) / 2,
+                    width: 16,
+                    height: 16,
+                    zIndex: 6,
+                    backgroundColor: active ? palette.focus : palette.surface,
+                    color: active ? '#ffffff' : palette.muted,
+                    border: `1px solid ${palette.border}`,
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    onFilterButton(colId, { x: r.left, y: r.bottom + 2 });
+                  }}
+                >
+                  <FilterIcon />
+                </button>
+              </SheetCellSlot>
             );
           })
         : null}

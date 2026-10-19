@@ -62,16 +62,22 @@ function show(n: number, canEdit = true, onDock?: () => void) {
   return { focusPage, addPage, movePageTo, duplicatePage, onClose };
 }
 
+// The page rows' own buttons, in order (a row opens through one button stretched across it).
+const rowButtons = () =>
+  screen
+    .getAllByRole('listitem')
+    .map((li) => li.querySelector<HTMLElement>('button[data-page-row]')!);
+
 describe('PageContentsPanel', () => {
   it('lists every page and glides to the one pressed, staying open on a desktop', () => {
     const h = show(3);
-    expect(screen.getAllByRole('option')).toHaveLength(3);
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
     // No page count: the list says it.
     expect(screen.queryByText('3 pages')).toBeNull();
-    fireEvent.click(screen.getByRole('option', { name: /Page 2/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Page 2/ }));
     expect(h.focusPage).toHaveBeenCalledWith('p2');
-    expect(screen.getByRole('option', { name: /Page 2/ }).getAttribute('aria-selected')).toBe(
-      'true',
+    expect(screen.getByRole('button', { name: /^Page 2/ }).getAttribute('aria-current')).toBe(
+      'page',
     );
     expect(h.onClose).not.toHaveBeenCalled();
   });
@@ -95,7 +101,7 @@ describe('PageContentsPanel', () => {
     fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Page' }), {
       target: { value: 'slide' },
     });
-    expect(screen.getAllByRole('option')).toHaveLength(4);
+    expect(screen.getAllByRole('listitem')).toHaveLength(4);
   });
 
   it('docks back as the sidebar from its header, where a sidebar is offered', () => {
@@ -122,12 +128,12 @@ describe('PageContentsPanel', () => {
 
   it('moves between rows with the arrow keys', () => {
     show(3);
-    const first = screen.getAllByRole('option')[0]!;
+    const first = rowButtons()[0]!;
     first.focus();
     fireEvent.keyDown(first, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(screen.getAllByRole('option')[1]);
+    expect(document.activeElement).toBe(rowButtons()[1]);
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
-    expect(document.activeElement).toBe(screen.getAllByRole('option')[2]);
+    expect(document.activeElement).toBe(rowButtons()[2]);
   });
 });
 
@@ -138,7 +144,7 @@ describe('PageContentsPanel reordering', () => {
     ({ top: i * 60, bottom: i * 60 + 60, height: 60, left: 0, right: 300, width: 300 }) as DOMRect;
 
   function drag(h: ReturnType<typeof show>, fromIndex: number, toY: number) {
-    const rows = screen.getAllByRole('option');
+    const rows = screen.getAllByRole('listitem');
     rows.forEach((r, i) => (r.getBoundingClientRect = () => rowRect(i)));
     document.elementFromPoint = (_x: number, y: number) => rows[Math.floor(y / 60)] ?? null;
     const row = rows[fromIndex]!;
