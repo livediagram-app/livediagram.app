@@ -15,6 +15,7 @@ import {
   type FacePartShape,
   type Finish,
 } from '@livediagram/document';
+import { trustedHtml } from '@livediagram/ui';
 import { watchUntilSettled } from '@/components/canvas/settle-watch';
 
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):
@@ -268,7 +269,7 @@ function drawGridRules(
   svg.setAttribute('width', String(face.width));
   svg.setAttribute('height', String(face.height));
   svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
-  svg.innerHTML = ink.join('');
+  svg.innerHTML = trustedHtml(ink.join('')) as string;
   root.appendChild(svg);
   return drawn;
 }
@@ -378,7 +379,7 @@ function frameInk(
   svg.style.cssText = `position:absolute;left:${-parseFloat(css.borderLeftWidth)}px;top:${-parseFloat(
     css.borderTopWidth,
   )}px;overflow:visible;pointer-events:none${under ? ';z-index:-1' : ''}`;
-  svg.innerHTML = part.svg;
+  svg.innerHTML = trustedHtml(part.svg) as string;
   // Its own line gives way to the ink (face-finish.css): a border, or a ring (`ring`, which drops that shadow only).
   if (pen === 'marker' && (bordered || ring))
     el.setAttribute(DRAWN_ATTR, ring ? 'ring' : part.role);
@@ -411,7 +412,7 @@ function shapeInk(
   g.setAttribute(INK_ATTR, '');
   const transform = el.getAttribute('transform');
   if (transform) g.setAttribute('transform', transform);
-  g.innerHTML = part.svg;
+  g.innerHTML = trustedHtml(part.svg) as string;
   if (pen === 'marker') el.setAttribute(DRAWN_ATTR, part.role);
   el.after(g);
   return part;
