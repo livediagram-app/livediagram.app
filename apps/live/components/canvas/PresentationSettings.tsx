@@ -18,7 +18,7 @@ import {
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <>
-      <span className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/40">
+      <span className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/60">
         {title}
       </span>
       {children}
