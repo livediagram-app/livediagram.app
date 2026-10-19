@@ -185,7 +185,9 @@ invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
 common case is a tombstone for a folder, theme or team: the emit
 deliberately omits its id, so the renderer has nothing to link and the
 dimming is structural rather than a rule someone has to remember. (A
-deleted document has no tombstone at all; see §3.5.)
+deleted document has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
+button stretched across the card, named by its subject and reason ("Payments, Document Created"); the card itself is
+no button, and the ⋯ menu and an inline rename sit above that button as controls of their own, never nested in it.
 
 ### Colour means what happened, not where
 
@@ -1531,7 +1533,9 @@ livediagram has a class-based dark mode ([Live app](../007-editor/live-app.md)),
 Toolkit which is dark-only, so every tint needs two, and dark mode
 lifts the bold value (a 600-weight hue goes muddy on slate-900) while
 dropping the soft one (an alpha tint over a dark surface reads far
-stronger than the same alpha over white). `eventTone` reads the var
+stronger than the same alpha over white). In light mode each bold value is a 700 step where the 600 fell short:
+it labels a card's reason in 12 px text, so amber (`#b45309`) and emerald (`#047857`) read at 4.5:1 or better on
+white and on their own tint. `eventTone` reads the var
 with a fallback baked into the package, so the components render
 standalone.
 

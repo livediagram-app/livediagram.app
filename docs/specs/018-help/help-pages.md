@@ -96,7 +96,9 @@ The search box answers `/` from anywhere on the page (unless focus is already in
 held), and shows a `/` key hint at its right edge while empty (not on a touch screen), so a keyboard reader can
 search without reaching for the mouse. On the home page the large box takes the key, elsewhere the header's.
 `Escape` closes the results, and a second `Escape` leaves the box. The results list shows each article's
-category as a small label above its title.
+category as a small label above its title. A polite live region says what the dropdown holds ("3 articles found",
+"No articles found for …") and the list is a region named Search results, since the results appear below the field
+with nothing else to tell a screen reader they came.
 
 **Ranking.** Matches are best first: a title that starts with the query, then a title with a word starting with
 it, then a title containing it, then a description match, then a keyword match alone, then, for a query of

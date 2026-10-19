@@ -77,7 +77,7 @@ export function FeatureCategoryIndex({ slug }: { slug: string }) {
                         className="-ml-px flex items-center justify-between border-l-2 border-transparent py-1.5 pl-4 pr-1 text-sm text-slate-600 transition-colors hover:border-brand-500 hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
                       >
                         {group}
-                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
                           {articles.length}
                         </span>
                       </a>
@@ -97,7 +97,7 @@ export function FeatureCategoryIndex({ slug }: { slug: string }) {
                 {group ? (
                   <h2 className="mb-4 flex items-baseline gap-3 text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
                     {group}
-                    <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       {articles.length}
                     </span>
                   </h2>

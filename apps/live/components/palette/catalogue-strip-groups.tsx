@@ -91,13 +91,11 @@ export function CatalogueGroupTile({
   );
   return (
     <span ref={ref} data-toolbar-more-button="" className="flex">
-      {open ? (
-        button
-      ) : (
-        <HoverCard title={group.label} description="Open this group.">
-          {button}
-        </HoverCard>
-      )}
+      {/* No hover card while open: it would sit over the group's menu. Disabled, not unwrapped, so the button keeps
+          its focus as the menu opens. */}
+      <HoverCard title={group.label} description="Open this group." disabled={open}>
+        {button}
+      </HoverCard>
     </span>
   );
 }

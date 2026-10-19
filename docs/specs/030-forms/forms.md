@@ -219,9 +219,9 @@ reads hand-drawn and one on a Boardroom tab reads crisp. The form card stays whi
 so text contrast never depends on the theme.
 
 - **Colour**: always the tab theme's own colour for each half (the theme's line colour; on Default, the brand blue
-  of each half), never the card type's or the starter's. It paints the cover's default band, the accent bars, focus
-  rings, selected choices, the progress bar, links and the filled buttons, whose labels take whichever of light or
-  dark text reads on it. A colour an earlier build stored on a form (`accent`) is dropped when the form is read.
+  of each half, sky-700 in light and sky-400 in dark), never the card type's or the starter's. It paints the cover's default band, the accent bars, focus
+  rings, selected choices, the progress bar, links and the filled buttons, whose labels take whichever of white or
+  slate-900 reads better on it (at least 4.5:1 on every built-in theme). A colour an earlier build stored on a form (`accent`) is dropped when the form is read.
 - **Font**: the tab font, on everything in the form (a tab with none keeps the app font).
 - **Finish**: **Flexible** draws boxes as they are; **Professional** squares their corners (2 px); **Sketch** draws
   every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink

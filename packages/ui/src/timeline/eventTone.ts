@@ -106,8 +106,8 @@ export const TONE_LABELS: Record<TimelineTone, string> = {
 // to sit quietly under body text rather than compete with it.
 const FALLBACK: Record<TimelineTone, { bold: string; soft: string }> = {
   danger: { bold: '#dc2626', soft: 'rgba(220, 38, 38, 0.10)' },
-  structural: { bold: '#d97706', soft: 'rgba(217, 119, 6, 0.10)' },
-  create: { bold: '#059669', soft: 'rgba(5, 150, 105, 0.10)' },
+  structural: { bold: '#b45309', soft: 'rgba(217, 119, 6, 0.10)' },
+  create: { bold: '#047857', soft: 'rgba(5, 150, 105, 0.10)' },
   neutral: { bold: '#64748b', soft: 'rgba(100, 116, 139, 0.10)' },
 };
 

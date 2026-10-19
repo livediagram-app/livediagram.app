@@ -82,3 +82,29 @@ describe('search keys', () => {
     expect(document.activeElement).not.toBe(header);
   });
 });
+
+// docs/specs/018-help/help-pages.md "Search": what the dropdown holds is announced, since nothing else tells a screen
+// reader results came.
+const type = (input: HTMLInputElement, value: string) => {
+  // React reads a change from the native value setter and an input event.
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+};
+const settle = () => act(async () => new Promise((resolve) => setTimeout(resolve, 50)));
+
+describe('SearchInput results', () => {
+  it('announces how many articles it found, or that it found none', async () => {
+    const input = mount(false);
+    const status = () => document.querySelector('[aria-live="polite"]')?.textContent;
+    act(() => {
+      input.focus();
+      type(input, 'export');
+    });
+    // The article index loads on first focus; under coverage it can take a while, so wait for the answer.
+    for (let i = 0; i < 100 && !status(); i++) await settle();
+    expect(status()).toMatch(/^\d+ articles? found$/);
+    expect(document.querySelector('[role="region"][aria-label="Search results"]')).not.toBeNull();
+    act(() => type(input, 'zzqqxx'));
+    expect(status()).toBe('No articles found for zzqqxx');
+  });
+});

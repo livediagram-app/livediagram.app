@@ -1,0 +1,14 @@
+// A rename ended from the keyboard (Enter or Escape) takes its field away, which left focus on the page. Once the
+// caller has swapped the field back for its name, the first control in the field's place (the title, the tab, the row's
+// link) takes focus, unless something else already has it. Shared by NameEditor and InlineRenameInput.
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+export function refocusAfterField(field: HTMLElement): void {
+  const host = field.parentElement;
+  if (!host) return;
+  requestAnimationFrame(() => {
+    const lost = !document.activeElement || document.activeElement === document.body;
+    if (lost && host.isConnected) host.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+  });
+}

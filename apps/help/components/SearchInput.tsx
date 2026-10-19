@@ -134,7 +134,11 @@ export function SearchInput({ large = false }: { large?: boolean }) {
         )}
       </div>
       {isOpen && results.length > 0 && (
-        <div className="scrollbar-slim absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+        <div
+          role="region"
+          aria-label="Search results"
+          className="scrollbar-slim absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+        >
           {results.map((article) => (
             <Link
               key={`${article.categorySlug}/${article.slug}`}
@@ -158,6 +162,15 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           ))}
         </div>
       )}
+      {/* What the dropdown holds, said to a screen reader: the results appear below the field with nothing else to
+          announce them (docs/specs/018-help/help-pages.md "Search"). */}
+      <p aria-live="polite" className="sr-only">
+        {isOpen
+          ? results.length === 0
+            ? `No articles found for ${trimmed}`
+            : `${results.length} ${results.length === 1 ? 'article' : 'articles'} found`
+          : ''}
+      </p>
       {isOpen && query.trim().length > 1 && results.length === 0 && (
         <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-800 dark:bg-slate-900">
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">

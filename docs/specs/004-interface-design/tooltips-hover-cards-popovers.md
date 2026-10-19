@@ -55,6 +55,9 @@ A control has at most one hint. If a hover card is present, it carries the name 
 - **A bold title over a one-line description.** The description may run to two or three short lines.
 - **White card** on light pages, with a border, a soft shadow and a pointer.
 - Hover cards are not part of the tooltip warm-up; they have no delay to skip.
+- **Quiet while the control's own popover is open** (the Explorer, a cluster button, a palette group), since it
+  would sit over what it names: the card is `disabled`, never unwrapped. Unwrapping re-parented the control, which
+  remounted it and dropped a keyboard user's focus to the page as the popover opened.
 
 ### On canvas elements, sparingly
 

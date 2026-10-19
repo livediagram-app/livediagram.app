@@ -80,14 +80,11 @@ export function ToolbarExplorerButton({
         e.stopPropagation();
       }}
     >
-      {/* No hover card while open: it would sit over the panel it names. */}
-      {open ? (
-        button
-      ) : (
-        <HoverCard title="Explorer" description="Your documents, folders and teams.">
-          {button}
-        </HoverCard>
-      )}
+      {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
+          button keeps its focus as the panel opens. */}
+      <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
+        {button}
+      </HoverCard>
       {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
       {phone || inline ? null : <MenuNameSlot />}
       {/* Else the open tab's name, in every mode (not on a phone). */}
