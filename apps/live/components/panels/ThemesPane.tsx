@@ -59,7 +59,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
   };
 
   if (loading) {
-    return <p className="px-1 py-8 text-sm text-slate-500">Loading themes…</p>;
+    return <p className="px-1 py-8 text-sm text-slate-500 dark:text-slate-400">Loading themes…</p>;
   }
 
   return (

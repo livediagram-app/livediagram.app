@@ -108,7 +108,9 @@ export function PaletteCategoryRail<T>({
           {/* Keyed on what it shows, so a switch fades the new entries in. */}
           <div key={matches ? `?${query}` : (open?.id ?? '')} className="animate-fade-in px-2 pb-3">
             {loading ? (
-              <p className="px-1 py-6 text-center text-[11.5px] text-slate-400">{loadingMessage}</p>
+              <p className="px-1 py-6 text-center text-[11.5px] text-slate-500 dark:text-slate-400">
+                {loadingMessage}
+              </p>
             ) : matches ? (
               matches.length > 0 ? (
                 renderItems(matches)

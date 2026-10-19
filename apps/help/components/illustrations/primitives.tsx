@@ -37,7 +37,10 @@ export function Scene({
       viewBox={`0 0 ${w} ${h}`}
       className="help-art h-auto w-full"
       preserveAspectRatio="xMidYMid meet"
-      role="img"
+      // The picture's words are its Figure's caption, which names the <figure> for a screen reader; as an unnamed
+      // role="img" it was an image with no alternative (axe svg-img-alt) on every illustrated article.
+      aria-hidden
+      focusable="false"
     >
       <defs>
         <pattern id={`grid-${gid}`} width="16" height="16" patternUnits="userSpaceOnUse">

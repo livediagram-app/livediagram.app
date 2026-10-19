@@ -67,7 +67,7 @@ export function ItemDescription({
 
   if (!canEdit) {
     return empty ? (
-      <p className="text-[13px] text-slate-500">No description</p>
+      <p className="text-[13px] text-slate-500 dark:text-slate-400">No description</p>
     ) : (
       <NoteRichText
         note={undefined}

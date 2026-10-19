@@ -154,7 +154,7 @@ export function PresentationHud({
             <span className="select-none text-[11px] font-semibold tabular-nums text-white/90">
               {position} / {total}
             </span>
-            <span className="max-w-[14rem] select-none truncate text-[11px] text-white/60">
+            <span className="max-w-[14rem] select-none truncate text-[11px] text-white/90">
               {name}
             </span>
           </>

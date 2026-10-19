@@ -62,7 +62,9 @@ function FunctionRow({
     >
       <span className="font-mono text-[12px] font-semibold text-slate-800 dark:text-slate-100">
         {name}
-        <span className="font-normal text-slate-400">({doc?.args.join(', ') ?? ''})</span>
+        <span className="font-normal text-slate-500 dark:text-slate-400">
+          ({doc?.args.join(', ') ?? ''})
+        </span>
       </span>
       {doc?.summary ? (
         <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">

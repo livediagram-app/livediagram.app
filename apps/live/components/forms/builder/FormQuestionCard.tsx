@@ -271,7 +271,7 @@ export function FormQuestionCard({
                 : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:border-slate-500'
             }`}
           >
-            <span className="shrink-0 text-slate-400">Answer goes to</span>
+            <span className="shrink-0 text-slate-500 dark:text-slate-400">Answer goes to</span>
             <span className="min-w-0 truncate">{targetLabel(target)}</span>
           </button>
         )}

@@ -196,7 +196,7 @@ function WidgetCard({
         }
       >
         {preview ?? (
-          <span className="flex items-center gap-2 text-slate-500">
+          <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
             <BoardWidgetArt kind={kind} size={18} />
           </span>
         )}
