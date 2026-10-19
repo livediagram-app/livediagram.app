@@ -34,6 +34,7 @@ import { offlineWriteItem } from '@/lib/offline/offline-items';
 import { seedAuthor } from '@/lib/seed-author';
 import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
+import { useDocumentCount } from './useDocumentCount';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
@@ -138,10 +139,10 @@ export default function NewDocumentPage() {
   // bfcache listener, which must stand down once this document IS the editor.
   const [openedId, setOpenedId] = useState<string | null>(null);
   const handedOff = useRef(false);
-  // How many documents the user owns (null until known). Reported by
-  // RecentDocumentsCard's fetch; gates the interactive tour's welcome offer
+  // How many documents the user owns, before this visit's create. Reported by RecentDocumentsCard's
+  // fetch and awaited by the create; gates the interactive tour's welcome offer
   // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
-  const [documentCount, setDocumentCount] = useState<number | null>(null);
+  const documentCount = useDocumentCount();
   // Set when the create fails: the card's copy and action (create-failure.ts). Shows instead of
   // navigating to the editor for a document that was never persisted (which would 404). The ref
   // keeps the last attempt's args so Retry can re-run the exact same create.
@@ -329,6 +330,10 @@ export default function NewDocumentPage() {
         debugLog(`[new] background identity failed: ${String(err)}`),
       );
     }
+    // Read before the create, so the new document is not in it. A cloud create has just settled identity, so the
+    // count's fetch is in flight: wait for it rather than miss the tour on a quick pick. This Browser opens at once
+    // and takes the count only if it is already in.
+    const priorDocuments = await documentCount.settled(offline ? 0 : undefined);
 
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
     const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
@@ -452,7 +457,7 @@ export default function NewDocumentPage() {
     // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
-    if (documentCount === 0) {
+    if (priorDocuments === 0) {
       markTourPending();
     }
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
@@ -611,7 +616,7 @@ export default function NewDocumentPage() {
         >
           <RecentDocumentsCard
             ownerId={self.id === 'pending' ? null : self.id}
-            onCount={setDocumentCount}
+            onCount={documentCount.report}
           />
         </div>
       </main>

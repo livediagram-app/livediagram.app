@@ -32,6 +32,11 @@ proved the better introduction.
   **No** dismisses it. A document made from a Plan, Draw, Pages or Workshop template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
+  The count is the one from **before** the create: a cloud create waits for it (up to
+  `DOCUMENT_COUNT_WAIT_MS`, 3 s, after identity settles, `apps/live/app/new/useDocumentCount.ts`), so a pick
+  made before the list fetch lands still offers the tour; only the first count reported is kept, since a
+  re-read after the create already includes the new document. A This Browser create opens at once and takes the
+  count only if it is already in.
 - **The bookend cards ask nothing of the editor.** The welcome offer and the last card are **banners**, built as the
   sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
   there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
