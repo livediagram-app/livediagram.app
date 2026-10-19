@@ -13,6 +13,7 @@ import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
 import { SKETCH_HATCH_OPACITY, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { markedGroup, replaceBlocks } from './svg-markup-blocks';
 
 function svgSketchDrawing(
   at: { x: number; y: number },
@@ -179,14 +180,14 @@ const INK_TAGS = /<(rect|circle|ellipse|path|line|polyline|polygon|use)\b/g;
 const HAS_INK = /<(rect|circle|ellipse|path|line|polyline|polygon|use)\b/;
 const HAS_WORDS = /<(text|image|foreignObject)\b/;
 // Shapes that clip, mask or paint (never drawn themselves): hiding one would empty its clip, so they are kept whole.
-const DEFINITIONS = /<(clipPath|mask|defs|pattern|marker)\b[^>]*>[\s\S]*?<\/\1>/g;
+const DEFINITIONS = ['clipPath', 'mask', 'defs', 'pattern', 'marker'] as const;
 // The hand-drawn body (svgSketchDrawing) is already drawn by hand; it is drawn once, under the face, never wobbled.
-const SKETCHED_BODY = /<g [^>]*data-finish="sketch">[\s\S]*?<\/g>/;
+const SKETCHED_BODY = 'data-finish="sketch"';
 
 /** Every ink tag in `markup` hidden, leaving its words and photos; definitions untouched. */
 function hideInk(markup: string): string {
   const kept: string[] = [];
-  const held = markup.replace(DEFINITIONS, (d) => `<!--lvd-def-${kept.push(d) - 1}-->`);
+  const held = replaceBlocks(markup, DEFINITIONS, (d) => `<!--lvd-def-${kept.push(d) - 1}-->`);
   return held
     .replace(INK_TAGS, '<$1 visibility="hidden"')
     .replace(/<!--lvd-def-(\d+)-->/g, (_, i: string) => kept[Number(i)]!);
@@ -196,8 +197,9 @@ function hideInk(markup: string): string {
  *  copy (every ink tag hidden) over it, so the words keep their place and stay sharp. A sketched body inside is
  *  drawn once, untouched, where it was: under a box's face, over a table's grid. */
 export function svgSketchFace(markup: string): string {
-  const body = SKETCHED_BODY.exec(markup)?.[0] ?? '';
-  const face = body ? markup.replace(body, '') : markup;
+  const at = markedGroup(markup, SKETCHED_BODY);
+  const body = at ? markup.slice(at[0], at[1]) : '';
+  const face = at ? markup.slice(0, at[0]) + markup.slice(at[1]) : markup;
   const ink = face.replace(WORDS, '').replace(PHOTOS, '');
   const inkLayer = HAS_INK.test(ink) ? `<g filter="url(#${SKETCH_FACE_FILTER.id})">${ink}</g>` : '';
   const wordsLayer = HAS_WORDS.test(face) ? hideInk(face) : '';

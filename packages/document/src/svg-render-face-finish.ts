@@ -12,33 +12,54 @@ import {
   type FacePartPaint,
   type FacePartShape,
 } from './marker-face';
+import { mapTags, markedGroup, replaceBlocks } from './svg-markup-blocks';
 
-const RECT = /<rect\b([^>]*?)(\/?)>/g;
-const THICK_LINE =
-  /(<(?:rect|circle|ellipse|path|line|polyline|polygon)\b[^>]*?\sstroke-width=")2(")/g;
+const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'line', 'polyline', 'polygon']);
+const RECT_TAG = new Set(['rect']);
+
+// A sticker's shadow (sticker-markup.ts): Professional and Marker draw none.
+const dropStickerShadow = (markup: string) =>
+  mapTags(markup, RECT_TAG, (tag, text) => (tag.attrs.includes('data-sticker-shadow') ? '' : text));
 
 /** Professional: every rectangle square (a circle's or a pill's ends kept), every 2 px line 1 px. */
-// A sticker's shadow (sticker-markup.ts): Professional and Marker draw none.
-const STICKER_SHADOW = /<rect\b[^>]*data-sticker-shadow[^>]*\/>/g;
-
 export function svgProfessionalFace(markup: string): string {
-  return markup
-    .replace(STICKER_SHADOW, '')
-    .replace(RECT, (tag, attrs: string, close: string) => {
+  return mapTags(dropStickerShadow(markup), SHAPE_TAGS, (tag, text) => {
+    let attrs = tag.attrs.replace(/(\sstroke-width=")2(")/, '$11$2');
+    if (tag.name === 'rect') {
       const a = faceAttrs(attrs);
-      if (!a.rx && !a.ry) return tag;
-      if (a['data-finish-keep'] !== undefined) return tag;
-      if (isPillRect(Number(a.width), Number(a.height), Number(a.rx ?? a.ry))) return tag;
-      return `<rect${attrs.replace(/\s(rx|ry)="[^"]*"/g, '')}${close}>`;
-    })
-    .replace(THICK_LINE, '$11$2');
+      const keep =
+        (!a.rx && !a.ry) ||
+        a['data-finish-keep'] !== undefined ||
+        isPillRect(Number(a.width), Number(a.height), Number(a.rx ?? a.ry));
+      if (!keep) attrs = attrs.replace(/\s(rx|ry)="[^"]*"/g, '');
+    }
+    return attrs === tag.attrs ? text : `<${tag.name}${attrs}${tag.selfClosing ? '/' : ''}>`;
+  });
 }
 
 // Blocks that are never drawn as they stand (clips, masks, patterns, markers, definitions), a foreignObject's HTML,
 // and the hand-drawn body (svgMarkerDrawing, already drawn in marker): kept whole, never redrawn.
-const HELD =
-  /<(clipPath|mask|defs|pattern|marker|symbol|foreignObject)\b[^>]*>[\s\S]*?<\/\1>|<g [^>]*data-finish="marker">[\s\S]*?<\/g>/g;
-const PART = /<(rect|circle|ellipse|path|polygon|polyline|line)\b([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/g;
+const HELD_BLOCKS = [
+  'clipPath',
+  'mask',
+  'defs',
+  'pattern',
+  'marker',
+  'symbol',
+  'foreignObject',
+] as const;
+const MARKER_BODY = 'data-finish="marker"';
+// A part is a self-closing shape tag, as our renderers write them; one with children keeps its plain look.
+
+// Every held block (HELD_BLOCKS, then the marker body) swapped for a placeholder comment, its markup kept in `held`.
+function holdBlocks(markup: string, held: string[]): string {
+  const hold = (block: string) => `<!--lvd-held-${held.push(block) - 1}-->`;
+  const out = replaceBlocks(markup, HELD_BLOCKS, hold);
+  const body = markedGroup(out, MARKER_BODY);
+  return body
+    ? out.slice(0, body[0]) + hold(out.slice(body[0], body[1])) + out.slice(body[1])
+    : out;
+}
 
 function partShape(tag: string, a: Record<string, string>): FacePartShape | null {
   const n = (k: string) => Number(a[k] ?? 0);
@@ -75,8 +96,9 @@ function partShape(tag: string, a: Record<string, string>): FacePartShape | null
   }
 }
 
-/** Marker (and, with `pen` 'pencil', Sketch's shading of the same shapes): a face's frames outlined, its shapes coloured in and outlined, its lines drawn in one marker stroke, each
- *  over its own part (markerFacePart); everything else, and every small part, as drawn. `face` is the element's box. */
+/** Marker (and, with `pen` 'pencil', Sketch's shading of the same shapes): a face's frames outlined, its shapes
+ *  coloured in and outlined, its lines drawn in one marker stroke, each over its own part (markerFacePart); everything
+ *  else, and every small part, as drawn. `face` is the element's box. */
 export function svgMarkerFace(
   markup: string,
   elementId: string,
@@ -89,35 +111,32 @@ export function svgMarkerFace(
   const drawPart = pen === 'marker' ? markerFacePart : sketchFacePart;
   const held: string[] = [];
   let drawn = 0;
-  return markup
-    .replace(STICKER_SHADOW, '')
-    .replace(HELD, (block) => `<!--lvd-held-${held.push(block) - 1}-->`)
-    .replace(PART, (tag, name: string, attrs: string, end: string) => {
-      if (drawn >= MARKER_FACE_MAX_PARTS) return tag;
-      const a = faceAttrs(attrs);
-      // A line carrying arrowheads, or a part marked to keep its look, is drawn as it is.
-      if (a['marker-start'] || a['marker-end'] || a['data-finish-keep'] !== undefined) return tag;
-      const shape = partShape(name, a);
-      if (!shape) return tag;
-      const stroke = a.stroke ?? null;
-      const paint: FacePartPaint = {
-        fill: a.fill ?? null,
-        stroke,
-        strokePx: stroke ? Number(a['stroke-width'] ?? 1) : 0,
-        ...(a.opacity ? { opacity: Number(a.opacity) } : {}),
-        ...(a['stroke-dasharray'] && a['stroke-dasharray'] !== 'none' ? { dashed: true } : {}),
-        ...(a['data-marker-shape'] !== undefined ? { shape: true } : {}),
-      };
-      const part = drawPart(shape, paint, box, seed, drawn);
-      if (!part) return tag;
-      drawn += 1;
-      // Pencil shading goes over the part as drawn; the face's wobble draws its line by hand.
-      if (pen === 'pencil')
-        return tag + (a.transform ? `<g transform="${a.transform}">${part.svg}</g>` : part.svg);
-      // The part keeps its solid fill (a line has none); its outline is the marker's.
-      const plain = `<${name}${attrs.replace(/\sstroke(-[a-z]+)?="[^"]*"/g, '')}${end}`;
-      const transform = a.transform ? `<g transform="${a.transform}">${part.svg}</g>` : part.svg;
-      return (part.role === 'line' ? '' : plain) + transform;
-    })
-    .replace(/<!--lvd-held-(\d+)-->/g, (_, i: string) => held[Number(i)]!);
+  return mapTags(holdBlocks(dropStickerShadow(markup), held), SHAPE_TAGS, (t, tag) => {
+    const { name, attrs } = t;
+    if (!t.selfClosing || drawn >= MARKER_FACE_MAX_PARTS) return tag;
+    const a = faceAttrs(attrs);
+    // A line carrying arrowheads, or a part marked to keep its look, is drawn as it is.
+    if (a['marker-start'] || a['marker-end'] || a['data-finish-keep'] !== undefined) return tag;
+    const shape = partShape(name, a);
+    if (!shape) return tag;
+    const stroke = a.stroke ?? null;
+    const paint: FacePartPaint = {
+      fill: a.fill ?? null,
+      stroke,
+      strokePx: stroke ? Number(a['stroke-width'] ?? 1) : 0,
+      ...(a.opacity ? { opacity: Number(a.opacity) } : {}),
+      ...(a['stroke-dasharray'] && a['stroke-dasharray'] !== 'none' ? { dashed: true } : {}),
+      ...(a['data-marker-shape'] !== undefined ? { shape: true } : {}),
+    };
+    const part = drawPart(shape, paint, box, seed, drawn);
+    if (!part) return tag;
+    drawn += 1;
+    // Pencil shading goes over the part as drawn; the face's wobble draws its line by hand.
+    if (pen === 'pencil')
+      return tag + (a.transform ? `<g transform="${a.transform}">${part.svg}</g>` : part.svg);
+    // The part keeps its solid fill (a line has none); its outline is the marker's.
+    const plain = `<${name}${attrs.replace(/\sstroke(-[a-z]+)?="[^"]*"/g, '')}/>`;
+    const transform = a.transform ? `<g transform="${a.transform}">${part.svg}</g>` : part.svg;
+    return (part.role === 'line' ? '' : plain) + transform;
+  }).replace(/<!--lvd-held-(\d+)-->/g, (_, i: string) => held[Number(i)]!);
 }
