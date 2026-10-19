@@ -474,7 +474,11 @@ columns) is never refused.
 - Every loop is bounded: recalc reads (`RECALC_READS_MAX`), range size (`RANGE_CELLS_MAX`), formula length and depth,
   regex work (`REGEX_WORK_MAX`), text results (`TEXT_RESULT_MAX`, longer → `#VALUE!`), `REPT`, `SEQUENCE` and
   array results (`ARRAY_CELLS_MAX`).
-- `HYPERLINK` targets are kept only when `http:`, `https:` or `mailto:`; others render the label as text.
+- `HYPERLINK` targets are kept only when `http:`, `https:` or `mailto:`, at most `HYPERLINK_URL_MAX` (2,048)
+  characters, normalised through `URL` (`safeHyperlink`, `packages/sheets/src/hyperlink.ts`); others render the label
+  as text. `Workbook.hyperlinkOf(sheetId, r, c)` reads the target from a formula whose top node is a `HYPERLINK` call,
+  evaluating its first argument in the cell as `evaluateAt` does (its own `~link` id, no value or dependency kept);
+  `renderWindow` sets `RenderCell.link` (and `underline`) from it.
 - Pasted HTML is scanned, never inserted into the DOM; only the listed styles are read, colours normalised to
   `#rrggbb`.
 

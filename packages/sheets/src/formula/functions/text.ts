@@ -235,7 +235,7 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     const re = regex(p!, t!, 'gu');
     return re instanceof RegExp ? t!.replace(re, by!) : re;
   }),
-  // The link itself is the editor's (workbook.hyperlinkOf); the value is the label.
+  // The value is the label; where it goes is Workbook.hyperlinkOf's, read from the formula (safeHyperlink).
   HYPERLINK: textFn(1, 2, 2, ([url, label]) =>
     label === undefined || label === '' ? url! : label,
   ),

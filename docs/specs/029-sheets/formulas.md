@@ -191,6 +191,22 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   `"mmm yyyy"`, `"hh:mm"`, `"[h]:mm"`, `"£#,##0.00"`, `"@"`).
 - `HYPERLINK(url, [label])` shows the label as a link; Ctrl/⌘ and a click opens it in a new tab (http, https and
   mailto only).
+  - The cell's **value is the label** (or the url when there is none), so sorting, CSV, charts, `read_sheet` and
+    every formula that reads the cell see text, as in other spreadsheets. Where it goes is read from the formula
+    (`Workbook.hyperlinkOf`): only a formula that **is** a `HYPERLINK` call at its top links; one nested inside
+    another function (`=UPPER(HYPERLINK(…))`) shows its value as plain text.
+  - The url argument is worked out in the cell, so it may be built from references (`=HYPERLINK(A2&"?ref=sheet",
+"Open")`) and follows them. A target that is not an http, https or mailto address (a `javascript:` or `data:`
+    one, a relative path, an address over 2,048 characters) is dropped (`safeHyperlink`): the label draws as plain
+    text and nothing opens.
+  - **Drawing**: the label underlined, in the sheet's accent (its `focus` colour) unless the cell has its own text
+    colour, kept readable on the cell's fill like any ink. Images and exports draw it the same way, and an SVG export
+    keeps it a link (`<a href target="_blank" rel="noopener noreferrer">`, escaped).
+  - **Opening**: Ctrl/⌘ and a press on the cell opens it in a new tab with no opener (`noopener,noreferrer`); on any
+    other cell Ctrl/⌘ still adds to the selection, and a plain press on a link only selects it. The pointer's tooltip
+    under a link shows its address and "⌘Click to open" (Ctrl+Click elsewhere). The cell menu offers **Open Link** for
+    the active cell's link, for every role: opening changes nothing, and it is the way in on a touch screen.
+  - Telemetry: `Sheet / Opened / Hyperlink`, never the address.
 - `REGEX…` functions take JavaScript regular expressions. A regular expression cannot be stopped once it runs, so
   its cost is bounded before it starts: a pattern whose repeats could backtrack for more than a moment on the cell's
   text (a repeat of a repeat such as `(a+)+`, or three or more open-ended repeats side by side on long text) answers

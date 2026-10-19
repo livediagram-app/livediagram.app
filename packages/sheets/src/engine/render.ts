@@ -35,6 +35,8 @@ type RenderCell = {
   chip?: { color?: string };
   // A dropdown drawn with an arrow at its right instead.
   arrow?: true;
+  // A HYPERLINK's allowed target (Workbook.hyperlinkOf): drawn as a link, underlined in the sheet's accent.
+  link?: string;
 };
 
 export type SheetRenderModel = {
@@ -135,6 +137,12 @@ export function renderWindow(
       if (f.b) out.bold = true;
       if (f.i) out.italic = true;
       if (f.u) out.underline = true;
+      // A HYPERLINK draws as a link, wherever its sheet is drawn (formulas.md "Text").
+      const link = shown.text ? wb.hyperlinkOf(sheetId, r, c) : null;
+      if (link) {
+        out.link = link;
+        out.underline = true;
+      }
       if (f.st) out.strike = true;
       if (f.fc) out.color = f.fc;
       if (f.bg) out.fill = f.bg;
