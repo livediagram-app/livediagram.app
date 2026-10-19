@@ -36,7 +36,7 @@ function copy(db: Awaited<ReturnType<typeof arrange>>['db'], code: string, body:
 }
 
 const nameOf = async (res: Response) =>
-  ((await res.json()) as { document: { name: string } }).document.name;
+  (await res.json<{ document: { name: string } }>()).document.name;
 
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {});
