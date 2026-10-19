@@ -4,7 +4,8 @@
 // A mind map's connectors are stored curved (MIND_CONNECTOR_LOOK). Professional draws them right-angled,
 // and neatly: every connector off one parent leaves the same point on the parent's face and turns on one
 // shared trunk halfway across the gap to the nearest child, so a column of siblings reads as a bracket
-// rather than a bundle of separate elbows. The bubble flow, which fans every way, draws straight spokes.
+// rather than a bundle of separate elbows. The bubble flow, which fans every way, draws straight spokes, in every
+// finish.
 //
 // It is a look, never a rewrite: the stored arrow keeps its curve, so switching the finish back restores
 // it. Only a connector still in the map's default look is routed; a style, bow or bend picked on it wins.
@@ -86,8 +87,8 @@ function flowOf(index: ElementIndex, node: ShapeElement): MindFlow {
 const FACE: Record<string, 'e' | 'w' | 'n' | 's'> = { e: 'e', w: 'w', n: 'n', s: 's' };
 
 /**
- * The route the finish draws `arrow` along, or null when it is drawn as stored: not Professional (nor an org
- * chart's connector, which is always routed), not a mind connector (both ends pinned to mind nodes, one the other's
+ * The route the finish draws `arrow` along, or null when it is drawn as stored: not Professional (nor a bubble
+ * map's spoke or an org chart's connector, which are always routed), not a mind connector (both ends pinned to mind nodes, one the other's
  * parent), or not in the default look.
  */
 export function finishMindConnectorRoute(
@@ -103,14 +104,16 @@ export function finishMindConnectorRoute(
   const a = index.get(arrow.from.elementId);
   const b = index.get(arrow.to.elementId);
   if (!isNode(a) || !isNode(b)) return null;
+  // Usually drawn parent to child, but a swapped connector is the same branch.
+  const forward = b.mindParentId === a.id;
+  if (!forward && a.mindParentId !== b.id) return null;
+  // A bubble map fans every way, so its spokes are straight in every finish: a curve leaving one face and
+  // entering another bulges sideways and can pass behind a sibling, so a branch reads as the wrong node's.
+  if (flowOf(index, a) === 'bubble') return { style: 'straight', corners: [] };
   // An org chart (docs/specs/009-elements/org-chart.md) draws its connectors as this bracket in every finish: a
   // person map's reports hang off one trunk, the way org charts are read.
   const orgChart = a.mindLook === 'person' && b.mindLook === 'person';
   if (finish !== 'professional' && !orgChart) return null;
-  // Usually drawn parent to child, but a swapped connector is the same branch.
-  const forward = b.mindParentId === a.id;
-  if (!forward && a.mindParentId !== b.id) return null;
-  if (flowOf(index, a) === 'bubble') return { style: 'straight', corners: [] };
 
   const parent = forward ? a : b;
   const parentEnd = forward ? arrow.from : arrow.to;

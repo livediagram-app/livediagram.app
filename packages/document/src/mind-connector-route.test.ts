@@ -198,6 +198,21 @@ describe('finishMindConnectorRoute', () => {
     );
   });
 
+  // A curve leaving one face and entering another bulges sideways, and in a bubble map's fan that passed
+  // behind a sibling (#970), so the spokes are straight whatever the finish.
+  it('draws bubble spokes straight in every finish, and a bow picked on one still wins', () => {
+    const els: Element[] = [
+      node('root', 0, 0, undefined, 'bubble'),
+      node('a', 300, 200, 'root'),
+      connector('ra', 'root', 'se', 'a', 'nw'),
+    ];
+    for (const finish of ['flexible', 'sketch', 'marker'] as const) {
+      expect(finishRoutedArrow(arrowOf(els, 'ra'), els, finish).arrowStyle).toBe('straight');
+    }
+    const bowed = { ...arrowOf(els, 'ra'), curveOffset: 40 };
+    expect(finishMindConnectorRoute(bowed, els, 'flexible')).toBeNull();
+  });
+
   it('routes a connector drawn child to parent the same way, reversed', () => {
     const els = tree().map((e) => (e.id === 'rb' ? connector('rb', 'b', 'w', 'root', 'e') : e));
     expect(finishMindConnectorRoute(arrowOf(els, 'rb'), els, 'professional')!.corners).toEqual([
