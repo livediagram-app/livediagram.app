@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import type { connectRoom } from '@/lib/api-client';
+import { whenTabSaved } from '@/lib/tab-saved';
 
 type Room = ReturnType<typeof connectRoom>;
 
@@ -108,6 +109,17 @@ describe('useAutosave and tab revisions', () => {
     rerender({ tabs: [tab('again')] });
     await act(async () => vi.advanceTimersByTime(600));
     expect(noted).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useAutosave and waiting creates', () => {
+  it('notes each saved tab, so a sheet waiting for its new tab is sent (issue #984)', async () => {
+    const { useSubject } = setup();
+    let saved: boolean | null = null;
+    void whenTabSaved('d1', 't1', 5_000).then((v) => (saved = v));
+    renderHook(({ tabs }) => useSubject(tabs, 0), { initialProps: { tabs: [tab('mine')] } });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(saved).toBe(true);
   });
 });
 
