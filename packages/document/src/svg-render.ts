@@ -28,7 +28,7 @@ import {
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
 import {
   finishCornerFallbackPx,
-  finishSplitsFace,
+  faceFinishOf,
   finishWobblesArt,
   isHandDrawn,
   resolveFinish,
@@ -40,6 +40,7 @@ import {
   svgSketchedBody,
   svgSketchFace,
 } from './svg-render-sketch';
+import { svgProfessionalFace } from './svg-render-face-finish';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
 import { inlineIconLayout } from './svg-render-inline-icon';
@@ -193,17 +194,18 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
   const drawn = svgBoxedFace(source, opts);
   const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
-  // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
-  // drawn by hand too"). A tab window shows another tab in that tab's own finish: only its frame is drawn by hand.
-  if (
-    resolveFinish(finishOf(source), opts.tabFinish) !== 'sketch' ||
-    !finishSplitsFace(source) ||
-    (source.type === 'shape' && source.shape === 'tab-window')
-  )
-    return out;
+  // A tab window shows another tab in that tab's own finish: only its frame follows this one.
+  if (source.type === 'shape' && source.shape === 'tab-window') return out;
+  const finish = faceFinishOf(source, resolveFinish(finishOf(source), opts.tabFinish));
   const open = out.indexOf('>') + 1;
   const close = out.lastIndexOf('</g>');
-  return out.slice(0, open) + svgSketchFace(out.slice(open, close)) + out.slice(close);
+  const inner = out.slice(open, close);
+  // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
+  // drawn by hand too"); under Professional its rectangles go square and its lines thin ("Faces").
+  if (finish === 'sketch') return out.slice(0, open) + svgSketchFace(inner) + out.slice(close);
+  if (finish === 'professional')
+    return out.slice(0, open) + svgProfessionalFace(inner) + out.slice(close);
+  return out;
 }
 
 function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {

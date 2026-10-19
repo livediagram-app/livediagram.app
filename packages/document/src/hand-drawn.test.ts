@@ -66,13 +66,23 @@ describe('handDrawnElementPaint', () => {
     expect(laptop.drawing.details).not.toBe('');
   });
 
-  it('leaves a self-painting face and a comment pin as they are', () => {
+  it('leaves a self-painting face as it is', () => {
     expect(
       handDrawnElementPaint({ ...createShape('pie-chart', 0, 0), id: 'p' }, 'marker', '#fff'),
     ).toBeNull();
-    expect(
-      handDrawnElementPaint({ ...createShape('comment-pin', 0, 0), id: 'c' }, 'marker', '#fff'),
-    ).toBeNull();
+  });
+
+  // The Comment Panel is a card (docs/specs/012-collaboration/comment-pin.md), not the unboxed pin it started as:
+  // its plain box is switched off by hand-drawn finishes, so the hand-drawn one must replace it.
+  it.each(['sketch', 'marker'] as const)('draws a Comment Panel card under %s', (finish) => {
+    const paint = handDrawnElementPaint(
+      { ...createShape('comment-pin', 0, 0), id: 'c' },
+      finish,
+      '#fff',
+    );
+    expect(paint).not.toBeNull();
+    const d = paint!.drawing;
+    expect(d.pen === 'marker' ? d.ink.join('') : d.strokes).not.toBe('');
   });
 });
 

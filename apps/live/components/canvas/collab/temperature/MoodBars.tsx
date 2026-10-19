@@ -8,10 +8,12 @@ import { useState } from 'react';
 import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livediagram/document';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from './mood-grid';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function MoodBars({ tally, textColor }: { tally: number[]; textColor: string }) {
   const [initial] = useState(tally);
   const peak = Math.max(1, ...tally);
+  const shadow = useFaceShadow();
   return (
     // Takes whatever height the card has spare, so a tall card gets taller
     // bars rather than dead space.
@@ -39,7 +41,7 @@ export function MoodBars({ tally, textColor }: { tally: number[]; textColor: str
                   // card is still a visible bar rather than a hairline.
                   height: count === 0 ? 0 : `max(10px, ${(count / peak) * 100}%)`,
                   background: `linear-gradient(180deg, ${hue}, ${tint(hue, 0.75)})`,
-                  boxShadow: count ? `0 0 12px -2px ${tint(hue, 0.6)}` : undefined,
+                  boxShadow: shadow(count ? `0 0 12px -2px ${tint(hue, 0.6)}` : undefined),
                 }}
               />
             </span>

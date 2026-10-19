@@ -44,6 +44,11 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
   taking the draw-time avoidance curve ([Arrow collision avoidance](arrow-collision-avoidance.md)). It is an
   ordinary Angled arrow afterwards; arrows already on the tab keep their style.
+- **Faces:** everything an element draws for itself (a Plan card and its column, a panel's rows, a concept
+  graphic's bands and rings, a chart's bars, a web component's card, a button, an input, a chip) is squared and
+  flattened the same way: every rectangle in it draws with square corners, its shadows and hover lift are not drawn,
+  and its 2 px borders draw at 1 px. Circles, discs and true pills (avatars, toggles, status dots) keep their shape,
+  since their roundness carries meaning. The canvas and every export agree.
 - **Mind maps:** a mind map's connectors that are still in the map's default look (curved, never bowed or bent by
   hand) are drawn right-angled, as a neat bracket off each parent; the bubble flow draws them as straight spokes
   ([The mind node](../009-elements/mind-node.md) "Connectors"). It is drawn, not stored: switching back to
@@ -52,7 +57,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 
 ### Sketch
 
-- **Outlines** of shapes, frames, lanes, stickies and tables are drawn as two slightly different hand-drawn
+- **Outlines** of shapes (a Comment Panel's card included), frames, lanes, stickies and tables are drawn as two slightly different hand-drawn
   strokes: straight edges bow and overshoot their corners a little, curves wander. The wobble is seeded by the
   element's id, so an element looks the same on every screen, in every export and after every reload, and only
   changes when its size or kind does.
@@ -97,6 +102,8 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
   face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
   and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
+  A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
+  box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.
 
 - **In WebKit** (Safari, and every browser on an iPhone or iPad), which runs a live wobble filter again on every
   repaint (a pan at iPhone resolution took 220-400 ms a frame), the canvas draws no live wobble. Icons and stickers
@@ -112,7 +119,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 Marker reads as a diagram drawn quickly and confidently on a whiteboard or flip chart with felt-tip markers. Where
 Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, laid down fast.
 
-- **Outlines** of shapes, frames, lanes and tables are drawn as one hand-drawn stroke per edge (never doubled):
+- **Outlines** of shapes (a Comment Panel's card included), frames, lanes and tables are drawn as one hand-drawn stroke per edge (never doubled):
   straight edges bow a little and run past their corners as a quick stroke does, curves drift, and a closed curve
   overlaps where it started. The wobble is seeded by the element's id, as Sketch's is, so an element looks the same
   everywhere and only changes when its size or kind does.
@@ -138,8 +145,20 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
   heads keep their shapes, as under Sketch.
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the marker line.
 - **Icons** without their own weight draw Bold, a marker's line. Technology icons and stickers keep their art.
-- **Not affected:** freehand strokes, images, and the faces of self-painting elements other than their lettering
-  (Marker draws them as Flexible does; Sketch's face wobble is pencil-only).
+- **Faces: frames and shapes.** What an element draws for itself is drawn in marker where it is a frame or a shape:
+  - A **frame** (a Plan card, a column, a panel, a web component's card, any outlined box inside a face at least
+    `MARKER_FACE_FRAME_MIN_PX` on both sides) loses its own border and shadow and is outlined in one marker stroke
+    per edge, its fill kept solid behind its words, as a card's body is.
+  - A **shape** (a concept graphic's band, tier, disc, ring or arc, a chart's bar, slice or ring, a Sankey's
+    node) is coloured in and outlined in marker in its own colour: the outline in its stroke, or its fill when it
+    has none, the colouring in streaks over its solid fill. A ring or arc drawn as a line is one bold marker
+    stroke along it.
+  - **Small parts** (chips, pills, badges, inputs, buttons, check boxes, glyphs, axes, grid lines, anything under
+    the frame size) keep their plain look, so the words in and around them stay easy to read.
+  - The marker strokes are seeded by the element's id and the part's place in it, so a face looks the same on
+    every screen and in every export.
+- **Not affected:** freehand strokes, images, photos inside a face, and a tab window's content (it keeps the
+  finish of the tab it shows).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
 
 ### Flexible

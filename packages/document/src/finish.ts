@@ -115,6 +115,29 @@ export function finishDrawsDefaultShadow(finish: Finish): boolean {
   return finish !== 'professional';
 }
 
+/** Whether the shadows and hover lift a face draws on its own parts draw (docs/specs/008-canvas/finish.md "Faces"):
+ *  Professional is flat and a marker drawing casts none. Sketch's are drawn through its wobble. */
+export function finishFaceShadows(finish: Finish): boolean {
+  return finish === 'flexible' || finish === 'sketch';
+}
+
+/** A face's own rectangle's corner (a card, a panel, a band, a chip) in its finish: square under Professional. */
+export function finishFaceCornerPx(px: number, finish: Finish): number {
+  return finish === 'professional' ? Math.min(PROFESSIONAL_CORNER_PX, px) : px;
+}
+
+/** The finish a face's own parts are drawn in, or undefined when they draw as they are: Flexible, a face that is
+ *  only its label (finishSplitsFace), or Professional on an element with a corner of its own, which wins over the
+ *  finish's square corners for the whole face. */
+export function faceFinishOf(
+  el: { type: string; shape?: string; iconId?: string; borderRadius?: unknown },
+  finish: Finish,
+): Finish | undefined {
+  if (finish === 'flexible' || !finishSplitsFace(el)) return undefined;
+  if (finish === 'professional' && el.borderRadius !== undefined) return undefined;
+  return finish;
+}
+
 /** The font id an element is lettered in: its own, else the tab's, else the handwriting font under Sketch or Inter
  *  under Professional. Undefined means the editor default. */
 export function finishFontId(

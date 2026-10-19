@@ -73,7 +73,18 @@ function syncInkAnimations(pairs: readonly InkAnimationPair[]): void {
 
 const animationName = (a: Animation) => ('animationName' in a ? String(a.animationName) : null);
 
-export function SketchFace({ active, children }: { active: boolean; children: ReactNode }) {
+export function SketchFace({
+  active,
+  keepTree = false,
+  children,
+}: {
+  active: boolean;
+  // Render the same two layers when inactive (the ink layer empty), so turning the split on and off never remounts
+  // the face: a maximised Plan board keeps its state (MaximisableSlot). Both layers fill the box, so a face laid out
+  // to fill its host is placed the same either way.
+  keepTree?: boolean;
+  children: ReactNode;
+}) {
   const inkRef = useRef<HTMLDivElement>(null);
   const liveRef = useRef<HTMLDivElement>(null);
 
@@ -94,11 +105,17 @@ export function SketchFace({ active, children }: { active: boolean; children: Re
     };
   }, [active]);
 
-  if (!active) return <>{children}</>;
+  if (!active && !keepTree) return <>{children}</>;
   return (
     <>
-      <div ref={inkRef} data-sketch-ink="" aria-hidden inert className="absolute inset-0" />
-      <div ref={liveRef} data-sketch-words="" className="absolute inset-0">
+      <div
+        ref={inkRef}
+        data-sketch-ink={active ? '' : undefined}
+        aria-hidden
+        inert
+        className="absolute inset-0"
+      />
+      <div ref={liveRef} data-sketch-words={active ? '' : undefined} className="absolute inset-0">
         {children}
       </div>
     </>

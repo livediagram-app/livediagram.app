@@ -97,8 +97,6 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
     };
   }
   if (el.type !== 'shape') return null;
-  // A comment pin draws its own bubble and no box (docs/specs/012-collaboration/comment-pin.md).
-  if (el.shape === 'comment-pin') return null;
 
   const hatches = finishHatches(el, o.fill, o.backdrop);
   const parts = handDrawnOutlines(el, inset, o.radiusPx);

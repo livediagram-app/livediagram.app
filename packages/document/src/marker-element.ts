@@ -65,7 +65,7 @@ export function markerElementPaint(
     };
     return { drawing, strokePx, dash: null };
   }
-  if (el.type !== 'shape' || el.shape === 'comment-pin') return null;
+  if (el.type !== 'shape') return null;
   // A marker has no fine-liner: Thin draws at the nib like an unset border (templates set Thin on purpose).
   const strokePx =
     el.strokeWidth && el.strokeWidth !== 'thin' ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX;

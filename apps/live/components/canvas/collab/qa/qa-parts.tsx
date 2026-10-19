@@ -7,6 +7,7 @@ import type { QaNote } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { HoverCard, Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
 // theme's colour, not the board's own: QaBoardFace sets `--qa-accent` from the
@@ -171,6 +172,7 @@ export function VotePill({
   });
 
   const w = large ? 44 : 36;
+  const shadow = useFaceShadow();
   const body = (
     <button
       type="button"
@@ -187,7 +189,7 @@ export function VotePill({
         color: mine ? QA_ON_ACCENT : textColor,
         backgroundColor: mine ? QA_ACCENT : tint(textColor, frozen ? 0.04 : 0.06),
         borderColor: mine ? QA_ACCENT : tint(textColor, frozen ? 0.08 : 0.16),
-        boxShadow: mine ? `0 4px 12px -4px ${QA_ACCENT}` : undefined,
+        boxShadow: shadow(mine ? `0 4px 12px -4px ${QA_ACCENT}` : undefined),
         opacity: frozen ? 0.7 : 1,
       }}
     >

@@ -27,6 +27,7 @@ import {
   withTagAccent,
   rotationOf,
   finishSplitsFace,
+  faceFinishOf,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -55,6 +56,7 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
+import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
@@ -221,6 +223,7 @@ function BoxedElementViewImpl({
   // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
   // the SketchOverlay below, in place of the wrapper's border and background.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
+  const faceFinish = faceFinishOf(element, finish);
   const sketchBackdrop = useIsSketchBackdrop(element.id);
   const sketch = useSketchPaint(
     element,
@@ -456,6 +459,8 @@ function BoxedElementViewImpl({
       // coplanar with its contents under preserve-3d, and coplanar layers
       // z-fight (flicker) while the camera orbits.
       data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
+      // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
+      data-face-finish={faceFinish}
       onPointerDown={(e) => {
         // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
         if (isPanThrough(e)) return;
@@ -576,6 +581,7 @@ function BoxedElementViewImpl({
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
           (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
           the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
+      <FaceFinishProvider finish={faceFinish ?? 'flexible'}>
       <SketchFace
         active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
       >
@@ -777,6 +783,7 @@ function BoxedElementViewImpl({
           labelFrame={labelFrame}
         />
       </SketchFace>
+      </FaceFinishProvider>
 
       {shapeHit && element.type === 'shape' ? (
         <ShapeHitOutline
