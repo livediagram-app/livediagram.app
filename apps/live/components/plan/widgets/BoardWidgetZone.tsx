@@ -171,82 +171,88 @@ export function BoardWidgetZone({
     <div
       ref={zone}
       data-widget-zone
-      role="list"
-      aria-label="Board widgets"
       className="flex h-9 min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overflow-y-hidden rounded-md px-1 [scrollbar-width:thin]"
     >
-      {widgets.map((kind, i) => {
-        const dragged = reorder?.moved && reorder.kind === kind;
-        return [
-          barAt === i && !dragged ? bar(`bar-${i}`) : null,
-          <div
-            key={kind}
-            data-widget={kind}
-            role="listitem"
-            tabIndex={canEdit ? 0 : undefined}
-            aria-label={canEdit ? `${BOARD_WIDGET_INFO[kind].label} widget` : undefined}
-            aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
-            className={`group/widget relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
-              canEdit ? 'cursor-grab active:cursor-grabbing' : ''
-            }`}
-            style={{
-              transform: dragged ? `translateX(${reorder.dx}px)` : undefined,
-              zIndex: dragged ? 2 : undefined,
-              opacity: dragged ? 0.85 : 1,
-              ['--tw-ring-color' as string]: palette.focus,
-            }}
-            onPointerDown={onPointerDown(kind)}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={() => setReorder(null)}
-            onClickCapture={(e) => {
-              if (!suppressClick.current) return;
-              suppressClick.current = false;
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onKeyDown={(e) => {
-              if (!canEdit || e.target !== e.currentTarget) return;
-              if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      {/* The widgets are the list; the Add button follows it rather than sitting in it, since a list holds only its
+          items. Empty, it takes no room. */}
+      <div
+        role="list"
+        aria-label="Board widgets"
+        className="flex items-center gap-1.5 empty:hidden"
+      >
+        {widgets.map((kind, i) => {
+          const dragged = reorder?.moved && reorder.kind === kind;
+          return [
+            barAt === i && !dragged ? bar(`bar-${i}`) : null,
+            <div
+              key={kind}
+              data-widget={kind}
+              role="listitem"
+              tabIndex={canEdit ? 0 : undefined}
+              aria-label={canEdit ? `${BOARD_WIDGET_INFO[kind].label} widget` : undefined}
+              aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
+              className={`group/widget relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
+                canEdit ? 'cursor-grab active:cursor-grabbing' : ''
+              }`}
+              style={{
+                transform: dragged ? `translateX(${reorder.dx}px)` : undefined,
+                zIndex: dragged ? 2 : undefined,
+                opacity: dragged ? 0.85 : 1,
+                ['--tw-ring-color' as string]: palette.focus,
+              }}
+              onPointerDown={onPointerDown(kind)}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={() => setReorder(null)}
+              onClickCapture={(e) => {
+                if (!suppressClick.current) return;
+                suppressClick.current = false;
                 e.preventDefault();
                 e.stopPropagation();
-                onChange(nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1));
-              } else if (e.key === 'Delete' || e.key === 'Backspace') {
-                e.preventDefault();
-                e.stopPropagation();
-                remove(kind);
-              }
-            }}
-          >
-            {render(kind)}
-            {canEdit && selected ? (
-              <button
-                type="button"
-                aria-label={`Remove ${BOARD_WIDGET_INFO[kind].label}`}
-                // Shown on hover or keyboard focus, or once a touch has tapped the widget; never all the time.
-                className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border shadow-sm transition-opacity duration-micro motion-reduce:transition-none ${
-                  armed === kind
-                    ? 'opacity-100'
-                    : 'pointer-events-none opacity-0 group-focus-within/widget:pointer-events-auto group-focus-within/widget:opacity-100 group-hover/widget:pointer-events-auto group-hover/widget:opacity-100'
-                }`}
-                style={{
-                  backgroundColor: palette.card,
-                  borderColor: palette.border,
-                  color: palette.muted,
-                }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
+              }}
+              onKeyDown={(e) => {
+                if (!canEdit || e.target !== e.currentTarget) return;
+                if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onChange(nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1));
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                  e.preventDefault();
                   e.stopPropagation();
                   remove(kind);
-                }}
-              >
-                <CloseIcon size={9} />
-              </button>
-            ) : null}
-          </div>,
-        ];
-      })}
-      {barAt === widgets.length ? bar('bar-end') : null}
+                }
+              }}
+            >
+              {render(kind)}
+              {canEdit && selected ? (
+                <button
+                  type="button"
+                  aria-label={`Remove ${BOARD_WIDGET_INFO[kind].label}`}
+                  // Shown on hover or keyboard focus, or once a touch has tapped the widget; never all the time.
+                  className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border shadow-sm transition-opacity duration-micro motion-reduce:transition-none ${
+                    armed === kind
+                      ? 'opacity-100'
+                      : 'pointer-events-none opacity-0 group-focus-within/widget:pointer-events-auto group-focus-within/widget:opacity-100 group-hover/widget:pointer-events-auto group-hover/widget:opacity-100'
+                  }`}
+                  style={{
+                    backgroundColor: palette.card,
+                    borderColor: palette.border,
+                    color: palette.muted,
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(kind);
+                  }}
+                >
+                  <CloseIcon size={9} />
+                </button>
+              ) : null}
+            </div>,
+          ];
+        })}
+        {barAt === widgets.length ? bar('bar-end') : null}
+      </div>
       {canEdit ? addButton('md') : null}
       {picker}
     </div>
