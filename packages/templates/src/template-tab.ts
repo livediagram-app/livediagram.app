@@ -6,7 +6,7 @@
 import { buildTab, getBuiltInTheme, stampTabKind, type Tab } from '@livediagram/document';
 import { withBlankPageThemed } from './blank-page-templates';
 import { buildTemplate, templateTabs } from './build-template';
-import { TEMPLATES, isTemplateKind, type TemplateKind } from './templates';
+import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { formTemplateStarter, isFormTemplateKind } from './form-templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 
@@ -18,7 +18,8 @@ const AGENT_KINDS: ReadonlySet<string> = new Set(AGENT_TEMPLATES.map((t) => t.ki
 // A template argument resolved against the catalogue; null for an unknown kind (or one only the editor makes), so the
 // caller can answer with the valid kinds and the model corrects itself without another round trip.
 export function resolveTemplate(kind: string): TemplateKind | null {
-  return isTemplateKind(kind) && AGENT_KINDS.has(kind) ? kind : null;
+  const resolved = templateKindOf(kind);
+  return resolved && AGENT_KINDS.has(resolved) ? resolved : null;
 }
 
 export const validTemplateKinds = () => AGENT_TEMPLATES.map((t) => t.kind).join(', ');

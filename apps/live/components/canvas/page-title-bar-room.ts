@@ -9,6 +9,7 @@ import { pageDeckRoom } from './PageDeckButton';
 import { pageLockRoom } from './PageLockButton';
 import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
+import { pageDeviceRoom } from './wireframe/PageDeviceButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
 const COG_ROOM = 32;
@@ -27,6 +28,8 @@ type TitleBarButtons = {
   // An article page's Style, Text and Background.
   article?: boolean;
   tidy: boolean;
+  // A wireframe page's Device.
+  device?: boolean;
 };
 
 /** The fixed buttons' room, each named beside its icon or not. */
@@ -38,7 +41,8 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.article ? pageArticleRoom(named) + pageBackgroundRoom(named) : 0) +
-    (b.tidy ? pageTidyUpRoom() : 0)
+    (b.tidy ? pageTidyUpRoom() : 0) +
+    (b.device ? pageDeviceRoom(named) : 0)
   );
 }
 

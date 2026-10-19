@@ -12,9 +12,21 @@ import { pageImageOverlayColor, pageImageTone } from './page-image';
 import type { LaidOutPage, PageBackground, PageFill } from './page';
 import type { PageImageFill } from './page-image';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { pageScreenRect, wireframeFrameSvg } from './wireframe-page';
+import type { WireframeFrameTheme } from './wireframe-device-svg';
 
 // The pattern's pitch on a page, in px (the page panel's dots, grid and lines).
 export const PAGE_PATTERN_PITCH = 24;
+
+/** The elements' markup cut to a wireframe page's screen, and its overlay after them; as it is on
+ *  any other page. */
+export function withinPageFrame(
+  frame: Pick<PageExportFrame, 'clipId' | 'overlaySvg'> | null | undefined,
+  elementsSvg: string,
+): string {
+  if (!frame?.clipId) return elementsSvg;
+  return `<g clip-path="url(#${frame.clipId})">${elementsSvg}</g>${frame.overlaySvg ?? ''}`;
+}
 
 /** The pattern's ink on a page: faint white on a dark fill, faint slate on a light one (and on the
  *  plain paper, whose sheet sets it by class on screen). */
@@ -67,8 +79,16 @@ export type PageExportFrame = {
   // The page's background as SVG markup in canvas coordinates (defs included).
   backgroundSvg: string;
   // True when the page has no paper at all: a logo page on plain paper exported see-through
-  // (docs/specs/007-editor/logo-pages.md "Export").
+  // (docs/specs/007-editor/logo-pages.md "Export"), and a wireframe page round its device
+  // (docs/specs/007-editor/wireframe-pages.md "Export").
   transparent: boolean;
+  // A wireframe page's screen outline (SVG path data, canvas coordinates): what its elements are
+  // cut off at. Absent: the frame's bounds cut them.
+  clipPath?: string;
+  // The id of the <clipPath> of it that `backgroundSvg` defines, for an SVG drawing it in one document.
+  clipId?: string;
+  // Markup drawn over the elements: a wireframe page's camera in its screen and its system bars.
+  overlaySvg?: string;
   // Whether an element reaches onto the page (the rest are left out); an arrow by its resolved
   // ends, against the tab's elements.
   reaches: (el: Element, elements: readonly Element[]) => boolean;
@@ -108,6 +128,7 @@ export function pageExportFrame(
     transparentPaper = false,
     imageHref,
     overFill,
+    frameTheme,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -128,15 +149,23 @@ export function pageExportFrame(
     // picture of the gradient with the motion painted in, so it takes the fill's place; laid over the pattern it
     // would hide it.
     overFill?: string;
+    // The tab theme's colours, for a wireframe page's frame in the Theme look.
+    frameTheme?: WireframeFrameTheme;
   } = {},
 ): PageExportFrame {
-  const r = page.rect;
+  // A wireframe page's paint is its screen's, inside its device (docs/specs/007-editor/
+  // wireframe-pages.md "The screen"); any other page's is its sheet's.
+  const device = wireframeFrameSvg(page, {
+    dark: pageIsDark(page),
+    ...(frameTheme ? { theme: frameTheme } : {}),
+  });
+  const r = device ? pageScreenRect(page) : page.rect;
   const { fill, pattern } = page.background ?? {};
   const id = `${idPrefix}-${page.id}`.replace(/[^a-zA-Z0-9-]/g, '');
   const rect = (paint: string) =>
     `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" fill="${paint}"/>`;
   const parts: string[] = [];
-  const transparent = transparentPaper && page.kind === 'logo' && !fill;
+  const transparent = !!device || (transparentPaper && page.kind === 'logo' && !fill);
   if (fill?.kind === 'gradient') {
     const l = pageGradientLine(fill, r);
     parts.push(
@@ -149,7 +178,7 @@ export function pageExportFrame(
     // Offline Mode's inline bytes are the picture itself; a gallery id is looked up.
     const href = fill.imageId.startsWith('data:') ? fill.imageId : imageHref?.(fill.imageId);
     parts.push(pageImageSvg(fill, r, href, id));
-  } else if (!transparent) {
+  } else if (!transparent || device) {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
   if (overFill) parts.push(overFill);
@@ -170,16 +199,23 @@ export function pageExportFrame(
       rect(`url(#${id}-pattern)`),
     );
   }
+  const p = page.rect;
   return {
-    bounds: { x: r.x, y: r.y, w: r.width, h: r.height },
+    bounds: { x: p.x, y: p.y, w: p.width, h: p.height },
     surface: pageSurface(page) ?? 'light',
-    backgroundSvg: parts.join(''),
+    // A device's frame under its screen, the screen's paint cut to its rounded outline.
+    backgroundSvg: device
+      ? `<defs><clipPath id="${id}-screen"><path d="${device.screen}"/></clipPath></defs>` +
+        device.under +
+        `<g clip-path="url(#${id}-screen)">${parts.join('')}</g>`
+      : parts.join(''),
     transparent,
+    ...(device ? { clipPath: device.screen, clipId: `${id}-screen`, overlaySvg: device.over } : {}),
     reaches: (el, elements) => {
       // An article's note marker is the editor's, never part of the page: no export or preview draws it.
       if (el.type === 'annotation' && el.articleNote) return false;
       const overlaps = (x: number, y: number, rr: number, b: number) =>
-        x <= r.x + r.width && rr >= r.x && y <= r.y + r.height && b >= r.y;
+        x <= p.x + p.width && rr >= p.x && y <= p.y + p.height && b >= p.y;
       if (el.type !== 'arrow') return overlaps(el.x, el.y, el.x + el.width, el.y + el.height);
       const a = endpointPosition(el.from, elements as Element[]);
       const b = endpointPosition(el.to, elements as Element[]);

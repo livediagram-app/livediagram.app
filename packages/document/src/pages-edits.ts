@@ -19,6 +19,7 @@ import {
   MAX_PAGES,
   newLogoPage,
   newSlidePage,
+  newWireframePage,
   PAGE_NAME_MAX,
   pageHasOrientation,
   pageKindOf,
@@ -38,6 +39,12 @@ import {
 } from './page-content';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 import { sameFill, withBackgroundPatch } from './page-paint';
+import {
+  WIREFRAME_DEVICES,
+  deviceHasSystemBars,
+  type WireframeDeviceId,
+  type WireframeFrameLook,
+} from './wireframe-device';
 
 export type PageEditRefusal =
   | 'unknown_page'
@@ -46,7 +53,8 @@ export type PageEditRefusal =
   | 'size_not_offered'
   | 'pattern_not_offered'
   | 'page_limit'
-  | 'last_page';
+  | 'last_page'
+  | 'not_a_wireframe';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -221,6 +229,8 @@ export function pageAdded<T extends PagesTab>(
   kind: PageKind,
   id: string,
   flow: string,
+  // A wireframe page's device, chosen as it was added; absent takes the last wireframe page's.
+  device?: WireframeDeviceId,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
@@ -248,14 +258,62 @@ export function pageAdded<T extends PagesTab>(
     page = newSlidePage(id, lastSlide?.size);
   } else if (kind === 'logo') {
     page = newLogoPage(id);
+  } else if (kind === 'wireframe') {
+    // The last wireframe page's device and frame (docs/specs/007-editor/wireframe-pages.md
+    // "Choosing the device"), its device unless one was just chosen.
+    const lastWireframe = [...pages].reverse().find((p) => p.kind === 'wireframe');
+    page = newWireframePage(id, device ?? lastWireframe?.device, lastWireframe?.frameLook);
   } else {
     const model = [...pages]
       .reverse()
-      .find((p) => !p.flow && p.kind !== 'slide' && p.kind !== 'logo');
+      .find((p) => !p.flow && p.kind !== 'slide' && p.kind !== 'logo' && p.kind !== 'wireframe');
     const size = model?.size === 'fit' ? undefined : model?.size;
     page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
   }
   if (carried) page = { ...page, background: carried };
+  return { tab: withPages(tab, [...pages, page]) };
+}
+
+/**
+ * A new page like `sourceId` after the last (docs/specs/007-editor/pages-mode.md "Adding a page"):
+ * its kind and shape, a wireframe page's device, frame look, orientation and system bars too,
+ * carrying the last page's background as any new page does; never its content. An article page
+ * starts a new article on the same paper.
+ */
+export function pageAddedLike<T extends PagesTab>(
+  tab: T,
+  sourceId: string,
+  id: string,
+  flow: string,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const source = pages.find((p) => p.id === sourceId);
+  if (!source) return refused('unknown_page');
+  if (source.kind !== 'wireframe') {
+    const kind = pageKindOf(source);
+    if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id, flow);
+    // An infographic page in the source's own size and turn (pageAdded takes the last infographic's).
+    const out = pageAdded(tab, kind, id, flow);
+    if (!('tab' in out)) return out;
+    const next = pagesOf(out.tab).map((p) => {
+      if (p.id !== id) return p;
+      const { size: _size, ...rest } = p;
+      return {
+        ...rest,
+        orientation: source.orientation,
+        ...(source.size && source.size !== 'a4' ? { size: source.size } : {}),
+      };
+    });
+    return { tab: withPages(out.tab, next) };
+  }
+  if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  const carried = carriedBackground(pages[pages.length - 1]?.background, 'wireframe');
+  const page: Page = {
+    ...newWireframePage(id, source.device, source.frameLook),
+    orientation: source.orientation,
+    ...(source.systemBars === false ? { systemBars: false as const } : {}),
+    ...(carried ? { background: carried } : {}),
+  };
   return { tab: withPages(tab, [...pages, page]) };
 }
 
@@ -272,6 +330,62 @@ function carriedBackground(
     ...(pattern && kind !== 'logo' ? { pattern } : {}),
   };
   return out.fill || out.pattern ? out : undefined;
+}
+
+export type WireframeDevicePatch = {
+  frameLook?: WireframeFrameLook;
+  systemBars?: boolean;
+  orientation?: PageOrientation;
+};
+
+/**
+ * A wireframe page's orientation, frame look or system bars changed (docs/specs/007-editor/
+ * wireframe-pages.md "Choosing the device"); its device is its own for good, chosen as it was added.
+ * A turn or new system bars re-fit the content into the new safe area, as a new size does. Refused
+ * on any other kind of page.
+ */
+export function pageDeviceSet<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  patch: WireframeDevicePatch,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
+  if (target.kind !== 'wireframe') return refused('not_a_wireframe');
+  const device = target.device ?? 'iphone';
+  const look = patch.frameLook ?? target.frameLook ?? 'theme';
+  const bars = patch.systemBars === undefined ? target.systemBars !== false : patch.systemBars;
+  const orientation = WIREFRAME_DEVICES[device].turns
+    ? (patch.orientation ?? target.orientation)
+    : 'portrait';
+  const same =
+    look === (target.frameLook ?? 'theme') &&
+    bars === (target.systemBars !== false) &&
+    orientation === target.orientation;
+  if (same) return { tab };
+  const apply = (p: Page): Page => {
+    const { frameLook: _l, systemBars: _b, ...rest } = p;
+    return {
+      ...rest,
+      orientation,
+      device,
+      ...(look !== 'theme' ? { frameLook: look } : {}),
+      // A device without bars keeps no choice about them.
+      ...(!bars && deviceHasSystemBars(device) ? { systemBars: false as const } : {}),
+    };
+  };
+  // A look alone moves nothing: no re-fit.
+  const reshapes = bars !== (target.systemBars !== false) || orientation !== target.orientation;
+  if (!reshapes)
+    return {
+      tab: withPages(
+        tab,
+        pages.map((p) => (p.id === pageId ? apply(p) : p)),
+      ),
+    };
+  return { tab: reshaped(tab, pageId, apply) };
 }
 
 /** A copy after the page, content and all; an article page copies its whole article (`flow` the

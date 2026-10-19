@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "140 templates (11 default + 129 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "147 templates (11 default + 136 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -56,11 +56,14 @@ describe('TEMPLATES catalogue', () => {
     'journey',
     'fishbone',
     'pyramid',
-    'mobile-wireframe',
-    'laptop-wireframe',
     'slide-deck',
     'flywheel',
     'logo-design',
+    'wireframe-mobile-app',
+    'wireframe-website',
+    'wireframe-dashboard',
+    'wireframe-tablet-app',
+    'wireframe-watch-app',
     'gantt',
     'live-card',
     'comparison-table',
@@ -91,7 +94,6 @@ describe('TEMPLATES catalogue', () => {
     'sankey',
     'okr-tree',
     'sitemap',
-    'browser-wireframe',
     'storyboard',
     'cloud-architecture',
     'uml-class',
@@ -125,6 +127,11 @@ describe('TEMPLATES catalogue', () => {
     'blank-article',
     'blank-infographic',
     'blank-logo',
+    'blank-wireframe-phone',
+    'blank-wireframe-tablet',
+    'blank-wireframe-browser',
+    'blank-wireframe-laptop',
+    'blank-wireframe-watch',
     'sketchnote',
     'rich-picture',
     'comic-strip',
@@ -180,21 +187,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "140 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "147 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 140 templates (11 default + 129 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(140);
+  it('lists exactly 147 templates (11 default + 136 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(147);
   });
 
-  it('splits cleanly into 11 default + 129 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 136 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(129);
+    expect(extras).toHaveLength(136);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -242,6 +249,7 @@ describe('TEMPLATES catalogue', () => {
         kind === 'blank-article' ||
         kind === 'blank-infographic' ||
         kind === 'blank-logo' ||
+        kind.startsWith('blank-wireframe-') ||
         // An empty Plan tab, which opens on Start Planning.
         kind === 'blank-plan' ||
         // An empty session tab, in Workshop.
@@ -507,12 +515,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // (label plus two line samples with their words). Components: 15 nodes
     // and the 14 edges between them.
     'system-architecture': { names: ['Tiers', 'Components'], scaffold: 15, content: 29 }, // the key is one Diagram key (docs/specs/009-elements/diagram-key.md)
-    // Frames: three phones, the how-to and the Notes heading.
-    'mobile-wireframe': { names: ['Frames', 'UI'], scaffold: 5, content: 75 },
-    // The laptop is lid, display, base and hinge notch.
-    'laptop-wireframe': { names: ['Frames', 'UI'], scaffold: 4, content: 22 },
-    // Frames: the browser, the how-to and the Notes heading.
-    'browser-wireframe': { names: ['Frames', 'UI'], scaffold: 3, content: 55 },
     // Frames: the footer (deck name + page number) of the five content slides; the slides
     // themselves are pages. Content: the title slide's nine pieces, each other
     // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
@@ -789,56 +791,7 @@ describe('buildTemplatedTab', () => {
 // again here, they're covered above against the blank + flowchart
 // templates.
 
-describe('wireframe templates', () => {
-  it('mobile-wireframe drops a three-phone user flow joined by tap arrows', () => {
-    const tab = buildTemplatedTab('mobile-wireframe', 'brand', 'tab-1', 'mobile');
-    const phones = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'phone');
-    expect(phones.map((p) => (p as { label?: string }).label)).toEqual([
-      '1 · Menu',
-      '2 · Customise',
-      '3 · Order placed',
-    ]);
-    // The detailed structure (pins, notes, tap arrows) is pinned in
-    // template-design.test.ts; here, the screens carry recognisable UI.
-    const labels = tab.elements
-      .map((el) => ('label' in el ? el.label : undefined))
-      .filter((l): l is string => Boolean(l));
-    for (const l of ['Oat flat white', 'Add to order · £3.40', 'Order placed!'])
-      expect(labels).toContain(l);
-  });
-
-  it('laptop-wireframe drops a front-on laptop around a working analytics dashboard', () => {
-    const tab = buildTemplatedTab('laptop-wireframe', 'brand', 'tab-1', 'laptop');
-    // Drawn from plain shapes, not the `laptop` device shape, whose own
-    // keyboard deck took a third of the frame.
-    expect(tab.elements.some((el) => el.type === 'shape' && el.shape === 'laptop')).toBe(false);
-    const labels = tab.elements
-      .map((el) => ('label' in el ? el.label : undefined))
-      .filter((l): l is string => Boolean(l));
-    // Top nav, sidebar with its active page, and the page header.
-    for (const l of ['Logo', 'Home', 'Projects', 'Search…', 'Overview', 'Settings', 'Last 30 days'])
-      expect(labels).toContain(l);
-    const shapes = tab.elements.filter(
-      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> => el.type === 'shape',
-    );
-    // Only the active nav row is tinted.
-    expect(shapes.filter((el) => el.colorPreset === 'soft').map((el) => el.label)).toEqual([
-      'Overview',
-    ]);
-    // Real KPIs with deltas rather than placeholder zeros.
-    const stats = shapes.find((el) => el.shape === 'stat-row')?.stats ?? [];
-    expect(stats).toHaveLength(4);
-    expect(stats.every((st) => st.value !== '0' && /[▲▼]/.test(st.caption))).toBe(true);
-    // A weekly chart beside a recent sign-ups table.
-    expect(shapes.find((el) => el.shape === 'line-chart')?.lineSeries).toHaveLength(2);
-    const table = tab.elements.find((el) => el.type === 'table');
-    expect(table && table.type === 'table' ? table.cells[0] : []).toEqual([
-      'Customer',
-      'Plan',
-      'When',
-    ]);
-  });
-
+describe('slide deck and flywheel templates', () => {
   it('slide-deck drops a six-slide pitch with speaker notes', () => {
     const tab = buildTemplatedTab('slide-deck', 'brand', 'tab-1', 'slides');
     // Built from standard primitives, no device shape.
@@ -872,7 +825,7 @@ describe('wireframe templates', () => {
 });
 
 // Board templates moved to template-builders-boards.ts in commit
-// 77f2859. Same kind of structural fingerprint as the wireframes
+// 77f2859. Same kind of structural fingerprint as the slide deck
 // above: a silent refactor that drops a column / lane / quadrant
 // (or changes the framework-defining label set) compiles AND
 // passes the catalogue "every kind builds non-empty" check, so
@@ -1017,25 +970,6 @@ describe('planning + strategy templates', () => {
 // template-technical.test.ts with the rest of the technical starters.
 
 describe('design + table templates (later batch)', () => {
-  it('browser wireframe drops an annotated landing page inside one browser frame', () => {
-    const tab = buildTemplatedTab('browser-wireframe', 'brand', 'tab-1', 'web');
-    const browsers = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'browser');
-    expect(browsers).toHaveLength(1);
-    const labels = labelsOf('browser-wireframe');
-    for (const bit of [
-      'Pocketbook',
-      'Features',
-      'Pricing',
-      'Start free trial',
-      'Bookkeeping that does itself while you work',
-      'Book a demo',
-      'Snap a receipt',
-      'Notes',
-    ]) {
-      expect(labels).toContain(bit);
-    }
-  });
-
   it('storyboard drops six numbered shots, each with an action and a sound line', () => {
     const labels = labelsOf('storyboard');
     expect(labels.filter((l) => /^[1-6]$/.test(l))).toHaveLength(6);

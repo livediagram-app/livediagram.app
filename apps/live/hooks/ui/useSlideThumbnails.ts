@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import type { Deck, Tab } from '@livediagram/document';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { slideThumbFor, type SlideThumb } from '@/lib/slide-thumb';
 
 export type { SlideThumb } from '@/lib/slide-thumb';
@@ -48,6 +49,8 @@ export function useSlideThumbnails(
 ): Map<string, SlideThumb> {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
+  // The canvas's surface: a page with no fill is pictured on the paper as the canvas shows it.
+  const surface = useCanvasSurface();
   // An article's writing laid out for the first time: its lines of text can be drawn now.
   const laidOut = useArticleLaidOutSeq();
   const showsBoard = useMemo(() => deckShowsBoard(deck, tabs), [deck, tabs]);
@@ -64,11 +67,12 @@ export function useSlideThumbnails(
       if (!tab) continue;
       const thumb = slideThumbFor(slide, tab, {
         iconsLoaded,
+        surface,
         ...(items ? { items } : {}),
         ...(itemTypes ? { itemTypes } : {}),
       });
       if (thumb) out.set(slide.id, thumb);
     }
     return out;
-  }, [deck, tabs, iconsLoaded, laidOut, items, itemTypes]);
+  }, [deck, tabs, iconsLoaded, surface, laidOut, items, itemTypes]);
 }

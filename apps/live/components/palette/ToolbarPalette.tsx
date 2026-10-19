@@ -68,6 +68,9 @@ import { useStripCrowded } from './useStripCrowded';
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
+import { usePaletteKindMotion } from './usePaletteKindMotion';
+import { ArticleDockSlot } from './ArticleDockSlot';
+import { usePaletteKind } from '@/lib/palette-kind';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -88,7 +91,6 @@ type Props = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
-  | 'logoPages'
   | 'themeTint'
 > &
   PaletteAddHandlers & {
@@ -209,6 +211,11 @@ export function ToolbarPalette(props: Props) {
   // notation is the palette, nor for a Participant, whose palette is one category.
   const categoryBar =
     CATEGORY_BAR_MODES.has(editorMode) && !esBoard && !participant && !dashboardTab;
+  // In Pages mode with the palette's kind Article, the strip holds the article's formatting in place of the bar.
+  const paletteKind = usePaletteKind();
+  const articleDock = categoryBar && editorMode === 'pages' && paletteKind === 'article';
+  // A change of kind cascades its categories in (usePaletteKindMotion).
+  usePaletteKindMotion(editorMode === 'pages' ? paletteKind : editorMode, rootRef);
   const defaultId = participant
     ? 'participate'
     : dashboardTab
@@ -518,7 +525,10 @@ export function ToolbarPalette(props: Props) {
                             {swipe ? null : <Divider />}
                           </>
                         )}
-                        {categoryBar ? (
+                        {articleDock ? (
+                          // The article's formatting, docked (lib/article/article-dock.ts).
+                          <ArticleDockSlot />
+                        ) : categoryBar ? (
                           <CategoryBarButtons
                             bar={bar}
                             categories={barCategories}

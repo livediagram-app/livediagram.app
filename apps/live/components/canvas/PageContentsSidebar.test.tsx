@@ -164,14 +164,16 @@ describe('PageContentsSidebar', () => {
 
   it('offers Add Page to an Editor alone', () => {
     const h = show();
-    // One Add Page button; its kinds open above it.
-    expect(screen.queryByRole('menuitem', { name: 'Add a Logo page' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Add a Logo page' }));
+    // Add a Page of Any Kind opens the chooser.
+    expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
+    fireEvent.click(
+      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="logo"]')!,
+    );
     expect(h.addPage).toHaveBeenCalledWith('logo');
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

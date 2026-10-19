@@ -7,7 +7,7 @@
 // back, each move sliding in from its side. A press places the layout at once, over anything on the page (one undo
 // step brings it back). Hovering a tile previews it on the page (InfographicLayoutPreview).
 import { useEffect, useState } from 'react';
-import { pageKindOf, type LaidOutPage } from '@livediagram/document';
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livediagram/document';
 import {
   layoutCatalogueFor,
   warmLayoutPlaceholders,
@@ -34,6 +34,8 @@ type LayoutBrowserProps = {
 
 // A category card's two front layouts' width: as large as the card's art box holds an A4 page.
 const FAN_THUMB_W = 74;
+// The fan's box is h-28 (112 px): a tall page's thumb stays inside it.
+const FAN_THUMB_MAX_H = 100;
 
 // A layout tile's art width in the wide card's four columns.
 const WIDE_THUMB_W = 104;
@@ -56,7 +58,7 @@ export function LayoutBrowser({ page, onApply, onPreview, wide = false }: Layout
   // right, back to the categories from the left (the template wizard's own slide). None at first.
   const [moved, setMoved] = useState<'in' | 'back' | null>(null);
   const slide = moved === 'in' ? 'animate-tip-next' : moved === 'back' ? 'animate-tip-prev' : '';
-  const { categories, layouts } = layoutCatalogueFor(pageKindOf(page));
+  const { categories, layouts } = layoutCatalogueFor(pageKindOf(page), pageDeviceClass(page));
   useEffect(() => prefetchWhenIdle([warmPlaceholders]), []);
   const openCategory = categories.find((c) => c.id === category);
   // A press places the layout at once, over whatever the page holds: one undo step brings it back.
@@ -134,7 +136,12 @@ export function LayoutBrowser({ page, onApply, onPreview, wide = false }: Layout
                         zIndex: i === 0 ? 1 : 0,
                       }}
                     >
-                      <LayoutThumb layout={l.id} page={page} width={FAN_THUMB_W} />
+                      <LayoutThumb
+                        layout={l.id}
+                        page={page}
+                        width={FAN_THUMB_W}
+                        maxHeight={FAN_THUMB_MAX_H}
+                      />
                     </span>
                   ))}
                 </span>

@@ -94,12 +94,35 @@ export type ArticleEditorHandle = {
 // Every article's editor on the tab, by flow: what an insert into an article that is not being
 // written in reaches.
 const handles = new Map<string, ArticleEditorHandle>();
+// Told as an editor comes or goes: the docked page toolbar, which shows for an article no one has
+// touched yet, follows its handle (an editor mounts after the toolbar first renders).
+const handlesListeners = new Set<() => void>();
+const handlesChanged = () => {
+  for (const l of handlesListeners) l();
+};
 
 export function registerArticleHandle(handle: ArticleEditorHandle): () => void {
   handles.set(handle.flow, handle);
+  handlesChanged();
   return () => {
-    if (handles.get(handle.flow) === handle) handles.delete(handle.flow);
+    if (handles.get(handle.flow) !== handle) return;
+    handles.delete(handle.flow);
+    handlesChanged();
   };
+}
+
+const subscribeHandles = (l: () => void) => {
+  handlesListeners.add(l);
+  return () => handlesListeners.delete(l);
+};
+
+/** An article's editor as it registers or goes, for what renders from a handle. */
+export function useArticleHandle(flow: string | null | undefined): ArticleEditorHandle | undefined {
+  return useSyncExternalStore(
+    subscribeHandles,
+    () => (flow ? handles.get(flow) : undefined),
+    () => undefined,
+  );
 }
 
 export function articleHandleOf(flow: string): ArticleEditorHandle | undefined {

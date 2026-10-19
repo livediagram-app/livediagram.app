@@ -138,6 +138,9 @@ export type EditorKeyboardShortcutsDeps = {
   // Shift) and which keys map to which axis; editor-page owns the
   // actual element transform + undo coalescing.
   onNudgeSelection: (dx: number, dy: number) => void;
+  // Pages mode (docs/specs/007-editor/pages-mode.md "Getting around the pages"): with nothing
+  // selected, an arrow goes to the next (1) or previous (-1) page; true when there was one.
+  onStepPage?: (dir: 1 | -1) => boolean;
   // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels): a printable key on a single selected
   // element opens its label editor seeded with that character. Returns
   // true when it took over (so the listener swallows the key) and false

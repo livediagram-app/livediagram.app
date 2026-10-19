@@ -179,3 +179,40 @@ describe('an article write', () => {
 function at(article: unknown) {
   return refusal({ article });
 }
+
+// docs/specs/007-editor/wireframe-pages.md: a wireframe page's device, frame look and system bars.
+describe('wireframe fields', () => {
+  it('reads a device, a frame look and system bars on an add', () => {
+    const out = parsePagesRequest({
+      pages: [
+        { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
+      ],
+    });
+    if ('refusal' in out) throw new Error(out.refusal.message);
+    expect(out).toMatchObject({
+      pages: [
+        { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
+      ],
+    });
+  });
+
+  it('refuses system bars that are not true or false, and an unknown device or look', () => {
+    expect(
+      refusal({ pages: [{ op: 'add', kind: 'wireframe', systemBars: 'yes' }] }).message,
+    ).toContain('"systemBars" is true or false.');
+    expect(refusal({ pages: [{ op: 'add', kind: 'wireframe', device: 'toaster' }] }).code).toBe(
+      'invalid_value',
+    );
+    expect(refusal({ pages: [{ op: 'set', page: 1, frameLook: 'neon' }] }).code).toBe(
+      'invalid_value',
+    );
+  });
+
+  it('never changes a device on a set', () => {
+    expect(refusal({ pages: [{ op: 'set', page: 1, device: 'ipad' }] }).message).toContain(
+      '"device" is chosen as a wireframe page is added',
+    );
+    const out = parsePagesRequest({ pages: [{ op: 'set', page: 1, systemBars: true }] });
+    expect('refusal' in out).toBe(false);
+  });
+});

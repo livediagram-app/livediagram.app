@@ -4,7 +4,7 @@
 // Drawn as the palette body (More's popover) shows them: a header band with the
 // category dropdown on the right, then the category body. Components and
 // Devices are rows (a glyph chip, the tile's caption and its one-line blurb),
-// Components with its Web Elements group opened in place; Icons is a search
+// Components under its group headings (Layout, Page Blocks, Code and Lists); Icons is a search
 // box over a grid of category tiles. Captions and blurbs are the editor's own
 // (palette-tile-defs.tsx, lib/icons.ts).
 
@@ -144,85 +144,105 @@ function Row({
 
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
-/** The Components category as Pages mode's palette shows it: Code and
- *  Checklist, then the Web Elements group opened in place with its six components
- *  below it. (Pages leaves the category's Entity tile out.) */
+/** The Components category as Pages mode's palette shows it: its Layout group first (Hero, Header, Banner and
+ *  the Stack), then Page Blocks, then Code and Lists. (Pages leaves the category's Entity tile out.) */
 export function ComponentsCategory() {
   const x = PX + 12;
-  const rows: [string, string][] = [
-    ['Banner', 'A themed title block for the top'],
-    ['Callout', 'A card with an icon badge and a title'],
-    ['Stat Row', 'Three KPI cards side by side'],
-    ['Process', 'Numbered steps joined by arrows'],
-    ['Hero', 'A big image with a title card'],
-    ['Header', 'A website-style nav bar'],
+  const groups: [string, [string, string, ReactNode][]][] = [
+    [
+      'Layout',
+      [
+        [
+          'Hero',
+          'A big image with a title card',
+          <rect key="h" x={-6} y={-4.5} width={12} height={9} rx={2} {...g} />,
+        ],
+        [
+          'Header',
+          'A website-style nav bar',
+          <path key="hd" d="M-6 -3h12v6h-12zM-4 0h2M1 0h3" {...g} />,
+        ],
+        [
+          'Banner',
+          'A themed title block for the top',
+          <path key="b" d="M-6 -4h12v4h-12z" {...g} />,
+        ],
+        [
+          'Stack',
+          'Lines things up with even gaps',
+          <path key="s" d="M-6 -3h3v6h-3zM-1.5 -3h3v6h-3zM3 -3h3v6h-3z" {...g} />,
+        ],
+      ],
+    ],
+    [
+      'Page Blocks',
+      [
+        [
+          'Card',
+          'A node with a title, meta line and tags',
+          <path key="c" d="M-6 -5h12v10h-12zM-4 -3h3v3h-3zM1 -2.5h3.5M-4 2.5h8" {...g} />,
+        ],
+        [
+          'Badge',
+          'A small label that rides a corner',
+          <rect key="bd" x={-6} y={-3} width={12} height={6} rx={3} {...g} />,
+        ],
+        [
+          'Step Number',
+          'A numbered disc for walkthroughs',
+          <circle key="st" cx={0} cy={0} r={5.5} {...g} />,
+        ],
+        [
+          'Callout',
+          'A note box with an icon and title',
+          <path key="co" d="M-6 -5h12v10h-12zM-4 -2h2M0 -2h4M-4 2h8" {...g} />,
+        ],
+        [
+          'Stat Row',
+          'Three KPI cards side by side',
+          <path key="sr" d="M-6 -3h3.4v6h-3.4zM-1.7 -3h3.4v6h-3.4zM2.6 -3h3.4v6h-3.4z" {...g} />,
+        ],
+        [
+          'Process',
+          'Numbered steps joined by arrows',
+          <path key="p" d="M-6 0h12M-4 0a1.6 1.6 0 1 0 0.01 0M4 0a1.6 1.6 0 1 0 0.01 0" {...g} />,
+        ],
+      ],
+    ],
+    [
+      'Code and Lists',
+      [
+        [
+          'Code',
+          'A syntax-highlighted code card',
+          <path key="cd" d="M-2 -5l-4 5 4 5M2 -5l4 5 -4 5" {...g} />,
+        ],
+        [
+          'Checklist',
+          'Tickable to-do rows',
+          <path key="cl" d="M-6 -5h5v5h-5zM-5 -3l1.5 1.5 3 -3M2 -3h5M-6 2h5v5h-5zM2 4h5" {...g} />,
+        ],
+      ],
+    ],
   ];
+  let y = 52;
+  const drawn: ReactNode[] = [];
+  for (const [title, rows] of groups) {
+    drawn.push(
+      <Label key={title} x={x} y={y + 6} size={10} weight={600} tone="muted">
+        {title}
+      </Label>,
+    );
+    y += 18;
+    for (const [name, blurb, glyph] of rows) {
+      drawn.push(<Row key={name} x={x} y={y} name={name} blurb={blurb} glyph={glyph} />);
+      y += 30;
+    }
+    y += 6;
+  }
   return (
-    <PaletteFrame category="Components" h={408} sceneH={432}>
-      <Row
-        x={x}
-        y={56}
-        name="Code"
-        blurb="A syntax-highlighted code card"
-        glyph={<path d="M-2 -5l-4 5 4 5M2 -5l4 5 -4 5" {...g} />}
-      />
-      <Row
-        x={x}
-        y={86}
-        name="Checklist"
-        blurb="Tickable to-do rows"
-        glyph={<path d="M-6 -5h5v5h-5zM-5 -3l1.5 1.5 3 -3M2 -3h5M-6 2h5v5h-5zM2 4h5" {...g} />}
-      />
-      <Row
-        x={x}
-        y={116}
-        name="Card"
-        blurb="A node with a title, meta line and tags"
-        glyph={<path d="M-6 -5h12v10h-12zM-4 -3h3v3h-3zM1 -2.5h3.5M-4 2.5h8" {...g} />}
-      />
-      <Row
-        x={x}
-        y={146}
-        name="Badge"
-        blurb="A small label that rides a corner"
-        glyph={<rect x={-6} y={-3} width={12} height={6} rx={3} {...g} />}
-      />
-      <Row
-        x={x}
-        y={176}
-        name="Step Number"
-        blurb="A numbered disc for walkthroughs"
-        glyph={<circle cx={0} cy={0} r={5.5} {...g} />}
-      />
-      <Row
-        x={x}
-        y={206}
-        name="Web Elements"
-        blurb="Themed page sections"
-        open
-        count={6}
-        glyph={<rect x={-6} y={-5} width={12} height={10} rx={2} {...g} />}
-      />
-      {rows.map(([name, blurb], i) => (
-        <Row
-          key={name}
-          x={x + 14}
-          y={242 + i * 30}
-          name={name}
-          blurb={blurb}
-          glyph={
-            i === 0 ? (
-              <path d="M-6 -4h12v4h-12z" {...g} />
-            ) : i === 2 ? (
-              <path d="M-6 -3h3.4v6h-3.4zM-1.7 -3h3.4v6h-3.4zM2.6 -3h3.4v6h-3.4z" {...g} />
-            ) : i === 3 ? (
-              <path d="M-6 0h12M-4 0a1.6 1.6 0 1 0 0.01 0M4 0a1.6 1.6 0 1 0 0.01 0" {...g} />
-            ) : (
-              <rect x={-6} y={-4.5} width={12} height={9} rx={2} {...g} />
-            )
-          }
-        />
-      ))}
+    <PaletteFrame category="Components" h={y + 4} sceneH={y + 28}>
+      {drawn}
     </PaletteFrame>
   );
 }

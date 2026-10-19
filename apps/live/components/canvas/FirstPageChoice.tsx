@@ -5,8 +5,10 @@
 // the add-a-page popover. Infographic keeps the page and puts the choice away; Article makes it the
 // first page of an article, the caret in its title; Slide turns it into a 16:9 landscape slide;
 // Logo into the 1024 artboard. Held at one screen size, centred on the page.
-import type { PageKind } from '@livediagram/document';
-import { useRef } from 'react';
+import type { PageKind, WireframeDeviceId } from '@livediagram/document';
+import { useRef, useState } from 'react';
+import { rememberWireframeDevice } from '@/lib/wireframe-device-memory';
+import { ChooseDeviceStep } from './wireframe/ChooseDeviceStep';
 import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
@@ -15,9 +17,11 @@ export function FirstPageChoice({
   onChoose,
 }: {
   zoom: number;
-  onChoose: (kind: PageKind) => void;
+  onChoose: (kind: PageKind, device?: WireframeDeviceId) => void;
 }) {
   const cards = useRef<(HTMLButtonElement | null)[]>([]);
+  // Wireframe turns the choice to Choose a Device (docs/specs/007-editor/wireframe-pages.md).
+  const [choosingDevice, setChoosingDevice] = useState(false);
   return (
     <div {...{ [GIF_OMIT_ATTR]: '' }} className="absolute inset-0 flex items-center justify-center">
       <div
@@ -29,31 +33,46 @@ export function FirstPageChoice({
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >
-        <p
-          id="first-page-choice-title"
-          className="px-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100"
-        >
-          What Is This Page For?
-        </p>
-        <p className="mb-2.5 mt-0.5 px-0.5 text-xs text-slate-500 dark:text-slate-400">
-          Choose now: a page keeps its kind once you start.
-        </p>
-        <div
-          className="grid grid-cols-2 gap-2"
-          // Arrow keys move between the cards, as in the Add a Page popover.
-          onKeyDown={(e) => moveBetweenKindCards(e, cards.current)}
-        >
-          {PAGE_KINDS.map((k, i) => (
-            <PageKindCard
-              key={k.kind}
-              choice={k}
-              ref={(el) => {
-                cards.current[i] = el;
-              }}
-              onChoose={() => onChoose(k.kind)}
-            />
-          ))}
-        </div>
+        {choosingDevice ? (
+          <ChooseDeviceStep
+            onBack={() => setChoosingDevice(false)}
+            onChoose={(device) => {
+              rememberWireframeDevice(device);
+              onChoose('wireframe', device);
+            }}
+          />
+        ) : (
+          <>
+            <p
+              id="first-page-choice-title"
+              className="px-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100"
+            >
+              What Is This Page For?
+            </p>
+            <p className="mb-2.5 mt-0.5 px-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Choose now: a page keeps its kind once you start.
+            </p>
+            <div
+              className="grid grid-cols-2 gap-2"
+              // Arrow keys move between the cards, as in the Add a Page popover.
+              onKeyDown={(e) => moveBetweenKindCards(e, cards.current)}
+            >
+              {PAGE_KINDS.map((k, i) => (
+                <PageKindCard
+                  key={k.kind}
+                  choice={k}
+                  wide={i === PAGE_KINDS.length - 1}
+                  ref={(el) => {
+                    cards.current[i] = el;
+                  }}
+                  onChoose={() =>
+                    k.kind === 'wireframe' ? setChoosingDevice(true) : onChoose(k.kind)
+                  }
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

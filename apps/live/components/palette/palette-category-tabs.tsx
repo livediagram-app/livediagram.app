@@ -148,9 +148,12 @@ export function paletteCategoryTabs(
       case 'write':
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
-        return <PaletteDrawTab {...tab} tiles={tiles} />;
-      case 'logo':
-        return <PaletteLogoTab {...tab} tiles={tiles} />;
+        // Logo's Draw holds this person's markers too, with their own flyouts (PaletteLogoTab).
+        return tiles.some((t) => t.action.type === 'marker') ? (
+          <PaletteLogoTab {...tab} tiles={tiles} />
+        ) : (
+          <PaletteDrawTab {...tab} tiles={tiles} />
+        );
       case 'devices':
         return <DevicePickerTab {...tab} tiles={tiles} />;
       case 'event-storming':

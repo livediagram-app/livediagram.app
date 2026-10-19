@@ -1,9 +1,10 @@
 'use client';
 
-// The Logo category (docs/specs/007-editor/logo-pages.md "The Logo palette"), offered in Pages
-// mode while the tab has a logo page: the Pen and the Pencil, then Draw mode's three markers in this
-// person's colours and widths. A marker is picked up for one stroke; pressed again while held, it
-// opens Draw mode's own flyout for it (colour and width), whose changes re-arm it at once.
+// A logo page's Draw (docs/specs/007-editor/logo-pages.md "The Logo palette"), the body Pages
+// mode's Draw shows while it holds markers: the Pen, the Pencil, the Shape Pen and the Polygon, then
+// Draw mode's three markers in this person's colours and widths. A marker is picked up for one
+// stroke; pressed again while held, it opens Draw mode's own flyout for it (colour and width), whose
+// changes re-arm it at once.
 import { useContext, useState } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -87,7 +88,7 @@ function MarkerRow({
   );
 }
 
-/** The Logo category's marker tiles: Draw mode's markers, for one stroke each, in the live colours
+/** A logo page's Draw marker tiles: Draw mode's markers, for one stroke each, in the live colours
  *  and widths (the dock model's; outside an editor, as this browser last set them). None while the
  *  category is not offered. */
 export function useLogoMarkerTiles(on: boolean): PaletteTileDef[] {

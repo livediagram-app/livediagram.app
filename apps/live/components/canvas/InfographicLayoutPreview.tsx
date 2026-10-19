@@ -15,11 +15,14 @@ import {
   arrowLabelPass,
   elementsOnPage,
   isBoxed,
+  pageIsDark,
   pageSurface,
+  wireframeFrameSvg,
   svgArrow,
   svgBoxed,
   type Element,
   type LaidOutPage,
+  type WireframeFrameTheme,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
@@ -27,6 +30,7 @@ import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livediagram/templates';
 import { useCanvasSurface } from './CanvasSurfaceContext';
+import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { useImageSources } from './page-image-access';
 
 export function InfographicLayoutPreview({
@@ -35,7 +39,10 @@ export function InfographicLayoutPreview({
   tabFont,
   elements,
   pages,
+  frameTheme,
 }: {
+  // The tab theme's colours, for a wireframe page's frame in the Theme look.
+  frameTheme?: WireframeFrameTheme;
   page: LaidOutPage;
   layout: PageLayoutId;
   tabFont?: string;
@@ -46,6 +53,27 @@ export function InfographicLayoutPreview({
   const canvas = useCanvasSurface();
   const surface = pageSurface(page) ?? canvas;
   const { rect } = page;
+  // A wireframe page previews on its device (WireframeDeviceSheet), not a bare sheet.
+  const wireframe = page.kind === 'wireframe';
+  const dark = pageIsDark(page);
+  const device = useMemo(
+    () =>
+      wireframe
+        ? wireframeFrameSvg(page, { dark, ...(frameTheme ? { theme: frameTheme } : {}) })
+        : null,
+    // oxlint-disable-next-line react/exhaustive-deps
+    [
+      wireframe,
+      dark,
+      frameTheme,
+      rect.x,
+      rect.y,
+      page.device,
+      page.orientation,
+      page.frameLook,
+      page.systemBars,
+    ],
+  );
   const els = useMemo(
     () =>
       buildPageLayoutOver(
@@ -69,19 +97,24 @@ export function InfographicLayoutPreview({
       tabFont,
       surface,
     };
-    return [
+    const drawn = [
       ...els.filter(isBoxed).map((el) => svgBoxed(el, opts)),
       ...els.flatMap((el) =>
         el.type === 'arrow' ? [svgArrow(el, els, surface, tabFont, labels, 'lvd-layout-ko-')] : [],
       ),
     ].join('');
-  }, [els, surface, tabFont, imageSource]);
+    // A wireframe page's layout is cut to its screen, its system bars over it, as placed.
+    return device
+      ? `<defs><clipPath id="lvd-layout-screen"><path d="${device.screen}"/></clipPath></defs>` +
+          `<g clip-path="url(#lvd-layout-screen)">${drawn}</g>${device.over}`
+      : drawn;
+  }, [els, surface, tabFont, imageSource, device]);
   return (
     <div
       aria-hidden
       data-layout-preview={layout}
       className={`pointer-events-none absolute z-[1] animate-fade-in motion-reduce:animate-none ${
-        page.background?.fill
+        page.background?.fill || wireframe
           ? ''
           : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
       }`}
@@ -90,11 +123,14 @@ export function InfographicLayoutPreview({
         top: rect.y,
         width: rect.width,
         height: rect.height,
-        ...pageSheetStyle(page.background),
+        ...(wireframe ? {} : pageSheetStyle(page.background)),
       }}
     >
+      {wireframe ? (
+        <WireframeDeviceSheet page={page} background={page.background} frameTheme={frameTheme} />
+      ) : null}
       {/* A slide's animated background keeps moving under the previewed layout. */}
-      {page.background?.fill?.kind === 'gradient' && page.background.fill.motion ? (
+      {!wireframe && page.background?.fill?.kind === 'gradient' && page.background.fill.motion ? (
         <PageMotionLayer
           motion={page.background.fill.motion}
           fill={page.background.fill}

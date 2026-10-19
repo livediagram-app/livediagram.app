@@ -9,6 +9,7 @@ import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
 import {
   buildTemplateTabs,
   isTemplateKind,
+  templateKindOf,
   templateFamilyOf,
   templateTabName,
 } from '@livediagram/templates';
@@ -52,7 +53,9 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
       continue;
     }
     const tabId = raw.id as string;
-    const { graph: _g, mermaid: _m, template, ...rest } = raw;
+    const { graph: _g, mermaid: _m, template: given, ...rest } = raw;
+    // A retired template's kind makes its replacement (templateKindOf).
+    const template = templateKindOf(given) ?? given;
     const compiled = applyReplace(null, body, {
       tabId,
       name: seededTabName(typeof raw.name === 'string' ? raw.name : 'Tab', template),

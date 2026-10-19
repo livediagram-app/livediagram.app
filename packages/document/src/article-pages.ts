@@ -19,6 +19,7 @@ import {
   PAGE_NAME_MAX,
   newLogoPage,
   newSlidePage,
+  newWireframePage,
   pageSizesFor,
   withPages,
   type Page,
@@ -26,6 +27,7 @@ import {
 } from './page';
 import { elementIdsOnPage, withPageContentReplaced } from './page-content';
 import type { Tab } from './index';
+import type { WireframeDeviceId } from './wireframe-device';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -264,6 +266,8 @@ export function withPageKindChosen<T extends PagesTab>(
   pageId: string,
   kind: PageKind,
   flow: string,
+  // A wireframe page's device (docs/specs/007-editor/wireframe-pages.md "Choosing the device").
+  device?: WireframeDeviceId,
 ): (T & { pages: Page[] }) | null {
   const pages = pagesOf(tab);
   const page = pages.find((p) => p.id === pageId);
@@ -287,6 +291,17 @@ export function withPageKindChosen<T extends PagesTab>(
       {
         ...newLogoPage(page.id),
         ...(fill ? { background: { fill } } : {}),
+        ...(name ? { name } : {}),
+      },
+    ]);
+  }
+  if (kind === 'wireframe') {
+    // The device keeps the page's name and background, which paints its screen.
+    const { name } = page;
+    return withPages(tab, [
+      {
+        ...newWireframePage(page.id, device),
+        ...(page.background ? { background: page.background } : {}),
         ...(name ? { name } : {}),
       },
     ]);

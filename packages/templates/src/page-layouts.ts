@@ -37,6 +37,7 @@ import { PEOPLE_SET_LAYOUTS, type PeopleSetLayoutId } from './page-layouts-set-p
 import { SOCIAL_SET_LAYOUTS, type SocialSetLayoutId } from './page-layouts-set-social';
 import { EXPLAINERS_SET_LAYOUTS, type ExplainersSetLayoutId } from './page-layouts-set-explainers';
 import type { LogoLayoutId } from './logo-layouts';
+import type { WireframeLayoutId } from './wireframe-layouts';
 import type { SlideLayoutId } from './slide-layouts';
 
 export type { LayoutBox } from './page-layout-kit';
@@ -46,6 +47,7 @@ export type { LayoutBox } from './page-layout-kit';
 export type PageLayoutId =
   | SlideLayoutId
   | LogoLayoutId
+  | WireframeLayoutId
   | CoversSetLayoutId
   | PostersSetLayoutId
   | DataSetLayoutId

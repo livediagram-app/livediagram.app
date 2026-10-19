@@ -18,10 +18,12 @@ import {
   type CanvasSurface,
   type Slide,
   type Tab,
+  tabWireframeFrameTheme,
 } from '@livediagram/document';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
+import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 
@@ -34,6 +36,9 @@ export type SlideThumbOptions = {
   itemTypes?: readonly ItemTypeDef[];
   // The tab's arrow labels, laid out once for many slides of one tab; laid out here when absent.
   labels?: ReturnType<typeof arrowLabelPass>;
+  // The canvas's surface: a page with no fill is drawn on the paper as the canvas shows it (slate
+  // in dark mode, CANVAS_PAPER), its ink the canvas's. Light when absent.
+  surface?: CanvasSurface;
 };
 
 /** The tab's arrow labels as the canvas lays them out, for slideThumbFor's `labels`. */
@@ -59,14 +64,18 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
   const page = slide.pageId
     ? layOutPages(pagesOf(tab)).find((p) => p.id === slide.pageId)
     : undefined;
-  // A page's surface sets its ink, as the export draws it: light ink on a dark page.
-  let surface: CanvasSurface = 'light';
+  // A page's surface sets its ink, as the canvas draws it: light ink on a dark page, and a page with
+  // no fill on the canvas's own paper in the canvas's ink.
+  const canvasSurface = opts.surface ?? 'light';
+  let surface: CanvasSurface = canvasSurface;
   if (page) {
     const frame = pageExportFrame(page, {
+      paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
       idPrefix: `lvd-slide-${slide.id}`,
       ruling: pageRulingOf(tab, page),
+      frameTheme: tabWireframeFrameTheme(tab),
     });
-    surface = frame.surface;
+    if (page.background?.fill) surface = frame.surface;
     parts.push(frame.backgroundSvg);
     // An article page's writing, as lines of text.
     const bars = pageWritingBars(page);

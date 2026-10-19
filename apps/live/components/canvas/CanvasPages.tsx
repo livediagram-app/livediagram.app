@@ -12,13 +12,14 @@ import { PageLockButton } from './PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
+import { WireframeDeviceSheet } from './WireframeDeviceSheet';
+import { PageDeviceButton } from './wireframe/PageDeviceButton';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { PageArticleButtons } from './PageArticleButtons';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import { isArticleLocked } from '@/lib/article/article-lock';
-import { PageNavigator } from './PageNavigator';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import {
   articleBodyLinePx,
@@ -29,6 +30,7 @@ import {
   pageIsDark,
   pageKindOf,
   pageLabel,
+  pageScreenRect,
   pageUnits,
   resolveArticleStyle,
   resolveFontStack,
@@ -144,7 +146,7 @@ export function CanvasPages({
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
   // Being on a logo page (opened on one, adding one, going to one, pressing into one) turns the
-  // palette to its Logo category.
+  // palette to its kind (lib/palette-kind.ts).
   const logoPalette = useLogoPaletteSwitch(pages, !!edit && !bare);
   const goToPage = (page: (typeof pages)[number]) => {
     focusPage(page.id);
@@ -225,7 +227,8 @@ export function CanvasPages({
     <>
       {pages.map((page) => {
         const background = previewedBackground(page, pages, preview);
-        const label = pageLabel(page, page.index, pages.length);
+        // No "Page n": the page navigator under the page says which it is.
+        const label = pageLabel(page, page.index, 1);
         const number = pageNumberOf(page);
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
@@ -241,7 +244,11 @@ export function CanvasPages({
           !!edit &&
           !locked &&
           !page.flow &&
-          (page.kind === 'slide' || pageKindOf(page) === 'infographic');
+          (page.kind === 'slide' ||
+            page.kind === 'wireframe' ||
+            pageKindOf(page) === 'infographic');
+        // A wireframe page's Device, first beside its Layouts (PageDeviceButton).
+        const deviceButton = pageButtons && page.kind === 'wireframe';
         // An infographic or slide page's Tidy, left of its Background, shown only while it would
         // change something.
         const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
@@ -277,6 +284,7 @@ export function CanvasPages({
           page: pageButtons,
           article: articleButtons,
           tidy: tidyButton,
+          device: deviceButton,
         };
         // The buttons name themselves on a desktop while the page is wide enough on screen to hold
         // them named; zoomed out further they drop to their icons, as a phone shows them.
@@ -290,6 +298,8 @@ export function CanvasPages({
               : room - fixedRoom >= INVITE_ICON + LABEL_MIN
                 ? 'icon'
                 : null;
+        // A wireframe page's sheet is its device (WireframeDeviceSheet): the paint is its screen's.
+        const device = page.kind === 'wireframe';
         const labelRoom =
           room -
           fixedRoom -
@@ -305,7 +315,7 @@ export function CanvasPages({
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
               drag.reorder?.pageIds.includes(page.id) ? 'opacity-60' : ''
             } ${
-              background?.fill
+              background?.fill || device
                 ? ''
                 : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
             }`}
@@ -317,12 +327,32 @@ export function CanvasPages({
               // Presenting a page slide, a spread shadow blacks out the whole surround.
               boxShadow: view.letterbox
                 ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
-                : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...pageSheetStyle(background, rulingOf(page), pictureOf),
+                : device
+                  ? undefined
+                  : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
+              ...(device ? {} : pageSheetStyle(background, rulingOf(page), pictureOf)),
             }}
           >
+            {device ? (
+              <WireframeDeviceSheet
+                page={page}
+                background={background}
+                resolveImage={pictureOf}
+                frameTheme={view.frameTheme}
+              >
+                {/* Its screen's animated background, sized to the screen. */}
+                {background?.fill?.kind === 'gradient' && background.fill.motion ? (
+                  <PageMotionLayer
+                    motion={background.fill.motion}
+                    fill={background.fill}
+                    width={pageScreenRect(page).width}
+                    height={pageScreenRect(page).height}
+                  />
+                ) : null}
+              </WireframeDeviceSheet>
+            ) : null}
             {/* A slide's animated background, over its gradient and under all on it. */}
-            {background?.fill?.kind === 'gradient' && background.fill.motion ? (
+            {!device && background?.fill?.kind === 'gradient' && background.fill.motion ? (
               <PageMotionLayer
                 motion={background.fill.motion}
                 fill={background.fill}
@@ -405,13 +435,23 @@ export function CanvasPages({
                     section={(part) => articleSection(page.flow!, part)}
                   />
                 ) : null}
+                {/* A wireframe page's Device (PageDeviceButton). */}
+                {deviceButton ? (
+                  <PageDeviceButton
+                    page={page}
+                    labelled={labelled}
+                    onDevice={(patch) => edit.setDevice(page.id, patch)}
+                    frameTheme={view.frameTheme}
+                  />
+                ) : null}
                 {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
                 {pageButtons ? (
                   <PageLayoutsButton
                     page={page}
                     labelled={labelled}
                     onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                    onChangeTheme={onOpenTheme}
+                    // A wireframe is drawn in wireframe greys: the theme is no choice of its layouts.
+                    onChangeTheme={page.kind === 'wireframe' ? undefined : onOpenTheme}
                     onPreview={(layout) =>
                       view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
                     }
@@ -453,21 +493,10 @@ export function CanvasPages({
                 />
               </div>
             ) : null}
-            {!bare && pages.length > 1 ? (
-              <PageNavigator
-                index={page.index}
-                count={pages.length}
-                zoom={zoom}
-                onGo={(i) => {
-                  const to = pages[i];
-                  if (to) goToPage(to);
-                }}
-              />
-            ) : null}
             {choosing && edit ? (
               <FirstPageChoice
                 zoom={zoom}
-                onChoose={(kind) => edit.choosePageKind(page.id, kind)}
+                onChoose={(kind, device) => edit.choosePageKind(page.id, kind, device)}
               />
             ) : null}
             {number ? (
@@ -488,14 +517,8 @@ export function CanvasPages({
         );
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
-      {edit?.addPage ? (
-        <AddPageButton
-          lastRight={last.rect.x + last.rect.width}
-          lastMiddle={last.rect.y + last.rect.height / 2}
-          zoom={zoom}
-          onAdd={edit.addPage}
-          suggested={pageKindOf(last)}
-        />
+      {edit?.addPage && edit.addPageLike ? (
+        <AddPageButton last={last} zoom={zoom} onAdd={edit.addPage} onAddLike={edit.addPageLike} />
       ) : null}
       {previewed && view.layoutPreview ? (
         <InfographicLayoutPreview
@@ -504,6 +527,7 @@ export function CanvasPages({
           tabFont={view.tabFont}
           elements={view.elements}
           pages={view.pages}
+          frameTheme={view.frameTheme}
         />
       ) : null}
       {edit
@@ -524,7 +548,6 @@ export function CanvasPages({
                 page={page}
                 zoom={zoom}
                 onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                onChangeTheme={onOpenTheme}
                 onHide={() => {
                   track('UI', 'Closed', 'EmptyPageLayouts');
                   setLayoutsHidden((hidden) => new Set(hidden).add(page.id));

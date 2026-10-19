@@ -534,3 +534,46 @@ describe('giving every page of a kind one background', () => {
     });
   });
 });
+
+// docs/specs/007-editor/wireframe-pages.md: an agent adds a wireframe page in its device and sets its
+// frame look and system bars.
+describe('wireframe pages', () => {
+  it('adds a page in its device, saying the device, the frame look and the bars', () => {
+    const out = run(tabOf({ pages: [page('p1')] }), [
+      { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
+    ]);
+    const added = pagesOf(out.tab)[1]!;
+    expect(added).toMatchObject({
+      kind: 'wireframe',
+      device: 'watch',
+      frameLook: 'dark',
+      systemBars: false,
+    });
+    expect(out.lines.join(' ')).toContain('device watch');
+    expect(out.lines.join(' ')).toContain('frame dark');
+    expect(out.lines.join(' ')).toContain('no system bars');
+  });
+
+  it('sets a wireframe page’s look and bars back on', () => {
+    const tab = tabOf({
+      pages: [
+        page('w', { kind: 'wireframe', size: 'device', device: 'iphone', systemBars: false }),
+      ],
+    });
+    const out = run(tab, [{ op: 'set', page: 1, frameLook: 'outline', systemBars: true }]);
+    expect(pagesOf(out.tab)[0]).toMatchObject({ frameLook: 'outline' });
+    expect(pagesOf(out.tab)[0]!.systemBars).toBeUndefined();
+    expect(out.lines.join(' ')).toContain('frame outline');
+    expect(out.lines.join(' ')).toContain('system bars');
+    const barsOnly = run(tab, [{ op: 'set', page: 1, systemBars: true }]);
+    expect(barsOnly.lines.join(' ')).not.toContain('frame');
+    const lookOnly = run(tab, [{ op: 'set', page: 1, frameLook: 'light' }]);
+    expect(lookOnly.lines.join(' ')).not.toContain('system bars');
+  });
+
+  it('refuses a frame look on a page that is not a wireframe', () => {
+    expect(
+      refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).code,
+    ).toBe('not_a_wireframe');
+  });
+});

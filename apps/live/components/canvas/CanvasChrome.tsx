@@ -43,6 +43,7 @@ import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
+import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -597,7 +598,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           esBoard={props.esBoard}
           esBoardControls={props.esBoardControls}
-          logoPages={!!props.pagesMode?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           tabElements={elements}
@@ -678,6 +678,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onRedo={onRedo}
                 canUndo={canUndo}
                 canRedo={canRedo}
+              />
+            ) : null}
+            {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
+                Redo, for every role, while the tab has two pages or more; not on a phone, whose row has no room
+                for it (a swipe moves between pages there). */}
+            {!zenMode && !isMobile && props.pagesMode && props.pagesMode.pages.length > 1 ? (
+              <PageNavigatorClusterStrip
+                pageIds={props.pagesMode.pages.map((p) => p.id)}
+                onGo={props.pagesMode.focusPage}
               />
             ) : null}
             {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode

@@ -41,6 +41,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'pages-mode': '#e11d48',
   'infographic-layouts': '#db2777',
   'logo-pages': '#0891b2',
+  'wireframe-pages': '#7c3aed',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',
   'tab-windows': '#4f46e5',

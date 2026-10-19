@@ -1,3 +1,5 @@
+import type { PaletteTileDef } from './palette-tile-defs';
+import { usePaletteKind } from '@/lib/palette-kind';
 import {
   DEFAULT_EDITOR_MODE,
   type EmbedProvider,
@@ -51,7 +53,6 @@ type Deps = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
-  | 'logoPages'
   | 'onTileUsed'
 > &
   PaletteAddHandlers & {
@@ -97,7 +98,6 @@ export function usePaletteCatalogue({
   pendingDraw,
   esBoard,
   esBoardControls,
-  logoPages,
   onTileUsed,
   participant = false,
 }: Deps) {
@@ -252,9 +252,12 @@ export function usePaletteCatalogue({
   const dashboardTab = usePlanTabKind() === 'dashboard';
   // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
   const planTabList = usePlanTabList();
-  // Logo only while the tab has a logo page (docs/specs/007-editor/logo-pages.md), its markers
-  // added as tiles in this person's colours and widths (logoMarkerTiles).
-  const markers = useLogoMarkerTiles(!!logoPages);
+  // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
+  // (palette-layouts.ts).
+  const paletteKind = usePaletteKind();
+  const pages = editorMode === 'pages';
+  // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
+  const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories(editorMode, !!esBoard)
@@ -268,10 +271,16 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
+        : paletteCategoriesFor(editorMode, {
+            esBoard: !!esBoard,
+            ...(pages ? { pagesKind: paletteKind } : {}),
+          })
             .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-
-            .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
+            .map((c) =>
+              c.id === 'draw' && markers.length
+                ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
+                : c,
+            );
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -320,4 +329,12 @@ export function usePaletteCatalogue({
     onCanvasToolChange,
     iconCatalogsLoaded,
   };
+}
+
+// `tiles` with its last ending a group, so what is added after it (Logo's markers) is a group of its own.
+function withGroupEnd(tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
+  const last = tiles.at(-1);
+  return last && !last.dividerAfter
+    ? [...tiles.slice(0, -1), { ...last, dividerAfter: true }]
+    : [...tiles];
 }

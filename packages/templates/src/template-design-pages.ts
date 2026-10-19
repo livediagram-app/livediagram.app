@@ -1,8 +1,7 @@
 // The Design templates' pages (docs/specs/007-editor/templates-by-mode.md "Design templates"): the
-// Floor Plan, Storyboard and the three wireframes open in Pages, each on one infographic page
-// sized for what it is. The screens (web page, laptop, phone flow) sit on a Widescreen (16:9) page,
-// the shape they are shown on; the floor plan and the storyboard on an A3 landscape sheet, the paper
-// a plan and a shoot's boards are printed on. Each drawing keeps its own builder and its own size
+// Floor Plan and the Storyboard open in Pages, each on one infographic page sized for what it is: an
+// A3 landscape sheet, the paper a plan and a shoot's boards are printed on. (The wireframes are
+// wireframe pages in their devices: template-builders-wireframe-flows.ts.) Each drawing keeps its own builder and its own size
 // (the floor plan is to a captioned metric scale, so it is never scaled): it is built once to be
 // measured, then again centred on its page.
 //
@@ -11,21 +10,16 @@ import { elementBounds, layOutPages, type Element, type Page } from '@livediagra
 import { templatePage } from './template-page-kit';
 import type { TemplateKind } from './templates';
 
-type DesignTemplateKind =
-  'floor-plan' | 'storyboard' | 'browser-wireframe' | 'laptop-wireframe' | 'mobile-wireframe';
+type DesignTemplateKind = 'floor-plan' | 'storyboard';
 
-// A cool, quiet paper the grey wireframe frames read on; white for the storyboard's printed sheet;
-// the floor plan's sheet ruled in a grid, since a plan is a scale drawing. (On the open canvas they
-// rode the canvas's graph paper; on a page the page carries its own.)
-const STUDIO = { fill: { kind: 'solid', color: '#f8fafc' } } as const;
+// White for the storyboard's printed sheet; the floor plan's sheet ruled in a grid, since a plan is
+// a scale drawing. (On the open canvas they rode the canvas's graph paper; on a page the page
+// carries its own.)
 const DRAFTING = { pattern: 'grid' } as const;
 
 const DESIGN_PAGES: Readonly<Record<DesignTemplateKind, Page>> = {
   'floor-plan': templatePage(1, 'a3', 'landscape', 'Floor Plan', DRAFTING),
   storyboard: templatePage(1, 'a3', 'landscape', 'Storyboard'),
-  'browser-wireframe': templatePage(1, 'wide', 'landscape', 'Landing Page', STUDIO),
-  'laptop-wireframe': templatePage(1, 'wide', 'landscape', 'Dashboard', STUDIO),
-  'mobile-wireframe': templatePage(1, 'wide', 'landscape', 'Order Ahead Flow', STUDIO),
 };
 
 export function isDesignTemplate(kind: TemplateKind): kind is DesignTemplateKind {

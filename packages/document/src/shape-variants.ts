@@ -102,6 +102,23 @@ export function badgePresetFace(variant: string | undefined): {
  *  over a preset's own colour, which is what the preset is (docs/specs/009-elements/badge.md "Badge presets"). A
  *  variant that fixes no colour leaves `el` as it is. */
 export function withVariantColours<T extends ShapeElement>(el: T, variant: string | undefined): T {
+  // A wireframe part's greys are the part (a dark button, a grey picture): put back over the theme's.
+  if (variant && Object.hasOwn(WIREFRAME_PARTS, variant)) {
+    const { fillColor, strokeColor, textColor, strokeWidth } = WIREFRAME_PARTS[variant]!.part;
+    const {
+      strokeSwatch: _s,
+      fillSwatch: _f,
+      colorPreset: _p,
+      ...rest
+    } = el as T & { strokeSwatch?: number; fillSwatch?: number; colorPreset?: string };
+    return {
+      ...rest,
+      ...(fillColor ? { fillColor } : {}),
+      ...(strokeColor ? { strokeColor } : {}),
+      ...(textColor ? { textColor } : {}),
+      ...(strokeWidth ? { strokeWidth } : {}),
+    } as T;
+  }
   if (el.shape !== 'badge' || !variant || !Object.hasOwn(BADGE_PRESETS, variant)) return el;
   const { strokeColor } = BADGE_PRESETS[variant]!;
   if (!strokeColor || el.strokeColor === strokeColor) return el;
@@ -117,6 +134,135 @@ export function withVariantColours<T extends ShapeElement>(el: T, variant: strin
   return { ...rest, strokeColor } as T;
 }
 
+// The Wireframe palette's parts (docs/specs/007-editor/wireframe-pages.md "The Wireframe palette"):
+// one shape placed as a screen's part, at a real interface's size, in wireframe greys (their
+// colours are the part, so placing keeps them, withVariantColours).
+const WF_INK = '#0f172a';
+const WF_LINE = '#cbd5e1';
+const WF_MUTED = '#64748b';
+const WF_PLACE = '#e2e8f0';
+const WIREFRAME_PARTS: Record<
+  string,
+  { shape: ShapeElement['shape']; part: Partial<ShapeElement> }
+> = {
+  'wf-button': {
+    shape: 'square',
+    part: {
+      width: 160,
+      height: 48,
+      label: 'Button',
+      textSize: 16,
+      textBold: true,
+      borderRadius: 'md',
+      fillColor: WF_INK,
+      textColor: '#ffffff',
+      strokeWidth: 'none',
+    },
+  },
+  'wf-button-outline': {
+    shape: 'square',
+    part: {
+      width: 160,
+      height: 48,
+      label: 'Button',
+      textSize: 16,
+      textBold: true,
+      borderRadius: 'md',
+      fillColor: '#ffffff',
+      textColor: WF_INK,
+      strokeColor: WF_LINE,
+      strokeWidth: 'thin',
+    },
+  },
+  'wf-field': {
+    shape: 'square',
+    part: {
+      width: 320,
+      height: 48,
+      label: 'Placeholder',
+      textSize: 15,
+      textAlignX: 'left',
+      padding: 'md',
+      borderRadius: 'md',
+      fillColor: '#ffffff',
+      textColor: WF_MUTED,
+      strokeColor: WF_LINE,
+      strokeWidth: 'thin',
+    },
+  },
+  'wf-search': {
+    shape: 'square',
+    part: {
+      width: 320,
+      height: 44,
+      label: 'Search',
+      iconId: 'search',
+      textSize: 15,
+      textAlignX: 'left',
+      padding: 'md',
+      borderRadius: 'full',
+      fillColor: '#f1f5f9',
+      textColor: WF_MUTED,
+      strokeWidth: 'none',
+    },
+  },
+  'wf-image': {
+    shape: 'square',
+    part: {
+      width: 320,
+      height: 200,
+      label: 'Image',
+      iconId: 'image',
+      textSize: 15,
+      borderRadius: 'lg',
+      fillColor: WF_PLACE,
+      textColor: WF_MUTED,
+      strokeWidth: 'none',
+    },
+  },
+  'wf-avatar': {
+    shape: 'circle',
+    part: {
+      width: 56,
+      height: 56,
+      label: 'AB',
+      textSize: 18,
+      textBold: true,
+      fillColor: WF_PLACE,
+      textColor: WF_MUTED,
+      strokeWidth: 'none',
+    },
+  },
+  'wf-chip': {
+    shape: 'square',
+    part: {
+      width: 96,
+      height: 34,
+      label: 'Chip',
+      textSize: 14,
+      borderRadius: 'full',
+      fillColor: '#ffffff',
+      textColor: '#334155',
+      strokeColor: WF_LINE,
+      strokeWidth: 'thin',
+    },
+  },
+  'wf-divider': {
+    shape: 'square',
+    part: {
+      width: 320,
+      height: 1,
+      label: '',
+      borderRadius: 'none',
+      fillColor: WF_LINE,
+      strokeWidth: 'none',
+    },
+  },
+};
+
+/** The Wireframe palette's variants, in palette order. */
+export const WIREFRAME_PART_VARIANTS = Object.keys(WIREFRAME_PARTS);
+
 /** The badge presets' variants, in palette order after the New preset (no variant). */
 export const BADGE_PRESET_VARIANTS = ['beta', 'version', 'count', 'draft', 'warning'] as const;
 
@@ -126,6 +272,8 @@ export const CARD_PRESET_VARIANTS = ['compact', 'panel', 'person', 'accent', 'ca
 /** `el` placed as `variant`, or `el` itself when the kind has no such variant. */
 export function applyShapeVariant(el: ShapeElement, variant: string | undefined): ShapeElement {
   if (!variant) return el;
+  const part = Object.hasOwn(WIREFRAME_PARTS, variant) ? WIREFRAME_PARTS[variant]! : undefined;
+  if (part && el.shape === part.shape) return { ...el, ...part.part };
   if (el.shape === 'card' && variant === 'callout') return calloutCard(el);
   if (el.shape === 'card') {
     const preset = cardPreset(el, variant);

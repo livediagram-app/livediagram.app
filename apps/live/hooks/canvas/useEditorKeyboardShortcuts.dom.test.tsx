@@ -575,3 +575,34 @@ describe('undo and redo from the start search', () => {
     input.remove();
   });
 });
+
+// docs/specs/007-editor/pages-mode.md "Getting around the pages": with nothing selected, the arrows
+// go between pages.
+describe('arrow keys between pages', () => {
+  it('steps forward on Right and Down, back on Left and Up, for every role', () => {
+    const onStepPage = vi.fn(() => true);
+    const { bag } = deps({ selectedId: null, isReadOnly: true, onStepPage });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('ArrowRight').defaultPrevented).toBe(true);
+    press('ArrowDown');
+    press('ArrowLeft');
+    press('ArrowUp');
+    expect(onStepPage.mock.calls.map((c) => (c as unknown[])[0])).toEqual([1, 1, -1, -1]);
+  });
+
+  it('lets the key be at either end of the row', () => {
+    const { bag } = deps({ selectedId: null, onStepPage: () => false });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('ArrowRight').defaultPrevented).toBe(false);
+  });
+
+  it('nudges a selection instead', () => {
+    const onStepPage = vi.fn(() => true);
+    const onNudgeSelection = vi.fn();
+    const { bag } = deps({ onStepPage, onNudgeSelection });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('ArrowRight');
+    expect(onNudgeSelection).toHaveBeenCalledWith(1, 0);
+    expect(onStepPage).not.toHaveBeenCalled();
+  });
+});

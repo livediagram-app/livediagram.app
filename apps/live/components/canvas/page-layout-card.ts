@@ -32,6 +32,8 @@ export function layoutCardShows(page: LaidOutPage, c: LayoutCardContext): boolea
     page.startedBlank !== true &&
     !page.flow &&
     page.kind !== 'article' &&
+    // A wireframe page's screen stays clear: its layouts are the Layout button's alone.
+    page.kind !== 'wireframe' &&
     c.contentCount === 0 &&
     !c.offersKind &&
     !c.panelOpen &&

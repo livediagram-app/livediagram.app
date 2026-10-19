@@ -44,6 +44,7 @@ import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PageClip } from '@/components/canvas/PageClip';
+import { WireframeDeviceOverlays } from '@/components/canvas/WireframeDeviceOverlays';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 import {
   SheetChartsContext,
@@ -623,6 +624,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               stackedIds={stackedIds}
             />
           </PageClip>
+          {/* A wireframe page's camera and system bars, over what is on its screen. */}
+          {props.pagesMode && props.canvasTool !== 'isometric' ? (
+            <WireframeDeviceOverlays
+              pages={props.pagesMode.pages}
+              frameTheme={props.pagesMode.frameTheme}
+            />
+          ) : null}
 
           {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
           <GifOmit>

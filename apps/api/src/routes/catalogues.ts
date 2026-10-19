@@ -6,7 +6,7 @@ import type { IconSearchResponse, TemplateCatalogueResponse } from '@livediagram
 import { renderView } from '@livediagram/document-views';
 import { addableKinds, elementFormatText, elementKindsText } from '@livediagram/edit-operations';
 import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@livediagram/icons/search';
-import { buildTemplateTab, isTemplateKind, templateCatalogue } from '@livediagram/templates';
+import { buildTemplateTab, templateCatalogue, templateKindOf } from '@livediagram/templates';
 import { json, methodNotAllowed, notFound, textPlain } from '../responses';
 import type { RouteContext } from './context';
 
@@ -25,8 +25,8 @@ function templates(ctx: RouteContext): Response {
   if (kind === undefined)
     return json(templateCatalogue() satisfies TemplateCatalogueResponse, { headers: cached });
   if (ctx.segments.length > 3) return notFound();
-  const decoded = decodeURIComponent(kind);
-  if (!isTemplateKind(decoded))
+  const decoded = templateKindOf(decodeURIComponent(kind));
+  if (!decoded)
     return json(
       { error: 'unknown_template', kinds: templateCatalogue().templates.map((t) => t.kind) },
       { status: 404 },

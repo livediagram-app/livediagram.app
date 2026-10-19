@@ -69,7 +69,7 @@ describe('template categories', () => {
       flowcharts: 5,
       strategy: 15,
       hierarchies: 7,
-      design: 12,
+      design: 14,
       presentations: 17,
       technical: 10,
       games: 5,

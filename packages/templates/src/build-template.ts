@@ -5,16 +5,12 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
+import { buildWireframeFlow } from './template-builders-wireframe-flows';
 import { isFormTemplateKind } from './form-templates';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { settleChips, type Element, type Tab } from '@livediagram/document';
 import type { TemplateKind } from './templates';
-import {
-  buildBrowserWireframe,
-  buildLaptopWireframe,
-  buildMobileWireframe,
-} from './template-builders-wireframes';
 import { buildSlideDeck } from './template-builders-slides';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
 import { companionTemplateTabs } from './template-companions';
@@ -189,10 +185,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildFishbone(cx, cy);
     case 'pyramid':
       return buildPyramid(cx, cy);
-    case 'mobile-wireframe':
-      return buildOnDesignPage('mobile-wireframe', buildMobileWireframe);
-    case 'laptop-wireframe':
-      return buildOnDesignPage('laptop-wireframe', buildLaptopWireframe);
     case 'slide-deck':
       return buildSlideDeck(cx, cy);
     case 'flywheel':
@@ -297,8 +289,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildOkrTree(cx, cy);
     case 'sitemap':
       return buildSitemap(cx, cy);
-    case 'browser-wireframe':
-      return buildOnDesignPage('browser-wireframe', buildBrowserWireframe);
     case 'storyboard':
       return buildOnDesignPage('storyboard', buildStoryboard);
     case 'cloud-architecture':
@@ -327,7 +317,18 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'blank-article':
     case 'blank-infographic':
     case 'blank-logo':
+    case 'blank-wireframe-phone':
+    case 'blank-wireframe-tablet':
+    case 'blank-wireframe-browser':
+    case 'blank-wireframe-laptop':
+    case 'blank-wireframe-watch':
       return [];
+    case 'wireframe-mobile-app':
+    case 'wireframe-website':
+    case 'wireframe-dashboard':
+    case 'wireframe-tablet-app':
+    case 'wireframe-watch-app':
+      return buildWireframeFlow(kind);
     case 'sketchnote':
       return buildSketchnote(cx, cy);
     case 'rich-picture':

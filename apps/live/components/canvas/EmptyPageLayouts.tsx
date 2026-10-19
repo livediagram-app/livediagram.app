@@ -9,7 +9,6 @@ import type { LaidOutPage } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { CloseIcon, Tooltip } from '@livediagram/ui';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
-import { ChangeThemeButton } from './ChangeThemeButton';
 import { LayoutBrowser } from './infographic-page-layouts-section';
 
 // The card's width in screen px; the host shows it only on a page with room for it.
@@ -24,7 +23,6 @@ export function EmptyPageLayouts({
   onApply,
   onHide,
   onBlank,
-  onChangeTheme,
   wide = false,
 }: {
   page: LaidOutPage;
@@ -33,8 +31,6 @@ export function EmptyPageLayouts({
   onHide: () => void;
   // Start From Scratch: the page starts from nothing, and the card is not offered on it again.
   onBlank: () => void;
-  // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
-  onChangeTheme?: (() => void) | undefined;
   // The wide card (EMPTY_PAGE_LAYOUTS_WIDE_WIDTH, four across).
   wide?: boolean;
 }) {
@@ -62,7 +58,6 @@ export function EmptyPageLayouts({
             Start From a Layout
           </p>
           <div className="flex items-center gap-1">
-            {onChangeTheme ? <ChangeThemeButton onClick={onChangeTheme} /> : null}
             <Tooltip label="Hide">
               <button
                 type="button"

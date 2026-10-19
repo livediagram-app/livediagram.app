@@ -1,15 +1,15 @@
 'use client';
 
-// The four kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
-// miniature of the page above its name and a line on what it is for. Shared by the add-a-page
-// popover and the first page's own choice.
+// The five kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
+// miniature of the page above its name and a line on what it is for: the first page's own choice.
+// The Add a Page list shows the same kinds as rows (AddPagePopover).
 import type { PageKind } from '@livediagram/document';
 import type { KeyboardEvent, Ref } from 'react';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
-type PageKindChoice = { kind: PageKind; name: string; line: string };
+// `hint`: the short line the Add a Page list shows beside the name.
+type PageKindChoice = { kind: PageKind; name: string; line: string; hint: string };
 
-// The cards sit two by two.
+// The cards sit two by two, the last across both columns.
 const KIND_COLUMNS = 2;
 
 /** Arrow keys between the cards (the popover and the first page's choice alike): Left / Right
@@ -35,42 +35,44 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     kind: 'infographic',
     name: 'Infographic',
     line: 'A page to lay out: layouts, icons, charts and media.',
+    hint: 'Lay out icons, charts and media.',
   },
   {
     kind: 'article',
     name: 'Article',
     line: 'A page to write on, flowing onto new pages as it grows.',
+    hint: 'Write, flowing onto new pages.',
   },
   {
     kind: 'slide',
     name: 'Slide',
     line: 'A slide for a deck: widescreen, ready to present.',
+    hint: 'A widescreen slide for a deck.',
   },
   {
     kind: 'logo',
     name: 'Logo',
     line: 'A square artboard for a logo, with guides and drawing tools.',
+    hint: 'A square artboard for a mark.',
+  },
+  {
+    kind: 'wireframe',
+    name: 'Wireframe',
+    line: 'A screen to wireframe, framed as a phone, tablet, laptop or browser.',
+    hint: 'A phone, tablet or web screen.',
   },
 ];
-
-/** The kinds in their order, the suggested one (the kind of the last page) first: the next page is
- *  most often another of the same. */
-export function kindsWithSuggestedFirst(suggested?: PageKind): readonly PageKindChoice[] {
-  if (!suggested) return PAGE_KINDS;
-  const first = PAGE_KINDS.find((k) => k.kind === suggested);
-  return first ? [first, ...PAGE_KINDS.filter((k) => k !== first)] : PAGE_KINDS;
-}
 
 export function PageKindCard({
   choice,
   onChoose,
-  suggested = false,
+  wide = false,
   ref,
 }: {
   choice: PageKindChoice;
   onChoose: () => void;
-  // The kind of the last page, offered first: ringed in the accent and tagged.
-  suggested?: boolean;
+  // Across both columns, its miniature beside its words (the last card of the five).
+  wide?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
@@ -78,21 +80,18 @@ export function PageKindCard({
       ref={ref}
       type="button"
       onClick={onChoose}
-      className={`group relative flex flex-col items-stretch gap-2 rounded-lg border p-2 text-left transition hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 ${
-        suggested
-          ? 'border-brand-400 bg-brand-50/60 ring-2 ring-brand-400/40 dark:border-brand-400 dark:bg-brand-500/15'
-          : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900'
-      }`}
+      className={`group relative flex items-stretch gap-2 rounded-lg border p-2 text-left transition ${
+        wide ? 'col-span-2 flex-row items-center' : 'flex-col'
+      } hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900`}
     >
-      {suggested ? (
-        <span
-          className={`absolute right-2 top-2 z-10 rounded-full bg-brand-700 px-2 py-0.5 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK_CONTROL}`}
-        >
-          Same as last page
-        </span>
-      ) : null}
-      <span className="flex h-24 items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800/70">
-        {choice.kind === 'article' ? (
+      <span
+        className={`flex h-24 shrink-0 items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800/70 ${
+          wide ? 'w-[calc(50%-0.25rem)]' : ''
+        }`}
+      >
+        {choice.kind === 'wireframe' ? (
+          <WireframeMiniature />
+        ) : choice.kind === 'article' ? (
           <ArticleMiniature />
         ) : choice.kind === 'slide' ? (
           <SlideMiniature />
@@ -253,6 +252,80 @@ function LogoMiniature() {
         rx="2"
         className="fill-slate-700 dark:fill-slate-200"
       />
+    </svg>
+  );
+}
+
+// A phone and a laptop, each with a screen being wireframed: a header bar, a picture, a button.
+function WireframeMiniature() {
+  const bar = 'fill-slate-300 dark:fill-slate-500';
+  const pic = 'fill-brand-100 dark:fill-brand-500/25';
+  return (
+    <svg width="104" height="70" viewBox="0 0 104 70" aria-hidden className="drop-shadow-sm">
+      <rect
+        x="22"
+        y="6"
+        width="74"
+        height="48"
+        rx="4"
+        className="fill-slate-800 dark:fill-slate-950"
+      />
+      <rect
+        x="25"
+        y="9"
+        width="68"
+        height="42"
+        rx="1.5"
+        className="fill-white dark:fill-slate-700"
+      />
+      <rect
+        x="12"
+        y="54"
+        width="94"
+        height="5"
+        rx="2"
+        className="fill-slate-400 dark:fill-slate-600"
+      />
+      <rect
+        x="29"
+        y="13"
+        width="18"
+        height="3"
+        rx="1.5"
+        className="fill-slate-700 dark:fill-slate-200"
+      />
+      <rect x="29" y="20" width="26" height="2.5" rx="1.25" className={bar} />
+      <rect x="29" y="25" width="22" height="2.5" rx="1.25" className={bar} />
+      <rect x="29" y="31" width="14" height="5" rx="1.5" className="fill-brand-500" />
+      <rect x="60" y="13" width="29" height="34" rx="2" className={pic} />
+      <rect
+        x="2"
+        y="16"
+        width="26"
+        height="50"
+        rx="5"
+        className="fill-slate-800 dark:fill-slate-950"
+      />
+      <rect
+        x="4"
+        y="18"
+        width="22"
+        height="46"
+        rx="3.5"
+        className="fill-white dark:fill-slate-700"
+      />
+      <rect
+        x="11"
+        y="19.5"
+        width="8"
+        height="2.5"
+        rx="1.25"
+        className="fill-slate-800 dark:fill-slate-950"
+      />
+      <rect x="7" y="25" width="16" height="12" rx="1.5" className={pic} />
+      <rect x="7" y="40" width="12" height="2.5" rx="1.25" className={bar} />
+      <rect x="7" y="45" width="15" height="2.5" rx="1.25" className={bar} />
+      <rect x="7" y="55" width="16" height="5" rx="1.5" className="fill-brand-500" />
     </svg>
   );
 }

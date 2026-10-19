@@ -1,5 +1,6 @@
 'use client';
 
+import { pageStep } from '@/lib/page-step';
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
@@ -94,6 +95,8 @@ import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@livediagram/doc
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
+import { selectAllIds } from '@/lib/select-all-ids';
+import { currentPageIdNow } from '@/lib/current-page-kind';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
@@ -3805,6 +3808,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
+    onStepPage: pagesMode
+      ? (dir) => {
+          const to = pageStep(pagesMode.pages, currentPageIdNow(), dir);
+          if (to) pagesMode.focusPage(to);
+          return !!to;
+        }
+      : undefined,
     onTypeIntoSelected: typeIntoSelected,
     pendingDraw,
     onCancelDraw: cancelDrawShape,
@@ -3816,10 +3826,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }
     },
     onSelectAll: () => {
-      // Hidden / locked layers are excluded from select-all (docs/specs/006-document/layers.md).
-      const allIds = new Set(
-        activeTab.elements.map((el) => el.id).filter((id) => !layerInertIds.has(id)),
-      );
+      // Hidden / locked layers are left out; in Pages mode, every page but the one someone is on.
+      const allIds = selectAllIds(activeTab, editorMode.mode, layerInertIds, currentPageIdNow());
       if (allIds.size === 0) return;
       setSelectedId(null);
       setMultiSelectedIds(allIds);
