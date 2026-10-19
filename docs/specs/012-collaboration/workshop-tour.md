@@ -34,26 +34,33 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
 
 ## Tour content
 
-None. The tour points at the controls a facilitator uses and places nothing, so there is nothing to take away
-and nothing in the document's history.
+Three session elements, to show what each does: a **Timer**, a **Dot Vote** and a **Poll** session button, placed in a
+row in the middle of the view at their palette sizes and the tab's colours, with no undo step (`useTourSquare`), and
+taken away when the tour ends, however it ends. Nothing reaches the document's history.
 
 ## The steps
 
-A welcome card, three steps, then an outro card. The bookend cards sit outside the step count. The palette
+A welcome card, six steps, then an outro card. The bookend cards sit outside the step count. The palette
 itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/live/components/tour/workshop-tour-steps.ts`.
 
-0. **Welcome to Workshop** (the offer): centred card with its own illustration (a flipchart with two sticky
+0. **Getting started with Workshop?** (the offer): centred card with its own illustration (a flipchart with two sticky
    notes and a timer), saying Workshop is for running a session with a team and offering a quick look, then
    **No** and **Yes**.
 1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
    ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to
    the room, and Session holds the timers, reveals, records, reactions, selection modes and places to go. It opens
    nothing (the bar's buttons carry the anchors `bar-collab-ask` and `bar-session`).
-2. **Run the room**: highlights the Session strip. Timer, Vote and Poll run for everyone on the tab without
+2. **A Timer for the Room**: places the three session elements (Tour content) and highlights the Timer: it counts down
+   for everyone, with pause, reset and more time on it.
+3. **Dot Voting**: highlights the Vote: everyone gets dots to put on the notes they back; the counts show when it
+   ends.
+4. **A Live Poll**: highlights the Poll: a question to the room, answered live, as yes or no, choices, a rating or
+   open.
+5. **Run the Room**: highlights the Session strip. Timer, Vote and Poll run for everyone on the tab without
    placing anything on the canvas.
-3. **Bring people in**: highlights the header's Share button. A Participant link lets people add notes, vote and
+6. **Bring People In**: opens the Share dialog and highlights it, closing it again after. A Participant link lets people add notes, vote and
    answer without changing the rest of the board.
-4. **You're ready to run a workshop** (outro): a help-centre link to the Workshop mode article (new tab) and
+7. **You're ready to run a workshop** (outro): a help-centre link to the Workshop mode article (new tab) and
    **Start**, which completes the tour.
 
 - Back from a step goes to the step before. Leaving a step closes what it opened (the category picker).

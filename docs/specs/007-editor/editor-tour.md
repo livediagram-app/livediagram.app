@@ -81,7 +81,7 @@ proved the better introduction.
     offered once every dialog has closed (stacked dialogs count until the last one goes), after the tour's usual
     offer delay. Nothing is remembered as answered while it waits.
   - **A running tour steps aside.** When a dialog opens over a running tour (opened by the person, or by
-    something else such as a sign-in prompt), the card, the ring and the backdrop hide, and the step's live
+    something else such as a sign-in prompt), the card and the spotlight hide, and the step's live
     tracking pauses, so nothing is reopened under the dialog. When the dialog closes the tour comes back on the
     same step, its target re-found (and re-prepared if the dialog closed what it had opened). Stepping aside is
     not an answer: the tour neither ends nor counts a new step view.
@@ -115,10 +115,11 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
 0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "A quick look
    at the editor? It takes about a minute.", then **No** / **Yes**. Yes and No are every tour's
    offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
-1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
+1. **The Palette**: the strip across the top: "Add whatever you need to your canvas to start drawing after the
+   tour."
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
-3. **Palette Categories**: opens the first category on the palette's category bar (Shapes), its flyout ringed
+3. **Palette Categories**: opens the first category on the palette's category bar (Shapes), its flyout highlighted
    with the bar ([Toolbar layout](toolbar-layout.md#the-category-bar)): "The palette's categories sit along the
    top: rest on one to see its elements, then click one to add it, or drag it onto the canvas." Plan's strip still
    opens its category dropdown here. A dedicated "Tools category" step existed briefly and was cut: the category
@@ -127,15 +128,16 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
    tab is empty) and opens its right-click menu programmatically. A square it added is the tour's own: placed
    with no history and taken away, with its selection, when the tour ends however it ends (`useTourSquare`), so
    a fresh document is left as it was and Undo never brings it back.
-5. **Tabs**: highlights the active tab pill and the "+" add button as one region (an `alsoHighlight` union,
-   like the dropdown steps): one document holds many diagrams, one per tab, with the tab menu covered in the
-   copy. A separate open-the-⋯-menu step existed briefly and was folded in here.
-6. **Theme & Canvas** (desktop only): highlights the Theme & canvas dock button
-   ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas
-   background dialog. No prepare needed: the button is always in the desktop chrome for an editable session.
-   Mobile reaches the same dialog through the canvas menu, so the step is skipped there.
-7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Help** link to the help centre
-   (new tab), and a **Start** button that completes the tour.
+5. **Tabs**: opens the active tab's ⋯ menu and highlights it with the tab pill (an `alsoHighlight` union): each
+   tab holds its own work in its own mode; + adds one; the menu renames, duplicates, locks, exports or sets it
+   side by side. The menu closes as the step ends.
+6. **Theme & Canvas** (desktop only): opens Tab Style from the Style (paintbrush) dock button
+   ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) and highlights the open panel with the
+   button, over the dialog layer. It closes as the step ends, however it ends, including when the step is left
+   while the panel is still opening. Mobile reaches the same dialog through the canvas menu, so the step is skipped
+   there.
+7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Learn More** link to the help
+   centre (new tab, no underline), and a **Start** button that completes the tour.
 
 Retired steps: **Tab Mode** (opening the editor mode switch's menu, step 4 until October 2026) was cut to keep
 the tour on diagramming; each mode now has a tour of its own, offered when the person enters it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
@@ -143,18 +145,49 @@ welcome tour; it describes the whole app rather than diagramming, so the Diagram
 step (opening the Cmd/Ctrl+K panel) once followed Theme & Canvas until it was cut to keep the tour short; the
 search panel has its own help article.
 
-Each step popover shows the step count, a title, the copy, and Back / Next (Done on the last step) plus a Skip
-control. A dimming highlight ring surrounds the current target; it never blocks pointer input, so the user can
-poke at whatever is highlighted mid-tour. Phase changes are animated: the ring keeps the previous rect and
-**glides** to the next target, the popover transitions its position, and the card content slides
-directionally (the New Document wizard's tip-next / tip-prev motion). The dropdown steps highlight the
-**union** of the trigger button and its portalled menu, so the ring wraps the whole control, not the floating
-menu alone.
+Each step popover shows the step count, a title, the copy, and Back / Next plus a Skip control, with a row of
+dots in which the current step's is drawn long. The right and left arrow keys are Next and Back, and Escape skips
+(never while a field is being typed in, nor with a modifier held). The dropdown steps highlight the **union** of
+the trigger button and its portalled menu.
+
+### Steps open what they explain
+
+A step that points at a control that opens something (a menu, a popover, a panel) opens it, highlights what
+opened, and closes it again as the step ends, however it ends: the person sees the real thing rather than being
+told where it is. A step left while what it opens is still opening closes it as it arrives. Shared by every tour
+(`tour-open.ts` for a button that opens a popover; element tours' menu steps open the element's menu to the path
+their copy names, [Element tours](element-tours.md#menu-steps)).
+
+### The spotlight
+
+The screen dims around the step's target, which stays clear; no outline is drawn round it. The dim is one
+full-screen layer with a rounded hole cut out of it (`TourSpotlight`).
+
+### The page waits
+
+While a step is up, the Diagram tour and element tours take no clicks or wheel on the page, only on the step card:
+a press on what a step opened (a palette category's shape) closed it and the step reopened it, flickering the page.
+A shield under the card stops presses on the window in the capture phase, ahead of every document listener, and
+shows the not-allowed cursor. The keyboard still reaches the card. The other tours leave the page usable, as some
+of their steps ask the person to try things.
+
+### Motion
+
+- **Arrival.** Nothing is drawn while the first step prepares; then the dim fades in (450 ms) and the step card
+  settles in after it (dialog-in, 160 ms later). Reduced motion keeps the fades.
+- **Hand-over.** On Next the spotlight and the card stay on the current target while the next step prepares (a
+  menu opening, a panel scrolling) and the card's buttons wait. The next step lands once its target exists, its own
+  entrance (CSS animations and transitions) has finished and its rect holds for three frames (at most 600 ms).
+  Then the hole and the card glide to it together, once, over 420 ms ease-in-out, and the card's words cross-fade:
+  a step's words never sit beside the previous step's target, and nothing chases a menu as it opens.
+- **Following.** Between glides the hole follows its target exactly, with no easing to lag behind a scroll or a
+  zoom. A glide is one frame-by-frame tween written straight to the hole, with no render during it.
+- **One of each.** One spotlight and one card for the whole run, never remounted per step.
 
 ## Mechanics
 
 - **One engine, three tours.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
-  Skip) and what it draws (`TourStage`: the ring, `TourPopover`) are shared with the
+  Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared with the
   [Plan tour](../026-plan/plan-tour.md) and the [Workshop tour](../012-collaboration/workshop-tour.md);
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
@@ -166,9 +199,9 @@ menu alone.
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target
   never appears is skipped rather than wedging the tour, the way the person was going: going Back, past it to the
   step before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step (outside
-  click), the step re-prepares itself; a target that still does not come back lets go of its ring, and the card
+  click), the step re-prepares itself; a target that still does not come back lets go of its spotlight, and the card
   waits centred.
-- **A target is brought into view before the ring lands.** A target below the fold of a scrolling panel (a long
+- **A target is brought into view before the step lands.** A target below the fold of a scrolling panel (a long
   form's add bar, a dialog's lower section) is centred in each scrolling ancestor that does not wholly show it
   (inside a 16 px margin), clear of chrome floating over a panel's edges (`revealInScrollers`, `tour-reveal.ts`),
   smoothly unless motion is reduced; a target already in view stays put, and a step may ask for its target at the
@@ -207,7 +240,7 @@ menu alone.
   white, still clear AA. A dark tab's pale accent is never painted as it is: it drew a washed-out banner with its words
   in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
   banner stacks, as the sign-in banner does: the words, then the buttons at the right.
-- **The ring** around a step's target is drawn in the same accent; the dim around it is unchanged.
+- **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
 - This holds for the Diagram, Plan, Workshop, Draw and Pages tours and the card type editor's Show Me,
   which all draw through `TourStage` and `TourPopover`.
 

@@ -358,17 +358,22 @@ number).
 A guided tour, as [Plan's](../026-plan/plan-tour.md) is (`components/tour/FormTourHost.tsx`, its steps in
 `form-tour-steps.ts`): offered once, 800 ms after an Editor first has a Form tab open, never beside another tour or a
 start panel, never on a read-only, locked or embedded tab, and never before the synced preferences are in. Its welcome
-card asks "Getting started with forms?" over a starter's picture; its steps point and never change anything:
+card asks "Getting started with Forms?" over a starter's picture. It does rather than points, on the person's own form,
+with an example question it takes away again:
 
-1. **Build It Here** (the form's questions, or its add bar when it has none);
-2. **Add Questions** (the add bar);
-3. **Responses and Preview** (the status bar);
-4. **Where Responses Go** (the cog);
-5. **Share Form** (the header's Share Form; skipped on a phone);
+1. **Add a Question**: adds a Short Answer question, "What should we call you?", after the form's last question, and
+   highlights it;
+2. **Edit It in Place**: opens that question in the builder (its wording, description, answers and Required);
+3. **Any Kind of Answer**: opens its type menu;
+4. **Try It as They Will**: turns on Preview, the form as respondents see it, and highlights the example question
+   there to answer (not the whole page), saying Back to Editing returns; it turns Preview off after;
+5. **Where Responses Go**: opens the cog's panel;
 6. **Responses Arrive Here** (a board) or **Responses Land Here** (a sheet): it opens the tab the form's responses go
    to and comes back to the form after, only when the form has one;
+7. **Share It**: opens the Share Form dialog and closes it after (skipped on a phone);
 
-then its closing card, **That Is a Form**. A step's target below the fold of a long form (the add bar) is scrolled into
+then its closing card, **That Is Your Form**. The example question is added and deleted with no undo step
+(`changeFormQuietly`), so Undo never brings it back, and the tour leaves Preview and deletes it however it ends. A step's target below the fold of a long form (the add bar) is scrolled into
 view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tour.md#mechanics)). Opening any tab but the form or where its responses go ends it as skipped.
 Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
 or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`

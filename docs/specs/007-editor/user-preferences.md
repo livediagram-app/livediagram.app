@@ -261,7 +261,7 @@ type UserPreferences = {
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
-  // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
+  // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Settings' Boards Tour and Sheets Tour rows each add or remove their own track.
   planTourTracks?: PlanTourTrack[];
   // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
@@ -283,7 +283,7 @@ type UserPreferences = {
   // kind offers its own once ever. Settings' row per kind (Slides Tour, ...) adds or removes its own kind.
   pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel). Surfaced in Settings as Tours › Element Tours, one switch per kind (inverted).
+  // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
@@ -765,8 +765,9 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Boards Tour**, **Sheets Tour**, **Workshop Tour**, **Draw Tour**, **Forms Tour**,
-  **Avatar Tour**, **Slides Tour**, **Infographic Tour**, **Article Tour** and **Logo Tour**, each with a line saying where it offers itself and a **Learn more**
+  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
+  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**,
+  **Article Tour** and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
@@ -783,24 +784,28 @@ and the dialog stays as the one complete, browsable index of them.
   on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
   on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
   for a Diagram tab. The Plan tour is a
-  tour of several tracks (`apps/live/lib/tour-tracks.ts`), and each track has its own row, named for itself:
-  **Boards Tour** and **Sheets Tour** (`tourTrackSwitch`, keys `planTourSeen-boards` / `planTourSeen-sheets`). A
-  row is on while its track is owed; off adds its track to `planTourTracks`, on removes it alone, and both clear
-  the single `planTourSeen`, folding it into the list first so one track back on leaves the other answered. It
-  needs no handoff flag (the Plan tour offers itself in Plan once a board or Sheet is open), so closing the
-  dialog only reruns it, when a track became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
+  tour of several tracks (`apps/live/lib/tour-tracks.ts`): **Plan Tours** is one switch over all of them
+  (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets every
+  answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself: **Boards
+  Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
+  `planTourSeen-sheets`, `planTourSeen-dashboards`). A track's row is on while its track is owed; off adds its track
+  to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, folding it into the list first
+  so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself in Plan once
+  a board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
+  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)), and the Pages tour is built as the Plan tour's
-  rows are ([Pages tour](pages-tour.md)), one row per page kind (**Slides Tour**, **Infographic Tour**, **Article
-  Tour**, **Logo Tour**): `pagesTourKinds` lists the kinds answered. Power user mode's readout names each tour's
-  rows together (**Plan Tours**, **Pages Tours**) through the rows' `presetGroup`.
+  rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Slides Tour**,
+  **Infographic Tour**, **Article Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
+  mode's readout lists each tour's switch over all its tracks (**Plan Tours**, **Pages Tours**).
   A multi-track tour's old single flag (`planTourSeen`, `pagesTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.
 
-  Below the mode tours, **Element Tours** is its own section, a closed accordion naming how many are on
-  ([Element tours](element-tours.md#settings)): **Element Tours**, built as the old single-switch tours were (`tourTracksSwitch`) against `elementToursSeen`
-  and `elementTourKinds`, with one switch per toured kind nested under it (**Sankey Diagram Tour**). Element tours
+  Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
+  accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
+  as Plan Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
+  kind nested under it, named for the element (**Sankey Diagram**). Element tours
   need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 

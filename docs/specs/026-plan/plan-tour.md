@@ -33,10 +33,10 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   toured Sheet) arms the offer again. The old single flag `planTourSeen` stands for both tracks only while
   [Power user mode](../007-editor/power-user-mode.md) is on: an answer given before the tour offered each track once
   named no track, so each is offered once more.
-- **Replayable from Settings**: one switch per track in Settings' **Tours** category, **Boards Tour** and
-  **Sheets Tour** (never "Plan Tour"), beside **Diagram**. On means that track is still owed; off answers that
-  track alone, on forgets it alone; Power user mode's readout names them together as **Plan Tours**. Turning
-  one on from off and closing
+- **Replayable from Settings**: in Settings' **Tours** category, beside **Diagram**, **Plan Tours** switches every
+  track at once, and one switch per track sits nested beneath it: **Boards Tour**, **Sheets Tour** and
+  **Dashboards Tour** (never "Plan Tour"). On means that track is still owed; a track's switch off answers that
+  track alone, on forgets it alone. Turning one on from off and closing
   Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
   an empty Plan tab already offers Start Planning, which makes a board or Sheet, and the switch's description
@@ -47,6 +47,30 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   names the one it will show and offers **Yes** and **No**. With both on the tab (a Plan
   canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No**, all with
   equal weight. Taking the tour answers the track picked; the other is offered on its own next time.
+
+## The Dashboards tour
+
+The Plan tour's third track, a tour of its own on a dashboard (`DashboardTour.tsx`): the steps of the dashboard's
+Show Me ([Plan tabs](plan-tabs.md) "Show Me": rows of slots, filling a slot, a slot's cog, Dashboard Settings)
+behind a welcome card, **Getting started with Dashboards?** (eyebrow **Dashboards tour**, its own picture of rows of
+slots filling in), **No** / **Yes**.
+
+- **Offered once**, the first time an Editor has a dashboard open in Plan while the `dashboards` track is owed, the
+  synced preferences are in, and no other tour, dialog or start panel is on screen; 800 ms after the dashboard is
+  on screen. Not to a Participant or a Viewer, not in an embed, not while a maximised slot covers the page.
+- **However it ends** (taken, skipped or declined) it answers the `dashboards` track (`planTourTracks`), on every
+  device. Show Me from Dashboard Settings runs the same steps without the welcome card and answers nothing.
+- **Telemetry**: `UI` · `Opened` · `DashboardTourOffer` when offered, `UI` · `Closed` · `DashboardTourOffer` when
+  declined, `UI` · `Started` · `DashboardTour` when accepted (as Show Me's press), and Show Me's
+  `DashboardTourCompleted` | `DashboardTourSkipped` at the end.
+
+## Tour content
+
+The Boards track makes one thing of its own, the example card: a card titled **Your First Card**, of the board's first
+card type (`task` when it takes every type), added to its first column, moved to its second, opened, and deleted when
+the tour ends, however it ends. Its writes have no undo step (`writeQuiet`), so Undo never brings it back, and it is
+recorded as tour content (`plan-tour-content` in localStorage) while it exists, so a reload mid-tour still takes it away
+(`usePlanTourLeftovers`). The Sheets track makes nothing.
 
 ## Tour subject
 
@@ -82,8 +106,8 @@ strings live in `apps/live/components/tour/plan-tour-steps.ts`.
 
 0. The offer, a centred card named for its track, never the mode: eyebrow **Boards tour** and title **Getting
    started with boards?** over a board whose card moves to the next column; eyebrow **Sheets tour** and title
-   **Getting started with sheets?** over a sheet whose selection steps across as A1 is typed into; on a choice
-   card, eyebrow **Boards and Sheets tour** and title **Getting started with boards and sheets?** over both. With
+   **Getting started with Sheets?** over a sheet whose selection steps across as A1 is typed into; on a choice
+   card, eyebrow **Boards and Sheets tour** and title **Getting started with Boards and Sheets?** over both. With
    one kind on the tab it says the tour will show around this board (or this sheet), without changing anything,
    then **No** and **Yes**; with both it asks which, then **No**, **Boards** and **Spreadsheets**.
 
@@ -92,15 +116,15 @@ the opening step of each track is a card on its own (centred, counted, no ring).
 
 ### Boards
 
-Up to six steps.
+Six steps, on the tour's own example card (below).
 
-1. **Your Board**: a centred card, no ring; it brings the board on screen. Columns are the stages work moves
+1. **Your Board**: a centred card, no spotlight; it brings the board on screen. Columns are the stages work moves
    through, left to right.
-2. **Add Cards**: highlights the first column's Add card. Add card at the bottom of a column adds a new one.
-3. **Move Work Along** (when the board has a card): highlights its first card. Drag a card to the next column as
-   the work moves on, or Shift and an arrow key with it focused; everyone in the document sees it move.
-4. **The Card Panel** (when the board has a card): opens that card's panel and highlights it. Everything about a
-   piece of work is here, saved as it is typed.
+2. **Add Cards**: adds the example card, **Your First Card**, to the board's first column and highlights it.
+3. **Move Work Along**: moves the example card to the next column and highlights it there; drag a card on as the work
+   moves on, and everyone in the document sees it move.
+4. **The Card Panel**: opens the example card's panel and highlights it. Everything about a piece of work is here,
+   saved as it is typed.
 5. **The Board Header**: highlights the board's header. Its widgets count and filter the board; more come from
    the + at their end, and a column's cog sets the board up.
 6. **Card Types**: highlights the Card Types button. Each type has its own colour and fields, changed or made
