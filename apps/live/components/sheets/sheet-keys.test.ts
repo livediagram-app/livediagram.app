@@ -74,4 +74,26 @@ describe('the grid keys (sheet.md "Keyboard")', () => {
     expect(sheetKey(k('Shift'))).toBeNull();
     expect(sheetKey(k('x', { altKey: true }))).toBeNull();
   });
+
+  it('types a character composed with Alt, and still not a bare Alt+letter', () => {
+    // A Mac's Option: ⌥3 is £ on a UK layout, ⌥⇧2 is €, ⌥e then a vowel is é. They were dropped as shortcuts.
+    expect(sheetKey(k('£', { altKey: true, code: 'Digit3' }))).toEqual({ kind: 'type', text: '£' });
+    expect(sheetKey(k('€', { altKey: true, shiftKey: true, code: 'Digit2' }))).toEqual({
+      kind: 'type',
+      text: '€',
+    });
+    // AltGr on Windows comes as Ctrl+Alt: € is AltGr+E and @ is AltGr+Q on a German layout.
+    const altGr = {
+      ctrlKey: true,
+      altKey: true,
+      getModifierState: (m: 'AltGraph') => m === 'AltGraph',
+    };
+    expect(sheetKey(k('€', { ...altGr, code: 'KeyE' }))).toEqual({ kind: 'type', text: '€' });
+    expect(sheetKey(k('@', { ...altGr, code: 'KeyQ' }))).toEqual({ kind: 'type', text: '@' });
+    // AltGr's Ctrl is not a Ctrl: AltGr+B types (a { on some layouts), it does not bold.
+    expect(sheetKey(k('{', { ...altGr, code: 'KeyB' }))).toEqual({ kind: 'type', text: '{' });
+    // A bare Alt+letter or Alt+digit keeps its own character: a chord, not typing.
+    expect(sheetKey(k('d', { altKey: true, code: 'KeyD' }))).toBeNull();
+    expect(sheetKey(k('3', { altKey: true, code: 'Digit3' }))).toBeNull();
+  });
 });

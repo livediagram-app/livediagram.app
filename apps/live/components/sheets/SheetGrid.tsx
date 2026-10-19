@@ -15,6 +15,7 @@ import { previewFormatRules } from './rules/useSheetRulesState';
 import { SheetCellComments } from './SheetCellComments';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
+  cellKey,
   cycleInRange,
   selectsSeveral,
   displayValue,
@@ -505,9 +506,15 @@ export function SheetGrid({
                 >
                   {active}{' '}
                   {
+                    // As the cell draws it, in its own format: 12% and a date, never 0.12 and a serial number.
                     displayValue(
                       c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
-                      undefined,
+                      c.sheet.cells.get(
+                        cellKey(
+                          c.sheet.layout.rows[c.selection.active.r] ?? '',
+                          c.sheet.layout.cols[c.selection.active.c] ?? '',
+                        ),
+                      )?.format,
                       c.locale,
                     ).text
                   }
