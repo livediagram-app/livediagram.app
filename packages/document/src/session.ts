@@ -197,6 +197,19 @@ const NON_VOTABLE_SHAPES = new Set([
   'plan-board',
   'plan-view',
   'plan-sheet',
+  // Readouts (docs/specs/012-collaboration/session-tools.md "Votable targets"): a stat row, a chart, a progress
+  // bar or ring, a legend or key shows a number or a key to one; it is what a board says, not an idea to rank.
+  'stat-row',
+  'progress-bar',
+  'progress-ring',
+  'pie-chart',
+  'bar-chart',
+  'line-chart',
+  'sankey',
+  'legend',
+  'diagram-key',
+  // A checklist is a to-do list, a task like the action panel, not a candidate.
+  'checklist',
 ]);
 
 // The key a Plan card's dots go under in `votes`: one per card, however many boards or card elements show it.
