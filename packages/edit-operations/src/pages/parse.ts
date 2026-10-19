@@ -198,6 +198,9 @@ function pageChange(v: unknown, i: number): PageChange {
       );
       if (v.locked !== undefined && typeof v.locked !== 'boolean')
         bad('"locked" is true or false.', i);
+      // A wireframe page's device is chosen as it is added and never changes (wireframe-pages.md).
+      if (v.device !== undefined)
+        bad('"device" is chosen as a wireframe page is added and never changes.', i);
       const change: PageChange = {
         op,
         page: pageRef(v.page, i),
@@ -210,7 +213,7 @@ function pageChange(v: unknown, i: number): PageChange {
       };
       if (Object.keys(change).length === 2)
         bad(
-          '"set" changes at least one of name, size, orientation, background, locked, device, frameLook or systemBars.',
+          '"set" changes at least one of name, size, orientation, background, locked, frameLook or systemBars.',
           i,
         );
       return change;
