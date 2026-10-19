@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { laidOutPagesOf, type Element, type Page, type Tab } from '@livediagram/document';
 import { blankQuestion, type FormDefinition } from '@livediagram/forms';
 import { renderTabToSvg } from './export-tab';
-import { pageElements, renderTabWindowSvg, tabWindowFontIdsOf } from './tab-window-render';
+import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
 import { svgFrameOf } from './svg-frame';
 
 // docs/specs/009-elements/tab-window.md "The drawing": every mode is drawn, a Pages tab as its pages and a Form tab as
@@ -31,16 +31,16 @@ const form: FormDefinition = {
   ],
 };
 
-describe('renderTabWindowSvg', () => {
+describe('renderTabDrawingSvg', () => {
   it('draws a Diagram or Draw tab as its canvas', () => {
     const t = tab({ elements: [box('a', 'Checkout', { x: 0, y: 0 })] });
-    expect(renderTabWindowSvg(t)).toBe(renderTabToSvg(t));
+    expect(renderTabDrawingSvg(t)).toBe(renderTabToSvg(t));
     const draw = { ...t, opensIn: 'draw' as const };
-    expect(renderTabWindowSvg(draw)).toBe(renderTabToSvg(draw));
+    expect(renderTabDrawingSvg(draw)).toBe(renderTabToSvg(draw));
   });
 
   it('draws a Form tab as its form on its look, though no element is on it', () => {
-    const svg = renderTabWindowSvg(tab({ kind: 'form', form, theme: 'ocean' }));
+    const svg = renderTabDrawingSvg(tab({ kind: 'form', form, theme: 'ocean' }));
     expect(svg).toContain('Team Survey');
     expect(svg).toContain('Your Role');
     expect(svg).toContain('Submit');
@@ -48,7 +48,7 @@ describe('renderTabWindowSvg', () => {
 
   it('draws a Form tab whose form cannot be read as its canvas', () => {
     const t = tab({ kind: 'form', form: [] as never });
-    expect(renderTabWindowSvg(t)).toBe(renderTabToSvg(t));
+    expect(renderTabDrawingSvg(t)).toBe(renderTabToSvg(t));
   });
 
   it('draws a Pages tab as each page where it lies, its own ids per page', () => {
@@ -67,7 +67,7 @@ describe('renderTabWindowSvg', () => {
         box('c', 'Stray', { x: two!.rect.x + two!.rect.width + 400, y: 0 }),
       ],
     });
-    const svg = renderTabWindowSvg(t);
+    const svg = renderTabDrawingSvg(t);
     expect(svg).toContain('Opening');
     expect(svg).toContain('Closing');
     expect(svg).not.toContain('Stray');
@@ -84,7 +84,7 @@ describe('renderTabWindowSvg', () => {
   });
 
   it('draws a blank Pages tab as its blank page', () => {
-    const svg = renderTabWindowSvg(tab({ opensIn: 'pages' }));
+    const svg = renderTabDrawingSvg(tab({ opensIn: 'pages' }));
     expect(svg).toContain('<svg x="');
   });
 
@@ -100,13 +100,13 @@ describe('renderTabWindowSvg', () => {
         },
       },
     });
-    expect(renderTabWindowSvg(t)).toContain('Quarterly');
+    expect(renderTabDrawingSvg(t)).toContain('Quarterly');
   });
 });
 
-describe('tabWindowFontIdsOf', () => {
+describe('tabDrawingFontIdsOf', () => {
   it("names a form's typeface and its elements'", () => {
-    expect(tabWindowFontIdsOf(tab({ kind: 'form', form, font: 'marker' }))).toContain('marker');
+    expect(tabDrawingFontIdsOf(tab({ kind: 'form', form, font: 'marker' }))).toContain('marker');
   });
 });
 
