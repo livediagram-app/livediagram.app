@@ -50,6 +50,50 @@ export type FacePartRole = 'frame' | 'shape' | 'line';
 
 export type FacePartDrawing = { role: FacePartRole; svg: string };
 
+/** How far a frame's ink is pulled from its fill, 0..1: a card's hairline border is a pale grey that, drawn as is,
+ *  reads as no marker at all; pulled this far toward black on a light card (white on a dark one) it reads as felt-tip
+ *  while keeping the border's hue. */
+export const MARKER_FACE_FRAME_INK_SHIFT = 0.45;
+
+type Rgba = { r: number; g: number; b: number; a: number };
+
+// `#rgb`, `#rrggbb`, `rgb()` and `rgba()` (comma or space separated), or null for anything else.
+function parseColour(c: string): Rgba | null {
+  const v = c.trim().toLowerCase();
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(v);
+  if (hex) {
+    const h = hex[1]!.length === 3 ? [...hex[1]!].map((d) => d + d).join('') : hex[1]!;
+    return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: 1 };
+  }
+  const fn = /^rgba?\(([^)]+)\)$/.exec(v);
+  if (!fn) return null;
+  const n = fn[1]!.split(/[\s,/]+/).filter(Boolean).map(Number);
+  if (n.length < 3 || n.some((x) => !Number.isFinite(x))) return null;
+  return { r: n[0]!, g: n[1]!, b: n[2]!, a: n[3] ?? 1 };
+}
+
+const hexOf = ({ r, g, b }: { r: number; g: number; b: number }) =>
+  '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+
+/** A frame's marker ink: its border colour as it shows on its fill (a see-through border laid over it), pulled
+ *  MARKER_FACE_FRAME_INK_SHIFT toward black on a light fill or white on a dark one. A colour it cannot read is
+ *  drawn as it is. */
+export function markerFrameInk(stroke: string, fill: string | null): string {
+  const s = parseColour(stroke);
+  if (!s) return stroke;
+  const f = (fill && parseColour(fill)) || null;
+  const under = f && f.a > 0 ? f : { r: 255, g: 255, b: 255, a: 1 };
+  const shown = {
+    r: s.r * s.a + under.r * (1 - s.a),
+    g: s.g * s.a + under.g * (1 - s.a),
+    b: s.b * s.a + under.b * (1 - s.a),
+  };
+  const light = (under.r * 299 + under.g * 587 + under.b * 114) / 1000 > 128;
+  const to = light ? 0 : 255;
+  const k = MARKER_FACE_FRAME_INK_SHIFT;
+  return hexOf({ r: shown.r + (to - shown.r) * k, g: shown.g + (to - shown.g) * k, b: shown.b + (to - shown.b) * k });
+}
+
 /** Whether a colour paints anything: not absent, none, transparent, a fully clear rgba, or a paint server. */
 export function isInkColour(c: string | null | undefined): c is string {
   if (!c) return false;
@@ -129,7 +173,13 @@ export function markerFacePart(
   const role = facePartRole(shape, outline, paint, face);
   if (!role) return null;
   const partSeed = (seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
-  const colour = xmlEscape(role === 'shape' && !isInkColour(paint.stroke) ? paint.fill! : paint.stroke!);
+  const colour = xmlEscape(
+    role === 'frame'
+      ? markerFrameInk(paint.stroke!, paint.fill)
+      : role === 'shape' && !isInkColour(paint.stroke)
+        ? paint.fill!
+        : paint.stroke!,
+  );
   const px =
     role === 'frame'
       ? MARKER_FACE_FRAME_PX

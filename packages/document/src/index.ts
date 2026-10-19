@@ -604,6 +604,9 @@ export * from './sketch-element';
 export * from './sketch-backdrop';
 export * from './marker';
 export * from './marker-element';
+// A face's own parts in its finish (docs/specs/008-canvas/finish.md "Faces").
+export * from './face-finish';
+export * from './marker-face';
 export * from './hand-drawn';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';

@@ -5,7 +5,8 @@
  * read useFaceFinish(). The export does the same to its markup (svg-render-face-finish.ts). */
 
 /* Professional: every rectangle square. Circles and true pills keep their shape: `rounded-full`, a 50% or
- * pill-sized inline radius, or a part marked `data-finish-keep`. */
+ * pill-sized inline radius, an SVG rectangle with round ends (marked by useFaceFinishPass), or a part marked
+ * `data-finish-keep`. */
 [data-face-finish='professional']
   :not(
     .rounded-full,
@@ -18,7 +19,8 @@
   ) {
   border-radius: 0 !important;
 }
-[data-face-finish='professional'] rect:not([data-finish-keep], [data-finish-keep] *) {
+[data-face-finish='professional']
+  rect:not([data-finish-keep], [data-finish-keep] *, [data-finish-pill]) {
   rx: 0;
   ry: 0;
 }
@@ -59,4 +61,17 @@
 [data-face-finish='professional']
   :is(rect, circle, ellipse, path, line, polyline, polygon)[stroke-width='2'] {
   stroke-width: 1px;
+}
+
+/* Marker: a frame's or a shape's own line gives way to the marker ink drawn beside it (useMarkerFace, which sets
+ * the mark); a shape keeps its solid fill under its colouring, and a line is all ink. */
+[data-face-finish='marker'] [data-marker-drawn='frame'],
+[data-face-finish='marker'][data-marker-drawn='frame'] {
+  border-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-drawn='shape'] {
+  stroke: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-drawn='line'] {
+  opacity: 0 !important;
 }

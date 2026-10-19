@@ -30,6 +30,7 @@ import {
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { isAnimatedPattern } from '@livediagram/document';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
+import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { SketchFace } from '@/components/canvas/SketchFace';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
@@ -389,7 +390,7 @@ export function MaximisableSlot({
       onWheel={over ? stop : undefined}
     >
       {createPortal(
-        <OverFace over={over}>
+        <OverFace id={id} over={over}>
           {children}
         </OverFace>,
         host,
@@ -418,10 +419,16 @@ export function MaximisableSlot({
 // too"): out of its element's box it is out of the element's SketchFace and data-face-finish too, so it takes its own
 // (the face finish reaches it through the portal as context). On the canvas the element's carry it and this stays
 // inactive. One tree both ways, so the board never remounts.
-function OverFace({ over, children }: { over: boolean; children: ReactNode }) {
+function OverFace({ id, over, children }: { id: string; over: boolean; children: ReactNode }) {
   const finish = useFaceFinish();
+  const ref = useRef<HTMLDivElement>(null);
+  useFaceFinishPass(ref, over ? finish : undefined, id);
   return (
-    <div className={HOST_CLASS} data-face-finish={over && finish !== 'flexible' ? finish : undefined}>
+    <div
+      ref={ref}
+      className={HOST_CLASS}
+      data-face-finish={over && finish !== 'flexible' ? finish : undefined}
+    >
       <SketchFace active={over && finish === 'sketch' && !liveFiltersRedrawOnRepaint()} keepTree>
         {children}
       </SketchFace>

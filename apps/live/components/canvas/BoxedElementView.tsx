@@ -57,6 +57,7 @@ import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
@@ -252,6 +253,8 @@ function BoxedElementViewImpl({
   // The element's wrapper node, so the context-menu handlers can read its
   // live screen rect to anchor the menu at the bottom-right corner.
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // The face's own parts in its finish: Marker's frames and shapes, Professional's pills (finish.md "Faces").
+  useFaceFinishPass(wrapperRef, faceFinish, element.id);
 
   // Gesture routing (press / double-click / context menu / long-press)
   // lives in useBoxedElementGestures; the wrapper JSX mounts its

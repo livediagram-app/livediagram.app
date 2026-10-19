@@ -5,6 +5,7 @@ import {
   isInkColour,
   markerFacePart,
   markerFaceSeed,
+  markerFrameInk,
   type FacePartPaint,
 } from './marker-face';
 import { outlineOfEllipse, outlineOfPath, outlineOfRect } from './sketch';
@@ -27,6 +28,25 @@ describe('isInkColour', () => {
     expect(isInkColour('rgb(1, 2, 3)')).toBe(true);
     for (const none of [null, '', 'none', 'transparent', 'url(#g)', 'rgba(0, 0, 0, 0)', 'rgb(0 0 0 / 0)'])
       expect(isInkColour(none)).toBe(false);
+  });
+});
+
+describe('markerFrameInk', () => {
+  it("pulls a pale border toward black on a light card", () => {
+    expect(markerFrameInk('#e2e8f0', '#ffffff')).toBe('#7c8084');
+  });
+
+  it('pulls a border toward white on a dark card', () => {
+    expect(markerFrameInk('#334155', '#0f172a')).toBe('#8f97a2');
+  });
+
+  it('reads a see-through border as it shows on its card', () => {
+    // 10% black over white shows as 229.5 grey, then pulled 45% toward black.
+    expect(markerFrameInk('rgba(0, 0, 0, 0.1)', 'rgb(255, 255, 255)')).toBe('#7e7e7e');
+  });
+
+  it('draws a colour it cannot read as it is', () => {
+    expect(markerFrameInk('oklch(0.7 0.1 200)', '#fff')).toBe('oklch(0.7 0.1 200)');
   });
 });
 
