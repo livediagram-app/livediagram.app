@@ -43,8 +43,8 @@ vi.mock('@/components/dialogs/ShareDialog', () => ({
   ),
 }));
 vi.mock('./CommunitySection', () => ({
-  CommunitySection: (p: { onPublish: () => void }) => (
-    <button type="button" onClick={p.onPublish}>
+  CommunitySection: (p: { onPublish: () => void; firstTabEmpty?: boolean }) => (
+    <button type="button" onClick={p.onPublish} disabled={!!p.firstTabEmpty}>
       Share to Community
     </button>
   ),
@@ -62,7 +62,12 @@ import { ShareDialogWithCommunity } from './ShareDialogWithCommunity';
 const post = (state: CommunityOwnPost['state']) => ({ state }) as CommunityOwnPost;
 
 function renderDialog(
-  over: { signedIn?: boolean; teamDocument?: boolean; offline?: boolean } = {},
+  over: {
+    signedIn?: boolean;
+    teamDocument?: boolean;
+    offline?: boolean;
+    firstTabEmpty?: boolean;
+  } = {},
 ) {
   const props = {
     participant: { id: 'user_a', name: 'Ada', color: '#f97316' },
@@ -77,6 +82,7 @@ function renderDialog(
       documentName="Doc"
       signedIn={over.signedIn ?? true}
       teamDocument={over.teamDocument ?? false}
+      firstTabEmpty={over.firstTabEmpty}
     />,
   );
 }
@@ -129,6 +135,18 @@ describe('ShareDialogWithCommunity', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
     fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
     expect(screen.getByTestId('share').dataset.tab).toBe('community');
+  });
+
+  it('hands the Community section an empty first tab, which holds Share to Community', () => {
+    renderDialog({ firstTabEmpty: true });
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' }).disabled,
+    ).toBe(true);
+    cleanup();
+    renderDialog();
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' }).disabled,
+    ).toBe(false);
   });
 
   it('is the plain Share dialog while the Community is switched off', () => {
