@@ -44,7 +44,9 @@ function draw(
   );
 }
 
-const texts = (role: string) => screen.queryAllByRole(role).map((el) => el.textContent);
+// The strips are aria-hidden (the active cell speaks its own address), so their cells are found among the hidden.
+const texts = (role: string) =>
+  screen.queryAllByRole(role, { hidden: true }).map((el) => el.textContent);
 const tinted = (el: HTMLElement) => el.dataset.selected !== undefined;
 
 describe('the sheet headers', () => {
@@ -62,8 +64,17 @@ describe('the sheet headers', () => {
         anchor: { r: 1, c: 1 },
       },
     });
-    expect(screen.getAllByRole('columnheader').map(tinted)).toEqual([false, true, false]);
-    expect(screen.getAllByRole('rowheader').map(tinted)).toEqual([false, true, true, false]);
+    expect(screen.getAllByRole('columnheader', { hidden: true }).map(tinted)).toEqual([
+      false,
+      true,
+      false,
+    ]);
+    expect(screen.getAllByRole('rowheader', { hidden: true }).map(tinted)).toEqual([
+      false,
+      true,
+      true,
+      false,
+    ]);
   });
 
   it('draws a whole selected column solid and a column the selection only crosses tinted', () => {
@@ -77,17 +88,15 @@ describe('the sheet headers', () => {
         anchor: { r: 0, c: 0 },
       },
     });
-    expect(screen.getAllByRole('columnheader').map((el) => el.dataset.selected)).toEqual([
-      'line',
-      undefined,
-      'cells',
-    ]);
-    expect(screen.getAllByRole('rowheader')[1]!.dataset.selected).toBe('cells');
+    expect(
+      screen.getAllByRole('columnheader', { hidden: true }).map((el) => el.dataset.selected),
+    ).toEqual(['line', undefined, 'cells']);
+    expect(screen.getAllByRole('rowheader', { hidden: true })[1]!.dataset.selected).toBe('cells');
   });
 
   it('tints nothing without a selection (outside Plan mode)', () => {
     draw(grid(2, 2));
-    expect(screen.getAllByRole('columnheader').some(tinted)).toBe(false);
+    expect(screen.getAllByRole('columnheader', { hidden: true }).some(tinted)).toBe(false);
   });
 
   it('leaves out hidden lines', () => {

@@ -1129,6 +1129,10 @@ Both show the same list:
   does not glide there, but marks the moved page as here. While Find a Page narrows the list there
   is no reordering (the rows shown are not the whole order). A Participant and a Viewer see no grip
   and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
+- **For a screen reader** the rows are a list named Pages. Each row opens through one button stretched across it,
+  named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
+  button as controls of their own. Rows that were listbox options held those buttons, controls nested in a
+  control. Up, Down, Home and End move between the rows' buttons.
 - **Adding**: an Editor's footer is one full-width **Add Page** button. Resting the pointer on it
   (or pressing it, or Up from it) opens the four kinds above it in a popover as wide as the button, standing on the page so nothing clips it,
   one per row (Infographic, Slide, Article, Logo, each its glyph and name), the last page's kind

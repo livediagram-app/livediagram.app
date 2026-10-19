@@ -80,6 +80,7 @@ function draw(
     scroll?: { top: number; left: number };
     view?: { width: number; height: number };
     fontFamily?: string;
+    filterHead?: { r: number; cols: ReadonlySet<number> };
   } = {},
 ) {
   const geometry = geometryOf(sheet.layout);
@@ -95,6 +96,7 @@ function draw(
       palette={palette}
       locale="en-GB"
       fontFamily={opts.fontFamily}
+      filterHead={opts.filterHead}
     />,
   );
 }
@@ -123,6 +125,15 @@ describe('the helpers', () => {
 });
 
 describe('the cells', () => {
+  it('keeps room at the right of a filter header cell for its button, and of no other cell', () => {
+    draw(sheetOf({ A1: 'Planned', B1: 'Actual', A2: '12' }), {
+      filterHead: { r: 0, cols: new Set([0]) },
+    });
+    expect(textBox('Planned').style.paddingRight).toBe('20px');
+    expect(textBox('Actual').style.paddingRight).toBe('');
+    expect(textBox('12').style.paddingRight).toBe('');
+  });
+
   it('aligns text left, numbers right and booleans and errors centred, errors in red', () => {
     draw(sheetOf({ A1: 'hello', B1: '42', C1: 'TRUE', D1: '=1/0' }));
     expect(textBox('hello').style.justifyContent).toBe('flex-start');

@@ -81,12 +81,17 @@ type CellsProps = {
   fontFamily?: string;
   // Columns whose cells keep room at their right for a dropdown arrow (a card table's set-value columns).
   padEnd?: ReadonlySet<string>;
+  // The filter's header row and the columns whose header cell carries a filter button (SheetSelectionLayer): those
+  // cells keep room at their right too, so a right-aligned heading is never covered (sheet.md "Filter").
+  filterHead?: { r: number; cols: ReadonlySet<number> } | null;
   // The format rules as the person editing one sees them (its preview, conditional-formatting.md); else the sheet's.
   formatRules?: readonly FormatRule[];
 };
 
 // The room a dropdown column keeps at its cells' right, so its arrow never covers the value.
 const DROPDOWN_PAD_PX = 22;
+// The room a filter header cell keeps: the 16 px button, inset 2 px from the right edge, and 2 px clear of the text.
+const FILTER_PAD_PX = 20;
 
 type Region = { r1: number; r2: number; c1: number; c2: number; clip: CSSProperties };
 
@@ -166,7 +171,10 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
             textStyle,
           })
         : null;
-      const padEnd = p.padEnd?.has(cols[c]!) ? DROPDOWN_PAD_PX : ruled?.padEnd ? RULE_ARROW_PX : 0;
+      const padEnd = Math.max(
+        p.padEnd?.has(cols[c]!) ? DROPDOWN_PAD_PX : ruled?.padEnd ? RULE_ARROW_PX : 0,
+        p.filterHead?.r === r && p.filterHead.cols.has(c) ? FILTER_PAD_PX : 0,
+      );
       if (shown.kind === 'number' && typeof value === 'number')
         text = fitNumber(text, value, f, box.w - padEnd, px);
       const align = f?.ha ?? (pending.pending ? 'l' : shown.align);

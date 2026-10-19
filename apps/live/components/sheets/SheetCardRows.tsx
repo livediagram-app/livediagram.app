@@ -34,6 +34,7 @@ import { cardFieldChoice } from './card-field-options';
 import { cellBox } from './sheet-geometry';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { cancelCardRow, saveCardRow } from './useCardTableSync';
+import { SheetCellSlot } from './SheetCellSlot';
 
 const OpenGlyph = lucideGlyph(lucideExternalLink, 13);
 const SaveGlyph = lucideGlyph(lucideCheck, 14);
@@ -100,21 +101,26 @@ function TableRows({
     const box = cellBox(c.geometry, rp, titleCol, c.scroll);
     // Only the rows in view (all of them before the view is measured).
     const inView = c.view.height <= 0 || (box.y + box.h > 0 && box.y < viewH);
-    return inView && !underFrozen(rp, titleCol, box) ? [{ r, itemId, box }] : [];
+    return inView && !underFrozen(rp, titleCol, box) ? [{ r, rp, itemId, box }] : [];
   });
   return (
     <>
-      {opens.map(({ r, itemId, box }) => (
+      {opens.map(({ r, rp, itemId, box }) => (
+        // A row and a cell of the grid, so the control is not a stray child of role="grid" (sheet-element.md).
         <div
           key={`open-${r}`}
+          role="row"
+          aria-rowindex={rp + 1}
           className="absolute z-[8]"
           style={{ left: box.x + box.w - 24 - OPEN_INSET_PX, top: box.y + (box.h - 24) / 2 }}
           onPointerDown={stop}
           onDoubleClick={stop}
         >
-          <RowButton c={c} quiet label="Open Card" onClick={() => plan.openItem(itemId)}>
-            <OpenGlyph />
-          </RowButton>
+          <div role="gridcell" aria-colindex={titleCol + 1}>
+            <RowButton c={c} quiet label="Open Card" onClick={() => plan.openItem(itemId)}>
+              <OpenGlyph />
+            </RowButton>
+          </div>
         </div>
       ))}
       {(c.canEdit ? (table.drafts ?? []) : []).map((r) => {
@@ -145,33 +151,40 @@ function TableRows({
               }}
             />
             <div
-              role="group"
+              role="row"
+              aria-rowindex={rp + 1}
               aria-label="Unsaved card row"
-              className="absolute z-[8] flex items-center gap-1"
+              className="absolute z-[8]"
               style={{ left, top: a.y + (a.h - 24) / 2 }}
               onPointerDown={stop}
               onDoubleClick={stop}
             >
-              <RowButton
-                c={c}
-                primary
-                label={card ? 'Save Card' : 'Add Card'}
-                onClick={() => {
-                  void saveCardRow(c, plan, table.id, r).then((ok) => ok && c.focusGrid());
-                }}
+              <div
+                role="gridcell"
+                aria-colindex={ctlPos !== undefined ? ctlPos + 1 : undefined}
+                className="flex items-center gap-1"
               >
-                <SaveGlyph />
-              </RowButton>
-              <RowButton
-                c={c}
-                label="Cancel Changes"
-                onClick={() => {
-                  cancelCardRow(c, plan, table.id, r);
-                  c.focusGrid();
-                }}
-              >
-                <CancelGlyph />
-              </RowButton>
+                <RowButton
+                  c={c}
+                  primary
+                  label={card ? 'Save Card' : 'Add Card'}
+                  onClick={() => {
+                    void saveCardRow(c, plan, table.id, r).then((ok) => ok && c.focusGrid());
+                  }}
+                >
+                  <SaveGlyph />
+                </RowButton>
+                <RowButton
+                  c={c}
+                  label="Cancel Changes"
+                  onClick={() => {
+                    cancelCardRow(c, plan, table.id, r);
+                    c.focusGrid();
+                  }}
+                >
+                  <CancelGlyph />
+                </RowButton>
+              </div>
             </div>
           </div>
         );
@@ -232,30 +245,32 @@ function ActiveCellChoice({ c, plan }: { c: SheetController; plan: PlanContextVa
           onCommit={commitDate}
         />
       ) : null}
-      <Tooltip label={`Choose ${field}`}>
-        <button
-          type="button"
-          aria-label={`Choose ${field}`}
-          aria-haspopup="dialog"
-          aria-expanded={choice.kind === 'date' ? undefined : anchor !== null}
-          className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
-          style={{
-            // Inside the cell's right edge, in the room its column keeps for it (SheetCells padEnd).
-            left: box.x + box.w - 21,
-            top: box.y + (box.h - 20) / 2,
-            backgroundColor: c.palette.column,
-            color: c.palette.text,
-          }}
-          onPointerDown={stop}
-          onClick={(e) => {
-            if (choice.kind === 'date') {
-              if (dateRef.current) openDatePicker(dateRef.current);
-            } else setAnchor(anchor ? null : e.currentTarget);
-          }}
-        >
-          <ChevronGlyph />
-        </button>
-      </Tooltip>
+      <SheetCellSlot r={r} c={col}>
+        <Tooltip label={`Choose ${field}`}>
+          <button
+            type="button"
+            aria-label={`Choose ${field}`}
+            aria-haspopup="dialog"
+            aria-expanded={choice.kind === 'date' ? undefined : anchor !== null}
+            className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
+            style={{
+              // Inside the cell's right edge, in the room its column keeps for it (SheetCells padEnd).
+              left: box.x + box.w - 21,
+              top: box.y + (box.h - 20) / 2,
+              backgroundColor: c.palette.column,
+              color: c.palette.text,
+            }}
+            onPointerDown={stop}
+            onClick={(e) => {
+              if (choice.kind === 'date') {
+                if (dateRef.current) openDatePicker(dateRef.current);
+              } else setAnchor(anchor ? null : e.currentTarget);
+            }}
+          >
+            <ChevronGlyph />
+          </button>
+        </Tooltip>
+      </SheetCellSlot>
       {anchor && choice.kind !== 'date' ? (
         <AnchoredPopover
           anchor={anchor}
