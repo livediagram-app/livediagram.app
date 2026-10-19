@@ -28,8 +28,16 @@ describe('which tabs a window may show', () => {
     { id: 'drawing', opensIn: 'draw' },
   ];
 
-  it('offers every tab but its own and a Plan tab, in tab-bar order', () => {
-    expect(tabWindowOffers(tabs, 'slides').map((t) => t.id)).toEqual(['diagram', 'es', 'drawing']);
+  it('offers every tab but its own, Plan tabs included, in tab-bar order', () => {
+    expect(tabWindowOffers(tabs, 'slides').map((t) => t.id)).toEqual([
+      'diagram',
+      'es',
+      'board',
+      'sheet',
+      'dash',
+      'planned',
+      'drawing',
+    ]);
   });
 
   it('never shows its own tab', () => {
