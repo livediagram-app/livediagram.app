@@ -33,6 +33,25 @@ export function writingScale(view: EditorView, p: WritingLayout) {
   return { frame, root, z };
 }
 
+// The caret, as a canvas rect (a sliver its line's height), or null when it has no place yet.
+export function caretCanvasRect(
+  view: EditorView,
+  p: WritingLayout,
+): { x: number; y: number; w: number; h: number } | null {
+  try {
+    const at = view.coordsAtPos(view.state.selection.head);
+    const { frame, root, z } = writingScale(view, p);
+    return {
+      x: frame.x + (at.left - root.left) / z,
+      y: frame.y + (at.top - root.top) / z,
+      w: 1,
+      h: Math.max(1, (at.bottom - at.top) / z),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function createArticleHandle({
   view,
   latest,

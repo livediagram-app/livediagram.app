@@ -234,6 +234,7 @@ export function ArticleFlows({
                 onTouchPress={touchPress}
                 focusRequest={articles.focusRequest}
                 onFocusTaken={articles.focusTaken}
+                onRevealCaret={articles.revealCaret}
               />
             );
           })}

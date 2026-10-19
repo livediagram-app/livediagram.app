@@ -79,6 +79,7 @@ export function FolderCard({
         {renaming ? (
           <InlineRenameInput
             initial={folder.name}
+            ariaLabel={`Rename ${folder.name}`}
             onCommit={onCommitRename}
             onCancel={onCancelRename}
             className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"

@@ -67,6 +67,8 @@ export type ArticlesView = {
   requestFocus: (flow: string, at: 'start' | 'end') => void;
   // The editor took the request: it is spent, so a remounted editor never takes it again.
   focusTaken: (seq: number) => void;
+  // The caret, as a canvas rect, brought into sight as it is written on (the editor's onRevealCaret).
+  revealCaret: (rect: { x: number; y: number; w: number; h: number }) => void;
   // A press on the writing: the canvas's selection goes.
   onWritingPress: () => void;
   // Insert at the caret (the page toolbar): an empty drawing, or an object the writing takes in.
@@ -164,6 +166,8 @@ export function useArticles(deps: {
   clearSelection: () => void;
   // A margin note's marker opened as made: its comment thread, or the Assign Action dialog.
   openNote: (id: string, kind: ArticleNoteKind) => void;
+  // A canvas rect panned into sight, the least move that shows it (useEditorViewport scrollIntoView).
+  reveal: (x: number, y: number, w: number, h: number) => void;
 }): ArticlesView | null {
   const { activeTab, on, canEdit } = deps;
   const tabId = activeTab.id;
@@ -455,6 +459,11 @@ export function useArticles(deps: {
   const undo = useCallback(() => latest.current.undo(), []);
   const redo = useCallback(() => latest.current.redo(), []);
   const onWritingPress = useCallback(() => latest.current.clearSelection(), []);
+  const revealCaret = useCallback(
+    (r: { x: number; y: number; w: number; h: number }) =>
+      latest.current.reveal(r.x, r.y, r.w, r.h),
+    [],
+  );
 
   if (!on) return null;
   return {
@@ -467,6 +476,7 @@ export function useArticles(deps: {
     focusRequest,
     requestFocus,
     focusTaken,
+    revealCaret,
     onWritingPress,
     insertObject,
     zoneAction,
