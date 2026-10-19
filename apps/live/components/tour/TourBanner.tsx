@@ -94,6 +94,9 @@ export function TourBanner({
         // (tour-colours bannerColours).
         style={{
           ...tourColourVars(palette),
+          // Solid under the gradient: forced colours drop gradients, and the banner went see-through over the canvas
+          // (docs/specs/004-interface-design/forced-colors.md).
+          backgroundColor: 'var(--tour-banner-to)',
           backgroundImage:
             'linear-gradient(135deg, var(--tour-banner-from), var(--tour-banner-to))',
         }}
