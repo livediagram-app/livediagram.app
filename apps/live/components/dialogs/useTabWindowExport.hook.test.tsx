@@ -92,7 +92,7 @@ describe('useTabWindowExport', () => {
   });
 
   // "Exports": a Plan tab draws as unavailable, so its content is never fetched for the export.
-  it('fetches only the tabs a window may show', async () => {
+  it('fetches each tab a window shows, a Plan tab included', async () => {
     const slide = { id: 's', name: 'S', elements: [win('f'), win('b')] } as Tab;
     const flow = { id: 'f', name: 'Flow', elements: [box] } as Tab;
     const board = { id: 'b', name: 'Board', kind: 'board', elements: [] } as unknown as Tab;
@@ -101,6 +101,6 @@ describe('useTabWindowExport', () => {
       useTabWindowExport({ tab: slide, tabs: [slide, flow, board], loadTabs, active: true }),
     );
     await waitFor(() => expect(result.current.ready).toBe(true));
-    expect(loadTabs).toHaveBeenCalledWith(['f']);
+    expect(loadTabs).toHaveBeenCalledWith(['f', 'b']);
   });
 });

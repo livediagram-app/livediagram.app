@@ -63,10 +63,11 @@ describe('tabWindowArts', () => {
     expect(flow.drawing!.width).toBeGreaterThan(0);
   });
 
-  it('names an empty tab without a drawing, and leaves out a tab a window may not show', () => {
-    const arts = tabWindowArts('slides', ['blank', 'board', 'gone'], tabs, new Map());
+  it('names an empty tab without a drawing, draws a Plan tab, and leaves out its own tab and a gone one', () => {
+    const arts = tabWindowArts('slides', ['blank', 'board', 'slides', 'gone'], tabs, new Map());
     expect(arts.get('blank')).toEqual({ name: 'Blank' });
-    expect(arts.has('board')).toBe(false);
+    expect(arts.has('board')).toBe(true);
+    expect(arts.has('slides')).toBe(false);
     expect(arts.has('gone')).toBe(false);
   });
 

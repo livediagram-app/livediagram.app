@@ -32,9 +32,13 @@ export type TabSvg = {
 // `motionFor` sets the drawing moving (a tab window, docs/specs/009-elements/tab-window.md "The drawing"): given the
 // drawn tab's surface, it says how each element animates. Without it the drawing is a still, as the side pane's is.
 // Pass a module-level function so its identity is stable.
+//
+// `planOpts` adds what a Plan tab's picture needs beyond its cards (usePlanImageExport): its Sheets' cells and its
+// plan views' pictures. A tab window passes them, so it draws a Board, Sheet or Dashboard tab as laid out.
 export function useTabSvg(
   tab: Tab | undefined,
   motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
+  planOpts?: Pick<NonNullable<Parameters<typeof renderTabToSvg>[1]>, 'sheets' | 'resolvePlanArt'>,
 ): TabSvg | null {
   const { imageContext, tabs } = useEditorContext();
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
@@ -81,11 +85,12 @@ export function useTabSvg(
       images: images?.map,
       resolveTabWindow: windowNames,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
+      ...planOpts,
     });
     return {
       markup,
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor]);
+  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor, planOpts]);
 }

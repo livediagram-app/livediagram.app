@@ -15,13 +15,14 @@ showing it is up to date.
 
 ## The element
 
-- **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on and never a Plan tab (a
-  Board, Sheet or Dashboard tab, or any tab in Plan mode). Absent until chosen.
+- **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on. A Plan tab (a Board,
+  Sheet or Dashboard tab, or any tab in Plan mode) is offered like any other. Absent until chosen.
 - **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance,
   the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own
   canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and
   opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling
-  the window edge to edge, so the window reads as that tab and not as a picture on a blank card. It follows every change to the tab (an edit, a collaborator's) at a
+  the window edge to edge, so the window reads as that tab and not as a picture on a blank card. A Plan tab is drawn
+  as laid out, as its image export draws it: its cards, its Sheets' cells and its plan views' pictures. It follows every change to the tab (an edit, a collaborator's) at a
   deferred priority, so a burst of edits never competes with the canvas.
 - **Moving**: the drawing moves as the tab does on the canvas. Each shown element's animation plays in the window
   with its own Speed and Repeat, by the same motion the canvas draws: the Shape set's motions (Blink, Heartbeat,
@@ -82,7 +83,8 @@ windows show the copy rather than "This tab isn't available".
 
 A PDF, PNG or SVG export draws each window's tab inside it, fitted, as on screen: the export fetches each shown tab's
 content and photos first, waiting for a fetch already under way rather than drawing the tab's empty placeholder. It
-fetches only the tabs a window may show: a Plan tab draws as unavailable, so its content is never downloaded for it. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
+fetches every tab a window shows, a Plan tab included; there a Plan tab draws its elements as stored (a Board's cards
+in its board, a Sheet's frame without its cells), not laid out as the canvas draws it. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
 drawing are prefixed per window, so its gradients, patterns and markers never collide with the page's. Thumbnails
 (Contents, the Slide Deck, layouts) and the API's tab render draw the frame, named for its tab where the caller
 knows it, else "Tab Window".

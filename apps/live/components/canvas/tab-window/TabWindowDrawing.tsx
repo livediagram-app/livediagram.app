@@ -10,12 +10,18 @@ import { trustedHtml } from '@livediagram/ui';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { prefixSvgIds, type Tab } from '@livediagram/document';
 import { useTabSvg } from '@/components/split/useTabSvg';
+import { usePlanImageExport } from '@/components/dialogs/usePlanImageExport';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTabBackdropPaint } from '@/components/split/useTabBackdropPaint';
 import { windowMotion } from './tab-window-motion';
 
 export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: string }) {
+  // A Plan tab (a Board, Sheet or Dashboard tab) is drawn as laid out, as its image export draws it: its cards, its
+  // Sheets' cells and its plan views' pictures ("The drawing"). Any other tab is itself, with any plan view on it.
+  const { tabs } = useEditorContext();
+  const plan = usePlanImageExport(tab, tabs);
   // The drawing moves as the tab does on the canvas ("The drawing"): its elements' animations play in the window.
-  const svg = useTabSvg(tab, windowMotion);
+  const svg = useTabSvg(plan.imageTab, windowMotion, plan.opts);
   const paint = useTabBackdropPaint(tab);
   const svgRef = useRef<SVGSVGElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
