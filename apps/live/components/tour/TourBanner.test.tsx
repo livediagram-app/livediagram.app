@@ -42,7 +42,7 @@ describe('TourBanner', () => {
   it('has a solid fill under its gradient', () => {
     open();
     const banner = screen.getByRole('dialog', { name: 'Getting started with Diagrams?' });
-    expect(banner.style.backgroundColor).toBe('var(--tour-banner-to)');
+    expect(banner.className).toContain('bg-[var(--tour-banner-to)]');
     expect(banner.style.backgroundImage).toContain('linear-gradient');
   });
 
