@@ -485,15 +485,24 @@ export function SheetGrid({
                   onFilterButton={null}
                 />
               ) : null}
-              <span id={`${elementId}-${active}`} role="gridcell" aria-selected className="sr-only">
-                {active}{' '}
-                {
-                  displayValue(
-                    c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
-                    undefined,
-                    c.locale,
-                  ).text
-                }
+              {/* The active cell, in its row: what the grid's aria-activedescendant names. */}
+              <span role="row" aria-rowindex={c.selection.active.r + 1} className="sr-only">
+                <span
+                  id={`${elementId}-${active}`}
+                  role="gridcell"
+                  aria-colindex={c.selection.active.c + 1}
+                  aria-selected
+                  className="sr-only"
+                >
+                  {active}{' '}
+                  {
+                    displayValue(
+                      c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
+                      undefined,
+                      c.locale,
+                    ).text
+                  }
+                </span>
               </span>
             </div>
             <div

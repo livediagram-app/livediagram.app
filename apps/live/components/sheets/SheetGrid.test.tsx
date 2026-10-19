@@ -79,7 +79,9 @@ describe('the grid frame', () => {
     expect(h.grid.tabIndex).toBe(-1);
     expect(h.container.querySelector('[data-sheet-fill-handle]')).toBeNull();
     expect(
-      screen.queryAllByRole('columnheader').some((el) => el.dataset.selected !== undefined),
+      screen
+        .queryAllByRole('columnheader', { hidden: true })
+        .some((el) => el.dataset.selected !== undefined),
     ).toBe(false);
   });
 
@@ -89,7 +91,7 @@ describe('the grid frame', () => {
     Object.defineProperty(h.grid, 'scrollLeft', { configurable: true, value: 0 });
     fireEvent.scroll(h.grid);
     expect(h.c().scroll).toEqual({ top: 480, left: 0 });
-    expect(screen.getAllByRole('rowheader')[0]!.textContent).not.toBe('1');
+    expect(screen.getAllByRole('rowheader', { hidden: true })[0]!.textContent).not.toBe('1');
   });
 
   it('scrolls to keep the active cell in view', async () => {
@@ -172,7 +174,7 @@ describe('the keyboard map', () => {
     key(h, { key: 'ArrowDown' });
     expect(active(h)).toEqual({ r: 0, c: 0 });
     act(() => h.c().setEditing(null));
-    fireEvent.keyDown(screen.getAllByRole('rowheader')[0]!, { key: 'ArrowDown' });
+    fireEvent.keyDown(screen.getAllByRole('rowheader', { hidden: true })[0]!, { key: 'ArrowDown' });
     expect(active(h)).toEqual({ r: 0, c: 0 });
     // A key the map does not know does nothing.
     key(h, { key: 'Shift', shiftKey: true });

@@ -225,6 +225,10 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
   Escape ends the copy marquee, then Find, then restores a maximised sheet, then (nothing else open) blurs to the
   canvas with the element selected (`bridge.selectElement`). Commands act on `selectionNow()`, the selection as
   last set, so a key pressed in the frame after a drag acts on the dragged range.
+- What `aria-activedescendant` names is one `sr-only` `role="gridcell"` (`aria-colindex`, `aria-selected`) inside a
+  `role="row"` (`aria-rowindex`), holding the address and its shown value. The drawn column and row header strips
+  (`SheetHeaders`) are `aria-hidden`: the cell's own text carries its address. The card-row overlay's controls
+  (`SheetCardRows`, `role="group"`) sit in the grid outside any row, a known gap left open.
 - The canvas's Undo/Redo are called (not re-implemented) for Ctrl+Z / Shift+Z / Y.
 - Editing focuses `SheetCellEditor`: a textarea with a coloured overlay, for predictable caret handling.
 - Announcements through the editor's live region: the active cell on move ("B4, 1,250.00"), "Copied 3 by 4
