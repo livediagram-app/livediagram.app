@@ -31,7 +31,8 @@ describe('a name needs a role', () => {
         const src = readFileSync(file, 'utf8');
         for (const m of src.matchAll(TAG)) {
           const attrs = m[2] ?? '';
-          if (!/\baria-label=/.test(attrs) || /\brole=/.test(attrs) || /\{\.\.\./.test(attrs)) continue;
+          if (!/\baria-label=/.test(attrs) || /\brole=/.test(attrs) || /\{\.\.\./.test(attrs))
+            continue;
           const line = src.slice(0, m.index).split('\n').length;
           offenders.push(`${file.slice(ROOT.length)}:${line} <${m[1]}>`);
         }
