@@ -7,7 +7,7 @@
 
 import { lazy, Suspense, useMemo } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { HeroCorner } from './HeroCorner';
 import { isInThisBrowser } from '@/lib/document-space';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { track } from '@/lib/telemetry';
@@ -100,7 +100,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
             >
               <HamburgerIcon />
             </button>
-            <HelpArticleLink article="timeline" variant="button" />
+            <HeroCorner />
           </div>
           {/* Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
           <div className="flex min-h-8 flex-wrap items-center gap-2">
@@ -141,10 +141,10 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                 </InAppLink>
               );
             })}
-            {/* Help ends the pills' row from `sm` to `lg`; from `lg` it stands at the hero's top right, over the
-                sheets; on a phone it sits beside the menu button above. */}
+            {/* Help and the banner's close end the pills' row from `sm` to `lg`; from `lg` they stand at the hero's
+                top right, over the sheets; on a phone they sit beside the menu button above. */}
             <span className="ml-auto hidden sm:inline-flex lg:hidden">
-              <HelpArticleLink article="timeline" variant="button" />
+              <HeroCorner />
             </span>
           </div>
           <h1
@@ -177,7 +177,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           </div>
         </div>
         <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">
-          <HelpArticleLink article="timeline" variant="button" />
+          <HeroCorner />
         </div>
         <div aria-hidden className="relative hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
           {firstRun ? (

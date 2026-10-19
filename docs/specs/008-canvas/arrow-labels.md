@@ -84,7 +84,7 @@ to where the label may sit, not to its width.
 
 - Double-clicking the line or the label opens the editor at the label's position, sized and wrapped
   exactly as the label will render, so committing never makes the text jump.
-- **Enter** commits, **Shift+Enter** inserts a line break, **Escape** cancels, blur commits.
+- **Enter** commits, **Shift+Enter** inserts a line break, **Escape** and blur commit (Escape keeps what you typed, [Labels](canvas-and-palette.md#labels)).
 - The editor grows as the text wraps and re-lays out live while typing.
 - An empty commit removes the label, as before.
 

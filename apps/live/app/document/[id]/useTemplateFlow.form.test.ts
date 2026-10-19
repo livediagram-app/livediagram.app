@@ -28,6 +28,7 @@ describe('chooseTemplate with a form template', () => {
         setSelfParticipant: vi.fn(),
         setIdentityPromptOpen: vi.fn(),
         requestFit: vi.fn(),
+        putToolDown: vi.fn(),
         markTabLoaded: vi.fn(),
         bringCardTypes: vi.fn(),
         seedCards: vi.fn(),

@@ -23,6 +23,7 @@ import { explorerPathFor } from './routes';
 import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
 import { useTagsPage } from './tags/useTagsPage';
+import { homeBannerShown } from '@/lib/home-banner';
 
 // The three layouts of a browse section, by the toggle.
 const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
@@ -278,8 +279,9 @@ export function ExplorerPane() {
     <>
       {imports.dialogs}
       {tagsPage.dialog}
-      {/* Home's hero is its page header (docs/specs/013-workspace/explorer-home.md "The hero"). */}
-      {selected.kind === 'home' ? null : (
+      {/* Home's hero is its page header (docs/specs/013-workspace/explorer-home.md "The hero"); with the banner
+          hidden, Home takes the ordinary one. */}
+      {selected.kind === 'home' && homeBannerShown(prefs) ? null : (
         <PaneHeader
           title={hideTeamTitle ? '' : (tagsPage.title ?? paneTitle)}
           crumbs={hideTeamTitle ? [] : (tagsPage.crumbs ?? paneCrumbs)}

@@ -2733,6 +2733,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.
+  // The draw slice comes later in this hook, so the template flow reaches its cancel through a ref.
+  const putToolDownRef = useRef<() => void>(() => {});
   const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
     activeId,
     tabs,
@@ -2747,6 +2749,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelfParticipant,
     setIdentityPromptOpen,
     requestFit,
+    putToolDown: () => putToolDownRef.current(),
     markTabLoaded,
     bringCardTypes: presetCardTypes.bring,
     seedCards: (creates) => void plan.context.addItems?.(creates),
@@ -2989,6 +2992,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
+  });
+  useEffect(() => {
+    putToolDownRef.current = () => {
+      cancelDrawShape();
+      setCanvasTool('select');
+    };
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({

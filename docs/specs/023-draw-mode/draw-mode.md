@@ -874,7 +874,10 @@ Draw mode is built in rounds and tuned with the operator between them.
   ([Editor modes](../007-editor/editor-modes.md)), the template, the dock with every tool above, pen versus touch, the one look,
   the backgrounds, telemetry and the help article. Entering Draw mode on an
   empty tab, by opening it or by switching, puts the active pen in hand; a
-  tab with content opens on Select.
+  tab with content opens on Select. Picking a template that lands content on
+  the empty tab makes it one with content, so the pen is put down for Select:
+  its Quick Style panel doesn't sit over the board and the first click selects
+  (`useTemplateFlow`'s `putToolDown`). Blank lands nothing and keeps the pen.
   The dock sits at the top, or at the bottom by choice
   ([Where the dock sits](#where-the-dock-sits)).
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,

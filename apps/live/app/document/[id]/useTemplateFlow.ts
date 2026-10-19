@@ -49,6 +49,9 @@ export function useTemplateFlow(opts: {
   setIdentityPromptOpen: SetState<boolean>;
   // Frames the tab once the template's elements have rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Puts down whatever tool is in hand, for Select (docs/specs/023-draw-mode/draw-mode.md "Opening tool"): a
+  // template's content makes the tab one with content, and such a tab opens on Select.
+  putToolDown: () => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
   markTabLoaded: (id: string) => void;
   // Adds the card types the template's boards bring, every tab's (usePresetCardTypes' bring).
@@ -72,6 +75,7 @@ export function useTemplateFlow(opts: {
     setSelfParticipant,
     setIdentityPromptOpen,
     requestFit,
+    putToolDown,
     markTabLoaded,
     bringCardTypes,
     seedCards,
@@ -196,7 +200,12 @@ export function useTemplateFlow(opts: {
       if (seeds.length) seedCards(seeds);
     }
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
-    if (elements.length > 0) requestFit();
+    // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
+    // put down, so its style panel doesn't sit over the board and the first click selects.
+    if (elements.length > 0) {
+      requestFit();
+      putToolDown();
+    }
     // Auto-select when a template produces a single element so the user can
     // immediately rename or edit it. Multi-element templates — and the now
     // truly-empty Blank template (zero elements) — leave the selection cleared.

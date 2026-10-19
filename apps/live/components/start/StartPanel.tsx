@@ -36,6 +36,7 @@ import { takeStartQuery } from './start-query';
 import { liftBestMatch } from './best-match';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
+import { usePalettePopoverOpen } from '@/lib/palette-popover-open';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
@@ -101,6 +102,8 @@ export function StartPanel<C extends string>({
   // Leading the rail, over a hairline: the mode switch.
   lead?: ReactNode;
 }) {
+  // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
+  const paletteOpen = usePalettePopoverOpen();
   // Another start panel was on screen a moment ago: the tab changed mode under it. The frame stays put (no fly-up) and
   // its content arrives whole, nothing fading up from nothing or cascading in, so a mode change never blinks; the
   // switch crossfades the two (StartModeSwitch's View Transition). `calm` lasts until the category or search changes.
@@ -241,7 +244,11 @@ export function StartPanel<C extends string>({
     // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster, clear of the home
     // indicator, the one place it still meets the bottom edge.
     <div
-      className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[calc(var(--start-floor)-8px)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-[var(--start-floor)] short-window:pt-16"
+      // While a palette popover hangs from the strip the start steps aside, mounted so its search and group are
+      // kept (start-diagramming.md "When it shows"). On its own root, never a wrapper: the start's View Transition
+      // names this element, and a `display: contents` wrapper has no box to picture.
+      data-start-stepped-aside={paletteOpen || undefined}
+      className={`${paletteOpen ? 'hidden' : 'flex'} pointer-events-none absolute inset-0 z-[var(--z-panel)] items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[calc(var(--start-floor)-8px)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-[var(--start-floor)] short-window:pt-16`}
       // On a phone, and on a short window, the sheet stands on the tab bar while it shows (measured as the toast stack
       // measures its floor; a sideways phone folds its bars away), so the tabs stay in reach: Start Planning cannot
       // close, and over the bar it left a new tab no way back to the others but a template. Flush on a phone.

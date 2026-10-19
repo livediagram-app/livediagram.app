@@ -71,6 +71,26 @@ goes at once. While folding away it takes no focus.
 The hero's top right holds Home's **Help** link ([Contextual help links](../018-help/contextual-help-links.md)). On a
 phone (below `sm`) its top left holds the menu button that opens the [mobile drawer](explorer-structure.md#mobile-drawer).
 
+## Hiding the banner
+
+Next to Help, wherever the hero puts it (a phone's row, the pills' row, the wide top right), sits a **close** (an ×
+button the size of Help, named and tooltipped "Hide Home Banner"). Pressing it hides the hero for good, as the
+synced `homeBanner` preference set to `false`
+([User preferences](../007-editor/user-preferences.md)), on every device the person signs in on. It folds away as it
+does on leaving Home. **Settings > Documents > Explorer > Show Home Banner** turns it back on. Either flip reports
+`UI / Toggled / HomeBannerOff` or `HomeBannerOn` before the preference is written.
+
+With the banner hidden, Home is drawn like every other Explorer page:
+
+- the **header's search field** is drawn on Home too ([Explorer filters](explorer-filters.md#the-field)), so the page
+  still has exactly one lens field;
+- Home takes the ordinary **page header** (the title "Home", its Help link, New Document and, on a phone, the menu
+  button), so it keeps its `h1`;
+- Jump Back In and What Happened, or a first run's sections, follow as before.
+
+One reading, `homeBannerShown` (`apps/live/lib/home-banner.ts`), decides all three, so Home never shows two fields or
+none. The banner's first-run words and template search go with it; the first run's sections under it stay.
+
 ## First run
 
 A person with **nothing yet** gets a Home that starts them off instead of one that waits for history. "Nothing yet"
