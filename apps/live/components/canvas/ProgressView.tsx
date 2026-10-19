@@ -72,11 +72,14 @@ export function ProgressView({
     return (
       <>
         <div
+          // Track and fill are a shape each under Marker and Sketch (docs/specs/008-canvas/finish.md "Faces").
+          data-marker-shape=""
           className="absolute inset-0 overflow-hidden rounded-full"
           style={{ backgroundColor: track }}
         >
           <div
-            className={`h-full rounded-full ${barFillClass(anim) ?? ''}`}
+            data-marker-shape=""
+            className={`relative h-full rounded-full ${barFillClass(anim) ?? ''}`}
             style={{ width: `${pct}%`, backgroundColor: accent, ...animStyle }}
           />
         </div>

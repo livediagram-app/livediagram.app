@@ -18,6 +18,7 @@ import {
   stopPointer,
 } from '@/components/canvas/collab/qa/qa-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the canvas that carries a
 // LIST of assigned actions (docs/specs/012-collaboration/assigned-actions.md) and shows them in place.
@@ -147,13 +148,14 @@ export function ActionPanelFace({
 
 function AddButton({ onPress }: { onPress: () => void }) {
   const press = usePressWithoutDrag(onPress);
+  const shadow = useFaceShadow();
   return (
     <button
       type="button"
       {...press}
       {...stopPointer}
       className="pointer-events-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold transition hover:scale-[1.03] active:scale-95"
-      style={LOUD_ACCENT}
+      style={{ ...LOUD_ACCENT, boxShadow: shadow(LOUD_ACCENT.boxShadow) }}
     >
       <PlusGlyph size={12} />
       Add Action

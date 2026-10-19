@@ -35,6 +35,10 @@ import { useSlotMove } from './useSlotMove';
 import { DashboardMenuName } from './DashboardMenuName';
 import { DashboardSettings } from './DashboardSettings';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { elementFontId, resolveFinish, resolveFontStack } from '@livediagram/document';
+import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { planFontStyle } from '@/lib/plan-font';
 
 export function DashboardPage({
   tab,
@@ -76,6 +80,12 @@ export function DashboardPage({
   useEffect(() => {
     if (canvas) pageRef.current?.setAttribute('data-dashboard-ready', '');
   }, [canvas]);
+  // The tab's finish and lettering (docs/specs/008-canvas/finish.md "Faces"): the page is drawn over the canvas,
+  // outside any element, so it takes them itself, as a full-tab board does (MaximisedPlanLayer's OverFace).
+  const finish = resolveFinish(undefined, tab.finish);
+  const faceFinish = finish === 'flexible' ? undefined : finish;
+  const fontStack = resolveFontStack(elementFontId({}, tab.font, tab.finish));
+  useFaceFinishPass(pageRef, faceFinish, tab.id, { page: true });
   const dashboard = useMemo(() => dashboardOf(tab), [tab]);
   const elements = useMemo(() => new Map(tab.elements.map((e) => [e.id, e])), [tab.elements]);
   const guard = useFitGuard(pageRef, dashboard, elements);
@@ -276,38 +286,42 @@ export function DashboardPage({
         ? createPortal(
             <CanvasCover layout={layout} marker={{ 'data-dashboard': '' }}>
               <DashboardContext.Provider value={value}>
-                <div
-                  role="region"
-                  aria-label={`${tab.name} dashboard`}
-                  ref={pageRef}
-                  // The bottom padding clears the canvas's bottom toolbars (about 64 px with their margin), so the
-                  // last row scrolls fully into view above them; on a phone also the home indicator's safe area.
-                  // A tinted background washes the page behind the slots (Dashboard Settings).
-                  className={`relative h-full overflow-y-auto overscroll-contain px-3 pb-20 pt-3 max-sm:pb-[calc(6rem+env(safe-area-inset-bottom))] ${dashboard.background === 'tint' ? 'bg-brand-500/[0.07] dark:bg-brand-400/[0.09]' : ''}`}
-                  onDragOver={onDragOver}
-                  onDragLeave={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setZone(null);
-                  }}
-                  onDrop={onDrop}
-                  onPointerMove={placement.onPointerMove}
-                  onClickCapture={placement.onClickCapture}
-                  data-armed={placement.armed ? '' : undefined}
-                >
-                  {placement.overlay}
-                  {zone ? <DropZoneMark mark={zone.mark} /> : null}
-                  {moving?.mark ? <DropZoneMark mark={moving.mark} /> : null}
-                  {/* At least the page's height, so a row that fills the page has the height to fill. */}
-                  <div className="flex min-h-full flex-col gap-3">
-                    {dashboard.rows.map((row, i) => (
-                      <DashboardRowView
-                        key={row.id}
-                        row={row}
-                        index={i}
-                        rowCount={dashboard.rows.length}
-                      />
-                    ))}
+                <FaceFinishProvider finish={finish}>
+                  <div
+                    data-face-finish={faceFinish}
+                    style={planFontStyle(fontStack)}
+                    role="region"
+                    aria-label={`${tab.name} dashboard`}
+                    ref={pageRef}
+                    // The bottom padding clears the canvas's bottom toolbars (about 64 px with their margin), so the
+                    // last row scrolls fully into view above them; on a phone also the home indicator's safe area.
+                    // A tinted background washes the page behind the slots (Dashboard Settings).
+                    className={`relative h-full overflow-y-auto overscroll-contain px-3 pb-20 pt-3 max-sm:pb-[calc(6rem+env(safe-area-inset-bottom))] ${dashboard.background === 'tint' ? 'bg-brand-500/[0.07] dark:bg-brand-400/[0.09]' : ''}`}
+                    onDragOver={onDragOver}
+                    onDragLeave={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setZone(null);
+                    }}
+                    onDrop={onDrop}
+                    onPointerMove={placement.onPointerMove}
+                    onClickCapture={placement.onClickCapture}
+                    data-armed={placement.armed ? '' : undefined}
+                  >
+                    {placement.overlay}
+                    {zone ? <DropZoneMark mark={zone.mark} /> : null}
+                    {moving?.mark ? <DropZoneMark mark={moving.mark} /> : null}
+                    {/* At least the page's height, so a row that fills the page has the height to fill. */}
+                    <div className="flex min-h-full flex-col gap-3">
+                      {dashboard.rows.map((row, i) => (
+                        <DashboardRowView
+                          key={row.id}
+                          row={row}
+                          index={i}
+                          rowCount={dashboard.rows.length}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </FaceFinishProvider>
               </DashboardContext.Provider>
             </CanvasCover>,
             canvas,

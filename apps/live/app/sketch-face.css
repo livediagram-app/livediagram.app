@@ -4,17 +4,21 @@
  * by SketchFilterDefs). */
 
 /* The live face: no fills, borders or shadows, no drawn shapes; its words, photos and focus rings stay. */
-[data-sketch-words] :not(img, video, iframe, canvas, [data-sketch-skip], [data-sketch-skip] *),
-[data-sketch-words] :not([data-sketch-skip], [data-sketch-skip] *)::before,
-[data-sketch-words] :not([data-sketch-skip], [data-sketch-skip] *)::after {
+[data-sketch-words]:not([data-sketch-measure])
+  :not(img, video, iframe, canvas, [data-sketch-skip], [data-sketch-skip] *),
+[data-sketch-words]:not([data-sketch-measure])
+  :not([data-sketch-skip], [data-sketch-skip] *)::before,
+[data-sketch-words]:not([data-sketch-measure])
+  :not([data-sketch-skip], [data-sketch-skip] *)::after {
   background-color: transparent !important;
   background-image: none !important;
   border-color: transparent !important;
 }
-[data-sketch-words] :not(:focus-visible, [data-sketch-skip], [data-sketch-skip] *) {
+[data-sketch-words]:not([data-sketch-measure])
+  :not(:focus-visible, [data-sketch-skip], [data-sketch-skip] *) {
   box-shadow: none !important;
 }
-[data-sketch-words]
+[data-sketch-words]:not([data-sketch-measure])
   :is(rect, circle, ellipse, path, line, polyline, polygon, use):not([data-sketch-skip] *) {
   opacity: 0 !important;
 }

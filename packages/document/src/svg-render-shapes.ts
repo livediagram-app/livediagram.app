@@ -15,6 +15,7 @@ import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
+import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
 import { codeTheme } from './code-themes';
 import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
@@ -147,7 +148,12 @@ export function svgShapeSilhouette(
 // Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/polygon-tool.md) with its straight
 // edges, and nothing for a lone point. Closed paths fill like the canvas;
 // open ones render stroke-only.
-export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
+export function svgFreehandShape(
+  el: FreehandElement,
+  stroke: string,
+  fill: string,
+  finish: Finish = 'flexible',
+): string {
   if (freehandStrokePoints(el).count < 2) return '';
   // A whiteboard pen stroke (docs/specs/023-draw-mode/draw-mode.md "Pens"): the filled
   // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
@@ -171,13 +177,15 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );
   }
-  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset.
-  const strokeWidth =
-    el.penWidth ??
-    (BORDER_STROKE_PX[
-      (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
-    ] ||
-      2);
+  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset; a
+  // Polygon-tool outline's unset width follows its finish (Professional's Thin).
+  const strokeWidth = isPolygonOutline(el)
+    ? polygonStrokePx(el, finish)
+    : (el.penWidth ??
+      (BORDER_STROKE_PX[
+        (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
+      ] ||
+        2));
   const dash =
     BORDER_DASH_ARRAY[
       (el as { strokeStyle?: keyof typeof BORDER_DASH_ARRAY }).strokeStyle ?? 'solid'
@@ -191,10 +199,16 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
 
 // A path (docs/specs/023-draw-mode/path-tool.md): the headless twin of the canvas PathSvg, the same
 // curve from the same function at the border preset width, filled only when closed.
-export function svgPathElementShape(el: PathElement, stroke: string, fill: string): string {
+export function svgPathElementShape(
+  el: PathElement,
+  stroke: string,
+  fill: string,
+  finish: Finish = 'flexible',
+): string {
   if (el.nodes.length < 2) return '';
   const d = pathElementD(el, undefined, r2);
-  const width = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'];
+  // An unset width follows the finish (Professional's Thin).
+  const width = polygonStrokePx({ strokeWidth: el.strokeWidth }, finish);
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
   const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
   // A combined shape's holes show through (docs/specs/007-editor/logo-pages.md "Combine").

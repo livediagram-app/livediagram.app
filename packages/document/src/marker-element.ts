@@ -33,6 +33,8 @@ export type MarkerDrawing = {
   details: string;
   /** The solid fill, in the fill colour, under everything. */
   solid: string;
+  /** The solid layer is a combined path whose holes show through (a Path-tool shape): filled even-odd. */
+  solidEvenOdd?: boolean;
   /** The colouring's rows in two layers over the fill, in the stroke colour at MARKER_STREAK_OPACITY, `nibPx` wide. */
   streaks: MarkerLayers;
   nibPx: number;
@@ -47,7 +49,8 @@ const MARKER_TABLE_FRAME_PX = 2.5;
 export function markerElementPaint(
   el: BoxedElement,
   fill: string,
-  backdrop = false,
+  // Kept for the shared hand-drawn signature (handDrawnElementPaint); Marker colours in backdrops too.
+  _backdrop = false,
 ): { drawing: MarkerDrawing; strokePx: number; dash: string | null } | null {
   const w = el.width;
   const h = el.height;
@@ -65,7 +68,24 @@ export function markerElementPaint(
     };
     return { drawing, strokePx, dash: null };
   }
-  if (el.type !== 'shape' || el.shape === 'comment-pin') return null;
+  // A sticky stays paper, its peel and no outline (a note on a wall is written on, never outlined), but is coloured
+  // in like any filled body (docs/specs/008-canvas/finish.md "Marker"); the canvas draws the streaks over the paper.
+  if (el.type === 'sticky') {
+    const area = outlineOfBox('square', w, h, 0, 0).area;
+    if (!area || fill === 'transparent' || fill === 'none') return null;
+    const { streaks, nibPx } = markerColouring(area, seed);
+    // Its paper as the solid layer, so an export (which draws this in place of the box) keeps it.
+    const drawing: MarkerDrawing = {
+      pen: 'marker',
+      ink: ['', ''],
+      details: '',
+      solid: sketchAreaPath(area),
+      streaks,
+      nibPx,
+    };
+    return { drawing, strokePx: 0, dash: null };
+  }
+  if (el.type !== 'shape') return null;
   // A marker has no fine-liner: Thin draws at the nib like an unset border (templates set Thin on purpose).
   const strokePx =
     el.strokeWidth && el.strokeWidth !== 'thin' ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX;
@@ -80,7 +100,9 @@ export function markerElementPaint(
   const parts = handDrawnOutlines(el, strokePx / 2, radiusPx);
   if (!parts) return null;
   const fillIt = !isSeeThrough(fill);
-  const colours = finishHatches(el, fill, backdrop);
+  // Marker colours in every filled body, backdrops too (docs/specs/008-canvas/finish.md "Marker"): its streaks are
+  // light enough to read over, and a shape left solid because something sits on it read as missed.
+  const colours = finishHatches(el, fill, false);
   const ink: [string[], string[]] = [[], []];
   const streaks: [string[], string[]] = [[], []];
   const details: string[] = [];
