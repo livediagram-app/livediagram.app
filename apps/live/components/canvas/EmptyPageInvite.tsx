@@ -27,7 +27,7 @@ export function EmptyPageInvite({
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
         onClick={onOpen}
-        className="touch-target pointer-events-auto relative flex animate-dialog-in items-center gap-2 whitespace-nowrap rounded-full bg-brand-600 py-2 pl-3 pr-4 text-sm font-semibold text-white shadow-lg shadow-brand-900/25 ring-4 ring-white/70 transition hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:ring-slate-900/70"
+        className="touch-target pointer-events-auto relative flex animate-dialog-in items-center gap-2 whitespace-nowrap rounded-full bg-brand-700 py-2 pl-3 pr-4 text-sm font-semibold text-white shadow-lg shadow-brand-900/25 ring-4 ring-white/70 transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-brand-600 dark:ring-slate-900/70 dark:hover:bg-brand-500"
         style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
       >
         <SparklesIcon />

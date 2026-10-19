@@ -88,9 +88,13 @@ export function LayoutGallery({
   } = useTileWidth(portrait ? MIN_TILE_PORTRAIT : MIN_TILE_LANDSCAPE, TILE_GAP);
   const thumbWidth = Math.max(40, Math.floor(tileWidth - TILE_PAD));
   const pick = (id: PageLayoutId) => onApply(id);
+  // A new choice of what to show starts at the top of it.
+  const toTop = () => {
+    if (scroller.current) scroller.current.scrollTop = 0;
+  };
   const choose = (id: string) => {
     setCategory(id);
-    scroller.current?.scrollTo({ top: 0 });
+    toTop();
   };
   const surprise = () => {
     const id = surprisePick(
@@ -114,7 +118,7 @@ export function LayoutGallery({
             query={query}
             onQuery={(q) => {
               setQuery(q);
-              scroller.current?.scrollTo({ top: 0 });
+              toTop();
             }}
             chips={[]}
             onClear={() => setQuery('')}
@@ -156,7 +160,7 @@ export function LayoutGallery({
               onClick={() => choose(c.id)}
               className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
                 on
-                  ? 'bg-brand-600 text-white shadow-sm'
+                  ? 'bg-brand-700 text-white shadow-sm dark:bg-brand-600'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
               }`}
             >

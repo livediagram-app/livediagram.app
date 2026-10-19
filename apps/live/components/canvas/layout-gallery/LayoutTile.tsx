@@ -66,13 +66,13 @@ export const LayoutTile = memo(function LayoutTile({
     >
       <div
         ref={art}
-        className="relative overflow-hidden rounded-lg bg-slate-100 shadow-sm ring-1 ring-slate-900/10 transition duration-short ease-out group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-brand-900/10 group-hover:ring-2 group-hover:ring-brand-500 group-focus-visible:ring-2 group-focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 dark:bg-slate-800 dark:ring-white/10"
+        className="relative overflow-hidden rounded-lg bg-slate-100 shadow-sm ring-1 ring-slate-900/10 transition duration-micro ease-out group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-brand-900/10 group-hover:ring-2 group-hover:ring-brand-500 group-focus-visible:ring-2 group-focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 dark:bg-slate-800 dark:ring-white/10"
         style={{ width, height }}
       >
         {seen ? <LayoutThumb layout={layout.id} page={page} width={width} /> : null}
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-1.5 right-1.5 translate-y-1 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white opacity-0 shadow-sm transition duration-short group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
+          className="pointer-events-none absolute bottom-1.5 right-1.5 translate-y-1 rounded-full bg-brand-700 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600 opacity-0 shadow-sm transition duration-micro group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
         >
           Use
         </span>
