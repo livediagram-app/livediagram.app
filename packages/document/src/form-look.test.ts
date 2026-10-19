@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { formLook } from './form-look';
+import { contrastRatio } from './colors';
+import { THEMES } from './themes-data';
 import { getBuiltInTheme } from './themes';
 import { themeAccent } from './page-default-background';
 
@@ -31,7 +33,7 @@ describe('formLook', () => {
   });
 
   it('draws the Default theme in the brand blue of each half', () => {
-    expect(formLook({}).accent).toEqual({ light: '#0284c7', dark: '#38bdf8' });
+    expect(formLook({}).accent).toEqual({ light: '#0369a1', dark: '#38bdf8' });
   });
 
   it('draws a custom or unknown theme as Default', () => {
@@ -80,5 +82,15 @@ describe('formLook', () => {
         formLook({ backgroundPattern: 'graph', backgroundPatternScale: Number.NaN }).canvas,
       ).not.toHaveProperty('scale');
     });
+  });
+});
+
+// docs/specs/030-forms/forms.md "Look": a filled button's label takes whichever of light or dark text reads on the
+// accent. A brightness cut-off left eight theme halves under AA, Pumpkin's and Evergreen's dark halves at 2.5:1.
+describe('a form button label on every theme', () => {
+  it.each(THEMES.map((t) => t.id))('%s reads at AA in both halves', (theme) => {
+    const look = formLook({ theme });
+    for (const half of ['light', 'dark'] as const)
+      expect(contrastRatio(look.onAccent[half], look.accent[half])).toBeGreaterThanOrEqual(4.5);
   });
 });

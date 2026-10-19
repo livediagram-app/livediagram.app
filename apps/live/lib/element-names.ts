@@ -6,9 +6,20 @@
 import {
   CHART_TYPE_LABELS,
   chartTypeOf,
+  DEFAULT_SESSION_TOOL,
   type BoxedElement,
   type Element,
+  type SessionTool,
+  type ShapeKind,
 } from '@livediagram/document';
+
+// The tool a session button starts, as its kind reads (docs/specs/012-collaboration/session-button.md).
+const SESSION_TOOL_KIND: Record<SessionTool, string> = {
+  timer: 'Timer',
+  stopwatch: 'Stopwatch',
+  vote: 'Dot vote',
+  poll: 'Poll',
+};
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
@@ -30,6 +41,9 @@ export function kindLabel(el: Element): string {
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
+  // A session button names the tool it starts ('Timer', 'Poll'), not the generic kind, which said nothing about it.
+  if (el.type === 'shape' && el.shape === 'session-button')
+    return SESSION_TOOL_KIND[el.session?.tool ?? DEFAULT_SESSION_TOOL];
   if (el.type === 'shape') {
     // A chart is named by its chart type, as the palette names it: 'Column chart', not its kind's 'Bar chart'.
     const chart = chartTypeOf(el);
@@ -126,4 +140,31 @@ export function elementAriaLabel(el: Element): string {
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;
+}
+
+// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
+// note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
+// record's settings and a mode button.
+const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
+  'session-button',
+  'checklist',
+  'temperature',
+  'agenda',
+  'qa-board',
+  'reaction-pad',
+  'quiz',
+  'picker',
+  'reveal',
+  'decision',
+  'mode-button',
+]);
+
+/** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
+ *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
+ *  controls, since an img's children are presentational and a screen reader could not reach the controls. */
+export function elementRole(el: Element): 'img' | 'group' {
+  if (el.type === 'video' || el.type === 'link-card') return 'group';
+  if (el.type === 'image') return el.imageId ? 'img' : 'group';
+  if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
+  return 'img';
 }

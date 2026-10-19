@@ -100,7 +100,7 @@ export function TeamFormModal({
             Members edit shared work; admins also manage who&rsquo;s in the team.
           </p>
           <label className="mt-4 block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Team name
             </span>
             <TextInput
@@ -113,8 +113,8 @@ export function TeamFormModal({
             />
           </label>
           <label className="mt-3 block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Organisation <span className="normal-case text-slate-400">(optional)</span>
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Organisation <span className="normal-case">(optional)</span>
             </span>
             <TextInput
               value={organisation}

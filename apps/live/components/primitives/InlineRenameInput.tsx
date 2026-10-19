@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { refocusAfterField } from './refocus-after-field';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
@@ -92,9 +93,11 @@ export function InlineRenameInput({
         e.stopPropagation();
         if (e.key === 'Enter') {
           e.preventDefault();
+          refocusAfterField(e.currentTarget);
           onCommit(draft);
         } else if (e.key === 'Escape') {
           e.preventDefault();
+          refocusAfterField(e.currentTarget);
           onCancel();
         }
       }}
