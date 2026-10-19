@@ -80,6 +80,10 @@ SVG, not screenshots, so they stay crisp, theme with the brand ramp, add zero
 binary assets to the static export, and never drift from a UI rebrand the way a
 captured screenshot would.
 
+A figure's words are its caption: the `<figcaption>` names the `<figure>` for a screen reader, and the SVG itself
+is `aria-hidden` (an unnamed `role="img"` was an image with no alternative on every illustrated article). A picture
+that teaches something says it in its caption.
+
 ### Card icons and accents
 
 Separate from the illustrations above: every card in the catalogue carries a

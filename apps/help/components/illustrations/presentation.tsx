@@ -129,7 +129,7 @@ export function SlideMenu() {
         const cx = bx + 16;
         const cy = 89;
         return (
-          <g key={label} aria-label={label}>
+          <g key={label}>
             <rect
               x={bx}
               y={73}
