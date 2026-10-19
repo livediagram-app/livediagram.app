@@ -7,8 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // greeting is the page's heading, New Document starts one, the lens field is drawn large with New Document inside
 // it, the sheets are decoration, and the menu button opens the drawer.
 
-const { track, lensField } = vi.hoisted(() => ({ track: vi.fn(), lensField: vi.fn() }));
+const { track, lensField, commitUserPreferences } = vi.hoisted(() => ({
+  track: vi.fn(),
+  lensField: vi.fn(),
+  commitUserPreferences: vi.fn(),
+}));
 vi.mock('@/lib/telemetry', () => ({ track }));
+vi.mock('@/lib/user-preferences', async (orig) => ({
+  ...(await orig<typeof import('@/lib/user-preferences')>()),
+  commitUserPreferences,
+}));
 vi.mock('@/components/panels/DocumentThumbnail', () => ({
   DocumentThumbnail: (p: { documentId: string; offline?: boolean }) => (
     <span data-testid={`thumb-${p.documentId}`} data-offline={p.offline ? '' : undefined} />
@@ -59,6 +67,7 @@ function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
     setMobileNavOpen,
     lens: {},
     lensResult: { subjects: [] },
+    prefs: { showMinimap: false },
     ...over,
   } as unknown as ExplorerStateValue;
   return render(
@@ -75,6 +84,7 @@ beforeEach(() => {
   go.mockReset();
   setMobileNavOpen.mockReset();
   lensField.mockReset();
+  commitUserPreferences.mockReset();
   assign.mockReset();
   vi.stubGlobal('location', { ...window.location, assign });
 });
@@ -188,6 +198,26 @@ describe('HomeHero', () => {
     expect(setMobileNavOpen).toHaveBeenCalledWith(true);
     expect(screen.getAllByRole('link', { name: 'Help' })[0]!.getAttribute('href')).toBe(
       '/help/timeline',
+    );
+  });
+});
+
+// docs/specs/013-workspace/explorer-home.md "Hiding the banner": a close beside every Help the hero draws, which
+// hides the banner as the synced preference, told to telemetry before it is written.
+describe('HomeHero close', () => {
+  it('stands beside each Help and hides the banner for good', () => {
+    renderHero();
+    const closes = screen.getAllByRole('button', { name: 'Hide Home Banner' });
+    expect(closes).toHaveLength(screen.getAllByRole('link', { name: 'Help' }).length);
+    fireEvent.click(closes[0]!);
+    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'HomeBannerOff');
+    expect(commitUserPreferences).toHaveBeenCalledWith(
+      { showMinimap: false },
+      { showMinimap: false, homeBanner: false },
+      'me',
+    );
+    expect(track.mock.invocationCallOrder[0]!).toBeLessThan(
+      commitUserPreferences.mock.invocationCallOrder[0]!,
     );
   });
 });
