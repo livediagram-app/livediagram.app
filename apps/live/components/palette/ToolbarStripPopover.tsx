@@ -24,6 +24,9 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
   // offset stays right.
   const [right, setRight] = useState(0);
   const close = useEffectEvent(() => setOpen(false));
+  // The button it opened from: Escape hands focus back to it when focus is in the popover (a press closes it
+  // where the press put focus). Escape out of Search dropped focus on the page.
+  const opener = useRef<HTMLElement | null>(null);
   // While open, the trays hanging from the strip step aside (PaletteTray), as they do for the Explorer: they would
   // cover the popover's top.
   useEffect(() => {
@@ -41,13 +44,19 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
       close();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key !== 'Escape') return;
+      const focus = document.activeElement;
+      if (focus instanceof Element && focus.closest(ownSelector) && opener.current?.isConnected)
+        opener.current.focus({ preventScroll: true });
+      close();
     };
     document.addEventListener('pointerdown', onDown, true);
-    document.addEventListener('keydown', onKey);
+    // Capture phase too: an editor key handler below can close the popover first, and its field then lets go of
+    // focus before this would see where it was.
+    document.addEventListener('keydown', onKey, true);
     return () => {
       document.removeEventListener('pointerdown', onDown, true);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
     };
   }, [open, ownSelector]);
   // `centre` hangs it centred under the button (a strip group's popover) rather than from its right edge, kept
@@ -57,6 +66,7 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
     align: 'right' | 'centre' = 'right',
     width: number = STRIP_POPOVER_PX,
   ) => {
+    opener.current = button;
     const root = rootRef.current?.getBoundingClientRect();
     const box = button.getBoundingClientRect();
     if (root)

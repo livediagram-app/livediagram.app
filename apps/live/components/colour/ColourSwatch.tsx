@@ -56,7 +56,7 @@ export function SwatchChip({
       aria-hidden
       data-swatch-chip=""
       style={none ? undefined : { backgroundColor: colour }}
-      className={`relative block shrink-0 border border-black/15 transition motion-reduce:transition-none dark:border-white/20 ${
+      className={`relative block shrink-0 border border-black/15 transition forced-color-adjust-none motion-reduce:transition-none dark:border-white/20 ${
         small ? 'h-3.5 w-3.5 rounded-[4px]' : 'h-5 w-5 rounded-[5px]'
       } ${none ? 'overflow-hidden bg-white' : ''} ${
         picked

@@ -18,10 +18,12 @@ export {
   type MenuMove,
 } from './menu-keys';
 export {
+  focusablesOf,
   isInMenuSurface,
   isPressableControl,
   isTextEditFocused,
   menuItemsOf,
+  openedFromKeyboard,
   ownsFocus,
 } from './menu-dom';
 export { MenuTreeContext, useMenuKind, type MenuKind, type MenuTree } from './menu-tree';

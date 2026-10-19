@@ -18,7 +18,12 @@ theirs without adding a settings screen.
 
 - **Every device.** The corner stacks apply on a desktop and a phone alike
   ([Toolbar layout](toolbar-layout.md)). The Palette is the strip and the Explorer, Layers and
-  Collaborate are popovers over their buttons, so they take no corner. **Zen mode** ([Zen mode](zen-mode.md)) still hides
+  Collaborate are popovers over their buttons, so they take no corner. **Its button pressed from the keyboard**, a popover
+  takes focus to its first control (a popover that focuses its own field keeps that), as a control menu does: it renders far
+  from its button in the tab order, so Tab from the button never reached it. **Escape closes a popover** (Layers,
+  Collaborate, the Trash, Find a Card, Card Types, the Explorer) while focus is in it or on its button, and focus goes
+  back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
+  then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
 - **Participating panels:** AI, Minimap, Poll, Vote, and the tool panels (Avatar, Laser,
   Spotlight, Eraser, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.

@@ -50,10 +50,11 @@ export function ToolbarSearchButton({
       <SearchIcon />
     </button>
   );
-  // No hover card while open: it would sit over the popover it names.
-  if (open) return button;
+  // No hover card while open: it would sit over the popover it names. Switched off rather than left out, so the
+  // button is not remounted as it opens: Escape hands focus back to it (ToolbarStripPopover).
   return (
     <HoverCard
+      disabled={open}
       title="Search Elements"
       description="Find any element by name, from every category and every mode. Shortcut: S."
     >

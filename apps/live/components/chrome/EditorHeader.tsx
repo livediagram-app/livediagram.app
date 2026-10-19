@@ -212,6 +212,7 @@ export function EditorHeader({
               type="button"
               onClick={present.onPresent}
               disabled={present.starting}
+              data-presentation-start="header"
               className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60 dark:text-slate-200 dark:enabled:hover:bg-slate-800`}
             >
               <HeaderGlyph>

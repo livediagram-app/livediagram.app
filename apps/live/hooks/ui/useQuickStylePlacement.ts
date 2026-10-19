@@ -3,13 +3,14 @@
 // Measures the canvas, the chrome and the quick style panel, and places the
 // panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge, vertically centred,
 // clear of the chrome.
-// Re-runs when the chrome moves or resizes, coalesced to one run per frame;
+// Re-runs when the chrome moves or resizes, or a panel arrives or leaves, coalesced to one run per frame;
 // never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { placeQuickStylePanel, type Rect } from '@/lib/quick-style-placement';
 import { debugLog } from '@/lib/debug-log';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { PANEL_PRESENCE_EVENT } from '@/lib/panel-presence';
 
 const AREA_SELECTOR = `main${CANVAS_ROOT_SELECTOR}`;
 // The palette strip, every panel or dock popover, the strip's More popover
@@ -86,7 +87,7 @@ export function useQuickStylePlacement(
     };
     const resizeObserver = new ResizeObserver(schedule);
     measure();
-    const events = ['resize', 'livediagram:panel-layout-changed'] as const;
+    const events = ['resize', 'livediagram:panel-layout-changed', PANEL_PRESENCE_EVENT] as const;
     for (const ev of events) window.addEventListener(ev, schedule);
     const captured = ['pointerup', 'keyup'] as const;
     for (const ev of captured) window.addEventListener(ev, schedule, true);

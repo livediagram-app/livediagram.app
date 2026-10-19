@@ -585,18 +585,15 @@ export function ToolbarPalette(props: Props) {
                         {showMore ? (
                           <>
                             <Divider />
-                            {moreShown ? (
-                              moreButton
-                            ) : (
-                              <HoverCard
-                                title={`More ${category?.label ?? ''}`.trim()}
-                                description={
-                                  category?.description ?? 'Everything in this category.'
-                                }
-                              >
-                                {moreButton}
-                              </HoverCard>
-                            )}
+                            {/* Switched off while open rather than left out, so the button is not remounted as
+                                More opens: Escape hands focus back to it (ToolbarStripPopover). */}
+                            <HoverCard
+                              disabled={moreShown}
+                              title={`More ${category?.label ?? ''}`.trim()}
+                              description={category?.description ?? 'Everything in this category.'}
+                            >
+                              {moreButton}
+                            </HoverCard>
                           </>
                         ) : null}
                       </>
