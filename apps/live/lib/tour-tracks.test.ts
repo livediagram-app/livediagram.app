@@ -1,6 +1,6 @@
 // A tour of several tracks offers each once (lib/tour-tracks.ts, docs/specs/007-editor/user-preferences.md "Tours").
 import { describe, expect, it } from 'vitest';
-import { markPlanTracksSeen, planTourOwed, planTrackSeen } from './plan-tour';
+import { markPlanTracksSeen, planTrackSeen } from './plan-tour';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 
 describe('tour tracks', () => {
@@ -27,12 +27,11 @@ describe('the Plan tour’s tracks', () => {
     const boards = markPlanTracksSeen({}, ['boards']);
     expect(planTrackSeen(boards, 'boards')).toBe(true);
     expect(planTrackSeen(boards, 'sheets')).toBe(false);
-    expect(planTourOwed(boards)).toBe(true);
-    expect(planTourOwed(markPlanTracksSeen(boards, ['sheets']))).toBe(false);
+    expect(planTrackSeen(markPlanTracksSeen(boards, ['sheets']), 'sheets')).toBe(true);
   });
 
   it('offers both again to someone who answered the single Plan tour', () => {
-    expect(planTourOwed({ planTourSeen: true })).toBe(true);
-    expect(planTourOwed({ planTourSeen: true, powerUserMode: true })).toBe(false);
+    expect(planTrackSeen({ planTourSeen: true }, 'boards')).toBe(false);
+    expect(planTrackSeen({ planTourSeen: true, powerUserMode: true }, 'sheets')).toBe(true);
   });
 });

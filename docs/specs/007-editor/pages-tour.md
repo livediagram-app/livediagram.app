@@ -38,10 +38,13 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
   `pagesTourSeen` true counts every kind as toured only while [Power user mode](power-user-mode.md) is on: an
   answer given before the tour offered each kind once named no kind, so each kind is offered once more
   (`apps/live/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
-- **Replayable from Settings**: the **Pages Tour** switch in Settings' **Tours** category, built as the other
-  tours' are (on means a kind is still owed). Turning it off answers every kind; turning it on clears both
-  preferences, so every kind offers its track again; closing Settings runs the track for the page on screen straight away when the person is in Pages,
-  or offers it the next time they enter Pages.
+- **Replayable from Settings**: one switch per kind in Settings' **Tours** category, each named for its kind
+  (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Logo Tour**), never "Pages Tour". On means that kind
+  is still owed. Turning one off answers that kind alone; turning one on forgets that kind alone (and folds a
+  Power user's single `pagesTourSeen` into the answered list first, so the other kinds stay as they were).
+  Closing Settings with a kind newly owed runs the track for the page on screen straight away when the person is
+  in Pages, or offers it the next time they enter Pages. Power user mode's readout names them together as
+  **Pages Tours**.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
   ([Show Me](show-me.md)), wherever the offer stands.
 
@@ -139,7 +142,9 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
   (`Slide`, `Infographic`, `Article`, `Logo`): `PagesTourStepSlideLayouts`,
   `PagesTourStepInfographicPageSize`, `PagesTourStepArticleStyle`, `PagesTourStepLogoOutro`, ...
 - **End**: `UI` · `Ended` · `PagesTourCompleted` | `PagesTourSkipped`.
-- **Settings row**: `UI` · `Toggled` · `PagesTourSeenOn` | `PagesTourSeenOff`.
+- **Settings rows**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`, for `SlidesTour`,
+  `InfographicTour`, `ArticleTour` and `LogoTour` (`PagesTourSeenOn` | `PagesTourSeenOff` until the row split
+  per kind in October 2026).
 - **Page Show Me**: `UI` · `Started` · `<Kind>Tour`, and `UI` · `Ended` · `<Kind>TourCompleted` |
   `<Kind>TourSkipped`, for `SlideTour`, `InfographicTour`, `ArticleTour` and `LogoTour` ([Show Me](show-me.md)).
 

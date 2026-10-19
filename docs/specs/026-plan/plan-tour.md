@@ -33,9 +33,10 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   toured Sheet) arms the offer again. The old single flag `planTourSeen` stands for both tracks only while
   [Power user mode](../007-editor/power-user-mode.md) is on: an answer given before the tour offered each track once
   named no track, so each is offered once more.
-- **Replayable from Settings**: the **Plan Tour** switch in Settings' **Tours** category,
-  beside **Diagram** and built the same way (on means a track is still owed; off answers both tracks, on forgets
-  them). Turning it on from off and closing
+- **Replayable from Settings**: one switch per track in Settings' **Tours** category, **Boards Tour** and
+  **Sheets Tour** (never "Plan Tour"), beside **Diagram**. On means that track is still owed; off answers that
+  track alone, on forgets it alone; Power user mode's readout names them together as **Plan Tours**. Turning
+  one on from off and closing
   Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
   an empty Plan tab already offers Start Planning, which makes a board or Sheet, and the switch's description
@@ -152,8 +153,9 @@ The Diagram tour's funnel, with its own tokens, so the tours chart apart:
   `PlanTourStepCardTypes`; `PlanTourStepSheet`, `PlanTourStepCells`, `PlanTourStepFormulas`,
   `PlanTourStepSheetToolbar`, `PlanTourStepSheetSettings`; `PlanTourStepOutro` for either outro).
 - **End**: `UI` · `Ended` · `PlanTourCompleted` | `PlanTourSkipped`.
-- **Settings row**: `UI` · `Toggled` · `PlanTourSeenOn` | `PlanTourSeenOff`, describing the preference as the
-  Diagram tour's row does.
+- **Settings rows**: `UI` · `Toggled` · `BoardsTourSeenOn` | `BoardsTourSeenOff` and `SheetsTourSeenOn` |
+  `SheetsTourSeenOff`, describing the preference as the Diagram tour's row does (`PlanTourSeenOn` |
+  `PlanTourSeenOff` until the row split per track in October 2026).
 - The tour sends no `Element`, `Plan` or `Sheet` events: opening a card's panel from the tour is not counted as
   the person opening it.
 

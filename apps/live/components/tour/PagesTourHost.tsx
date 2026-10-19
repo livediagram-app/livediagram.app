@@ -169,7 +169,7 @@ export function PagesTourHost() {
     };
   }, [armed, active, anyUnseen, inPages, canWork, otherTour, modalOpen, engineRef, prefsRef]);
 
-  // Settings rerun (the Tours › "Pages Tour" row, turned on from off + closed): offers again in Pages, and
+  // Settings rerun (a Tours › "Slides Tour" (or another kind's) row, turned on from off + closed): offers again in Pages, and
   // otherwise the next time the person enters it (the row has cleared the preferences).
   const inPagesRef = useLatest(inPages);
   useEffect(() => {
