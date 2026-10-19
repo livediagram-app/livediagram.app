@@ -10,6 +10,7 @@ import { aliasedSeries, foldAliases, type TypeAliases } from './rank';
 import { TrendBadge } from './TrendBadge';
 import type { RankTrend } from './windows';
 import { useCategoryColor } from './useCategoryColor';
+import { LeaderTag } from './LeaderTag';
 
 // A ranked usage list: rows sorted most-to-least, each with a share bar and
 // (on desktop) a mini trend line, the top row tagged Most used. (No "least
@@ -104,7 +105,7 @@ function RankList({
                   <span className="truncate text-slate-700 dark:text-slate-200">
                     {label(row.type ?? '')}
                   </span>
-                  {isTop ? <RankTag /> : null}
+                  {isTop ? <LeaderTag>Most used</LeaderTag> : null}
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                   {trend ? (
@@ -139,13 +140,5 @@ function RankList({
         );
       })}
     </ul>
-  );
-}
-
-function RankTag() {
-  return (
-    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-      Most used
-    </span>
   );
 }
