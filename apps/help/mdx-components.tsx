@@ -174,8 +174,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </code>
     ),
+    // Focusable, so a keyboard reaches a code block too wide for the column and scrolls it (WCAG 2.1.1; axe
+    // scrollable-region-focusable).
     pre: ({ children }) => (
-      <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-950">
+      <pre
+        tabIndex={0}
+        className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-800 dark:bg-slate-950"
+      >
         {children}
       </pre>
     ),
