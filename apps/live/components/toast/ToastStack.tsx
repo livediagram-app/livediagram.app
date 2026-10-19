@@ -97,6 +97,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
       message={toast.message}
       actions={actions}
       leaving={leaving}
+      full={toast.full === true}
       aria-hidden={leaving || undefined}
       onClose={() => on.close(toast)}
       onPointerEnter={() => setHovered(true)}

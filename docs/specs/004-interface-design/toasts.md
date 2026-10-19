@@ -82,8 +82,8 @@ lists its decline before its confirm.
 - **Hovering or focusing a toast pauses its timer**, and leaving it resumes with the time it had left, never a fresh
   start, so a toast someone is reading never disappears under them. A hidden page (another browser tab) pauses it too.
 - The same message in the same tone, while one is still up, is not shown twice: the toast already up stays.
-- **At most four toasts** are up at once. A fifth retires the oldest one without buttons, or the oldest of all when
-  every one has them.
+- **At most three toasts** are up at once, so a burst (a run of deletes, each with its Undo) never covers the
+  screen. A fourth retires the oldest one without buttons, or the oldest of all when every one has them.
 
 ## Placement
 
@@ -117,6 +117,9 @@ Toasts follow [Motion](motion.md): chrome, within the ceiling.
 
 - **Entering**, a toast rises 8px and fades in from 98% scale over `short` (200ms), on the ease-out curve
   `cubic-bezier(0.16, 1, 0.3, 1)` (`toast-in`).
+- **Entering a full stack**, a toast that retires an older one pops in instead: it rises 12px and grows from 90%
+  with a little overshoot over `long` (250ms, the ceiling; `toast-in-full`), so a new notice on a busy stack is
+  plainly new rather than looking like the stack just shuffled.
 - **Leaving** (timed out, closed, answered), it fades out and drops 4px over `micro` (150ms, `toast-out`), and is
   removed once that has played (an exit hold, belonging to the animation).
 - **Under reduced motion** both collapse to instant, as all motion does.
