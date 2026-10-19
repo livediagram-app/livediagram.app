@@ -310,7 +310,7 @@ describe('laying out, moving, duplicating, deleting', () => {
     const layout = layoutCatalogueFor('infographic').layouts[0]!;
     const out = run(tab, [{ op: 'layout', page: 1, layout: layout.id }]);
     expect(out.tab.elements.some((e) => e.id === 'old')).toBe(false);
-    expect(out.lines[0]).toBe(`Laid out page 1 as ${layout.label} (replaced 1 elements).`);
+    expect(out.lines[0]).toBe(`Laid out page 1 as ${layout.label} (replaced 1 element).`);
   });
 
   it('moves a page to a place', () => {
@@ -336,7 +336,7 @@ describe('laying out, moving, duplicating, deleting', () => {
     ]);
     expect(out.lines).toEqual([
       'Duplicated page 1 as page 2.',
-      'Duplicated the article on page 3 (1 pages, from page 4).',
+      'Duplicated the article on page 3 (1 page, from page 4).',
     ]);
     expect(Object.keys(articlesOf(out.tab))).toHaveLength(2);
   });
@@ -355,8 +355,8 @@ describe('laying out, moving, duplicating, deleting', () => {
     expect(pagesOf(out.tab).map((p) => p.id)).toEqual(['p1']);
     expect(out.tab.elements).toEqual([]);
     expect(out.lines).toEqual([
-      'Deleted page 2 and 1 elements on it.',
-      'Deleted the article on page 2 (1 pages, writing and 0 elements).',
+      'Deleted page 2 and 1 element on it.',
+      'Deleted the article on page 2 (1 page, writing and 0 elements).',
     ]);
     expect(refusal(tabOf({ pages: [page('p1')] }), [{ op: 'delete', page: 1 }]).code).toBe(
       'last_page',

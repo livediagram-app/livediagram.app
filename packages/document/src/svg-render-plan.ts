@@ -20,6 +20,7 @@ import { r2, xmlEscape } from './svg-render-primitives';
 import { text as faceText, wrapLines } from './svg-render-face-kit';
 import { PLAN_BOARD_PAD, planBoardLayout } from './plan-board-layout';
 import { planCardFace, type CardFaceContext } from './svg-render-plan-card';
+import { plural } from './plural';
 
 type Shape = BoxedElement & { type: 'shape' };
 
@@ -119,7 +120,7 @@ export function svgPlanBoard(
   );
   if (items) {
     parts.push(
-      text(el.x + el.width - PAD - 4, el.y + 32, 12, p.muted, `${projection.total} items`, {
+      text(el.x + el.width - PAD - 4, el.y + 32, 12, p.muted, plural(projection.total, 'item'), {
         anchor: 'end',
       }),
     );

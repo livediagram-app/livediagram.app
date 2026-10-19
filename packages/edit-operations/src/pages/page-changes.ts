@@ -33,6 +33,7 @@ import {
   type PageEdit,
   type PageEditRefusal,
   type Tab,
+  plural,
 } from '@livediagram/document';
 import { buildPageLayout, layoutCatalogueFor } from '@livediagram/templates';
 import { enterPages, type PagesIds } from './enter';
@@ -172,7 +173,7 @@ export function applyPageChanges(
           ),
           page,
         );
-        return `${found!.label}${replaced ? ` (replaced ${replaced} elements)` : ''}`;
+        return `${found!.label}${replaced ? ` (replaced ${plural(replaced, 'element')})` : ''}`;
       };
       // name, size, orientation and background in that order, as the panel would make them.
       const setFields = (page: Page, c: Extract<PageChange, { op: 'add' | 'set' }>) => {
@@ -262,7 +263,7 @@ export function applyPageChanges(
           const made = pages().filter((p) => !before.has(p.id));
           lines.push(
             page.flow
-              ? `Duplicated the article on page ${placeOf(page.id)} (${made.length} pages, from page ${placeOf(made[0]!.id)}).`
+              ? `Duplicated the article on page ${placeOf(page.id)} (${plural(made.length, 'page')}, from page ${placeOf(made[0]!.id)}).`
               : `Duplicated page ${placeOf(page.id)} as page ${placeOf(made[0]!.id)}.`,
           );
           return;
@@ -310,8 +311,8 @@ export function applyPageChanges(
           removed.push(...gone);
           lines.push(
             page.flow
-              ? `Deleted the article on page ${at} (${count} pages, writing and ${els} elements).`
-              : `Deleted page ${at} and ${els} elements on it.`,
+              ? `Deleted the article on page ${at} (${plural(count, 'page')}, writing and ${plural(els, 'element')}).`
+              : `Deleted page ${at} and ${plural(els, 'element')} on it.`,
           );
           return;
         }
