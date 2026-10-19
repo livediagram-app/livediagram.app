@@ -60,6 +60,7 @@ export function ToastCard({
   actions = [],
   onClose,
   leaving = false,
+  full = false,
   className = '',
   ...rest
 }: {
@@ -68,13 +69,15 @@ export function ToastCard({
   actions?: readonly ToastCardAction[];
   onClose: () => void;
   leaving?: boolean;
+  // Arrived on a full stack: the bolder entrance (toast-in-full), so a new toast on a busy stack is seen.
+  full?: boolean;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children'>) {
   const Icon = ICONS[tone];
   return (
     <div
       role={tone === 'error' ? 'alert' : 'status'}
       data-toast-tone={tone}
-      className={`flex w-full items-start gap-3 py-1.5 pl-3 pr-1.5 sm:w-auto sm:max-w-[36rem] ${TOAST_SURFACE} ${BORDER[tone]} ${leaving ? 'pointer-events-none animate-toast-out' : 'pointer-events-auto animate-toast-in'} ${className}`}
+      className={`flex w-full items-start gap-3 py-1.5 pl-3 pr-1.5 sm:w-auto sm:max-w-[36rem] ${TOAST_SURFACE} ${BORDER[tone]} ${leaving ? 'pointer-events-none animate-toast-out' : full ? 'pointer-events-auto animate-toast-in-full' : 'pointer-events-auto animate-toast-in'} ${className}`}
       {...rest}
     >
       <span className={`flex h-8 shrink-0 items-center ${ICON_TINT[tone]}`} aria-hidden>

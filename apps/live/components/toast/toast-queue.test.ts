@@ -35,7 +35,7 @@ describe('pushToast', () => {
     for (let i = 2; i <= TOAST_LIMIT + 1; i++) {
       list = pushToast(list, { message: `Note ${i}`, tone: 'info' }, i);
     }
-    expect(live(list)).toEqual(['Document deleted', 'Note 3', 'Note 4', 'Note 5']);
+    expect(live(list)).toEqual(['Document deleted', 'Note 3', 'Note 4']);
   });
 
   it('retires the oldest of all when every toast has answers', () => {
@@ -43,7 +43,32 @@ describe('pushToast', () => {
     for (let i = 1; i <= TOAST_LIMIT + 1; i++) {
       list = upsertActionToast(list, { key: `k${i}`, message: `Deleted ${i}`, actions: [undo] }, i);
     }
-    expect(live(list)).toEqual(['Deleted 2', 'Deleted 3', 'Deleted 4', 'Deleted 5']);
+    expect(live(list)).toEqual(['Deleted 2', 'Deleted 3', 'Deleted 4']);
+  });
+});
+
+describe('a full stack', () => {
+  it('shows at most three toasts, so a burst never covers the screen', () => {
+    expect(TOAST_LIMIT).toBe(3);
+  });
+
+  it('marks a toast that retired an older one as arriving on a full stack, and only that one', () => {
+    let list: ToastEntry[] = [];
+    for (let i = 1; i <= TOAST_LIMIT; i++) {
+      list = upsertActionToast(list, { key: `k${i}`, message: `Deleted ${i}`, actions: [undo] }, i);
+    }
+    expect(list.some((t) => t.full)).toBe(false);
+    list = upsertActionToast(list, { key: 'k9', message: 'Deleted 9', actions: [undo] }, 9);
+    expect(list.filter((t) => t.full).map((t) => t.id)).toEqual([9]);
+    list = pushToast(list, { message: 'Saved', tone: 'success' }, 10);
+    expect(list.find((t) => t.id === 10)?.full).toBe(true);
+  });
+
+  it('marks nothing when a toast replaces one under its key, or the stack has room', () => {
+    let list = upsertActionToast([], { key: 'a', message: 'Deleted 1', actions: [undo] }, 1);
+    list = upsertActionToast(list, { key: 'a', message: 'Deleted 2', actions: [undo] }, 2);
+    list = pushToast(list, { message: 'Saved', tone: 'success' }, 3);
+    expect(list.some((t) => t.full)).toBe(false);
   });
 });
 
