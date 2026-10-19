@@ -173,13 +173,15 @@ of their steps ask the person to try things.
 
 ### Motion
 
-- **Arrival.** Nothing is drawn while the first step prepares; then the dim fades in (450 ms) and the step card
-  settles in after it (dialog-in, 160 ms later). Reduced motion keeps the fades.
+- **Arrival.** Nothing is drawn while the first step prepares; then the dim fades in (`long`, 250 ms) and the step
+  card settles in with it (dialog-in, `short`, 50 ms later), both inside the chrome ceiling. Reduced motion keeps
+  the fades.
 - **Hand-over.** On Next the spotlight and the card stay on the current target while the next step prepares (a
   menu opening, a panel scrolling) and the card's buttons wait. The next step lands once its target exists, its own
   entrance (CSS animations and transitions) has finished and its rect holds for three frames (at most 600 ms).
-  Then the hole and the card glide to it together, once, over 420 ms ease-in-out, and the card's words cross-fade:
-  a step's words never sit beside the previous step's target, and nothing chases a menu as it opens.
+  Then the hole and the card glide to it together, once, over 250 ms (`long`, a tour move) ease-in-out, and the
+  card's words cross-fade: a step's words never sit beside the previous step's target, and nothing chases a menu as
+  it opens.
 - **Following.** Between glides the hole follows its target exactly, with no easing to lag behind a scroll or a
   zoom. A glide is one frame-by-frame tween written straight to the hole, with no render during it.
 - **One of each.** One spotlight and one card for the whole run, never remounted per step.

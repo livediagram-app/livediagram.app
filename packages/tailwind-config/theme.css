@@ -82,8 +82,8 @@
    * fades in and draws in from a little wider, so the eye is led onto the target. Long motion token. */
   /* A tour's arrival (docs/specs/007-editor/editor-tour.md "Motion"), staged: the dim settles in first, the step card
    * after it. Slower than a dialog: it changes the whole screen, and should feel like the lights dimming, not a cut. */
-  --animate-tour-dim-in: fade-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-tour-card-in: dialog-in 380ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both;
+  --animate-tour-dim-in: fade-in var(--transition-duration-long) cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-tour-card-in: dialog-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1) 50ms both;
 }
 
 @keyframes view-forward {
