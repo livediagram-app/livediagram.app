@@ -589,7 +589,7 @@ function MiniLayout({ x, y, motif }: { x: number; y: number; motif: number }) {
 
 /** An infographic page's title bar with its Layout button pressed, and the Layout popover open
  *  under it on the layout gallery: Layouts, the search beside Surprise Me, the category chips with
- *  All on, and the Covers section's first tiles, one under the pointer (ringed, its Use pill). */
+ *  All on, and a row of tiles, one under the pointer (ringed, its Use pill). */
 export function LayoutGalleryScene() {
   // The page: A4 landscape, its only page, so its label is its size alone.
   const pageX = 20;
@@ -610,10 +610,9 @@ export function LayoutGalleryScene() {
   const popX = layoutX;
   const popY = barY + 16;
   const popW = pad * 2 + cols * tw + (cols - 1) * gap;
-  const searchY = popY + 30;
+  const searchY = popY + 40;
   const chipY = searchY + 30;
-  const sectionY = chipY + 30;
-  const tileY = sectionY + 10;
+  const tileY = chipY + 18;
   const popH = tileY - popY + th + 34 + pad;
   const surpriseW = 86;
   // The chips in one row: All (on), then the first categories; the rest scroll in from the right.
@@ -626,7 +625,8 @@ export function LayoutGalleryScene() {
       return chip;
     },
   );
-  const TILES = ['Title Page', 'Quote', 'Event', 'Report Cover'];
+  // One from each of the first categories, drawn in its category's look.
+  const TILES = ['Title Page', 'Poster', 'Chart Story', 'Timeline'];
   return (
     <Scene w={popX + popW + 12} h={popY + popH + 14}>
       {/* The title bar */}
@@ -663,7 +663,7 @@ export function LayoutGalleryScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.3}
       />
-      <Label x={popX + pad} y={popY + 16} size={11} weight={700} tone="strong">
+      <Label x={popX + pad} y={popY + 18} size={11} weight={700} tone="strong">
         Layouts
       </Label>
       {/* The search, and Surprise Me beside it */}
@@ -723,9 +723,6 @@ export function LayoutGalleryScene() {
           </text>
         </g>
       ))}
-      <Label x={popX + pad + 2} y={sectionY} size={8.5} weight={700} tone="muted">
-        COVERS 12
-      </Label>
       {TILES.map((name, i) => {
         const x = popX + pad + i * (tw + gap);
         const hovered = i === 1;
