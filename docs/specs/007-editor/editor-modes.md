@@ -104,8 +104,8 @@ A tab never switches **into Plan** from another mode, nor **out of Plan** into a
 boards, sheets and dashboards, which need tabs of their own, and the other modes on a canvas. In the mode switch the
 mode across that line is still listed; picking it asks **Open a New <Mode> Tab?** ("Plan works in tabs of its own.",
 or on a Plan tab "A Plan tab stays in Plan.", then "Its mode can’t change, but you can carry on in a new <Mode>
-tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: Start Diagramming, Start
-Facilitating, Start Making Pages or Start Drawing (a pen in hand) ([Template starts](start-diagramming.md)), and
+tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: Start Diagramming, Start a
+Workshop, Start Making Pages or Start Drawing (a pen in hand) ([Template starts](start-diagramming.md)), and
 Start Planning for Plan. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. Since the switch shows only on an empty tab's start, the line holds in
@@ -151,8 +151,8 @@ switch lists every mode unlocked, and Shift+D steps through all five. The first 
   **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
   source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
   follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
-  opens empty on its mode's own start (Start Diagramming, Start Drawing, Start
-  Facilitating, Start Making Pages, Start Planning: [Template starts](start-diagramming.md), [Plan
+  opens empty on its mode's own start (Start Diagramming, Start Drawing, Start a
+  Workshop, Start Making Pages, Start Planning: [Template starts](start-diagramming.md), [Plan
   mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
   search also finds every other mode's templates. Only the template chosen for it changes that:
   every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
