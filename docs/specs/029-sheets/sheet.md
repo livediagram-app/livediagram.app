@@ -55,7 +55,8 @@ the left beside Cell Size and Freeze Header Row on the right.
   **Setup Sheet** card in place of the grid (the header, cog and Maximise stay), as a new board shows Setup Board:
   the card in the Sheet's colours (a sheet glyph, "Setup Sheet", "Start from a layout, your cards or a blank grid.
   Everything can change later from its cog.", Help), with Setup Board's wizard stepper: **Start From**, then **Style** (Plan Cards adds **Cards** and **Columns** between). Someone who may only view
-  sees the empty grid.
+  sees the empty grid. Covering the canvas on a phone, the card ends clear of the bottom controls (one row: undo,
+  Style, Fit), so its footer is never under them.
 - **Start From**: an option list ([Option lists](../026-plan/plan-board.md#option-lists)), a row per start with its
   glyph, name and line, **Blank** chosen to start:
 

@@ -18,6 +18,8 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planBandTint, planOwnColours, planPalette } from '@/components/plan/plan-palette';
 import { MaximisableSlot } from '@/components/plan/MaximisedPlanLayer';
+import { PHONE_SHEET_END_CLEARANCE } from '@/components/plan/phone-board';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { SheetCellThreadsProvider } from '@/hooks/sheets/sheet-comments-context';
@@ -310,6 +312,7 @@ function SheetParts({
   // Setup Sheet (sheet.md "Setup Sheet"): a placed sheet awaiting setup shows it while it has no cells; cells
   // arriving any other way (a peer, an agent, an import) end setup, so a sheet cleared later never shows it again.
   const pending = c.sheet.layout.setupPending === true;
+  const phone = useIsMobileViewport();
   const settingUp = pending && c.sheet.cells.size === 0 && canEdit && interactive;
   // The header holds the top row (menu-name-slot): the toolbar joins it rather than sitting under it.
   const [bandMarker, inBand] = useInHeaderBand();
@@ -359,7 +362,9 @@ function SheetParts({
         toolbar={toolbarInBand ? <SheetToolbar actions={actions} inBand /> : undefined}
       />
       {settingUp ? (
-        <div className="min-h-0 flex-1">
+        // Covering the canvas on a phone, the card ends clear of the bottom controls as a board's cards do
+        // (phone-board.ts), so its footer's Next is never under them.
+        <div className={`min-h-0 flex-1 ${phone && c.maximised ? PHONE_SHEET_END_CLEARANCE : ''}`}>
           <SheetSetup onImportCsv={onImportCsv} />
         </div>
       ) : (
