@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isMobileViewportSync } from '@/lib/responsive';
+import { announcePanelPresence } from '@/lib/panel-presence';
 
 // The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
@@ -13,6 +14,7 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.types';
 import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
+import { useDockPopoverKeys } from './useDockPopoverKeys';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -95,6 +97,12 @@ export function MovablePanel({
     onDockDragEnd,
   });
 
+  // Arriving and leaving, the panel has the chrome placed around it measure again (lib/panel-presence.ts).
+  useEffect(() => {
+    announcePanelPresence();
+    return announcePanelPresence;
+  }, []);
+
   // Panel geometry measurement (the body max-height cap): see useMovablePanelMeasure.
   const bodyMaxH = useMovablePanelMeasure({
     ref,
@@ -108,6 +116,9 @@ export function MovablePanel({
   // A popover off a button (the Toolbar layout's Explorer, the cluster
   // popovers): shown only while the button has it open.
   const popoverShown = asPopover && popoverOpen === true;
+
+  // As a popover off a dock button: keyboard focus in on a keyboard open, Escape out (useDockPopoverKeys).
+  useDockPopoverKeys(ref, popoverShown, onPopoverClose);
 
   // Outside-tap auto-close, for a popover that opts in with
   // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity /

@@ -38,3 +38,12 @@
   mix-blend-mode: darken;
   pointer-events: none;
 }
+
+/* Forced colours (docs/specs/004-interface-design/forced-colors.md): a preview is a picture of a canvas, so it keeps
+   its own colours. Repainted, the dark veil above turned black and its darken blend wiped the art to a blank box. */
+@media (forced-colors: active) {
+  .preview-art-tile,
+  .preview-art-tile::after {
+    forced-color-adjust: none;
+  }
+}

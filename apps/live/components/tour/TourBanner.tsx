@@ -91,13 +91,14 @@ export function TourBanner({
         // Sheet's grid, a field), where it would otherwise fall to the page as the banner goes.
         onMouseDown={(e) => e.preventDefault()}
         // The sign-in banner's look in the tab's own hue: a deep gradient white reads on, in light and dark alike
-        // (tour-colours bannerColours).
+        // (tour-colours bannerColours). Solid under the gradient (its end colour): forced colours drop gradients, and
+        // the banner went see-through over the canvas (docs/specs/004-interface-design/forced-colors.md).
         style={{
           ...tourColourVars(palette),
           backgroundImage:
             'linear-gradient(135deg, var(--tour-banner-from), var(--tour-banner-to))',
         }}
-        className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 p-4 text-white shadow-2xl shadow-slate-900/30 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-3 sm:pr-4 dark:shadow-black/40 [&_button]:relative [&_button]:touch-target-y"
+        className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-[var(--tour-banner-to)] p-4 text-white shadow-2xl shadow-slate-900/30 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-3 sm:pr-4 dark:shadow-black/40 [&_button]:relative [&_button]:touch-target-y"
       >
         {/* The tour's own picture, small: what it is about at a glance, as the sign-in banner's glyph tile is. On a
             ground of its own appearance: the art draws its dark frame in dark mode, which over white went a dull grey. */}

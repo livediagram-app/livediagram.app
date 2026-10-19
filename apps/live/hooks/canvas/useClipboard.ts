@@ -114,7 +114,7 @@ type ClipboardDeps = {
   // Drops a new image element pre-filled with an uploaded image. From
   // useEditorImages; undefined when image support is unavailable (no
   // document id / read-only), in which case image paste is a no-op.
-  addImageFromGallery?: (image: ImageDescriptor) => void;
+  addImageFromGallery?: (image: ImageDescriptor, at?: { x: number; y: number }) => void;
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
   // The current document id (null before hydration). Offline documents embed
@@ -309,7 +309,7 @@ export function useClipboard(deps: ClipboardDeps) {
   // The OS clipboard hand off doesn't carry a filename for inline
   // images (screenshots etc.), so we synthesise one from the MIME
   // suffix so the gallery has something to render in the title slot.
-  const pasteImageFile = async (file: File) => {
+  const pasteImageFile = async (file: File, at?: { x: number; y: number }) => {
     if (!addImageFromGallery) return;
     // Embeds never upload (docs/specs/013-workspace/embeds.md): the upload endpoint authorises by owner
     // identity, which inside a partitioned iframe is a throwaway guest.
@@ -328,12 +328,15 @@ export function useClipboard(deps: ClipboardDeps) {
       // Cloud documents upload; offline documents embed the paste locally
       // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
       const { image } = await addImageFileForDocument(ownerId, documentId, named);
-      addImageFromGallery({
-        id: image.id,
-        width: image.width,
-        height: image.height,
-        originalName: image.originalName,
-      });
+      addImageFromGallery(
+        {
+          id: image.id,
+          width: image.width,
+          height: image.height,
+          originalName: image.originalName,
+        },
+        at,
+      );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
     }
@@ -367,17 +370,25 @@ export function useClipboard(deps: ClipboardDeps) {
     track('Element', 'Imported', 'Excalidraw');
   };
 
-  // A file dropped on the canvas, at its canvas point: an Excalidraw file or export lands as its
-  // scene there; a file Import reads is pointed at Import; any other file is not something the canvas takes, and
-  // says so.
+  // A file dropped on the canvas, at its canvas point (docs/specs/020-import-export/excalidraw-import-export.md
+  // "Dropped files"): an Excalidraw file or export lands as its scene there; any other image lands as an image
+  // element there, as a pasted one does; a file Import reads is pointed at Import; anything else is not something
+  // the canvas takes, and says so.
   const dropBoardFile = (file: File, at: { x: number; y: number }) => {
-    if (isReadOnly || !insertBoardScene) return;
+    if (isReadOnly) return;
     const refuse = () => toast.info(DROP_NOT_A_SCENE);
+    const asImage = () => void pasteImageFile(file, at);
     // A draw.io, Mermaid, Markdown or JSON file replaces the tab through Import, and is told so.
     const importHint = dropImportHint(file);
     if (importHint) return toast.info(importHint);
-    if (!isExcalidrawFileCandidate(file)) return refuse();
-    void pasteExcalidrawFile(file, refuse, at);
+    const image = file.type.startsWith('image/');
+    // A PNG or SVG may carry an Excalidraw scene: read for one first, the picture itself otherwise.
+    if (insertBoardScene && isExcalidrawFileCandidate(file)) {
+      void pasteExcalidrawFile(file, image ? asImage : refuse, at);
+      return;
+    }
+    if (image) return asImage();
+    refuse();
   };
 
   // Single mutable ref holding the latest paste functions. The paste

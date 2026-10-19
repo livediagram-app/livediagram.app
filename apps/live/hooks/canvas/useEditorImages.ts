@@ -210,8 +210,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // "Images" accordion thumbnails. Sizes the placeholder to the
   // image's natural aspect ratio, capped at 240 px on the larger
   // side so it lands at a sensible canvas footprint regardless of
-  // the original resolution.
-  const addImageFromGallery = (image: ImageDescriptor) => {
+  // the original resolution. `at` centres it on a canvas point (a dropped file lands where it was released); the
+  // viewport's centre otherwise.
+  const addImageFromGallery = (image: ImageDescriptor, at?: { x: number; y: number }) => {
     // embedMode also blocks the clipboard's paste-image upload, which
     // funnels through this handler after uploading.
     if (editsBlocked || embedMode) return;
@@ -223,11 +224,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
       void apiFetchImageDataUrl(ownerId, image.id)
         .catch(() => null)
         .then((href) => {
-          if (href) addImageFromGallery({ ...image, id: href });
+          if (href) addImageFromGallery({ ...image, id: href }, at);
         });
       return;
     }
-    const centre = getViewportCenter();
+    const centre = at ?? getViewportCenter();
     const max = 240;
     const ratio = image.width / image.height;
     const w = image.width >= image.height ? max : Math.round(max * ratio);

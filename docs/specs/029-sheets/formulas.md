@@ -57,6 +57,12 @@ as what it means, never as the text typed, so everyone reads it the same whateve
 | `'anything`                             | The text after the `'`                            | Automatic                      |
 | Anything else                           | Text                                              | Automatic                      |
 
+- **The formula's format** is the format of what its outermost function returns: a date from `TODAY`, `DATE`,
+  `DATEVALUE`, `EDATE`, `EOMONTH` or `WORKDAY` is Date, `NOW` is Date Time, `TIME` and `TIMEVALUE` are Time, and so
+  is one of them plus or minus a plain number (`=TODAY()+7`); any other formula (arithmetic with a cell, `=A1+7`, or
+  between dates, `=A1-TODAY()`, which is a number of days) stays Automatic. It is taken only by a cell whose format is
+  Automatic, however the formula arrives (typed, pasted, or written by an agent), so a cell someone formatted keeps
+  its format. `=TODAY()` drew as `46314` before this.
 - A cell already formatted as **Plain Text** keeps whatever is typed as text.
 - Separators are read in the typist's locale (`1.234,5` is a number to someone whose locale writes it so).
 - The formula bar shows a stored number unformatted (`0.12`, or the date in the locale's short form).

@@ -61,10 +61,10 @@ export function tabToJsonText(tab: Tab, plan?: TabPlanData): string {
 // then left-to-right by x. That matches how a person would scan the
 // canvas and produces a usable export even for non-tree layouts.
 //
-// Arrows with labels render as italic edges between bullet points,
-// keyed off their endpoints so the connection survives the
-// flattening. Unlabelled arrows are dropped — they're structural,
-// not content.
+// Connections list every arrow that joins two elements, keyed off its endpoints so the connection survives the
+// flattening: a labelled one with its label in italics, an unlabelled one as the plain edge (`- Checkout → Enter card
+// details`). On a flowchart the arrows are the content: the main path carries no labels, and leaving it out kept
+// only the side branches (issue #985). A free line that joins nothing, with no label, says nothing and stays out.
 // The markdown outline as a string — shared by the Blob download and the
 // export dialog's view/copy panel (docs/specs/020-import-export/mermaid.md).
 // `plan`: the document's items, so Plan boards and cards list their cards.
@@ -92,14 +92,21 @@ export function tabToMarkdownText(tab: Tab, plan?: TabPlanData): string {
     lines.push('');
   }
 
-  const labelledArrows = arrows.filter((a) => a.label && a.label.trim().length > 0);
-  if (labelledArrows.length > 0) {
+  const connections = arrows.filter(
+    (a) =>
+      (a.label && a.label.trim().length > 0) ||
+      (a.from.kind === 'pinned' && a.to.kind === 'pinned'),
+  );
+  if (connections.length > 0) {
     lines.push('## Connections');
     lines.push('');
-    for (const a of labelledArrows) {
+    for (const a of connections) {
       const fromLabel = endpointLabel(a.from, boxed);
       const toLabel = endpointLabel(a.to, boxed);
-      lines.push(`- *${a.label}*: ${fromLabel} → ${toLabel}`);
+      const label = a.label?.trim();
+      lines.push(
+        label ? `- *${a.label}*: ${fromLabel} → ${toLabel}` : `- ${fromLabel} → ${toLabel}`,
+      );
     }
     lines.push('');
   }
@@ -107,7 +114,7 @@ export function tabToMarkdownText(tab: Tab, plan?: TabPlanData): string {
   const planLines = plan ? tabPlanMarkdown(tab, plan) : [];
   lines.push(...planLines);
 
-  if (labelledBoxed.length === 0 && labelledArrows.length === 0 && planLines.length === 0) {
+  if (labelledBoxed.length === 0 && connections.length === 0 && planLines.length === 0) {
     lines.push('_No labelled content._');
   }
   return lines.join('\n');

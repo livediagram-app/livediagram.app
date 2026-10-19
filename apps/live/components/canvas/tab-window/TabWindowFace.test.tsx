@@ -82,6 +82,13 @@ describe('tabWindowState', () => {
     });
     expect(tabWindowState('flow', tab('flow', 'Flow'), 'failed')).toMatchObject({ kind: 'failed' });
     expect(tabWindowState('b', tab('b', 'B', 0), 'loaded')).toEqual({ kind: 'empty', name: 'B' });
+    // A Pages tab always has a page and a Form tab its form, though neither holds an element.
+    expect(
+      tabWindowState('p', { ...tab('p', 'Deck', 0), opensIn: 'pages' }, 'loaded'),
+    ).toMatchObject({ kind: 'drawing' });
+    expect(
+      tabWindowState('f', { ...tab('f', 'Survey', 0), kind: 'form', form: {} }, 'loaded'),
+    ).toMatchObject({ kind: 'drawing' });
     expect(tabWindowState('flow', tab('flow', ''), 'loaded')).toMatchObject({
       kind: 'drawing',
       name: 'Untitled tab',
@@ -132,17 +139,18 @@ describe('TabWindowFace', () => {
     expect(ctx.open).toHaveBeenCalledWith('flow');
   });
 
-  it('shows its own tab or a Plan tab as not available, asking for nothing, as the export does', () => {
+  it('shows its own tab as not available, asking for nothing, as the export does', () => {
     const own = show(windowEl('slides'));
     expect(screen.getByText("This tab isn't available.")).toBeTruthy();
     expect(own.request).not.toHaveBeenCalled();
-    cleanup();
+  });
+
+  it('shows a Plan tab, asking for its content like any other tab', () => {
     const plan = show(windowEl('board'), {
       tabs: [tab('slides', 'Slides'), { ...tab('board', 'Board'), opensIn: 'plan' } as never],
     });
-    expect(screen.getByText("This tab isn't available.")).toBeTruthy();
-    expect(screen.queryByText(/Board/)).toBeNull();
-    expect(plan.request).not.toHaveBeenCalled();
+    expect(screen.queryByText("This tab isn't available.")).toBeNull();
+    expect(plan.request).toHaveBeenCalled();
   });
 
   it('waits, offers Retry, says when the tab is empty or not available', () => {

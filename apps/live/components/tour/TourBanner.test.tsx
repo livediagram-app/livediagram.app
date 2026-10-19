@@ -37,6 +37,15 @@ describe('TourBanner', () => {
     expect(buttons).toEqual(['No', 'Yes']);
   });
 
+  // docs/specs/004-interface-design/forced-colors.md: forced colours drop the gradient; a solid fill under it keeps the
+  // banner opaque over the canvas.
+  it('has a solid fill under its gradient', () => {
+    open();
+    const banner = screen.getByRole('dialog', { name: 'Getting started with Diagrams?' });
+    expect(banner.className).toContain('bg-[var(--tour-banner-to)]');
+    expect(banner.style.backgroundImage).toContain('linear-gradient');
+  });
+
   it('leaves focus where it is and takes no backdrop', () => {
     const before = document.createElement('button');
     document.body.append(before);

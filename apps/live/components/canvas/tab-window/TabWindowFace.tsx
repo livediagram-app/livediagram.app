@@ -9,6 +9,7 @@ import {
   TAB_WINDOW_EMPTY,
   TAB_WINDOW_HAIRLINE,
   TAB_WINDOW_RADIUS,
+  tabHasDrawing,
   tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
@@ -41,7 +42,7 @@ type TabWindowState =
 
 export function tabWindowState(
   windowTabId: string | undefined,
-  tab: { id: string; name: string; elements: readonly unknown[] } | undefined,
+  tab: (Parameters<typeof tabHasDrawing>[0] & { id: string; name: string }) | undefined,
   status: 'loaded' | 'loading' | 'failed',
 ): TabWindowState {
   if (!windowTabId) return { kind: 'unchosen' };
@@ -49,7 +50,7 @@ export function tabWindowState(
   const name = tab.name || 'Untitled tab';
   if (status === 'failed') return { kind: 'failed', name, tabId: tab.id };
   if (status === 'loading') return { kind: 'loading', name };
-  if (tab.elements.length === 0) return { kind: 'empty', name };
+  if (!tabHasDrawing(tab)) return { kind: 'empty', name };
   return { kind: 'drawing', name, tabId: tab.id };
 }
 
@@ -69,7 +70,7 @@ export function TabWindowFace({
   const ctx = useTabWindows();
   const choose = canChoose === false ? undefined : ctx?.choose;
   const tabId = element.windowTabId;
-  // A tab the window may not show (its own, a Plan tab) is unavailable, as the export draws it.
+  // A tab the window may not show (its own) is unavailable, as the export draws it.
   const found = tabId ? ctx?.tabs.find((t) => t.id === tabId) : undefined;
   const tab = found && ctx && tabWindowMayShow(found, ctx.ownTabId) ? found : undefined;
   const state = ctx

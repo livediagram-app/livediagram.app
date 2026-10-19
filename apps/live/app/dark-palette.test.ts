@@ -253,7 +253,8 @@ describe('white text on an identity colour', () => {
             );
           const cls = attr('className')?.initializer?.getText(sf) ?? '';
           const style = attr('style')?.initializer?.getText(sf) ?? '';
-          const runtimeBg = /backgroundColor:\s*(?!['"`])/.test(style);
+          // A literal (a quoted string, after any spaces) is not a runtime colour.
+          const runtimeBg = /backgroundColor:\s*(?![\s'"`])/.test(style);
           if (runtimeBg && /(^|[\s'"`{])text-white\b/.test(cls)) {
             offenders.push(
               `${relative(REPO, path)}:${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1}`,

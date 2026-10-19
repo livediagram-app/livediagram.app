@@ -95,6 +95,25 @@ describe('tabToMarkdownText', () => {
     expect(lines).toContain('- *flows to*: A → (12, 31)');
   });
 
+  it('lists an unlabelled arrow that joins two elements as the plain edge, so a flowchart keeps its main path', () => {
+    // Issue #985: the Flowchart template's Checkout → Enter card details path carries no labels and was left out.
+    const lines = md(
+      tab('T', [
+        shape('a', { label: 'Checkout' }),
+        shape('b', { label: 'Enter card details' }),
+        arrow('e', {
+          from: { kind: 'pinned', elementId: 'a', anchor: 's' },
+          to: { kind: 'pinned', elementId: 'b', anchor: 'n' },
+        }),
+        arrow('loose', { to: { kind: 'free', x: 5, y: 5 } }),
+      ]),
+    );
+    expect(lines).toContain('## Connections');
+    expect(lines).toContain('- Checkout → Enter card details');
+    // A free unlabelled line joins nothing and stays out.
+    expect(lines.filter((l) => l.startsWith('- ') && l.includes('→'))).toHaveLength(1);
+  });
+
   it('shows ? for an arrow pinned to a missing element', () => {
     const lines = md(
       tab('T', [

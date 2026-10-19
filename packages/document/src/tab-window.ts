@@ -1,8 +1,6 @@
 // The tab window (docs/specs/009-elements/tab-window.md): an element showing another tab of the document, live,
 // zoomed to fit. Pure: which tabs a window may show, its sizes, and its picture in an export (the shown tab's drawing
 // fitted inside a rounded frame, or the frame named for its tab where there is no drawing).
-import { opensInOf } from './editor-mode';
-import { isPlanTabKind } from './tab-kind';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -22,12 +20,10 @@ export const TAB_WINDOW_EMPTY = {
 
 type TabLike = { id: string; kind?: string; opensIn?: string };
 
-/** Whether a window on `ownTabId` may show this tab: any tab of the document but its own and a Plan tab (a Board,
- *  Sheet or Dashboard tab, or any tab in Plan mode). */
+/** Whether a window on `ownTabId` may show this tab: any tab of the document but its own, a Plan tab (a Board, Sheet
+ *  or Dashboard tab, or any tab in Plan mode) included. */
 export function tabWindowMayShow(tab: TabLike, ownTabId: string | undefined): boolean {
-  if (tab.id === ownTabId) return false;
-  if (isPlanTabKind(tab.kind)) return false;
-  return opensInOf(tab) !== 'plan';
+  return tab.id !== ownTabId;
 }
 
 /** The tabs a window on `ownTabId` may show, in tab-bar order. */

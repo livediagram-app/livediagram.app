@@ -622,6 +622,29 @@
 }
 
 /*
+ * Forced colours (docs/specs/004-interface-design/forced-colors.md). A Windows contrast theme repaints every author
+ * colour with the system's own, so a control whose chosen state is only its fill showed no state at all: a segmented
+ * control's chosen option, a pressed toggle, a selected tab. Each states it with ARIA, so the system's selection
+ * colour rings it here, inside its edge, for every app. A ring, not a Highlight fill: the browser draws a Canvas
+ * backplate behind forced text, which hid a filled option's HighlightText label. Not while the focus ring shows, which
+ * is drawn with the same outline. Unlayered, so it outranks the utilities on the same control. A switch has no system
+ * pair that says "on", and its border-less track and thumb vanished into Canvas, so it keeps its own colours.
+ */
+@media (forced-colors: active) {
+  :is(
+    :is([role='radio'], [role='menuitemradio'])[aria-checked='true'],
+    [aria-pressed='true'],
+    :is([role='tab'], [role='option'])[aria-selected='true']
+  ):not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  [role='switch'] {
+    forced-color-adjust: none;
+  }
+}
+
+/*
  * The one narrower variant, for dense strips where even the thin default crowds the content (the
  * editor's tab bar, packed panel lists and dialogs, the dashboard's stack modals). Same colours as
  * the default; only the webkit width differs, since `thin` is already the standard's narrowest.

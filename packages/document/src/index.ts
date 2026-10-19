@@ -513,6 +513,7 @@ export * from './page-default-background';
 export * from './pages-edits';
 export * from './pages-background-copy';
 export * from './tab-window';
+export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

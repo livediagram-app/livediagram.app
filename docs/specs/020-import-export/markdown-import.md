@@ -121,10 +121,11 @@ _different_ problem from Mermaid, so they stay:
   tree-from-indentation is a genuinely different input from a node/edge
   graph. Different source, different shape → distinct value.
 - **Markdown export — keep, repositioned.** It emits a flat, human-
-  readable **summary** (`## Elements` + `## Connections` bullet lists of
-  the _labelled_ content), sorted for reading, to drop into a doc, PR, or
-  notes. It is deliberately **lossy** — no nesting, unlabelled elements
-  omitted — because it's a summary, not a reconstruction. Mermaid is now
+  readable **summary** (`## Elements`, the _labelled_ elements, and `## Connections`, every arrow that joins two
+  elements: a labelled one as `- *label*: A → B`, an unlabelled one as `- A → B`, since on a flowchart the
+  unlabelled arrows are the main path; a free line with no label stays out), sorted for reading, to drop into a
+  doc, PR, or notes. It is deliberately **lossy** (no nesting, unlabelled elements omitted) because it's a summary,
+  not a reconstruction. Mermaid is now
   the **faithful** text export (rebuilds the graph); Markdown is the
   **readable** one. The two coexist with clear, non-overlapping jobs, and
   the export dialog + help copy say which is which.

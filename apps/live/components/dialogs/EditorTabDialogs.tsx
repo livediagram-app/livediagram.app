@@ -159,6 +159,10 @@ export function EditorTabDialogs() {
           documentName={documentName}
           signedIn={!!clerkUserId}
           teamDocument={!!documentTeamId}
+          // Known only for the open tab (the editor holds its elements); another first tab is left to the server.
+          firstTabEmpty={
+            !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
+          }
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

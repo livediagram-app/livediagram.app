@@ -63,11 +63,35 @@ describe('tabWindowArts', () => {
     expect(flow.drawing!.width).toBeGreaterThan(0);
   });
 
-  it('names an empty tab without a drawing, and leaves out a tab a window may not show', () => {
-    const arts = tabWindowArts('slides', ['blank', 'board', 'gone'], tabs, new Map());
+  it('names an empty tab without a drawing, draws a Plan tab, and leaves out its own tab and a gone one', () => {
+    const arts = tabWindowArts('slides', ['blank', 'board', 'slides', 'gone'], tabs, new Map());
     expect(arts.get('blank')).toEqual({ name: 'Blank' });
-    expect(arts.has('board')).toBe(false);
+    expect(arts.has('board')).toBe(true);
+    expect(arts.has('slides')).toBe(false);
     expect(arts.has('gone')).toBe(false);
+  });
+
+  it('draws a Pages tab as its pages, a Form tab as its form and a Board tab laid out', () => {
+    const shown = [
+      ...tabs,
+      tab('deck', 'Deck', [], { opensIn: 'pages' }),
+      tab('survey', 'Survey', [], {
+        kind: 'form',
+        form: { v: 1, heading: 'Team Survey', sections: [{ id: 's', title: '', questions: [] }] },
+      }),
+    ];
+    const arts = tabWindowArts('slides', ['deck', 'survey'], shown, new Map());
+    expect(arts.get('deck')?.drawing?.markup).toContain('<svg x="');
+    expect(arts.get('survey')?.drawing?.markup).toContain('Team Survey');
+    // A Board tab is its board alone (planImageOf), never the canvas's other elements.
+    const board = tab(
+      'board',
+      'Board',
+      [{ ...box('b', ''), shape: 'plan-board' } as Element, box('loose', 'Loose Note')],
+      { kind: 'board' },
+    );
+    const boardArt = tabWindowArts('slides', ['board'], [...tabs.slice(0, 3), board], new Map());
+    expect(boardArt.get('board')?.drawing?.markup).not.toContain('Loose Note');
   });
 
   it('puts the drawing inside the window in the tab export', () => {

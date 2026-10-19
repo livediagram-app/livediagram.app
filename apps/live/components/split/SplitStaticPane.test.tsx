@@ -8,15 +8,28 @@ import { SplitStaticPane } from './SplitStaticPane';
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorContext: () => ({ editingId: null, userPreferences: {} }),
 }));
-vi.mock('./useTabSvg', () => ({ useTabSvg: () => null }));
+vi.mock('./useTabSvg', () => ({
+  useTabSvg: (t: Tab | undefined) =>
+    t
+      ? { markup: '<svg/>', width: 10, height: 10, origin: { x: 0, y: 0 }, background: '#fff' }
+      : null,
+}));
+vi.mock('./TabSvgViewport', () => ({ TabSvgViewport: () => <div data-testid="drawing" /> }));
 
 const tab = { id: 't2', name: 'Roadmap', elements: [] } as unknown as Tab;
 
-function pane(props: { failed?: boolean; onFocus?: (via: 'Click' | 'Hover') => void } = {}) {
+function pane(
+  props: {
+    failed?: boolean;
+    onFocus?: (via: 'Click' | 'Hover') => void;
+    shown?: Tab;
+    loaded?: boolean;
+  } = {},
+) {
   return render(
     <SplitStaticPane
-      tab={tab}
-      loaded={false}
+      tab={props.shown ?? tab}
+      loaded={props.loaded ?? false}
       failed={props.failed}
       initialAnchor={null}
       handleRef={{ current: null }}
@@ -54,5 +67,17 @@ describe('SplitStaticPane', () => {
     fireEvent.pointerEnter(section);
     act(() => void vi.advanceTimersByTime(SPLIT_HOVER_FOCUS_MS + 1));
     expect(onFocus).toHaveBeenCalledWith('Hover');
+  });
+
+  // A Pages tab always has a page, and a Form tab its form: neither is "nothing on this tab".
+  it('draws an empty Pages or Form tab, and says an empty canvas has nothing on it', () => {
+    pane({ loaded: true, shown: { ...tab, opensIn: 'pages' } });
+    expect(screen.getByTestId('drawing')).toBeTruthy();
+    cleanup();
+    pane({ loaded: true, shown: { ...tab, kind: 'form', form: {} } as unknown as Tab });
+    expect(screen.getByTestId('drawing')).toBeTruthy();
+    cleanup();
+    pane({ loaded: true });
+    expect(screen.getByText('Nothing on this tab yet. Click to start on it.')).toBeTruthy();
   });
 });
