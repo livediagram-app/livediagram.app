@@ -61,7 +61,7 @@ export function ToolOptionRow<T extends string>({
           {swatchFor && value !== null ? (
             <span
               aria-hidden
-              className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
+              className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10 forced-color-adjust-none"
               style={{ backgroundColor: swatchFor(value) }}
             />
           ) : null}
@@ -88,7 +88,7 @@ export function ToolOptionRow<T extends string>({
               {swatchFor ? (
                 <span
                   aria-hidden
-                  className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
+                  className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10 forced-color-adjust-none"
                   style={{ backgroundColor: swatchFor(option.id) }}
                 />
               ) : null}

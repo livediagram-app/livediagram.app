@@ -202,7 +202,7 @@ describe('exportTabAsMarkdown', () => {
     expect(md.match(/^- \*\*/gm)?.length).toBe(2);
   });
 
-  it('drops unlabelled arrows entirely (no Connections section)', async () => {
+  it('lists an unlabelled arrow between two elements as the plain edge (issue #985)', async () => {
     const md = await text(
       exportTabAsMarkdown(
         tab({
@@ -214,7 +214,8 @@ describe('exportTabAsMarkdown', () => {
         }),
       ),
     );
-    expect(md).not.toContain('## Connections');
+    expect(md).toContain('## Connections');
+    expect(md).toContain('- A → B');
   });
 });
 

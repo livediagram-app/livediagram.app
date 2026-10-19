@@ -3,11 +3,8 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
-import {
-  EMPTY_PAGE_LAYOUTS_WIDE_WIDTH,
-  EMPTY_PAGE_LAYOUTS_WIDTH,
-  EmptyPageLayouts,
-} from './EmptyPageLayouts';
+import { layoutCardShows, LAYOUT_CARD_MARGIN } from './page-layout-card';
+import { EMPTY_PAGE_LAYOUTS_WIDE_WIDTH, EmptyPageLayouts } from './EmptyPageLayouts';
 import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
@@ -75,12 +72,6 @@ const LETTERBOX_SPREAD = 100_000;
 const INVITE_WIDE = 150;
 const INVITE_ICON = 30;
 
-// Screen px an empty page needs round the in-page layout card (EmptyPageLayouts), and the least
-// height on screen that holds it.
-const LAYOUT_CARD_MARGIN = 16;
-// Six categories make three rows of cards.
-const LAYOUT_CARD_MIN_HEIGHT = 440;
-
 // Held at one screen size whatever the zoom: counter-scaled about the given corner.
 const steady = (zoom: number, origin: string): CSSProperties => ({
   transform: `scale(${1 / zoom})`,
@@ -98,12 +89,16 @@ export function CanvasPages({
   view,
   zoom,
   bare = false,
+  placing = false,
   onOpenTheme,
 }: {
   view: PagesModeView;
   zoom: number;
   // The sheets alone, without their title bars or the add button (zen, presenting).
   bare?: boolean;
+  // A palette tile is armed (tap to drop or drag to draw): the page is where it will land, so the in-page layout
+  // card steps aside until the tool is put down.
+  placing?: boolean;
   // Opens the Tab Style popover, from the Layout popover's Change Theme; absent where the session
   // may not restyle the tab.
   onOpenTheme?: (() => void) | undefined;
@@ -198,20 +193,18 @@ export function CanvasPages({
   // The pages whose in-page layout card was hidden, until the tab is next opened.
   const [layoutsHidden, setLayoutsHidden] = useState<ReadonlySet<string>>(() => new Set());
   // An empty infographic page shows its layouts inside itself (EmptyPageLayouts): never on the first
-  // page while it offers its kind, under its open panel, or on a page too small on screen to hold
-  // the card.
+  // page while it offers its kind, under its open panel, while a palette tile is armed to place something on it, or
+  // on a page too small on screen to hold the card.
   const showsLayoutCard = (page: LaidOutPage) =>
-    !!edit &&
-    page.locked !== true &&
-    page.startedBlank !== true &&
-    !page.flow &&
-    page.kind !== 'article' &&
-    edit.contentCount(page.id) === 0 &&
-    !offersPageKindChoice(pages, page.id, 0) &&
-    openId !== page.id &&
-    !layoutsHidden.has(page.id) &&
-    page.rect.width * zoom >= EMPTY_PAGE_LAYOUTS_WIDTH + LAYOUT_CARD_MARGIN * 2 &&
-    page.rect.height * zoom >= LAYOUT_CARD_MIN_HEIGHT;
+    layoutCardShows(page, {
+      editable: !!edit,
+      placing,
+      contentCount: edit ? edit.contentCount(page.id) : 0,
+      offersKind: offersPageKindChoice(pages, page.id, 0),
+      panelOpen: openId === page.id,
+      hidden: layoutsHidden.has(page.id),
+      zoom,
+    });
   // The page a layout is previewed on: its panel's, or its in-page card's.
   const previewed = view.layoutPreview
     ? pages.find((p) => p.id === view.layoutPreview!.pageId)

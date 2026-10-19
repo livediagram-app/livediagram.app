@@ -131,12 +131,8 @@ export function writeRows(
         cells.push({ r, c, i: { b: v } });
         continue;
       }
-      const read = readTypedInput(
-        v,
-        AGENT_LOCALE,
-        ctx,
-        sheet.cells.get(cellKey(r, c))?.format?.nf === 'text',
-      );
+      const nf = sheet.cells.get(cellKey(r, c))?.format?.nf;
+      const read = readTypedInput(v, AGENT_LOCALE, ctx, nf === 'text');
       if (read.kind === 'invalid') {
         const a1 = formatRange({
           r1: start.r1 + i,
@@ -151,7 +147,8 @@ export function writeRows(
         return { ok: false, error: 'formula_invalid', at: a1, why };
       }
       const ch: CellChange = { r, c, i: read.kind === 'clear' ? null : read.input };
-      if (read.kind === 'value' && read.hint)
+      // A formula's hint is taken only by a cell whose own format is Automatic.
+      if (read.kind === 'value' && read.hint && !(read.hint.ifAutomatic && nf && nf !== 'auto'))
         ch.f = { nf: read.hint.nf, ...(read.hint.cur ? { cur: read.hint.cur } : {}) } as never;
       cells.push(ch);
     }

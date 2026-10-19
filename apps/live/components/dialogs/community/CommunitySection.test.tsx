@@ -86,6 +86,21 @@ describe('CommunitySection, every face', () => {
     expect(screen.getByText("We couldn't reach the Community. Try again.")).toBeTruthy();
   });
 
+  it('says before the form when the open first tab is empty, and holds Share to Community', () => {
+    // Issue #988: the refusal came only after the whole form was filled in, and Cancel lost the draft.
+    const onPublish = vi.fn();
+    render(<CommunitySection {...base({ onPublish, firstTabEmpty: true })} />);
+    const share = screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' });
+    expect(share.disabled).toBe(true);
+    expect(
+      screen.getByText(
+        'Add something to your first tab before sharing: it is the picture on your Community card.',
+      ),
+    ).toBeTruthy();
+    fireEvent.click(share);
+    expect(onPublish).not.toHaveBeenCalled();
+  });
+
   it('says the Community is public, and holds Share to Community while a password is set', () => {
     const onPublish = vi.fn();
     render(<CommunitySection {...base({ onPublish })} />);

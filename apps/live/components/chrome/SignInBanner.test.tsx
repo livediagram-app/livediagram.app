@@ -34,6 +34,14 @@ describe('SignInBanner', () => {
     expect(view.getByText(/Share with your team/).className).toContain('text-white/90');
   });
 
+  // docs/specs/004-interface-design/forced-colors.md: forced colours drop the gradient; a solid fill under it keeps the
+  // banner opaque over the canvas.
+  it('has a solid fill under its gradient', () => {
+    const view = render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
+    const card = view.container.querySelector('[data-toast-floor]')!;
+    expect(card.className).toMatch(/(^|\s)bg-brand-800(\s|$)/);
+  });
+
   // docs/specs/014-identity/sign-in-encouragement.md: a tour's offer takes the same place, so the banner steps aside.
   // docs/specs/014-identity/sign-in-encouragement.md "Banner": a sideways phone has little height to give.
   it('is one slim row on a phone held sideways', () => {

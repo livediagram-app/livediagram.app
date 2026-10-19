@@ -173,7 +173,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           onClick={() => onSelect(tab.id)}
           onDoubleClick={readOnly ? undefined : () => isActive && setEditingId(tab.id)}
           aria-current={isActive ? 'page' : undefined}
-          className="relative flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium touch-target-y"
+          className="relative flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium outline-none touch-target-y focus-visible:ring-2 focus-visible:ring-brand-400"
         >
           {/* The mode you work in on this tab (docs/specs/007-editor/editor-modes.md), tinted with
               the tab theme's accent; the pill text itself stays neutral so it reads on the bar for

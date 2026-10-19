@@ -21,7 +21,8 @@ export const CURRENCY_SYMBOLS = [
   '₫',
 ] as const;
 
-export type FormatHint = { nf: NumberFormatKind; cur?: string };
+// `ifAutomatic`: a formula's hint, taken only by a cell whose own format is Automatic, however it is written.
+export type FormatHint = { nf: NumberFormatKind; cur?: string; ifAutomatic?: true };
 
 type LiteralRead = { kind: 'clear' } | { kind: 'value'; input: CellInput; hint?: FormatHint };
 

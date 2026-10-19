@@ -289,7 +289,9 @@ Editor (`apps/live`):
   still preview (no `href`), its `image` slot holding the owner's own snapshot and `categoryLabel` asking for a
   category until one is chosen. The share password control is locked while the post is listed; with a share
   password set the section disables Share to Community and says "Remove the share password to share it to the
-  Community." A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
+  Community." With the open tab being the first and empty (`firstTabEmpty`, computed in `EditorTabDialogs.tsx` as
+  `tabs[0].id === activeTab.id && activeTab.elements.length === 0`, the same count the server's `empty_document`
+  check reads) it disables the button beside `communityCodeMessage('empty_document')`. A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
   Remove.
 - Public badge: `apps/live/lib/community-state-store.ts` (an external store, seeded from the document fetch and
   updated by the Community section on publish or remove) feeds `SharedBadge`'s `community` state, labelled **Public**,
@@ -417,7 +419,9 @@ Final copy:
 - Gallery search box: placeholder "Search..."; its label (visually hidden) "Search the Community".
 - Share dialog section heading: **Community**. Unpublished: "The Community is public: anyone, with or without an
   account, can find this document there, view it and make their own copy." Button: **Share to Community**. With a
-  share password set, the button is disabled beside "Remove the share password to share it to the Community." Guest: "Sign in to share your document with the
+  share password set, the button is disabled beside "Remove the share password to share it to the Community." With
+  the open first tab empty, it is disabled beside "Add something to your first tab before sharing: it is the picture
+  on your Community card." Guest: "Sign in to share your document with the
   Community." Button: **Sign In to Share**. Team document: "Team library documents can't be shared to the Community."
 - Published: post title, category, "♥ n · Copied n times", **View Post**, **Edit Listing**, **Remove From Community**;
   hidden: "**Hidden after reports.** Several people reported it, so it was taken out of the Community for good. Only you

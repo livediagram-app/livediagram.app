@@ -104,7 +104,7 @@ export function CustomColourEditor({
           if (e.currentTarget.hasPointerCapture(e.pointerId)) fromPointer(e);
         }}
         onKeyDown={squareKeys}
-        className="relative h-28 w-full cursor-crosshair touch-none rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="relative h-28 w-full cursor-crosshair touch-none rounded-md forced-color-adjust-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         style={{
           backgroundImage: `linear-gradient(to bottom, transparent, #000), linear-gradient(to right, #fff, ${hue})`,
         }}
@@ -122,7 +122,7 @@ export function CustomColourEditor({
         value={Math.round(hsv.h)}
         aria-label="Hue"
         onChange={(e) => set({ ...hsv, h: Number(e.target.value) })}
-        className="h-3 w-full cursor-pointer appearance-none rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="h-3 w-full cursor-pointer appearance-none rounded-full forced-color-adjust-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         style={{
           background: 'linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)',
         }}
@@ -130,7 +130,7 @@ export function CustomColourEditor({
       <div className="flex items-center gap-1.5">
         <span
           aria-hidden
-          className="h-6 w-6 shrink-0 rounded-md border border-black/15 dark:border-white/20"
+          className="h-6 w-6 shrink-0 rounded-md border border-black/15 forced-color-adjust-none dark:border-white/20"
           style={{ backgroundColor: hex }}
         />
         <input
@@ -198,7 +198,7 @@ export function CustomColourEditor({
                 >
                   <span
                     aria-hidden
-                    className="block h-5 w-5 rounded-[5px] border border-black/15 dark:border-white/20"
+                    className="block h-5 w-5 rounded-[5px] border border-black/15 forced-color-adjust-none dark:border-white/20"
                     style={{ backgroundColor: readable }}
                   />
                 </button>

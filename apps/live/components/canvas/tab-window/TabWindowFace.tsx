@@ -69,7 +69,7 @@ export function TabWindowFace({
   const ctx = useTabWindows();
   const choose = canChoose === false ? undefined : ctx?.choose;
   const tabId = element.windowTabId;
-  // A tab the window may not show (its own, a Plan tab) is unavailable, as the export draws it.
+  // A tab the window may not show (its own) is unavailable, as the export draws it.
   const found = tabId ? ctx?.tabs.find((t) => t.id === tabId) : undefined;
   const tab = found && ctx && tabWindowMayShow(found, ctx.ownTabId) ? found : undefined;
   const state = ctx

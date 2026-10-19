@@ -18,8 +18,7 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 
 ## Behaviour and state
 
-- **May show**: not `ownTabId`, not `isPlanTabKind(tab.kind)`, and `opensInOf(tab) !== 'plan'`. Offers keep tab-bar
-  order.
+- **May show**: any tab but `ownTabId`, a Plan tab included. Offers keep tab-bar order.
 - **State** (`tabWindowState(windowTabId, tab, status)`): no `windowTabId` → `unchosen`; no tab with that id among the
   person's tabs → `unavailable`; status `failed` → `failed`; `loading` → `loading`; no elements → `empty`; else
   `drawing`. A name is the tab's, or "Untitled tab".
@@ -36,7 +35,9 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 - **Choosing**: the face's `choose(elementId, tabId)` commits `windowTabId` on that element (`commitElements`, one
   undo step); the menu's Shows commits through `ops.commit(..., 'TabWindowTab')` on the selection.
 - **Opening**: `open(tabId)` (face) and the menu's Open row call `useSelectTab()`.
-- **Drawing**: `TabWindowDrawing` → `useTabSvg(tab)` (deferred, the export renderer, appearance, photos, cards) →
+- **Drawing**: `TabWindowDrawing` → `usePlanImageExport(tab, tabs)` (a Plan tab laid out as its image export, its
+  Sheets' cells and plan-view art) → `useTabSvg(plan.imageTab, windowMotion, plan.opts)` (deferred, the export
+  renderer, appearance, photos, cards) →
   inline `<svg width=100% height=100% viewBox="0 0 w h" preserveAspectRatio="xMidYMid meet">` wrapping the markup with
   `prefixSvgIds(markup, 'tw-<elementId>-')`, on a div painted `svg.background`, `pointer-events: none`.
 - **Motion**: `TabWindowDrawing` passes `windowMotion` (`tab-window-motion.ts`) to `useTabSvg`, which hands
@@ -64,7 +65,7 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
   prefixed; references to ids not in the markup are left alone.
 - `useTabWindowExport({ tab, tabs, loadTabs, imageContext, active, items })`: targets are `tabWindowTargets(tab)`
   (distinct `windowTabId`s in element order, not the tab itself); when `active` and there are targets it awaits
-  `loadTabs` of the targets a window may show (`tabWindowMayShow`; none fetched for a Plan tab), then `loadTabImages` for each target tab; `ready` once both settle (photos only with an
+  `loadTabs` of the targets a window may show (`tabWindowMayShow`, a Plan tab included), then `loadTabImages` for each target tab; `ready` once both settle (photos only with an
   `imageContext`). It returns `resolveTabWindow` (from `tabWindowArts`) and `tabWindowFontIds`
   (`exportFontIds` of each target). `tabWindowArts` skips a tab `tabWindowMayShow` refuses or that is missing, gives an
   empty tab its name only, and otherwise renders `renderTabToSvg(tabAsSeen(t), { pattern: false, images,
@@ -87,7 +88,6 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
 | Fetch failed                                    | `failed` with Retry                                                                                                                                              |
 | Tab empty                                       | `empty`                                                                                                                                                          |
 | A window set to its own tab (by the API)        | Never offered; the canvas draws its own tab (status `loaded`), the window inside as its named frame; an export skips it (`tabWindowTargets`) and draws the frame |
-| A Plan tab chosen through the API               | The canvas draws it as any tab; exports skip it (`tabWindowMayShow`) and draw the named frame.                                                                   |
 | Nested windows                                  | Named frame, never recursion                                                                                                                                     |
 | No editor context (thumbnails, other renderers) | `useTabWindows()` is null → `unchosen` look, no controls                                                                                                         |
 

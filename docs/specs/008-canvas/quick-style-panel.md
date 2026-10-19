@@ -68,7 +68,10 @@ takes the first that overlaps none of them:
 5. the right edge, centred.
 
 If none is clear, the first is used. The order is fixed so the panel always lands in the same place
-for the same chrome. Placement is recomputed when the chrome moves or resizes, never on a timer, and never while the chrome is still.
+for the same chrome. Placement is recomputed when the chrome moves or resizes, and when a panel appears or goes
+with no gesture of its own (the Map arriving with the canvas's first content, Collaborate when someone joins), never on
+a timer, and never while the chrome is still. A paste into a blank canvas showed the panel and the Map in the same
+moment; placed before the Map existed, the panel sat over its header.
 
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.

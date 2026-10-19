@@ -85,7 +85,7 @@ export function SignInBanner({
           // brand-700 to brand-800 in light and dark alike: white reads on them at 5.9:1 and 7.6:1, and the copy at 90%
           // white at 5.1:1 (docs/specs/004-interface-design/color-scheme.md). brand-500 and brand-600 drew it at 2.8:1
           // and 4.1:1.
-          className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-700 to-brand-800 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5 landscape-phone:py-2"
+          className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-brand-800 bg-gradient-to-br from-brand-700 to-brand-800 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5 landscape-phone:py-2"
         >
           {/* Decorative glyph tile */}
           <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 sm:flex">

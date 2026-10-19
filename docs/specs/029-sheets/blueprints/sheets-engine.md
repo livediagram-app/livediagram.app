@@ -216,7 +216,10 @@ Order of reading, first match wins (spec formulas.md "What a typed input becomes
 1. Current format `text` → `{ s }` (as typed, no trim).
 2. Leading `'` → `{ s: rest }`.
 3. Leading `=` (and length > 1) → `parseFormula`; ok → `compileFormula` → `{ f }`; else the failure (the editor
-   shows it; agents get `formula_invalid`).
+   shows it; agents get `formula_invalid`). `formulaHint(ast)`: an outermost `call` named in `FORMULA_FORMATS`
+   (`TODAY`, `DATE`, `DATEVALUE`, `EDATE`, `EOMONTH`, `WORKDAY` → `date`; `NOW` → `datetime`; `TIME`, `TIMEVALUE`
+   → `time`), or a `bin` `+` / `-` of such a call and a `num` (the `num` second, or either side of `+`), gives hint
+   `{ nf, ifAutomatic: true }`; anything else no hint.
 4. `true` / `false` (any case, trimmed) → `{ b }`.
 5. Number forms (trimmed): optional sign, currency prefix from `CURRENCY_SYMBOLS` (hint `currency`, `cur`), digits
    with the locale's group separator, the locale's decimal mark, exponent; trailing `%` (hint `percent`, value / 100).
@@ -227,7 +230,9 @@ Order of reading, first match wins (spec formulas.md "What a typed input becomes
 7. Empty after trim → clear (no input).
 8. Otherwise `{ s: text }`.
 
-`formatHint` is applied only when the cell's `nf` is unset or `auto`. Agent inputs use locale `en-GB`.
+`formatHint` is applied only when the cell's `nf` is unset or `auto` (`commands.ts`). A hint marked `ifAutomatic`
+(a formula's) is held to that by every writer: a paste keeps the copied cell's own `nf` over it, and an agent write
+(`a1-io.ts`) keeps the target cell's. Agent inputs use locale `en-GB`.
 
 ## Formula language
 

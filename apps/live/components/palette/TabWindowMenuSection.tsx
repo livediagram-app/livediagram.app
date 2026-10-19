@@ -28,7 +28,7 @@ export function TabWindowMenuSection({
   const { tabs: allTabs, activeTab, can, activeTabLocked, isOutOfScope } = useEditorContext();
   const selectTab = useSelectTab();
   // As the windows see them (tab-window-context): a tab outside a tab-scoped link is never named or offered, and one
-  // the window may not show (its own, a Plan tab) has no Open.
+  // the window may not show (its own) has no Open.
   const tabs = allTabs.filter((t) => !isOutOfScope(t.id));
   const found = target.windowTabId ? tabs.find((t) => t.id === target.windowTabId) : undefined;
   const shown = found && tabWindowMayShow(found, activeTab.id) ? found : undefined;
