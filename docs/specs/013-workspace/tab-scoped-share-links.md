@@ -81,6 +81,15 @@ For a scoped session:
 
 Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessions that joined with that code reload the page (the resolve then hands them the new scope) and the room closes their sockets. Sessions on other codes ignore it.
 
+### A change while joining
+
+A session's scope and code come from its room ticket, minted a moment before the upgrade. A revoke or rescope that lands between that mint and the room accepting the socket broadcasts to a room the session is not in yet. So once the room has accepted a share session's socket it reads that link once more (`room-link-recheck.ts`, one indexed read, share sessions only):
+
+- The link is gone, expired, or its tab deleted: the room sends that session `share-revoked { code }` and closes it, as the broadcast would have.
+- The link now opens another scope: the room sends it `share-rescoped { code }` and closes it, and the editor reloads into the new scope.
+- Otherwise nothing happens. A change this read did not see has not been written yet, and its broadcast reaches the socket, which is already in the room.
+- A failed read leaves the session as its ticket admitted it and logs `[room-link] join recheck failed`; a session told of a change logs `[room-link] joined on a changed link` with the op's kind.
+
 ## Visitor experience
 
 - A scoped visitor lands **on their tab**, whatever tab the document last had open.
