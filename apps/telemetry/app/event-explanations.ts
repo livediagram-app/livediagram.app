@@ -1230,18 +1230,34 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerEditor': 'Someone dismissed the guest sign-in banner shown in the editor.',
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
+  'UI|Closed|TourOfferFolded':
+    "The Diagram tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
   'UI|Closed|TourOffer':
-    "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
+    "Someone turned the Diagram tour down with No Thanks, in its dock or with the tab bar chip's × (the welcome tour's offer card, until October 2026).",
   'UI|Closed|PagesTourOffer':
     "Someone turned the Pages tour down with No Thanks, in its dock or with the tab bar chip's ×.",
   'UI|Closed|PagesTourOfferFolded':
     "The Pages tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
-  'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
-  'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
+  'UI|Closed|AvatarTourOfferFolded':
+    "The Avatar tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
+  'UI|Closed|AvatarTourOffer':
+    "Someone turned the Avatar tour down with No Thanks, in its dock or with the tab bar chip's ×.",
+  'UI|Closed|DrawTourOfferFolded':
+    "The Draw tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
+  'UI|Closed|DrawTourOffer':
+    "Someone turned the Draw tour down with No Thanks, in its dock or with the tab bar chip's ×.",
+  'UI|Closed|WorkshopTourOfferFolded':
+    "The Workshop tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
   'UI|Closed|WorkshopTourOffer':
-    'Someone turned the Workshop tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Workshop).',
-  'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
-  'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
+    "Someone turned the Workshop tour down with No Thanks, in its dock or with the tab bar chip's × (until October 2026, also by finishing the welcome tour without pressing Show me Workshop).",
+  'UI|Closed|FormTourOfferFolded':
+    "The Forms tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
+  'UI|Closed|FormTourOffer':
+    "Someone turned the Forms tour down with No Thanks, in its dock or with the tab bar chip's ×.",
+  'UI|Closed|PlanTourOfferFolded':
+    "The Plan tour's offer was left alone, so it folded into a chip in the tab bar (not an answer: it is offered again next visit).",
+  'UI|Closed|PlanTourOffer':
+    "Someone turned the Plan tour down with No Thanks, in its dock or with the tab bar chip's ×.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
     "Someone used Repair This Browser on a failed document load: livediagram's settings and caches in that browser were cleared and the page reloaded.",
@@ -1485,12 +1501,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An open editor learned the server now serves a newer document format and offered "A new version of livediagram is ready".',
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
+  'UI|Opened|TourChip':
+    'Someone started the Diagram tour from the tab bar chip its offer folded into.',
   'UI|Opened|TourOffer':
     'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|PagesTourChip':
     'Someone started the Pages tour from the tab bar chip its offer folded into.',
   'UI|Opened|PagesTourOffer':
     'The Pages tour was offered: in its dock above the tab bar the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
+  'UI|Opened|AvatarTourChip':
+    'Someone started the Avatar tour from the tab bar chip its offer folded into.',
   'UI|Opened|AvatarTourOffer':
     'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
   'UI|Opened|AvatarPanel':
@@ -1537,12 +1557,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
+  'UI|Opened|DrawTourChip':
+    'Someone started the Draw tour from the tab bar chip its offer folded into.',
   'UI|Opened|DrawTourOffer':
     'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
+  'UI|Opened|FormTourChip':
+    'Someone started the Forms tour from the tab bar chip its offer folded into.',
   'UI|Opened|FormTourOffer':
     'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
+  'UI|Opened|WorkshopTourChip':
+    'Someone started the Workshop tour from the tab bar chip its offer folded into.',
   'UI|Opened|WorkshopTourOffer':
     'The Workshop tour was offered: as its own card the first time someone worked in Workshop mode, or replayed from Settings\' Tours › "Workshop Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Workshop").',
+  'UI|Opened|PlanTourChip':
+    'Someone started the Plan tour from the tab bar chip its offer folded into.',
   'UI|Opened|PlanTourOffer':
     'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour".',
   'UI|Opened|activity':

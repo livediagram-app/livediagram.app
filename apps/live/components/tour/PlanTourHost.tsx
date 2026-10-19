@@ -27,7 +27,8 @@ import {
   visiblePlanWork,
 } from './plan-tour-steps';
 import { BoardsTourArt, PlanChoiceTourArt, SheetsTourArt } from './art/plan-tour-art';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
 // The settle delay before the offer, as the Diagram tour's.
@@ -35,17 +36,23 @@ export const OFFER_DELAY_MS = 800;
 
 // Each welcome card names what it shows: a track, or both on a choice card (docs/specs/026-plan/plan-tour.md
 // "The steps"); the copy after a pick follows the track picked.
-const BOARDS_TOUR_COPY = {
-  welcomeEyebrow: 'Boards tour',
-  helpHref: '/help/canvas/plan-mode/',
-};
-const SHEETS_TOUR_COPY = {
-  ...BOARDS_TOUR_COPY,
-  welcomeEyebrow: 'Sheets tour',
-  helpHref: '/help/canvas/plan-mode/sheets/',
-};
 const TRACK_NAME: Record<PlanTourTrack, string> = { boards: 'Boards tour', sheets: 'Sheets tour' };
-const CHOICE_TOUR_COPY = { ...BOARDS_TOUR_COPY, welcomeEyebrow: 'Boards and Sheets tour' };
+const HELP: Record<PlanTourTrack, { href: string; label: string }> = {
+  boards: { href: '/help/canvas/plan-mode/', label: 'Boards Help' },
+  sheets: { href: '/help/canvas/plan-mode/sheets/', label: 'Sheets Help' },
+};
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP: Record<PlanTourOffer, { label: string; about: string }> = {
+  boards: {
+    label: 'Boards Tour',
+    about: 'A short tour of your board: columns, cards and the card panel.',
+  },
+  sheets: {
+    label: 'Sheets Tour',
+    about: 'A short tour of your sheet: cells, formulas and the toolbar.',
+  },
+  choice: { label: 'Plan Tour', about: 'A short tour of your board or your sheet, your choice.' },
+};
 const WELCOME_ART = {
   boards: <BoardsTourArt />,
   sheets: <SheetsTourArt />,
@@ -247,25 +254,27 @@ export function PlanTourHost() {
   };
 
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix={offerKind === 'choice' ? 'Boards and Sheets tour' : TRACK_NAME[tourTrack]}
-      copy={
+      eyebrow={
         offerKind === 'choice' && engine.stepIndex === 0
-          ? CHOICE_TOUR_COPY
-          : tourTrack === 'sheets'
-            ? SHEETS_TOUR_COPY
-            : BOARDS_TOUR_COPY
+          ? 'Boards and Sheets tour'
+          : TRACK_NAME[tourTrack]
       }
-      welcomeArt={WELCOME_ART[offerKind]}
-      {...(offerKind === 'choice'
-        ? {
-            welcomeChoices: [
+      art={WELCOME_ART[offerKind]}
+      help={HELP[tourTrack]}
+      finish={TOUR_FINISH}
+      chip={CHIP[offerKind]}
+      choices={
+        offerKind === 'choice'
+          ? [
               { id: 'boards', label: 'Boards', onPick: () => pick('boards') },
               { id: 'sheets', label: 'Spreadsheets', onPick: () => pick('sheets') },
-            ],
-          }
-        : {})}
+            ]
+          : undefined
+      }
+      onFolded={() => track('UI', 'Closed', 'PlanTourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'PlanTourChip')}
     />
   );
 }

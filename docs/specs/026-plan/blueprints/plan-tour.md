@@ -18,20 +18,19 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 
 ## Files
 
-| File                                              | Holds                                                                                                                                                                  |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/live/components/tour/tour-step.ts`          | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                                                                                |
-| `apps/live/components/tour/useTourEngine.ts`      | The shared step runner: step index, direction, target rect, prepare / wait / heal                                                                                      |
-| `apps/live/components/tour/TourStage.tsx`         | The shared overlay: card backdrop, highlight ring, `TourPopover`                                                                                                       |
-| `apps/live/components/tour/TourPopover.tsx`       | `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept)                                                                   |
-| `apps/live/components/tour/TourHost.tsx`          | The Diagram tour on the engine; publishes itself to `tour-active`                                                                                                      |
-| `apps/live/components/tour/plan-tour-steps.ts`    | `planTourSteps`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `PlanTourOffer`, `boardRoot`, `sheetRoot`, `firstCardOn`, `visiblePlanWork`, `needsReveal`, telemetry type |
-| `apps/live/components/tour/PlanTourHost.tsx`      | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
-| `apps/live/components/tour/art/plan-tour-art.tsx` | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/live/components/tour/art/TourArtFrame.tsx`)                          |
-| `apps/live/lib/tour-tracks.ts`                    | `tourTrackSeen`, `withTracksAnswered`: a tour of several tracks, each offered once                                                                                     |
-| `apps/live/lib/tour-active.ts`                    | Which tour is on screen (`'welcome' \| 'plan' \| 'workshop' \| null`), a module store                                                                                  |
-| `apps/live/lib/plan-tour.ts`                      | Relaunch event, tracks, `planTrackSeen` / `planTourOwed` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                               |
-| `apps/live/hooks/plan/usePlanTourLeftovers.ts`    | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
+| File                                                      | Holds                                                                                                                                                                  |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/live/components/tour/tour-step.ts`                  | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                                                                                |
+| `apps/live/components/tour/useTourEngine.ts`              | The shared step runner: step index, direction, target rect, prepare / wait / heal                                                                                      |
+| `apps/live/components/tour/coach-dock/CoachDockStage.tsx` | The shared stage ([coach dock](../../007-editor/blueprints/coach-dock.md)): dock, pointer, chip; `choices` (`TourWelcomeChoice[]`, replacing Take the Tour)            |
+| `apps/live/components/tour/TourHost.tsx`                  | The Diagram tour on the engine; publishes itself to `tour-active`                                                                                                      |
+| `apps/live/components/tour/plan-tour-steps.ts`            | `planTourSteps`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `PlanTourOffer`, `boardRoot`, `sheetRoot`, `firstCardOn`, `visiblePlanWork`, `needsReveal`, telemetry type |
+| `apps/live/components/tour/PlanTourHost.tsx`              | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
+| `apps/live/components/tour/art/plan-tour-art.tsx`         | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/live/components/tour/art/TourArtFrame.tsx`)                          |
+| `apps/live/lib/tour-tracks.ts`                            | `tourTrackSeen`, `withTracksAnswered`: a tour of several tracks, each offered once                                                                                     |
+| `apps/live/lib/tour-active.ts`                            | Which tour is on screen (`'welcome' \| 'plan' \| 'workshop' \| null`), a module store                                                                                  |
+| `apps/live/lib/plan-tour.ts`                              | Relaunch event, tracks, `planTrackSeen` / `planTourOwed` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                               |
+| `apps/live/hooks/plan/usePlanTourLeftovers.ts`            | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
 
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
@@ -201,12 +200,14 @@ The tour writes nothing, so nothing crosses a trust boundary. A Participant and 
 
 ## Presentation and UX
 
-As the Diagram tour. The welcome card names its offer: eyebrow **Boards tour**, **Sheets tour** or **Boards and
-Sheets tour** (`ariaPrefix` the same, the chosen track's after a pick), with `BoardsTourArt` (a card sliding from
+As the Diagram tour, in the coach dock. The offer names its track: eyebrow **Boards tour**, **Sheets tour** or
+**Boards and Sheets tour** (the chosen track's after a pick), its chip **Boards Tour**, **Sheets Tour** or **Plan
+Tour**, with `BoardsTourArt` (a card sliding from
 one column to the next), `SheetsTourArt` (A1 typed into, the selection stepping across and down) or
 `PlanChoiceTourArt` (a two-column board beside a small sheet), all in `TourArtFrame`'s recipe: inline SVG, Tailwind
-classes for light and dark, looping with `infinite`, still under reduced motion. The outro reuses `TourHelpArt`, with
-**Help** linking `/help/canvas/plan-mode` and **Start** (`TOUR_FINISH`).
+classes for light and dark, looping with `infinite`, still under reduced motion. The closing keeps the offer's picture,
+with **Boards Help** linking `/help/canvas/plan-mode/` (**Sheets Help**, `/help/canvas/plan-mode/sheets/`, after the
+Spreadsheets track) and **Start** (`TOUR_FINISH`).
 
 ## Accessibility
 
@@ -232,7 +233,7 @@ surface is fixed-position over the canvas.
 | Not offered when seen, read-only, locked, unhydrated, embedded          | `PlanTourHost.test.tsx`                                  |
 | Waits for another tour on screen; not for the Diagram tour being owed   | `PlanTourHost.test.tsx`                                  |
 | Relaunch offers in Plan only                                            | `PlanTourHost.test.tsx`                                  |
-| One kind skips the choice; both ask; the track runs on the subject      | `PlanTourHost.test.tsx`, `TourStage.test.tsx`            |
+| One kind skips the choice; both ask; the track runs on the subject      | `PlanTourHost.test.tsx`, `CoachDockStage.test.tsx`       |
 | A board with no cards leaves out the card steps                         | `PlanTourHost.test.tsx`, `plan-tour-steps.test.ts`       |
 | Runs to the end without changing the document or sending content events | `PlanTourHost.test.tsx`                                  |
 | Ends as skipped on another tab or the subject deleted                   | `PlanTourHost.test.tsx`                                  |
@@ -241,7 +242,7 @@ surface is fixed-position over the canvas.
 | Leftover record round trip, malformed value dropped                     | `plan-tour.test.ts`                                      |
 | Sweep of a leftover record                                              | `usePlanTourLeftovers.test.ts`                           |
 | Engine: prepare, skip a missing target, heal, finish outcomes           | `useTourEngine.test.tsx`                                 |
-| Stage: default and Plan card words, ring, labels                        | `TourStage.test.tsx`                                     |
+| Stage: choices, chip reopening a choice, ring, labels                   | `CoachDockStage.test.tsx`                                |
 | Active-tour store                                                       | `tour-active.test.ts`                                    |
 | Settings row inverted, events                                           | `settings-catalogue.test.ts`                             |
 | Telemetry tokens charted and explained                                  | `apps/telemetry` `metric-emitters.test.ts`, explanations |

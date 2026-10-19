@@ -18,14 +18,17 @@ import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { FormStarterPicture } from '@livediagram/template-previews';
 import { formTourSteps, formTourStepTelemetryType, type FormTourApi } from './form-tour-steps';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
 const OFFER_DELAY_MS = 800;
 
-const FORM_TOUR_COPY = {
-  welcomeEyebrow: 'Forms tour',
-  helpHref: '/help/canvas/plan-mode/forms/',
+const HELP = { href: '/help/canvas/plan-mode/forms/', label: 'Forms Help' };
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP = {
+  label: 'Forms Tour',
+  about: 'A short tour of building your form, where responses go and sharing it.',
 };
 
 // The welcome card's picture: a form in the art's light colours.
@@ -183,11 +186,15 @@ export function FormTourHost() {
   useEffect(() => () => setActiveTour('form', false), []);
 
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix="Forms tour"
-      copy={FORM_TOUR_COPY}
-      welcomeArt={<FormStarterPicture starter="feedback" palette={ART_PALETTE} />}
+      eyebrow="Forms tour"
+      art={<FormStarterPicture starter="feedback" palette={ART_PALETTE} />}
+      help={HELP}
+      finish={TOUR_FINISH}
+      chip={CHIP}
+      onFolded={() => track('UI', 'Closed', 'FormTourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'FormTourChip')}
     />
   );
 }

@@ -78,8 +78,10 @@ section. Power user mode's readout lists the switch over them all as **Element T
 
 ## The tour
 
-- **The shared tour**: the anchored step card with Back, Next and Skip, the ring with room to breathe, the dim
-  around it, and a closing card, as [Show Me](show-me.md) draws them. No welcome card: the offer was the welcome.
+- **The shared tour**, in the [coach dock](coach-dock.md): each step (End Tour, Back, Next) in the strip above the
+  tab bar, the ring with its step number around the part it points at, and the closing, as [Show Me](show-me.md)
+  draws them. Nothing in the dock offers it: the offer beside the selection toolbar was the offer. A step inside
+  the data dialog the tour opened (a Sequence's, a chart's, a Sankey's Flows) stands the dock over that dialog.
   Steps count from 1.
 - **On the element itself.** The steps ring the selected element's real parts and show what it says about them.
 - **The steps are fixed when Play is pressed**, from the element as it is then: a part it does not have (no
@@ -106,7 +108,7 @@ The steps, in order, each a line or two. The exact strings live in
    [Show Me](../009-elements/sankey.md#show-me) (Your Nodes, Flows Step by Step, Add a Flow, In and Out Differ, Or
    Type Them, Import a File, Live Preview), left out as Show Me leaves them out. Each opens the dialog again if it
    was closed. Stepping Back onto a canvas step closes it.
-6. **That Is a Sankey** (closing card): "Undo takes back any change. Show Me in the Flows dialog runs this part
+6. **That Is a Sankey** (closing): "Undo takes back any change. Show Me in the Flows dialog runs this part
    again." with **Done** and a link to the Sankey Diagram article (**Sankey Diagram Help**). Done closes the Flows
    dialog with the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
 
@@ -116,7 +118,7 @@ The lift and the readout in steps 1 and 2 are the tour's: they win over a pointe
 
 On the selected [layer stack](../009-elements/concept-graphics.md), each step a line or two. The strings live in
 `apps/live/components/tour/layer-stack-tour-steps.ts`; the steps it is built from (a step on the graphic or a row, the
-"+" ring, the More button, the closing card) in `concept-element-tour-steps.ts`, shared by every concept graphic's
+"+" ring, the More button, the closing) in `concept-element-tour-steps.ts`, shared by every concept graphic's
 tour.
 
 1. **One Element, Many Layers**: rings the stack. Each band is a layer, top to bottom; a resize shares the height
@@ -133,7 +135,7 @@ tour.
    fill; a colour change carries every band, their words kept readable.
 7. **Build It Up**: rings the stack and plays its **Build** animation on it once, as a preview: never stored, so the
    document does not change, and gone with the step. Animation, then Concept: Build, or Pulse.
-8. **That Is a Layer Stack** (closing card): it exports as drawn, every change one undo step; **Done** and the
+8. **That Is a Layer Stack** (closing): it exports as drawn, every change one undo step; **Done** and the
    **Concept Graphics Help** link.
 
 ## The Pyramid tour
@@ -151,7 +153,7 @@ the variant: an Inverted pyramid's first tier is the widest, along the top, and 
    steps toward the fill.
 6. **Build It Up** (Inverted: **Build It Down**): plays Build on it as a preview, from the base up (Inverted: from the
    top down).
-7. **That Is a Pyramid** (Inverted: **That Is an Inverted Pyramid**): the closing card.
+7. **That Is a Pyramid** (Inverted: **That Is an Inverted Pyramid**): the closing.
 
 ## The Funnel tour
 
@@ -167,7 +169,7 @@ On the selected Funnel (a Pyramid in its Funnel variant), from `funnel-tour-step
    every band.
 6. **From the Accent Down**: rings the last band; the widest takes the accent.
 7. **Pour It In**: plays Build on it as a preview, from the top down.
-8. **That Is a Funnel**: the closing card.
+8. **That Is a Funnel**: the closing.
 
 ## The Cycle tour
 
@@ -182,7 +184,7 @@ On the selected Cycle, from `cycle-tour-steps.ts`.
 5. **Reorder in the Menu** (only while More shows): rings More; Rows renames, moves and removes steps, three at least.
 6. **Set It Turning**: plays **Flow**, the cycle's own loop, round its arrows as a preview while the step is up (a
    previewed loop keeps going; a previewed Build plays once).
-7. **That Is a Cycle**: the closing card.
+7. **That Is a Cycle**: the closing.
 
 ## The Hub and Spoke tour
 
@@ -196,7 +198,7 @@ On the selected Hub and spoke, from `hub-tour-steps.ts`.
 5. **Spokes or None** (only while More shows): rings More. Spokes turns the lines off, leaving the satellites
    floating; Rows reorders them.
 6. **Light Them Up**: plays **Pulse** round the satellites as a preview while the step is up.
-7. **That Is a Hub and Spoke**: the closing card.
+7. **That Is a Hub and Spoke**: the closing.
 
 ## The Onion tour
 
@@ -210,7 +212,7 @@ On the selected Onion, from `onion-tour-steps.ts`.
 4. **Add a Ring**: the "+" ring open on **Add Ring**; a new ring round the outside, up to six.
 5. **Reorder in the Menu** (only while More shows): rings More; Rows from the core out, two at least.
 6. **Ripple Outward**: plays **Pulse** from the core outward as a preview while the step is up.
-7. **That Is an Onion**: the closing card.
+7. **That Is an Onion**: the closing.
 
 ## The Timeline tour
 
@@ -223,7 +225,7 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
 4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
 5. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
 6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
-7. **That Is a Timeline**: the closing card.
+7. **That Is a Timeline**: the closing.
 
 ## The Chevrons tour
 
@@ -240,7 +242,7 @@ the canvas, not in a Rows section.
 4. **A Note Under Each** (only while a stage has a note): rings the first note.
 5. **Add a Stage**: the "+" ring open on **Add Stage**; up to eight.
 6. **Run the Pipeline**: plays **Pulse** along the stages as a preview while the step is up.
-7. **That Is a Chevron Process**: the closing card.
+7. **That Is a Chevron Process**: the closing.
 
 ## The Mind Map tour
 
@@ -257,7 +259,7 @@ node and its selection toolbar; it never grows the map itself.
    dragging it carries its branch.
 5. **The Mind Map Menu** (only while More shows): rings More. Branching (the shape it grows in), Spacing, Tidy Map
    and Edit Outline.
-6. **That Is a Mind Map**: the closing card, with **Mind Maps Help**.
+6. **That Is a Mind Map**: the closing, with **Mind Maps Help**.
 
 The steps' environment carries the tab's elements, so a step can read past its own element (here, whether the node has
 children).
@@ -274,7 +276,7 @@ re-lays the chart itself.
 4. **Change Its Type**: rings **Step Type**; the type is the shape, the words are kept, the chart re-lays.
 5. **Its Lane** (only on a chart with swimlanes): rings **Lane**.
 6. **The Flowchart Menu** (only while More shows): rings More. Add Lane, Tidy Flowchart, Direction.
-7. **That Is a Flowchart**: the closing card, with **Flowcharts Help**.
+7. **That Is a Flowchart**: the closing, with **Flowcharts Help**.
 
 ## The Org Chart tour
 
@@ -289,7 +291,7 @@ its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar;
 6. **Move a Whole Team** (a person with reports; otherwise **Teams Move Together**): rings the node.
 7. **The Mind Map Menu** (only while More shows): rings More; an org chart is a mind map flowing down: Tidy Map,
    Spacing, Edit Outline.
-8. **That Is an Org Chart**: the closing card, with **Org Charts Help**.
+8. **That Is an Org Chart**: the closing, with **Org Charts Help**.
 
 ## The Sequence tour
 
@@ -310,7 +312,7 @@ step puts it away. While it runs, Escape is the tour's and never closes the dial
 8. **Or Type It**: brings the Text tab forward and rings it; put back to the messages on leaving.
 9. **Live Preview**: the preview.
 10. **Number Them**: the Numbered switch.
-11. **That Is a Sequence Diagram**: the closing card, with **Sequence Diagrams Help**. **Done** closes the dialog with
+11. **That Is a Sequence Diagram**: the closing, with **Sequence Diagrams Help**. **Done** closes the dialog with
     the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
 
 ## Menu steps on the elements of round two
@@ -341,7 +343,7 @@ Escape is the tour's and never closes the dialog.
 6. **Series Across the Top**: rings the series header row; rename, remove, or **+** for another series.
 7. **Add a Row**: rings **+ Add row**: a category at the end, every series at 0.
 8. **Or Import a CSV**: rings **Import CSV**: the header row names the series, the first column the categories.
-9. **That Is a Chart**: the closing card, with **Data Elements Help**. **Done** closes Chart Data with the tour, storing
+9. **That Is a Chart**: the closing, with **Data Elements Help**. **Done** closes Chart Data with the tour, storing
    what is being typed as the dialog's own Done does; Skip leaves it open.
 
 ## The Stack tour
@@ -355,7 +357,7 @@ On a selected stack, from `stack-tour-steps.ts`.
    takes the next slot, and an empty stack keeps its size as a target.
 3. **Carries What It Holds**: rings the stack; dragging it brings everything inside, as a frame does.
 4. **The Stack Menu**: the menu step. Row, Column or Grid (with Columns), Gap, Padding, Align.
-5. **That Is a Stack**: the closing card, with **Stacks Help**.
+5. **That Is a Stack**: the closing, with **Stacks Help**.
 
 ## The Entity tour
 
@@ -370,7 +372,7 @@ On a selected entity, from `entity-tour-steps.ts`. Its fields carry `data-entity
    to forty.
 5. **Join Them Up**: rings the entity; a "+" adds a related entity already joined, or a drag from the dot beside a
    field to another entity's field draws a one-to-many relationship, which the Cardinality button changes.
-6. **That Is an Entity**: the closing card, with **Entities Help**.
+6. **That Is an Entity**: the closing, with **Entities Help**.
 
 ## The Tab Window tour
 
@@ -382,7 +384,7 @@ On a selected tab window, from `tab-window-tour-steps.ts`.
    button (`data-tab-window-choose`): any tab but this one and Plan tabs.
 3. **The Tab Window Menu**: the menu step. Shows (another tab) and Open.
 4. **Any Size**: rings the window; resized, the tab stays fitted and never cropped.
-5. **That Is a Tab Window**: the closing card, with **Tab Windows Help**.
+5. **That Is a Tab Window**: the closing, with **Tab Windows Help**.
 
 ## The Lane tour
 
@@ -394,7 +396,7 @@ On a selected lane, from `lane-tour-steps.ts`. Its gutter carries `data-lane-gut
 4. **Carries Its Steps**: rings the lane; dragging it brings everything inside, as a frame does.
 5. **Rows or Columns**: the menu step. Centring the title at the top turns the lane into a column; Upright Title
    (Text) turns a side title to read bottom to top.
-6. **That Is a Lane**: the closing card, with **Lanes Help**.
+6. **That Is a Lane**: the closing, with **Lanes Help**.
 
 ## The Boundary tour
 
@@ -406,7 +408,7 @@ On a selected boundary, from `boundary-tour-steps.ts`.
    the title (Tab and Inset styles; the C4 style names the C4 corner title instead).
 3. **The Meta Line** (a boundary showing one): rings it; a CIDR range or a C4 type, clicked (tapped) to type over.
 4. **Three Styles**: the menu step. Tab, Inset (nested), C4, and Meta Line on or off.
-5. **That Is a Boundary**: the closing card, with **Boundaries Help**.
+5. **That Is a Boundary**: the closing, with **Boundaries Help**.
 
 ## The Diagram Key tour
 
@@ -417,7 +419,7 @@ On a selected diagram key, from `diagram-key-tour-steps.ts`. It has no menu sect
    meaning, Enter keeps it, Escape puts it back. An empty key instead has **Nothing to Key Yet** on the key: two
    arrows in different line styles bring their rows.
 3. **Its Title**: rings the key; "Key" by default, double-click (double-tap) to rename; it grows downward on its own.
-4. **That Is a Diagram Key**: the closing card, with **Diagram Keys Help**.
+4. **That Is a Diagram Key**: the closing, with **Diagram Keys Help**.
 
 ## The Portal tour
 
@@ -429,7 +431,7 @@ On a selected portal, from `portal-tour-steps.ts`.
 3. **Link It**: the menu step. Portal: Name, Leads To (a link works both ways), Create Portal (a linked partner
    beside it).
 4. **Walk Into It**: rings the portal; an Avatar-mode character walking in steps out of the other.
-5. **That Is a Portal**: the closing card, with **Portals Help**.
+5. **That Is a Portal**: the closing, with **Portals Help**.
 
 ## Share roles
 

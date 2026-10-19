@@ -35,6 +35,17 @@ describe('Dialog backdrop', () => {
   });
 });
 
+// A tour of a dialog stands its coach dock at the window's bottom (docs/specs/007-editor/coach-dock.md "Where it
+// sits"): the dialog centres, and caps its height, in the room above the dock floor.
+describe('Dialog on the coach dock floor', () => {
+  it('pads its layer by the dock floor and caps the panel to what is left', () => {
+    const { panel, backdrop } = open();
+    expect(backdrop.className).toContain('pb-[var(--coach-dock-floor,0px)]');
+    expect(panel.className).toContain('max-h-[calc(100%-2rem)]');
+    expect(panel.className).not.toContain('100dvh');
+  });
+});
+
 // A fake on-screen keyboard: the visual viewport shrinks under the window, the window itself does not
 // (docs/specs/007-editor/live-app.md "A dialog stays above the on-screen keyboard").
 type FakeViewport = EventTarget & {

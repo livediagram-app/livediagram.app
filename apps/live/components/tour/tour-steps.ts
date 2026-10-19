@@ -53,8 +53,8 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with Diagrams?',
-    body: 'A quick look at the editor? It takes about a minute.',
+    title: 'New to diagrams?',
+    body: 'A quick look at the editor: adding shapes, connecting them and making them look the way you want.',
   },
   {
     id: 'palette',

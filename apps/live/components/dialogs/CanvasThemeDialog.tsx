@@ -178,7 +178,9 @@ export function CanvasThemeDialog({
         // dialog as they click (docs/specs/011-theme/canvas-and-theme-dialog.md). The full-screen layer stays as a
         // transparent click-catcher (click-outside / right-click guard) so an
         // accidental edit doesn't leak to the canvas while it's open.
-        className={`fixed inset-0 z-[var(--z-modal)] flex ${anchor ? '' : 'items-center justify-center max-sm:items-end'}`}
+        // pb: its Show Me's coach dock, standing at the window's bottom, is the floor it stands on
+        // (docs/specs/007-editor/coach-dock.md "Where it sits").
+        className={`fixed inset-0 z-[var(--z-modal)] flex pb-[var(--coach-dock-floor,0px)] ${anchor ? '' : 'items-center justify-center max-sm:items-end'}`}
       >
         <div
           ref={dialogRef}
@@ -188,7 +190,7 @@ export function CanvasThemeDialog({
           aria-label="Tab style"
           // A bottom sheet on a phone, rising from the bottom edge as the editor's other phone sheets do, the canvas
           // still in view above it so each pick shows on the tab.
-          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
+          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75%] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
           // Drawn at the Panels UI scale like every other panel (docs/specs/007-editor/ui-scale.md); under its
           // `zoom` the anchored offsets are in the panel's own px, so they are converted (toSurfacePx).
           style={
@@ -196,8 +198,8 @@ export function CanvasThemeDialog({
               ? {
                   ...uiScaleStyle(panelScale),
                   right: toSurfacePx(anchor.right, panelScale),
-                  bottom: toSurfacePx(anchor.bottom, panelScale),
-                  maxHeight: `calc(100% - ${toSurfacePx(anchor.bottom + 16, panelScale)}px)`,
+                  bottom: anchoredBottom(anchor.bottom, panelScale),
+                  maxHeight: `calc(100% - ${anchoredBottom(anchor.bottom, panelScale)} - ${toSurfacePx(16, panelScale)}px)`,
                   transformOrigin: 'bottom right',
                 }
               : { ...uiScaleStyle(panelScale), ...sheet.style, paddingBottom: safeInset('bottom') }
@@ -327,6 +329,12 @@ export function CanvasThemeDialog({
 // brush with its right edge on the bottom-right cluster's (the screen's right-hand side), keeping as much of the work
 // as it can in view. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.
 const BRUSH_GAP_PX = 8;
+
+// The anchored panel's bottom, in its own px: above its brush, or above the coach dock while its Show Me runs
+// (docs/specs/007-editor/coach-dock.md "Where it sits"), whichever is higher.
+function anchoredBottom(brushBottom: number, scale: number): string {
+  return `max(${toSurfacePx(brushBottom, scale)}px, calc((var(--coach-dock-floor, 0px) + ${BRUSH_GAP_PX}px) / ${scale}))`;
+}
 function useBrushAnchor(): { right: number; bottom: number } | null {
   // Read once as it opens, in the browser only (use(browser())): the brush does not move while it is open.
   use(browser());

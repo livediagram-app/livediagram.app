@@ -375,32 +375,72 @@ export function KeyboardEssentials() {
   );
 }
 
-/** The Diagram tour's offer card: a short welcome, then No or Yes. */
+/** The Diagram tour's offer in the coach dock: the strip above the tab bar, the canvas giving it room. */
 export function DiagramTourCard() {
   return (
-    <Scene w={420} h={170} bg="plain">
+    <Scene w={420} h={196} bg="plain">
+      {/* The canvas, shorter by the dock's height: nothing on it is covered. */}
       <rect
-        x={70}
-        y={12}
-        width={280}
-        height={146}
-        rx={14}
-        className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        x={10}
+        y={10}
+        width={400}
+        height={92}
+        rx={8}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1.5}
       />
-      <Label x={210} y={34} anchor="middle" size={10} weight={700} tone="accent">
+      <rect
+        x={120}
+        y={36}
+        width={72}
+        height={40}
+        rx={6}
+        className="fill-white stroke-slate-300"
+        strokeWidth={1.5}
+      />
+      <rect
+        x={232}
+        y={36}
+        width={72}
+        height={40}
+        rx={6}
+        className="fill-white stroke-slate-300"
+        strokeWidth={1.5}
+      />
+      <line x1={192} y1={56} x2={228} y2={56} className="stroke-slate-400" strokeWidth={1.5} />
+      {/* The coach dock. */}
+      <rect
+        x={10}
+        y={106}
+        width={400}
+        height={64}
+        rx={4}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={24} y={122} size={8} weight={700} tone="accent">
         DIAGRAM TOUR
       </Label>
-      <Label x={210} y={54} anchor="middle" size={14} weight={700} tone="strong">
-        Getting started with Diagrams?
+      <Label x={96} y={122} size={8} tone="muted">
+        6 stops, about a minute
       </Label>
-      <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
-      <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />
-      {/* No is a plain text button, beside the primary. */}
-      <Label x={156} y={130} anchor="middle" size={11} weight={600} tone="body">
-        No
+      <Label x={24} y={140} size={12} weight={700} tone="strong">
+        New to diagrams?
       </Label>
-      <Button x={210} y={116} w={104} h={26} label="Yes" variant="primary" />
+      <rect x={24} y={150} width={170} height={5} rx={2.5} className="fill-slate-200" />
+      <Button x={222} y={125} w={80} label="No Thanks" />
+      <Button x={308} y={125} w={92} label="Take the Tour" variant="primary" />
+      {/* The tab bar the dock stands on. */}
+      <rect x={10} y={174} width={400} height={16} rx={4} className="fill-slate-100" />
+      <rect
+        x={18}
+        y={177}
+        width={64}
+        height={10}
+        rx={3}
+        className="fill-white stroke-slate-300"
+        strokeWidth={1}
+      />
     </Scene>
   );
 }

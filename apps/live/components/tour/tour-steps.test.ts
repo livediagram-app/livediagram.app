@@ -84,7 +84,7 @@ describe('the Diagram tour copy', () => {
   it('offers a tour of diagramming and sends them off to diagram', () => {
     const welcome = TOUR_STEPS[0]!;
     const outro = TOUR_STEPS[TOUR_STEPS.length - 1]!;
-    expect(welcome.title).toBe('Getting started with Diagrams?');
+    expect(welcome.title).toBe('New to diagrams?');
     expect(welcome.body).toMatch(/quick look at the editor/);
     expect(outro.title).toBe("You're ready to diagram");
   });

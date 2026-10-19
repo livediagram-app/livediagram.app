@@ -58,7 +58,7 @@ const COMBINE_HIDDEN: LogoTourStep = {
 const OUTRO: LogoTourStep = {
   id: 'outro',
   card: 'outro',
-  title: 'That Is a Logo Page',
+  title: "You're ready to make a logo",
   body: 'Export › Logo Kit downloads every size you need, plus a favicon.',
 };
 

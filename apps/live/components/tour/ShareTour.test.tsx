@@ -6,6 +6,7 @@ import { track } from '@/lib/telemetry';
 import { ShareDialog } from '@/components/dialogs/ShareDialog';
 import type { ShareDialogProps } from '@/components/dialogs/ShareDialog.types';
 import { shareTourSteps } from './share-tour-steps';
+import { dockSays } from './coach-dock/coach-dock-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the document" here, and there is nothing to scroll.
@@ -77,38 +78,32 @@ describe('Share dialog Show Me', () => {
   it('sits in the title row, starts on the role picker and sends its Started event', async () => {
     renderDialog();
     await startShowMe();
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 1 of 6: Choose What They Can Do/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 6: Choose What They Can Do/);
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'ShareTour');
   });
 
   it('counts five steps on a one-tab document', async () => {
     renderDialog({ tabs: [TABS[0]!] });
     await startShowMe();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 5:/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 5:/);
   });
 
   it('keeps its steps when a tab is added mid-tour', async () => {
     const { rerender } = renderDialog({ tabs: [TABS[0]!] });
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ }));
     await settle();
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 2 of 5: Set How Long It Lasts/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 2 of 5: Set How Long It Lasts/);
     rerender({ tabs: TABS });
     await settle();
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 2 of 5: Set How Long It Lasts/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 2 of 5: Set How Long It Lasts/);
   });
 
   it('counts the document as it is when pressed', async () => {
     const { rerender } = renderDialog({ tabs: [TABS[0]!] });
     rerender({ tabs: TABS });
     await startShowMe();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 6:/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 6:/);
   });
 
   it('keeps Escape from closing the dialog while it runs', async () => {
@@ -131,7 +126,7 @@ describe('Share dialog Show Me', () => {
   it('reports a skip when left before its end', async () => {
     renderDialog();
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'End Tour' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'ShareTourSkipped');
   });
 });

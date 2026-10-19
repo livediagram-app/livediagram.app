@@ -29,7 +29,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 - **Retired: the welcome tour's chain.** Until October 2026 `TourHost` offered the welcome tour first in
   Workshop (`owedByWorkshop`), carried this tour's offer on its closing card (`outroChoice`, "Show me
   Workshop", `WORKSHOP_TOUR_START_EVENT`) and wrote `workshopTourSeen` with `tourSeen`. All of it is gone:
-  `TourStage` / `TourPopover` lost `outroChoice`, `lib/workshop-tour.ts` lost the start event, and
+  the tour stage lost `outroChoice` (the stage is now `CoachDockStage`), `lib/workshop-tour.ts` lost the start event, and
   `workshopTourSteps` lost `withWelcome`.
 - **One tour at a time:** each of `TourHost` (the Diagram tour), `PlanTourHost`, `WorkshopTourHost` treats any other
   active tour as blocking and publishes itself with `setActiveTour` while active.
@@ -45,9 +45,10 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 ## Interfaces and contracts
 
 - `WorkshopTourApi = Record<string, never>`: the steps drive only the DOM.
-- `TourStage` gets `ariaPrefix="Workshop tour"`, copy `{ welcomeEyebrow: 'Workshop tour',
-helpHref: '/help/canvas/workshop-mode/', finish: TOUR_FINISH }` and no
-  `welcomeChoices` (the default Yes / No).
+- `CoachDockStage` gets `eyebrow="Workshop tour"`, `art={<WorkshopTourArt />}`, `help` `{ href:
+'/help/canvas/workshop-mode/', label: 'Workshop Help' }`, `finish={TOUR_FINISH}`, `chip` `{ label: 'Workshop
+Tour', about }` and the fold and chip events (`WorkshopTourOfferFolded`, `WorkshopTourChip`); no `choices` (Take
+  the Tour / No Thanks).
 
 ## Data and persistence
 
@@ -78,8 +79,8 @@ helpHref: '/help/canvas/workshop-mode/', finish: TOUR_FINISH }` and no
 
 ## Accessibility
 
-- The shared `TourStage` / `TourPopover`: focus moves to the card, Escape skips, the ring is
-  decorative. The art is `aria-hidden`.
+- The shared [coach dock](../../007-editor/coach-dock.md): it never takes focus, Escape from inside it ends the
+  tour, the ring is decorative. The art is `aria-hidden`.
 
 ## Observability
 

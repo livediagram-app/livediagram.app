@@ -12,18 +12,21 @@ export function CoachPointer({
   rect,
   n,
   layerClass,
+  pad = RING_PAD_PX,
 }: {
   rect: TourTargetRect;
   // The step's number, as the dock counts it.
   n: number;
-  // The ring's stacking layer: the overlay's, or just above a dialog or an open menu (TourStage's rule).
+  // The ring's stacking layer: the overlay's, or just above a dialog or an open menu (CoachDockStage's rule).
   layerClass: string;
+  // The room between the control and its ring, in px.
+  pad?: number;
 }) {
   const ring = {
-    left: rect.left - RING_PAD_PX,
-    top: rect.top - RING_PAD_PX,
-    width: rect.width + RING_PAD_PX * 2,
-    height: rect.height + RING_PAD_PX * 2,
+    left: rect.left - pad,
+    top: rect.top - pad,
+    width: rect.width + pad * 2,
+    height: rect.height + pad * 2,
   };
   const half = BADGE_SIZE_PX / 2;
   const badge = { left: Math.max(4, ring.left - half), top: Math.max(4, ring.top - half) };

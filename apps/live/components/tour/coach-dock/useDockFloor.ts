@@ -1,12 +1,12 @@
 import { useEffect, type RefObject } from 'react';
 import { announceToastFloorChange } from '@/components/toast/toast-floor';
-import { TOUR_CARD_ATTR } from '../TourBanner';
-import { COACH_DOCK_FLOOR_VAR } from './coach-dock-copy';
+import { COACH_DOCK_FLOOR_VAR, TOUR_CARD_ATTR } from './coach-dock-copy';
 
 // The dock floor (docs/specs/007-editor/coach-dock.md "Where it sits"): while the dock shows, how far its top edge
-// sits above the bottom of the window, as `--coach-dock-floor` on <html>, which a phone's bottom sheets stand on.
+// sits above the bottom of the window, as `--coach-dock-floor` on <html>, which a phone's bottom sheets and every
+// dialog stand on.
 // Toasts and the sign-in banner find the dock themselves (BOTTOM_CHROME_SELECTOR); they are told it came and went.
-// The sign-in banner steps aside while a tour is up, as it does for the tour banner (TOUR_CARD_ATTR).
+// The sign-in banner steps aside while a tour is up (TOUR_CARD_ATTR).
 
 export function useDockFloor(ref: RefObject<HTMLElement | null>): void {
   useEffect(() => {

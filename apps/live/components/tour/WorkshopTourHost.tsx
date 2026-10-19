@@ -16,16 +16,19 @@ import {
   type WorkshopTourApi,
 } from './workshop-tour-steps';
 import { WorkshopTourArt } from './WorkshopTourArt';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
 // The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
 
-const WORKSHOP_TOUR_COPY = {
-  welcomeEyebrow: 'Workshop tour',
-  helpHref: '/help/canvas/workshop-mode/',
+const HELP = { href: '/help/canvas/workshop-mode/', label: 'Workshop Help' };
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP = {
+  label: 'Workshop Tour',
+  about: 'A short tour of running a retro, workshop or town hall.',
 };
 
 const NO_API: WorkshopTourApi = {};
@@ -151,11 +154,15 @@ export function WorkshopTourHost() {
   useEffect(() => () => setActiveTour('workshop', false), []);
 
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix="Workshop tour"
-      copy={WORKSHOP_TOUR_COPY}
-      welcomeArt={<WorkshopTourArt />}
+      eyebrow="Workshop tour"
+      art={<WorkshopTourArt />}
+      help={HELP}
+      finish={TOUR_FINISH}
+      chip={CHIP}
+      onFolded={() => track('UI', 'Closed', 'WorkshopTourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'WorkshopTourChip')}
     />
   );
 }

@@ -28,7 +28,7 @@ describe('the Draw tour steps', () => {
   it('offers itself as the Diagram tour does, and closes ready to draw', () => {
     expect(DRAW_TOUR_STEPS[0]).toMatchObject({
       card: 'welcome',
-      title: 'Getting started with Draw?',
+      title: 'New to Draw?',
     });
     expect(DRAW_TOUR_STEPS.at(-1)).toMatchObject({ card: 'outro', title: "You're ready to draw" });
   });

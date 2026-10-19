@@ -11,14 +11,14 @@ hold.
 
 ## Domain language
 
-| Term                   | Means                                                                                              |
-| ---------------------- | -------------------------------------------------------------------------------------------------- |
-| **Pages tour**         | This tour, whichever track it runs                                                                 |
-| **Track**              | One page kind's steps: the **Slides**, **Infographic**, **Article** or **Logo** track              |
-| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts           |
-| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md)), without the welcome card |
-| **Diagram tour**       | The Diagram mode tour, [Diagram tour](editor-tour.md)                                              |
-| **Start Making Pages** | An empty Pages tab's template start, [Start Diagramming](start-diagramming.md)                     |
+| Term                   | Means                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| **Pages tour**         | This tour, whichever track it runs                                                          |
+| **Track**              | One page kind's steps: the **Slides**, **Infographic**, **Article** or **Logo** track       |
+| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts    |
+| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md)), without the offer |
+| **Diagram tour**       | The Diagram mode tour, [Diagram tour](editor-tour.md)                                       |
+| **Start Making Pages** | An empty Pages tab's template start, [Start Diagramming](start-diagramming.md)              |
 
 ## Where it appears
 
@@ -125,7 +125,7 @@ Layouts) and closes it on leaving.
 ### Logo track
 
 The logo page's Show Me steps ([Logo pages](logo-pages.md#show-me)) behind the offer **New to logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on Guides**, **Mirror As You Draw**,
-**Combine Shapes**, then **That Is a Logo Page**.
+**Combine Shapes**, then **You're ready to make a logo**.
 
 ### Filtering
 

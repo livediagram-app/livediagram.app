@@ -1,8 +1,8 @@
 # Draw tour
 
 A short, optional guided tour of [Draw mode](draw-mode.md), offered the first time a person works in Draw. It is
-the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same welcome card, anchored step cards,
-glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the
+the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same [coach dock](../007-editor/coach-dock.md)
+offer, steps, ring and closing, driven by the same engine. Where this spec is silent, the
 Workshop tour's rules hold.
 
 ## Domain language
@@ -22,7 +22,7 @@ Workshop tour's rules hold.
 - **On its own, never at the same time as another tour.** It also waits while a template start panel is on screen
   ([Start Diagramming](../007-editor/start-diagramming.md) "The tours wait"); Draw has no start panel of its own,
   since it offers no templates, so this only matters mid-switch.
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
+- **Optional.** The offer is the opt-in: **Take the Tour** starts it, **No Thanks** declines it, and left alone it folds into its chip in the tab bar.
 - **Once ever per person**, through the synced `drawTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
@@ -38,13 +38,13 @@ again.
 
 ## The steps
 
-A welcome card, four steps, then an outro card. The bookend cards sit outside the step count. Three steps ring one
+An offer, four steps, then the closing. The offer and the closing sit outside the step count. Three steps ring one
 of the dock's groups by its `data-tour-id` (`dock-drawing`, `dock-shapes`, `dock-settings`, carried by every dock
 group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings live in `apps/live/components/tour/draw-tour-steps.ts`.
 
-0. **Getting started with Draw?** (the offer): centred card with its own illustration (a whiteboard where a marker
+0. **New to Draw?** (the offer): in the coach dock, with its own illustration (a whiteboard where a marker
    scribble draws itself on over a highlighter swipe and a star is circled), offering a quick tour of the pens,
-   shapes and tools, then **No** and **Yes**.
+   shapes and tools, then **No Thanks** and **Take the Tour**.
 1. **Pens and Tools**: rings the Drawing tools group. Select, three markers, Text, the Path tool and the Eraser;
    pressing the marker in hand again changes its colour and width.
 2. **Quick Style**: rings the Quick style panel. Colour and width for the marker in hand, or for whatever is
@@ -73,7 +73,8 @@ offered it, since the dock's drawing tools are not theirs to use.
 
 The Workshop tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `DrawTourOffer` when its welcome card shows; `UI` · `Closed` · `DrawTourOffer` on No.
+- **Offer**: `UI` · `Opened` · `DrawTourOffer` when its offer shows; `UI` · `Closed` · `DrawTourOffer` on No Thanks; `UI` · `Closed` · `DrawTourOfferFolded` when it folds into
+  its chip, `UI` · `Opened` · `DrawTourChip` when the chip starts it.
 - **Start**: `UI` · `Started` · `DrawTour`.
 - **Stage views**: `UI` · `View` · `DrawTourStep<Id>` once per step entry (`DrawTourStepDrawingTools`,
   `DrawTourStepQuickStyle`, `DrawTourStepShapes`, `DrawTourStepSettings`, `DrawTourStepOutro`).

@@ -19,16 +19,27 @@ const stage = vi.hoisted(() => ({
   engine: null as TourEngine<WorkshopTourApi> | null,
   helpHref: '' as string | undefined,
 }));
-vi.mock('./TourStage', () => ({
-  TourStage: ({
+// The fold and chip callbacks the host hands the dock, to fire as the dock would.
+const dockChip = vi.hoisted(() => ({
+  onFolded: undefined as (() => void) | undefined,
+  onChipStart: undefined as (() => void) | undefined,
+}));
+vi.mock('./coach-dock/CoachDockStage', () => ({
+  CoachDockStage: ({
+    onFolded,
+    onChipStart,
     engine,
-    copy,
+    help,
   }: {
+    onFolded?: () => void;
+    onChipStart?: () => void;
     engine: TourEngine<WorkshopTourApi>;
-    copy: { helpHref?: string };
+    help: { href: string };
   }) => {
+    dockChip.onFolded = onFolded;
+    dockChip.onChipStart = onChipStart;
     stage.engine = engine;
-    stage.helpHref = copy.helpHref;
+    stage.helpHref = help.href;
     return null;
   },
 }));
@@ -251,5 +262,16 @@ describe('WorkshopTourHost end', () => {
     r.rerender(<WorkshopTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'WorkshopTourSkipped');
     expect(stage.engine?.active).toBe(false);
+  });
+});
+
+describe('WorkshopTourHost in the coach dock', () => {
+  it('counts an offer folding into its chip, and a start from the chip', () => {
+    editor();
+    render(<WorkshopTourHost />);
+    act(() => dockChip.onFolded!());
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'WorkshopTourOfferFolded');
+    act(() => dockChip.onChipStart!());
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'WorkshopTourChip');
   });
 });

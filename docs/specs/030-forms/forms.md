@@ -348,8 +348,9 @@ number).
 
 A guided tour, as [Plan's](../026-plan/plan-tour.md) is (`components/tour/FormTourHost.tsx`, its steps in
 `form-tour-steps.ts`): offered once, 800 ms after an Editor first has a Form tab open, never beside another tour or a
-start panel, never on a read-only, locked or embedded tab, and never before the synced preferences are in. Its welcome
-card asks "Getting started with forms?" over a starter's picture; its steps point and never change anything:
+start panel, never on a read-only, locked or embedded tab, and never before the synced preferences are in. It speaks through
+the [coach dock](../007-editor/coach-dock.md): its offer asks "New to forms?" beside a starter's picture, and folds
+into the **Forms Tour** chip when left alone; its steps point and never change anything:
 
 1. **Build It Here** (the form's questions, or its add bar when it has none);
 2. **Add Questions** (the add bar);
@@ -359,7 +360,7 @@ card asks "Getting started with forms?" over a starter's picture; its steps poin
 6. **Responses Arrive Here** (a board) or **Responses Land Here** (a sheet): it opens the tab the form's responses go
    to and comes back to the form after, only when the form has one;
 
-then its closing card, **That Is a Form**. A step's target below the fold of a long form (the add bar) is scrolled into
+then its closing, **You're ready to build your form**. A step's target below the fold of a long form (the add bar) is scrolled into
 view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tour.md#mechanics)). Opening any tab but the form or where its responses go ends it as skipped.
 Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
 or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`

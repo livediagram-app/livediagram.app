@@ -4,11 +4,13 @@
 // speaks through, so it never covers the page it teaches. One component for its three states: the offer (Take the
 // Tour, No Thanks), a step (its count and progress, Try it, End Tour, Back, Next) and the closing (help, Start). It
 // draws into the dock slot (CoachDockSlot), which makes the canvas give up its room; with no slot mounted (a surface
-// outside the editor) it stands at the bottom of the window instead.
+// outside the editor), or on a step inside a dialog, it stands at the bottom of the window instead, over the dialog's
+// dim, and the dialog stands on it (the dock floor).
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { lucideCheck, lucideCircleHelp } from '@livediagram/icons/lucide';
 import { Button, lucideGlyph, Portal, safeInlinePadding } from '@livediagram/ui';
+import type { TourWelcomeChoice } from '../tour-card-copy';
 import { useCoachSlot } from './coach-dock-slots';
 import { stepAnnouncement } from './coach-dock-copy';
 import { useDockFloor } from './useDockFloor';
@@ -39,6 +41,10 @@ export type CoachDockProps = {
   art?: ReactNode;
   help?: { href: string; label: string };
   finish?: string;
+  // An offer with more than one way in (the Plan tour's Boards and Spreadsheets), in place of Take the Tour.
+  choices?: readonly TourWelcomeChoice[] | undefined;
+  // A step inside a dialog: the dock stands over the dialog's dim, where it can be pressed.
+  overModal?: boolean;
   // Changes what the dock announces and replays its rise-in: the step's id.
   stepKey: string;
   onAccept?: () => void;
@@ -54,7 +60,7 @@ export type CoachDockProps = {
 export function CoachDock(props: CoachDockProps) {
   const slot = useCoachSlot('dock');
   const dock = <CoachDockBody {...props} />;
-  if (slot) return createPortal(dock, slot);
+  if (slot && !props.overModal) return createPortal(dock, slot);
   return (
     <Portal>
       <div className="fixed inset-x-0 bottom-0 z-[var(--z-toast)]">{dock}</div>
@@ -73,6 +79,7 @@ function CoachDockBody({
   art,
   help,
   finish = 'Start',
+  choices,
   stepKey,
   onAccept,
   onDecline,
@@ -185,9 +192,17 @@ function CoachDockBody({
               <Button variant="secondary" onClick={onDecline} className={PHONE_BUTTON}>
                 No Thanks
               </Button>
-              <Button onClick={onAccept} className={PHONE_BUTTON}>
-                Take the Tour
-              </Button>
+              {choices ? (
+                choices.map((choice) => (
+                  <Button key={choice.id} onClick={choice.onPick} className={PHONE_BUTTON}>
+                    {choice.label}
+                  </Button>
+                ))
+              ) : (
+                <Button onClick={onAccept} className={PHONE_BUTTON}>
+                  Take the Tour
+                </Button>
+              )}
             </>
           ) : state === 'step' ? (
             <>

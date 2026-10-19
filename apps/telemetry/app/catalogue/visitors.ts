@@ -14,6 +14,12 @@ import {
   FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
   PAGES_TOUR_CHIP_STARTED,
+  TOUR_CHIP_STARTED,
+  PLAN_TOUR_CHIP_STARTED,
+  WORKSHOP_TOUR_CHIP_STARTED,
+  DRAW_TOUR_CHIP_STARTED,
+  FORM_TOUR_CHIP_STARTED,
+  AVATAR_TOUR_CHIP_STARTED,
   PAGES_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
@@ -147,6 +153,14 @@ export const TOUR_OFFER_DISMISSED = chart(
   { types: ['TourOffer'], rising: 'neutral' },
 );
 
+export const TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Diagram Tour Offers Folded',
+  'The Diagram tour offer left alone and folded into its tab bar chip.',
+  { types: ['TourOfferFolded'], rising: 'neutral' },
+);
+
 export const TOURS_STARTED = chart(
   'UI',
   'Started',
@@ -190,7 +204,9 @@ export const WELCOME_TOUR: MetricStack = {
     WELCOME_DIALOG_CLOSED,
     TOUR_OFFERED,
     TOUR_OFFER_DISMISSED,
+    TOUR_FOLDED,
     TOURS_STARTED,
+    TOUR_CHIP_STARTED,
     TOUR_STEPS_VIEWED,
     TOURS_COMPLETED,
     TOURS_SKIPPED,
@@ -205,6 +221,14 @@ export const PLAN_TOUR_DECLINED = chart(
   'Plan Tours Declined',
   'The Plan tour turned down on its welcome card, before it started.',
   { types: ['PlanTourOffer'], rising: 'neutral' },
+);
+
+export const PLAN_TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Plan Tour Offers Folded',
+  'The Plan tour offer left alone and folded into its tab bar chip.',
+  { types: ['PlanTourOfferFolded'], rising: 'neutral' },
 );
 
 export const PLAN_TOURS_STARTED = chart(
@@ -265,7 +289,9 @@ export const PLAN_TOUR: MetricStack = {
   members: [
     PLAN_TOUR_OFFERED,
     PLAN_TOUR_DECLINED,
+    PLAN_TOUR_FOLDED,
     PLAN_TOURS_STARTED,
+    PLAN_TOUR_CHIP_STARTED,
     PLAN_TOUR_BOARDS_PICKED,
     PLAN_TOUR_SHEETS_PICKED,
     PLAN_TOUR_STEPS_VIEWED,
@@ -283,6 +309,14 @@ export const WORKSHOP_TOUR_DECLINED = chart(
   'Workshop Tours Declined',
   'The Workshop tour turned down on its welcome card, before it started.',
   { types: ['WorkshopTourOffer'], rising: 'neutral' },
+);
+
+export const WORKSHOP_TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Workshop Tour Offers Folded',
+  'The Workshop tour offer left alone and folded into its tab bar chip.',
+  { types: ['WorkshopTourOfferFolded'], rising: 'neutral' },
 );
 
 export const WORKSHOP_TOURS_STARTED = chart(
@@ -333,7 +367,9 @@ export const WORKSHOP_TOUR: MetricStack = {
   members: [
     WORKSHOP_TOUR_OFFERED,
     WORKSHOP_TOUR_DECLINED,
+    WORKSHOP_TOUR_FOLDED,
     WORKSHOP_TOURS_STARTED,
+    WORKSHOP_TOUR_CHIP_STARTED,
     WORKSHOP_TOURS_FROM_WELCOME,
     WORKSHOP_TOUR_STEPS_VIEWED,
     WORKSHOP_TOURS_COMPLETED,
@@ -349,6 +385,14 @@ export const DRAW_TOUR_DECLINED = chart(
   'Draw Tours Declined',
   'The Draw tour turned down on its welcome card, before it started.',
   { types: ['DrawTourOffer'], rising: 'neutral' },
+);
+
+export const DRAW_TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Draw Tour Offers Folded',
+  'The Draw tour offer left alone and folded into its tab bar chip.',
+  { types: ['DrawTourOfferFolded'], rising: 'neutral' },
 );
 
 export const DRAW_TOURS_STARTED = chart(
@@ -391,7 +435,9 @@ export const DRAW_TOUR: MetricStack = {
   members: [
     DRAW_TOUR_OFFERED,
     DRAW_TOUR_DECLINED,
+    DRAW_TOUR_FOLDED,
     DRAW_TOURS_STARTED,
+    DRAW_TOUR_CHIP_STARTED,
     DRAW_TOUR_STEPS_VIEWED,
     DRAW_TOURS_COMPLETED,
     DRAW_TOURS_SKIPPED,
@@ -406,6 +452,14 @@ export const FORM_TOUR_DECLINED = chart(
   'Forms Tours Declined',
   'The Forms tour turned down on its welcome card, before it started.',
   { types: ['FormTourOffer'], rising: 'neutral' },
+);
+
+export const FORM_TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Forms Tour Offers Folded',
+  'The Forms tour offer left alone and folded into its tab bar chip.',
+  { types: ['FormTourOfferFolded'], rising: 'neutral' },
 );
 
 export const FORM_TOURS_STARTED = chart(
@@ -448,7 +502,9 @@ export const FORM_TOUR: MetricStack = {
   members: [
     FORM_TOUR_OFFERED,
     FORM_TOUR_DECLINED,
+    FORM_TOUR_FOLDED,
     FORM_TOURS_STARTED,
+    FORM_TOUR_CHIP_STARTED,
     FORM_TOUR_STEPS_VIEWED,
     FORM_TOURS_COMPLETED,
     FORM_TOURS_SKIPPED,
@@ -463,6 +519,14 @@ export const AVATAR_TOUR_DECLINED = chart(
   'Avatar Tours Declined',
   'The Avatar tour turned down on its welcome card, before it started.',
   { types: ['AvatarTourOffer'], rising: 'neutral' },
+);
+
+export const AVATAR_TOUR_FOLDED = chart(
+  'UI',
+  'Closed',
+  'Avatar Tour Offers Folded',
+  'The Avatar tour offer left alone and folded into its tab bar chip.',
+  { types: ['AvatarTourOfferFolded'], rising: 'neutral' },
 );
 
 export const AVATAR_TOURS_STARTED = chart(
@@ -505,7 +569,9 @@ export const AVATAR_TOUR: MetricStack = {
   members: [
     AVATAR_TOUR_OFFERED,
     AVATAR_TOUR_DECLINED,
+    AVATAR_TOUR_FOLDED,
     AVATAR_TOURS_STARTED,
+    AVATAR_TOUR_CHIP_STARTED,
     AVATAR_TOUR_STEPS_VIEWED,
     AVATAR_TOURS_COMPLETED,
     AVATAR_TOURS_SKIPPED,

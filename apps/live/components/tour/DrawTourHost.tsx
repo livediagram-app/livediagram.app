@@ -12,17 +12,17 @@ import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { drawTourSteps, drawTourStepTelemetryType, type DrawTourApi } from './draw-tour-steps';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DrawTourArt } from './DrawTourArt';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
 // The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
 
-const DRAW_TOUR_COPY = {
-  welcomeEyebrow: 'Draw tour',
-  helpHref: '/help/canvas/draw-mode/',
-};
+const HELP = { href: '/help/canvas/draw-mode/', label: 'Draw Help' };
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP = { label: 'Draw Tour', about: 'A short tour of the pens, shapes and tools.' };
 
 const NO_API: DrawTourApi = {};
 
@@ -139,11 +139,15 @@ export function DrawTourHost() {
   useEffect(() => () => setActiveTour('draw', false), []);
 
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix="Draw tour"
-      copy={DRAW_TOUR_COPY}
-      welcomeArt={<DrawTourArt />}
+      eyebrow="Draw tour"
+      art={<DrawTourArt />}
+      help={HELP}
+      finish={TOUR_FINISH}
+      chip={CHIP}
+      onFolded={() => track('UI', 'Closed', 'DrawTourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'DrawTourChip')}
     />
   );
 }

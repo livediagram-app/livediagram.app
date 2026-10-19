@@ -18,15 +18,18 @@ import {
   type AvatarTourApi,
 } from './avatar-tour-steps';
 import { AvatarTourArt } from './AvatarTourArt';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
 // The settle delay before the offer, as the other tours'.
 export const OFFER_DELAY_MS = 800;
 
-const AVATAR_TOUR_COPY = {
-  welcomeEyebrow: 'Avatar tour',
-  helpHref: '/help/selection-modes/avatar-mode/',
+const HELP = { href: '/help/selection-modes/avatar-mode/', label: 'Avatar Help' };
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP = {
+  label: 'Avatar Tour',
+  about: 'A short tour of dressing up your character, reacting, talking and pushing.',
 };
 
 const NO_API: AvatarTourApi = {};
@@ -142,11 +145,15 @@ export function AvatarTourHost() {
   useEffect(() => () => setActiveTour('avatar', false), []);
 
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix="Avatar tour"
-      copy={AVATAR_TOUR_COPY}
-      welcomeArt={<AvatarTourArt />}
+      eyebrow="Avatar tour"
+      art={<AvatarTourArt />}
+      help={HELP}
+      finish={TOUR_FINISH}
+      chip={CHIP}
+      onFolded={() => track('UI', 'Closed', 'AvatarTourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'AvatarTourChip')}
     />
   );
 }

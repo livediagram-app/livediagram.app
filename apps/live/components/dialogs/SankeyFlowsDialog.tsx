@@ -185,7 +185,7 @@ export function SankeyFlowsDialog({
       closeOnEscape={!tour.active && !elementTourRunning}
       ariaLabel="Edit Sankey flows"
       size="3xl"
-      className="max-h-[90vh]"
+      className="max-h-[90%]"
     >
       <DialogHeader
         title="Flows"

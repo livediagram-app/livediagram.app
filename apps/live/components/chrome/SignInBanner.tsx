@@ -75,7 +75,7 @@ export function SignInBanner({
           eat clicks meant for the pane behind; the card re-enables
           them for itself. */}
       <div
-        // Steps aside while a tour's offer or last card is up (both stand at the bottom centre, TourPopover) and while a
+        // Steps aside while a tour is in the coach dock (which takes its place, TOUR_CARD_ATTR) and while a
         // panel opened from the chrome is open (Tidy Up, Layers, the Explorer panel), which reaches up into its band.
         className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 [body[data-tour-card-open]_&]:hidden [body:has([data-dock-button]_[aria-expanded=true])_&]:hidden ${placementClassName}`}
         style={standOnChrome ? { bottom: chromeFloor } : undefined}

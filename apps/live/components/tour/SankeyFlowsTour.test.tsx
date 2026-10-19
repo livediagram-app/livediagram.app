@@ -7,6 +7,7 @@ import { SankeyFlowsDialog } from '@/components/dialogs/SankeyFlowsDialog';
 import { sankeyFlowsTourSteps } from './sankey-flows-tour-steps';
 import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { setActiveTour } from '@/lib/tour-active';
+import { dockSays } from './coach-dock/coach-dock-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the document" here, and there is nothing to scroll.
@@ -36,7 +37,7 @@ const startShowMe = async () => {
 };
 
 const next = async () => {
-  fireEvent.click(screen.getByRole('button', { name: /next/i }));
+  fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ }));
   await settle();
 };
 
@@ -61,14 +62,14 @@ describe('Sankey Flows dialog Show Me', () => {
   it('sits in the title row, starts on the nodes and sends its Started event', async () => {
     renderDialog();
     await startShowMe();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 6: Your Nodes/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 6: Your Nodes/);
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'SankeyFlowsTour');
   });
 
   it('starts on Add a Flow when there are no flows yet', async () => {
     renderDialog(el({ sankeyFlows: [] }));
     await startShowMe();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 4: Add a Flow/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 4: Add a Flow/);
   });
 
   it('points at the balance notes while a middle node does not balance', async () => {
@@ -81,25 +82,21 @@ describe('Sankey Flows dialog Show Me', () => {
       }),
     );
     await startShowMe();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 7:/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 7:/);
     await next();
     await next();
     await next();
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 4 of 7: In and Out Differ/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 4 of 7: In and Out Differ/);
   });
 
   it('brings the Text tab forward on its step, and the Table back on leaving it', async () => {
     renderDialog(el({ sankeyFlows: [] }));
     await startShowMe();
     await next();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 2 of 4: Or Type Them/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 2 of 4: Or Type Them/);
     expect(screen.getByRole('tab', { name: 'Text' }).getAttribute('aria-selected')).toBe('true');
     await next();
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 3 of 4: Import a File/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 3 of 4: Import a File/);
     expect(screen.getByRole('tab', { name: 'Table' }).getAttribute('aria-selected')).toBe('true');
   });
 
@@ -114,7 +111,7 @@ describe('Sankey Flows dialog Show Me', () => {
   it('reports a skip when left before its end', async () => {
     renderDialog();
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'End Tour' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyFlowsTourSkipped');
   });
 });

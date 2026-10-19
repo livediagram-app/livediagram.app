@@ -44,11 +44,14 @@ A new Show Me surface is added to this table, and its own spec says its steps.
 
 ## The tour
 
-- The shared tour (the step card with Back, Next and Skip, the ring around what it points at with room to
-  breathe, the dim around it). It starts straight on its first step: no welcome card. Steps count from 1, and
-  a closing card ends it, with **Done** and a link to the surface's help article ("<Topic> Help").
-- **A page's Show Me speaks through the [Coach dock](coach-dock.md)** instead: its steps, Try it, ring and
-  closing sit in the strip above the tab bar, with no card over the page and no dim.
+- **Every Show Me speaks through the [coach dock](coach-dock.md)**: its steps (End Tour, Back, Next), the ring
+  with its step number around what it points at, and its closing sit in the strip above the tab bar, with no card
+  over the surface and no dim. Its eyebrow names it: **Show Me · Card Types**, **Show Me · Slides**. It starts
+  straight on its first step: no offer. Steps count from 1, and the closing ends it, with **Done** and a link to
+  the surface's help article ("<Topic> Help").
+- **Inside a dialog** (the card type editor, Share, Sankey Flows, Tab Style, Photo Review) the dock stands at the
+  bottom of the window over the dialog's dim, and the dialog moves up to stand on it, so neither covers the
+  other; its ring has more room (14 px) around the dialog's tightly packed rows.
 - **Live controls.** Each step points at a real control, which stays usable while the step is up: the person
   can type, pick or press as the tour goes, and what they do is kept. A step never changes anything on its own
   beyond opening the tab, section or selection it is about.

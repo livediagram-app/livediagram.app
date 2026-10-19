@@ -1634,7 +1634,7 @@ kind, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
-- Hiding chrome has a second audience: the Diagram tour ([Diagram tour ("Getting started with Diagrams?")](../007-editor/editor-tour.md))
+- Hiding chrome has a second audience: the Diagram tour ([Diagram tour ("New to diagrams?")](../007-editor/editor-tour.md))
   pointed at the hidden header until it learned to drop those steps on a
   board — anything that teaches the UI has to be told when the UI shrinks.
 - Next App Router hydrates React on `document`, so React handlers are

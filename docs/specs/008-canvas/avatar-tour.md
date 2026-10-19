@@ -1,8 +1,8 @@
 # Avatar tour
 
 A short, optional guided tour of [Avatar mode](avatar-mode.md), offered the first time a person walks as an
-avatar. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s sibling: the same welcome card, anchored step cards,
-glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the Draw
+avatar. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s sibling: the same [coach dock](../007-editor/coach-dock.md)
+offer, steps, ring and closing, driven by the same engine. Where this spec is silent, the Draw
 tour's rules hold.
 
 ## Domain language
@@ -21,7 +21,7 @@ tour's rules hold.
   a Viewer's as much as an Editor's, and a read-only canvas is the mode's normal state, not a reason to hold off.
 - **Not before the synced preferences are in**, so an answer given on another device holds on a new one.
 - **On its own, never at the same time as another tour**, and it waits while a template start panel is on screen.
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
+- **Optional.** The offer is the opt-in: **Take the Tour** starts it, **No Thanks** declines it, and left alone it folds into its chip in the tab bar.
 - **Once ever per person**, through the synced `avatarTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
@@ -37,12 +37,12 @@ sends no message and pushes nobody. There is nothing to take away and nothing in
 
 ## The steps
 
-A welcome card, five steps, then an outro card. The bookend cards sit outside the step count. Each step rings an
+An offer, five steps, then the closing. The offer and the closing sit outside the step count. Each step rings an
 element by its `data-tour-id`. The exact strings live in `apps/live/components/tour/avatar-tour-steps.ts`.
 
-0. **Meet Your Avatar** (the offer): centred card with its own illustration (two pixel characters on a dotted
+0. **New to your avatar?** (the offer): in the coach dock, with its own illustration (two pixel characters on a dotted
    canvas, one waving, a speech bubble rising from the other), offering a quick tour of dressing up, reacting,
-   talking and pushing, then **No** and **Yes**.
+   talking and pushing, then **No Thanks** and **Take the Tour**.
 1. **Your Avatar**: rings the Avatar button (`avatar-button`). The character sheet and everything your character
    can do live here.
 2. **Make It Yours**: opens the Avatar panel if it is closed and rings its character section (`avatar-character`):
@@ -79,7 +79,7 @@ bottom bar as the other tours' do.
 
 The Draw tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `AvatarTourOffer` when its welcome card shows; `UI` · `Closed` · `AvatarTourOffer`
+- **Offer**: `UI` · `Opened` · `AvatarTourOffer` when its offer shows; `UI` · `Closed` · `AvatarTourOffer`
   on No.
 - **Start**: `UI` · `Started` · `AvatarTour`.
 - **Stage views**: `UI` · `View` · `AvatarTourStep<Id>` once per step entry (`AvatarTourStepAvatarButton`,

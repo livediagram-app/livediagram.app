@@ -11,6 +11,8 @@ import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
 import { hasTourPending, markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourHost } from './TourHost';
+import type { TourApi } from './tour-steps';
+import type { TourEngine } from './useTourEngine';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -21,16 +23,26 @@ const popover = vi.hoisted(() => ({
     onNext: () => void;
   },
 }));
-vi.mock('./TourPopover', () => ({
-  TourPopover: (props: NonNullable<typeof popover.props>) => {
-    popover.props = props;
-    return null;
-  },
+// What the dock shows, read off the engine it is handed (CoachDockStage): the card or step on screen.
+// The fold and chip callbacks the host hands the dock, to fire as the dock would.
+const dockChip = vi.hoisted(() => ({
+  onFolded: undefined as (() => void) | undefined,
+  onChipStart: undefined as (() => void) | undefined,
 }));
-// The offer and the last card are the banner's (TourBanner): read the same way.
-vi.mock('./TourBanner', () => ({
-  TourBanner: (props: NonNullable<typeof popover.props>) => {
-    popover.props = props;
+vi.mock('./coach-dock/CoachDockStage', () => ({
+  CoachDockStage: ({
+    onFolded,
+    onChipStart,
+    engine,
+  }: {
+    onFolded?: () => void;
+    onChipStart?: () => void;
+    engine: TourEngine<TourApi>;
+  }) => {
+    dockChip.onFolded = onFolded;
+    dockChip.onChipStart = onChipStart;
+    if (engine.active && engine.step)
+      popover.props = { card: engine.step.card, title: engine.step.title, onNext: engine.next };
     return null;
   },
 }));
@@ -280,7 +292,7 @@ describe('TourHost running', () => {
     editor();
     render(<TourHost />);
     act(() => requestTourRelaunch());
-    expect(popover.props!.title).toBe('Getting started with Diagrams?');
+    expect(popover.props!.title).toBe('New to diagrams?');
     act(() => popover.props!.onNext());
     await act(async () => {
       await vi.advanceTimersByTimeAsync(60000);
@@ -309,5 +321,16 @@ describe('TourHost running', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'TourSkipped');
     expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true }, 'me');
     expect(hasTourPending()).toBe(false);
+  });
+});
+
+describe('TourHost in the coach dock', () => {
+  it('counts an offer folding into its chip, and a start from the chip', () => {
+    editor();
+    render(<TourHost />);
+    act(() => dockChip.onFolded!());
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'TourOfferFolded');
+    act(() => dockChip.onChipStart!());
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'TourChip');
   });
 });

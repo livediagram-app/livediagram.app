@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import type { TourStepOf } from './tour-step';
 import { useTourEngine } from './useTourEngine';
+import { dockSays, dockStepShowing } from './coach-dock/coach-dock-test-utils';
 
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
@@ -47,7 +48,7 @@ describe('Show Me', () => {
     expect(button.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(button);
     await settle();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 1: First/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 1: First/);
     expect(button.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(button);
     expect(onStart).toHaveBeenCalledTimes(1);
@@ -58,7 +59,7 @@ describe('Show Me', () => {
     render(<Surface onStart={() => {}} onFinish={onFinish} />);
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ }));
     await settle();
     const link = screen.getByRole('link', { name: /Sharing Help/ });
     expect(link.getAttribute('href')).toBe('/help/collaboration/sharing/');
@@ -72,10 +73,10 @@ describe('Show Me', () => {
     render(<Surface onStart={onStart} onFinish={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     await settle();
-    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(dockStepShowing()).toBe(false);
     await act(async () => loaded());
     await settle();
-    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 1: First/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 1: First/);
   });
 
   it('ignores a second press while its steps load, and can be pressed again after a failed load', async () => {
@@ -90,7 +91,7 @@ describe('Show Me', () => {
     expect(onStart).toHaveBeenCalledTimes(1);
     await act(async () => fail());
     await settle();
-    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(dockStepShowing()).toBe(false);
     fireEvent.click(button);
     expect(onStart).toHaveBeenCalledTimes(2);
   });

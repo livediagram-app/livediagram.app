@@ -1079,6 +1079,54 @@ export const PAGES_TOUR_OFFERED = opened(
   (t) => t === 'PagesTourOffer',
 );
 
+// The Diagram tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const TOUR_CHIP_STARTED = opened(
+  'Diagram Tours Started From the Chip',
+  'The Diagram tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'TourChip',
+);
+
+// The Plan tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const PLAN_TOUR_CHIP_STARTED = opened(
+  'Plan Tours Started From the Chip',
+  'The Plan tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'PlanTourChip',
+);
+
+// The Workshop tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const WORKSHOP_TOUR_CHIP_STARTED = opened(
+  'Workshop Tours Started From the Chip',
+  'The Workshop tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'WorkshopTourChip',
+);
+
+// The Draw tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const DRAW_TOUR_CHIP_STARTED = opened(
+  'Draw Tours Started From the Chip',
+  'The Draw tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'DrawTourChip',
+);
+
+// The Forms tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const FORM_TOUR_CHIP_STARTED = opened(
+  'Forms Tours Started From the Chip',
+  'The Forms tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'FormTourChip',
+);
+
+// The Avatar tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
+// in its funnel on the Visitors tab.
+export const AVATAR_TOUR_CHIP_STARTED = opened(
+  'Avatar Tours Started From the Chip',
+  'The Avatar tour started from the tab bar chip a folded offer left.',
+  (t) => t === 'AvatarTourChip',
+);
+
 // The Pages tour started from the tab bar chip its offer folded into (docs/specs/007-editor/coach-dock.md); charted
 // in its funnel on the Visitors tab.
 export const PAGES_TOUR_CHIP_STARTED = opened(

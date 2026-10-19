@@ -189,7 +189,7 @@ export function ItemTypeEditor({
       phoneSheet
       // While Show Me runs, Escape is the tour's, never the editor's.
       closeOnEscape={!tour.active}
-      className="max-h-[min(46rem,calc(100dvh-2rem))] overflow-hidden"
+      className="max-h-[min(46rem,calc(100%-2rem))] overflow-hidden"
     >
       <div className="flex items-center gap-2 px-5 pt-5 pb-2">
         <h2

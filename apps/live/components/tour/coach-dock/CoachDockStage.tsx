@@ -1,16 +1,17 @@
 'use client';
 
-// What a tour that speaks through the coach dock draws (docs/specs/007-editor/coach-dock.md,
-// blueprints/coach-dock.md "Behaviour and state"): the offer, folding into the tour chip when left alone; each step
-// in the dock with its Try it, and the pointer at its control; the closing, folding away as completed. It reads the
-// shared tour engine and keeps one state of its own: whether the offer has folded.
+// What every tour draws (docs/specs/007-editor/coach-dock.md, blueprints/coach-dock.md "Behaviour and state"): the
+// offer, folding into the tour chip when left alone; each step in the dock with its Try it, and the pointer at its
+// control; the closing, folding away as completed. The mode tours, the Pages tour, the element tours and every Show
+// Me draw through it. It reads the shared tour engine and keeps one state of its own: whether the offer has folded.
 import { useState, type ReactNode } from 'react';
 import { debugLog } from '@/lib/debug-log';
 import type { TourEngine } from '../useTourEngine';
 import { CoachChip } from './CoachChip';
 import { CoachDock } from './CoachDock';
+import type { TourWelcomeChoice } from '../tour-card-copy';
 import { CoachPointer } from './CoachPointer';
-import { tourLength } from './coach-dock-copy';
+import { RING_PAD_IN_DIALOG_PX, RING_PAD_PX, tourLength } from './coach-dock-copy';
 import { useFoldTimer } from './useFoldTimer';
 import { useTryIt } from './useTryIt';
 
@@ -22,12 +23,14 @@ export function CoachDockStage<Api>({
   help,
   finish,
   chip,
+  choices,
+  layer = 'overlay',
   onFolded,
   onChipStart,
 }: {
   engine: TourEngine<Api>;
-  // The steps' facade, for a Try it's selector.
-  api: Api;
+  // The steps' facade, for a Try it's selector (only the tours whose steps carry one).
+  api?: Api;
   // Names the tour: "Slides tour", "Show Me".
   eyebrow: string;
   art?: ReactNode;
@@ -36,6 +39,11 @@ export function CoachDockStage<Api>({
   finish: string;
   // The tour chip's words, for an offered tour: "Slides Tour", and what it shows.
   chip?: { label: string; about: string };
+  // An offer with more than one way in (the Plan tour's tracks): each starts the tour its own way.
+  choices?: readonly TourWelcomeChoice[] | undefined;
+  // 'modal' for a tour of a dialog (a Show Me inside one): its pointer rings controls over the dialog, roomier, and
+  // the dock stands over the dialog's dim. A step may say so for itself (an element tour's step in its data dialog).
+  layer?: 'overlay' | 'modal';
   onFolded?: () => void;
   onChipStart?: () => void;
 }) {
@@ -64,7 +72,10 @@ export function CoachDockStage<Api>({
   });
 
   // A step's Try it: resolved against the tour's page as the step shows.
-  const selector = engine.active && step && !card && step.tryIt ? step.tryIt.pressed(api) : null;
+  const selector =
+    engine.active && step && !card && step.tryIt && api !== undefined
+      ? step.tryIt.pressed(api)
+      : null;
   const stepKey = step ? `${stepIndex}:${step.id}` : '';
   const tryItDone = useTryIt(selector, stepKey, engine.next);
 
@@ -78,7 +89,8 @@ export function CoachDockStage<Api>({
         onStart={() => {
           setFolded(false);
           onChipStart?.();
-          engine.next();
+          // An offer of choices opens again to be chosen from; otherwise the tour starts at its first step.
+          if (!choices) engine.next();
         }}
         onDismiss={engine.skip}
       />
@@ -94,6 +106,7 @@ export function CoachDockStage<Api>({
         body={step.body}
         length={tourLength(engine.countableSteps)}
         art={art}
+        choices={choices}
         stepKey={stepKey}
         onAccept={engine.next}
         onDecline={engine.skip}
@@ -112,6 +125,7 @@ export function CoachDockStage<Api>({
         art={art}
         help={help}
         finish={finish}
+        overModal={layer === 'modal'}
         stepKey={stepKey}
         onFinish={engine.next}
         onHoldChange={setHold}
@@ -121,17 +135,22 @@ export function CoachDockStage<Api>({
 
   // Real steps count from 1: an offered tour's welcome sits at index 0, so a step's index is its number.
   const n = stepIndex + (engine.hasWelcome ? 0 : 1);
-  const layerClass =
-    step.layer === 'modal'
-      ? 'z-[calc(var(--z-modal)+1)]'
-      : step.ringOverMenu
-        ? 'z-[calc(var(--z-overlay)+1)]'
-        : 'z-[var(--z-overlay)]';
+  const inDialog = (step.layer ?? layer) === 'modal';
+  const layerClass = inDialog
+    ? 'z-[calc(var(--z-modal)+1)]'
+    : step.ringOverMenu
+      ? 'z-[calc(var(--z-overlay)+1)]'
+      : 'z-[var(--z-overlay)]';
   return (
     <>
       {/* Stepped aside for a dialog that is not the tour's (useTourEngine): the dock stays, the pointer goes. */}
       {targetRect && !engine.yielded ? (
-        <CoachPointer rect={targetRect} n={n} layerClass={layerClass} />
+        <CoachPointer
+          rect={targetRect}
+          n={n}
+          layerClass={layerClass}
+          pad={layer === 'modal' ? RING_PAD_IN_DIALOG_PX : RING_PAD_PX}
+        />
       ) : null}
       <CoachDock
         state="step"
@@ -139,7 +158,10 @@ export function CoachDockStage<Api>({
         title={step.title}
         body={step.body}
         step={{ n, of: engine.countableSteps }}
-        tryIt={step.tryIt ? { label: step.tryIt.label, done: tryItDone } : null}
+        tryIt={
+          step.tryIt && api !== undefined ? { label: step.tryIt.label, done: tryItDone } : null
+        }
+        overModal={inDialog}
         stepKey={stepKey}
         onBack={n > 1 ? engine.back : undefined}
         onNext={engine.next}

@@ -15,21 +15,21 @@ export const metadata = helpMetadata({
   categorySlug="canvas/plan-mode"
 >
 
-The Plan tour shows you around your own board, or your own spreadsheet. Like the [Diagram Tour](/help/getting-started/diagram-tour/), it works on the real editor rather than screenshots: it spotlights each part of your board or sheet with a highlight ring and a short explanation, without changing anything on it. It takes about a minute, and you can leave at any point.
+The Plan tour shows you around your own board, or your own spreadsheet. Like the [Diagram Tour](/help/getting-started/diagram-tour/), it works on the real editor rather than screenshots: it rings each part of your board or sheet and explains it in the coach dock, a strip above the tab bar that never covers your work, without changing anything on it. It takes about a minute, and you can leave at any point.
 
 ## When It's Offered
 
 The tour needs something to show, so it waits until you're in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit **with a board or a sheet open**: a Board tab, a Sheet tab, or a Plan tab holding a board or sheet. On an empty Plan tab, pick a board or a spreadsheet from **Start Planning** first; a Dashboard waits until you open one of its boards or sheets in their own tab.
 
-Then a banner at the bottom of the screen offers a look around your board (**Getting started with boards?**) or your sheet (**Getting started with sheets?**): **Yes** starts it, **No** dismisses it. If the tab has both a board and a sheet, the banner asks which: **Boards** or **Spreadsheets**. It isn't offered on a locked tab, in an embed, or to a Participant or a Viewer.
+Then the coach dock above the tab bar offers a look around your board (**New to boards?**) or your sheet (**New to sheets?**): **Take the Tour** starts it, **No Thanks** dismisses it. If the tab has both a board and a sheet, it asks which: **Boards** or **Spreadsheets**. Leave it alone and after a few seconds it folds into a small chip (**Boards Tour**, **Sheets Tour**, or **Plan Tour** when it asks which) in the tab bar: press it to start, or its **×** to say no thanks. It comes back on your next visit until you answer. It isn't offered on a locked tab, in an embed, or to a Participant or a Viewer.
 
-The boards tour and the sheets tour are each offered **once ever**. However you answer one (decline, skip midway, or finish), it won't come back on its own, but the other is still offered the first time you have that kind open: take the boards tour, and the sheets tour is offered when you open a sheet. Saying **No** when the card asks which declines both. If you're signed in, your answers follow you to every device. Turning on **Power User Mode** in Settings marks them both as seen.
+The boards tour and the sheets tour are each offered **once ever**. However you answer one (decline, skip midway, or finish), it won't come back on its own, but the other is still offered the first time you have that kind open: take the boards tour, and the sheets tour is offered when you open a sheet. Saying **No Thanks** when it asks which declines both. If you're signed in, your answers follow you to every device. Turning on **Power User Mode** in Settings marks them both as seen.
 
 ## What It Covers
 
 ### Boards
 
-1. **Your Board**: a card on its own, about your board's columns, the stages work moves through. See [Boards](/help/canvas/plan-mode/boards/).
+1. **Your Board**: the dock on its own, with no ring, about your board's columns, the stages work moves through. See [Boards](/help/canvas/plan-mode/boards/).
 2. **Add Cards**: the first column's **Add card** button; every column ends in one.
 3. **Move Work Along**: dragging a card to the next column, or **Shift** and an arrow key. Shown on your first card; left out when the board has no cards yet.
 4. **The Card Panel**: everything about one piece of work, saved as you type. The tour opens your first card's panel and closes it again. See [Cards](/help/canvas/plan-mode/cards/).
@@ -38,13 +38,13 @@ The boards tour and the sheets tour are each offered **once ever**. However you 
 
 ### Spreadsheets
 
-1. **Your Sheet**: a card on its own, about your sheet, a spreadsheet in your document. See [Sheets](/help/canvas/plan-mode/sheets/).
+1. **Your Sheet**: the dock on its own, with no ring, about your sheet, a spreadsheet in your document. See [Sheets](/help/canvas/plan-mode/sheets/).
 2. **Type Into Cells**: cell **A1**, selecting a cell and typing, with **Enter** and **Tab** to move on.
 3. **Formulas**: the formula bar, which shows the selected cell's value or formula, and pointing at cells as you write one. See [Sheet Functions](/help/canvas/plan-mode/sheet-functions/).
 4. **The Toolbar**: its category switcher and the tools each category shows.
 5. **Sheet Settings**: the cog with the sheet's title, CSV, gridlines, sizes, freeze and named ranges.
 
-Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to plan**, links to the [Plan mode](/help/canvas/plan-mode/) article (or [Sheets](/help/canvas/plan-mode/sheets/) after the Spreadsheets tour) and ends the tour with **Start Planning**. The steps are the same on a phone.
+Each step shows in the coach dock with **End Tour**, **Back** and **Next**, and a ring with the step's number marks what it's about. It closes with **You're ready to plan**, which links to the [Plan mode](/help/canvas/plan-mode/) article (or [Sheets](/help/canvas/plan-mode/sheets/) after the Spreadsheets tour) and ends the tour with **Start**. The steps are the same on a phone.
 
 ## Your Work Is Left Alone
 
@@ -61,8 +61,8 @@ Each step has **Next**, **Back** and **Skip tour**. The last card, **You're read
 <Step n={2}>Switch **Plan Tour** back on.</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Plan mode with a board or sheet open, the tour's welcome banner shows
-  straight away; otherwise it's offered the next time you are.
+  Close Settings. If you're in Plan mode with a board or sheet open, the tour's offer shows straight
+  away; otherwise it's offered the next time you are.
 </Step>
 
 </ArticleLayout>

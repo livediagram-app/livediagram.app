@@ -1,7 +1,8 @@
-# Diagram tour ("Getting started with Diagrams?")
+# Diagram tour ("New to diagrams?")
 
-A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
-spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. Until
+A guided tour of [Diagram mode](editor-modes.md): a sequence of steps, spoken through the
+[coach dock](coach-dock.md), that ring one piece of the diagramming chrome at a time, opening the real panels and
+menus as it goes. Until
 October 2026 it was the **welcome tour**, offered whatever mode a tab was in; it is now about diagramming alone,
 and the other modes have tours of their own (the [Plan tour](../026-plan/plan-tour.md) and the
 [Workshop tour](../012-collaboration/workshop-tour.md)). It superseded the guided-tour **sample diagram**
@@ -27,33 +28,28 @@ proved the better introduction.
 - **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
   the count from the Jump-back-in fetch; `null` = unknown = no offer) creates a document through the wizard
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
-  shows a **welcome offer banner** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
-  or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
-  **No** dismisses it. A document made from a Plan, Draw, Pages or Workshop template does not show it
+  shows the **offer** in the [coach dock](coach-dock.md) once the editor is ready, and once its start is done (a
+  template picked or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Take the
+  Tour** starts the tour, **No Thanks** dismisses it, and left alone it folds into the **Diagram Tour** chip in the
+  tab bar. A document made from a Plan, Draw, Pages or Workshop template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
-- **The bookend cards ask nothing of the editor.** The welcome offer and the last card are **banners**, built as the
-  sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
-  there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
-  title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); every
-  mode tour's finish button reads just **Start** (`TOUR_FINISH`), and its help link reads **Help** behind a help icon
-  (an element tour's names its article, "Sankey Diagram Help", behind the same icon); on a
-  phone they stack, the picture left out. No backdrop, no focus taken (not even by a press on its buttons, so answering it leaves the focus where the person was working), so someone who would rather carry on working simply does, and answers when they like. Tab reaches
-  their buttons. They are the toasts' floor while up, and the sign-in banner, which takes the same place, steps aside
-  meanwhile: the two are never on screen together. A step card leaves focus alone too: it points at a real control
-  the person is about to use.
+- **Every tour looks and behaves as one.** This tour, and every other (the mode tours, the Pages tour, the element
+  tours, every Show Me), speaks through the [coach dock](coach-dock.md): the offer, each step and the closing in
+  the strip above the tab bar, a ring with the step's number around the real control, no backdrop, no dim, no focus
+  taken. Every offered tour's offer reads **Take the Tour** and **No Thanks**, folds into its chip when left alone,
+  and every mode tour's closing finishes on **Start** (`TOUR_FINISH`) beside its help link, named for its article.
 - **How a step reads.** Every tour's words, the editor's, each mode's and each element's, are written to get someone
   going fast: what to do first, in one idea and about twenty words at most; the control named exactly as it is
   labelled; a menu path written as it is pressed ("Tools › Boundary", or "In its menu, Mind Map"); no inside terms
   ("accent", "steps toward the fill", "one undo step": say "Undo takes back any change"); no list of every option
-  where the person can see them. An offer says what the tour covers in a line. A detail that changes what the
+  where the person can see them. An offer asks "New to …?" and says what the tour covers in a line, as a
+  statement (the dock adds its length). A detail that changes what the
   person can do stays (a keyboard key, a right-click a phone lacks, how many there are).
-- **Escape is each card's way out.** On the offer it declines (as **No**), on a step it skips the tour (as
-  **Skip tour**), on the last card it finishes (as its finish button). Every tour's cards are the same card
-  (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
-  element tour asks for Escape to put text back, and when another surface has already taken it. The offer and the
-  last card take Escape only from inside themselves, as they ask nothing of the editor: Escape elsewhere is the
-  person's own.
+- **Escape is the dock's way out**, from inside the dock only ([Coach dock](coach-dock.md) "Keyboard and assistive
+  tech"): on the offer it declines (as **No Thanks**), on a step it ends the tour (as **End Tour**), on the closing
+  it finishes. Escape anywhere else is the person's own (an element tour asking for Escape to put text back, a
+  popover a step opened).
 - **Once ever per user.** However the offer ends (declined, skipped mid-tour, or completed), the synced
   `tourSeen` user preference ([User preferences](user-preferences.md)) stops it ever reappearing: the offer
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
@@ -62,7 +58,7 @@ proved the better introduction.
 - **Replayable from Settings.** The Settings dialog's **Tours** category has a
   **Diagram Tour** switch that surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
   closing Settings relaunches the tour from the top when the open tab is in Diagram, and otherwise offers it
-  the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
+  the next time the person is on a Diagram tab. The offer is always first, on a rerun too. Finishing
   the rerun turns it off again.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
   [Workshop tour](../012-collaboration/workshop-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
@@ -76,8 +72,8 @@ proved the better introduction.
     offered once every dialog has closed (stacked dialogs count until the last one goes), after the tour's usual
     offer delay. Nothing is remembered as answered while it waits.
   - **A running tour steps aside.** When a dialog opens over a running tour (opened by the person, or by
-    something else such as a sign-in prompt), the card, the ring and the backdrop hide, and the step's live
-    tracking pauses, so nothing is reopened under the dialog. When the dialog closes the tour comes back on the
+    something else such as a sign-in prompt), the ring hides and the step's live tracking pauses (the dock stays
+    where it is, under the dialog's dim), so nothing is reopened under the dialog. When the dialog closes the tour comes back on the
     same step, its target re-found (and re-prepared if the dialog closed what it had opened). Stepping aside is
     not an answer: the tour neither ends nor counts a new step view.
   - **A tour's own dialogs are not in its way.** A dialog a tour step opens to show what is in it (a Sequence's
@@ -101,15 +97,15 @@ flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 
-A welcome offer card, then six steps in palette → canvas → tabs → theme order (five on mobile, where the
+An offer, then six steps in palette → canvas → tabs → theme order (five on mobile, where the
 theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
-the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
+the two dropdown steps; three when it is both), and a closing "you're ready". The offer and the closing sit outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`):
 
-0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "A quick look
-   at the editor? It takes about a minute.", then **No** / **Yes**. Yes and No are every tour's
-   offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
+0. **New to diagrams?** (the offer): in the dock, eyebrow **Diagram tour**, "A quick look at the editor: adding
+   shapes, connecting them and making them look the way you want.", its length, then **No Thanks** / **Take the
+   Tour**.
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
@@ -129,8 +125,8 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas
    background dialog. No prepare needed: the button is always in the desktop chrome for an editable session.
    Mobile reaches the same dialog through the canvas menu, so the step is skipped there.
-7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Help** link to the help centre
-   (new tab), and a **Start** button that completes the tour.
+7. **Outro** (the closing): "You're ready to diagram", a **Help Centre** link to the help centre (new tab), and a
+   **Start** button that completes the tour.
 
 Retired steps: **Tab Mode** (opening the editor mode switch's menu, step 4 until October 2026) was cut to keep
 the tour on diagramming; each mode now has a tour of its own, offered when the person enters it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
@@ -138,31 +134,29 @@ welcome tour; it describes the whole app rather than diagramming, so the Diagram
 step (opening the Cmd/Ctrl+K panel) once followed Theme & Canvas until it was cut to keep the tour short; the
 search panel has its own help article.
 
-Each step popover shows the step count, a title, the copy, and Back / Next (Done on the last step) plus a Skip
-control. A dimming highlight ring surrounds the current target; it never blocks pointer input, so the user can
-poke at whatever is highlighted mid-tour. Phase changes are animated: the ring keeps the previous rect and
-**glides** to the next target, the popover transitions its position, and the card content slides
-directionally (the New Document wizard's tip-next / tip-prev motion). The dropdown steps highlight the
-**union** of the trigger button and its portalled menu, so the ring wraps the whole control, not the floating
-menu alone.
+Each step shows in the dock with its count and progress, a title, the copy, and End Tour / Back / Next (Finish on
+the last step). A ring with the step's number surrounds the current target, with no dim; it never blocks pointer
+input, so the user can poke at whatever is ringed mid-tour. The ring keeps the previous rect and **glides** to the
+next target, and the dock's words rise in afresh. The dropdown steps ring the **union** of the trigger button and its
+portalled menu, so the ring wraps the whole control, not the floating menu alone.
 
 ## Mechanics
 
-- **One engine, three tours.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
-  Skip) and what it draws (`TourStage`: the ring, `TourPopover`) are shared with the
-  [Plan tour](../026-plan/plan-tour.md) and the [Workshop tour](../012-collaboration/workshop-tour.md);
-  each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
-  `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
-  too. The bookend cards' words (`TourCardCopy`) and the welcome art are props, defaulting to this tour's.
+- **One engine, one stage, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back /
+  Next / Skip) and what it draws (`CoachDockStage`: the dock and the pointer) are shared by every tour; each tour's
+  host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
+  `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless step's `prepare` runs
+  too. The eyebrow, the picture, the help link, the finish button, the chip's words and any offer choices are the
+  stage's props.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like
-  `setContextMenu`), then anchors the popover to the resulting DOM node found via `data-tour-id` attributes
+  `setContextMenu`), then rings the resulting DOM node found via `data-tour-id` attributes
   (plus the existing `data-palette-dropdown-menu` / `data-element-id` hooks).
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target
   never appears is skipped rather than wedging the tour, the way the person was going: going Back, past it to the
-  step before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step (outside
-  click), the step re-prepares itself; a target that still does not come back lets go of its ring, and the card
-  waits centred.
+  step before (never onto the offer); otherwise forward. If an open menu is dismissed mid-step (outside
+  click), the step re-prepares itself; a target that still does not come back lets go of its ring, and the dock
+  waits on the step.
 - **A target is brought into view before the ring lands.** A target below the fold of a scrolling panel (a long
   form's add bar, a dialog's lower section) is centred in each scrolling ancestor that does not wholly show it
   (inside a 16 px margin), clear of chrome floating over a panel's edges (`revealInScrollers`, `tour-reveal.ts`),
@@ -190,21 +184,9 @@ menu alone.
 
 ## Look
 
-- **Every tour wears the active tab's colours**, as the start panels do: the card (welcome, step and outro) takes
-  the tab's palette (`useStartPalette`, the start panels' hook; `tour-colours.ts` reads it into CSS variables).
-  Card background, border, title, copy (muted) and the eyebrow, help link, progress dots and primary buttons
-  (the tab's accent) all follow it, so a tour on a dark or coloured tab reads as part of that tab.
-- **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
-  accent.
-- **The banners (the offer and the last card) are the sign-in banner's look in the tab's hue**: a deep gradient, in
-  white, in light and dark alike. The accent keeps its hue and saturation and is deepened until white reads on it at
-  5.9:1, the gradient's far end at 7.6:1 (sign-in's own `brand-700` and `brand-800`), so the eyebrow and words, at 90%
-  white, still clear AA. A dark tab's pale accent is never painted as it is: it drew a washed-out banner with its words
-  in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
-  banner stacks, as the sign-in banner does: the words, then the buttons at the right.
-- **The ring** around a step's target is drawn in the same accent; the dim around it is unchanged.
-- This holds for the Diagram, Plan, Workshop, Draw and Pages tours and the card type editor's Show Me,
-  which all draw through `TourStage` and `TourPopover`.
+The [coach dock](coach-dock.md)'s, as every tour's: the app's own colours, never the tab's theme, so contrast holds on
+any canvas. Until October 2026 the tours wore the tab's colours in a bottom banner and a floating step card over a
+dim; both are gone.
 
 ## Share roles
 
@@ -216,8 +198,9 @@ for the tour's purposes: `isReadOnly`).
 
 The welcome tour's tokens, unchanged, so the funnel's history reads straight through the rename:
 
-- **Offer**: `'UI'/'Opened'/'TourOffer'` when the welcome card shows (first run and Settings relaunch alike);
-  `'UI'/'Closed'/'TourOffer'` on **No**.
+- **Offer**: `'UI'/'Opened'/'TourOffer'` when the offer shows (first run and Settings relaunch alike);
+  `'UI'/'Closed'/'TourOffer'` on **No Thanks** (in the dock, or the chip's ×); `'UI'/'Closed'/'TourOfferFolded'`
+  when it folds into the chip; `'UI'/'Opened'/'TourChip'` when the chip starts it.
 - **Start**: `'UI'/'Started'/'Tour'` on accept.
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry (`TourStepPalette`,
   `TourStepSelectionModes`, `TourStepCategories`, `TourStepContextMenu`, `TourStepTabs`,

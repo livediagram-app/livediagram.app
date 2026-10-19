@@ -60,12 +60,6 @@ export function DashboardShowMeButton({
 
 export function DashboardTourStage({ tour }: { tour: TourEngine<DashboardTourApi> }) {
   return (
-    <ShowMeStage
-      tour={tour}
-      article="planDashboards"
-      helpLabel="Dashboards Help"
-      layer="overlay"
-      pad={8}
-    />
+    <ShowMeStage tour={tour} article="planDashboards" helpLabel="Dashboards Help" layer="overlay" />
   );
 }

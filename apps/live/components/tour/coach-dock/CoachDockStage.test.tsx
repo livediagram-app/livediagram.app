@@ -6,7 +6,12 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TourStepOf } from '../tour-step';
 import type { TourEngine } from '../useTourEngine';
-import { OFFER_FOLD_MS, TRY_IT_ADVANCE_MS } from './coach-dock-copy';
+import {
+  OFFER_FOLD_MS,
+  RING_PAD_IN_DIALOG_PX,
+  RING_PAD_PX,
+  TRY_IT_ADVANCE_MS,
+} from './coach-dock-copy';
 import { CoachChipSlot, CoachDockSlot } from './CoachDockSlots';
 import { CoachDockStage } from './CoachDockStage';
 
@@ -439,5 +444,113 @@ describe('keyboard and focus', () => {
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Slides Tour' }));
     document.removeEventListener('pointerdown', outside);
     expect(outside).not.toHaveBeenCalled();
+  });
+});
+
+// Every tour draws through the dock (spec "Every tour speaks through it"): the Plan tour's offer of two ways in, and a
+// Show Me (or an element tour's step) inside a dialog.
+describe('choices and dialogs', () => {
+  function ChoiceStage({ e, onPick }: { e: TourEngine<Api>; onPick: (id: string) => void }) {
+    return (
+      <>
+        <CoachDockStage
+          engine={e}
+          eyebrow="Boards and Sheets tour"
+          help={{ href: '/help/plan/', label: 'Boards Help' }}
+          finish="Start"
+          chip={{ label: 'Plan Tour', about: 'Your board or your sheet.' }}
+          choices={[
+            { id: 'boards', label: 'Boards', onPick: () => onPick('boards') },
+            { id: 'sheets', label: 'Spreadsheets', onPick: () => onPick('sheets') },
+          ]}
+        />
+        <CoachDockSlot />
+        <div data-editor-tabbar="">
+          <CoachChipSlot />
+        </div>
+      </>
+    );
+  }
+
+  it('offers each choice in place of Take the Tour, with No Thanks beside them', () => {
+    const onPick = vi.fn();
+    const e = engine();
+    render(<ChoiceStage e={e} onPick={onPick} />);
+    expect(screen.queryByRole('button', { name: 'Take the Tour' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'No Thanks' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Spreadsheets' }));
+    expect(onPick).toHaveBeenCalledWith('sheets');
+    expect(e.next).not.toHaveBeenCalled();
+  });
+
+  it('opens the offer again from the chip, to be chosen from, rather than starting a track', () => {
+    const e = engine();
+    render(<ChoiceStage e={e} onPick={vi.fn()} />);
+    act(() => vi.advanceTimersByTime(OFFER_FOLD_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Plan Tour' }));
+    expect(e.next).not.toHaveBeenCalled();
+    expect(dock()?.dataset.coachDock).toBe('offer');
+    expect(screen.getByRole('button', { name: 'Boards' })).toBeTruthy();
+  });
+
+  function DialogStage({ e }: { e: TourEngine<Api> }) {
+    return (
+      <>
+        <CoachDockStage
+          engine={e}
+          eyebrow="Show Me · Card Types"
+          help={{ href: '/help/card-types/', label: 'Card Types Help' }}
+          finish="Done"
+          layer="modal"
+        />
+        <CoachDockSlot />
+      </>
+    );
+  }
+  const rect = { left: 100, top: 100, width: 50, height: 20 };
+
+  it('stands a dialog tour at the window bottom over the dim, ringing its controls roomier', () => {
+    render(
+      <DialogStage e={engine({ step: plus, stepIndex: 0, hasWelcome: false, targetRect: rect })} />,
+    );
+    expect(dock()?.closest('[data-coach-dock-slot]')).toBeNull();
+    expect(dock()?.parentElement?.className).toContain('fixed');
+    expect(dock()?.parentElement?.className).toContain('z-[var(--z-toast)]');
+    const ring = document.querySelector<HTMLElement>('[data-coach-ring]')!;
+    expect(ring.style.left).toBe(`${rect.left - RING_PAD_IN_DIALOG_PX}px`);
+    expect(ring.className).toContain('z-[calc(var(--z-modal)+1)]');
+  });
+
+  it('stands a dialog tour’s closing over the dim too', () => {
+    render(<DialogStage e={engine({ step: outro, stepIndex: 1, hasWelcome: false })} />);
+    expect(dock()?.dataset.coachDock).toBe('closing');
+    expect(dock()?.closest('[data-coach-dock-slot]')).toBeNull();
+  });
+
+  it('lifts one step of an editor tour over a dialog it opened, and back into the slot after', () => {
+    const inDialog: TourStepOf<Api> = { ...plus, id: 'data', layer: 'modal' };
+    const { rerender } = render(
+      <Stage e={engine({ step: inDialog, stepIndex: 1, targetRect: rect })} />,
+    );
+    expect(dock()?.closest('[data-coach-dock-slot]')).toBeNull();
+    const ring = document.querySelector<HTMLElement>('[data-coach-ring]')!;
+    // An editor tour keeps its own ring room, even over a dialog.
+    expect(ring.style.left).toBe(`${rect.left - RING_PAD_PX}px`);
+    rerender(<Stage e={engine({ step: plus, stepIndex: 1, targetRect: rect })} />);
+    expect(dock()?.closest('[data-coach-dock-slot]')).not.toBeNull();
+  });
+
+  it('leaves out a Try it it has no facade to resolve', () => {
+    const e = engine({ step: layouts, stepIndex: 1 });
+    render(
+      <CoachDockStage
+        engine={e}
+        eyebrow="Draw tour"
+        help={{ href: '/help/draw/', label: 'Draw Help' }}
+        finish="Start"
+      />,
+    );
+    expect(dock()?.dataset.coachDock).toBe('step');
+    expect(document.querySelector('[data-try-it]')).toBeNull();
   });
 });

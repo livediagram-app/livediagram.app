@@ -18,7 +18,9 @@ import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
+import { TOUR_FINISH } from './tour-card-copy';
+import { TourWelcomeArt } from './TourWelcomeArt';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
@@ -28,8 +30,15 @@ import { elementSelector } from '@/lib/canvas-selectors';
 // Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
 // handoff flag is set (a brand-new user's first document → the welcome offer card, waiting for a Diagram tab
 // when the document opened in another mode) or the Settings dialog requests a relaunch. The steps run on the
-// shared engine (useTourEngine) and draw through the shared stage (TourStage); this host owns the offer, the
+// shared engine (useTourEngine) and draw through the coach dock (CoachDockStage); this host owns the offer, the
 // step list and what ending means.
+
+const HELP = { href: '/help', label: 'Help Centre' };
+// The tour chip a folded offer leaves in the tab bar (docs/specs/007-editor/coach-dock.md "The offer").
+const CHIP = {
+  label: 'Diagram Tour',
+  about: 'A short tour of the editor: adding shapes, connecting them and styling.',
+};
 
 export function TourHost() {
   const ctx = useEditorContext();
@@ -202,5 +211,16 @@ export function TourHost() {
     endTourRef.current('skipped');
   }, [active, inDiagram, engineRef, endTourRef]);
 
-  return <TourStage engine={engine} />;
+  return (
+    <CoachDockStage
+      engine={engine}
+      eyebrow="Diagram tour"
+      art={<TourWelcomeArt />}
+      help={HELP}
+      finish={TOUR_FINISH}
+      chip={CHIP}
+      onFolded={() => track('UI', 'Closed', 'TourOfferFolded')}
+      onChipStart={() => track('UI', 'Opened', 'TourChip')}
+    />
+  );
 }

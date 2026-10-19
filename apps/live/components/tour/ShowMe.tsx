@@ -7,7 +7,7 @@ import { useRef } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideFootprints } from '@livediagram/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
 import type { TourEngine } from './useTourEngine';
 
 // A walkthrough's footprints, at the Help link's size.
@@ -49,33 +49,28 @@ export function ShowMeButton<Api>({
   );
 }
 
-// The running tour: the ring around each step's real control and the step card, the closing card linking `article`
-// as `helpLabel` ("Card Types Help"). `layer` 'modal' rings controls inside a dialog; 'overlay' rings the editor's own chrome.
+// The running tour, in the coach dock (docs/specs/007-editor/coach-dock.md): the ring around each step's real control
+// and the step in the dock, the closing linking `article` as `helpLabel` ("Card Types Help"). `layer` 'modal' rings
+// controls inside a dialog, with the dock standing over its dim; 'overlay' rings the editor's own chrome.
 export function ShowMeStage<Api>({
   tour,
   article,
   helpLabel,
   layer = 'modal',
-  pad = 14,
 }: {
   tour: TourEngine<Api>;
   article: HelpArticleKey;
   helpLabel: string;
   layer?: 'overlay' | 'modal';
-  pad?: number;
 }) {
   return (
-    <TourStage
+    <CoachDockStage
       engine={tour}
-      ariaPrefix="Show Me"
-      copy={{
-        outroEyebrow: 'Show Me',
-        helpHref: helpArticleHref(article),
-        helpLabel,
-        finish: 'Done',
-      }}
+      // "Show Me · Card Types", as a page's Show Me reads "Show Me · Slides".
+      eyebrow={`Show Me · ${helpLabel.replace(/ Help$/, '')}`}
+      help={{ href: helpArticleHref(article), label: helpLabel }}
+      finish="Done"
       layer={layer}
-      pad={pad}
     />
   );
 }

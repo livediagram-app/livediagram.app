@@ -15,8 +15,8 @@ export const WORKSHOP_TOUR_STEPS: WorkshopTourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Welcome to Workshop',
-    body: 'Run a retro, workshop or town hall with your team. A quick look at where everything is?',
+    title: 'New to Workshop?',
+    body: 'Run a retro, workshop or town hall with your team. A quick look at where everything is.',
   },
   {
     id: 'collaborate',

@@ -30,7 +30,7 @@ import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { useAnyModalOpen } from '@/lib/modal-guard';
 import type { ElementTourApi } from './element-tour-api';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
-import { TourStage } from './TourStage';
+import { CoachDockStage } from './coach-dock/CoachDockStage';
 import type { TourStepOf } from './tour-step';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
@@ -243,19 +243,15 @@ export function ElementTourHost() {
   );
 
   return (
-    <TourStage
+    <CoachDockStage
       engine={engine}
-      ariaPrefix={def?.eyebrow ?? 'Element tour'}
-      copy={
+      eyebrow={def?.eyebrow ?? 'Element tour'}
+      help={
         def
-          ? {
-              outroEyebrow: def.eyebrow,
-              helpHref: helpArticleHref(def.helpArticle),
-              helpLabel: def.helpLabel,
-              finish: 'Done',
-            }
-          : undefined
+          ? { href: helpArticleHref(def.helpArticle), label: def.helpLabel }
+          : { href: '/help', label: 'Help Centre' }
       }
+      finish="Done"
     />
   );
 }

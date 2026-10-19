@@ -15,8 +15,23 @@ import { FormTourHost } from './FormTourHost';
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const stage = vi.hoisted(() => ({ engine: null as TourEngine<FormTourApi> | null }));
-vi.mock('./TourStage', () => ({
-  TourStage: ({ engine }: { engine: TourEngine<FormTourApi> }) => {
+// The fold and chip callbacks the host hands the dock, to fire as the dock would.
+const dockChip = vi.hoisted(() => ({
+  onFolded: undefined as (() => void) | undefined,
+  onChipStart: undefined as (() => void) | undefined,
+}));
+vi.mock('./coach-dock/CoachDockStage', () => ({
+  CoachDockStage: ({
+    onFolded,
+    onChipStart,
+    engine,
+  }: {
+    onFolded?: () => void;
+    onChipStart?: () => void;
+    engine: TourEngine<FormTourApi>;
+  }) => {
+    dockChip.onFolded = onFolded;
+    dockChip.onChipStart = onChipStart;
     stage.engine = engine;
     return null;
   },
@@ -221,5 +236,16 @@ describe('FormTourHost steps', () => {
     r.rerender(<FormTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'FormTourSkipped');
     expect(stage.engine?.active).toBe(false);
+  });
+});
+
+describe('FormTourHost in the coach dock', () => {
+  it('counts an offer folding into its chip, and a start from the chip', () => {
+    editor();
+    render(<FormTourHost />);
+    act(() => dockChip.onFolded!());
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'FormTourOfferFolded');
+    act(() => dockChip.onChipStart!());
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'FormTourChip');
   });
 });

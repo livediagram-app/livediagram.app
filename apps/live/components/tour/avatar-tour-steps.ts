@@ -46,8 +46,8 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Meet Your Avatar',
-    body: 'A quick look at dressing up your character, reacting, talking and pushing?',
+    title: 'New to your avatar?',
+    body: 'A quick look at dressing up your character, reacting, talking and pushing.',
     prepare: () => {
       panelOpenAtStart = panelOpen();
     },

@@ -20,8 +20,8 @@ export const DRAW_TOUR_STEPS: DrawTourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with Draw?',
-    body: 'A quick look at the pens, shapes and tools?',
+    title: 'New to Draw?',
+    body: 'A quick look at the pens, shapes and tools.',
   },
   {
     id: 'drawing-tools',

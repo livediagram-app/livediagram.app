@@ -81,7 +81,7 @@ export type DialogProps = {
 
 // A phone sheet's panel below sm: the BottomSheet's shape, taller (a dialog holds a form).
 const PHONE_SHEET =
-  ' max-sm:max-h-[85dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0';
+  ' max-sm:max-h-[85%] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0';
 
 const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
   dim: 'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60',
@@ -183,7 +183,9 @@ export function Dialog({
         // The dim fades in (fade-in, micro) while the panel settles (dialog-in, long), so the modal
         // arrives rather than appearing (docs/specs/004-interface-design/motion.md "Dialogs").
         style={fitted.layer}
-        className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center ${
+        // pb: a tour's coach dock standing at the window's bottom (a Show Me of this dialog) sets the floor the
+        // dialog centres, and caps itself, above (docs/specs/007-editor/coach-dock.md "Where it sits").
+        className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center pb-[var(--coach-dock-floor,0px)] ${
           phoneSheet ? 'max-sm:items-end ' : ''
         }${BACKDROPS[backdrop]}`}
         onClick={(e) => {
@@ -221,7 +223,8 @@ export function Dialog({
                 ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
                 : ''
           }${
-            className?.includes('max-h') ? '' : ' max-h-[calc(100dvh-2rem)] overflow-y-auto'
+            // Of the layer's height, less the dock floor (its bottom padding).
+            className?.includes('max-h') ? '' : ' max-h-[calc(100%-2rem)] overflow-y-auto'
           }${className ? ` ${className}` : ''}`}
         >
           {phoneSheet ? (

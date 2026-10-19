@@ -18,8 +18,8 @@ const NEVER_CHANGES = 'We will only point things out, never change anything.';
 const WELCOME: FormTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with forms?',
-  body: `A quick look at building your form, where responses go and sharing it? ${NEVER_CHANGES}`,
+  title: 'New to forms?',
+  body: `A quick look at building your form, where responses go and sharing it. ${NEVER_CHANGES}`,
 };
 
 const FORM: FormTourStep = {
@@ -74,7 +74,7 @@ const DESTINATION = (kind: 'board' | 'sheet'): FormTourStep => ({
 const OUTRO: FormTourStep = {
   id: 'outro',
   card: 'outro',
-  title: 'That Is a Form',
+  title: "You're ready to build your form",
   body: 'Run this again from the cog › Show Me Around.',
 };
 

@@ -1,19 +1,19 @@
 # Plan tour
 
 A guided tour of [Plan mode](plan-mode.md) on the person's own board or Sheet, offered the first time they work
-in Plan with one open. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling: the same welcome card,
-anchored step cards, glide, dimming ring, Skip, Back and outro card, driven by the same engine, so the tours
+in Plan with one open. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling: the same
+[coach dock](../007-editor/coach-dock.md) offer, steps, ring and closing, driven by the same engine, so the tours
 read as one product. Where this spec is silent, the Diagram tour's rules hold.
 
 ## Domain language
 
-| Term             | Means                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| **Plan tour**    | This tour                                                                                              |
-| **Diagram tour** | The Diagram mode tour ("Getting started with Diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
-| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                            |
-| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab         |
-| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind      |
+| Term             | Means                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| **Plan tour**    | This tour                                                                                         |
+| **Diagram tour** | The Diagram mode tour ("New to diagrams?"), [Diagram tour](../007-editor/editor-tour.md)          |
+| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                       |
+| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab    |
+| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind |
 
 ## Where it appears
 
@@ -42,10 +42,11 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   says the tour needs one.
 - **One tour at a time**: while the Diagram or Workshop tour is on screen the Plan tour waits. Each tour
   belongs to its own mode, so the Plan tour never waits for the Diagram tour's offer to be answered.
-- The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the welcome card
-  names the one it will show and offers **Yes** and **No**. With both on the tab (a Plan
-  canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No**, all with
-  equal weight. Taking the tour answers the track picked; the other is offered on its own next time.
+- The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the offer
+  names the one it will show and offers **Take the Tour** and **No Thanks**. With both on the tab (a Plan
+  canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No Thanks**, all one
+  press. Left alone, it folds into its chip in the tab bar (**Boards Tour**, **Sheets Tour**, or **Plan Tour** for
+  a choice, whose ▶ opens the offer again to choose from). Taking the tour answers the track picked; the other is offered on its own next time.
 
 ## Tour subject
 
@@ -75,19 +76,19 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 
 ## The steps
 
-A welcome card, then the track's steps, then its outro card. The bookend cards sit outside the step count. Copy
+An offer, then the track's steps, then its closing. The offer and the closing sit outside the step count. Copy
 is one or two short sentences per step and speaks of the person's board or sheet ("your board"); the exact
 strings live in `apps/live/components/tour/plan-tour-steps.ts`.
 
-0. The offer, a centred card named for its track, never the mode: eyebrow **Boards tour** and title **Getting
-   started with boards?** over a board whose card moves to the next column; eyebrow **Sheets tour** and title
-   **Getting started with sheets?** over a sheet whose selection steps across as A1 is typed into; on a choice
-   card, eyebrow **Boards and Sheets tour** and title **Getting started with boards and sheets?** over both. With
-   one kind on the tab it says the tour will show around this board (or this sheet), without changing anything,
-   then **No** and **Yes**; with both it asks which, then **No**, **Boards** and **Spreadsheets**.
+0. The offer, in the coach dock, named for its track, never the mode: eyebrow **Boards tour** and title **New to
+   boards?** beside a board whose card moves to the next column; eyebrow **Sheets tour** and title **New to
+   sheets?** beside a sheet whose selection steps across as A1 is typed into; on a choice, eyebrow **Boards and
+   Sheets tour** and title **New to boards and sheets?** beside both. With one kind on the tab it says the tour will
+   show around this board (or this sheet), without changing anything, then **No Thanks** and **Take the Tour**;
+   with both it asks which, then **No Thanks**, **Boards** and **Spreadsheets**.
 
 A step rings a control, never a whole board, column or sheet: a ring that size would light most of the screen, so
-the opening step of each track is a card on its own (centred, counted, no ring).
+the opening step of each track has no ring: the dock speaks of the whole board or sheet on its own (counted).
 
 ### Boards
 
@@ -126,7 +127,7 @@ Five steps.
 
 ### Both tracks
 
-- Back from a step goes to the step before and shows it again. Back never returns to the welcome card. Leaving a
+- Back from a step goes to the step before and shows it again. Back never returns to the offer. Leaving a
   step closes what it opened (the card panel). Plan has no palette, so neither track has a palette step.
 - A step whose target never appears is skipped, as in the Diagram tour; a step list filtered up front keeps the
   count honest. The steps are the same on a desktop and a phone.
@@ -143,8 +144,9 @@ settings) is an Editor's to use.
 
 The Diagram tour's funnel, with its own tokens, so the tours chart apart:
 
-- **Offer**: `UI` · `Opened` · `PlanTourOffer` when the welcome card shows; `UI` · `Closed` · `PlanTourOffer` on
-  No.
+- **Offer**: `UI` · `Opened` · `PlanTourOffer` when the offer shows; `UI` · `Closed` · `PlanTourOffer` on
+  No Thanks; `UI` · `Closed` · `PlanTourOfferFolded` when it folds into its chip, `UI` · `Opened` · `PlanTourChip`
+  when the chip starts it.
 - **Start**: `UI` · `Selected` · `PlanTourBoards` | `PlanTourSheets` (the track picked, only when the welcome
   card asked), then `UI` · `Started` · `PlanTour`.
 - **Stage views**: `UI` · `View` · `PlanTourStep<Id>` once per step entry (`PlanTourStepBoard`,

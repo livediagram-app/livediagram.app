@@ -6,6 +6,7 @@ import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { track } from '@/lib/telemetry';
 import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';
 import { photoReviewTourSteps } from './photo-review-tour-steps';
+import { dockSays } from './coach-dock/coach-dock-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the document" here.
@@ -67,7 +68,7 @@ function show(stickies: DetectedSticky[] | null) {
 
 const settle = () => act(async () => new Promise((r) => setTimeout(r, 30)));
 const next = async () => {
-  fireEvent.click(screen.getByRole('button', { name: /next/i }));
+  fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ }));
   await settle();
 };
 
@@ -102,9 +103,7 @@ describe('Photo review Show Me', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     await settle();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'PhotoReviewTour');
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 1 of 6: Each Box Is a Note/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 6: Each Box Is a Note/);
     await next(); // Tick
     await next(); // Words
     await next(); // Correct
@@ -120,9 +119,7 @@ describe('Photo review Show Me', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     await settle();
     await next(); // Tick
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 2 of 6: Tick What to Keep/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 2 of 6: Tick What to Keep/);
     expect(screen.queryByRole('toolbar', { name: 'Correct this box' })).toBeNull();
   });
 
@@ -130,9 +127,7 @@ describe('Photo review Show Me', () => {
     show([]);
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     await settle();
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 1 of 2: Draw One It Missed/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 2: Draw One It Missed/);
   });
 
   it('keeps Escape from leaving the review while it runs', async () => {
@@ -141,7 +136,7 @@ describe('Photo review Show Me', () => {
     await settle();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onCancel).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'End Tour' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PhotoReviewTourSkipped');
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalled();

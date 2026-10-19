@@ -269,7 +269,9 @@ export function PhotoReviewOverlay({
       // Which detector found the boxes (hybrid / classical), for the e2e suite
       // and the editor sweep; absent while it is still looking.
       data-detector={detection?.detector.path}
-      className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/80 p-2"
+      // Its Show Me's coach dock stands at the window's bottom: the photo centres above it
+      // (docs/specs/007-editor/coach-dock.md "Where it sits").
+      className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/80 p-2 pb-[calc(0.5rem+var(--coach-dock-floor,0px))]"
       role="dialog"
       aria-modal="true"
       aria-label="Review the notes found in your photo"
@@ -340,7 +342,7 @@ export function PhotoReviewOverlay({
               onLoad={() => setPhotoShown(true)}
               // Room at the bottom for the action bar, so it never covers a
               // note's words.
-              className="block h-auto max-h-[88vh] w-auto max-w-[96vw] object-contain"
+              className="block h-auto max-h-[calc(88vh-var(--coach-dock-floor,0px))] w-auto max-w-[96vw] object-contain"
             />
             {notes.map((s) => (
               <NoteBox

@@ -42,7 +42,7 @@ describe('SignInBanner', () => {
   });
 
   it('hides while a tour card is up', async () => {
-    const { TOUR_CARD_ATTR } = await import('@/components/tour/TourBanner');
+    const { TOUR_CARD_ATTR } = await import('@/components/tour/coach-dock/coach-dock-copy');
     render(<SignInBanner surface="Editor" onDismiss={() => {}} />);
     const wrapper = screen.getByText('Sign in to access Teams & AI').closest('.fixed')!;
     expect(wrapper.className).toContain(`[body[${TOUR_CARD_ATTR}]_&]:hidden`);

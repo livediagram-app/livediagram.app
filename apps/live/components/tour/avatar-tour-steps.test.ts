@@ -44,7 +44,7 @@ describe('the Avatar tour steps', () => {
   });
 
   it('offers itself and closes ready to roam', () => {
-    expect(AVATAR_TOUR_STEPS[0]).toMatchObject({ card: 'welcome', title: 'Meet Your Avatar' });
+    expect(AVATAR_TOUR_STEPS[0]).toMatchObject({ card: 'welcome', title: 'New to your avatar?' });
     expect(AVATAR_TOUR_STEPS.at(-1)).toMatchObject({
       card: 'outro',
       title: "You're Ready to Roam",

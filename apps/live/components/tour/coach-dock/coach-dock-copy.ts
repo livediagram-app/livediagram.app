@@ -4,13 +4,16 @@
 // The dock floor on <html>: how far the dock's top edge sits above the window's bottom, which a phone's bottom
 // sheets stand on (spec "Where it sits"). Unset with no tour in the dock.
 export const COACH_DOCK_FLOOR_VAR = '--coach-dock-floor';
+// On <body> while the dock shows: the sign-in banner, which takes the same place, steps aside.
+export const TOUR_CARD_ATTR = 'data-tour-card-open';
 
 // An offer, or a closing, left alone this long folds away (spec "The offer").
 export const OFFER_FOLD_MS = 12_000;
 // The beat between a Try it landing and the next step, so the person sees their pick land (spec "A step").
 export const TRY_IT_ADVANCE_MS = 900;
-// The room between a control and its ring (spec "The pointer").
+// The room between a control and its ring (spec "The pointer"); a dialog's tightly packed rows take more.
 export const RING_PAD_PX = 6;
+export const RING_PAD_IN_DIALOG_PX = 14;
 // The step badge on the ring's corner: room for two digits in 11px type.
 export const BADGE_SIZE_PX = 20;
 

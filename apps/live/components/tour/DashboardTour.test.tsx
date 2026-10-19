@@ -10,6 +10,7 @@ import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from '@/components/plan/dashboard/DashboardSettings';
 import { dashboardTourSteps } from './dashboard-tour-steps';
+import { dockSays, dockStepShowing } from './coach-dock/coach-dock-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the document" here.
@@ -110,21 +111,19 @@ describe('Dashboard Show Me', () => {
     await startShowMe();
     expect(screen.queryByRole('textbox', { name: 'Name' })).toBeNull();
     // Every slot empty: Rows, Fill and Settings.
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 1 of 3: Rows of Slots/ }),
-    ).toBeTruthy();
+    expect(dockSays()).toMatch(/^Show Me · [^,]+, step 1 of 3: Rows of Slots/);
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
   });
 
   it('shows the filled slot’s grip and cog while its step is up, and hides them after', async () => {
     show(held());
     await startShowMe();
-    const next = () => fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    const next = () => fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ }));
     next(); // Fill a Slot
     await settle();
     next(); // Change or Move a Slot
     await settle();
-    expect(screen.getByRole('dialog', { name: /Change or Move a Slot/ })).toBeTruthy();
+    expect(dockSays()).toMatch(/Change or Move a Slot/);
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
     next(); // Dashboard Settings
@@ -135,16 +134,16 @@ describe('Dashboard Show Me', () => {
   it('reports a skip when left before its end', async () => {
     show(held());
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'End Tour' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
   });
 
   it('ends when the page can no longer be edited, letting go of the slot it was showing', async () => {
     const { setCanEdit } = show(held());
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /next/i })); // Fill a Slot
+    fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ })); // Fill a Slot
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: /next/i })); // Change or Move a Slot
+    fireEvent.click(screen.getByRole('button', { name: /^(Next|Finish)$/ })); // Change or Move a Slot
     await settle();
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
@@ -153,7 +152,7 @@ describe('Dashboard Show Me', () => {
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(false);
     setCanEdit(true);
     await settle();
-    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(dockStepShowing()).toBe(false);
     expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
   });
 });

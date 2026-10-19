@@ -2,15 +2,15 @@
 
 A short, optional guided tour of [Workshop mode](workshop-mode.md), offered the first time a person works in
 Workshop. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
-[Plan tour](../026-plan/plan-tour.md) is: the same welcome card, anchored step cards, glide, dimming ring, Skip,
-Back and outro card, driven by the same engine. Where this spec is silent, the Plan tour's rules hold.
+[Plan tour](../026-plan/plan-tour.md) is: the same [coach dock](../007-editor/coach-dock.md) offer, steps, ring and closing,
+Back and closing, driven by the same engine. Where this spec is silent, the Plan tour's rules hold.
 
 ## Domain language
 
-| Term              | Means                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| **Workshop tour** | This tour                                                                                              |
-| **Diagram tour**  | The Diagram mode tour ("Getting started with Diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
+| Term              | Means                                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| **Workshop tour** | This tour                                                                                |
+| **Diagram tour**  | The Diagram mode tour ("New to diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
 
 ## Where it appears
 
@@ -21,10 +21,10 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
 - **Not before the synced preferences are in.** The offer does not fire until this person's preferences have
   arrived from the server (or failed to), so an answer given on another device holds on a new one.
 - **On its own, whatever other tours the person has seen.** Until October 2026 a newcomer in Workshop was
-  offered the welcome tour first, with this tour's offer (**Show me Workshop**) on its closing card. The
+  offered the welcome tour first, with this tour's offer (**Show me Workshop**) on its closing. The
   welcome tour is now the Diagram tour and never runs in Workshop, so this tour no longer waits for it: the
   first time someone is in Workshop it offers itself, never at the same time as another tour.
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
+- **Optional.** The offer is the opt-in: **Take the Tour** starts it, **No Thanks** declines it, and left alone it folds into its chip in the tab bar.
 - **Once ever per person**, through the synced `workshopTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
@@ -39,12 +39,12 @@ and nothing in the document's history.
 
 ## The steps
 
-A welcome card, three steps, then an outro card. The bookend cards sit outside the step count. The palette
+An offer, three steps, then the closing. The offer and the closing sit outside the step count. The palette
 itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/live/components/tour/workshop-tour-steps.ts`.
 
-0. **Welcome to Workshop** (the offer): centred card with its own illustration (a flipchart with two sticky
+0. **New to Workshop?** (the offer): in the coach dock, with its own illustration (a flipchart with two sticky
    notes and a timer), saying Workshop is for running a session with a team and offering a quick look, then
-   **No** and **Yes**.
+   **No Thanks** and **Take the Tour**.
 1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
    ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to
    the room, and Session holds the timers, reveals, records, reactions, selection modes and places to go. It opens
@@ -72,10 +72,10 @@ not theirs to use.
 
 The Plan tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `WorkshopTourOffer` when its welcome card shows; `UI` · `Closed` ·
+- **Offer**: `UI` · `Opened` · `WorkshopTourOffer` when its offer shows; `UI` · `Closed` ·
   `WorkshopTourOffer` on No.
 - **Start**: `UI` · `Started` · `WorkshopTour`. (`UI` · `Selected` · `WorkshopTourFromWelcome`, sent when the
-  welcome tour's closing card started it, is retired with that card's offer and stays explained for the history.)
+  welcome tour's closing started it, is retired with that card's offer and stays explained for the history.)
 - **Stage views**: `UI` · `View` · `WorkshopTourStep<Id>` once per step entry (`WorkshopTourStepCollaborate`, `WorkshopTourStepSessionStrip`, `WorkshopTourStepShare`,
   `WorkshopTourStepOutro`).
 - **End**: `UI` · `Ended` · `WorkshopTourCompleted` | `WorkshopTourSkipped`.

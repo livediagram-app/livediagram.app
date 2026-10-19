@@ -20,8 +20,8 @@ import { ElementTourHost } from './ElementTourHost';
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const stage = vi.hoisted(() => ({ engine: null as TourEngine<SankeyElementTourApi> | null }));
-vi.mock('./TourStage', () => ({
-  TourStage: ({ engine }: { engine: TourEngine<SankeyElementTourApi> }) => {
+vi.mock('./coach-dock/CoachDockStage', () => ({
+  CoachDockStage: ({ engine }: { engine: TourEngine<SankeyElementTourApi> }) => {
     stage.engine = engine;
     return null;
   },

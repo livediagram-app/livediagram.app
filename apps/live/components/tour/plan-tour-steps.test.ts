@@ -128,8 +128,8 @@ describe('PLAN_TOUR_STEPS', () => {
 
 describe('the welcome card', () => {
   it('names the track on offer in its title, never the mode', () => {
-    expect(planTourSteps('boards')[0]!.title).toBe('Getting started with boards?');
-    expect(planTourSteps('sheets')[0]!.title).toBe('Getting started with sheets?');
+    expect(planTourSteps('boards')[0]!.title).toBe('New to boards?');
+    expect(planTourSteps('sheets')[0]!.title).toBe('New to sheets?');
     expect(planTourSteps('boards', { offer: 'choice' })[0]!.title).toMatch(/boards and sheets/);
     for (const offer of ['boards', 'sheets', 'choice'] as const)
       expect(planTourSteps('boards', { offer })[0]!.title).not.toMatch(/Plan/);

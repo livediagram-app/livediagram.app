@@ -258,7 +258,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
 // clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
 // keeps it owed without showing it (the editor marks which mode the tab is in).
 export async function dismissQuickTour(page: Page): Promise<void> {
-  const decline = page.getByRole('button', { name: /^no$/i }).first();
+  const decline = page.getByRole('button', { name: 'No Thanks', exact: true }).first();
   const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);
   const elsewhere = () =>
     page.evaluate(() => {

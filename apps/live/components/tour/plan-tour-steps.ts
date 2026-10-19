@@ -88,19 +88,19 @@ const WELCOMES: Record<PlanTourOffer, PlanTourStep> = {
   boards: {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with boards?',
-    body: `A quick look around your board: columns, cards and the card panel? ${NEVER_CHANGES}`,
+    title: 'New to boards?',
+    body: `A quick look around your board: columns, cards and the card panel. ${NEVER_CHANGES}`,
   },
   sheets: {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with sheets?',
-    body: `A quick look around your sheet: cells, formulas and the toolbar? ${NEVER_CHANGES}`,
+    title: 'New to sheets?',
+    body: `A quick look around your sheet: cells, formulas and the toolbar. ${NEVER_CHANGES}`,
   },
   choice: {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with boards and sheets?',
+    title: 'New to boards and sheets?',
     body: `This tab has a board and a sheet. Which would you like a quick look at? ${NEVER_CHANGES}`,
   },
 };

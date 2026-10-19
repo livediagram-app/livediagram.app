@@ -443,7 +443,7 @@ default document name) without walking the wizard:
     redirects to the plain `/new` wizard rather than silently minting
     another blank document or trapping the user behind a page that always
     navigates forward again.
-  - The Diagram tour's welcome offer ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)) is not queued on
+  - The Diagram tour's welcome offer ([Diagram tour ("New to diagrams?")](editor-tour.md)) is not queued on
     this path: the create fires before the document count resolves, and a
     Start Blank user has asked to get straight to the canvas.
   - **The wizard must never paint on this path, not even for a frame.**
