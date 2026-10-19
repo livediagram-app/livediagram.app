@@ -13,6 +13,7 @@ export function isPillRect(width: number, height: number, rx: number): boolean {
 /** The double-quoted attributes of one tag's attribute text, by name. */
 export function faceAttrs(text: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const m of text.matchAll(/([\w:-]+)="([^"]*)"/g)) out[m[1]!] = m[2]!;
+  // Each name starts at the text's start or after whitespace, so a long run of name characters is scanned once.
+  for (const m of text.matchAll(/(?:^|\s)([\w:-]+)="([^"]*)"/g)) out[m[1]!] = m[2]!;
   return out;
 }

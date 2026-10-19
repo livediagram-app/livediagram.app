@@ -176,7 +176,8 @@ describe('a Marker tab in the export', () => {
 
   it('keeps a sticky as paper, coloured in with no outline', () => {
     const svg = renderElementsToSvg(tab([{ ...createSticky(0, 0), id: 's' }]));
-    const body = /<g [^>]*data-finish="marker">[\s\S]*?<\/g>/.exec(svg)?.[0] ?? '';
+    const at = svg.indexOf('data-finish="marker"');
+    const body = at < 0 ? '' : svg.slice(at, svg.indexOf('</g>', at));
     expect(body).toMatch(/stroke-opacity="0\.07"/);
     expect(body).not.toMatch(/stroke-opacity="0\.86"/);
   });
