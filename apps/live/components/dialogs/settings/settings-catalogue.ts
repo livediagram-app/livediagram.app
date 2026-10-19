@@ -1228,21 +1228,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Workshop Tour',
         event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
-        description: 'The first time you work in Workshop.',
+        description: 'In Workshop: the session tools, running the room and bringing people in.',
         helpArticle: 'workshopTour',
       }),
       tourSwitch('drawTourSeen', {
         label: 'Draw Tour',
         event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
-        description: 'The first time you work in Draw.',
+        description: 'In Draw: the pens, quick style, shapes and board settings.',
         helpArticle: 'drawTour',
       }),
       tourSwitch('formTourSeen', {
         label: 'Forms Tour',
         event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
-        description: 'The first time you open a Form tab.',
+        description: 'On a Form tab: building it, where responses go and sharing it.',
         helpArticle: 'planForms',
       }),
       tourSwitch('avatarTourSeen', {
@@ -1250,7 +1250,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
         keywords:
           'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
-        description: 'The first time you walk as an avatar.',
+        description: 'In Avatar mode: your character, reactions, talking and pushing.',
         helpArticle: 'avatarTour',
       }),
       // The Pages tour's tracks, one per kind of page, each its own row (docs/specs/007-editor/pages-tour.md).
