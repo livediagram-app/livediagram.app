@@ -21,12 +21,15 @@ export function ShareDialogWithCommunity({
   documentName,
   signedIn,
   teamDocument,
+  firstTabEmpty = false,
   ...share
 }: ShareDialogProps & {
   documentId: string | null;
   documentName: string;
   signedIn: boolean;
   teamDocument: boolean;
+  // The document's first tab is open and has nothing on it (docs/specs/025-community/community.md "Something to show").
+  firstTabEmpty?: boolean;
 }) {
   const ownerId = share.participant.id;
   // Switched off, the Community is not offered at all (docs/specs/025-community/community.md "Turning the Community
@@ -79,6 +82,7 @@ export function ShareDialogWithCommunity({
             signInHref={authHrefWithReturn('/sign-in/', `/document/${documentId}`)}
             teamDocument={teamDocument}
             sharePasswordSet={share.sharePasswordSet}
+            firstTabEmpty={firstTabEmpty}
             post={community.post}
             loading={community.loading}
             error={community.error}

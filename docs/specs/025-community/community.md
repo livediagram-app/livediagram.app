@@ -58,6 +58,10 @@ A post shows every tab of the document. A document that is empty (its first tab 
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish). It is the first tab because that tab is the post's card picture; a document with content
   only on later tabs is refused too, and the refusal names the first tab so the owner knows where to add something.
+  **The owner learns it before the form**: when the first tab is the open one (the editor holds its elements) and has
+  nothing on it, the Community section holds **Share to Community** and says why beside it, in the refusal's own words
+  ("Add something to your first tab before sharing: it is the picture on your Community card."), as it does for a
+  share password. Another first tab is not loaded, so for it the server's refusal stays the only word.
 - **Where**: the Share dialog carries a **Community** tab beside Passes: a short illustrated guide to what publishing means (three steps and four facts: always up to date, anonymous by default, private stays private, yours to take back), then the Community section. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.

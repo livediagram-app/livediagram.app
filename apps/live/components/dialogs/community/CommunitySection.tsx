@@ -9,7 +9,7 @@ import {
 } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph, communityPlural } from '@livediagram/ui';
 import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
-import { communityErrorMessage } from '@/lib/community-errors';
+import { communityCodeMessage, communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { SECTION_LABEL } from '../share-dialog-parts';
@@ -29,6 +29,7 @@ export function CommunitySection({
   signInHref,
   teamDocument,
   sharePasswordSet,
+  firstTabEmpty = false,
   post,
   loading,
   error,
@@ -42,6 +43,9 @@ export function CommunitySection({
   teamDocument: boolean;
   // A share password and a post exclude each other: with one set, Share to Community is disabled.
   sharePasswordSet: boolean;
+  // The first tab is known to have nothing on it (it is the open tab, so the editor holds it): the server refuses
+  // such a post, so the button says why up front instead of after the whole form is filled in.
+  firstTabEmpty?: boolean;
   post: CommunityOwnPost | null;
   loading: boolean;
   error: string | null;
@@ -129,12 +133,21 @@ export function CommunitySection({
             without an account, can find this document there, view it and make their own copy.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="xs" data-focus="share" onClick={onPublish} disabled={sharePasswordSet}>
+            <Button
+              size="xs"
+              data-focus="share"
+              onClick={onPublish}
+              disabled={sharePasswordSet || firstTabEmpty}
+            >
               Share to Community
             </Button>
             {sharePasswordSet ? (
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 Remove the share password to share it to the Community.
+              </span>
+            ) : firstTabEmpty ? (
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {communityCodeMessage('empty_document')}
               </span>
             ) : null}
           </div>
