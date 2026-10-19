@@ -218,15 +218,44 @@ describe('dropping a file on the canvas', () => {
     expect(track).toHaveBeenCalledWith('Element', 'Imported', 'Excalidraw');
   });
 
-  it('says a dropped file without a scene is not something the canvas takes', async () => {
+  it('lands a dropped picture without a scene as an image where it was released, as a paste does', async () => {
+    // Issue #996: a dropped screenshot was refused with an Excalidraw message while the same picture pasted.
+    upload.mockResolvedValue({
+      image: { id: 'img', width: 4, height: 2, originalName: 'photo.png' },
+    });
     const h = harness();
     const png = new Uint8Array([
       0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0, 73, 69, 78, 68, 0, 0, 0, 0,
     ]);
     h.dropBoardFile(new File([png], 'photo.png', { type: 'image/png' }), at);
+    await vi.waitFor(() => expect(h.addImageFromGallery).toHaveBeenCalledTimes(1));
+    expect(h.addImageFromGallery).toHaveBeenCalledWith(expect.objectContaining({ id: 'img' }), at);
+    expect(h.insertBoardScene).not.toHaveBeenCalled();
+    expect(h.toast.info).not.toHaveBeenCalled();
+  });
+
+  it('lands a dropped JPEG as an image without reading it for a scene', async () => {
+    upload.mockResolvedValue({
+      image: { id: 'jpg', width: 4, height: 2, originalName: 'photo.jpg' },
+    });
+    const h = harness();
+    h.dropBoardFile(
+      new File([new Uint8Array([0xff, 0xd8, 0xff])], 'photo.jpg', { type: 'image/jpeg' }),
+      at,
+    );
+    await vi.waitFor(() =>
+      expect(h.addImageFromGallery).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'jpg' }),
+        at,
+      ),
+    );
+    expect(h.insertBoardScene).not.toHaveBeenCalled();
+  });
+
+  it('says a dropped file that is neither a picture nor a scene is not something the canvas takes', async () => {
+    const h = harness();
     h.dropBoardFile(new File(['hello'], 'notes.txt', { type: 'text/plain' }), at);
-    await vi.waitFor(() => expect(h.toast.info).toHaveBeenCalledTimes(2));
-    expect(h.toast.info).toHaveBeenCalledWith(DROP_NOT_A_SCENE);
+    await vi.waitFor(() => expect(h.toast.info).toHaveBeenCalledWith(DROP_NOT_A_SCENE));
     expect(h.insertBoardScene).not.toHaveBeenCalled();
     expect(upload).not.toHaveBeenCalled();
   });

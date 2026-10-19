@@ -139,9 +139,11 @@ exposes the custom type only to pages in the same browser engine, so:
   pasted PNG or SVG is checked for an embedded scene first: with one, the scene
   lands; without one, it is an ordinary image paste, as before.
 - **Dropped files** (on a tab that is not read-only): the same files land at the point
-  they are released. Any other dropped file (a photo, a PNG or SVG without a scene) is
-  refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with
-  the scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livediagram JSON file, by
+  they are released. A picture without a scene (a photo, a screenshot, a PNG, JPEG or SVG) lands as an image
+  element centred where it was released, through the same upload as a pasted one
+  ([Image import pipeline](import-image-pipeline.md)), so dragging a screenshot in works as pasting it does. Any
+  other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the
+  scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livediagram JSON file, by
   its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
   replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.) A photo dropped on
   an event-storming board still goes to the wall reader first
