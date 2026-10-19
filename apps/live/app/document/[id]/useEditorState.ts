@@ -2356,7 +2356,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     statusNames: planStatusNames,
     markTabLoaded,
     openTab: setActiveId,
-    makeSheet: (create) => makeFormSheet(sheets.bridge, create),
+    makeSheet: (create) => void makeFormSheet(sheets.bridge, create),
     retitleSheets: sheets.retitleSheets,
   });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
