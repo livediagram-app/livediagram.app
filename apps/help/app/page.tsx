@@ -103,7 +103,7 @@ export default function HelpHome() {
             <Link
               key={t.path}
               href={articleHref(articleAt(t.path))}
-              className="rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-sm text-(--hero-chip-text) transition-colors touch-target-y hover:border-(--hero-chip-border-hover)"
+              className="relative rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-sm text-(--hero-chip-text) transition-colors touch-target-y hover:border-(--hero-chip-border-hover)"
             >
               {t.label}
             </Link>

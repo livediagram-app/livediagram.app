@@ -22,6 +22,7 @@ import {
   useClickOutside,
   useEscape,
 } from '@livediagram/ui';
+import { plural } from '@livediagram/document';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { Portal, Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideBetweenVerticalEnd } from '@livediagram/icons/lucide';
@@ -244,7 +245,7 @@ export function PlanColumnPopover({
             <button
               type="button"
               aria-label="Remove Column"
-              className="touch-target flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+              className="relative touch-target flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
               onClick={() => {
                 onChange(removeColumn(setup, column.id), 'ColumnRemoved');
                 onClose(false);
@@ -340,7 +341,7 @@ export function PlanColumnPopover({
               WIP Limit
             </label>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {wip ? `Warns past ${wip} cards` : 'No limit'}
+              {wip ? `Warns past ${plural(wip, 'card')}` : 'No limit'}
             </p>
           </div>
           <div className="flex h-8 shrink-0 items-stretch overflow-hidden rounded-md border border-slate-200 dark:border-slate-700">
@@ -557,7 +558,7 @@ function ToolbarButton({
         type="button"
         aria-label={label}
         disabled={disabled}
-        className="touch-target flex w-9 items-center justify-center text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:text-slate-300 motion-reduce:transition-none dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-50 dark:disabled:text-slate-600"
+        className="relative touch-target flex w-9 items-center justify-center text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:text-slate-300 motion-reduce:transition-none dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-50 dark:disabled:text-slate-600"
         onClick={onClick}
       >
         {children}

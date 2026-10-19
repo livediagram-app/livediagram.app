@@ -1,7 +1,9 @@
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
+  glyphWidth,
   isValidTab,
+  LABEL_FONT_PX,
   MAX_TABLE_CELLS,
   MAX_TABLE_COLS,
   MAX_TABLE_ROWS,
@@ -148,6 +150,66 @@ describe('layoutOutline', () => {
       x: number;
     };
     expect(a.x).toBeGreaterThan(r.x);
+  });
+});
+
+describe('layoutOutline box sizes', () => {
+  type Box = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    label: string;
+    textSize: string;
+  };
+  const boxesOf = (root: MarkdownNode) =>
+    layoutOutline(root).elements.filter((e) => e.type !== 'arrow') as unknown as Box[];
+
+  it('fits a root label at its own large text size on one line', () => {
+    const [root] = boxesOf({ label: 'Flowchart', children: [] });
+    // 'Flowchart' at the root's 32 px sets about 150 px wide; a 120 px box broke it mid-word.
+    expect(root!.width).toBeGreaterThanOrEqual(glyphWidth('Flowchart', LABEL_FONT_PX.lg) + 40);
+    expect(root!.height).toBe(56);
+  });
+
+  it('grows a long label taller rather than past its cap', () => {
+    const long = 'A long list item that keeps going well past what one line of a box can hold';
+    const boxes = boxesOf({
+      label: 'R',
+      children: [{ label: 'A', children: [{ label: long, children: [] }] }],
+    });
+    const leaf = boxes.find((b) => b.label === long)!;
+    expect(leaf.width).toBe(240);
+    expect(leaf.height).toBeGreaterThan(56);
+  });
+
+  it('never overlaps boxes, across or within columns', () => {
+    const long = 'Another long line of prose that wraps onto a second or third line in its box';
+    const root: MarkdownNode = {
+      label: 'Connections and more connections',
+      children: [
+        {
+          label: 'Short',
+          children: [
+            { label: long, children: [] },
+            { label: 'x', children: [] },
+          ],
+        },
+        { label: long, children: [{ label: 'y', children: [] }] },
+        { label: 'Solo', children: [] },
+      ],
+    };
+    const boxes = boxesOf(root);
+    for (const a of boxes)
+      for (const b of boxes) {
+        if (a === b) continue;
+        const apart =
+          a.x + a.width <= b.x ||
+          b.x + b.width <= a.x ||
+          a.y + a.height <= b.y ||
+          b.y + b.height <= a.y;
+        expect(apart, `${a.label} overlaps ${b.label}`).toBe(true);
+      }
   });
 });
 

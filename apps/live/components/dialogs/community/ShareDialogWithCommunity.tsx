@@ -37,6 +37,8 @@ export function ShareDialogWithCommunity({
   const community = useCommunityPost({ ownerId, documentId, open: eligible });
   const picture = usePublishedPicture();
   const [publishing, setPublishing] = useState(false);
+  // Back from writing a listing, the Share dialog opens on Community, where it was left.
+  const [backFromListing, setBackFromListing] = useState(false);
 
   if (!communityOn) return <ShareDialog {...share} teamDocument={teamDocument} />;
 
@@ -53,7 +55,10 @@ export function ShareDialogWithCommunity({
           picture,
         }}
         onPublish={community.publish}
-        onClose={() => setPublishing(false)}
+        onClose={() => {
+          setPublishing(false);
+          setBackFromListing(true);
+        }}
       />
     );
   }
@@ -66,6 +71,7 @@ export function ShareDialogWithCommunity({
         community.post?.state === 'listed' ? communityCodeMessage('community_published') : null
       }
       communityListed={community.post?.state === 'listed'}
+      initialTab={backFromListing ? 'community' : 'passes'}
       community={
         documentId ? (
           <CommunitySection

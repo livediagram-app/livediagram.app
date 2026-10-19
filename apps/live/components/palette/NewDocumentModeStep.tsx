@@ -12,6 +12,8 @@ import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
 import { PreviewFan } from '@livediagram/template-previews';
 import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livediagram/templates';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@/lib/typing-target';
 import { Spinner } from './template-picker-icons';
 
 // The modes in the order every mode list shows them (the mode switch's dropdown, Opens in): the catalogue's.
@@ -138,13 +140,23 @@ export function NewDocumentModeStep({
     // Once, as the step appears.
     // oxlint-disable-next-line react/exhaustive-deps
   }, []);
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const digit = Number(e.key);
-    if (Number.isInteger(digit) && digit >= 1 && digit <= NEW_DOCUMENT_MODES.length) {
+  // 1 to 5 choose a mode wherever the focus is on the page, as Escape backs out from anywhere: after a click on the
+  // backdrop the focus is on the page, not a card, and the keys did nothing. A field being typed in, or a chord, keeps
+  // its digit.
+  const choose = useLatest(onChoose);
+  useEffect(() => {
+    const onDigit = (e: globalThis.KeyboardEvent) => {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target))
+        return;
+      const digit = Number(e.key);
+      if (!Number.isInteger(digit) || digit < 1 || digit > NEW_DOCUMENT_MODES.length) return;
       e.preventDefault();
-      onChoose(NEW_DOCUMENT_MODES[digit - 1]!);
-      return;
-    }
+      choose.current(NEW_DOCUMENT_MODES[digit - 1]!);
+    };
+    window.addEventListener('keydown', onDigit);
+    return () => window.removeEventListener('keydown', onDigit);
+  }, [choose]);
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (!step) return;
     const at = cards.current.findIndex((c) => c === document.activeElement);

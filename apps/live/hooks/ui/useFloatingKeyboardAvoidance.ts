@@ -113,6 +113,20 @@ export function checkFloatingField() {
   const surface = vv && isTextField(field) ? surfaceOf(field) : null;
   releaseAll(surface);
   if (!vv || !surface || !isTextField(field)) return;
+  // A surface still arriving (a sheet sliding up, a popover fading in) measures where its animation has it, not where
+  // it comes to rest: a phone's column sheet, its name field focused as it rose, was lifted by the distance it still
+  // had to travel and came to rest above the screen. It is checked again once it settles. A looping animation never
+  // settles, so it is not waited for.
+  const arriving =
+    surface
+      .getAnimations?.()
+      .filter((a) => a.playState === 'running' && a.effect?.getTiming().iterations !== Infinity) ??
+    [];
+  if (arriving.length > 0) {
+    const again = () => requestAnimationFrame(checkFloatingField);
+    void Promise.all(arriving.map((a) => a.finished)).then(again, again);
+    return;
+  }
   // A re-render that set the surface's own transform dropped the lift: it starts again from there.
   const was = lifted.get(surface);
   if (was && !surface.style.transform.startsWith(`translateY(${-was.dy}px)`))
@@ -123,10 +137,14 @@ export function checkFloatingField() {
   const dy = lifted.get(surface)?.dy ?? 0;
   const s = surface.getBoundingClientRect();
   const f = field.getBoundingClientRect();
+  // The keyboard's edge wants the margin; the window's own foot does not, where a bottom sheet docks flush. With no
+  // keyboard up, a focused sheet was lifted 8px off the bottom of the screen.
+  const band = vv.offsetTop + vv.height;
+  const atFoot = band >= window.innerHeight - 1;
   const next = liftFor(
     { top: s.top + dy, bottom: s.bottom + dy },
     { top: f.top + dy, bottom: f.bottom + dy },
-    { top: vv.offsetTop, bottom: vv.offsetTop + vv.height },
+    { top: vv.offsetTop, bottom: atFoot ? band + VIEWPORT_EDGE_MARGIN : band },
   );
   apply(surface, next);
 }

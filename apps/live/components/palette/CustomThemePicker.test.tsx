@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The theme list (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel") is one flat grid of every
-// theme; its "New theme" card is the builder's door (docs/specs/011-theme/custom-themes.md). A workbench writes no
+// theme; its "New Theme" card is the builder's door (docs/specs/011-theme/custom-themes.md). A workbench writes no
 // themes (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table), so it offers neither New nor Copy.
 
 // jsdom has no ResizeObserver; the browser's animated height measures itself with one.
@@ -55,16 +55,16 @@ describe('CustomThemePicker', () => {
       expect(screen.queryByText(gone), gone).toBeNull();
   });
 
-  it('offers a New theme card where themes can be written', () => {
+  it('offers a New Theme card where themes can be written', () => {
     writable.value = true;
     render(<CustomThemePicker themeId="brand" onSelect={vi.fn()} />);
-    expect(screen.queryByText('New theme')).not.toBeNull();
+    expect(screen.queryByText('New Theme')).not.toBeNull();
   });
 
-  it('offers no New theme card where they cannot', () => {
+  it('offers no New Theme card where they cannot', () => {
     writable.value = false;
     render(<CustomThemePicker themeId="brand" onSelect={vi.fn()} />);
-    expect(screen.queryByText('New theme')).toBeNull();
+    expect(screen.queryByText('New Theme')).toBeNull();
   });
 
   // Deleting the theme the tab wears asks first; only a confirmed delete falls the tab back to Default.

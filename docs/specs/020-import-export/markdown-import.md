@@ -55,8 +55,11 @@ top-level nodes so the result is one connected diagram.
 
 - A **tidy left-to-right tree**: the root on the left, each level a
   column, children stacked and vertically centred on their parent so
-  nothing overlaps. Boxes are sized to their label; depth drives text
-  size (root largest). Parent→child links are **curved pinned arrows**.
+  nothing overlaps. Depth drives text size (root largest), and boxes are
+  sized to their label measured at that size: wider up to a cap (240, 320
+  and 400 px for small, medium and large text), then a line taller for each
+  wrap. Each column is as wide as its widest box. Parent→child links are
+  **curved pinned arrows**.
 - Any **tables** are placed in a column below the tree.
 - Everything is recoloured to a theme (the active tab's theme, falling
   back to Brand) and the new tab adopts that theme's background — so the

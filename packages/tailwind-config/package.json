@@ -9,7 +9,8 @@
     "./theme.css": "./theme.css",
     "./motion": "./src/motion.ts",
     "./motion-budget": "./src/motion-budget.ts",
-    "./optical-guard": "./src/optical-guard.ts"
+    "./optical-guard": "./src/optical-guard.ts",
+    "./touch-target-guard": "./src/touch-target-guard.ts"
   },
   "files": [
     "theme.css",

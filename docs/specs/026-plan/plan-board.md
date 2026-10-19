@@ -772,7 +772,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
   size is the board's again on a wider screen. Nothing is saved.
-- **The header has no widgets** on a phone: the title, then the header's controls. The quick filter the widgets set
+- **The header has no widgets** on a phone: the title, taking the room up to the header's controls (beside widgets
+  it keeps to 40% of the header), then the controls. The quick filter the widgets set
   stands down with them, so a filter set on a wider screen never hides cards with nothing on screen saying so.
 - A board that scrolls on its own (maximised, filling its tab, or in a Dashboard slot) shows one column a screen (see
   "Five slots across"); covering the canvas, its body ends 8.5 rem (and the home indicator's safe area) past its last

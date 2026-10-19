@@ -16,6 +16,8 @@ import {
   createPinnedArrow,
   createShape,
   createTable,
+  glyphWidth,
+  LABEL_FONT_PX,
   MAX_TABLE_CELLS,
   MAX_TABLE_COLS,
   MAX_TABLE_ROWS,
@@ -24,7 +26,6 @@ import {
   type Element,
   type ShapeElement,
   type TableElement,
-  type TextSize,
   type Tab,
 } from '@livediagram/document';
 import type { ImportOutcome } from './import-tab';
@@ -228,23 +229,32 @@ const NODE_H = 56;
 const V_GAP = 26;
 const COL_GAP = 90;
 const MIN_W = 120;
-const MAX_W = 240;
-const ROW_STRIDE = NODE_H + V_GAP;
-const COL_STRIDE = MAX_W + COL_GAP; // every column the same so widths can't collide
 const LABEL_CAP = 120;
+// A box's side padding and its label's line height (as a fraction of the font), as the editor sets a label.
+const PAD_X = 40;
+const LINE_EM = 1.35;
+// The widest a box grows before its label wraps, per depth's text size: about eighteen characters a line.
+const MAX_W: Readonly<Record<'sm' | 'md' | 'lg', number>> = { sm: 240, md: 320, lg: 400 };
 
-function nodeWidth(label: string): number {
-  // Rough monospace-ish estimate; the renderer wraps, this just keeps the
-  // box proportionate to its text without measuring the DOM.
-  const est = label.length * 7.2 + 34;
-  return Math.round(Math.max(MIN_W, Math.min(MAX_W, est)));
+// A box sized to its label at its own text size (the spec's "Boxes are sized to their label"): the label's
+// estimated one-line width up to the size's cap, then a line taller for each wrap. Measured at 7 px a glyph
+// whatever the size, a root's 32 px "Flowchart" got a 120 px box and broke mid-word out of it.
+function nodeSize(label: string, size: 'sm' | 'md' | 'lg'): { width: number; height: number } {
+  const px = LABEL_FONT_PX[size];
+  const maxW = MAX_W[size];
+  const textW = glyphWidth(label, px);
+  const width = Math.round(Math.max(MIN_W, Math.min(maxW, textW + PAD_X)));
+  const lines = Math.max(1, Math.ceil(textW / (width - PAD_X)));
+  // One line of even the root's text sits in the standard height; each wrap adds its line.
+  const height = Math.round(NODE_H + (lines - 1) * px * LINE_EM);
+  return { width, height };
 }
 
 function capLabel(label: string): string {
   return label.length > LABEL_CAP ? `${label.slice(0, LABEL_CAP - 1).trimEnd()}…` : label;
 }
 
-function depthTextSize(depth: number): TextSize {
+function depthTextSize(depth: number): 'sm' | 'md' | 'lg' {
   return depth === 0 ? 'lg' : depth === 1 ? 'md' : 'sm';
 }
 
@@ -254,54 +264,69 @@ type OutlineLayout = {
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
 };
 
-// Tidy left-to-right tree. Leaves take successive rows; a parent centres
-// on the span of its children. Columns are fixed-stride by depth so
-// variable box widths never overlap horizontally. Parent→child links are
-// curved pinned arrows (parent east → child west).
+// Tidy left-to-right tree. Leaves stack down by their own heights; a parent centres
+// on the span of its children (or starts at its span's top when it is the taller). Each
+// depth is a column as wide as its widest box, so variable box widths never overlap
+// horizontally. Parent→child links are curved pinned arrows (parent east → child west).
 export function layoutOutline(root: MarkdownNode, originX = 0, originY = 0): OutlineLayout {
-  const boxes: ShapeElement[] = [];
+  const boxes: { el: ShapeElement; depth: number }[] = [];
   const arrows: ArrowElement[] = [];
-  let nextRow = 0;
+  const columnW: number[] = [];
+  let nextY = originY;
+
+  const place = (node: MarkdownNode, depth: number): { id: string } => {
+    const label = capLabel(node.label);
+    const textSize = depthTextSize(depth);
+    const { width, height } = nodeSize(label, textSize);
+    const top = nextY;
+    const childResults = node.children.map((c) => place(c, depth + 1));
+    let y: number;
+    if (childResults.length === 0) {
+      y = top;
+    } else {
+      // The children's span: the first one's top to the last one's bottom.
+      const spanBottom = nextY - V_GAP;
+      y = Math.max(top, (top + spanBottom) / 2 - height / 2);
+    }
+    nextY = Math.max(nextY, y + height + V_GAP);
+    const el: ShapeElement = {
+      ...createShape('square', 0, y),
+      width,
+      height,
+      label,
+      textSize,
+    };
+    boxes.push({ el, depth });
+    columnW[depth] = Math.max(columnW[depth] ?? 0, width);
+    for (const cr of childResults) {
+      arrows.push({ ...createPinnedArrow(el.id, 'e', cr.id, 'w'), arrowStyle: 'curved' });
+    }
+    return { id: el.id };
+  };
+
+  place(root, 0);
+  // Each column starts past the widest box of every column before it.
+  const columnX: number[] = [];
+  for (let d = 0, x = originX; d < columnW.length; d++) {
+    columnX[d] = x;
+    x += columnW[d]! + COL_GAP;
+  }
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-
-  const place = (node: MarkdownNode, depth: number): { id: string; cy: number } => {
-    const childResults = node.children.map((c) => place(c, depth + 1));
-    let cy: number;
-    if (childResults.length === 0) {
-      cy = originY + nextRow * ROW_STRIDE + NODE_H / 2;
-      nextRow++;
-    } else {
-      cy = (childResults[0]!.cy + childResults[childResults.length - 1]!.cy) / 2;
-    }
-    const w = nodeWidth(node.label);
-    const x = originX + depth * COL_STRIDE;
-    const y = cy - NODE_H / 2;
-    const el: ShapeElement = {
-      ...createShape('square', x, y),
-      width: w,
-      height: NODE_H,
-      label: capLabel(node.label),
-      textSize: depthTextSize(depth),
-    };
-    boxes.push(el);
+  const placed = boxes.map(({ el, depth }) => {
+    const x = columnX[depth]!;
     if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x + w > maxX) maxX = x + w;
-    if (y + NODE_H > maxY) maxY = y + NODE_H;
-    for (const cr of childResults) {
-      arrows.push({ ...createPinnedArrow(el.id, 'e', cr.id, 'w'), arrowStyle: 'curved' });
-    }
-    return { id: el.id, cy };
-  };
-
-  place(root, 0);
+    if (el.y < minY) minY = el.y;
+    if (x + el.width > maxX) maxX = x + el.width;
+    if (el.y + el.height > maxY) maxY = el.y + el.height;
+    return { ...el, x };
+  });
   // Boxes first, arrows last (so connectors render over the nodes) —
   // matches the template builders' z-order.
   return {
-    elements: [...boxes, ...arrows],
+    elements: [...placed, ...arrows],
     bounds: { minX, minY, maxX, maxY },
   };
 }

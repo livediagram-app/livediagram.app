@@ -100,8 +100,8 @@ A React context (`CustomThemeProvider`) tracks the list reactively so the picker
 
 The Theme tab of the Tab Style dialog ([Canvas + Theme dialog](canvas-and-theme-dialog.md)) gains:
 
-- A **Custom** category in the theme browse, sitting alongside the built-in colour categories. Its drill-in lists the owner's saved themes as cards (apply / edit / delete) plus a **+ New theme** card, with a short explainer line. (This replaced an earlier "My themes" row: presenting custom themes as just another category keeps the browse uniform.)
-- **+ New theme** (or **Edit** on a saved card) opens the **theme builder** in place of the category grid, with a `Back` affordance.
+- A **Custom** category in the theme browse, sitting alongside the built-in colour categories. Its drill-in lists the owner's saved themes as cards (apply / edit / delete) plus a **+ New Theme** card, with a short explainer line. (This replaced an earlier "My themes" row: presenting custom themes as just another category keeps the browse uniform.)
+- **+ New Theme** (or **Edit** on a saved card) opens the **theme builder** in place of the category grid, with a `Back` affordance.
 
 The builder is **fast by default, deep on demand**:
 
@@ -116,13 +116,13 @@ Colour inputs open the one [colour picker](../004-interface-design/colour-picker
 The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry under its **Library** section (beside Image gallery):
 
 - Route `/explorer/themes`; sidebar row with a palette glyph; `SelectedNode` gains `{ kind: 'themes' }`.
-- The pane lists the owner's custom themes as cards (each a `ThemeSwatch` preview + name + element count), with **New theme**, **Edit** (opens the same builder, presented as a standalone modal here), **Duplicate**, and **Delete** (confirm) actions.
+- The pane lists the owner's custom themes as cards (each a `ThemeSwatch` preview + name + element count), with **New Theme**, **Edit** (opens the same builder, presented as a standalone modal here), **Duplicate**, and **Delete** (confirm) actions.
 - Deleting a theme that a document still references is safe: `getTheme` falls back to the default, so the document keeps rendering (it just loses the custom look). No cascading rewrite.
 
 ## New-document / template picker
 
 The New-document theme picker ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) shows the same
-**Custom** category and **+ New theme** builder as the Tab Style dialog's Colours panel,
+**Custom** category and **+ New Theme** builder as the Tab Style dialog's Colours panel,
 so a user can apply (or author) one of their saved themes at the moment they
 start a document. Both surfaces render one shared `CustomThemePicker` (which owns
 the builder state and lists the saved themes in `ThemeBrowser`), so
