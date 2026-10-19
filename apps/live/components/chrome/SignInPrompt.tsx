@@ -86,7 +86,7 @@ function PromptShell({
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss"
-          className="flex h-6 w-6 shrink-0 touch-target cursor-pointer items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+          className="relative flex h-6 w-6 shrink-0 touch-target cursor-pointer items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100"
         >
           <CloseIcon size={12} />
         </button>
