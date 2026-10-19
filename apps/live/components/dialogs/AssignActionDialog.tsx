@@ -261,7 +261,8 @@ export function AssignActionDialog({
 
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-              Description <span className="font-normal text-slate-400">(optional)</span>
+              Description{' '}
+              <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
             </span>
             <textarea
               value={description}

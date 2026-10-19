@@ -55,7 +55,7 @@ function MatchRow({ match, onPick }: { match: FunctionMatch; onPick: () => void 
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="font-mono text-[12px] font-semibold text-slate-800 dark:text-slate-100">
           {match.name}
-          <span className="ml-1.5 font-sans font-normal text-slate-400">
+          <span className="ml-1.5 font-sans font-normal text-slate-500 dark:text-slate-400">
             {FUNCTION_FAMILY_LABELS[match.family]}
           </span>
         </span>

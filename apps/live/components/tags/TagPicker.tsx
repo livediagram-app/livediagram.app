@@ -89,7 +89,7 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
         <div className="border-b border-slate-100 px-3 pb-2 pt-2.5 dark:border-slate-800">
           <p className="mb-1.5 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
             Tags
-            <span className="font-normal text-slate-400">
+            <span className="font-normal text-slate-500 dark:text-slate-400">
               {' '}
               · {documentName || 'Untitled document'}
             </span>
