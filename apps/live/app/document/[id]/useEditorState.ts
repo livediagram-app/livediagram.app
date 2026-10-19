@@ -928,8 +928,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // rather than whatever was in scope when the timer was scheduled.
   // Declared before the realtime + autosave hooks so the Yjs seed
   // (useRoomConnection) and loadAllTabs prefetch can read current tabs.
+  // A layout effect, so it is current before any passive effect: a child's effects run before this hook's, and a tab
+  // window asking for its tab on the commit the tabs arrive found none of them, settled at once and never asked again.
   const tabsRef = useRef(tabs);
-  useEffect(() => {
+  useLayoutEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
 

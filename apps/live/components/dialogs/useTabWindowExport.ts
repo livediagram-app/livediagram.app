@@ -6,15 +6,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import {
-  exportFontIds,
+  tabWindowHasDrawing,
   tabWindowMayShow,
   tabWindowNames,
   type ResolveTabWindow,
   type Tab,
   type TabWindowArt,
 } from '@livediagram/document';
+import { planImageOf } from '@livediagram/plan-art';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
+import { getTheme } from '@/lib/themes';
+import { renderTabWindowSvg, tabWindowFontIdsOf } from '@/lib/tab-window-render';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import { svgFrameOf } from '@/lib/svg-frame';
 
@@ -31,7 +34,8 @@ export function tabWindowTargets(tab: Pick<Tab, 'id' | 'elements'>): string[] {
 }
 
 /** Each shown tab drawn for a window: its name, and its drawing when it has anything on it. Only tabs a window may
- *  show are drawn; inside them a window is its named frame. */
+ *  show are drawn; inside them a window is its named frame. A Pages tab draws as its pages and a Form tab as its form
+ *  (renderTabWindowSvg); a Board or Dashboard tab laid out (planImageOf), without its Sheets' cells or figures. */
 export function tabWindowArts(
   ownTabId: string,
   targets: readonly string[],
@@ -41,19 +45,28 @@ export function tabWindowArts(
 ): Map<string, TabWindowArt> {
   const names = tabWindowNames(tabs);
   const arts = new Map<string, TabWindowArt>();
+  const now = new Date();
   for (const id of targets) {
     const t = tabs.find((x) => x.id === id);
     if (!t || !tabWindowMayShow(t, ownTabId)) continue;
     const name = t.name || 'Untitled tab';
-    if (t.elements.length === 0) {
+    if (!tabWindowHasDrawing(t)) {
       arts.set(id, { name });
       continue;
     }
     const seen = tabAsSeen(t);
-    const markup = renderTabToSvg(seen, {
+    const plan = planImageOf(seen, {
+      tabs,
+      now,
+      themeOf: getTheme,
+      renderDiagram: (shown) =>
+        renderTabToSvg(tabAsSeen(shown), { pattern: false, ...(items ?? {}) }),
+    });
+    const markup = renderTabWindowSvg(plan?.tab ?? seen, {
       pattern: false,
       images: images.get(id),
       resolveTabWindow: names,
+      ...(plan ? { resolvePlanArt: (el) => plan.art.get(el.id) } : {}),
       ...(items ?? {}),
     });
     const frame = svgFrameOf(markup);
@@ -98,7 +111,7 @@ export function useTabWindowExport({
     () => ({ key: '', map: new Map() }),
   );
   // Fetch the shown tabs' content once an image format is picked; done once each has arrived or failed. Only the
-  // tabs a window may show are fetched (never a Plan tab, which draws as unavailable), so an export never waits on,
+  // tabs a window may show are fetched (never its own tab), so an export never waits on,
   // nor downloads, content it will not draw.
   const known = useLatest(tabs);
   useEffect(() => {
@@ -145,9 +158,7 @@ export function useTabWindowExport({
     const arts = tabWindowArts(tab.id, targets, tabs, images.map, items);
     return {
       resolveTabWindow: (el) => (el.windowTabId ? arts.get(el.windowTabId) : undefined),
-      tabWindowFontIds: shown.flatMap((t) =>
-        exportFontIds(t.elements, t.font, undefined, t.finish),
-      ),
+      tabWindowFontIds: shown.flatMap(tabWindowFontIdsOf),
       ready: true,
     };
   }, [settled, tab.id, targets, tabs, images, items, shown]);
