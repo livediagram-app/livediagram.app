@@ -79,7 +79,7 @@ An Editor edits an entity where it stands:
 
 - **Double-click a field** to edit it in place: the name and the type become inputs over the row. **Enter** saves
   and moves to the next field (adding one after the last), **Tab** steps name, type, next field, **Shift+Tab**
-  steps back, **Escape** cancels, and leaving the row saves. A field emptied of both name and type is removed when
+  steps back, **Escape** and leaving the row save (Escape keeps what you typed, as on every canvas label). A field emptied of both name and type is removed when
   it is saved.
 - **Double-click below the last field** adds a field and edits it.
 - **Double-click the title** edits the title, as on every element.

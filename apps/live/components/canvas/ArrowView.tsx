@@ -84,7 +84,6 @@ type ArrowViewProps = {
   // the arrow into label-edit mode (mirrors boxed-element edit).
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
-  onCancelEdit: () => void;
   // Begin the curve drag gesture, when the arrow is curved and the
   // selected user grabs the curve handle. Receives the original
   // pointer event so the caller can hook up move/up listeners.
@@ -129,7 +128,6 @@ function ArrowViewImpl({
   onBeginEndpointDrag,
   onBeginEdit,
   onCommitLabel,
-  onCancelEdit,
   onBeginCurveDrag,
   onBeginCurvePointDrag,
   onBeginArrowBend,
@@ -516,7 +514,6 @@ function ArrowViewImpl({
           onStartDrag={(e) => onBeginLabelDrag?.(arrow.id, e)}
           onDraft={setDraft}
           onCommit={(next) => onCommitLabel(arrow.id, next)}
-          onCancel={onCancelEdit}
           guardPress={guardPress}
           onSelect={(e) => onSelect(arrow.id, e)}
           onContextMenu={(e) => contextSelectBeside(e.clientX, e.clientY)}
