@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type Ref } from 'react';
-import type { Tab } from '@livediagram/document';
+import { tabHasDrawing, type Tab } from '@livediagram/document';
 import { isTextEditFocused } from '@livediagram/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -45,7 +45,8 @@ export function SplitStaticPane({
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
   const svg = useTabSvg(loaded ? tab : undefined);
-  const empty = loaded && tab.elements.length === 0;
+  // A Pages tab always has a page and a Form tab its form, though neither need hold an element.
+  const empty = loaded && !tabHasDrawing(tab);
 
   // The paper and pattern the editor would paint for this tab, in its mode.
   const paint = useTabBackdropPaint(tab);
@@ -118,7 +119,7 @@ export function SplitStaticPane({
 // the target previews exactly what will open there.
 export function SplitTabPreview({ tab, loaded }: { tab: Tab; loaded: boolean }) {
   const svg = useTabSvg(loaded ? tab : undefined);
-  if (!svg || tab.elements.length === 0) return null;
+  if (!svg || !tabHasDrawing(tab)) return null;
   return <TabSvgViewport svg={svg} fitNonce={0} />;
 }
 

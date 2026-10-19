@@ -5,7 +5,7 @@
 // the tab (an edit, a collaborator's), drawn as the split view's other pane draws a tab (useTabSvg). Pressing it opens
 // the tab. The drawing's renderer is the export one, loaded only once a Diagram slot is shown.
 import dynamic from 'next/dynamic';
-import type { Tab } from '@livediagram/document';
+import { tabHasDrawing, type Tab } from '@livediagram/document';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useDashboard } from './dashboard-context';
 import { useSlotSettings } from './slot-menu';
@@ -39,7 +39,8 @@ export function DashboardDiagramView({
 }) {
   const { openTab } = useDashboard();
   const slot = useSlotSettings();
-  const empty = tab.elements.length === 0;
+  // Waiting while its content is on its way (a Pages tab has its page before then), then while there is nothing to draw.
+  const empty = !tabHasDrawing(tab) || (status !== 'loaded' && tab.elements.length === 0);
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-900/[0.07] bg-white/[0.72] shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-16px_rgba(15,23,42,0.22)] dark:border-white/[0.08] dark:bg-slate-900/60">
       <div className="flex h-11 shrink-0 items-center gap-2 border-b border-slate-900/[0.06] pl-3.5 pr-1.5 dark:border-white/[0.06]">
