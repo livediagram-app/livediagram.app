@@ -231,6 +231,10 @@ their assignee or votes, authored by the neutral "Someone". Each distinct person
 who copies a post's document counts once toward its copy count. The post page's Make a Copy opens the viewer with
 `?copy=1`; that parameter copies only through a Community link, never through any other share link.
 
+A copy through a Community link is **named after the post**: its title, as the visitor saw it in the gallery
+(capped like any name). The author's own document name was never published, so it doesn't travel with the copy.
+A name the caller sends still wins, and copies through any other share link keep `Copy of <document name>`.
+
 A share password ([Share password](../013-workspace/share-password.md)) and a post exclude each other: a document with a
 password cannot be published, and a published document cannot be given a password (the Share dialog explains why).
 
