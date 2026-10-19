@@ -29,6 +29,7 @@ import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { SectionsDrawer } from './SectionsDrawer';
 import { HomeHero } from '@/components/panels/home/HomeHero';
 import { useHeroPresence } from '@/components/panels/home/useHeroPresence';
+import { homeBannerShown } from '@/lib/home-banner';
 import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
 import { useExplorerState } from './useExplorerState';
 import { teamFolderPath } from './routes';
@@ -138,8 +139,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
   } = useExplorer();
   // Navigating to another section clears a crashed pane's notice.
   const pathname = usePathname();
-  // Home's hero folds away when the reader leaves Home and unfolds when they return.
-  const hero = useHeroPresence(selected.kind === 'home');
+  // Home's hero folds away when the reader leaves Home and unfolds when they return; hidden by its close, Home
+  // opens on the header's field and its own page header instead (explorer-home.md "Hiding the banner").
+  const heroOnHome = selected.kind === 'home' && homeBannerShown(prefs);
+  const hero = useHeroPresence(heroOnHome);
   // Cmd/Ctrl+K and Cmd/Ctrl+. open search here as in the editor (docs/specs/007-editor/command-palette.md).
   useSearchShortcut(() => setSearchOpen(true));
 
@@ -168,14 +171,17 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* The search field (docs/specs/013-workspace/explorer-filters.md "The field") sits left of the
           account; below `sm` it wraps onto its own full-width row, so the header grows rather than
           squeezing the brand. */}
-      <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap dark:border-slate-700 dark:bg-slate-900/85">
-        <div className="flex h-14 items-center gap-3">
+      {/* On a desktop the header is three columns, the field centred between the brand and the account on every
+          page; each side grows to its content first, so a narrow desktop never overlaps them. */}
+      <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap lg:grid lg:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] dark:border-slate-700 dark:bg-slate-900/85">
+        <div className="flex h-14 items-center gap-3 lg:col-start-1">
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        {/* On Home the field sits in the hero instead (docs/specs/013-workspace/explorer-filters.md "The field"). */}
-        {selected.kind === 'home' ? null : (
-          <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0">
+        {/* While Home shows its hero the field sits there instead (docs/specs/013-workspace/explorer-filters.md "The
+            field"). */}
+        {heroOnHome ? null : (
+          <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0 lg:col-start-2 lg:ml-0">
             <LensField lens={lens} subjects={lensResult.subjects} />
             {/* Counts what the lens left once typing settles; the team library counts its own. */}
             <LensAnnouncer
@@ -186,7 +192,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
             />
           </div>
         )}
-        <div className="flex h-14 items-stretch">
+        <div className="flex h-14 items-stretch lg:col-start-3 lg:justify-self-end">
           <AuthControls onOpenAccount={() => openSettingsOn('account')} />
         </div>
       </header>
@@ -203,7 +209,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           }`}
         >
           <div className="min-h-0 overflow-hidden">
-            <HomeHero active={selected.kind === 'home'} />
+            <HomeHero active={heroOnHome} />
           </div>
         </div>
       ) : null}
