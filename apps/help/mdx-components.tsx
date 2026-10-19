@@ -167,8 +167,10 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </ol>
     ),
     li: ({ children }) => <li className="text-[15px] leading-relaxed">{children}</li>,
+    // A long token (an api path, a CLI line) may break anywhere: it has no spaces of its own, and on a phone it ran
+    // to the screen's edge. A fenced block keeps its lines whole (its <pre> scrolls instead).
     code: ({ children }) => (
-      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-brand-700 dark:bg-slate-800 dark:text-brand-300">
+      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-brand-700 [overflow-wrap:anywhere] dark:bg-slate-800 dark:text-brand-300">
         {children}
       </code>
     ),
