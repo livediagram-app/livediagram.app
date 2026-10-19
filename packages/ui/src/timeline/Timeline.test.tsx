@@ -34,7 +34,7 @@ function filteredToNothing() {
 
 // Filtered-empty stays honest and distinct (docs/specs/013-workspace/timeline.md §2.3, §2.4).
 describe('Timeline filtered-empty state', () => {
-  it('keeps Show more when the loaded events match nothing but more pages exist', () => {
+  it('keeps Show More when the loaded events match nothing but more pages exist', () => {
     const controls = filteredToNothing();
     const onLoadMore = vi.fn();
 
@@ -43,11 +43,11 @@ describe('Timeline filtered-empty state', () => {
     expect(screen.getByText('No loaded events match these filters')).toBeTruthy();
     expect(screen.queryByText('No events match these filters')).toBeNull();
     expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show More' }));
     expect(onLoadMore).toHaveBeenCalledOnce();
   });
 
-  it('disables Show more while the next page is loading', () => {
+  it('disables Show More while the next page is loading', () => {
     const controls = filteredToNothing();
 
     render(<Timeline controls={controls} viewerId={ME} hasMore loadingMore onLoadMore={vi.fn()} />);
@@ -63,6 +63,6 @@ describe('Timeline filtered-empty state', () => {
 
     expect(screen.getByText('No events match these filters')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show More' })).toBeNull();
   });
 });

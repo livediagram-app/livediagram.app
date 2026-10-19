@@ -465,7 +465,7 @@ the mode buttons in §2.2.
   scroll-and-pulse-only implementation left this control — offered in the
   header in both modes — doing nothing at all in one of them.
 
-- **Show more** appends the next page when the read returns a cursor.
+- **Show More** appends the next page when the read returns a cursor.
   Page size 50, capped server-side at 200.
 
 **The Filter dot means "this feed is narrowed", whichever control did
@@ -500,7 +500,7 @@ popover is clipped no matter its z-index.
   **Clear Filters** action. Distinct copy from the new-user case, so the
   user isn't told they have no history when they do. The filters run on
   the loaded pages only, so while the read still returns a cursor the
-  copy is "No loaded events match these filters" ("Show more to look further back, or remove a filter.") instead, and Show
+  copy is "No loaded events match these filters" ("Show More to look further back, or remove a filter.") instead, and Show
   more (§2.3) stays under it: claiming nothing matches while older
   pages are unread is the same lie in a smaller voice.
 - **Failed**: "Couldn't load your timeline", with a Try again action.
@@ -1635,7 +1635,7 @@ New category `Timeline` in the closed enum in
   toggled.
 - `Timeline`/`Opened` with `type` `Stack` — a stacked run expanded.
   Tells us whether stacking thresholds are right.
-- `Timeline`/`Loaded` with `type` `More` — Show more.
+- `Timeline`/`Loaded` with `type` `More` — Show More.
 - `Timeline`/`Opened` with `type` `Menu` — a card's ⋯ menu opened
   (§2.8), so we can see whether people act on the feed or only read it.
 - `Timeline`/`Removed` with `type` `Entry` | `Stack` — a card, or a

@@ -154,7 +154,7 @@ export function CustomThemeBuilder({
       {/* Inline (in the theme browse): the shared BackBar returns. In a
           modal host (Explorer) the dialog owns the header, so no bar. */}
       {variant === 'inline' ? (
-        <BackBar label="Back" current={isEdit ? 'Edit theme' : 'New theme'} onClick={onCancel} />
+        <BackBar label="Back" current={isEdit ? 'Edit Theme' : 'New Theme'} onClick={onCancel} />
       ) : null}
 
       {/* Live preview — the in-progress theme as a real diagram scene,

@@ -1078,7 +1078,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Changed|List':
     "Someone switched the Explorer's Timeline from calendar view to list view.",
   'Timeline|Loaded|More':
-    'Someone clicked "Show more" at the bottom of the Timeline, loading the next page of history.',
+    'Someone clicked "Show More" at the bottom of the Timeline, loading the next page of history.',
   'Timeline|Loaded|Retry':
     'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
   'Timeline|Opened|Landing':

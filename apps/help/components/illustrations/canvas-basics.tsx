@@ -769,7 +769,7 @@ function ThemeTile({
 }
 
 /** The Colours panel: every theme in one carousel, nine to a page, Default first (then the
- *  catalogue, then your custom themes and New theme). */
+ *  catalogue, then your custom themes and New Theme). */
 export function LookAndFeelTheme() {
   const themes: [string, string, string, string][] = [
     [
@@ -1047,7 +1047,7 @@ export function LookAndFeelCanvas() {
   );
 }
 
-/** The custom-theme builder, opened from the New theme card at the end of the Colours panel's
+/** The custom-theme builder, opened from the New Theme card at the end of the Colours panel's
  *  theme list: the back bar stays on top, then the live preview, the name, the four base colours, the Pattern section
  *  (open to start with) and the Per-shape colours section stacked beneath it, and Save theme. */
 export function CustomThemeBuilderScene() {
@@ -1064,7 +1064,7 @@ export function CustomThemeBuilderScene() {
         ‹ Back
       </Label>
       <Label x={102} y={98} size={10} weight={700} tone="strong">
-        New theme
+        New Theme
       </Label>
       {/* Live preview of the in-progress theme. */}
       <g className="help-art-as-drawn">
