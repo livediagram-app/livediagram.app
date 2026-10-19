@@ -66,13 +66,19 @@ describe('blanks of a page kind', () => {
 });
 
 describe('a blank infographic on its theme', () => {
-  it("starts its page on the theme's default background; other templates keep theirs", async () => {
+  it("starts its page on the theme's default background, a blank deck's on Steel; other templates keep theirs", async () => {
     const { buildTemplateTab } = await import('./template-tab');
     const { defaultPageBackground, getBuiltInTheme, pagesOf } =
       await import('@livediagram/document');
     const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
     expect(pagesOf(tab)[0]!.background).toEqual(defaultPageBackground(getBuiltInTheme('ocean')));
     const slides = buildTemplateTab('s', 'S', 'blank-slide-deck', 'ocean');
-    expect(pagesOf(slides)[0]!.background).toBeUndefined();
+    expect(pagesOf(slides)[0]!.background).toEqual(
+      defaultPageBackground(getBuiltInTheme('ocean'), 'slide'),
+    );
+    const deck = buildTemplateTab('d', 'D', 'slide-deck', 'ocean');
+    expect(pagesOf(deck)[0]!.background).not.toEqual(
+      defaultPageBackground(getBuiltInTheme('ocean'), 'slide'),
+    );
   });
 });

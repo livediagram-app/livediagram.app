@@ -74,4 +74,11 @@ describe('ToastCard', () => {
     expect(screen.getByRole('status').className).toContain('animate-toast-out');
     expect(screen.getByRole('status').className).toContain('pointer-events-none');
   });
+
+  it('enters with the bolder toast-in-full when it arrives on a full stack', () => {
+    render(<ToastCard tone="info" message="Deleted" onClose={() => {}} full />);
+    const cls = screen.getByRole('status').className;
+    expect(cls).toContain('animate-toast-in-full');
+    expect(cls).toContain('pointer-events-auto');
+  });
 });

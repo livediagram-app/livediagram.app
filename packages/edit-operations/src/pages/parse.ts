@@ -20,9 +20,12 @@ import {
   PAGE_ORIENTATIONS,
   PAGE_PATTERNS,
   PAGE_SIZE_IDS,
+  WIREFRAME_DEVICE_IDS,
+  WIREFRAME_FRAME_LOOKS,
 } from '@livediagram/document';
 
-const PAGE_KINDS = ['infographic', 'article', 'slide', 'logo'] as const;
+const PAGE_KINDS = ['infographic', 'article', 'slide', 'logo', 'wireframe'] as const;
+const WIREFRAME_KEYS = ['device', 'frameLook', 'systemBars'];
 
 type Raw = Record<string, unknown>;
 
@@ -130,6 +133,20 @@ function pageChange(v: unknown, i: number): PageChange {
       ? {}
       : { orientation: oneOf(PAGE_ORIENTATIONS, v.orientation, 'orientation', i) };
   const bg = () => (v.background === undefined ? {} : { background: background(v.background, i) });
+  // A wireframe page's device, frame look and system bars (docs/specs/007-editor/wireframe-pages.md).
+  const wireframe = () => {
+    if (v.systemBars !== undefined && typeof v.systemBars !== 'boolean')
+      bad('"systemBars" is true or false.', i);
+    return {
+      ...(v.device === undefined
+        ? {}
+        : { device: oneOf(WIREFRAME_DEVICE_IDS, v.device, 'device', i) }),
+      ...(v.frameLook === undefined
+        ? {}
+        : { frameLook: oneOf(WIREFRAME_FRAME_LOOKS, v.frameLook, 'frameLook', i) }),
+      ...(v.systemBars === undefined ? {} : { systemBars: v.systemBars as boolean }),
+    };
+  };
   const layout = (required: boolean) =>
     v.layout === undefined && !required
       ? {}
@@ -138,7 +155,17 @@ function pageChange(v: unknown, i: number): PageChange {
     case 'add':
       onlyKeys(
         v,
-        [...COMMON, 'kind', 'size', 'orientation', 'name', 'background', 'layout', 'at'],
+        [
+          ...COMMON,
+          'kind',
+          'size',
+          'orientation',
+          'name',
+          'background',
+          'layout',
+          'at',
+          ...WIREFRAME_KEYS,
+        ],
         'add',
         i,
       );
@@ -151,16 +178,29 @@ function pageChange(v: unknown, i: number): PageChange {
         ...bg(),
         ...layout(false),
         ...(v.at === undefined ? {} : { at: place(v.at, 'at', i) }),
+        ...wireframe(),
       };
     case 'set': {
       onlyKeys(
         v,
-        [...COMMON, 'page', 'name', 'size', 'orientation', 'background', 'locked'],
+        [
+          ...COMMON,
+          'page',
+          'name',
+          'size',
+          'orientation',
+          'background',
+          'locked',
+          ...WIREFRAME_KEYS,
+        ],
         'set',
         i,
       );
       if (v.locked !== undefined && typeof v.locked !== 'boolean')
         bad('"locked" is true or false.', i);
+      // A wireframe page's device is chosen as it is added and never changes (wireframe-pages.md).
+      if (v.device !== undefined)
+        bad('"device" is chosen as a wireframe page is added and never changes.', i);
       const change: PageChange = {
         op,
         page: pageRef(v.page, i),
@@ -169,9 +209,13 @@ function pageChange(v: unknown, i: number): PageChange {
         ...orientation(),
         ...bg(),
         ...(v.locked === undefined ? {} : { locked: v.locked as boolean }),
+        ...wireframe(),
       };
       if (Object.keys(change).length === 2)
-        bad('"set" changes at least one of name, size, orientation, background or locked.', i);
+        bad(
+          '"set" changes at least one of name, size, orientation, background, locked, frameLook or systemBars.',
+          i,
+        );
       return change;
     }
     case 'layout':

@@ -38,6 +38,7 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   slide: { label: 'Slide', hint: 'Slide (16:9), always landscape' },
   'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
   logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
+  device: { label: 'Device', hint: 'A wireframe page is its device' },
   fit: { label: 'Fit', hint: 'Sized around the board it was made for' },
 };
 

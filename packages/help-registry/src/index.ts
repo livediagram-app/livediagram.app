@@ -1721,6 +1721,17 @@ export const articles: Article[] = [
     parentSlug: 'pages-mode',
   },
   {
+    slug: 'wireframe-pages',
+    title: 'Wireframe Pages',
+    description:
+      'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
+    keywords:
+      'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
+    category: 'Canvas',
+    categorySlug: 'canvas/pages-mode',
+    parentSlug: 'pages-mode',
+  },
+  {
     slug: 'articles',
     title: 'Writing Articles',
     description:

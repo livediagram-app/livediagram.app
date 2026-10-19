@@ -14,6 +14,15 @@ import {
   type PagePattern,
 } from '@livediagram/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
+import {
+  DEFAULT_WIREFRAME_DEVICE,
+  WIREFRAME_DEVICES,
+  deviceGeometry,
+  isWireframeDeviceId,
+  isWireframeFrameLook,
+  type WireframeDeviceId,
+  type WireframeFrameLook,
+} from './wireframe-device';
 
 export type PageOrientation = 'portrait' | 'landscape';
 
@@ -41,6 +50,7 @@ export type PageSizeId =
   | 'slide'
   | 'slide-classic'
   | 'logo'
+  | 'device'
   | 'fit';
 
 // A logo page's artboard (docs/specs/007-editor/logo-pages.md "A logo page"): the common
@@ -62,6 +72,9 @@ export const PAGE_SIZES: Readonly<
       landscapeOnly?: true;
       // The logo artboard: offered by logo pages alone.
       logoOnly?: true;
+      // A wireframe page's device: its sides are the device's frame (`Page.device`); short and long
+      // here are only what a page in it without one is read as (the iPhone).
+      deviceOnly?: true;
       // Fit to Content: its sides are the page's own (`Page.fit`); short and long here
       // are only what a page in it without them is read as (A4).
       fitOnly?: true;
@@ -100,6 +113,13 @@ export const PAGE_SIZES: Readonly<
     landscape: '1024 x 1024',
     logoOnly: true,
   },
+  device: {
+    short: 423,
+    long: 876,
+    portrait: 'Device',
+    landscape: 'Device',
+    deviceOnly: true,
+  },
   fit: {
     short: A4_SHORT_SIDE,
     long: A4_LONG_SIDE,
@@ -125,6 +145,8 @@ const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
 
 // The one size a logo page takes (docs/specs/007-editor/logo-pages.md "A logo page").
 const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
+// A wireframe page's one size is its device (docs/specs/007-editor/wireframe-pages.md).
+const WIREFRAME_PAGE_SIZE_IDS: readonly PageSizeId[] = ['device'];
 
 /** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, a logo
  *  page only the artboard, an infographic or article page the paper and screen ones (a slide size
@@ -132,6 +154,7 @@ const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
 export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
   if (kind === 'logo') return LOGO_PAGE_SIZE_IDS;
+  if (kind === 'wireframe') return WIREFRAME_PAGE_SIZE_IDS;
   return PAPER_AND_SCREEN_SIZE_IDS;
 }
 
@@ -178,8 +201,8 @@ export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/pages-mode.md "Page
 // kinds"): an infographic page to lay out, an article page to write on, a slide of a deck, or a
-// logo's artboard.
-export type PageKind = 'infographic' | 'article' | 'slide' | 'logo';
+// logo's artboard, or a wireframe's device (docs/specs/007-editor/wireframe-pages.md).
+export type PageKind = 'infographic' | 'article' | 'slide' | 'logo' | 'wireframe';
 
 export type Page = {
   id: string;
@@ -206,6 +229,11 @@ export type Page = {
   // Locked (docs/specs/007-editor/pages-mode.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
   locked?: true;
+  // A wireframe page's device, frame look (absent is Dark) and system bars (absent is shown);
+  // present only on wireframe pages, whose size is always 'device'.
+  device?: WireframeDeviceId;
+  frameLook?: WireframeFrameLook;
+  systemBars?: false;
   // Started blank (Start From Scratch on its Start From a Layout card): the card is not offered on it
   // again; its panel's Layouts still are. Absent while it may be offered.
   startedBlank?: true;
@@ -269,7 +297,9 @@ function parsePageFields(v: unknown): Page | undefined {
           ? { kind: 'slide' as const }
           : p.kind === 'logo'
             ? { kind: 'logo' as const }
-            : {};
+            : p.kind === 'wireframe'
+              ? { kind: 'wireframe' as const }
+              : {};
   // A slide is landscape in a slide size, whatever was stored.
   if (kindFields.kind === 'slide') {
     const size = isPageSizeId(p.size) && SLIDE_PAGE_SIZE_IDS.includes(p.size) ? p.size : 'slide';
@@ -296,6 +326,26 @@ function parsePageFields(v: unknown): Page | undefined {
       ...lock,
     };
   }
+  // A wireframe page is its device: a device this build does not know is the iPhone, a turn on one
+  // that does not turn is upright (docs/specs/007-editor/wireframe-pages.md "The devices").
+  if (kindFields.kind === 'wireframe') {
+    const device = isWireframeDeviceId(p.device) ? p.device : DEFAULT_WIREFRAME_DEVICE;
+    const turns = WIREFRAME_DEVICES[device].turns;
+    return {
+      id: p.id,
+      orientation: turns ? p.orientation : 'portrait',
+      size: 'device',
+      ...(background ? { background } : {}),
+      ...(name ? { name } : {}),
+      kind: 'wireframe',
+      device,
+      ...(isWireframeFrameLook(p.frameLook) && p.frameLook !== 'theme'
+        ? { frameLook: p.frameLook }
+        : {}),
+      ...(p.systemBars === false ? { systemBars: false as const } : {}),
+      ...lock,
+    };
+  }
   // The artboard is the logo kind's alone: any other page stored in it is read as A4. Fit to
   // Content is an infographic page's, and only with its sides.
   const fit = p.size === 'fit' && kindFields.kind !== 'article' ? parsePageSides(p.fit) : undefined;
@@ -303,6 +353,7 @@ function parsePageFields(v: unknown): Page | undefined {
     isPageSizeId(p.size) &&
     p.size !== 'a4' &&
     !PAGE_SIZES[p.size].logoOnly &&
+    !PAGE_SIZES[p.size].deviceOnly &&
     (p.size !== 'fit' || fit !== undefined);
   return {
     id: p.id,
@@ -318,9 +369,30 @@ function parsePageFields(v: unknown): Page | undefined {
 
 /** The page's kind: an article, a slide or a logo page, or else an infographic page. */
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
-  return page.kind === 'article' || page.kind === 'slide' || page.kind === 'logo'
+  return page.kind === 'article' ||
+    page.kind === 'slide' ||
+    page.kind === 'logo' ||
+    page.kind === 'wireframe'
     ? page.kind
     : 'infographic';
+}
+
+/** A new wireframe page (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the
+ *  device as it is held (upright, the iPhone Duo opened landscape), its frame Dark unless given, its system bars shown, on plain paper. */
+export function newWireframePage(
+  id: string,
+  device: WireframeDeviceId = DEFAULT_WIREFRAME_DEVICE,
+  frameLook?: WireframeFrameLook,
+): Page {
+  return {
+    id,
+    // A device held landscape by default (the iPhone Duo opened) starts turned.
+    orientation: WIREFRAME_DEVICES[device].landscape ? 'landscape' : 'portrait',
+    size: 'device',
+    kind: 'wireframe',
+    device,
+    ...(frameLook && frameLook !== 'theme' ? { frameLook } : {}),
+  };
 }
 
 /** A new logo page (docs/specs/007-editor/logo-pages.md "A logo page"): the 1024 artboard on
@@ -432,25 +504,43 @@ export function pagesOf(tab: { pages?: unknown; pageOrientation?: unknown } | un
 
 /** A page's width and height in canvas px: its size's sides, the long one upright in portrait.
  *  A square page is the same either way; a slide size is always landscape. */
-export function pageDimensions(page: Pick<Page, 'orientation' | 'size' | 'fit'>): {
+export function pageDimensions(
+  page: Pick<Page, 'orientation' | 'size' | 'fit'> & { device?: WireframeDeviceId },
+): {
   width: number;
   height: number;
 } {
   if (page.size === 'fit' && page.fit) return { width: page.fit.width, height: page.fit.height };
+  if (page.size === 'device') {
+    const g = deviceGeometry(
+      page.device ?? DEFAULT_WIREFRAME_DEVICE,
+      page.orientation === 'landscape',
+    );
+    return { width: g.width, height: g.height };
+  }
   const { short, long, landscapeOnly } = PAGE_SIZES[page.size ?? 'a4'];
   return page.orientation === 'portrait' && !landscapeOnly
     ? { width: short, height: long }
     : { width: long, height: short };
 }
 
-/** Whether a page has an orientation to choose (a square page has none, nor a slide size). */
-export function pageHasOrientation(page: Pick<Page, 'size'>): boolean {
+/** Whether a page has an orientation to choose (a square page has none, nor a slide size; a
+ *  wireframe page while its device turns). */
+export function pageHasOrientation(
+  page: Pick<Page, 'size'> & { device?: WireframeDeviceId },
+): boolean {
+  if (page.size === 'device')
+    return WIREFRAME_DEVICES[page.device ?? DEFAULT_WIREFRAME_DEVICE].turns;
   const { short, long, landscapeOnly, fitOnly } = PAGE_SIZES[page.size ?? 'a4'];
   return short !== long && !landscapeOnly && !fitOnly;
 }
 
-/** The size's name as this page shows it ("A4", "Slide (16:9)"). */
-export function pageSizeLabel(page: Pick<Page, 'orientation' | 'size'>): string {
+/** The size's name as this page shows it ("A4", "Slide (16:9)", a wireframe page's "iPhone"). */
+export function pageSizeLabel(
+  page: Pick<Page, 'orientation' | 'size'> & { device?: WireframeDeviceId },
+): string {
+  if (page.size === 'device')
+    return WIREFRAME_DEVICES[page.device ?? DEFAULT_WIREFRAME_DEVICE].label;
   const size = PAGE_SIZES[page.size ?? 'a4'];
   return size[size.landscapeOnly ? 'landscape' : page.orientation];
 }
@@ -459,7 +549,7 @@ export function pageSizeLabel(page: Pick<Page, 'orientation' | 'size'>): string 
  *  has one its orientation, and its kind but for an infographic page or where the size names it
  *  ("Page 2 · A4 · Landscape", "Launch · Square · Article", "Intro · Slide (16:9)"). */
 export function pageLabel(
-  page: Pick<Page, 'orientation' | 'size' | 'name' | 'kind'>,
+  page: Pick<Page, 'orientation' | 'size' | 'name' | 'kind' | 'device'>,
   index: number,
   count: number,
 ): string {
@@ -474,6 +564,9 @@ export function pageLabel(
   if (pageHasOrientation(page) && (size === 'a4' || size === 'letter' || size === 'a3')) {
     parts.push(page.orientation === 'portrait' ? 'Portrait' : 'Landscape');
   }
+  // A turned device says so; upright is how a device is seen.
+  if (size === 'device' && page.orientation === 'landscape' && pageHasOrientation(page))
+    parts.push('Landscape');
   // The kind closes it, but for an infographic page, the plain page: its title bar keeps the room. Nor where the size
   // already names it: a slide's sizes say Slide, and "Slide (16:9) · Slide" said it twice.
   const kind = pageKindOf(page);
@@ -488,6 +581,7 @@ const PAGE_KIND_LABEL: Record<PageKind, string> = {
   article: 'Article',
   slide: 'Slide',
   logo: 'Logo',
+  wireframe: 'Wireframe',
 };
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */

@@ -4,8 +4,8 @@ import { templateCanvasOverrides } from '@livediagram/templates';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the design starters redesigned together
-// (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the mobile and web page wireframes,
-// the slide deck, the storyboard and the floor plan. Each test maps to a
+// (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the slide deck, the storyboard and
+// the floor plan. Each test maps to a
 // sentence of that spec.
 
 type Shape = Extract<Element, { type: 'shape' }>;
@@ -14,7 +14,6 @@ const shapesOf = (els: Element[], shape: string) =>
   els.filter((el) => el.type === 'shape' && el.shape === shape) as Shape[];
 const labelOf = (el: Element) => (el as { label?: string }).label ?? '';
 const labels = (els: Element[]) => els.map(labelOf).filter(Boolean);
-const byId = (els: Element[], id: string) => els.find((el) => el.id === id) as Box | undefined;
 const inside = (a: Box, b: Box) =>
   a.x >= b.x - 0.5 &&
   a.y >= b.y - 0.5 &&
@@ -23,91 +22,6 @@ const inside = (a: Box, b: Box) =>
 const centre = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
 const contains = (b: Box, p: { x: number; y: number }) =>
   p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
-
-// The annotation grammar the two wireframes share: numbered bold pins on the
-// UI, each matched by an amber note in the rail.
-const pinsOf = (els: Element[]) =>
-  shapesOf(els, 'circle').filter((c) => /^\d$/.test(labelOf(c)) && c.colorPreset === 'bold');
-const notesOf = (els: Element[]) => els.filter((el) => el.type === 'sticky');
-
-describe('mobile wireframe template', () => {
-  const els = buildTemplate('mobile-wireframe', 0, 0);
-  const phones = shapesOf(els, 'phone');
-
-  it('tells one flow across three named phones', () => {
-    expect(phones.map(labelOf)).toEqual(['1 · Menu', '2 · Customise', '3 · Order placed']);
-    expect(labels(els)).toContain('Order-ahead coffee · mobile flow');
-  });
-
-  it('joins each screen to the next with a Tap arrow from the control that moves on', () => {
-    const arrows = els.filter(
-      (el): el is Extract<Element, { type: 'arrow' }> => el.type === 'arrow',
-    );
-    expect(arrows).toHaveLength(2);
-    arrows.forEach((arrow, i) => {
-      expect(arrow.label).toBe('Tap');
-      if (arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned') throw new Error('free');
-      // Leaves a control on screen i, lands on the west side of phone i + 1.
-      expect(inside(byId(els, arrow.from.elementId)!, phones[i]!)).toBe(true);
-      expect(arrow.to.elementId).toBe(phones[i + 1]!.id);
-      expect(arrow.to.anchor).toBe('w');
-    });
-    expect(
-      labelOf(els.find((el) => el.id === (arrows[1]!.from as { elementId: string }).elementId)!),
-    ).toBe('Add to order · £3.40');
-  });
-
-  it('marks the chosen size, and offers extras as a checklist and status as a process', () => {
-    const soft = shapesOf(els, 'stadium').filter((s) =>
-      ['Small', 'Regular', 'Large'].includes(labelOf(s)),
-    );
-    expect(soft.filter((s) => s.colorPreset === 'soft').map(labelOf)).toEqual(['Regular']);
-    expect(shapesOf(els, 'checklist')[0]!.checklistItems).toHaveLength(3);
-    expect(shapesOf(els, 'process')[0]!.processSteps).toEqual(['Placed', 'Brewing', 'Ready']);
-  });
-
-  it('numbers five pins on the phones and matches each with an amber note', () => {
-    const pins = pinsOf(els);
-    const onPhones = pins.filter((p) => phones.some((ph) => contains(ph, centre(p))));
-    expect(onPhones.map(labelOf).sort()).toEqual(['1', '2', '3', '4', '5']);
-    const notes = notesOf(els);
-    expect(notes).toHaveLength(5);
-    expect(notes.every((n) => (n as { fillColor?: string }).fillColor === '#fde68a')).toBe(true);
-    // The rail repeats each number beside its note.
-    const railPins = pins.filter((p) => !onPhones.includes(p));
-    expect(railPins.map(labelOf)).toEqual(['1', '2', '3', '4', '5']);
-    expect(labels(els)).toContain('Notes');
-  });
-});
-
-describe('web page wireframe template', () => {
-  const els = buildTemplate('browser-wireframe', 0, 0);
-  const browser = shapesOf(els, 'browser')[0]!;
-
-  it('lays out a real landing page: one CTA label in nav and hero, a product shot with numbers', () => {
-    const ctas = shapesOf(els, 'stadium').filter((s) => labelOf(s) === 'Start free trial');
-    expect(ctas).toHaveLength(2);
-    expect(ctas.every((c) => c.colorPreset === 'bold')).toBe(true);
-    expect(shapesOf(els, 'bar-chart')[0]!.pieSlices!.length).toBeGreaterThanOrEqual(4);
-    for (const l of ['pocketbook.app', 'Book a demo', 'Snap a receipt', 'Invoices that chase'])
-      expect(labels(els)).toContain(l);
-    // Three benefit cards, each led by a line-art glyph.
-    const glyphs = shapesOf(els, 'icon').filter((i) =>
-      ['camera', 'send', 'pie-chart'].includes(i.iconId ?? ''),
-    );
-    expect(glyphs).toHaveLength(3);
-  });
-
-  it('pins five decisions on the page and explains them in the notes rail', () => {
-    const pins = pinsOf(els);
-    const onPage = pins.filter((p) => contains(browser, centre(p)));
-    expect(onPage.map(labelOf)).toEqual(['1', '2', '3', '4', '5']);
-    expect(notesOf(els)).toHaveLength(5);
-    // The rail sits beside the frame, not over the page.
-    for (const note of notesOf(els))
-      expect((note as Box).x).toBeGreaterThan(browser.x + browser.width);
-  });
-});
 
 describe('slide deck template', () => {
   // The slides are pages (canvas-and-palette.md "Templates on pages"), not drawn cards.

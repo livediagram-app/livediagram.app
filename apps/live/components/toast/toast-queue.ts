@@ -33,6 +33,8 @@ export type ToastEntry = {
   actions?: ToastAction[];
   // Dismissed, still playing its exit before the stack removes it.
   leaving?: boolean;
+  // Arrived on a full stack and retired an older toast: it enters with a bolder pop, so the change is seen.
+  full?: boolean;
 };
 
 /** How long a toast that times out stays up, by tone (the spec's "Tones" table). */
@@ -49,8 +51,9 @@ export const TOAST_TIMEOUT_MS: Readonly<Record<ToastTone, number>> = {
  */
 export const TOAST_ANSWER_TIMEOUT_MS = 10_000;
 
-/** The most toasts up at once; a newer one retires the oldest without answers. */
-export const TOAST_LIMIT = 4;
+/** The most toasts up at once; a newer one retires the oldest without answers. Three keeps a burst (a run of
+ *  deletes) from covering the screen. */
+export const TOAST_LIMIT = 3;
 
 /** Whether a toast carries answers (an offer, or an action toast with a button), so it stays up longer. */
 export function toastAnswers(entry: Pick<ToastEntry, 'offer' | 'actions'>): boolean {
@@ -60,6 +63,13 @@ export function toastAnswers(entry: Pick<ToastEntry, 'offer' | 'actions'>): bool
 /** How long a toast stays up: its tone's time, or the longer answer time for one with buttons. */
 export function toastTimeout(entry: Pick<ToastEntry, 'offer' | 'actions' | 'tone'>): number {
   return toastAnswers(entry) ? TOAST_ANSWER_TIMEOUT_MS : TOAST_TIMEOUT_MS[entry.tone];
+}
+
+// Append a toast, retiring past the limit; one that retired another arrived on a full stack and is marked `full`.
+function appendToast(list: ToastEntry[], entry: ToastEntry): ToastEntry[] {
+  const next = applyLimit([...list, entry]);
+  const retired = next.filter((t) => t.leaving).length > list.filter((t) => t.leaving).length;
+  return retired ? next.map((t) => (t.id === entry.id ? { ...t, full: true } : t)) : next;
 }
 
 // Retire (mark leaving) the oldest toast past the limit: the oldest without answers first, else the oldest of all.
@@ -83,7 +93,7 @@ export function pushToast(
   if (list.some((t) => !t.leaving && t.message === input.message && t.tone === input.tone)) {
     return list;
   }
-  return applyLimit([...list, { id, ...input }]);
+  return appendToast(list, { id, ...input });
 }
 
 /** Add an action toast, or replace the one up under the same key in place (keeping its id and place). */
@@ -100,7 +110,7 @@ export function upsertActionToast(
     actions: spec.actions,
   };
   const at = list.findIndex((t) => !t.leaving && t.key === spec.key);
-  if (at === -1) return applyLimit([...list, { id, ...entry }]);
+  if (at === -1) return appendToast(list, { id, ...entry });
   const next = list.slice();
   next[at] = { ...list[at]!, ...entry };
   return next;

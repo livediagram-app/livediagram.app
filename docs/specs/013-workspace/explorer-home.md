@@ -114,7 +114,8 @@ The hero speaks to a beginning:
   again."
 - **The field searches templates**, not documents (there are none): its placeholder is "Search templates", and
   Enter opens the New Document wizard with the words in its template search (`/new?q=`). Inside its right end,
-  **Start Blank** makes a blank diagram at once (`/new?blank=1`).
+  **Start Blank** asks which mode, then makes that mode's blank with its start closed (`/new?start=blank`,
+  [Start Blank after a mode](../007-editor/new-document-route.md#start-blank-after-a-mode)).
 - **The fanned sheets** show three template previews (Flowchart in front, Mind Map and Kanban Board behind), the
   marketing hero's fan, so the page shows what can be made.
 

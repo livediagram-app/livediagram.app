@@ -1,5 +1,5 @@
 import { parseEditorMode, type EditorMode } from '@livediagram/document';
-import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
+import { templateKindOf, type TemplateKind } from '@livediagram/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
 // a blank document, `?template=<kind>` (built by the templates package's
@@ -19,8 +19,8 @@ export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
 export function wizardBypassKind(search: string): TemplateKind | null {
   const params = new URLSearchParams(search);
   if (params.has('blank')) return 'blank';
-  const template = params.get('template');
-  return isTemplateKind(template) ? template : null;
+  // A retired template's kind opens its replacement (templateKindOf).
+  return templateKindOf(params.get('template'));
 }
 
 // The template step's presets (`?mode=`, `?q=`; docs/specs/007-editor/new-document-route.md): the

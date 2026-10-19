@@ -3,27 +3,24 @@
 // The layout gallery on its own (docs/specs/007-editor/pages-mode.md "An empty page offers its
 // layouts"): what Choose a Layout opens on a page too small on screen for its card. A sheet risen
 // from the bottom on a phone, a centred dialog on a desktop zoomed out; a press (or Surprise Me)
-// places the layout and closes it, so the page is seen with it.
-import { pageKindOf, type LaidOutPage } from '@livediagram/document';
+// places the layout and closes it, so the page is seen with it. Like the card it stands in for, it
+// keeps to its layouts (no Change Theme).
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livediagram/document';
 import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
 import { CloseIcon, Tooltip } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { ChangeThemeButton } from './ChangeThemeButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 
 export function LayoutGalleryDialog({
   page,
   onApply,
   onClose,
-  onChangeTheme,
 }: {
   page: LaidOutPage;
   onApply: (layout: PageLayoutId) => void;
   onClose: () => void;
-  // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
-  onChangeTheme?: (() => void) | undefined;
 }) {
-  const count = layoutCatalogueFor(pageKindOf(page)).layouts.length;
+  const count = layoutCatalogueFor(pageKindOf(page), pageDeviceClass(page)).layouts.length;
   const titleId = `layout-gallery-${page.id}`;
   return (
     <Dialog
@@ -46,14 +43,6 @@ export function LayoutGalleryDialog({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            {onChangeTheme ? (
-              <ChangeThemeButton
-                onClick={() => {
-                  onClose();
-                  onChangeTheme();
-                }}
-              />
-            ) : null}
             <Tooltip label="Close">
               <button
                 type="button"

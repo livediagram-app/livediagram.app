@@ -8,7 +8,17 @@ import type {
   PageOrientation,
   PagePattern,
   PageSizeId,
+  WireframeDeviceId,
+  WireframeFrameLook,
 } from '@livediagram/document';
+
+// A wireframe page's device fields (docs/specs/007-editor/wireframe-pages.md): all on add; on set
+// its frame look and system bars alone, its device being its own for good.
+type WireframeFields = {
+  device?: WireframeDeviceId;
+  frameLook?: WireframeFrameLook;
+  systemBars?: boolean;
+};
 
 // The most page changes one call takes (as change_items and change_sheet).
 export const PAGE_CHANGES_MAX = 50;
@@ -32,7 +42,7 @@ export type PageBackgroundInput = {
 };
 
 export type PageChange =
-  | {
+  | ({
       op: 'add';
       kind: PageKind;
       size?: PageSizeId;
@@ -42,8 +52,8 @@ export type PageChange =
       layout?: string;
       // The 1-based place it goes to; absent is the end.
       at?: number;
-    }
-  | {
+    } & WireframeFields)
+  | ({
       op: 'set';
       page: PageRef;
       name?: string;
@@ -51,7 +61,7 @@ export type PageChange =
       orientation?: PageOrientation;
       background?: PageBackgroundInput;
       locked?: boolean;
-    }
+    } & Omit<WireframeFields, 'device'>)
   | { op: 'layout'; page: PageRef; layout: string }
   | { op: 'move'; page: PageRef; to: number }
   | { op: 'duplicate'; page: PageRef }
@@ -105,6 +115,12 @@ export type PageSummary = {
   flow: string | null;
   // How many elements are on it.
   elements: number;
+  // A wireframe page's device, frame look and system bars, and its screen's safe area on the canvas
+  // (where its content goes); absent on any other page.
+  device?: WireframeDeviceId;
+  frameLook?: WireframeFrameLook;
+  systemBars?: boolean;
+  screen?: PageRect;
 };
 
 export type ArticleSummary = {
@@ -139,6 +155,7 @@ const PAGES_REFUSAL_CODES = [
   'size_not_offered',
   'no_orientation',
   'pattern_not_offered',
+  'not_a_wireframe',
   'no_other_pages',
   'layout_unknown',
   'page_locked',

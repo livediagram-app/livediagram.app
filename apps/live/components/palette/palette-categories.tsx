@@ -27,7 +27,6 @@ import {
   TechTabIcon,
   WriteTabIcon,
   EventStormingTabIcon,
-  LogoTabIcon,
   ParticipateTabIcon,
 } from '@livediagram/ui';
 import {
@@ -40,10 +39,21 @@ import {
 } from '@livediagram/ui';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
-import { lucideGlyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucidePanelTop, lucideRows2 } from '@livediagram/icons/lucide';
 
 const DashboardLayoutIcon = lucideGlyph(lucideRows2, 18);
+
+// A phone with a screen being wireframed: a bar, a picture and a button.
+function WireframeTabIcon() {
+  return (
+    <Glyph size={18} units={24}>
+      <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+      <rect x="8.5" y="6.5" width="7" height="5" rx="0.75" />
+      <path d="M8.5 14.5h7M8.5 17.5h4" />
+    </Glyph>
+  );
+}
 const TabsIcon = lucideGlyph(lucidePanelTop, 18);
 
 /**
@@ -191,15 +201,16 @@ export const PALETTE_CATEGORIES: {
     description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
+
   {
-    // Pages mode, while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
-    // palette").
-    id: 'logo',
-    label: 'Logo',
+    // Pages mode, while the tab has a wireframe page (docs/specs/007-editor/wireframe-pages.md "The
+    // Elements palette").
+    id: 'wireframe',
+    label: 'Elements',
     group: 0,
     description:
-      'The tools a logo is made with: the pen, the pencil, text, the basic shapes and your markers.',
-    icon: <LogoTabIcon />,
+      'The parts a screen is wireframed from: buttons, fields, badges, pictures, avatars, cards and lists.',
+    icon: <WireframeTabIcon />,
   },
   {
     id: 'draw',

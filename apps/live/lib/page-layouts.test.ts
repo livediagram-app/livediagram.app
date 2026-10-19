@@ -151,7 +151,9 @@ describe('page layouts', () => {
     }
   });
 
-  for (const size of PAGE_SIZE_IDS) {
+  // A wireframe page's device size is its own, laid out from the wireframe layouts
+  // (packages/templates wireframe-layouts.test.ts).
+  for (const size of PAGE_SIZE_IDS.filter((s) => s !== 'device')) {
     for (const orientation of PAGE_ORIENTATIONS) {
       const [page] = layOutPages([{ id: 'p', orientation, size }]);
       const m = pageMargin(page!);

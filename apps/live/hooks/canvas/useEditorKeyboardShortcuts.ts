@@ -31,6 +31,7 @@ import {
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { arrowPageDir } from '@/lib/page-step';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import { altGraphHeld } from '@/lib/composed-key';
@@ -321,11 +322,18 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // arrows keep their default page behaviour). Placed before the
       // letter shortcuts; arrow keys never collide with them.
       if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
-        if (live.isReadOnly) return;
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md) owns the arrow keys: they steer the walking
         // character (useAvatarWalk), and the mode is read-only anyway.
         if (live.canvasTool === 'avatar') return;
         const hasSelection = multiSelectedIds.size > 0 || selectedId !== null;
+        // With nothing selected in Pages mode, an arrow goes to the next or previous page (for every
+        // role: it only moves the view).
+        const dir = arrowPageDir(key);
+        if (!hasSelection && live.onStepPage && dir && !e.shiftKey && !e.altKey) {
+          if (live.onStepPage(dir)) e.preventDefault();
+          return;
+        }
+        if (live.isReadOnly) return;
         if (!hasSelection) return;
         const step = e.shiftKey ? 10 : 1;
         const dx = key === 'ArrowLeft' ? -step : key === 'ArrowRight' ? step : 0;

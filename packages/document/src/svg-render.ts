@@ -10,7 +10,7 @@
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
-import { PAGE_EXPORT_PAPER, type PageExportFrame } from './page-frame';
+import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
@@ -681,6 +681,8 @@ export function renderElementsToSvg(
   // A dimmed layer wraps its band in a <g opacity>.
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
   const tagColours = tagColoursOf(tab);
+  // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
+  const bandsStart = parts.length;
   for (const band of layerBands(tab.elements, tab.layers)) {
     const shown = frame
       ? band.elements.filter((el) => frame.reaches(el, tab.elements))
@@ -712,6 +714,12 @@ export function renderElementsToSvg(
       opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
     );
   }
+  if (frame?.clipId)
+    parts.splice(
+      bandsStart,
+      parts.length - bandsStart,
+      withinPageFrame(frame, parts.slice(bandsStart).join('\n')),
+    );
   parts.push('</svg>');
   return parts.join('\n');
 }

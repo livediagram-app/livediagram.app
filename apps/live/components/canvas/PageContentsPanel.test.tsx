@@ -84,13 +84,15 @@ describe('PageContentsPanel', () => {
 
   it('adds a page of the kind pressed, for an Editor alone', () => {
     const h = show(2);
-    fireEvent.mouseEnter(screen.getByRole('button', { name: 'Add Page' }).parentElement!);
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Add a Slide page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
+    fireEvent.click(
+      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="slide"]')!,
+    );
     expect(h.addPage).toHaveBeenCalledWith('slide');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
     cleanup();
     show(2, false);
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
   });
 
   it('offers Find a Page past six pages, narrowing the list', () => {

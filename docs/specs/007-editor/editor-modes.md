@@ -401,17 +401,18 @@ actions, snapping, export, putting content onto a page, page slides) is
   as in Diagram mode. Its pattern is **plain** while the tab keeps its theme's pattern (see One look, "Each mode's
   default canvas"); a pattern someone picked shows as it does in Diagram mode.
 - **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
-  **Page 2 · A4 · Landscape · Article** once there is more than one, or its name), and
+  **A4 · Landscape · Article**, its name first when it has one, never "Page n": the page
+  navigator shows its place), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
   **page panel** ([Pages](pages-mode.md) "The page panel").
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
-- **Adding a page:** a round **+** (tooltip **Add Page**) sits in the gap's
-  width to the right of the last page, level with its middle. It opens **Add a
-  Page**, choosing the new page's kind ([Pages](pages-mode.md)
-  "Page kinds"); the page goes after the last; the + is gone at the limit,
-  and the view then frames the new page.
+- **Adding a page:** a round **+** sits in the gap's width to the right of the
+  last page, level with its middle, adding another page like the last; under it
+  a smaller button opens **Add a Page** to choose a page of any kind
+  ([Pages](pages-mode.md) "Adding a page"). The page goes after the last; both
+  are gone at the limit, and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
   moves (and an arrow's free ends) moves with it, re-centred on the page's

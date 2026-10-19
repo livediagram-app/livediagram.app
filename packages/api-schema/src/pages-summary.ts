@@ -13,6 +13,8 @@ import {
   layOutPages,
   pageHasOrientation,
   pageKindOf,
+  pageContentBox,
+  pageShowsSystemBars,
   type PageBackground,
   type Tab,
 } from '@livediagram/document';
@@ -39,6 +41,13 @@ export function describeBackground(b: PageBackground | undefined): string | null
   return [fill, b.pattern ? `${b.pattern} pattern` : null].filter(Boolean).join(', ') || null;
 }
 
+const roundRect = (r: { x: number; y: number; width: number; height: number }) => ({
+  x: Math.round(r.x),
+  y: Math.round(r.y),
+  width: Math.round(r.width),
+  height: Math.round(r.height),
+});
+
 /** Every page as the answers list it. */
 export function pageSummaries(tab: PagesTab): PageSummary[] {
   const laid = layOutPages(pagesOf(tab));
@@ -59,6 +68,14 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
     locked: p.locked === true,
     flow: p.flow ?? null,
     elements: elementIdsOnPage(tab.elements, laid, p.id).size,
+    ...(p.kind === 'wireframe'
+      ? {
+          device: p.device ?? 'iphone',
+          frameLook: p.frameLook ?? 'theme',
+          systemBars: pageShowsSystemBars(p),
+          screen: roundRect(pageContentBox(p)),
+        }
+      : {}),
   }));
 }
 

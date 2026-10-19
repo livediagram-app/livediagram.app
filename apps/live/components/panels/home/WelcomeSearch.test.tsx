@@ -32,10 +32,10 @@ describe('WelcomeSearch', () => {
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'Welcome.Search');
   });
 
-  it('starts a blank diagram from its end', () => {
+  it('starts a blank from its end, asking which mode first', () => {
     render(<WelcomeSearch />);
     const blank = screen.getByRole('link', { name: 'Start Blank' });
-    expect(blank.getAttribute('href')).toBe('/new?blank=1');
+    expect(blank.getAttribute('href')).toBe('/new?start=blank');
     fireEvent.click(blank);
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'Welcome.StartBlank');
   });

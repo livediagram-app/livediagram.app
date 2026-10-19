@@ -4,6 +4,7 @@
 // size, or every page in a grid of rows, so each stays legible in an image whose longer side is bounded. Pure.
 import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import { pageExportFrame } from './page-frame';
+import { tabWireframeFrameTheme } from './wireframe-page';
 import { opensInOf } from './editor-mode';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { renderElementsToSvg } from './svg-render';
@@ -70,6 +71,7 @@ export function renderPageToSvg(
   const { writingSvg = pagesWithWriting(tab).writing, ...rest } = opts;
   // The page's own picture too, from the same resolver as its image elements.
   const frame = pageExportFrame(page, {
+    frameTheme: tabWireframeFrameTheme(tab),
     idPrefix: `pg-${page.index}`,
     imageHref: opts.resolveImageHref,
   });

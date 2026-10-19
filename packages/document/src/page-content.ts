@@ -17,13 +17,13 @@ import {
   pagesOf,
   layOutPages,
   PAGE_NAME_MAX,
-  pageMargin,
   withPages,
   type Page,
   type LaidOutPage,
   type PageFill,
 } from './page';
 import { pageImageTone } from './page-image';
+import { pageContentBox, pageScreenRect } from './wireframe-page';
 import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
 import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
 
@@ -223,8 +223,9 @@ export function elementPageSurfaces(
  *  and one for its margin box, with ids no element can take. */
 export function pageSnapBoxes(pages: readonly LaidOutPage[]): ShapeElement[] {
   return pages.flatMap((page) => {
-    const m = pageMargin(page);
-    const { x, y, width, height } = page.rect;
+    // A wireframe page offers its screen and safe area in place of its sheet and margin box.
+    const { x, y, width, height } = pageScreenRect(page);
+    const inner = pageContentBox(page);
     const box = (id: string, bx: number, by: number, w: number, h: number): ShapeElement => ({
       id,
       type: 'shape',
@@ -236,7 +237,7 @@ export function pageSnapBoxes(pages: readonly LaidOutPage[]): ShapeElement[] {
     });
     return [
       box(`page-snap:${page.id}`, x, y, width, height),
-      box(`page-margin:${page.id}`, x + m, y + m, width - 2 * m, height - 2 * m),
+      box(`page-margin:${page.id}`, inner.x, inner.y, inner.width, inner.height),
     ];
   });
 }
@@ -295,14 +296,15 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
     }
   }
   if (!Number.isFinite(minX)) return tab;
-  const m = pageMargin(page);
-  const roomW = page.rect.width - 2 * m;
-  const roomH = page.rect.height - 2 * m;
+  // The room is the page's content box: its margin box, a wireframe page's safe area.
+  const room = pageContentBox(page);
+  const roomW = room.width;
+  const roomH = room.height;
   const s = keepSize
     ? 1
     : Math.min(1, roomW / Math.max(1, maxX - minX), roomH / Math.max(1, maxY - minY));
-  const cx = page.rect.x + page.rect.width / 2;
-  const cy = page.rect.y + page.rect.height / 2;
+  const cx = room.x + room.width / 2;
+  const cy = room.y + room.height / 2;
   // The content's centre lands on the page's (scaled about it); unscaled content keeps its place
   // unless it pokes out of the margin box, when it is nudged back in.
   const ox = (minX + maxX) / 2;
@@ -312,8 +314,8 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
   const toY = scaled || centre ? cy : oy;
   const halfW = ((maxX - minX) * s) / 2;
   const halfH = ((maxY - minY) * s) / 2;
-  const nudgeX = clampInto(toX, halfW, page.rect.x + m, page.rect.x + page.rect.width - m) - toX;
-  const nudgeY = clampInto(toY, halfH, page.rect.y + m, page.rect.y + page.rect.height - m) - toY;
+  const nudgeX = clampInto(toX, halfW, room.x, room.x + room.width) - toX;
+  const nudgeY = clampInto(toY, halfH, room.y, room.y + room.height) - toY;
   if (!scaled && nudgeX === 0 && nudgeY === 0 && toX === ox && toY === oy) return tab;
   const mapX = (x: number) => toX + nudgeX + (x - ox) * s;
   const mapY = (y: number) => toY + nudgeY + (y - oy) * s;

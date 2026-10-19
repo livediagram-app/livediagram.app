@@ -21,7 +21,8 @@ const JARGON =
   /spec\/\d|\bClerk\b|api worker|Durable Object|\bD1\b|\bemit|\bmint|One occurrence|localStorage|IndexedDB|—/;
 // A camelCase or PascalCase token ("FillColor", "SessionButton") is a code
 // name leaking into the copy. Product and brand names are allowed.
-const CODE_NAME = /\b(?!JavaScript\b|GitHub\b|PowerPoint\b)[A-Za-z]*[a-z][A-Z][A-Za-z]*\b/;
+const CODE_NAME =
+  /\b(?!JavaScript\b|GitHub\b|PowerPoint\b|iPhone\b|iPad\b)[A-Za-z]*[a-z][A-Z][A-Za-z]*\b/;
 
 const sentences = (): [string, string][] =>
   [...Object.entries(EXACT), ...Object.entries(BY_ACTION)] as [string, string][];

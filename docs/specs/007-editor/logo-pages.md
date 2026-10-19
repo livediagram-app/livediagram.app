@@ -45,16 +45,18 @@ of infographic pages applies to a logo page except where this spec says otherwis
 
 ## The Logo palette
 
-In Pages mode, while the tab has at least one logo page, the palette strip offers a **Logo** category, first of the Common band after Popular: "The tools a logo is
-made with: the pen, the pencil, text, the basic shapes and your markers."
+In Pages mode, while the palette's kind is **Logo** ([Pages mode](pages-mode.md) "The palette's
+kind"; a logo page's own), the palette is made for drawing a mark. There is no Logo category: its
+tools are where they belong.
 
-- **Pen**: the Path tool (click for corners, drag for curves), the same tool Draw mode's dock
-  holds.
-- **Freehand Pencil**.
-- **Text**, and the basic shapes: **Square**, **Circle** and **Diamond** (the same tiles as
-  elsewhere; the rest stay in their own categories).
-- **Markers**: Draw mode's three (**Marker 1**, **Marker 2**, **Marker 3**), each in the colour and
-  width the person gave it.
+- **Draw**, which the palette opens on: **Pens** (the **Pen**, the Path tool, click for corners
+  and drag for curves, the same tool Draw mode's dock holds; the **Freehand Pencil**; the **Shape
+  Pen**), **Outlines** (the **Polygon**) and **Markers** (Draw mode's three, **Marker 1**,
+  **Marker 2**, **Marker 3**, each in the colour and width the person gave it).
+- **Shapes**, every one; **Write**, **Text** for a wordmark and a **Sticky Note** for a comment on
+  the design; **Icons**, a glyph to start from; **Library**; and **Media**, an **Image** to trace
+  or set the mark beside.
+- No charts, blocks, device frames, stickers or embeds: a logo has no use for them.
 
 Each tool puts itself down after one use and selects what it drew, as the pencil does, a marker
 included (a marker picked up
@@ -63,8 +65,8 @@ whiteboard a marker lines up as the pencil does: its first point snaps to nearby
 dot shows before the press) and its stroke shows alignment guides as it grows. In the palette a
 held marker pressed again opens Draw mode's own flyout for it below its tile (colour and width); its changes are the marker's everywhere and re-arm it at once.
 
-The palette follows the page someone moves to: **Logo** on a logo page, **Popular** on any other.
-They move to a page by going to it with its label or the page navigator, or by pressing on a page
+The palette follows the page someone moves to: its kind is Logo on a logo page, opening on **Draw**, and **Popular** on any other.
+They move to a page by going to it with its label or the page navigator, by a view that comes to rest on it, or by pressing on a page
 other than the one they were last on (a press on chrome floating over a page, such as the palette or a popover, is not a press on the page); a logo page added turns it to Logo too. On opening, a logo
 page in view (the one under the canvas's centre, else the first) turns it to Logo, and any other
 page leaves the category the person last chose. Staying on the same page never turns it again, so

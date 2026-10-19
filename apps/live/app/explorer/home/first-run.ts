@@ -28,8 +28,9 @@ export function welcomeSearchHref(words: string): string {
   return q ? `/new?q=${encodeURIComponent(q)}` : '/new';
 }
 
-/** The field's Start Blank: a blank diagram at once. */
-export const WELCOME_START_BLANK_HREF = '/new?blank=1';
+/** The field's Start Blank: the wizard asks which mode, then opens that mode's blank with its start closed
+ *  (new-document-route.md "Start Blank after a mode"). */
+export const WELCOME_START_BLANK_HREF = '/new?start=blank';
 
 /** The wizard, for Browse All Templates. */
 export const WELCOME_ALL_TEMPLATES_HREF = '/new';

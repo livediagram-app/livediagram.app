@@ -304,6 +304,8 @@ const BY_KIND: Record<PageKind, () => ReactNode> = {
   infographic: InfographicTourArt,
   article: ArticleTourArt,
   logo: LogoTourArt,
+  // A wireframe page is laid out as an infographic page is: its track and art are the infographic's.
+  wireframe: InfographicTourArt,
 };
 
 /** The welcome card's hero for a page kind's track. */

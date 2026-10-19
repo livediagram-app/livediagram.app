@@ -98,6 +98,7 @@ describe('the shelves, as the template step lays them out', () => {
       'blank-slide-deck',
       'blank-article',
       'blank-logo',
+      'blank-wireframe-phone',
       'blank-plan',
       'blank-spreadsheet',
       'blank-form',

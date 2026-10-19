@@ -36,7 +36,8 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 - `upsertActionToast(list, spec, id)`: replaces the non-leaving entry with the same `key` in place (keeping its id), or
   appends and applies the limit.
 - The limit: while more than `TOAST_LIMIT` non-leaving entries remain, the oldest one without answers is marked
-  leaving; when every one has answers, the oldest is.
+  leaving; when every one has answers, the oldest is. A new entry whose append retired another is marked
+  `full: true` (`appendToast`); a replace in place never is. The card then enters with `animate-toast-in-full`.
 - `dismiss(id)` marks the entry leaving; `remove(id)` drops it. `dismissAction(key)` marks the keyed entry leaving.
 - Gate: `info`, `success`, `offer` and `action` read `readUserPreferences().notificationsEnabled` per push and drop
   the push when it is `false`; `warning` and `error` never read it.
@@ -100,7 +101,7 @@ hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-
 
 ## Performance and limits
 
-- At most `TOAST_LIMIT` (4) non-leaving entries, plus the few leaving ones for 150ms: the list is bounded.
+- At most `TOAST_LIMIT` (3) non-leaving entries, plus the few leaving ones for 150ms: the list is bounded.
 - The floor is measured only while the stack shows a toast: on mount, on a window `resize`, on a `ResizeObserver`
   callback for the obstacles found, on a document `animationend` (a banner that flew into place), and when the
   toast count changes. Each measure is one `querySelectorAll` and one `getBoundingClientRect` per obstacle (four or
@@ -111,20 +112,20 @@ hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-
 
 ## Constants and configuration
 
-| Constant                   | Value | Provenance                                    | Safe range    |
-| -------------------------- | ----- | --------------------------------------------- | ------------- |
-| `TOAST_TIMEOUT_MS.info`    | 4000  | The previous single timeout                   | 3000 to 6000  |
-| `TOAST_TIMEOUT_MS.success` | 4000  | Same                                          | 3000 to 6000  |
-| `TOAST_TIMEOUT_MS.warning` | 6000  | Longer copy, needs reading                    | 5000 to 8000  |
-| `TOAST_TIMEOUT_MS.error`   | 6000  | Same                                          | 5000 to 8000  |
-| `TOAST_ANSWER_TIMEOUT_MS`  | 10000 | Time to reach for Undo, never for good        | 8000 to 15000 |
-| `TOAST_NAME_MAX`           | 30    | Two names plus copy stay under 90 characters  | 20 to 32      |
-| `TOAST_LIMIT`              | 4     | Four 44px toasts stay in a phone's lower half | 3 to 5        |
-| `TOAST_EXIT_HOLD_MS`       | 150   | The `micro` token `toast-out` runs at         | = `micro`     |
-| `TOAST_EDGE_PX`            | 16    | The page gutter                               | 8 to 24       |
-| `TOAST_FLOOR_GAP_PX`       | 8     | The stack's own gap                           | 4 to 16       |
-| `TOAST_MAX_WIDTH_PX`       | 576   | `sm:max-w-[36rem]`                            | 400 to 640    |
-| `TOAST_PHONE_MAX_PX`       | 639   | Below Tailwind `sm`                           | = `sm` - 1    |
+| Constant                   | Value | Provenance                                   | Safe range    |
+| -------------------------- | ----- | -------------------------------------------- | ------------- |
+| `TOAST_TIMEOUT_MS.info`    | 4000  | The previous single timeout                  | 3000 to 6000  |
+| `TOAST_TIMEOUT_MS.success` | 4000  | Same                                         | 3000 to 6000  |
+| `TOAST_TIMEOUT_MS.warning` | 6000  | Longer copy, needs reading                   | 5000 to 8000  |
+| `TOAST_TIMEOUT_MS.error`   | 6000  | Same                                         | 5000 to 8000  |
+| `TOAST_ANSWER_TIMEOUT_MS`  | 10000 | Time to reach for Undo, never for good       | 8000 to 15000 |
+| `TOAST_NAME_MAX`           | 30    | Two names plus copy stay under 90 characters | 20 to 32      |
+| `TOAST_LIMIT`              | 3     | A burst of deletes never covers the screen   | 3 to 5        |
+| `TOAST_EXIT_HOLD_MS`       | 150   | The `micro` token `toast-out` runs at        | = `micro`     |
+| `TOAST_EDGE_PX`            | 16    | The page gutter                              | 8 to 24       |
+| `TOAST_FLOOR_GAP_PX`       | 8     | The stack's own gap                          | 4 to 16       |
+| `TOAST_MAX_WIDTH_PX`       | 576   | `sm:max-w-[36rem]`                           | 400 to 640    |
+| `TOAST_PHONE_MAX_PX`       | 639   | Below Tailwind `sm`                          | = `sm` - 1    |
 
 `TOAST_FLOOR_SELECTOR`: `[data-toast-floor], [data-editor-tabbar], [data-zoom-cluster], [data-whiteboard-dock]`. The
 Explorer bottom bar and the sign-in banner's card carry `data-toast-floor`.
@@ -170,6 +171,8 @@ move and unmount, the new-version prompt when it shows or hides.
   `opacity: 0; transform: translateY(8px) scale(0.98)`.
 - `--animate-toast-out: toast-out var(--transition-duration-micro) ease-in forwards`, keyframe to
   `opacity: 0; transform: translateY(4px)`.
+- `--animate-toast-in-full: toast-in-full var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1)`, keyframe
+  from `opacity: 0; transform: translateY(12px) scale(0.9)`: the entrance of an entry marked `full`.
 
 ## Testing
 

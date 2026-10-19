@@ -7,6 +7,8 @@ import type { LayoutBox } from './page-layout-kit';
 import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS, type PageLayoutId } from './page-layouts';
 import { LOGO_LAYOUT_CATEGORIES, LOGO_LAYOUTS } from './logo-layouts';
 import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS } from './slide-layouts';
+import { WIREFRAME_LAYOUTS, wireframeLayoutsFor } from './wireframe-layouts';
+import type { WireframeDeviceClass } from '@livediagram/document';
 
 type CatalogueLayout = {
   id: PageLayoutId;
@@ -29,12 +31,15 @@ const SLIDE: LayoutCatalogue = { categories: SLIDE_LAYOUT_CATEGORIES, layouts: S
 const LOGO: LayoutCatalogue = { categories: LOGO_LAYOUT_CATEGORIES, layouts: LOGO_LAYOUTS };
 
 /** The layouts a page of this kind starts from (an article page has none, and gets the
- *  infographic ones should it ever ask). */
+ *  infographic ones should it ever ask); a wireframe page its device class's (every wireframe
+ *  layout when no class is given). */
 export function layoutCatalogueFor(
-  kind: 'infographic' | 'article' | 'slide' | 'logo',
+  kind: 'infographic' | 'article' | 'slide' | 'logo' | 'wireframe',
+  deviceClass?: WireframeDeviceClass | null,
 ): LayoutCatalogue {
   if (kind === 'slide') return SLIDE;
   if (kind === 'logo') return LOGO;
+  if (kind === 'wireframe') return wireframeLayoutsFor(deviceClass);
   return INFOGRAPHIC;
 }
 
@@ -42,5 +47,6 @@ export function layoutCatalogueFor(
 export function pageLayoutById(id: PageLayoutId): CatalogueLayout {
   return (PAGE_LAYOUTS.find((l) => l.id === id) ??
     SLIDE_LAYOUTS.find((l) => l.id === id) ??
-    LOGO_LAYOUTS.find((l) => l.id === id))!;
+    LOGO_LAYOUTS.find((l) => l.id === id) ??
+    WIREFRAME_LAYOUTS.find((l) => l.id === id))!;
 }

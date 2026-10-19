@@ -287,8 +287,45 @@ export const PAGES = chart(
       'PageKindSlide',
       'LogoPageAdded',
       'PageKindLogo',
+      'WireframePageAdded',
+      'PageKindWireframe',
+      'PageAddedLikeLast',
     ],
   },
+);
+
+// A wireframe page's device and frame chosen (docs/specs/007-editor/wireframe-pages.md).
+export const WIREFRAME_DEVICES_CHOSEN = chart(
+  'Tab',
+  'Changed',
+  'Wireframe Devices',
+  'The device a wireframe page was framed as, chosen as it was added or afterwards, and its frame look.',
+  {
+    types: [
+      'WireframeDeviceIphone',
+      'WireframeDeviceIphoneDuo',
+      'WireframeDeviceAndroid',
+      'WireframeDeviceIpad',
+      'WireframeDeviceAndroidTablet',
+      'WireframeDeviceLaptop',
+      'WireframeDeviceDesktop',
+      'WireframeDeviceBrowser',
+      'WireframeDeviceWatch',
+      'WireframeFrameTheme',
+      'WireframeFrameDark',
+      'WireframeFrameLight',
+      'WireframeFrameOutline',
+    ],
+  },
+);
+
+// A wireframe page's system bars turned on or off.
+export const WIREFRAME_SYSTEM_BARS = chart(
+  'UI',
+  'Toggled',
+  'Wireframe System Bars',
+  'A wireframe page’s status bar and home indicator turned on or off.',
+  { types: ['WireframeSystemBarsOn', 'WireframeSystemBarsOff'] },
 );
 
 // A logo page's tools (docs/specs/007-editor/logo-pages.md): shapes combined into one, Mirror
@@ -516,6 +553,8 @@ export const WHITEBOARDS: MetricStack = {
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,
     LOGO_MIRROR_SETTINGS,
+    WIREFRAME_DEVICES_CHOSEN,
+    WIREFRAME_SYSTEM_BARS,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,

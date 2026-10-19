@@ -7,8 +7,10 @@
 import { keyLabel } from '@/lib/key-label';
 import type { ReactNode } from 'react';
 import {
+  lucideChartColumn,
   lucideCode,
   lucideFileText,
+  lucideImage,
   lucideIndentDecrease,
   lucideIndentIncrease,
   lucideList,
@@ -21,6 +23,7 @@ import {
   lucideStrikethrough,
   lucideSubscript,
   lucideSuperscript,
+  lucideTable,
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignJustify,
@@ -56,6 +59,9 @@ const PanelIcons = {
   quote: I(lucideTextQuote),
   codeBlock: I(lucideSquareCode),
   pageBreak: I(lucidePilcrow),
+  image: I(lucideImage),
+  table: I(lucideTable),
+  chart: I(lucideChartColumn),
 };
 
 const Keys = ({ k }: { k?: string }) =>
@@ -382,6 +388,85 @@ export function MorePanel({
 export type BlockInsert = 'divider' | 'pageBreak' | 'quote' | 'code';
 export type ObjectInsert = 'image' | 'table' | 'chart' | 'drawing';
 
+// The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
+// the slash menu's own: lib/article/article-slash-items.ts): the objects, then the blocks.
+const INSERT_OBJECTS: readonly {
+  id: ObjectInsert;
+  label: string;
+  blurb: string;
+  icon: ReactNode;
+}[] = [
+  { id: 'image', label: 'Image', blurb: 'A picture in the text', icon: <PanelIcons.image /> },
+  { id: 'table', label: 'Table', blurb: 'Rows and columns', icon: <PanelIcons.table /> },
+  {
+    id: 'chart',
+    label: 'Bar Chart',
+    blurb: 'Compare values',
+    icon: <PanelIcons.chart />,
+  },
+];
+const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; icon: ReactNode }[] =
+  [
+    {
+      id: 'divider',
+      label: 'Divider',
+      blurb: 'A line across',
+      icon: <PanelIcons.divider />,
+    },
+    {
+      id: 'pageBreak',
+      label: 'Page Break',
+      blurb: 'Start the next page',
+      icon: <PanelIcons.pageBreak />,
+    },
+    { id: 'quote', label: 'Quote', blurb: 'A quotation', icon: <PanelIcons.quote /> },
+    {
+      id: 'code',
+      label: 'Code',
+      blurb: 'Code, as typed',
+      icon: <PanelIcons.codeBlock />,
+    },
+  ];
+
+function InsertRow({
+  label,
+  blurb,
+  icon,
+  onPick,
+}: {
+  label: string;
+  blurb: string;
+  icon: ReactNode;
+  onPick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onPick}
+      className="group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800"
+    >
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 transition group-hover:bg-white group-hover:text-brand-700 group-hover:shadow-sm dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-slate-700 dark:group-hover:text-brand-100">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] font-semibold text-slate-900 dark:text-slate-100">
+          {label}
+        </span>
+        <span className="block truncate text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          {blurb}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+const InsertHeading = ({ children }: { children: ReactNode }) => (
+  <p className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 first:pt-0.5 dark:text-slate-400">
+    {children}
+  </p>
+);
+
 export function InsertPanel({
   onObject,
   onBlock,
@@ -391,14 +476,14 @@ export function InsertPanel({
 }) {
   return (
     <div role="menu" aria-label="Insert" className="flex flex-col">
-      <Row label="Image" onPick={() => onObject('image')} />
-      <Row label="Table" onPick={() => onObject('table')} />
-      <Row label="Chart" onPick={() => onObject('chart')} />
-      <Rule />
-      <Row label="Divider" icon={<PanelIcons.divider />} onPick={() => onBlock('divider')} />
-      <Row label="Page break" icon={<PanelIcons.pageBreak />} onPick={() => onBlock('pageBreak')} />
-      <Row label="Quote" icon={<PanelIcons.quote />} onPick={() => onBlock('quote')} />
-      <Row label="Code" icon={<PanelIcons.codeBlock />} onPick={() => onBlock('code')} />
+      <InsertHeading>Objects</InsertHeading>
+      {INSERT_OBJECTS.map((o) => (
+        <InsertRow key={o.id} {...o} onPick={() => onObject(o.id)} />
+      ))}
+      <InsertHeading>Blocks</InsertHeading>
+      {INSERT_BLOCKS.map((b) => (
+        <InsertRow key={b.id} {...b} onPick={() => onBlock(b.id)} />
+      ))}
     </div>
   );
 }

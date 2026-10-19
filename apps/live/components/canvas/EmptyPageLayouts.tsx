@@ -6,12 +6,12 @@
 // lands on the page at once. No hover preview here: drawn over the page the card sits on, it hid
 // the very tiles being pointed at. Hide puts the card away for the page; the host takes it away
 // once anything lands there. Where the card has no room, the page shows EmptyPageInvite instead.
+// The card keeps to its layouts: Change Theme is the Layout popover's alone.
 import { lucideSparkles } from '@livediagram/icons/lucide';
-import { pageKindOf, type LaidOutPage } from '@livediagram/document';
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livediagram/document';
 import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
-import { ChangeThemeButton } from './ChangeThemeButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { layoutCardSize } from './page-layout-card';
 
@@ -26,7 +26,13 @@ const LOGO_SCRATCH_HEIGHT = 48;
 const DESCRIBED_MIN_WIDTH = 520;
 
 // What the card calls a page's layouts, by its kind.
-const KIND_NOUN = { slide: 'slide', logo: 'logo', infographic: 'page', article: 'page' } as const;
+const KIND_NOUN = {
+  slide: 'slide',
+  logo: 'logo',
+  wireframe: 'screen',
+  infographic: 'page',
+  article: 'page',
+} as const;
 
 export function EmptyPageLayouts({
   page,
@@ -34,7 +40,6 @@ export function EmptyPageLayouts({
   onApply,
   onHide,
   onBlank,
-  onChangeTheme,
 }: {
   page: LaidOutPage;
   zoom: number;
@@ -42,12 +47,10 @@ export function EmptyPageLayouts({
   onHide: () => void;
   // Start From Scratch: the page starts from nothing, and the card is not offered on it again.
   onBlank: () => void;
-  // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
-  onChangeTheme?: (() => void) | undefined;
 }) {
   const { width, height } = layoutCardSize(page, zoom);
   const kind = pageKindOf(page);
-  const count = layoutCatalogueFor(kind).layouts.length;
+  const count = layoutCatalogueFor(kind, pageDeviceClass(page)).layouts.length;
   const logo = page.kind === 'logo';
   return (
     <div className="absolute inset-0 flex items-center justify-center">
@@ -94,7 +97,6 @@ export function EmptyPageLayouts({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            {onChangeTheme ? <ChangeThemeButton onClick={onChangeTheme} /> : null}
             <Tooltip label="Hide">
               <button
                 type="button"

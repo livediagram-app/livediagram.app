@@ -37,7 +37,7 @@ const WRITING = { one: 'line of writing', many: 'lines of writing' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
 const ELEMENT = { one: 'element line', many: 'element lines' };
 
-const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'logo', 'article'];
+const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'logo', 'wireframe', 'article'];
 
 const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'landscape' | null) => {
   const s = PAGE_SIZES[size];

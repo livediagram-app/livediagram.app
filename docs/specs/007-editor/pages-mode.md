@@ -11,7 +11,7 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | Term                | Means                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab in Pages mode (`Page`), stored in `Tab.pages` in row order.                                                        |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide** or **logo** page.                               |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide**, **logo** or **wireframe** page.                |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
 | **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
 | **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                             |
@@ -19,9 +19,53 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                 |
 | **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                  |
 
+## Selecting on a page
+
+**Select All** (Cmd/Ctrl+A on the canvas) selects what is on the **page someone is on**: the page
+they last pressed on, went to (its label, the page navigator, Contents), added, or the one in view
+as the tab opened. Elements on other pages, and those off every page, are left out, as are hidden
+and locked layers' anywhere. With no page known yet it selects the whole tab, as in every other
+mode.
+
+## The palette's kind
+
+The palette in Pages mode has a **kind**, which is always the kind of the page someone is on: it
+is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
+offering what that page is made of and nothing it has no use for; within a kind every tile sits in
+one category (Popular, a pick from across them, aside).
+
+- **Design** (infographic pages): Popular, Shapes, Library,
+  Write, Concepts, Components, Devices, Icons, Stickers, Media, Data.
+- **Slide** (slide pages): Popular (a
+  title, a picture, a chart and a point), then in Common **Write**, **Shapes**, **Media** (with
+  its embeds: a video, a prototype or a page a talk plays) and **Library**; in Structure **Data**,
+  **Concepts**, **Components** (no website Header) and **Devices** (a screenshot in a frame); then
+  **Icons** and **Stickers**.
+- **Article** (article pages): the strip holds the article's
+  formatting in place of the category bar: its page toolbar, docked ([Article pages](article-pages.md)
+  "The page toolbar"). Search and More keep the Design palette. Offered on an article page alone
+  (anywhere else the strip would be empty).
+- **Wireframe** (wireframe pages): **Components** and **Elements** first, in a band of their own
+  (a divider after Elements), then the rest without **Concepts** and **Devices**
+  ([Wireframe pages](wireframe-pages.md) "The Elements palette").
+- **Logo** (logo pages): **Draw** (Pens: the
+  Pen, the Pencil, the Shape Pen; Outlines: the Polygon; Markers: Draw mode's three), **Shapes**,
+  **Write** (Text for a wordmark, a sticky note for a comment), **Icons**, **Library** and **Media**
+  (an Image to trace); no charts, blocks, frames, stickers or embeds, and no Logo category
+  ([Logo pages](logo-pages.md) "The Logo palette").
+
+The kind changes by itself as someone moves (see "Selecting on a page" for which page they are
+on): pressing on a page, going to one (its label, the page navigator, Contents), adding one, or a
+pan, scroll or zoom that comes to rest with another page under the canvas's centre (250 ms after
+the view settles; resting between pages keeps the last). Moving onto a page of another kind opens
+that kind's own category (Elements, Draw; the others keep the bar as it is). A change of kind
+moves: the new categories (or the docked formatting) come in as a quick cascade, each rising and
+fading in a moment after the one before (160 ms each, the whole within the 250 ms chrome budget);
+nothing moves under reduced motion.
+
 ## Page kinds
 
-A page is one of four kinds (`Page.kind`), chosen when it is made and never changed
+A page is one of five kinds (`Page.kind`), chosen when it is made and never changed
 afterwards (the one exception: the first page's own choice, below):
 
 - **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
@@ -37,18 +81,40 @@ afterwards (the one exception: the first page's own choice, below):
   infographic page, with construction guides, mirror drawing, wordmark type, combining shapes,
   and a logo kit export ([Logo pages](logo-pages.md)). Everything in this spec for
   infographic pages applies to it except where [Logo pages](logo-pages.md) says otherwise.
+- **Wireframe** (`kind: 'wireframe'`): a screen framed as a device (a phone, the iPhone Duo, a
+  tablet, a laptop, a desktop monitor, a browser window or a watch), its size the device's, laid out
+  like an infographic page on the device's screen, starting from the wireframe layouts
+  ([Wireframe pages](wireframe-pages.md)). Everything in this spec for infographic pages applies to
+  it except where [Wireframe pages](wireframe-pages.md) says otherwise.
 
-**Adding a page**: the **+** after the last page (centred in the gap after it, or, zoomed out so
-far that the gap is narrower than the button, kept 12 screen px clear of the page) opens a small
-popover, **Add a Page**, offering
-four cards, two by two, each a miniature of the kind and a line under its name:
+**Adding a page**: two buttons sit after the last page, one above the other (centred in the gap
+after it, level with its middle, or, zoomed out so far that the gap is narrower than them, kept 12
+screen px clear of the page), held at one screen size:
 
-- **Infographic**: "A page to lay out: layouts, icons, charts and media."
-- **Article**: "A page to write on, flowing onto new pages as it grows."
-- **Slide**: "A slide for a deck: widescreen, ready to present."
-- **Logo**: "A square artboard for a logo, with guides and drawing tools."
+- **The +** adds **another page like the last one**, at once: its kind and shape (an infographic
+  page's size and orientation, a slide's size, an article's paper for a new article, the logo
+  artboard), and a wireframe page's device, frame look, orientation and system bars too
+  ([Wireframe pages](wireframe-pages.md)). It carries the last page's background as every new page
+  does, never its content. Its tooltip and name say what it adds: **Add Another Slide**, **Add
+  Another Infographic Page**, **Add Another Article**, **Add Another Logo Page**, **Add Another
+  iPhone Screen** (a browser's **Browser Page**, a watch's **Watch Face**).
+- **The button under it** (a grid, tooltip **Add a Page of Any Kind**) opens **Add a Page**: a
+  compact list, one row per kind, its glyph, its name and a short line, so it stays small however
+  many kinds there are:
+  - **Infographic**: "Lay out icons, charts and media."
+  - **Article**: "Write, flowing onto new pages."
+  - **Slide**: "A widescreen slide for a deck."
+  - **Logo**: "A square artboard for a mark."
+  - **Wireframe**: "A phone, tablet or web screen.", with a chevron: it turns the list to
+    **Choose a Device**, a row per device (its miniature, name and screen size) under its family,
+    the device last chosen in this browser ringed and focused, and **Back**.
 
-Arrow keys move between them (here and in the first page's choice below), Enter or a press chooses, Escape or an outside press closes. A new
+  The list hangs beside the button (right of it while there is room, else left), level with it,
+  scrolling inside the window when it cannot fit. Up and Down (Home, End) move between the rows,
+  Enter or a press chooses, Escape steps back from the devices and else closes, an outside press
+  closes.
+
+The first page's own choice (below) keeps its cards, two by two, arrow keys moving between them. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
 its orientation after a Fit to Content page, whose sides are that page's alone); a new
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
@@ -59,18 +125,16 @@ from then on.
 
 **A new page's background.** A new infographic page with nothing to carry over (after the plain
 paper, or the first page once it is chosen as an infographic, or a Blank Infographic's page)
-starts on the tab theme's **Mist** gradient (the Gradient category's Theme Mist: the theme's
-accent tinted 95% toward white at the top and 72% at the bottom), so a fresh page looks designed
-rather than bare; its default dark ink reads on it at 7:1 or better on every built-in theme. A new
-slide, article or logo page starts on the plain paper as before, and a template that comes with
-content keeps the paper it was designed on. Every path that makes a page lands the same: adding
+starts on the tab theme's **Dusk** gradient (the Gradient category's Theme Dusk: the theme's
+accent shaded 65% toward black at the top into its second colour shaded 40%), so a fresh page looks
+designed rather than bare; light ink reads on it at 4.5:1 or better on every built-in theme. A new
+slide document's slide (a Blank Slide Deck's, or the first page chosen as a slide) starts on the
+**Steel** gradient (a cool light grey, `#f1f5f9` to `#cbd5e1`, where dark ink reads at 7:1); a
+slide added to a deck carries over the slide before it, as every page does. A new article or logo
+page starts on the plain paper as before, and a template that comes with content keeps the paper it
+was designed on. Every path that makes a page lands the same: adding
 one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
-a phone (a bottom sheet). **The last page's kind comes first**: the card for the kind of the last page
-leads, ringed in the accent and tagged "Same as last page", and takes focus, so Enter adds another
-of the same, the most likely next page; with no page yet the usual order (Infographic, Article,
-Slide, Logo) stands. Contents' Add Page row leads with it too, highlighted. The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar strip has no **+** of
-its own (it once ended with one): it is the palette's category bar ([Toolbar layout](toolbar-layout.md#the-category-bar)),
-and the row's own **+** and Contents' Add Page row add a page.
+a phone (a bottom sheet). The + already adds another of the last page's kind, so the list keeps one fixed order.
 
 A tab entering Pages mode with no pages stored starts with one page, its kind unchosen.
 
@@ -202,12 +266,12 @@ a slide of a deleted page can never find a new page under the old id.
   one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Article|Slide|Logo>`.
+- The page label reads `<name> · <size label> · <Portrait|Landscape> · <Article|Slide|Logo|Wireframe>`,
+  the name only where the page has one: never "Page n", which the page navigator shows.
   Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
   story and slide labels already say which way they face. The kind ends it, but for an infographic
   page, the plain page, which leaves the kind off so its title bar keeps the room for its
-  controls, and for a slide, whose size already says Slide ("Intro · Slide (16:9)", never "Slide (16:9) · Slide"). No `Page n`
-  while there is one page and no name.
+  controls, and for a slide, whose size already says Slide ("Intro · Slide (16:9)", never "Slide (16:9) · Slide").
 
 ## Backgrounds
 
@@ -379,7 +443,7 @@ drawing only, never stored:
 
 ### Animated backgrounds
 
-A slide page's Background has a fourth category, **Animated**, after Solid, Gradient and Image (the
+A slide page's Background, and a wireframe page's (whose screen it moves, [Wireframe pages](wireframe-pages.md)), has a fourth category, **Animated**, after Solid, Gradient and Image (the
 four tiles share the row, each a quarter, Animated's sheet a theme gradient under a sparkle). Its **Motion** carousel holds twenty-four
 motions, six to a page across four pages (two rows of three) with the carousel's arrows and page dots, opening on
 the page holding the slide's motion; each tile plays in the tab theme's colours, 16:9 like the
@@ -633,8 +697,8 @@ Pressing it is tracked as `Tab / Aligned / PageTidyUp`, beside the diagram tidie
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
-**Change Theme** sits at the top right of every layout picker (the title bar's Layout popover and
-the in-page Start From a Layout card), left of its X: it closes the picker and opens the Tab Style
+**Change Theme** sits at the top right of the title bar's Layout popover (never on the in-page
+Start From a Layout card, which keeps to its layouts), left of its X: it closes the picker and opens the Tab Style
 popover, as the dock's Theme button does, so a layout and the look it wears are chosen together.
 It shows wherever the session may restyle the tab (an Editor; never for a Participant or a Viewer,
 who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
@@ -1013,7 +1077,9 @@ swipe, with no X.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
 - **The layout gallery** is how every picker offers a page's layouts (the Layout popover, the empty
-  page's card, Choose a Layout's dialog, a logo page's Layouts tab), all of them at once:
+  page's card, Choose a Layout's dialog, a logo page's Layouts tab), all of them at once (a
+  wireframe page's for its device class); a wireframe page's tiles stand at most 200 px tall, a
+  phone's narrowing to fit:
   - Along the top, a **search** ("Search n layouts") and **Surprise Me**. The search narrows every
     category at once: each word typed must appear in a layout's name, its description or its
     category's name. Nothing matches: "No layouts match" with Clear Search.
@@ -1047,12 +1113,13 @@ swipe, with no X.
   empty artboard still invites them: a "Start From a Layout" button beside the cog, only while the
   page is empty, opening the panel on Layouts, with its words while the title bar has room for
   them beside its other buttons and the label, else just its icon, else hidden.
-- **An empty page offers its layouts**: while an infographic, slide or logo page is empty, on a tab
+- **An empty page offers its layouts**: while an infographic, slide or logo page is empty (never a
+  wireframe page, whose screen stays clear), on a tab
   the viewer can edit, a **Start From a Layout** card sits centred on the page, held at its screen
   size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
   most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
   Layout**, "n slide layouts in your theme. Pick one, then make it yours." naming the page's kind,
-  Change Theme and Hide) over the layout gallery. Pressing a layout places it (the page is empty,
+  and Hide; no Change Theme, the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
   soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
@@ -1063,7 +1130,7 @@ swipe, with no X.
   screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
   small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
   sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
-  sheet on a phone, a centred dialog on a desktop, headed like the card; a press or Surprise Me
+  sheet on a phone, a centred dialog on a desktop, headed like the card (no Change Theme either); a press or Surprise Me
   places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
@@ -1083,7 +1150,9 @@ swipe, with no X.
 
 **Contents** is every page of the Pages tab in one list, in every Pages tab and for every role:
 finding your way round a long document is everyone's. It has two homes on a desktop, and the person
-chooses between them:
+chooses between them. Each row's picture is the page as the canvas shows it: a page with no fill on
+the canvas's own paper (white, or slate `#0f172a` in dark mode, as the Map draws it) in the
+canvas's ink; the Slide Deck's pictures the same.
 
 - **Docked as a sidebar** (the default): a filmstrip pinned flush against the canvas's left edge,
   the way a slide editor shows its slides. It starts below the Toolbar strip and runs down to the
@@ -1159,15 +1228,14 @@ Both show the same list:
   named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
   button as controls of their own. Rows that were listbox options held those buttons, controls nested in a
   control. Up, Down, Home and End move between the rows' buttons.
-- **Adding**: an Editor's footer is one full-width **Add Page** button. Resting the pointer on it
-  (or pressing it, or Up from it) opens the four kinds above it in a popover as wide as the button, standing on the page so nothing clips it,
-  one per row (Infographic, Slide, Article, Logo, each its glyph and name), the last page's kind
-  first and tinted; Up and Down move between them, Escape closes. A press adds a page of that kind
-  after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a new
-  infographic), glides to it and scrolls the list to its new row, marked as here. The kinds close
-  150 ms after the pointer leaves the button and the popover. At the page limit the button is
-  disabled with the limit in its tooltip. A Participant and a Viewer see the list without the
-  footer.
+- **Adding**: an Editor's footer is the same pair as the canvas's + after the last page ("Adding a
+  page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
+  tooltip names what it adds, **Add Another Slide**, **Add Another iPad Screen**: its kind and
+  shape, a wireframe page's device and frame too), and beside it a square button, **Add a Page of
+  Any Kind**, opening Add a Page (the kinds as rows, Wireframe stepping on to its devices) beside
+  it. A new page lands after the last (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
+  limit both buttons are disabled with the limit in
+  their tooltips. A Participant and a Viewer see the list without the footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so
@@ -1353,13 +1421,20 @@ is while the rest of the tab is worked on.
   snaps to the edges, the centre lines and the margins (7% of the short side) of every page, with
   the same guides as element-to-element alignment (not to the pages' spacing: equal-spacing snaps
   stay element to element).
-- **The page navigator**: under each page, while there are two pages or more, a small bar at one
-  screen size: **Previous page**, the page's place ("2 of 5"), **Next page** (disabled at either
-  end). An arrow fits that neighbouring page in the view, as a press on its label does, gliding
+- **The page navigator**: in the bottom-right cluster, right of Undo / Redo (first when there is
+  no Undo / Redo), while there are two pages or more: a cluster strip of the cluster's own 44 px
+  controls, **Previous page**, the place of the page someone is on ("2 of 5"), **Next page**
+  (disabled at either end). An arrow fits that neighbouring page in the view, as a press on its label does, gliding
   there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `apps/live/lib/viewport-glide.ts`) so the eye follows the
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
-  the pages; not in zen or isometric view.
+  the pages; not in zen, and not on a phone, whose bottom row has no room for it (a swipe moves
+  between pages there).
+- **The arrow keys**: with nothing selected (and no text being typed in), **Right** and **Down** go
+  to the next page and **Left** and **Up** to the previous one, from the page someone is on, as the
+  navigator's arrows do (gliding there, the page fitted); at either end of the row the key does
+  nothing. With a selection the arrows nudge it, as everywhere. For every role: it only moves the
+  view.
 - **The view rests on a page**: the canvas never comes to rest between pages, beyond the row, or
   zoomed out past a page. Pan and zoom as freely as ever while a hand is on it (a drag, a finger, a
   pinch, a wheel or trackpad); the moment it lets go, the view glides (`VIEW_GLIDE_MS`, at once
@@ -1372,7 +1447,9 @@ is while the rest of the tab is worked on.
     page, exactly as its label, Fit and the pages row's arrows frame it. Zoomed in further than fit
     stays zoomed in: the page is kept across what shows, its edges never pulled more than 104 px
     (`READING_TOP_ROOM`, the reading frame's own top room) inside the view's edges, and centred
-    along a side it is now narrower than.
+    along a side it is now narrower than. Moving on from a page seen whole (a swipe, or a pan onto
+    another page) lands on the new page seen whole, at its own fit, whatever the zoom was: a watch
+    fits far closer than an article, and its zoom never carries over.
   - **Whenever the view rests**: the same holds after anything else that moves the view (the zoom
     cluster's buttons, the Map, the arrow keys) once the view has rested 250 ms with no pointer
     held. Not while following someone (their view is the follow's, and a move of your own would

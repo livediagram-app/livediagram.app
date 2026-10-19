@@ -302,7 +302,7 @@ use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
 entities, lanes and charts carry content fields, documented on each tool's
 element argument. For a standard artefact that is not a node/edge graph (kanban, swot,
-gantt, browser-wireframe, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
+gantt, wireframe-website, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
 "template" on create_document / add_tab, then fill in real labels with
 update_document. search_icons finds icon ids for "iconId" and a graph node's "icon". Plan boards hold cards (items), which have their own tools:
 list_items reads a document's boards, their columns by name, its cards and its

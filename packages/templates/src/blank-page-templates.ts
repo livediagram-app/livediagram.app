@@ -10,6 +10,7 @@ import {
   type PageKind,
   type Tab,
   type ThemeDefinition,
+  type WireframeDeviceId,
 } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 
@@ -19,7 +20,21 @@ export const BLANK_PAGE_TEMPLATE_KINDS = {
   'blank-article': 'article',
   'blank-infographic': 'infographic',
   'blank-logo': 'logo',
+  'blank-wireframe-phone': 'wireframe',
+  'blank-wireframe-tablet': 'wireframe',
+  'blank-wireframe-browser': 'wireframe',
+  'blank-wireframe-laptop': 'wireframe',
+  'blank-wireframe-watch': 'wireframe',
 } as const satisfies Partial<Record<TemplateKind, PageKind>>;
+
+// Each blank wireframe's device (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
+const BLANK_WIREFRAME_DEVICES: Partial<Record<TemplateKind, WireframeDeviceId>> = {
+  'blank-wireframe-phone': 'iphone',
+  'blank-wireframe-tablet': 'ipad',
+  'blank-wireframe-browser': 'browser',
+  'blank-wireframe-laptop': 'laptop',
+  'blank-wireframe-watch': 'watch',
+};
 
 type BlankPageTemplateKind = keyof typeof BLANK_PAGE_TEMPLATE_KINDS;
 
@@ -41,19 +56,22 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
     unchosen.pages[0]!.id,
     BLANK_PAGE_TEMPLATE_KINDS[kind],
     BLANK_ARTICLE_FLOW,
+    BLANK_WIREFRAME_DEVICES[kind],
   )!;
   // An article page's writing (an empty Title and paragraph) comes with it.
   const { articles } = chosen as Partial<Tab>;
   return { opensIn: 'pages', pages: chosen.pages, ...(articles ? { articles } : {}) };
 }
 
-/** A blank infographic's page on the tab theme's default background (docs/specs/007-editor/
- *  pages-mode.md "A new page's background"), as a page added in the editor starts; any other
- *  template's tab as it is (one with content keeps the paper it was designed on). */
+/** A blank infographic's or blank slide deck's page on the tab theme's default background
+ *  (docs/specs/007-editor/pages-mode.md "A new page's background"), as a page added in the editor
+ *  starts; any other template's tab as it is (one with content keeps the paper it was designed on). */
 export function withBlankPageThemed<T extends Partial<Pick<Tab, 'pages'>>>(
   tab: T,
   kind: TemplateKind,
   theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
 ): T {
-  return kind === 'blank-infographic' ? withDefaultPageBackgrounds(tab, theme) : tab;
+  return kind === 'blank-infographic' || kind === 'blank-slide-deck'
+    ? withDefaultPageBackgrounds(tab, theme)
+    : tab;
 }

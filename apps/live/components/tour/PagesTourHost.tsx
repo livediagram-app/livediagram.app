@@ -41,6 +41,7 @@ const EYEBROW: Record<PageKind, string> = {
   infographic: 'Infographic tour',
   article: 'Article tour',
   logo: 'Logo tour',
+  wireframe: 'Wireframe tour',
 };
 
 // Orchestrates the Pages tour (docs/specs/007-editor/pages-tour.md). Mounted once in EditorView beside

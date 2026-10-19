@@ -461,6 +461,30 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
   'Tab|Changed|LogoPageAdded': 'Someone added a logo page to a Pages tab.',
   'Tab|Changed|PageKindLogo': "Someone chose Logo for a new Pages tab's first page.",
+  'Tab|Changed|WireframePageAdded': 'Someone added a wireframe page to a Pages tab.',
+  'Tab|Changed|PageAddedLikeLast':
+    'Someone added another page like the last one, with the + after the pages.',
+  'Tab|Changed|PageKindWireframe': "Someone chose Wireframe for a new Pages tab's first page.",
+  'Tab|Changed|WireframeDeviceIphone': 'Someone framed a wireframe page as an iPhone.',
+  'Tab|Changed|WireframeDeviceIphoneDuo': 'Someone framed a wireframe page as an iPhone Duo.',
+  'Tab|Changed|WireframeDeviceAndroid': 'Someone framed a wireframe page as an Android phone.',
+  'Tab|Changed|WireframeDeviceIpad': 'Someone framed a wireframe page as an iPad.',
+  'Tab|Changed|WireframeDeviceAndroidTablet':
+    'Someone framed a wireframe page as an Android tablet.',
+  'Tab|Changed|WireframeDeviceLaptop': 'Someone framed a wireframe page as a laptop.',
+  'Tab|Changed|WireframeDeviceDesktop': 'Someone framed a wireframe page as a desktop monitor.',
+  'Tab|Changed|WireframeDeviceBrowser': 'Someone framed a wireframe page as a browser window.',
+  'Tab|Changed|WireframeDeviceWatch': 'Someone framed a wireframe page as a watch.',
+  'Tab|Changed|WireframeFrameTheme':
+    "Someone drew a wireframe page's device in the tab theme's colours.",
+  'Tab|Changed|WireframeFrameDark': "Someone drew a wireframe page's device in the Dark look.",
+  'Tab|Changed|WireframeFrameLight': "Someone drew a wireframe page's device in the Light look.",
+  'Tab|Changed|WireframeFrameOutline':
+    "Someone drew a wireframe page's device in the Outline look.",
+  'UI|Toggled|WireframeSystemBarsOn':
+    "Someone turned a wireframe page's status bar and home indicator on.",
+  'UI|Toggled|WireframeSystemBarsOff':
+    "Someone turned a wireframe page's status bar and home indicator off.",
   'Element|Changed|ShapesUnited': 'Someone united shapes on a logo page into one.',
   'Element|Changed|StrokesTidiedUp':
     'Someone tidied up hand-drawn lines on a logo page, making them straight.',

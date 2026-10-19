@@ -69,6 +69,7 @@ import {
 } from './isometric';
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
+import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@livediagram/document';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
@@ -252,6 +253,7 @@ export async function renderTabToCanvas(
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
+        frameTheme: tabWireframeFrameTheme(tab),
       })
     : null;
   // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
@@ -326,7 +328,14 @@ export async function renderTabToCanvas(
     // it (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
     const pageFill = opts.page?.background?.fill;
     if (opts.page && pageFill?.kind === 'gradient' && pageFill.motion) {
-      const r = opts.page.rect;
+      // A wireframe page's motion is its screen's, cut to it (its frame stays as drawn).
+      const r = pageScreenRect(opts.page);
+      if (frame.clipPath) {
+        ctx.save();
+        ctx.translate(-x, -y);
+        ctx.clip(new Path2D(frame.clipPath));
+        ctx.translate(x, y);
+      }
       paintMotionFrame(
         ctx,
         pageFill.motion,
@@ -334,6 +343,7 @@ export async function renderTabToCanvas(
         { x: r.x - x, y: r.y - y, width: r.width, height: r.height },
         opts.motionFrames,
       );
+      if (frame.clipPath) ctx.restore();
     }
   }
   if (bg) {
@@ -447,6 +457,12 @@ export async function renderTabToCanvas(
   const ay = bounds.y - pad;
   const aw = bounds.w + pad * 2;
   const ah = bounds.h + pad * 2;
+  // A wireframe page's elements are cut to its screen (docs/specs/007-editor/wireframe-pages.md
+  // "Export"); its system bars go over them below.
+  if (frame?.clipPath) {
+    ctx.save();
+    ctx.clip(new Path2D(frame.clipPath));
+  }
   let arrowRun: string[] = [];
   const flushArrows = async () => {
     if (arrowRun.length === 0) return;
@@ -479,6 +495,20 @@ export async function renderTabToCanvas(
     if (clip) ctx.restore();
   }
   await flushArrows();
+  if (frame?.clipPath) {
+    ctx.restore();
+    if (frame.overlaySvg) {
+      const { x, y, w: fw, h: fh } = frame.bounds;
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(fw * scale)}" height="${r2(fh * scale)}"` +
+        ` viewBox="${r2(x)} ${r2(y)} ${r2(fw)} ${r2(fh)}">${fontDefs}${frame.overlaySvg}</svg>`;
+      try {
+        ctx.drawImage(await svgToImage(svg), x, y, fw, fh);
+      } catch {
+        // The bars are the frame's dressing: a failed paint must never abort the export.
+      }
+    }
+  }
   return canvas;
 
   function drawOne(c: CanvasRenderingContext2D, el: BoxedElement, alpha: number) {
@@ -571,7 +601,8 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 function pageMotionSvg(page: LaidOutPage | undefined): string {
   const fill = page?.background?.fill;
   if (!page || fill?.kind !== 'gradient' || !fill.motion) return '';
-  const r = page.rect;
+  // A wireframe page's screen (pageExportFrame lays it inside the screen's clip).
+  const r = pageScreenRect(page);
   const href = motionFrameHref(fill, r.width, r.height);
   if (!href) return '';
   return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${href}"/>`;
@@ -592,6 +623,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
+        frameTheme: tabWireframeFrameTheme(tab),
         overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
     : null;
@@ -691,6 +723,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // z-order as the canvas); bands stack bottom -> top with frame
   // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
+  // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
+  const bandsStart = parts.length;
   for (const band of bands) {
     const inner: string[] = [];
     for (const el of band.elements) {
@@ -744,6 +778,12 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }
+  if (frame?.clipId)
+    parts.splice(
+      bandsStart,
+      parts.length - bandsStart,
+      withinPageFrame(frame, parts.slice(bandsStart).join('\n')),
+    );
   if (iso) parts.push('</g>');
   parts.push('</svg>');
   return parts.join('\n');
