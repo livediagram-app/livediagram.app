@@ -4,19 +4,20 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 
 ## Domain and naming
 
-| Term                    | Identifier                                                                                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tab window              | `ShapeElement` with `shape: 'tab-window'` (`ShapeKind`, `packages/document/src/shape-kind.ts`)                                                                 |
-| The tab it shows        | `ShapeElement.windowTabId` (a tab id of the same document)                                                                                                     |
-| A tab a window may show | `tabWindowMayShow(tab, ownTabId)`, `tabWindowOffers(tabs, ownTabId)` (`packages/document/src/tab-window.ts`)                                                   |
-| Something to draw       | `tabHasDrawing(tab)` (`tab-has-drawing.ts`)                                                                                                                    |
-| The tab drawn           | `renderTabDrawingSvg`, `pageElements`, `tabDrawingFontIdsOf` (`apps/live/lib/tab-drawing.ts`); `ImageExportOpts.estimatedWriting`                              |
-| A drawing in an export  | `TabWindowDrawing`, `TabWindowArt`, `ResolveTabWindow`, `svgTabWindow`, `prefixSvgIds` (`tab-window.ts`)                                                       |
-| The window's state      | `TabWindowState`, `tabWindowState` (`apps/live/components/canvas/tab-window/TabWindowFace.tsx`)                                                                |
-| The windows' context    | `TabWindowContext`, `TabWindowContextValue`, `useTabWindows`, `useTabWindowContextValue` (`tab-window-context.ts`)                                             |
-| The canvas face         | `TabWindowFace`, `TabWindowDrawing`, `TabWindowPicker`, `TabWindowTabList` (`components/canvas/tab-window/`)                                                   |
-| The menu section        | `TabWindowMenuSection` (`components/palette/TabWindowMenuSection.tsx`)                                                                                         |
-| Exporting windows       | `useTabWindowExport`, `tabWindowTargets`, `tabWindowArts` (`components/dialogs/useTabWindowExport.ts`); `ImageExportOpts.resolveTabWindow`, `tabWindowFontIds` |
+| Term                                                    | Identifier                                                                                                                                                     |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tab window                                              | `ShapeElement` with `shape: 'tab-window'` (`ShapeKind`, `packages/document/src/shape-kind.ts`)                                                                 |
+| The tab it shows                                        | `ShapeElement.windowTabId` (a tab id of the same document)                                                                                                     |
+| A tab a window may show                                 | `tabWindowMayShow(tab, ownTabId)`, `tabWindowOffers(tabs, ownTabId)` (`packages/document/src/tab-window.ts`)                                                   |
+| The menu reaches Shows (Tools offered for a tab window) | `apps/live/components/palette/ElementDataSections.tab-window.test.tsx`                                                                                         |
+| Something to draw                                       | `tabHasDrawing(tab)` (`tab-has-drawing.ts`)                                                                                                                    |
+| The tab drawn                                           | `renderTabDrawingSvg`, `pageElements`, `tabDrawingFontIdsOf` (`apps/live/lib/tab-drawing.ts`); `ImageExportOpts.estimatedWriting`                              |
+| A drawing in an export                                  | `TabWindowDrawing`, `TabWindowArt`, `ResolveTabWindow`, `svgTabWindow`, `prefixSvgIds` (`tab-window.ts`)                                                       |
+| The window's state                                      | `TabWindowState`, `tabWindowState` (`apps/live/components/canvas/tab-window/TabWindowFace.tsx`)                                                                |
+| The windows' context                                    | `TabWindowContext`, `TabWindowContextValue`, `useTabWindows`, `useTabWindowContextValue` (`tab-window-context.ts`)                                             |
+| The canvas face                                         | `TabWindowFace`, `TabWindowDrawing`, `TabWindowPicker`, `TabWindowTabList` (`components/canvas/tab-window/`)                                                   |
+| The menu section                                        | `TabWindowMenuSection` (`components/palette/TabWindowMenuSection.tsx`), in `ElementDataSections`' Tools flyout (`showTools`)                                   |
+| Exporting windows                                       | `useTabWindowExport`, `tabWindowTargets`, `tabWindowArts` (`components/dialogs/useTabWindowExport.ts`); `ImageExportOpts.resolveTabWindow`, `tabWindowFontIds` |
 
 ## Behaviour and state
 
@@ -167,5 +168,6 @@ pattern: false, images, resolveTabWindow: names, resolvePlanArt: plan.art, items
 | `TAB_WINDOW_SIZE`      | 640 x 360                                               | 16:9, a slide's own shape                                                         |
 | `TAB_WINDOW_RADIUS`    | 12                                                      | The editor's card corners                                                         |
 | `TAB_WINDOW_HAIRLINE`  | `#cbd5e1`                                               | slate-300, the frame on any paper                                                 |
+| Hand-drawn inset       | 6 px (`face-finish.css`)                                | `MARKER_FACE_BODY_SLACK_PX`: clears the frame's line, which wobbles about 5 px in |
 | `TAB_WINDOW_EMPTY`     | light `#f8fafc` / `#64748b`; dark `#1e293b` / `#94a3b8` | slate grounds and ink for each paper                                              |
 | `TAB_FETCH_FOLLOW_MAX` | 3 (`usePerTabLoad`; safe 1 to 5)                        | A cancelled fetch's replacements followed before leaving the tab to its own visit |

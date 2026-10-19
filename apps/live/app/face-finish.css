@@ -95,3 +95,11 @@
 :is([data-face-finish='professional'], [data-face-finish='marker']) [data-sticker-shadow] {
   display: none;
 }
+
+/* A tab window's content inside its hand-drawn frame (docs/specs/009-elements/tab-window.md "The drawing"): the
+ * body's line wobbles up to about 5 px into the box, under the face, so a drawing that reached the box's edge (an
+ * article's page, fitted top to bottom) covered the line and poked out past it. 6 px is MARKER_FACE_BODY_SLACK_PX,
+ * how far inside its box a hand-drawn body may sit; the band between is the window's own fill, the tab's paper. */
+:is([data-face-finish='marker'], [data-face-finish='sketch']) [data-tab-window] {
+  inset: 6px;
+}

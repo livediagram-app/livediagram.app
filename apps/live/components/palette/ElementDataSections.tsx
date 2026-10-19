@@ -254,6 +254,8 @@ export function ElementDataSections({
     isDecision ||
     isChair ||
     shapeTarget?.shape === 'room' ||
+    // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
+    shapeTarget?.shape === 'tab-window' ||
     !!props.flowchart;
   return (
     <>
