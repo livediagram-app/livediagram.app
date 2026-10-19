@@ -32,6 +32,7 @@ import {
 } from './document-room-rules';
 import { followerIdsOf, followTargetOf } from './room-follows';
 import { opForScope } from './room-scope';
+import { recheckAdmittedLink } from './room-link-recheck';
 import { gateClientOp } from './room-op-gate';
 import { answerInternal, type InternalRoom } from './room-internal';
 import { rosterFrames, type RosterEntry } from './room-roster';
@@ -294,7 +295,34 @@ export class DocumentRoom implements DurableObject {
       v.adderKey,
       v.documentId,
     );
+    // A share session whose link changed while it was joining is told now (room-link-recheck.ts).
+    this.state.waitUntil(this.recheckJoinedLink(server));
     return new Response(null, { status: 101, webSocket: client });
+  }
+
+  // Read an accepted share session's link again and, when it was revoked or rescoped since the
+  // ticket was minted, send this one session that op and close it, as the broadcast would have.
+  // Owner and team sessions carry no code and are left alone.
+  async recheckJoinedLink(ws: WebSocket): Promise<void> {
+    const session = this.readSession(ws);
+    const env = this.env;
+    if (!env || !session?.shareCode || !session.documentId) return;
+    let op: Awaited<ReturnType<typeof recheckAdmittedLink>>;
+    try {
+      op = await recheckAdmittedLink(env, {
+        shareCode: session.shareCode,
+        tabScope: session.tabScope ?? null,
+        documentId: session.documentId,
+      });
+    } catch (err) {
+      // The session keeps its ticket's link, as before this check; a later change still broadcasts.
+      console.warn('[room-link] join recheck failed', { error: String(err) });
+      return;
+    }
+    if (!op) return;
+    console.info('[room-link] joined on a changed link', { kind: op.kind });
+    this.sendTo(ws, { kind: 'op', from: 'system', op });
+    this.closeSockets((each) => (each === ws ? [SHARE_LINK_CHANGED_CLOSE, op.kind] : null));
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
