@@ -51,7 +51,10 @@ const CHIP: Record<PlanTourOffer, { label: string; about: string }> = {
     label: 'Sheets Tour',
     about: 'A short tour of your sheet: cells, formulas and the toolbar.',
   },
-  choice: { label: 'Plan Tour', about: 'A short tour of your board or your sheet, your choice.' },
+  choice: {
+    label: 'Boards and Sheets Tour',
+    about: 'A short tour of your board or your sheet, your choice.',
+  },
 };
 const WELCOME_ART = {
   boards: <BoardsTourArt />,
@@ -212,7 +215,7 @@ export function PlanTourHost() {
     // oxlint-disable-next-line react/exhaustive-deps
   }, [armed, active, seen, inPlan, canWork, otherTour, modalOpen, hasPlanWork, workKey, engineRef]);
 
-  // Settings rerun (the Tours › "Plan Tour" row, turned on from off + closed): offers again in Plan once a
+  // Settings rerun (the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off + closed): offers again in Plan once a
   // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared
   // the answered tracks). It places nothing to show: an empty tab offers Start Planning, which makes one.
   const inPlanRef = useLatest(inPlan);

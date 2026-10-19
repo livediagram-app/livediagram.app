@@ -19,8 +19,8 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { PAGES_TOUR_KINDS, pagesTourOwed } from '@/lib/pages-tour';
-import { PLAN_TOUR_TRACKS, planTourOwed } from '@/lib/plan-tour';
+import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
+import { PLAN_TOUR_TRACKS, planTrackSeen } from '@/lib/plan-tour';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -189,6 +189,9 @@ type RowBase = {
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
+  // One of the switches a single preset setting stands for (the Plan and Pages tours' tracks, each its own row): the
+  // Power user readout names them together by this label, read through this key.
+  presetGroup?: { key: string; label: string };
   // The key of a row in the same category this one belongs to: it renders
   // directly beneath that row, indented, in a group named after it
   // (docs/specs/007-editor/power-user-mode.md#in-settings).
@@ -456,6 +459,38 @@ function elementTourSwitch(
 }
 
 const ELEMENT_TOURS_SECTION = 'Element Tours';
+
+// One track of a tour of several (lib/tour-tracks.ts), as its own row: the Plan tour's Boards and Sheets, the Pages
+// tour's page kinds (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it,
+// on forgets its answer. Each track is named for itself ("Slides Tour"), never the mode. The tour's single seen flag
+// (set by Power user mode) is folded into the answered list first, so turning one track back on leaves the others as
+// they were.
+function tourTrackSwitch<T extends string>(
+  key: 'planTourSeen' | 'pagesTourSeen',
+  tracksKey: 'planTourTracks' | 'pagesTourKinds',
+  tracks: readonly T[],
+  seen: (p: UserPreferences, track: T) => boolean,
+  track: T,
+  group: string,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key: `${key}-${track}`,
+    section: 'Offer Again',
+    presetGroup: { key, label: group },
+    ...row,
+    read: (p) => !seen(p, track),
+    write: (p, v) => {
+      const answered = tracks.filter((t) => seen(p, t) && (v ? t !== track : true));
+      return {
+        ...p,
+        [key]: false,
+        [tracksKey]: v ? answered : [...new Set([...answered, track])],
+      };
+    },
+  };
+}
 
 function tourTracksSwitch(
   key: 'planTourSeen' | 'pagesTourSeen' | 'elementToursSeen',
@@ -1133,8 +1168,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), one switch each. A tour
-    // offers itself once, in its own mode, and its switch turns itself off once taken or dismissed.
+    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), one switch each, a tour of several
+    // tracks one per track ("Boards Tour", "Slides Tour"). A tour offers itself in its own mode until answered, and
+    // its switch turns itself off once taken or dismissed.
     id: 'tours',
     label: 'Tours',
     collapsedSections: [ELEMENT_TOURS_SECTION],
@@ -1143,7 +1179,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'The first time you select a complex element, a small Tour toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
       },
       'Offer Again': {
-        note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
+        note: 'Each tour offers itself until you answer it. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
       },
     },
     rows: [
@@ -1156,14 +1192,38 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
         helpArticle: 'diagramTour',
       }),
-      tourTracksSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTourOwed, {
-        label: 'Plan Tour',
-        event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial plan board kanban cards sheet spreadsheet replay',
-        description: 'The first time you work on a board, and on a sheet, in Plan.',
-        helpArticle: 'planTour',
-      }),
+      // The Plan tour's tracks, each its own row (docs/specs/026-plan/plan-tour.md).
+      tourTrackSwitch(
+        'planTourSeen',
+        'planTourTracks',
+        PLAN_TOUR_TRACKS,
+        planTrackSeen,
+        'boards',
+        'Plan Tours',
+        {
+          label: 'Boards Tour',
+          event: { category: 'UI', on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial plan board kanban cards columns replay',
+          description: 'On a board in Plan: columns, cards and the card panel.',
+          helpArticle: 'planTour',
+        },
+      ),
+      tourTrackSwitch(
+        'planTourSeen',
+        'planTourTracks',
+        PLAN_TOUR_TRACKS,
+        planTrackSeen,
+        'sheets',
+        'Plan Tours',
+        {
+          label: 'Sheets Tour',
+          event: { category: 'UI', on: 'SheetsTourSeenOff', off: 'SheetsTourSeenOn' },
+          keywords:
+            'tour walkthrough onboarding tutorial plan sheet spreadsheet cells formulas replay',
+          description: 'On a sheet in Plan: cells, formulas and the toolbar.',
+          helpArticle: 'planTour',
+        },
+      ),
       tourSwitch('workshopTourSeen', {
         label: 'Workshop Tour',
         event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
@@ -1193,15 +1253,67 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you walk as an avatar.',
         helpArticle: 'avatarTour',
       }),
-      tourTracksSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesTourOwed, {
-        label: 'Pages Tour',
-        event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial pages pages slides infographic article logo present replay',
-        description:
-          'The first time you work on each kind of page: slides, infographics, articles and logos.',
-        helpArticle: 'pagesTour',
-      }),
+      // The Pages tour's tracks, one per kind of page, each its own row (docs/specs/007-editor/pages-tour.md).
+      tourTrackSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        pagesKindSeen,
+        'slide',
+        'Pages Tours',
+        {
+          label: 'Slides Tour',
+          event: { category: 'UI', on: 'SlidesTourSeenOff', off: 'SlidesTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial pages slides deck present replay',
+          description: 'On a slide: layouts, backgrounds, speaker notes and presenting.',
+          helpArticle: 'pagesTour',
+        },
+      ),
+      tourTrackSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        pagesKindSeen,
+        'infographic',
+        'Pages Tours',
+        {
+          label: 'Infographic Tour',
+          event: { category: 'UI', on: 'InfographicTourSeenOff', off: 'InfographicTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial pages infographic poster layout replay',
+          description: 'On an infographic page: layouts, backgrounds and page size.',
+          helpArticle: 'pagesTour',
+        },
+      ),
+      tourTrackSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        pagesKindSeen,
+        'article',
+        'Pages Tours',
+        {
+          label: 'Article Tour',
+          event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
+          description: 'On an article: writing, its toolbar and its look.',
+          helpArticle: 'pagesTour',
+        },
+      ),
+      tourTrackSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        pagesKindSeen,
+        'logo',
+        'Pages Tours',
+        {
+          label: 'Logo Tour',
+          event: { category: 'UI', on: 'LogoTourSeenOff', off: 'LogoTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial pages logo artboard brand replay',
+          description: 'On a logo artboard: layouts, guides, mirroring and combining shapes.',
+          helpArticle: 'pagesTour',
+        },
+      ),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.
       tourTracksSwitch(

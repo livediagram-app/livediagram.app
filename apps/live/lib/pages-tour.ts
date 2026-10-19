@@ -3,7 +3,7 @@ import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // The Pages tour's relaunch signal (docs/specs/007-editor/pages-tour.md "Where it appears"): the Settings
-// row Tours › "Pages Tour", turned on from off and closed, reruns the tour. A window event keeps the dialog
+// row Tours › "Slides Tour" (or another kind's), turned on from off and closed, reruns the tour. A window event keeps the dialog
 // decoupled from PagesTourHost, as the other tours' relaunches do.
 export const PAGES_TOUR_RELAUNCH_EVENT = 'livediagram:pages-tour-relaunch';
 
@@ -21,7 +21,7 @@ export function pagesKindSeen(prefs: UserPreferences | null | undefined, kind: P
   return tourTrackSeen(prefs, prefs?.pagesTourKinds, prefs?.pagesTourSeen, kind);
 }
 
-/** Whether any kind's track is still owed: what the Settings row's switch shows. */
+/** Whether any kind's track is still owed. */
 export function pagesTourOwed(prefs: UserPreferences | null | undefined): boolean {
   return PAGES_TOUR_KINDS.some((k) => !pagesKindSeen(prefs, k));
 }

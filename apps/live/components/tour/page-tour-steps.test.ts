@@ -13,11 +13,11 @@ const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Slides: layout, background, the deck, another slide, present', () => {
+  it('Slides: layout, background, speaker notes, another slide, present', () => {
     expect(ids(pageTourSteps('slide', NOW))).toEqual([
       'layouts',
       'background',
-      'deck',
+      'notes',
       'add-page',
       'present',
       'outro',

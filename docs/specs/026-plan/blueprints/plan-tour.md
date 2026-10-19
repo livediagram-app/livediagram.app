@@ -153,11 +153,12 @@ another document is kept. Nothing writes a record any more.
 - Leftover record (read only): `localStorage['livediagram:v2:plan-tour-content']` = JSON `PlanTourContent`; a
   malformed value is dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its
   `elementId`.
-- Settings switch: `planTourSeen` (`tourTracksSwitch`), label **Plan Tour**, second toggle row in the Tours category; reads on while
-  `planTourOwed`, writes off as `{ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }` and on as
-  `planTourSeen: false` with `planTourTracks` removed; help article
-  `planTour`, event `{ on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' }`. `SettingsDialog`'s close relaunches
-  when the row is on (`planTourOwed`) and was off at open.
+- Settings switches: one per track (`tourTrackSwitch`), `planTourSeen-boards` **Boards Tour** and
+  `planTourSeen-sheets` **Sheets Tour**, after Diagram Tour in the Tours category; each reads on while
+  `!planTrackSeen(track)`, writes `planTourSeen: false` with `planTourTracks` holding every other answered track
+  (and this one when switched off); help article `planTour`, events `BoardsTourSeenOff/On`,
+  `SheetsTourSeenOff/On`; `presetGroup` `{ key: 'planTourSeen', label: 'Plan Tours' }` for the Power user readout.
+  `SettingsDialog`'s close relaunches when any track is owed that was not at open.
 - `POWER_USER_PRESET.planTourSeen = { planTourSeen: true }`.
 
 ## Data and persistence

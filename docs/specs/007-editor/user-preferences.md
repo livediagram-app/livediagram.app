@@ -259,7 +259,7 @@ type UserPreferences = {
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
-  // mode is on (lib/tour-tracks.ts); set with every track by Settings' Tours › "Plan Tour" switched off.
+  // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
   // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
@@ -277,7 +277,7 @@ type UserPreferences = {
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
   // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Pages Tour".
+  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
   // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
@@ -764,11 +764,11 @@ and the dialog stays as the one complete, browsable index of them.
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
   and read as broken.
 
-  **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tour**, **Workshop Tour**, **Draw Tour**, **Avatar Tour** and
-  **Pages Tour**, each with a line saying where it offers itself and a **Learn more**
-  to its article, under one **Offer Again** section note: each tour offers
-  itself once; switch one back on and close Settings to take it again, straight
+  **Tours** is a category of its own: one switch per guided tour, and one per track of a tour of several, each
+  named for itself, never its mode: **Diagram Tour**, **Boards Tour**, **Sheets Tour**, **Workshop Tour**, **Draw
+  Tour**, **Forms Tour**, **Avatar Tour**, **Slides Tour**, **Infographic Tour**, **Article Tour** and **Logo
+  Tour**, each with a line saying where it offers itself and a **Learn more** to its article, under one **Offer
+  Again** section note: each tour offers itself until you answer it; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
   to be an Onboarding Tutorials grid of five switches inside
   Accessibility, where nobody looked for them: a tour is not an accessibility
@@ -778,19 +778,19 @@ and the dialog stays as the one complete, browsable index of them.
   meaning.
 
   **Diagram Tour** (the [Diagram tour](editor-tour.md), labelled **Welcome** until October 2026) is inverted
-  against the stored `tourSeen`. Because `tourSeen !== true` is necessary but NOT sufficient for the offer
-  (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
-  on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
-  on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
-  for a Diagram tab. **Plan Tour** is a
-  tour of several tracks (`apps/live/lib/tour-tracks.ts`): on while a track is still owed, off answering every
-  track (`planTourTracks`), on forgetting them; it needs no handoff flag (the Plan tour offers itself in
-  Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
-  ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
+  against the stored `tourSeen`, which alone decides the offer. Turning it on from off relaunches in place on a
+  Diagram tab; on a tab in another mode the offer waits for a Diagram tab. **Boards Tour** and **Sheets Tour**
+  are the [Plan tour](../026-plan/plan-tour.md)'s two tracks (`apps/live/lib/tour-tracks.ts`), one row each
+  (`tourTrackSwitch`, keys `planTourSeen-boards` and `planTourSeen-sheets`): on while that track is owed, off
+  adding it to `planTourTracks`, on taking it out (folding a power user's single `planTourSeen` into the list
+  first, so the other track keeps its answer). Closing the dialog reruns the Plan tour when any track was turned
+  on from off. Until October 2026 one **Plan Tour** row stood for both. **Workshop Tour** works the same way against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)), and **Pages Tour** is built as Plan Tour is
-  ([Pages tour](pages-tour.md)), one track per page kind: `pagesTourKinds` lists the kinds answered.
+  ([Avatar tour](../008-canvas/avatar-tour.md)), and **Slides Tour**, **Infographic Tour**, **Article Tour** and
+  **Logo Tour** are the [Pages tour](pages-tour.md)'s tracks, one row per page kind, built as Boards Tour and
+  Sheets Tour are (`pagesTourKinds` lists the kinds answered; one **Pages Tour** row until October 2026). The
+  Power user readout names each tour's track rows together, **Plan Tours** and **Pages Tours** (`presetGroup`).
   A multi-track tour's old single flag (`planTourSeen`, `pagesTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.
 

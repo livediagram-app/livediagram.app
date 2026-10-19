@@ -33,9 +33,9 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   toured Sheet) arms the offer again. The old single flag `planTourSeen` stands for both tracks only while
   [Power user mode](../007-editor/power-user-mode.md) is on: an answer given before the tour offered each track once
   named no track, so each is offered once more.
-- **Replayable from Settings**: the **Plan Tour** switch in Settings' **Tours** category,
-  beside **Diagram** and built the same way (on means a track is still owed; off answers both tracks, on forgets
-  them). Turning it on from off and closing
+- **Replayable from Settings**: a switch per track in Settings' **Tours** category, **Boards Tour** and **Sheets
+  Tour**, named for the track, never the mode (on means that track is still owed; off answers it, on forgets it).
+  Turning one on from off and closing
   Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
   an empty Plan tab already offers Start Planning, which makes a board or Sheet, and the switch's description
@@ -45,8 +45,8 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 - The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the offer
   names the one it will show and offers **Take the Tour** and **No Thanks**. With both on the tab (a Plan
   canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No Thanks**, all one
-  press. Left alone, it folds into its chip in the tab bar (**Boards Tour**, **Sheets Tour**, or **Plan Tour** for
-  a choice, whose ▶ opens the offer again to choose from). Taking the tour answers the track picked; the other is offered on its own next time.
+  press. Left alone, it folds into its chip in the tab bar (**Boards Tour**, **Sheets Tour**, or **Boards and Sheets
+  Tour** for a choice, whose ▶ opens the offer again to choose from). Taking the tour answers the track picked; the other is offered on its own next time.
 
 ## Tour subject
 

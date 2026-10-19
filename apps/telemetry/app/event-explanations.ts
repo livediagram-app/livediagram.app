@@ -1847,9 +1847,25 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TourSeenOn':
     'Someone switched off Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|PagesTourSeenOff':
-    'Someone switched on Tours › "Pages Tour" in Settings, marking the Pages tour as not yet seen.',
+    'Someone switched on Tours › "Pages Tour" in Settings, marking the Pages tour as not yet seen (until October 2026, when the row split into one per kind of page).',
   'UI|Toggled|PagesTourSeenOn':
-    'Someone switched off Tours › "Pages Tour" in Settings, marking the Pages tour as seen.',
+    'Someone switched off Tours › "Pages Tour" in Settings, marking the Pages tour as seen (until October 2026, when the row split into one per kind of page).',
+  'UI|Toggled|SlidesTourSeenOff':
+    'Someone switched on Tours › "Slides Tour" in Settings, so the Pages tour\'s slides track is offered again.',
+  'UI|Toggled|SlidesTourSeenOn':
+    'Someone switched off Tours › "Slides Tour" in Settings, marking the Pages tour\'s slides track as answered.',
+  'UI|Toggled|InfographicTourSeenOff':
+    'Someone switched on Tours › "Infographic Tour" in Settings, so the Pages tour\'s infographic track is offered again.',
+  'UI|Toggled|InfographicTourSeenOn':
+    'Someone switched off Tours › "Infographic Tour" in Settings, marking the Pages tour\'s infographic track as answered.',
+  'UI|Toggled|ArticleTourSeenOff':
+    'Someone switched on Tours › "Article Tour" in Settings, so the Pages tour\'s article track is offered again.',
+  'UI|Toggled|ArticleTourSeenOn':
+    'Someone switched off Tours › "Article Tour" in Settings, marking the Pages tour\'s article track as answered.',
+  'UI|Toggled|LogoTourSeenOff':
+    'Someone switched on Tours › "Logo Tour" in Settings, so the Pages tour\'s logo track is offered again.',
+  'UI|Toggled|LogoTourSeenOn':
+    'Someone switched off Tours › "Logo Tour" in Settings, marking the Pages tour\'s logo track as answered.',
   'UI|Toggled|AvatarTourSeenOff':
     'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
   'UI|Toggled|AvatarTourSeenOn':
@@ -1955,9 +1971,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|WorkshopTourSeenOn':
     'Someone switched off Tours › "Workshop Tour" in Settings, marking the Workshop tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
+    'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen (until October 2026, when the row split into Boards Tour and Sheets Tour).',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+    'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again (until October 2026, when the row split into Boards Tour and Sheets Tour).',
+  'UI|Toggled|BoardsTourSeenOff':
+    'Someone switched on Tours › "Boards Tour" in Settings, so the Plan tour\'s boards track is offered again.',
+  'UI|Toggled|BoardsTourSeenOn':
+    'Someone switched off Tours › "Boards Tour" in Settings, marking the Plan tour\'s boards track as answered.',
+  'UI|Toggled|SheetsTourSeenOff':
+    'Someone switched on Tours › "Sheets Tour" in Settings, so the Plan tour\'s sheets track is offered again.',
+  'UI|Toggled|SheetsTourSeenOn':
+    'Someone switched off Tours › "Sheets Tour" in Settings, marking the Plan tour\'s sheets track as answered.',
   'UI|Toggled|LandscapeBarsOff':
     'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
   'UI|Toggled|LandscapeBarsOn':
@@ -1986,7 +2010,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PagesTourStepSlideBackground':
     'The Pages tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
   'UI|View|PagesTourStepSlideDeck':
-    'The Pages tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button.',
+    'The Pages tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button (retired in October 2026 for the speaker notes step: every slide of a deck is in it already).',
+  'UI|View|PagesTourStepSlideNotes':
+    'The Pages tour\'s slides track reached its "Write Your Speaker Notes" step, with the slide\'s notes popover open.',
   'UI|View|PagesTourStepSlideAddPage':
     'The Pages tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
   'UI|View|PagesTourStepSlidePresent':

@@ -95,6 +95,39 @@ export function pageOrPopover(pageId: string, name: string): string {
   return document.querySelector(titlePopover(name)) ? titlePopover(name) : pageButton(pageId, name);
 }
 
+// A slide's speaker notes (PageNotesButton): named Add Notes until the slide has some, Notes after, and shown only
+// once the page is in the deck. The popover takes the button's name, so it is found by what it holds.
+const NOTES_NAMES = ['Add Notes', 'Notes'] as const;
+const NOTES_POPOVER = '[data-page-notes-popover]';
+
+/** The tour page's notes button, by either of its names. */
+export const notesButton = (pageId: string) =>
+  NOTES_NAMES.map((name) => pageButton(pageId, name)).join(', ');
+
+/** Where the notes step points: the notes popover while it shows, else the button. */
+export function notesAnchor(pageId: string): string {
+  return document.querySelector(NOTES_POPOVER)
+    ? NOTES_NAMES.map((name) => `${titlePopover(name)}:has(${NOTES_POPOVER})`).join(', ')
+    : notesButton(pageId);
+}
+
+/** Opens the slide's notes popover once per step, and waits for it to show. */
+export async function openNotes(pageId: string): Promise<void> {
+  if (opened.has('notes')) return;
+  opened.add('notes');
+  const button = document.querySelector<HTMLButtonElement>(notesButton(pageId));
+  if (!button) return;
+  if (button.getAttribute('aria-expanded') !== 'true') button.click();
+  await waitForSelector(NOTES_POPOVER, 1000);
+}
+
+/** Closes the notes popover the step opened, whatever its button is named by now (writing a note renames it). */
+export function closeNotes(pageId: string): void {
+  if (!opened.delete('notes')) return;
+  const button = document.querySelector<HTMLButtonElement>(notesButton(pageId));
+  if (button?.getAttribute('aria-expanded') === 'true') button.click();
+}
+
 // The Slide Deck, opened from the Slides button in the bottom-right cluster.
 export const SLIDES_BUTTON = '[data-tour-id="slides"] button[aria-expanded]';
 export const SLIDE_DECK = '[data-tour-id="slide-deck"]';

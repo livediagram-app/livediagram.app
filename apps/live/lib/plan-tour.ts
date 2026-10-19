@@ -11,7 +11,7 @@ import type { UserPreferences } from './user-preferences';
 // signal, its tracks, and the leftover record an older tour wrote, so a later visit tidies the example content
 // a reload cut short (usePlanTourLeftovers).
 
-// Settings → Plan tour: the Tours › "Plan Tour" row, turned on from off and closed, reruns the tour. A
+// Settings → Plan tour: the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off and closed, reruns the tour. A
 // window event keeps the dialog decoupled from PlanTourHost, as the welcome tour's relaunch does.
 export const PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch';
 
@@ -33,7 +33,7 @@ export function planTrackSeen(
   return tourTrackSeen(prefs, prefs?.planTourTracks, prefs?.planTourSeen, track);
 }
 
-/** Whether any track is still owed: what the Settings row's switch shows. */
+/** Whether any track is still owed. */
 export function planTourOwed(prefs: UserPreferences | null | undefined): boolean {
   return PLAN_TOUR_TRACKS.some((t) => !planTrackSeen(prefs, t));
 }

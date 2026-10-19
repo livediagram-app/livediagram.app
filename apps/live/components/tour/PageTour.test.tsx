@@ -59,7 +59,10 @@ function TitlePopover({ name }: { name: string }) {
       {open ? (
         <div role="dialog" aria-label={name} data-anchored-popover="">
           {/* A pick: a layout tile in Layout, a choice in a radio group in Background (what Try it listens for). */}
-          <div role={name === 'Background' ? 'radiogroup' : undefined}>
+          <div
+            role={name === 'Background' ? 'radiogroup' : undefined}
+            data-page-notes-popover={name === 'Add Notes' ? '' : undefined}
+          >
             <button
               type="button"
               data-layout-tile={name === 'Layout' ? 'title-and-body' : undefined}
@@ -129,7 +132,9 @@ function Page({
           <TitlePopover name="Background" />
           <TitlePopover name="Style" />
           <TitlePopover name="Text" />
-          <button type="button" data-page-deck-button="add" aria-label="Add to Slides" />
+          {/* In the deck already, as every slide of a deck is: Hide in Slides, and its speaker notes. */}
+          <button type="button" data-page-deck-button="shown" aria-label="Hide in Slides" />
+          <TitlePopover name="Add Notes" />
           <button type="button" data-tour-id="page-cog" aria-label="Page settings" />
           <div data-logo-title-bar={of.id}>
             <button type="button" aria-label="Mirror" />
@@ -202,7 +207,7 @@ describe('Show Me on every page', () => {
 });
 
 describe('a slide’s Show Me', () => {
-  it('opens Layout, then Background, points at the deck and the +, then opens the Slide Deck', async () => {
+  it('opens Layout, then Background, then the speaker notes, points at the +, then opens the Slide Deck', async () => {
     render(<Page of={page('slide')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'SlideTour');
@@ -216,8 +221,10 @@ describe('a slide’s Show Me', () => {
     await shows(() => expect(popover('Background')).not.toBeNull());
     await next();
     await shows(() => expect(popover('Background')).toBeNull());
-    await shows(() => expect(stepDialog(/Add It to the Deck/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/Write Your Speaker Notes/)).toBeTruthy());
+    await shows(() => expect(popover('Add Notes')).not.toBeNull());
     await next();
+    await shows(() => expect(popover('Add Notes')).toBeNull());
     await shows(() => expect(stepDialog(/Add Another Slide/)).toBeTruthy());
     await next();
     await shows(() => expect(stepDialog(/Present/)).toBeTruthy());
@@ -269,7 +276,7 @@ describe('Try it on a slide', () => {
     await next();
     await shows(() => expect(popover('Background')).not.toBeNull());
     fireEvent.click(popover('Background')!.querySelector('[role="radiogroup"] button')!);
-    await shows(() => expect(announced()).toMatch(/Add It to the Deck/));
+    await shows(() => expect(announced()).toMatch(/Write Your Speaker Notes/));
     expect(dock()!.querySelector('[data-try-it]')).toBeNull();
   });
 

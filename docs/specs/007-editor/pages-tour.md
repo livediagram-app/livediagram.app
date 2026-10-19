@@ -42,10 +42,10 @@ hold.
   `pagesTourSeen` true counts every kind as toured only while [Power user mode](power-user-mode.md) is on: an
   answer given before the tour offered each kind once named no kind, so each kind is offered once more
   (`apps/live/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
-- **Replayable from Settings**: the **Pages Tour** switch in Settings' **Tours** category, built as the other
-  tours' are (on means a kind is still owed). Turning it off answers every kind; turning it on clears both
-  preferences, so every kind offers its track again; closing Settings runs the track for the page on screen straight away when the person is in Pages,
-  or offers it the next time they enter Pages.
+- **Replayable from Settings**: a switch per kind in Settings' **Tours** category, named for the kind, never the
+  mode: **Slides Tour**, **Infographic Tour**, **Article Tour** and **Logo Tour** (on means that kind's track is
+  still owed; off answers it, on forgets it). Closing Settings after turning one on runs the track for the page on
+  screen straight away when the person is in Pages, or offers it the next time they enter Pages.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
   ([Show Me](show-me.md)), wherever the offer stands.
 
@@ -89,13 +89,15 @@ Layouts) and closes it on leaving.
 ### Slides track
 
 0. **New to slides?** (offer): a quick look at making a slide, choosing its layout and background,
-   adding it to the deck and presenting.
+   writing its speaker notes and presenting.
 1. **Choose a Layout** (the slide's own Start From a Layout card while it shows, else its Layout popover, opened): hover a layout to preview it, press to place it;
    Change Theme restyles every page.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
-3. **Add It to the Deck** (the slide's deck button): Add to Slides puts it in the deck; once in, the eye hides or
-   shows it, and Notes beside it holds what to say.
+3. **Write Your Speaker Notes** (the slide's notes popover, opened from **Add Notes**, or **Notes** once it has
+   some): what to say over the slide, shown only to the presenter. Left out when the slide is not in the deck (no
+   notes button). It replaced **Add It to the Deck** (October 2026): every slide of a deck is in it already, so that
+   step pointed at a button reading Hide in Slides while telling the person to add it.
 4. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
 5. **Present** (the Slide Deck, opened from the Slides button): the deck's order, then **Present** for full screen.
 6. **You're ready to present** (outro).
