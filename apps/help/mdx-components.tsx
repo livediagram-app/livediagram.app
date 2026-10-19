@@ -179,7 +179,9 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     pre: ({ children }) => (
       <pre
         tabIndex={0}
-        className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-800 dark:bg-slate-950"
+        // A fenced block's <code> is not an inline token: no pill per line (it drew a tinted band behind each line
+        // and indented the first), and its lines stay whole.
+        className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-800 dark:bg-slate-950 [&>code]:rounded-none [&>code]:bg-transparent [&>code]:p-0 [&>code]:[overflow-wrap:normal] dark:[&>code]:bg-transparent"
       >
         {children}
       </pre>
