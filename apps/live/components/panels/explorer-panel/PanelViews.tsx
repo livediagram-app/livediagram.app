@@ -88,7 +88,8 @@ function JumpBackInCard({
       title={item.name || 'Untitled document'}
       meta={
         <span className="flex items-center gap-1.5">
-          {item.localOnly ? <ThisBrowserPill tabbable={false} /> : null}
+          {/* Inside the row's button: a label, not a link (a link in a button is a control nested in a control). */}
+          {item.localOnly ? <ThisBrowserPill asLabel /> : null}
           <span className="truncate">Opened {relativeSince(item.lastUsedAt, now)}</span>
         </span>
       }
