@@ -127,7 +127,7 @@ export function FormQuestionCard({
             aria-label={`Move ${promptOf(q)}`}
             onPointerDown={(e) => onGrab(e, q.id)}
             onClick={(e) => e.stopPropagation()}
-            className="absolute left-1/2 top-0.5 z-[1] flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600 dark:hover:text-slate-400"
+            className="absolute left-1/2 top-0 z-[1] flex h-6 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600 dark:hover:text-slate-400"
           >
             <GripIcon className="rotate-90" />
           </button>
