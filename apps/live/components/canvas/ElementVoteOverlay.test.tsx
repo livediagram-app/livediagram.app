@@ -48,7 +48,7 @@ describe('ElementVoteOverlay', () => {
   it('shows a Viewer the live count, not a stepper whose plus would do nothing', () => {
     const c = overlay(vote(true), 2, false);
     expect(c.querySelector('.lvd-vote-stepper')).toBeNull();
-    expect(c.querySelector('[aria-label="1 votes"]')).not.toBeNull();
+    expect(c.querySelector('[aria-label="1 vote"]')).not.toBeNull();
   });
 
   it('draws nothing without a vote', () => {

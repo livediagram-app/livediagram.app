@@ -5,6 +5,7 @@
 // per-mode and per-tab reset effects, and the streaming handleSend with
 // its history bookkeeping + telemetry. AiPanel keeps the render.
 
+import { plural } from '@livediagram/document';
 import { useEffect, useRef, useState } from 'react';
 import type { Element } from '@livediagram/document';
 import { apiAiStream, type AiMode, type AiConversationTurn } from '@/lib/api-client';
@@ -108,7 +109,10 @@ export function useAiPanelSession({
               setHistory((h) => [
                 ...h.slice(-(MAX_HISTORY - 2)),
                 userTurn,
-                { role: 'assistant', content: `Applied changes (${elements.length} elements)` },
+                {
+                  role: 'assistant',
+                  content: `Applied changes (${plural(elements.length, 'element')})`,
+                },
               ]);
               track('AI', 'Used', 'Clean');
               onApplyElements(elements, 'clean');

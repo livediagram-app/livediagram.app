@@ -4,6 +4,7 @@
 // Current: a pulsing accent dot and an expanded, accent-lit row with the time
 // left large and a bar draining as it runs.
 
+import { plural } from '@livediagram/document';
 import { Glyph } from '@livediagram/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
@@ -35,7 +36,7 @@ export function agendaStepLabel({
   running: boolean;
   pressable: boolean;
 }): string {
-  const length = `${minutes} minutes`;
+  const length = plural(minutes, 'minute');
   if (state === 'current' && running) return `${name}, running, ${length}`;
   if (!pressable) {
     const status = state === 'done' ? 'done' : state === 'current' ? 'current' : 'not started';
