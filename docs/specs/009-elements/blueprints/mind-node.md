@@ -249,7 +249,9 @@ States: **idle** (no pending handoff), **capturing** (pending for a node id), **
 
 Canvas guards: not in a text field, no modifier, no Shift, not read-only, `editingId === null`,
 exactly one selected element (`D32`), `canGrowMindNode`. `useCanvasA11y` returns early for plain
-Tab when `ownsTabKey(selectedId)`; `ownsTabKey` is `canGrowMindNode`.
+Tab when `ownsTabKey(selectedId)`, unless `selectedId` is `walkedTo` (the element its own last Tab selected; any
+`pointerdown` on `window`, in capture, or a walk off either end clears it): then Tab walks on. `ownsTabKey` is
+`canGrowMindNode`, which covers flowchart steps too (`growth-routing.ts`).
 
 ### Toolbar and ring
 

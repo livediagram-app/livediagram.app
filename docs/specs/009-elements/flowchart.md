@@ -8,7 +8,8 @@ again after every change**, so it is always clean and tidy and nobody ever drags
 It starts as one **Start** step, placed from the palette (Build → **Flowchart**). From a selected
 step:
 
-- **Tab** adds the **next step** after it, connected from it.
+- **Tab** adds the **next step** after it, connected from it (on a step the keyboard's Tab walk just reached,
+  Tab walks on instead, as on a mind node: [The mind node](mind-node.md)).
 - **Enter** adds a **parallel step**: another step from the same step the selected one came from.
 
 The same two actions are one click away: **Add Step** and **Add Branch** on the step's selection

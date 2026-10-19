@@ -97,4 +97,24 @@ describe('useCanvasA11y Tab ownership', () => {
     pressTab();
     expect(h.selectElement).toHaveBeenCalledWith('c');
   });
+
+  it('walks on from a node the walk itself landed on, so a keyboard user is never trapped growing it', () => {
+    // A flowchart step or mind node reached by Tab: growing it on the next Tab added a step per press and
+    // focus never left the canvas. Growth stays one pointer press (or an edit) away.
+    const selection = storeWith('a', []);
+    const selectElement = vi.fn((id: string) =>
+      selection.setSelection({ selectedId: id, multiSelectedIds: new Set() }),
+    );
+    harness({ selection, selectElement, ownsTabKey: (id) => id !== 'a' });
+    pressTab();
+    expect(selectElement).toHaveBeenLastCalledWith('b');
+    const onward = pressTab();
+    expect(selectElement).toHaveBeenLastCalledWith('c');
+    expect(onward.defaultPrevented).toBe(true);
+    // A pointer press on the node gives Tab back to growth.
+    window.dispatchEvent(new Event('pointerdown'));
+    const grow = pressTab();
+    expect(selectElement).toHaveBeenCalledTimes(2);
+    expect(grow.defaultPrevented).toBe(false);
+  });
 });

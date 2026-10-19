@@ -68,6 +68,14 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
   const ref = useLatest(deps);
 
   useEffect(() => {
+    // The element this walk last selected. Tab grows a selected mind node or flowchart step, but not one the
+    // walk just landed on: there Tab walks on, or every keyboard user reaching a step would be trapped on it,
+    // a new step per press (docs/specs/004-interface-design/canvas-accessibility.md "No wrap, no trap"). A
+    // pointer press hands the selection back to growth.
+    let walkedTo: string | null = null;
+    const onPointer = () => {
+      walkedTo = null;
+    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.defaultPrevented) return;
@@ -86,6 +94,7 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       if (
         !e.shiftKey &&
         selectedId !== null &&
+        selectedId !== walkedTo &&
         multiSelectedIds.size === 0 &&
         live.ownsTabKey(selectedId)
       )
@@ -100,15 +109,23 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       );
       // Past either end: leave the event to the browser so focus moves
       // on to the next control — deliberately no wrap.
-      if (i === null) return;
+      if (i === null) {
+        walkedTo = null;
+        return;
+      }
       const next = els[i]!;
       e.preventDefault();
+      walkedTo = next.id;
       live.selectElement(next.id);
       if (isBoxed(next)) live.scrollIntoView(next.x, next.y, next.width, next.height);
       track('Element', 'Selected', 'Keyboard');
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onPointer, true);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', onPointer, true);
+    };
   }, [ref]);
 
   // Announce selection changes: single ("Selected 'Login'"), multi (a
