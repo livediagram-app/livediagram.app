@@ -49,8 +49,10 @@ export function EntityFieldEditor({
     // The canvas's shortcuts (Delete, Tab to grow, arrows to nudge) are not for a row being typed in.
     e.stopPropagation();
     if (e.key === 'Escape') {
+      // Escape keeps what was typed, as on every canvas label (canvas-and-palette.md "Labels"); a blank new row
+      // still adds nothing.
       e.preventDefault();
-      finish('cancel');
+      finish('close');
     } else if (e.key === 'Enter') {
       e.preventDefault();
       finish('next');

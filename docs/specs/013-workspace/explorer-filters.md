@@ -148,11 +148,14 @@ written where the first stood, or added after the last token; clearing a chip re
 ## The field
 
 The top-bar search is the lens field on every Explorer view. It sits in the Explorer header, left of the account
-control; below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
+control; on a desktop (`lg` and up) the header is three columns and the field is **centred** between the brand and
+the account, on every page (each side column grows to its content first, so a narrow desktop never overlaps them);
+below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
 filter documents". The app-wide search panel (documents, folders, help, settings) stays on the bottom bar's Search.
 
 On Home the field moves into the [hero](explorer-home.md#the-hero), drawn large with New document inside its end,
-and the header draws none. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
+and the header draws none. With the hero hidden ([Hiding the banner](explorer-home.md#hiding-the-banner)), Home
+draws the header's field like every other page. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
 Search results; the header's field there takes the focus with the caret after the typed words.
 
 - Each token renders as a **pill** inside the field: "Template: Retrospective, Kanban", "Space: Acme". The free text

@@ -1722,6 +1722,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
+  'UI|Toggled|HomeBannerOff':
+    "Someone hid Explorer Home's banner, from its close button or Settings > Documents. Home then opens on its page header.",
+  'UI|Toggled|HomeBannerOn':
+    "Someone turned Explorer Home's banner back on, in Settings > Documents.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
