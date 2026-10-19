@@ -208,6 +208,7 @@ export function PlanBoardHeader({
                 selected={selected}
                 palette={palette}
                 inBox={false}
+                capped={showWidgets && (widgets.length > 0 || canEdit)}
                 onRename={(t) => onSetup({ ...setup, title: t }, 'Title')}
                 onDone={() => setRenaming(false)}
               />

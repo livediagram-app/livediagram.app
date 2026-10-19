@@ -11,7 +11,10 @@ import { IN_BOX_TITLE_CLASS } from './menu-name-slot';
 const BOARD_TITLE_MAX = 80;
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
-const TITLE_CLASS = 'min-w-0 max-w-[40%] shrink-0 text-[17px] font-bold leading-tight';
+const TITLE_CLASS = 'min-w-0 text-[17px] font-bold leading-tight';
+// Beside a widget zone the title keeps to 40% of the header so the widgets have room; with none (a phone's
+// header, a board without widgets that its viewer may not add to) it takes the room there is.
+const CAPPED_CLASS = 'max-w-[40%] shrink-0';
 
 export function BoardTitle({
   title,
@@ -22,11 +25,14 @@ export function BoardTitle({
   onDone,
   onStart,
   inBox = false,
+  capped = true,
 }: {
   title: string;
   editing: boolean;
   // In the menu box (menu-name-slot): the chrome's size and ink.
   inBox?: boolean;
+  // A widget zone shares the header row (CAPPED_CLASS).
+  capped?: boolean;
   selected: boolean;
   palette: PlanPalette;
   onRename: (title: string) => void;
@@ -39,7 +45,7 @@ export function BoardTitle({
       <div
         // In the menu box a click renames (on the canvas a press moves the board, a double-click renames).
         onClick={inBox ? onStart : undefined}
-        className={`${inBox ? `${IN_BOX_TITLE_CLASS} ${onStart ? 'cursor-text' : ''}` : `${TITLE_CLASS} truncate`} ${selected && !inBox ? 'cursor-move' : ''}`}
+        className={`${inBox ? `${IN_BOX_TITLE_CLASS} ${onStart ? 'cursor-text' : ''}` : `${TITLE_CLASS} ${capped ? CAPPED_CLASS : ''} truncate`} ${selected && !inBox ? 'cursor-move' : ''}`}
       >
         {title}
       </div>
