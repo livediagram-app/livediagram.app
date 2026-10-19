@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isMobileViewportSync } from '@/lib/responsive';
+import { announcePanelPresence } from '@/lib/panel-presence';
 
 // The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
@@ -94,6 +95,12 @@ export function MovablePanel({
     onDockDrag,
     onDockDragEnd,
   });
+
+  // Arriving and leaving, the panel has the chrome placed around it measure again (lib/panel-presence.ts).
+  useEffect(() => {
+    announcePanelPresence();
+    return announcePanelPresence;
+  }, []);
 
   // Panel geometry measurement (the body max-height cap): see useMovablePanelMeasure.
   const bodyMaxH = useMovablePanelMeasure({

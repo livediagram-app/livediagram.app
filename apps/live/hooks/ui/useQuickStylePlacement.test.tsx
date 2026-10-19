@@ -2,6 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { announcePanelPresence } from '@/lib/panel-presence';
 import { useQuickStylePlacement } from './useQuickStylePlacement';
 
 // A ResizeObserver that behaves like the browser's: every observe() of an
@@ -196,5 +197,25 @@ describe('useQuickStylePlacement', () => {
     expect(measures).toBe(settled + 1);
     expect(result.current!.left).toBeGreaterThanOrEqual(300);
     cluster.remove();
+  });
+
+  // docs/specs/008-canvas/quick-style-panel.md "Collisions": a paste into a blank canvas showed the panel and the Map in
+  // the same moment, with no gesture after; placed before the Map existed, the panel sat over the Map's header.
+  it('moves clear of a panel that arrives with no gesture of its own', () => {
+    const panelRef = mountPanel();
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
+    for (let i = 0; i < 5; i++) act(runFrame);
+    const map = document.createElement('div');
+    map.setAttribute('data-floating-panel', '');
+    box(map, { left: 0, top: 560, width: 256, height: 181 });
+    document.body.append(map);
+    // Where it sat, it overlaps the Map now.
+    expect(result.current!.top + 200).toBeGreaterThan(560);
+
+    act(announcePanelPresence);
+    for (let i = 0; i < 3; i++) act(runFrame);
+
+    expect(result.current!.top + 200).toBeLessThanOrEqual(560);
+    map.remove();
   });
 });
