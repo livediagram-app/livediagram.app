@@ -486,7 +486,9 @@ describe('choices and dialogs', () => {
   it('opens the offer again from the chip, to be chosen from, rather than starting a track', () => {
     const e = engine();
     render(<ChoiceStage e={e} onPick={vi.fn()} />);
-    act(() => vi.advanceTimersByTime(OFFER_FOLD_MS));
+    act(() => {
+      vi.advanceTimersByTime(OFFER_FOLD_MS);
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Plan Tour' }));
     expect(e.next).not.toHaveBeenCalled();
     expect(dock()?.dataset.coachDock).toBe('offer');

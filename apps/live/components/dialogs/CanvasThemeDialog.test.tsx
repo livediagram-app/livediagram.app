@@ -55,7 +55,8 @@ describe('CanvasThemeDialog placement', () => {
     render(<CanvasThemeDialog {...props} />);
     const panel = screen.getByRole('dialog', { name: 'Tab style' });
     expect(panel.style.right).toBe('36px');
-    expect(panel.style.bottom).toBe('68px');
+    // Above the brush, or above a Show Me's coach dock when that stands higher (coach-dock.md "Where it sits").
+    expect(panel.style.bottom).toBe('max(68px, calc((var(--coach-dock-floor, 0px) + 8px) / 1))');
   });
 
   it('is the centred dialog without a brush', () => {

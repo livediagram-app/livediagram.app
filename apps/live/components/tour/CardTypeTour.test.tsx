@@ -6,11 +6,6 @@ import { CardTypeShowMeButton, CardTypeTourStage, useCardTypeTour } from './Card
 import { dockSays } from './coach-dock/coach-dock-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
-vi.mock('@/components/start/useStartPalette', async () => {
-  const { planPalette } = await import('@livediagram/document');
-  return { useStartPalette: () => planPalette('light') };
-});
 // jsdom lays nothing out, so "on screen" is just "in the document" here.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
