@@ -171,9 +171,12 @@ export function RichTextEditor({
           // to be committed first — the global one would move the edit to the
           // new node and lose what was just typed.
           if (onMindKeyDown(e)) return;
+          // Escape keeps what was typed and leaves (docs/specs/008-canvas/canvas-and-palette.md "Labels"), as a click
+          // away does: it is how people finish typing on a canvas, so a cancel lost the label they had just written.
+          // Undo takes it back.
           if (e.key === 'Escape') {
             e.preventDefault();
-            handleCancel();
+            commitNow();
             return;
           }
           // Cmd/Ctrl+B/I/U drive the toolbar's run toggle, never the browser's execCommand.

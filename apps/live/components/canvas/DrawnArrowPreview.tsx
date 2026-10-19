@@ -65,7 +65,6 @@ export function DrawnArrowPreview({
         onBeginEndpointDrag={noop}
         onBeginEdit={noop}
         onCommitLabel={noop}
-        onCancelEdit={noop}
         fontFamily={fontFamily}
       />
     </svg>
