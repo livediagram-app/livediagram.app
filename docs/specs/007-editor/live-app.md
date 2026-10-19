@@ -296,12 +296,17 @@ Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals,
 
 These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
-The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
+The routes that draw the canvas (`/document/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`apps/live/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
 That lock stays. Lifting it was tested (2026-10-03): with page zoom allowed, a pinch on the canvas
 zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
 gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
 zoom instead.
+
+The lock is the canvas's, so it covers only the canvas routes. Every other page of the live app (the public form
+page `/form/<code>`, the Explorer, sign-in, get-started, join and the rest) keeps the root layout's zoomable viewport
+(`width: device-width`, `initialScale: 1`), so a phone can pinch to read it (WCAG 1.4.4 Resize Text). They have no
+focus-zoom to do: `globals.css` already holds every field at 16px on a phone.
 
 **Menus are bottom sheets on a phone.** Every context menu (an element's, a selection's: the
 shared `ContextMenu`; and the tab menu, from a tab's `⋯` or a long-press on the canvas:
