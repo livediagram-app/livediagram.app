@@ -26,6 +26,8 @@ import {
   pageResized,
   pageSizesFor,
   pageTurned,
+  pageDeviceSet,
+  pageDeviceClass,
   pageUnits,
   withPageKindChosen,
   type Page,
@@ -50,6 +52,7 @@ const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   pattern_not_offered: 'pattern_not_offered',
   page_limit: 'page_limit',
   last_page: 'last_page',
+  not_a_wireframe: 'not_a_wireframe',
 };
 
 class Stop extends Error {
@@ -100,6 +103,7 @@ function messageFor(why: PageEditRefusal, tab: Tab, page: Page | undefined): str
     pattern_not_offered: 'A logo page takes no pattern; give it a color or gradient.',
     page_limit: 'A tab holds at most 100 pages: delete one first.',
     last_page: "That is the tab's only page (or article): add another before deleting it.",
+    not_a_wireframe: `A ${kind} page has no device: device, frameLook and systemBars are a wireframe page's.`,
   };
   return words[why];
 }
@@ -152,7 +156,8 @@ export function applyPageChanges(
       };
       const layOut = (page: Page, layout: string): string => {
         const kind = pageKindOf(page);
-        const offered = kind === 'article' ? [] : layoutCatalogueFor(kind).layouts;
+        const offered =
+          kind === 'article' ? [] : layoutCatalogueFor(kind, pageDeviceClass(page)).layouts;
         const found = offered.find((l) => l.id === layout);
         if (!found)
           stop(
@@ -194,6 +199,21 @@ export function applyPageChanges(
           current = take(pageBackgroundSet(current, page.id, backgroundPatch(c.background)), page);
           said.push(`background ${describePatch(c.background)}`);
         }
+        // A wireframe page's frame look and system bars (wireframe-pages.md); its device was chosen as
+        // it was added (pageAdded) and is never changed.
+        if (c.op === 'add' && c.device !== undefined) said.push(`device ${c.device}`);
+        if (c.frameLook !== undefined || c.systemBars !== undefined) {
+          current = take(
+            pageDeviceSet(current, page.id, {
+              ...(c.frameLook !== undefined ? { frameLook: c.frameLook } : {}),
+              ...(c.systemBars !== undefined ? { systemBars: c.systemBars } : {}),
+            }),
+            page,
+          );
+          if (c.frameLook !== undefined) said.push(`frame ${c.frameLook}`);
+          if (c.systemBars !== undefined)
+            said.push(c.systemBars ? 'system bars' : 'no system bars');
+        }
         return said;
       };
       switch (change.op) {
@@ -205,7 +225,13 @@ export function applyPageChanges(
           let page: Page;
           if (offersPageKindChoice(ps, first.id, onPage(first.id))) {
             // The fresh tab's empty, unchosen first page becomes the page asked for.
-            current = withPageKindChosen(current, first.id, change.kind, newFlowId())!;
+            current = withPageKindChosen(
+              current,
+              first.id,
+              change.kind,
+              newFlowId(),
+              change.device,
+            )!;
             page = pages()[0]!;
             tookBlank.set(page.id, i + 1);
           } else if (
@@ -221,7 +247,7 @@ export function applyPageChanges(
             tookBlank.set(page.id, i + 1);
           } else {
             const id = newPageId();
-            current = take(pageAdded(current, change.kind, id, newFlowId()));
+            current = take(pageAdded(current, change.kind, id, newFlowId(), change.device));
             page = pages().find((p) => p.id === id)!;
           }
           madeHere.add(page.id);

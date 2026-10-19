@@ -5,6 +5,9 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, newLogoPage, type LaidOutPage } from '@livediagram/document';
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
+import { createViewportStore } from '@/lib/viewport-store';
+import type { ReactNode } from 'react';
+import { ViewportStoreProvider } from './useViewportStore';
 import { useLogoPaletteSwitch } from './useLogoPaletteSwitch';
 
 let asked: string[] = [];
@@ -51,7 +54,7 @@ describe('useLogoPaletteSwitch', () => {
     expect(asked).toEqual([]);
     rerender({ pages: both });
     vi.runAllTimers();
-    expect(asked).toEqual(['logo']);
+    expect(asked).toEqual(['draw']);
   });
 
   it('asks for Logo on a logo page and Popular on any other, when a press moves page', () => {
@@ -62,11 +65,11 @@ describe('useLogoPaletteSwitch', () => {
     expect(asked).toEqual([]);
     press(250);
     press(260);
-    expect(asked).toEqual(['logo']);
+    expect(asked).toEqual(['draw']);
     press(50);
     press(55);
     press(250);
-    expect(asked).toEqual(['logo', 'popular', 'logo']);
+    expect(asked).toEqual(['draw', 'popular', 'draw']);
   });
 
   it('stays quiet when inactive (a viewer, or a bare view)', () => {
@@ -80,7 +83,7 @@ describe('useLogoPaletteSwitch', () => {
     const logoFirst = layOutPages([newLogoPage('l'), { id: 'i', orientation: 'portrait' }]);
     renderHook(() => useLogoPaletteSwitch(logoFirst, true));
     vi.runAllTimers();
-    expect(asked).toEqual(['logo', 'logo']);
+    expect(asked).toEqual(['draw', 'draw']);
     asked = [];
     renderHook(() => useLogoPaletteSwitch(infographic, true));
     vi.runAllTimers();
@@ -93,10 +96,10 @@ describe('useLogoPaletteSwitch', () => {
     act(() => result.current.pageShown(both[1]!));
     act(() => result.current.pageShown(both[1]!));
     vi.runAllTimers();
-    expect(asked).toEqual(['logo']); // And Popular on going back to the infographic page.
+    expect(asked).toEqual(['draw']); // And Popular on going back to the infographic page.
     act(() => result.current.pageShown(both[0]!));
     vi.runAllTimers();
-    expect(asked).toEqual(['logo', 'popular']);
+    expect(asked).toEqual(['draw', 'popular']);
   });
 
   it('ignores a press on chrome floating over a logo page (a palette category just chosen)', () => {
@@ -105,5 +108,38 @@ describe('useLogoPaletteSwitch', () => {
     press(50);
     press(250, true);
     expect(asked).toEqual([]);
+  });
+
+  it('follows a view that comes to rest on another page (a pan, a scroll)', () => {
+    const store = createViewportStore(1);
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <ViewportStoreProvider store={store}>{children}</ViewportStoreProvider>
+    );
+    sheets(both);
+    // The canvas, its centre over the first page, then over the logo page.
+    const canvas = document.createElement('div');
+    canvas.setAttribute('data-canvas-a11y-root', '');
+    let centre = 50;
+    canvas.getBoundingClientRect = () =>
+      ({ left: centre - 50, top: 0, width: 100, height: 100 }) as DOMRect;
+    document.body.appendChild(canvas);
+    renderHook(() => useLogoPaletteSwitch(both, true), { wrapper });
+    act(() => {
+      vi.runAllTimers();
+    });
+    asked = [];
+    centre = 250;
+    act(() => {
+      store.setOffset({ x: -200, y: 0 });
+      vi.runAllTimers();
+    });
+    expect(asked).toEqual(['draw']);
+    // Resting between pages keeps the page last on.
+    centre = 150;
+    act(() => {
+      store.setOffset({ x: -100, y: 0 });
+      vi.runAllTimers();
+    });
+    expect(asked).toEqual(['draw']);
   });
 });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Logo category's body (docs/specs/007-editor/logo-pages.md "The Logo palette").
+// A logo page's Draw body, with its markers (docs/specs/007-editor/logo-pages.md "The Logo palette").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';

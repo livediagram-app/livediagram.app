@@ -20,6 +20,8 @@ import { LayoutRenderThumb } from './layout-render-thumb';
 
 // Wide enough to read a layout's parts: two tiles to a row in the panel and the in-page card.
 const THUMB_W = 120;
+// The tallest a tile's thumb stands by default.
+const THUMB_MAX_H = 150;
 
 function ElementGlyph({ el }: { el: Element }) {
   if (el.type === 'arrow') return null;
@@ -131,13 +133,23 @@ function ElementGlyph({ el }: { el: Element }) {
 export function LayoutThumb({
   layout,
   page,
-  width = THUMB_W,
+  width: widest = THUMB_W,
+  maxHeight = THUMB_MAX_H,
 }: {
   layout: PageLayoutId;
   page: LaidOutPage;
   // The tile's width in px (a category card's fan draws them smaller).
   width?: number;
+  // The tallest a wireframe page's thumb is drawn: a phone narrows to fit rather than standing
+  // taller than its tile.
+  maxHeight?: number;
 }) {
+  // Only a wireframe page is ever that tall (a phone is twice as tall as wide); every other page
+  // keeps the width it was given.
+  const width =
+    page.kind === 'wireframe'
+      ? Math.min(widest, Math.round((maxHeight * page.rect.width) / page.rect.height))
+      : widest;
   // Rendered with the editor's tab (its theme and font, LayoutRenderThumb); a wireframe where there
   // is none.
   const tab = useContext(EditorContext)?.activeTab;

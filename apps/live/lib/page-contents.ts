@@ -38,6 +38,7 @@ const KIND_NAME = {
   slide: 'Slide',
   article: 'Article',
   logo: 'Logo',
+  wireframe: 'Wireframe',
 } as const;
 
 export function contentsRows(
@@ -55,6 +56,8 @@ export function contentsRows(
       const size = pageSizeLabel(p);
       const turn = pageHasOrientation(p) && ['a4', 'letter', 'a3'].includes(p.size ?? 'a4');
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
+    } else if (kind === 'wireframe') {
+      line += ` · ${pageSizeLabel(p)}${p.orientation === 'landscape' && pageHasOrientation(p) ? ' Landscape' : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
     } else if (kind === 'article' && p.flow) {

@@ -24,6 +24,7 @@ import {
   withPageSplit,
   withPageInkFor,
   pageAdded,
+  pageAddedLike,
   pageBackgroundSet,
   pageDuplicated,
   pageLaidOut,
@@ -38,6 +39,7 @@ import {
   pageResized,
   pagesSharing,
   pageTurned,
+  pageDeviceSet,
   type Page,
   type PageEdit,
   type PageBackground,
@@ -45,11 +47,15 @@ import {
   type PageOrientation,
   type PageSizeId,
   type Tab,
+  type WireframeDeviceId,
+  type WireframeDevicePatch,
+  type WireframeFrameLook,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
+import { lastWireframeDevice } from '@/lib/wireframe-device-memory';
 import { lockedElementIds } from '@/lib/locked-element-ids';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
@@ -71,10 +77,16 @@ export type PageEdits = BackgroundCopyEdits & {
   // A page's unit (the page, or its whole document) to a place among the units (0 first), its
   // content with it: a page's label dragged.
   movePageTo: (pageId: string, unitIndex: number) => void;
-  // Absent at the page limit.
-  addPage?: (kind: PageKind) => void;
+  // Absent at the page limit. A wireframe page takes the device chosen for it.
+  addPage?: (kind: PageKind, device?: WireframeDeviceId) => void;
+  // Another page like this one after the last (the + beside the last page): its kind and shape, a
+  // wireframe page's device and frame too. Absent at the page limit.
+  addPageLike?: (pageId: string) => void;
   // The first page's kind chosen while it is the only page and empty (its own choice cards).
-  choosePageKind: (pageId: string, kind: PageKind) => void;
+  choosePageKind: (pageId: string, kind: PageKind, device?: WireframeDeviceId) => void;
+  // A wireframe page's orientation, frame look or system bars; its device is fixed once made
+  // (docs/specs/007-editor/wireframe-pages.md "Choosing the device").
+  setDevice: (pageId: string, patch: WireframeDevicePatch) => void;
   duplicatePage?: (pageId: string) => void;
   // Whether a page's copy fits under the page limit (an article's copy is all its pages).
   canDuplicate: (pageId: string) => boolean;
@@ -123,12 +135,33 @@ const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   article: 'PageKindArticle',
   slide: 'PageKindSlide',
   logo: 'PageKindLogo',
+  wireframe: 'PageKindWireframe',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   infographic: 'PageAdded',
   article: 'ArticleAdded',
   slide: 'SlidePageAdded',
   logo: 'LogoPageAdded',
+  wireframe: 'WireframePageAdded',
+};
+
+// Telemetry for a wireframe page's device and frame look (docs/specs/007-editor/wireframe-pages.md).
+const WIREFRAME_DEVICE_EVENT: Record<WireframeDeviceId, string> = {
+  iphone: 'WireframeDeviceIphone',
+  'iphone-duo': 'WireframeDeviceIphoneDuo',
+  android: 'WireframeDeviceAndroid',
+  ipad: 'WireframeDeviceIpad',
+  'android-tablet': 'WireframeDeviceAndroidTablet',
+  laptop: 'WireframeDeviceLaptop',
+  desktop: 'WireframeDeviceDesktop',
+  browser: 'WireframeDeviceBrowser',
+  watch: 'WireframeDeviceWatch',
+};
+const WIREFRAME_FRAME_EVENT: Record<WireframeFrameLook, string> = {
+  theme: 'WireframeFrameTheme',
+  dark: 'WireframeFrameDark',
+  light: 'WireframeFrameLight',
+  outline: 'WireframeFrameOutline',
 };
 
 // Whether a page would change under a Tidy, by tab and page, with what the answer was for: the
@@ -177,11 +210,13 @@ export function pageEdits({
   onArticleCreated?: (flow: string) => void;
   // What a page action says it did (Split Into Pages).
   toastInfo?: (message: string) => void;
-  // The tab's theme: a new infographic page starts on its Mist gradient (defaultPageBackground).
+  // The tab's theme: a new infographic page starts on its Dusk gradient, a new slide document's
+  // slide on Steel (defaultPageBackground).
   // Absent, a new page starts on the plain paper.
   theme?: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
 }): PageEdits {
-  // A new infographic page (by id) on the theme's default background, unless it carried one over.
+  // A new infographic page, or a new slide document's slide (by id), on its default background,
+  // unless it carried one over.
   const themed = (t: Tab | null, id: string): Tab | null =>
     t && theme ? withDefaultPageBackgrounds(t, theme, new Set([id])) : t;
   // A locked tab, or a person no longer editing, takes no page edit. A handler that tells or moves the view after
@@ -339,25 +374,34 @@ export function pageEdits({
   // portrait); a new document the last page's paper size and orientation when it is a paper size
   // (A4, US Letter, A3), else A4 portrait; a new slide the last slide's size (else 16:9),
   // landscape; a new logo page the 1024 artboard. All on the plain paper.
-  const choosePageKind = (pageId: string, kind: PageKind) => {
+  const choosePageKind = (pageId: string, kind: PageKind, device?: WireframeDeviceId) => {
     if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
+    if (kind === 'wireframe' && device) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[device]);
     const flow = nextArticleFlowId(new Set());
     commitTab((t) => {
-      const chosen = withPageKindChosen(t, pageId, kind, flow);
-      return kind === 'infographic' ? themed(chosen, pageId) : chosen;
+      const chosen = withPageKindChosen(t, pageId, kind, flow, device);
+      return kind === 'infographic' || kind === 'slide' ? themed(chosen, pageId) : chosen;
     });
     if (kind === 'article') onArticleCreated?.(flow);
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
   };
-  const addPage = (kind: PageKind) => {
+  const addPage = (kind: PageKind, chosen?: WireframeDeviceId) => {
     if (!takesEdits()) return;
+    // A first wireframe page added without its own choice (Contents' Add Page) takes the device last
+    // chosen in this browser; a later one the last wireframe page's (pageAdded).
+    const device =
+      chosen ??
+      (kind === 'wireframe' && !current.some((p) => p.kind === 'wireframe')
+        ? lastWireframeDevice()
+        : undefined);
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
+    if (kind === 'wireframe' && chosen) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[chosen]);
     const id = nextPageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
     commitTab((t) => {
-      const added = edited(t, pageAdded(t, kind, id, flow));
-      return kind === 'infographic' ? themed(added, id) : added;
+      const added = edited(t, pageAdded(t, kind, id, flow, device));
+      return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
     if (kind === 'article') {
       onGoTo(id);
@@ -367,6 +411,41 @@ export function pageEdits({
     }
     onGoTo(id);
     debugLog('[page] page added', { tabId, count: current.length + 1 });
+  };
+  const setDevice = (pageId: string, patch: WireframeDevicePatch) => {
+    if (refusedLocked(pageId, 'device')) return;
+    const target = page(pageId);
+    if (!target || target.kind !== 'wireframe') return;
+    if (patch.frameLook && patch.frameLook !== (target.frameLook ?? 'theme'))
+      track('Tab', 'Changed', WIREFRAME_FRAME_EVENT[patch.frameLook]);
+    if (patch.systemBars !== undefined)
+      track('UI', 'Toggled', patch.systemBars ? 'WireframeSystemBarsOn' : 'WireframeSystemBarsOff');
+    if (patch.orientation && patch.orientation !== target.orientation)
+      track('Tab', 'Changed', patch.orientation === 'landscape' ? 'PageLandscape' : 'PagePortrait');
+    commitTab((t) => edited(t, pageDeviceSet(t, pageId, patch)));
+    // A turned page is framed again in its new shape.
+    if (patch.orientation) onGoTo(pageId);
+    debugLog('[page] device set', { tabId, pageId, keys: Object.keys(patch) });
+  };
+  const addPageLike = (pageId: string) => {
+    if (!takesEdits()) return;
+    const source = page(pageId);
+    if (!source) return;
+    const kind = pageKindOf(source);
+    track('Tab', 'Changed', 'PageAddedLikeLast');
+    const id = nextPageId(current);
+    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    commitTab((t) => {
+      const added = edited(t, pageAddedLike(t, pageId, id, flow));
+      return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
+    });
+    if (kind === 'article') {
+      onGoTo(id);
+      onArticleCreated?.(flow);
+      return;
+    }
+    onGoTo(id);
+    debugLog('[page] page added like another', { tabId, from: pageId, kind });
   };
   const duplicatePage = (pageId: string) => {
     if (!takesEdits()) return;
@@ -579,7 +658,9 @@ export function pageEdits({
     movePageTo,
     canMove,
     addPage: room ? addPage : undefined,
+    addPageLike: room ? addPageLike : undefined,
     choosePageKind,
+    setDevice,
     duplicatePage: room ? duplicatePage : undefined,
     canDuplicate: (pageId: string) => {
       const flow = page(pageId)?.flow;

@@ -96,7 +96,7 @@ describe('Start a Workshop', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos, Design', () => {
+  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos, Wireframes, Design', () => {
     expect(TEMPLATE_STARTS.pages.groups.map((g) => g.name)).toEqual([
       'Recommended',
       'Slides',
@@ -104,19 +104,14 @@ describe('Start Making Pages', () => {
       'Articles',
       'Posters and Social',
       'Logos',
+      'Wireframes',
       'Design',
     ]);
     // A carousel is posted, not presented.
     const group = (id: string) => TEMPLATE_STARTS.pages.groups.find((g) => g.id === id)!.kinds;
     expect(group('slides')).not.toContain('social-carousel');
     expect(group('posters')).toContain('social-carousel');
-    expect(group('design')).toEqual([
-      'browser-wireframe',
-      'laptop-wireframe',
-      'mobile-wireframe',
-      'storyboard',
-      'floor-plan',
-    ]);
+    expect(group('design')).toEqual(['storyboard', 'floor-plan']);
     expect(TEMPLATE_STARTS.pages.blank).toBe('blank-illustration');
   });
 

@@ -101,6 +101,9 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:text': 'Text',
   'tools:sticky': 'Notes',
   'tools:pencil': 'Pens',
+  // Logo's Draw (palette-layouts PAGES_LOGO): the Pen first, then each person's markers as a group.
+  'logo:pen': 'Pens',
+  'draw:marker-main': 'Markers',
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',
   'tools:mind-node': 'Diagrams',
@@ -109,8 +112,11 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'collab:comment-pin': 'Comments',
   'tools:table': 'Tables',
   'tools:stack': 'Layout',
+  'components:hero': 'Layout',
   'tools:code-block': 'Code and Lists',
   'components:card': 'Page Blocks',
+  // Page Blocks where Elements holds the Card and the Badge (a tab with a wireframe page).
+  'components:step': 'Page Blocks',
   'devices:browser': 'Desktop',
   'devices:phone': 'Mobile',
   'tools:image': 'Pictures',

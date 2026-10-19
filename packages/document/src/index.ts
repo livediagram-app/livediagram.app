@@ -481,6 +481,14 @@ export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './page';
+export * from './wireframe-device';
+export * from './wireframe-page';
+export {
+  wireframeFrameOverSvg,
+  wireframeFrameTheme,
+  wireframeFrameUnderSvg,
+  type WireframeFrameTheme,
+} from './wireframe-device-svg';
 export * from './page-fit';
 export * from './page-image';
 export * from './page-lock';

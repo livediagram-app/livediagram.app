@@ -1,5 +1,6 @@
 'use client';
 
+import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageWritingBars } from '@/lib/article/article-export';
 import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
@@ -190,7 +191,7 @@ export function Minimap({
     const parts: string[] = [];
     // The pages first, under everything: each sheet in its own paint with a crisp outline, so
     // even an empty page shows where it is.
-    const paper = surface === 'dark' ? '#0f172a' : '#ffffff';
+    const paper = CANVAS_PAPER[surface === 'dark' ? 'dark' : 'light'];
     const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
     for (const page of pages ?? []) {
       const { x, y, width, height } = page.rect;

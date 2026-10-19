@@ -5,7 +5,12 @@
 // left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
 // keyboard, reordering by drag and adding a page live here once; each home lays them out.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { MAX_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
+import {
+  MAX_PAGES,
+  pageKindOf,
+  type PageKind,
+  type WireframeDeviceId,
+} from '@livediagram/document';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
@@ -170,9 +175,19 @@ export function usePageContents({
   const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add =
     view.edit?.addPage && !full
-      ? (kind: PageKind) => {
+      ? (kind: PageKind, device?: WireframeDeviceId) => {
           setAdded(pages.length);
-          view.edit!.addPage!(kind);
+          if (device) view.edit!.addPage!(kind, device);
+          else view.edit!.addPage!(kind);
+        }
+      : undefined;
+  // Another page like the last (its kind and shape; a wireframe page's device and frame too).
+  const lastPage = pages.at(-1);
+  const addLike =
+    view.edit?.addPageLike && lastPage && !full
+      ? () => {
+          setAdded(pages.length);
+          view.edit!.addPageLike!(lastPage.id);
         }
       : undefined;
   // A page's own toolbar (an Editor's): what each press does, absent where it cannot. Delete and
@@ -214,6 +229,8 @@ export function usePageContents({
     canAdd: !!view.edit?.addPage,
     actionsFor,
     add,
+    addLike,
+    lastPage,
     full,
     lastKind,
   };

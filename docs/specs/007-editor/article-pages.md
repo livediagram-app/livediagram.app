@@ -157,6 +157,15 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
 
 ## The page toolbar
 
+- **Docked**: while the palette's kind is **Article** ([Pages mode](pages-mode.md) "The palette's
+  kind", on an article page), the toolbar's controls sit in the Toolbar strip, after the selection
+  mode and in place of the category bar, at the strip's sizes, and its menus hang from
+  them. Docked it always shows, for someone who may edit: for the article being worked on or
+  hovered, else the one last shown, else the tab's first, so the controls stay as the pointer
+  leaves a page for the strip. On a phone its controls scroll in the strip's rail. The **Insert**
+  menu is the palette's rows (a glyph chip, the name and the slash menu's line for it), headed
+  **Objects** (Image, Table, Bar Chart) and **Blocks** (Divider, Page Break, Quote, Code). Under
+  any other kind the card below is used.
 - **Where**: a card fixed at the top of the page, inside it, centred in the top margin. An article
   page's top margin is never less than 72 px (`ARTICLE_TOP_MIN_PX`), whatever its margins, so at
   100% the first line always starts below the card; zoomed out until the margin is thinner than

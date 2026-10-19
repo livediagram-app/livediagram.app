@@ -55,11 +55,14 @@ const ALL_KINDS = [
   'journey',
   'fishbone',
   'pyramid',
-  'mobile-wireframe',
-  'laptop-wireframe',
   'slide-deck',
   'flywheel',
   'logo-design',
+  'wireframe-mobile-app',
+  'wireframe-website',
+  'wireframe-dashboard',
+  'wireframe-tablet-app',
+  'wireframe-watch-app',
   'gantt',
   'live-card',
   'comparison-table',
@@ -90,7 +93,6 @@ const ALL_KINDS = [
   'sankey',
   'okr-tree',
   'sitemap',
-  'browser-wireframe',
   'storyboard',
   'cloud-architecture',
   'uml-class',
@@ -124,6 +126,11 @@ const ALL_KINDS = [
   'blank-article',
   'blank-infographic',
   'blank-logo',
+  'blank-wireframe-phone',
+  'blank-wireframe-tablet',
+  'blank-wireframe-browser',
+  'blank-wireframe-laptop',
+  'blank-wireframe-watch',
   'sketchnote',
   'rich-picture',
   'comic-strip',
@@ -207,6 +214,11 @@ function coordsOf(el: Element): { x: number; y: number }[] {
 const PAGED_KINDS = [
   'slide-deck',
   'logo-design',
+  'wireframe-mobile-app',
+  'wireframe-website',
+  'wireframe-dashboard',
+  'wireframe-tablet-app',
+  'wireframe-watch-app',
   'live-card',
   'event-poster',
   'year-in-review',
@@ -222,9 +234,6 @@ const PAGED_KINDS = [
   'workshop-kickoff',
   'floor-plan',
   'storyboard',
-  'browser-wireframe',
-  'laptop-wireframe',
-  'mobile-wireframe',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -262,7 +271,9 @@ describe('templates on pages', () => {
         ? 'slide'
         : kind === 'logo-design' && i < 6
           ? 'logo'
-          : 'infographic';
+          : kind.startsWith('wireframe-')
+            ? 'wireframe'
+            : 'infographic';
     expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });
@@ -361,6 +372,7 @@ describe('buildTemplate translation invariance', () => {
         k !== 'blank-article' &&
         k !== 'blank-infographic' &&
         k !== 'blank-logo' &&
+        !k.startsWith('blank-wireframe-') &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
         // An empty session tab (docs/specs/012-collaboration/workshop-mode.md "Templates").

@@ -36,6 +36,7 @@ import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import type { PageLayoutId } from '@livediagram/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
+import { WireframeDeviceSettings } from './wireframe/WireframeDeviceSettings';
 import { OrientationSection, SizeSection } from './page-panel-sections';
 import { ApplyBackgroundToAll } from './page-background-apply-all';
 import { BackgroundSection } from './page-background-section';
@@ -48,10 +49,11 @@ const GAP = 6;
 const PAGE_EASE_MS = 200;
 
 type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'background' | 'layouts';
+export type PagePanelTab = 'page' | 'device' | 'background' | 'layouts';
 
 const TAB_LABEL: Record<PagePanelTab, string> = {
   page: 'Page',
+  device: 'Device',
   background: 'Background',
   layouts: 'Layouts',
 };
@@ -61,6 +63,9 @@ const TAB_LABEL: Record<PagePanelTab, string> = {
 // logo page's Layouts (an infographic or slide page's Layouts, and an article's Style and Text, sit
 // beside its cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
+  // A wireframe page's size is its device (docs/specs/007-editor/wireframe-pages.md); its
+  // Background and Layouts sit beside its cog, as an infographic page's.
+  if (page.kind === 'wireframe') return ['device'];
   const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
   // An infographic page's Background, and an infographic or slide page's Layouts, are beside its
   // cog (PageBackgroundButton, PageLayoutsButton), so not here too.
@@ -232,7 +237,14 @@ export function PagePanel({
             }}
           />
         ) : null}
-        {tab === 'page' ? (
+        {tab === 'device' ? (
+          <div className="px-3 py-2">
+            <WireframeDeviceSettings
+              page={page}
+              onDevice={(patch) => edit.setDevice(page.id, patch)}
+            />
+          </div>
+        ) : tab === 'page' ? (
           <>
             <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
             <OrientationSection

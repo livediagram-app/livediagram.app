@@ -1,6 +1,6 @@
 'use client';
 
-// A marker's palette tile (Draw mode's pen, offered in the Logo category and the Toolbar strip's
+// A marker's palette tile (Draw mode's pen, offered in a logo page's Draw and the Toolbar strip's
 // Search: docs/specs/007-editor/logo-pages.md "The Logo palette"). Pressed, it picks the marker up;
 // pressed again while held, it opens Draw mode's own flyout for it (colour and width), as the
 // whiteboard dock's marker does. A change re-arms the held marker, so the next stroke is in it.

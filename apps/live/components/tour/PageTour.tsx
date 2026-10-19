@@ -111,6 +111,7 @@ export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
   infographic: { article: 'infographicLayouts' },
   article: { article: 'articlePages' },
   logo: { article: 'logoPages' },
+  wireframe: { article: 'wireframePages' },
 };
 
 export function PageTourStage({ tour, kind }: { tour: TourEngine<PageTourApi>; kind: PageKind }) {

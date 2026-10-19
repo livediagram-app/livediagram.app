@@ -31,6 +31,12 @@ const WELCOMES: Record<PageKind, PageTourStep> = {
   infographic: INFOGRAPHIC_WELCOME,
   article: ARTICLE_WELCOME,
   logo: LOGO_WELCOME,
+  // A wireframe page is laid out as an infographic page is, and takes its track under its own welcome.
+  wireframe: {
+    ...INFOGRAPHIC_WELCOME,
+    title: 'Getting started with wireframes?',
+    body: 'A quick look at screen layouts, backgrounds and presenting?',
+  },
 };
 
 /** Whether a step's control is on screen as the tour starts (spec "Filtering"): what it needs to open, else its own

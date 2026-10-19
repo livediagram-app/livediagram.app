@@ -136,6 +136,7 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
   logoPages: 'canvas/pages-mode/logo-pages',
+  wireframePages: 'canvas/pages-mode/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   slidePages: 'canvas/pages-mode/slide-pages',
   infographicLayouts: 'canvas/pages-mode/infographic-layouts',
@@ -513,6 +514,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   logoPages: {
     title: 'Learn about logo pages',
     description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
+  },
+  wireframePages: {
+    title: 'Learn about wireframe pages',
+    description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
   },
   slidePages: {
     title: 'Learn about slide pages',

@@ -80,7 +80,7 @@ longSide)`, at least 1.
 3. **Leave out** (live nodes, a parent before its children, so everything inside goes too): every other
    `[data-page-id]`; every outermost `[data-element-id]` whose screen box misses this page's (a frame then
    draws one page's DOM, not the whole deck's); and every node matching `GIF_OMIT_SELECTOR`: `[data-gif-omit]`
-   (the `GifOmit` wrapper round the drafts, cursors, laser, agent overlays and avatars; the page navigator, the
+   (the `GifOmit` wrapper round the drafts, cursors, laser, agent overlays and avatars; the
    first-page kind choice, the in-page layout card and an empty logo page's guides), `[data-selection-grips]` and
    `[data-comment-trigger]`. Page title bars and the add-page button sit outside the page's box and are cropped.
 4. **Animation table**, read inside `withFullMotion` (below): for each kept node and each of `''`, `'::before'`,

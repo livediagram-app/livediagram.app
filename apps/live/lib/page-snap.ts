@@ -57,8 +57,13 @@ export function pageSnap(input: {
   const turned = input.velocity === undefined ? undefined : swipeTurn(input, page);
   if (turned) page = turned;
   const fit = fitOf(page);
+  // Moved on from a page seen whole (a swipe, or a pan onto another page): the new page is seen whole
+  // too, at its own fit, however its zoom compares (a watch's fit is far closer than an article's).
+  const start = input.from === undefined ? undefined : pages.find((p) => p.id === input.from);
+  const movedOnWhole =
+    !!start && start.id !== page.id && view.zoom <= fitOf(start).zoom * SNAP_FIT_TOLERANCE;
   const frame =
-    view.zoom <= fit.zoom * SNAP_FIT_TOLERANCE
+    turned || movedOnWhole || view.zoom <= fit.zoom * SNAP_FIT_TOLERANCE
       ? fit
       : {
           zoom: view.zoom,

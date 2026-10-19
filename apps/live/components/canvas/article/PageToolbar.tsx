@@ -7,9 +7,12 @@
 // and goes from view with the page's top. Its buttons never take focus: the caret stays in the writing.
 // Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
 // the less used formats are menus (page-toolbar-panels.tsx). Where it sits is
-// page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts.
+// page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts. While the palette's
+// kind is Article it docks in the Toolbar strip instead (lib/article/article-dock.ts).
 import { keyLabel } from '@/lib/key-label';
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import { useArticleDock } from '@/lib/article/article-dock';
 import {
   lucideBaseline,
   lucideBold,
@@ -36,6 +39,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,
   requestStylePanel,
+  useArticleHandle,
   useActiveArticle,
   useArticleLinkRequest,
   useArticleCommentRequest,
@@ -138,6 +142,33 @@ export function PageToolbar({
           focused: false,
         }
       : null);
+  // Docked in the Toolbar strip (the palette's kind is Article): always shown, for the article last
+  // worked on or hovered, else the first, so the strip never loses its controls as the pointer
+  // leaves a page for it.
+  const dock = useArticleDock();
+  const [last, setLast] = useState<{ flow: string; pageId: string | null } | null>(null);
+  if (active && (active.handle.flow !== last?.flow || active.pageId !== last?.pageId))
+    setLast({ flow: active.handle.flow, pageId: active.pageId });
+  const lastFlow = last?.flow;
+  // Followed as editors register: on load the strip shows before the first one mounts.
+  const lastHandle = useArticleHandle(lastFlow);
+  const firstArticleHandle = useArticleHandle(articlePages[0]?.flow);
+  const keptHandle =
+    dock && !active && lastFlow && articlePages.some((p) => p.flow === lastFlow)
+      ? lastHandle
+      : undefined;
+  const firstHandle = dock && !active && !keptHandle ? firstArticleHandle : undefined;
+  const fallbackHandle = keptHandle ?? firstHandle;
+  const shown: ActiveArticle | null =
+    active ??
+    (fallbackHandle
+      ? {
+          handle: fallbackHandle,
+          pageId: keptHandle ? (last?.pageId ?? null) : (articlePages[0]?.id ?? null),
+          selection: fallbackHandle.selection(),
+          focused: false,
+        }
+      : null);
   useOffPagePressClears(worked, articlePages);
   const [open, setOpen] = useState<Open>(null);
   const linkRequest = useArticleLinkRequest();
@@ -162,19 +193,20 @@ export function PageToolbar({
   }, [commentRequest]);
   // A menu hangs where it opened: the view panning or zooming away from it closes it.
   const gesture = useCanvasGesture();
-  if ((gesture === 'pan' || gesture === 'zoom') && open) setOpen(null);
+  // Docked, the menus hang from the strip, which a pan or a zoom does not move.
+  if (!dock && (gesture === 'pan' || gesture === 'zoom') && open) setOpen(null);
   // A menu goes with the article.
-  if (!active && open) setOpen(null);
+  if (!shown && open) setOpen(null);
 
   const phone = useIsMobileViewport();
   const bar = usePageToolbarPlacement({
-    pageId: active?.pageId ?? null,
+    pageId: dock ? null : (shown?.pageId ?? null),
     phone,
     topRoomOf,
   });
 
-  if (!active) return null;
-  const { handle, selection } = active;
+  if (!shown) return null;
+  const { handle, selection } = shown;
   const run = (command: Parameters<typeof handle.run>[0], event?: keyof typeof FORMAT_EVENT) => {
     handle.run(command);
     if (event) track('Element', 'Changed', FORMAT_EVENT[event]);
@@ -212,7 +244,7 @@ export function PageToolbar({
   const more = (action: MoreAction) => {
     if (action === 'style') {
       handle.flush();
-      if (active.pageId) requestStylePanel(active.pageId);
+      if (shown.pageId) requestStylePanel(shown.pageId);
       return;
     }
     run(
@@ -229,140 +261,148 @@ export function PageToolbar({
     );
   };
 
-  return (
-    <Portal>
-      <div
-        ref={bar}
-        role="toolbar"
-        aria-label="Article Formatting"
-        data-page-toolbar=""
-        data-article-keep-active=""
-        onMouseDown={(e) => e.preventDefault()}
-        onPointerDown={(e) => e.stopPropagation()}
-        className={`fixed left-0 top-0 z-[var(--z-toolbar)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`}
-        style={{ visibility: 'hidden' }}
+  const controls = (
+    <div
+      ref={dock ? undefined : bar}
+      role="toolbar"
+      aria-label="Article Formatting"
+      data-page-toolbar=""
+      data-article-keep-active=""
+      onMouseDown={(e) => e.preventDefault()}
+      onPointerDown={(e) => e.stopPropagation()}
+      className={
+        dock
+          ? 'flex min-w-0 items-center gap-0.5'
+          : `fixed left-0 top-0 z-[var(--z-toolbar)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`
+      }
+      style={dock ? undefined : { visibility: 'hidden' }}
+    >
+      <button
+        data-anchor="style"
+        type="button"
+        aria-label={`Style: ${styleLabel}`}
+        aria-haspopup="menu"
+        aria-expanded={open === 'style'}
+        onClick={() => toggleOpen('style')}
+        className={`flex h-9 ${phone ? '' : 'min-w-[124px]'} shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+          open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
+        }`}
       >
-        <button
-          data-anchor="style"
-          type="button"
-          aria-label={`Style: ${styleLabel}`}
-          aria-haspopup="menu"
-          aria-expanded={open === 'style'}
-          onClick={() => toggleOpen('style')}
-          className={`flex h-9 ${phone ? '' : 'min-w-[124px]'} shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
-            open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
-          }`}
-        >
-          <TypeIcon />
-          <span className="flex-1 truncate text-left">{styleShown}</span>
-          <ChevronDownIcon className="shrink-0" />
-        </button>
-        <Divider />
-        <Button
-          label="Bold"
-          keys="Mod-b"
-          pressed={selection.marks.has('bold')}
-          onPress={() => run(toggleBold, 'format')}
-        >
-          <Bold />
-        </Button>
-        <Button
-          label="Italic"
-          keys="Mod-i"
-          pressed={selection.marks.has('italic')}
-          onPress={() => run(toggleItalic, 'format')}
-        >
-          <Italic />
-        </Button>
-        <Button
-          label="Underline"
-          keys="Mod-u"
-          pressed={selection.marks.has('underline')}
-          onPress={() => run(toggleUnderline, 'format')}
-        >
-          <Underline />
-        </Button>
-        <Button
-          label="Colour"
-          anchor="colour"
-          menu
-          popup="dialog"
-          expanded={open === 'colour'}
-          onPress={() => toggleOpen('colour')}
-        >
-          <span className="relative flex flex-col items-center">
-            <Colour />
-            <span
-              className="absolute -bottom-1 h-[3px] w-4 rounded-full"
-              style={{ background: selection.highlight ?? selection.color ?? 'currentColor' }}
-            />
-          </span>
-        </Button>
-        <Button
-          label="Link"
-          keys="Mod-k"
-          anchor="link"
-          pressed={open === 'link' || selection.marks.has('link')}
-          onPress={() => toggleOpen('link')}
-        >
-          <LinkIcon />
-        </Button>
-        <Divider />
-        <Button
-          label="Lists"
-          anchor="list"
-          menu
-          expanded={open === 'list'}
-          pressed={selection.list !== null}
-          onPress={() => toggleOpen('list')}
-        >
-          {selection.list ? <ListGlyph list={selection.list} /> : <ListIcon />}
-        </Button>
-        <Button
-          label="Alignment"
-          anchor="align"
-          menu
-          expanded={open === 'align'}
-          onPress={() => toggleOpen('align')}
-        >
-          <AlignGlyph align={selection.align ?? 'left'} />
-        </Button>
-        <Button
-          label="More Formatting"
-          anchor="more"
-          menu
-          expanded={open === 'more'}
-          onPress={() => toggleOpen('more')}
-        >
-          <More />
-        </Button>
-        <Divider />
-        <Button
-          label="Insert"
-          anchor="insert"
-          menu
-          expanded={open === 'insert'}
-          onPress={() => toggleOpen('insert')}
-        >
-          <Plus />
-        </Button>
-        <Divider />
-        <Button
-          label="Comment"
-          keys="Mod-Alt-m"
-          disabled={!selection.hasText || !onNote}
-          onPress={() => onNote?.(handle.flow, 'comment')}
-        >
-          <CommentIcon />
-        </Button>
-        <Button
-          label="Assign Action"
-          disabled={!selection.hasText || !onNote}
-          onPress={() => onNote?.(handle.flow, 'action')}
-        >
-          <ActionIcon />
-        </Button>
-      </div>
+        <TypeIcon />
+        <span className="flex-1 truncate text-left">{styleShown}</span>
+        <ChevronDownIcon className="shrink-0" />
+      </button>
+      <Divider />
+      <Button
+        label="Bold"
+        keys="Mod-b"
+        pressed={selection.marks.has('bold')}
+        onPress={() => run(toggleBold, 'format')}
+      >
+        <Bold />
+      </Button>
+      <Button
+        label="Italic"
+        keys="Mod-i"
+        pressed={selection.marks.has('italic')}
+        onPress={() => run(toggleItalic, 'format')}
+      >
+        <Italic />
+      </Button>
+      <Button
+        label="Underline"
+        keys="Mod-u"
+        pressed={selection.marks.has('underline')}
+        onPress={() => run(toggleUnderline, 'format')}
+      >
+        <Underline />
+      </Button>
+      <Button
+        label="Colour"
+        anchor="colour"
+        menu
+        popup="dialog"
+        expanded={open === 'colour'}
+        onPress={() => toggleOpen('colour')}
+      >
+        <span className="relative flex flex-col items-center">
+          <Colour />
+          <span
+            className="absolute -bottom-1 h-[3px] w-4 rounded-full"
+            style={{ background: selection.highlight ?? selection.color ?? 'currentColor' }}
+          />
+        </span>
+      </Button>
+      <Button
+        label="Link"
+        keys="Mod-k"
+        anchor="link"
+        pressed={open === 'link' || selection.marks.has('link')}
+        onPress={() => toggleOpen('link')}
+      >
+        <LinkIcon />
+      </Button>
+      <Divider />
+      <Button
+        label="Lists"
+        anchor="list"
+        menu
+        expanded={open === 'list'}
+        pressed={selection.list !== null}
+        onPress={() => toggleOpen('list')}
+      >
+        {selection.list ? <ListGlyph list={selection.list} /> : <ListIcon />}
+      </Button>
+      <Button
+        label="Alignment"
+        anchor="align"
+        menu
+        expanded={open === 'align'}
+        onPress={() => toggleOpen('align')}
+      >
+        <AlignGlyph align={selection.align ?? 'left'} />
+      </Button>
+      <Button
+        label="More Formatting"
+        anchor="more"
+        menu
+        expanded={open === 'more'}
+        onPress={() => toggleOpen('more')}
+      >
+        <More />
+      </Button>
+      <Divider />
+      <Button
+        label="Insert"
+        anchor="insert"
+        menu
+        expanded={open === 'insert'}
+        onPress={() => toggleOpen('insert')}
+      >
+        <Plus />
+      </Button>
+      <Divider />
+      <Button
+        label="Comment"
+        keys="Mod-Alt-m"
+        disabled={!selection.hasText || !onNote}
+        onPress={() => onNote?.(handle.flow, 'comment')}
+      >
+        <CommentIcon />
+      </Button>
+      <Button
+        label="Assign Action"
+        disabled={!selection.hasText || !onNote}
+        onPress={() => onNote?.(handle.flow, 'action')}
+      >
+        <ActionIcon />
+      </Button>
+    </div>
+  );
+
+  return (
+    <>
+      {dock ? createPortal(controls, dock) : <Portal>{controls}</Portal>}
       {open === 'style' ? (
         <ToolbarPopover anchor="style" menu onClose={close} label="Text Style" width={210}>
           <StylePanel
@@ -419,7 +459,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'insert' ? (
-        <ToolbarPopover anchor="insert" menu onClose={close} label="Insert" width={200}>
+        <ToolbarPopover anchor="insert" menu onClose={close} label="Insert" width={264}>
           <InsertPanel
             onObject={(what) => choose(() => onInsert?.(handle.flow, what))}
             onBlock={(what) => choose(() => insertBlock(what))}
@@ -431,7 +471,7 @@ export function PageToolbar({
           <MorePanel selection={selection} onAction={(a) => choose(() => more(a))} />
         </ToolbarPopover>
       ) : null}
-    </Portal>
+    </>
   );
 }
 

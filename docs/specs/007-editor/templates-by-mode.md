@@ -151,23 +151,49 @@ already infographic pages, built with the page layouts' kit.
 
 ### Design templates
 
-Five templates for showing a design open in Pages, each on one infographic page sized for what it is
+Two templates for showing a design open in Pages, each on one infographic page sized for what it is
 (`template-design-pages.ts`). Their drawings are the ones they had as Diagram templates, built by the same builders
 at the same size (the Floor plan is drawn to a captioned metric scale, so none is scaled) and centred on the page.
-Start Making Pages lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
-show."), after Logos; their catalogue category stays Design.
+Start Making Pages lists them in their own group, **Design** ("Storyboards and floor plans, drawn to show."), after
+Wireframes; their catalogue category stays Design.
 
-| Template           | Kind id             | Page                                                         |
-| ------------------ | ------------------- | ------------------------------------------------------------ |
-| Web page wireframe | `browser-wireframe` | Widescreen (16:9), "Landing Page", on a cool studio grey     |
-| Laptop wireframe   | `laptop-wireframe`  | Widescreen (16:9), "Dashboard", on a cool studio grey        |
-| Mobile wireframe   | `mobile-wireframe`  | Widescreen (16:9), "Order Ahead Flow", on a cool studio grey |
-| Storyboard         | `storyboard`        | A3 landscape, "Storyboard", plain paper                      |
-| Floor plan         | `floor-plan`        | A3 landscape, "Floor Plan", ruled in the page's grid pattern |
+| Template   | Kind id      | Page                                                         |
+| ---------- | ------------ | ------------------------------------------------------------ |
+| Storyboard | `storyboard` | A3 landscape, "Storyboard", plain paper                      |
+| Floor plan | `floor-plan` | A3 landscape, "Floor Plan", ruled in the page's grid pattern |
 
-- Screens sit on the shape they are shown on (16:9); the storyboard and the plan on the sheet they are printed on (A3).
-- The page carries the backdrop: none of the five ships a canvas pattern any more (the Floor plan's graph paper
-  became its page's grid, the Storyboard's crosshatch is gone).
+- Both sit on the sheet they are printed on (A3), which carries the backdrop: neither ships a canvas pattern any more
+  (the Floor plan's graph paper became its page's grid, the Storyboard's crosshatch is gone).
+- The three device wireframes once here (`mobile-wireframe`, `laptop-wireframe`, `browser-wireframe`, device shapes on
+  a 16:9 page) are retired for the wireframe templates below: a link, an agent or a seed naming one makes its
+  replacement (`templateKindOf`): **Mobile App Wireframe**, **Web App Wireframe** and **Website Wireframe**.
+
+### Wireframe templates
+
+Ten templates on [wireframe pages](wireframe-pages.md), listed in Start Making Pages' own **Wireframes** group
+("Screens in their device: a phone, a tablet, a laptop, a browser or a watch."), after Logos and before Design.
+
+The **blank wireframes** are blanks of a page kind (above), each one empty wireframe page in its device, made by
+`withPageKindChosen` with the device (`blankPageTemplateOverrides`), and they lead the group:
+
+| Template                | Kind id                   | Device  |
+| ----------------------- | ------------------------- | ------- |
+| Blank Phone Wireframe   | `blank-wireframe-phone`   | iPhone  |
+| Blank Tablet Wireframe  | `blank-wireframe-tablet`  | iPad    |
+| Blank Website Wireframe | `blank-wireframe-browser` | Browser |
+| Blank Laptop Wireframe  | `blank-wireframe-laptop`  | Laptop  |
+| Blank Watch Wireframe   | `blank-wireframe-watch`   | Watch   |
+
+The **flows** (`template-builders-wireframe-flows.ts`, catalogue category Design) are a row of wireframe pages in
+one device, each named for its screen and laid out from a wireframe layout:
+
+| Template             | Kind id                | Device  | Screens                                      |
+| -------------------- | ---------------------- | ------- | -------------------------------------------- |
+| Mobile App Wireframe | `wireframe-mobile-app` | iPhone  | Onboarding, Sign In, Home, Product, Checkout |
+| Website Wireframe    | `wireframe-website`    | Browser | Home, Pricing, Sign In                       |
+| Web App Wireframe    | `wireframe-dashboard`  | Laptop  | Overview, Orders, Settings                   |
+| Tablet App Wireframe | `wireframe-tablet-app` | iPad    | Discover, Messages, Profile                  |
+| Watch App Wireframe  | `wireframe-watch-app`  | Watch   | Glance, Today, Alert                         |
 
 ## Workshop templates
 

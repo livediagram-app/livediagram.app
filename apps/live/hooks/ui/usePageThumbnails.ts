@@ -19,6 +19,7 @@ import {
 } from '@livediagram/document';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thumb';
 
 export type PageThumbTab = Pick<
@@ -37,6 +38,8 @@ export function usePageThumbnails(
   settleMs = 0,
 ): Map<string, SlideThumb> {
   const iconsLoaded = useIconCatalogs();
+  // The canvas's surface: a page with no fill is pictured on the paper as the canvas shows it.
+  const surface = useCanvasSurface();
   const key = pageIds.join(',');
   // What a picture shows, as one value, so a rest can hold the last one drawn.
   const live = useMemo(
@@ -59,6 +62,7 @@ export function usePageThumbnails(
       full.finish,
       full.articles,
       iconsLoaded,
+      surface,
     ];
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
@@ -81,7 +85,7 @@ export function usePageThumbnails(
         const thumb = slideThumbFor(
           slide,
           { ...full, elements },
-          { iconsLoaded, ...(labels ? { labels } : {}) },
+          { iconsLoaded, surface, ...(labels ? { labels } : {}) },
         );
         entry = { page, elements, thumb };
       }
@@ -90,7 +94,7 @@ export function usePageThumbnails(
     }
     cache.current = { shared, pages: next };
     return out;
-  }, [drawn, iconsLoaded]);
+  }, [drawn, iconsLoaded, surface]);
 }
 
 function sameList(a: readonly unknown[], b: readonly unknown[]): boolean {

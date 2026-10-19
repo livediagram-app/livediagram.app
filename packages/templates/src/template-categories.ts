@@ -135,6 +135,11 @@ type BlankKind =
   | 'blank-article'
   | 'blank-infographic'
   | 'blank-logo'
+  | 'blank-wireframe-phone'
+  | 'blank-wireframe-tablet'
+  | 'blank-wireframe-browser'
+  | 'blank-wireframe-laptop'
+  | 'blank-wireframe-watch'
   | 'blank-plan'
   | 'blank-spreadsheet'
   | 'blank-session'
@@ -239,9 +244,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'metric-tree': 'hierarchies',
   'family-tree': 'hierarchies',
   // Design and UX: screens, research and the spaces people move through.
-  'mobile-wireframe': 'design',
-  'laptop-wireframe': 'design',
-  'browser-wireframe': 'design',
   'paper-prototype': 'design',
   storyboard: 'design',
   journey: 'design',
@@ -265,6 +267,12 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'workshop-kickoff': 'presentations',
   'event-poster': 'presentations',
   'logo-design': 'presentations',
+  // Design: the wireframe flows sit with the other wireframes.
+  'wireframe-mobile-app': 'design',
+  'wireframe-website': 'design',
+  'wireframe-dashboard': 'design',
+  'wireframe-tablet-app': 'design',
+  'wireframe-watch-app': 'design',
   resume: 'presentations',
   'recipe-card': 'presentations',
   'live-card': 'presentations',

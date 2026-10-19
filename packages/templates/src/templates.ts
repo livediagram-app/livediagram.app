@@ -34,8 +34,6 @@ export type TemplateKind =
   // UI wireframes (use the device-frame shapes added in docs/specs/008-canvas/canvas-and-palette.md's
   // Devices accordion). Situational starters for design / product work,
   // which is why they are extras rather than defaults.
-  | 'mobile-wireframe'
-  | 'laptop-wireframe'
   | 'slide-deck'
   // A growth / momentum flywheel: a spinning hub and four hue-tinted
   // stage wheels on a flowing clockwise loop, each with its metric, plus
@@ -46,6 +44,13 @@ export type TemplateKind =
   // a one-colour version) plus the brand palette, so a designer picks
   // the composition that fits, deletes the rest, and iterates.
   | 'logo-design'
+  // Wireframe templates (docs/specs/007-editor/templates-by-mode.md "Wireframe templates"): flows
+  // of wireframe pages, each screen a wireframe layout in its device.
+  | 'wireframe-mobile-app'
+  | 'wireframe-website'
+  | 'wireframe-dashboard'
+  | 'wireframe-tablet-app'
+  | 'wireframe-watch-app'
   // Gantt chart: a twelve-week plan on a month + week calendar, grouped
   // by workstream, with owners, progress bars, dependencies, a milestone
   // and a Today line. A project-planning starter, and an extra.
@@ -122,7 +127,6 @@ export type TemplateKind =
   // Web page wireframe in a browser frame: an annotated landing page (nav,
   // hero, product shot, social proof, benefits, footer) with pinned notes.
   // The landing-page sibling of the mobile / laptop wireframes.
-  | 'browser-wireframe'
   // Storyboard: numbered shots of a short ad, each with a shot + timing
   // chip, a sketch, and action + sound lines beneath.
   | 'storyboard'
@@ -203,6 +207,11 @@ export type TemplateKind =
   | 'blank-article'
   | 'blank-infographic'
   | 'blank-logo'
+  | 'blank-wireframe-phone'
+  | 'blank-wireframe-tablet'
+  | 'blank-wireframe-browser'
+  | 'blank-wireframe-laptop'
+  | 'blank-wireframe-watch'
   // Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"): boards drawn with
   // freehand strokes, stickies, text and stickers, opening in Draw mode.
   | 'sketchnote'
@@ -326,6 +335,36 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-logo',
     title: 'Blank Logo',
     description: 'One empty square artboard for a mark, a wordmark or a lockup.',
+    extra: true,
+  },
+  {
+    kind: 'blank-wireframe-phone',
+    title: 'Blank Phone Wireframe',
+    description: 'One empty iPhone screen to wireframe a mobile app on.',
+    extra: true,
+  },
+  {
+    kind: 'blank-wireframe-tablet',
+    title: 'Blank Tablet Wireframe',
+    description: 'One empty iPad screen to wireframe a tablet app on.',
+    extra: true,
+  },
+  {
+    kind: 'blank-wireframe-browser',
+    title: 'Blank Website Wireframe',
+    description: 'One empty browser window to wireframe a web page on.',
+    extra: true,
+  },
+  {
+    kind: 'blank-wireframe-laptop',
+    title: 'Blank Laptop Wireframe',
+    description: 'One empty laptop screen to wireframe a web or desktop app on.',
+    extra: true,
+  },
+  {
+    kind: 'blank-wireframe-watch',
+    title: 'Blank Watch Wireframe',
+    description: 'One empty watch face to wireframe a watch app on.',
     extra: true,
   },
   {
@@ -608,20 +647,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'mobile-wireframe',
-    title: 'Mobile Wireframe',
-    description:
-      'A three-screen app flow joined by tap arrows, with numbered pins matching design notes.',
-    extra: true,
-  },
-  {
-    kind: 'laptop-wireframe',
-    title: 'Laptop Wireframe',
-    description:
-      'An analytics dashboard on a laptop: nav, sidebar, KPI row, a chart and a recent sign-ups table.',
-    extra: true,
-  },
-  {
     kind: 'slide-deck',
     title: 'Slide Deck',
     description:
@@ -640,6 +665,38 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Logo Design',
     description:
       'A brand exploration on Square pages: six lockups (horizontal, stacked, app icon, one colour), each on its own artboard, plus a palette page. Pick one, delete the rest, swap in your own mark.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-mobile-app',
+    title: 'Mobile App Wireframe',
+    description:
+      'Five iPhone screens of a shopping app, from onboarding and sign in to the home feed, a product and checkout.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-website',
+    title: 'Website Wireframe',
+    description: 'Three browser pages of a product site: a landing page, pricing and sign in.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-dashboard',
+    title: 'Web App Wireframe',
+    description:
+      'Three laptop screens of a web app: an overview dashboard, an orders table and settings.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-tablet-app',
+    title: 'Tablet App Wireframe',
+    description: 'Three iPad screens: a discovery feed, messages and a profile.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-watch-app',
+    title: 'Watch App Wireframe',
+    description: 'Three watch faces: a glance, a list and a notification.',
     extra: true,
   },
   {
@@ -846,13 +903,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Sitemap',
     description:
       'A site page tree: nav sections, pages with type glyphs and routes, footer and utility pages.',
-    extra: true,
-  },
-  {
-    kind: 'browser-wireframe',
-    title: 'Web Page Wireframe',
-    description:
-      'A real landing page in a browser frame, annotated with pinned notes on why it is laid out so.',
     extra: true,
   },
   {
@@ -1193,6 +1243,24 @@ export const TEMPLATES: TemplateDescriptor[] = [
 // `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
 export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
+}
+
+// Templates retired for a better one, by their old kind: a link, an agent or a seed naming one makes
+// its replacement. The diagram-mode device wireframes became wireframe pages in their devices
+// (docs/specs/007-editor/templates-by-mode.md "Wireframe templates").
+const RETIRED_TEMPLATE_KINDS: Readonly<Record<string, TemplateKind>> = {
+  'mobile-wireframe': 'wireframe-mobile-app',
+  'laptop-wireframe': 'wireframe-dashboard',
+  'browser-wireframe': 'wireframe-website',
+};
+
+/** The template a kind names: itself, a retired kind's replacement, else null. For a kind that
+ *  arrives as a plain string from outside (a link, an agent, a seed). */
+export function templateKindOf(value: unknown): TemplateKind | null {
+  if (isTemplateKind(value)) return value;
+  return typeof value === 'string' && Object.hasOwn(RETIRED_TEMPLATE_KINDS, value)
+    ? RETIRED_TEMPLATE_KINDS[value]!
+    : null;
 }
 
 // The editor URL that creates this template without the wizard and opens it

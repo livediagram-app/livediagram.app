@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import {
   chartPageGrounds,
   elementPageSurfaces,
+  pageClipPathData,
   type Element,
   type LaidOutPage,
   type Layer,
@@ -19,12 +20,15 @@ import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-b
 // press on the empty canvas still reaches the canvas. It also inks each element for the page it is
 // on (docs/specs/007-editor/pages-mode.md "A dark page has light ink").
 
-/** The pages as one CSS clip path, in canvas coordinates (the world's origin). */
+/** The pages as one CSS clip path, in canvas coordinates (the world's origin): each page's sheet,
+ *  a wireframe page's rounded screen (docs/specs/007-editor/wireframe-pages.md "The screen"). */
 export function pagesClipPath(pages: readonly LaidOutPage[]): string {
   // No page to show through: a clip that hides everything (an empty path would clip nothing).
   if (pages.length === 0) return 'polygon(0 0, 0 0, 0 0)';
-  const rects = pages.map(
-    ({ rect: r }) => `M${r.x} ${r.y}H${r.x + r.width}V${r.y + r.height}H${r.x}Z`,
+  const rects = pages.map((page) =>
+    page.kind === 'wireframe'
+      ? pageClipPathData(page)
+      : `M${page.rect.x} ${page.rect.y}H${page.rect.x + page.rect.width}V${page.rect.y + page.rect.height}H${page.rect.x}Z`,
   );
   return `path('${rects.join('')}')`;
 }

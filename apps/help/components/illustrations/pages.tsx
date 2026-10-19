@@ -1,7 +1,7 @@
 // Pages mode illustrations for the Canvas articles on Pages Mode, Infographic Layouts,
 // Exporting and Presenting Pages and Writing Articles (docs/specs/018-help/help-app.md). Each draws
 // the real surface with its real labels: the pages in a row with their labels, title-bar buttons,
-// cogs, navigator and add button (CanvasPages.tsx, PageNavigator.tsx, AddPageButton.tsx), the
+// cogs and add buttons (CanvasPages.tsx, AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the
 // page panel (PagePanel.tsx, page-panel-sections.tsx), the Layout button's
 // popover (PageLayoutsButton.tsx, infographic-page-layouts-section.tsx), the export page picker (ExportPagePicker.tsx) and the
 // article formatting toolbar (article/PageToolbar.tsx). Composed from the shared primitives.
@@ -163,13 +163,14 @@ function PageIcons({ cogX, cy }: { cogX: number; cy: number }) {
 }
 
 /** Two pages in a row: each with its label above its top-left corner and its buttons and cog
- *  above its top-right, the page navigator under the first, and the + after the last. */
+ *  above its top-right, the + and the any-kind button after the last, and the page navigator in
+ *  the bottom-right cluster beside Undo / Redo. */
 export function PagesScene() {
   return (
     <Scene w={480} h={250}>
       {/* Page 1: A4 landscape, a title and a small chart */}
       <Label x={20} y={38} size={9} weight={600} tone="body">
-        Page 1 · A4 · Landscape
+        A4 · Landscape
       </Label>
       <PageIcons cogX={211} cy={38} />
       <Cog cx={211} cy={38} />
@@ -195,38 +196,9 @@ export function PagesScene() {
           strokeWidth={7}
         />
       </Sheet>
-      {/* The navigator under each page once there are two or more */}
-      <g>
-        <rect
-          x={78}
-          y={208}
-          width={84}
-          height={24}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <path
-          d="M92 215 l-5 5 l5 5"
-          fill="none"
-          className="stroke-slate-300"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-        <Label x={120} y={220.5} anchor="middle" size={10.5} tone="body">
-          1 of 2
-        </Label>
-        <path
-          d="M148 215 l5 5 l-5 5"
-          fill="none"
-          className="stroke-slate-600"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-      </g>
       {/* Page 2: a square social post */}
       <Label x={244} y={38} size={9} weight={600} tone="body">
-        Page 2 · Square
+        Square
       </Label>
       <PageIcons cogX={395} cy={38} />
       <Cog cx={395} cy={38} />
@@ -247,22 +219,84 @@ export function PagesScene() {
           />
         ))}
       </Sheet>
-      {/* Add page, after the last page */}
+      {/* After the last page: the + adds another like it, the button under it any kind */}
       <g>
-        <rect
-          x={428}
-          y={114}
-          width={30}
-          height={30}
-          rx={8}
+        <circle
+          cx={438}
+          cy={122}
+          r={14}
           className="fill-white stroke-slate-300"
           strokeWidth={1.3}
-          strokeDasharray="3 3"
         />
         <path
-          d="M443 122 v14 M436 129 h14"
+          d="M438 116 v12 M432 122 h12"
           className="stroke-slate-500"
           strokeWidth={1.8}
+          strokeLinecap="round"
+        />
+        <circle
+          cx={438}
+          cy={148}
+          r={10}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1.2}
+        />
+        <path
+          d="M434 144h3v3h-3zM439 144h3v3h-3zM434 149h3v3h-3zM439 149h3v3h-3z"
+          className="fill-none stroke-slate-500"
+          strokeWidth={1}
+        />
+      </g>
+      {/* The bottom-right cluster: Undo / Redo, then the page navigator */}
+      <g>
+        <rect
+          x={286}
+          y={214}
+          width={60}
+          height={28}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <line x1={316} y1={214} x2={316} y2={242} className="stroke-slate-100" strokeWidth={1.2} />
+        <path
+          d="M297 228 a6 6 0 1 1 3 5 M297 223 v5 h5"
+          fill="none"
+          className="stroke-slate-500"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        <path
+          d="M335 228 a6 6 0 1 0 -3 5 M335 223 v5 h-5"
+          fill="none"
+          className="stroke-slate-300"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        <rect
+          x={352}
+          y={214}
+          width={112}
+          height={28}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <path
+          d="M368 223 l-5 5 l5 5"
+          fill="none"
+          className="stroke-slate-300"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+        <Label x={408} y={228.5} anchor="middle" size={10.5} tone="body">
+          1 of 2
+        </Label>
+        <path
+          d="M448 223 l5 5 l-5 5"
+          fill="none"
+          className="stroke-slate-600"
+          strokeWidth={1.6}
           strokeLinecap="round"
         />
       </g>

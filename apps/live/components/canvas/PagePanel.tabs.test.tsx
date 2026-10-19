@@ -16,6 +16,7 @@ const laidOut = (page: Page) => layOutPages([page])[0]!;
 const edits = (): PageEdits => ({
   setOrientation: vi.fn(),
   setSize: vi.fn(),
+  setDevice: vi.fn(),
   rename: vi.fn(),
   setBackground: vi.fn(),
   applyToAllReach: vi.fn(() => 0),

@@ -2,7 +2,7 @@
 // (docs/specs/007-editor/pages-mode.md "Slides"): that page's sheet alone. In the presenter's
 // Pages mode it is the mode's own view narrowed to the page; in any other mode (modes are
 // per person), the sheet is built from the tab, so a page slide always presents on its page.
-import { pagesOf, layOutPages, type Tab } from '@livediagram/document';
+import { pagesOf, layOutPages, tabWireframeFrameTheme, type Tab } from '@livediagram/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { ArticlesView } from '@/hooks/editor/useArticles';
 import { getTheme } from '@/lib/themes';
@@ -40,6 +40,7 @@ export function presentedPages(
     readPage: noop,
     themeBackgrounds: [],
     themeAccent: themeAccent(getTheme(tab.theme)),
+    frameTheme: tabWireframeFrameTheme(tab),
     tabFont: tab.font,
     layoutPreview: null,
     setLayoutPreview: noop,

@@ -67,6 +67,7 @@ import {
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
+import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
 
 import {
@@ -127,6 +128,8 @@ export type PaletteTileSection =
   | 'dashboard-cards'
   // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
   | 'logo'
+  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
+  | 'wireframe'
   | 'plan-sheets'
   | 'tools'
   | 'data'
@@ -600,7 +603,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
-  // the same tool Draw mode's dock holds, in the Logo category only.
+  // the same tool Draw mode's dock holds, in a logo page's Draw only.
   {
     id: 'logo:pen',
     blurb: 'Click for corners, drag for curves',
@@ -2407,6 +2410,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   })),
   // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
   ...PLAN_TILES,
+  // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
+  ...WIREFRAME_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

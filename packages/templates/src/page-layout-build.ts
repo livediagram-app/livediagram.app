@@ -1,24 +1,17 @@
 // A page layout built for one page (docs/specs/007-editor/pages-mode.md "Layouts"): laid out
-// in the page's content box, the page less its margins. Shared by placing a layout, its picker
+// in the page's content box: the page less its margins, a wireframe page's safe area. Shared by placing a layout, its picker
 // tile and its hover preview, so all three show the same arrangement.
-import { pageMargin, settleChips, type Element, type LaidOutPage } from '@livediagram/document';
+import { pageContentBox, settleChips, type Element, type LaidOutPage } from '@livediagram/document';
 import { pageLayoutById } from './layout-catalogue';
 import { carryPageContent } from './page-layout-carry';
 import type { PageLayoutId } from './page-layouts';
 
-export function buildPageLayout(
-  layout: PageLayoutId,
-  page: Pick<LaidOutPage, 'rect' | 'orientation' | 'size'>,
-): Element[] {
-  const m = pageMargin(page);
-  const { x, y, width, height } = page.rect;
+type LayoutPage = Pick<LaidOutPage, 'rect' | 'orientation' | 'size'> &
+  Partial<Pick<LaidOutPage, 'kind' | 'device' | 'systemBars'>>;
+
+export function buildPageLayout(layout: PageLayoutId, page: LayoutPage): Element[] {
   // Settled as a template is (build-template.ts): a layout's steps are sized after they're made.
-  const built = pageLayoutById(layout).build({
-    x: x + m,
-    y: y + m,
-    width: width - 2 * m,
-    height: height - 2 * m,
-  });
+  const built = pageLayoutById(layout).build(pageContentBox(page));
   return settleChips([], built, { attachLoose: false });
 }
 
@@ -26,7 +19,7 @@ export function buildPageLayout(
  *  elements on the page now): what placing it lands, and what its hover preview shows. */
 export function buildPageLayoutOver(
   layout: PageLayoutId,
-  page: Pick<LaidOutPage, 'rect' | 'orientation' | 'size'>,
+  page: LayoutPage,
   previous: readonly Element[],
 ): Element[] {
   const placed = buildPageLayout(layout, page);
