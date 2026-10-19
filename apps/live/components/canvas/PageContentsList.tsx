@@ -105,7 +105,7 @@ export function ContentsList({
   return (
     <div
       ref={list}
-      role="listbox"
+      role="list"
       aria-label="Pages"
       onKeyDown={onListKey}
       className={`flex min-h-0 flex-col overflow-y-auto ${className}`}
@@ -120,19 +120,9 @@ export function ContentsList({
         <Fragment key={row.id}>
           {reorder.caretBefore(i) ? <DropCaret /> : null}
           <div
-            ref={(el) => registerRow(row.id, el)}
-            role="option"
-            tabIndex={0}
-            aria-selected={row.id === current}
-            aria-label={row.name}
-            data-page-row={row.id}
+            role="listitem"
             data-contents-slot={i}
             onClick={(e) => go(row, e.timeStamp)}
-            onKeyDown={(e) => {
-              if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
-              e.preventDefault();
-              go(row);
-            }}
             // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls.
             onPointerDown={(e) => {
               if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
@@ -140,24 +130,41 @@ export function ContentsList({
             onPointerMove={reorder.moveDrag}
             onPointerUp={reorder.endDrag}
             onPointerCancel={reorder.endDrag}
-            className={`group relative flex w-full cursor-pointer text-left transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
+            // The row wears its button's keyboard focus: the button lies under the row's own content.
+            className={`group relative flex w-full cursor-pointer text-left transition has-[>button:focus-visible]:outline-2 has-[>button:focus-visible]:outline-brand-600 ${
               reorder.moving && reorder.draggingId === row.id ? 'opacity-50' : ''
             } ${variant === 'film' ? FILM_ROW_CLASS(row.id === current) : LIST_ROW_CLASS(row.id === current)}`}
           >
+            {/* The row opens through one button stretched across it; its toolbar and grip sit above that button as
+                controls of their own. An option holding them was a control nested in a control (docs/specs/007-editor/pages-mode.md). */}
+            <button
+              ref={(el) => registerRow(row.id, el)}
+              type="button"
+              aria-label={row.name}
+              aria-current={row.id === current ? 'page' : undefined}
+              data-page-row={row.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                go(row, e.timeStamp);
+              }}
+              className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
+            />
             <Row
               row={row}
               here={row.id === current}
               thumb={thumbs.get(row.id)}
               actions={
-                variant === 'film' ? (
-                  <PageToolbar
-                    row={row}
-                    actions={actionsFor(row)}
-                    shown={touch || row.id === current}
-                  />
-                ) : (
-                  <PageMenu row={row} actions={actionsFor(row)} />
-                )
+                <span className="relative z-10 flex">
+                  {variant === 'film' ? (
+                    <PageToolbar
+                      row={row}
+                      actions={actionsFor(row)}
+                      shown={touch || row.id === current}
+                    />
+                  ) : (
+                    <PageMenu row={row} actions={actionsFor(row)} />
+                  )}
+                </span>
               }
               grip={
                 reorderable ? (
@@ -167,7 +174,7 @@ export function ContentsList({
                     onPointerDown={(e) => {
                       if (e.pointerType === 'touch') reorder.beginDrag(e, row.id);
                     }}
-                    className={`flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
+                    className={`relative z-10 flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
                       touch ? '' : 'opacity-0 group-hover:opacity-100'
                     }`}
                   >
@@ -260,7 +267,7 @@ function NameLine({
         {row.name}
       </span>
       {row.locked ? (
-        <span className="shrink-0 text-slate-400" aria-label="Locked">
+        <span role="img" className="shrink-0 text-slate-400" aria-label="Locked">
           <LockIcon />
         </span>
       ) : null}

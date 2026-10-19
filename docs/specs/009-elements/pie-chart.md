@@ -87,6 +87,10 @@ ChartAxis`); a series on the right shows "(right)" after its name in the Data su
 A **chart type** is how a chart draws its data, named as Google Sheets names it. Seven ship; each is a chart kind
 (the stored `shape`) and, for all but the first of its kind, a `chartVariant`:
 
+A chart is **named by its type** wherever the editor names an element: the selection badge says "Selected Column
+Chart" and a screen reader hears "Column chart", as the palette's tile says, never the kind's "Bar Chart"
+(`elementKindLabel`, `kindLabel`).
+
 | Chart type | Kind (`shape`) | `chartVariant` | Draws                                                                                         |
 | ---------- | -------------- | -------------- | --------------------------------------------------------------------------------------------- |
 | Column     | `bar-chart`    | (none)         | Upright bars from a baseline, one per datum                                                   |

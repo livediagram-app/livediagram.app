@@ -28,7 +28,7 @@ export function WindowPanel({
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {WINDOW_META.map((w) => {
           const isActive = active === w.key;
           return (

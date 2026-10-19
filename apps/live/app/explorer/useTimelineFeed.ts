@@ -322,7 +322,7 @@ export function useTimelineFeed(
     void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope: stableScope }).then(
       (page) => {
         if (!page) {
-          // The cursor is kept, so Show more simply comes back and the
+          // The cursor is kept, so Show More simply comes back and the
           // reader can press it again. No error state for this one: the
           // feed above it is intact, and a failed page is not a claim
           // that the history ended here.

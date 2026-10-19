@@ -131,6 +131,14 @@ describe('the charts in a Sheet', () => {
     expect(box('mine').style.top).toBe('20px');
   });
 
+  it('sits in a row and cell of its own, since the grid it lives in owns only rows', () => {
+    elements = [chart('mine')];
+    mount();
+    const cell = box('mine').parentElement!;
+    expect(cell.getAttribute('role')).toBe('gridcell');
+    expect(cell.parentElement!.getAttribute('role')).toBe('row');
+  });
+
   it('hands its live chart the element itself while scrolling, so the chart never reads its range again', () => {
     elements = [chart('c')];
     mount();

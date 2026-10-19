@@ -108,7 +108,7 @@ export function LogoKitPanel({
             className="h-full w-full object-contain"
           />
         ) : (
-          <span className="text-xs text-slate-500">Preparing the preview…</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Preparing the preview…</span>
         )}
       </div>
       {error ? (

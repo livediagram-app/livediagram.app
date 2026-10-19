@@ -1,5 +1,5 @@
 // Card primitives for the flat theme list (ThemeBrowser): a selectable ThemeCard (swatch + label), a custom
-// theme's card with its edit / delete actions, and the "New theme" card.
+// theme's card with its edit / delete actions, and the "New Theme" card.
 
 import type { CustomTheme } from '@livediagram/api-schema';
 import { CopyIcon, PencilIcon, PlusIcon, TrashIcon } from '@livediagram/ui';
@@ -134,7 +134,7 @@ export function CustomThemeCard({
   );
 }
 
-// The "+ New theme" tile in the Custom category drill-in: opens the
+// The "+ New Theme" tile in the Custom category drill-in: opens the
 // theme builder. Laid out like CustomThemeCard (a swatch-height block +
 // a label beneath) so it sits consistently in the grid with the saved
 // theme tiles, just dashed + a plus where the swatch would be.
@@ -149,7 +149,7 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
         <PlusIcon size={18} />
       </span>
       <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">
-        New theme
+        New Theme
       </span>
     </button>
   );

@@ -134,13 +134,16 @@ SheetToolbarMenus.tsx    number format, colours, font size, borders, merge (with
 SheetFreezeRows.tsx      Freeze's rows, in the toolbar's Freeze menu
 SheetFormulaBar.tsx      name box + fx (edits through useFormulaInput, as the cell editor does)
 SheetGrid.tsx            the scroll container, sticky viewport, keys (sheet-keys.ts), overlays, Add Rows footer
-SheetCells.tsx           the visible cells in four regions (frozen corner, rows, columns, body), overflow, fit
+SheetCells.tsx           the visible cells in four regions (frozen corner, rows, columns, body), overflow, fit;
+                         right padding where an arrow sits (DROPDOWN_PAD_PX 22, RULE_ARROW_PX, FILTER_PAD_PX 20 on
+                         the filter's header cells, `filterHead`)
+SheetCellSlot.tsx        an unstyled row + gridcell (by index) for a control drawn over a cell
 SheetHeaders.tsx         column letters and row numbers, selection tint, unhide arrows
 SheetSelectionLayer.tsx  selection, fill handle, copy and cut marquee, reference / presence / Find outlines,
                          peer name tags, filter buttons
 SheetCellEditor.tsx      in-place editor (textarea + coloured overlay), FunctionAssist (list and argument hint),
                          parse error line
-SheetMenus.tsx           header menus (with Resize…), the filter menu and the Sort Range dialog
+SheetMenus.tsx           header menus (with Resize…), the filter menu and the Custom Sort dialog
 SheetCellMenu.tsx        the cell menu: MenuHeader (the selection, its cell count), a MenuToolbar (Cut, Copy, Paste,
                          Paste Values, Clear Contents, Clear Formatting), plain MenuActionRows grouped by
                          MenuGroupSeparator (insert either side, delete, merge or unmerge) and plain
@@ -225,6 +228,15 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
   Escape ends the copy marquee, then Find, then restores a maximised sheet, then (nothing else open) blurs to the
   canvas with the element selected (`bridge.selectElement`). Commands act on `selectionNow()`, the selection as
   last set, so a key pressed in the frame after a drag acts on the dragged range.
+- What `aria-activedescendant` names is one `sr-only` `role="gridcell"` (`aria-colindex`, `aria-selected`) inside a
+  `role="row"` (`aria-rowindex`), holding the address and its value as the cell draws it (in the cell's own format: `12.00%`, a date, never `0.12` or a serial number). The drawn column and row header strips
+  (`SheetHeaders`) are `aria-hidden`: the cell's own text carries its address. The card-row overlay's controls
+  (`SheetCardRows`: Open Card, and an unsaved row's Save and Cancel, named "Unsaved card row") each sit in their own
+  `role="row"` (`aria-rowindex` the row's) and `role="gridcell"`, so the grid holds only rows. The same holds for
+  every other control drawn over a cell: the filter arrows (`SheetSelectionLayer`), comment markers and their
+  preview (`SheetCellComments`), the rule dropdown arrow (`SheetRuleLayer`) and a card field's Choose arrow each sit
+  in `SheetCellSlot` (an unstyled row and gridcell by the cell's index); the cell editor sits in the active cell's
+  row and cell; the charts layer is one row ("Charts") with one cell.
 - The canvas's Undo/Redo are called (not re-implemented) for Ctrl+Z / Shift+Z / Y.
 - Editing focuses `SheetCellEditor`: a textarea with a coloured overlay, for predictable caret handling.
 - Announcements through the editor's live region: the active cell on move ("B4, 1,250.00"), "Copied 3 by 4

@@ -1,4 +1,4 @@
-import { canCastVote, voteHidesTallies, type TabVote } from '@livediagram/document';
+import { canCastVote, voteHidesTallies, type TabVote, plural } from '@livediagram/document';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 
@@ -126,7 +126,10 @@ export function ElementVoteOverlay({
                   ? 'text-brand-700 dark:text-brand-100'
                   : 'text-slate-600 dark:text-slate-300')
               }
-              aria-label={tallyHidden ? `Your ${voteTotal} dots` : `${voteTotal} votes`}
+              role="img"
+              aria-label={
+                tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote')
+              }
             >
               {voteTotal}
             </span>
@@ -153,7 +156,10 @@ export function ElementVoteOverlay({
             }
           >
             <span
-              aria-label={tallyHidden ? `Your ${voteTotal} dots` : `${voteTotal} votes`}
+              role="img"
+              aria-label={
+                tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote')
+              }
               className={
                 'flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
                 (myVotes > 0

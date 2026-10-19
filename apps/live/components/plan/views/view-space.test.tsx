@@ -137,7 +137,7 @@ describe('a chart counts only the statuses it names', () => {
 
   it('Cards by Field too, and says so when nothing is left', () => {
     draw('workload', planWith(CARDS()), { width: 720, height: 400 }, { statuses: ['done'] });
-    expect(screen.getByRole('listitem', { name: /^Sam: 1 cards/ })).toBeTruthy();
+    expect(screen.getByRole('listitem', { name: /^Sam: 1 card,/ })).toBeTruthy();
     expect(screen.queryByRole('listitem', { name: /^No assignee/ })).toBeNull();
     cleanup();
     draw('workload', planWith(CARDS()), { width: 720, height: 400 }, { statuses: ['gone'] });

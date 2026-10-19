@@ -2,7 +2,7 @@
 
 // The theme list (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel"): every theme in one carousel, nine
 // to a page (PagedCarousel), Default first, then the built-in themes in catalogue order, then the owner's custom themes (docs/specs/011-theme/
-// custom-themes.md) and a "New theme" card. No categories: every theme works in light and dark mode alike, so there is
+// custom-themes.md) and a "New Theme" card. No categories: every theme works in light and dark mode alike, so there is
 // nothing to sort them by. Hosted by CustomThemePicker, which owns the builder; this list only signals "new" / "edit".
 //
 // Selection is reported via callbacks; the caller decides what "select" means (apply live). `onCommit` is the

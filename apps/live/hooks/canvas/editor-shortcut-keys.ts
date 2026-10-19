@@ -236,6 +236,15 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   '5': (l) => l.addArrow(),
 };
 
+// A Participant's plain keys (docs/specs/013-workspace/share-roles.md "The Participant palette"): what its tiles add, by
+// the keys the tiles show, and nothing else of EDIT_KEYS. The commit guard still decides what lands.
+export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
+  n: (l) => l.addSticky(),
+  t: (l) => l.addText(),
+  '8': (l) => l.addText(),
+  '9': (l) => l.onAddImage?.(),
+};
+
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
 //
 // Lifted out of useEditorKeyboardShortcuts' keydown, which was 477 lines with

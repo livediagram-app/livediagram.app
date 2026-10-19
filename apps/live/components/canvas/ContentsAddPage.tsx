@@ -11,7 +11,7 @@ import {
   lucidePlus,
   lucideShapes,
 } from '@livediagram/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livediagram/ui';
+import { lucideGlyph, Tooltip, withArticle } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 
@@ -144,7 +144,7 @@ export function ContentsAddPage({ contents }: { contents: PageContents }) {
                   key={kind}
                   type="button"
                   role="menuitem"
-                  aria-label={`Add a ${name} page`}
+                  aria-label={`Add ${withArticle(name)} page`}
                   onClick={() => {
                     setOpen(false);
                     add?.(kind);

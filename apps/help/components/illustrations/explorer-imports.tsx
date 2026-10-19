@@ -421,7 +421,7 @@ export function GalleryCards() {
 }
 
 /** The Themes page: a card per saved theme (swatch, name, Edit, Duplicate and Delete buttons) and
- *  the dashed New theme card. */
+ *  the dashed New Theme card. */
 export function SavedThemeCards() {
   const themes = [
     { name: 'Ocean', swatches: ['fill-brand-500', 'fill-brand-300', 'fill-brand-100'] },
@@ -519,7 +519,7 @@ export function SavedThemeCards() {
         strokeLinecap="round"
       />
       <Label x={354} y={114} anchor="middle" size={10} weight={500} tone="muted">
-        New theme
+        New Theme
       </Label>
     </Scene>
   );

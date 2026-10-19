@@ -230,6 +230,9 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Shift+F10** or the **Menu** key opens a folder row's (or My Documents') menu, the same menu as its `⋯` button and a
   right-click.
 - Keys typed into a folder's inline rename field are the field's, never the tree's.
+- Every inline rename field (a folder's, a document's, New Folder's) is named "Rename <name>" for a screen reader
+  (`InlineRenameInput`'s required `ariaLabel`): it replaces the row's label while open, and was announced only as
+  "edit text" with the old name.
 - Focus is shown with a visible ring on the row (WCAG 2.2 AA focus appearance); mouse clicks show none.
 
 ## Mobile drawer

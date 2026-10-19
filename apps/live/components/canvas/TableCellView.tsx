@@ -281,6 +281,8 @@ export function TableCellView({
           key={textAnim?.className}
           className={`whitespace-pre-wrap break-words ${textAnim?.className ?? ''}`}
           style={textAnim?.style}
+          // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
+          role={textAnim && cell ? 'img' : undefined}
           aria-label={textAnim && cell ? cell : undefined}
         >
           {textAnim && cell

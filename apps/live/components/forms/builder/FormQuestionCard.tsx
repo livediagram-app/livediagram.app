@@ -104,34 +104,36 @@ export function FormQuestionCard({
       <div
         ref={cardRef}
         data-form-question={q.id}
-        role={b.canEdit ? 'button' : undefined}
-        tabIndex={b.canEdit ? 0 : undefined}
-        aria-label={b.canEdit ? `Edit question: ${promptOf(q)}` : undefined}
         onClick={b.canEdit ? () => b.select(q.id) : undefined}
-        onKeyDown={
-          b.canEdit
-            ? (e) => {
-                if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  b.select(q.id);
-                }
-              }
-            : undefined
-        }
-        className={`group/q relative rounded-xl outline-none transition ${b.canEdit ? 'cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--form-accent)]' : ''} ${dragging ? 'opacity-40' : ''}`}
+        // The card wears its edit button's keyboard focus: that button lies under the question's picture.
+        className={`group/q relative rounded-xl outline-none transition ${b.canEdit ? 'cursor-pointer has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-[var(--form-accent)]' : ''} ${dragging ? 'opacity-40' : ''}`}
       >
+        {b.canEdit ? (
+          // The card opens for editing through one button stretched across it, with the grip above it as a control of
+          // its own: a card that was itself a button held the grip, a control nested in a control.
+          <button
+            type="button"
+            aria-label={`Edit question: ${promptOf(q)}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              b.select(q.id);
+            }}
+            className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
+          />
+        ) : null}
         {b.canEdit ? (
           <button
             type="button"
             aria-label={`Move ${promptOf(q)}`}
             onPointerDown={(e) => onGrab(e, q.id)}
             onClick={(e) => e.stopPropagation()}
-            className="absolute left-1/2 top-0.5 z-[1] flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600 dark:hover:text-slate-400"
+            className="absolute left-1/2 top-0 z-[1] flex h-6 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600 dark:hover:text-slate-400"
           >
             <GripIcon className="rotate-90" />
           </button>
         ) : null}
-        <div>
+        {/* What respondents see, drawn disabled: a picture of the question for an Editor, whose edit button names it. */}
+        <div aria-hidden={b.canEdit || undefined}>
           <QuestionView
             question={q}
             value={undefined}
@@ -269,7 +271,7 @@ export function FormQuestionCard({
                 : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:border-slate-500'
             }`}
           >
-            <span className="shrink-0 text-slate-400">Answer goes to</span>
+            <span className="shrink-0 text-slate-500 dark:text-slate-400">Answer goes to</span>
             <span className="min-w-0 truncate">{targetLabel(target)}</span>
           </button>
         )}

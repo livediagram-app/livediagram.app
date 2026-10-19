@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // Header stack row (docs/specs/004-interface-design/optical-alignment.md, "A stack row shares one line"):
@@ -135,6 +135,16 @@ describe('EditorHeader rename requests', () => {
     rerender(header(1, true));
     rerender(header(1, false));
     expect(editing()).toBeNull();
+  });
+
+  it('hands focus back to the title when a rename ends from the keyboard', async () => {
+    // The field goes as the rename ends, so Escape (or Enter) left focus on the page (NameEditor).
+    render(header(0));
+    fireEvent.click(screen.getByRole('button', { name: 'Untitled document' }));
+    fireEvent.keyDown(screen.getByDisplayValue('Untitled document'), { key: 'Escape' });
+    expect(editing()).toBeNull();
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Untitled document' }));
   });
 });
 

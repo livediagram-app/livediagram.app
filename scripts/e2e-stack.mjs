@@ -153,7 +153,14 @@ function mintClerkToken(sub, email) {
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(JSON.stringify({ alg: 'RS256', kid: CLERK_KID, typ: 'JWT' }));
   const payload = b64url(
-    JSON.stringify({ sub, sid: `sess_${sub}`, iat: now, nbf: now - 5, exp: now + 3600, ...(email ? { email } : {}) }),
+    JSON.stringify({
+      sub,
+      sid: `sess_${sub}`,
+      iat: now,
+      nbf: now - 5,
+      exp: now + 3600,
+      ...(email ? { email } : {}),
+    }),
   );
   const signature = sign('sha256', Buffer.from(`${header}.${payload}`), clerkKey.privateKey);
   return `${header}.${payload}.${b64url(signature)}`;
@@ -396,6 +403,9 @@ function resolveStatic(pathname, out) {
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
   // /document and everything under it share one placeholder HTML.
   if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
+  // So does every form link, /form/<code> (apps/live/lib/form-path.ts, as the live worker rewrites it): without this
+  // the stack answered a published form's link with the 404 page, so no spec could open one.
+  if (p === '/form' || p.startsWith('/form/')) p = '/form/placeholder';
   if (p === '/') p = '/index';
   const candidates = [
     path.join(out, p), // exact file (assets)

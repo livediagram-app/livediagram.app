@@ -119,7 +119,9 @@ side panel. The Form tab shows the form as respondents will see it, centred in a
 previewing), the help link and the form's **cog**.
 
 - The answer controls the builder draws (unselected questions, and a selected one's control) are a picture of the
-  form: they show a not-allowed cursor and take no input; a press on one selects its question.
+  form: they show a not-allowed cursor and take no input; a press on one selects its question. For a screen reader an
+  unselected question is one button, "Edit question: <prompt>", stretched across the card (the picture of it hidden
+  behind that name), with its grip a control of its own beside it rather than inside it.
 - **Share Form** is the header's Share button: on a Form tab, for someone who may edit it, the header's **Share** is
   **Share Form** (filled once the form is published), so the page never shows two share buttons. Everyone else keeps
   the document's Share.
@@ -219,9 +221,9 @@ reads hand-drawn and one on a Boardroom tab reads crisp. The form card stays whi
 so text contrast never depends on the theme.
 
 - **Colour**: always the tab theme's own colour for each half (the theme's line colour; on Default, the brand blue
-  of each half), never the card type's or the starter's. It paints the cover's default band, the accent bars, focus
-  rings, selected choices, the progress bar, links and the filled buttons, whose labels take whichever of light or
-  dark text reads on it. A colour an earlier build stored on a form (`accent`) is dropped when the form is read.
+  of each half, sky-700 in light and sky-400 in dark), never the card type's or the starter's. It paints the cover's default band, the accent bars, focus
+  rings, selected choices, the progress bar, links and the filled buttons, whose labels take whichever of white or
+  slate-900 reads better on it (at least 4.5:1 on every built-in theme). A colour an earlier build stored on a form (`accent`) is dropped when the form is read.
 - **Font**: the tab font, on everything in the form (a tab with none keeps the app font).
 - **Finish**: **Flexible** draws boxes as they are; **Professional** squares their corners (2 px); **Sketch** draws
   every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink
@@ -284,6 +286,10 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
   kept as the answer.
 - A **required** question is marked with a red asterisk and its accessible name says "required". A required
   Checkbox must be ticked.
+- A **Number** answer is read as the respondent's locale writes it: the box offers a decimal keypad, which has a comma
+  on a German or French phone, so the browser reads `3,5` as 3.5 and `1.234,5` as 1234.5 before it checks the answer
+  and sends it (`withLocaleNumbers`, `packages/forms/src/locale-number.ts`); the box keeps showing what was typed. A
+  group mark counts only between thousands, so an en-US `3,5` is not read as 35. The server checks plain numbers.
 
 ### Mapping: where an answer goes
 

@@ -101,6 +101,7 @@ export function CardTypesPanel({
           </button>
         ) : (
           <div
+            role="group"
             className="flex min-w-0 flex-1 items-center gap-2.5"
             aria-label={`${t.label}, ${label}`}
           >

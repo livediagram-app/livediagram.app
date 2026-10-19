@@ -133,7 +133,7 @@ export function TeamInviteLinkDialog({
 
         {inviteLink ? (
           <div className="mt-4">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Invite link
             </span>
             {/* Stacks on narrow screens so the URL field keeps its

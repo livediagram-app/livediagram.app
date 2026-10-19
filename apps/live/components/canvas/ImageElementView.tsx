@@ -122,6 +122,7 @@ function ImageElementViewImpl({
           borderColor: tone.border,
           color: tone.ink,
         }}
+        role={metrics.showLabel ? undefined : 'img'}
         aria-label={metrics.showLabel ? undefined : 'Image unavailable'}
       >
         <BrokenIcon size={metrics.iconPx} />

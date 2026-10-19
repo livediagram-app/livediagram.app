@@ -6,12 +6,14 @@ import {
   createShape,
   createSticky,
   createText,
+  type Element,
 } from '@livediagram/document';
 import {
   describeMany,
   describeOne,
   describeSelected,
   elementAriaLabel,
+  elementRole,
   kindLabel,
   shapeKindLabel,
 } from './element-names';
@@ -87,6 +89,15 @@ describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () =>
   });
 });
 
+describe('a chart', () => {
+  it('is named by its chart type, as the palette names it', () => {
+    expect(kindLabel(createShape('bar-chart', 0, 0))).toBe('Column chart');
+    expect(kindLabel({ ...createShape('bar-chart', 0, 0), chartVariant: 'horizontal' })).toBe(
+      'Bar chart',
+    );
+  });
+});
+
 describe('shapeKindLabel', () => {
   it('reads a shape kind as prose, for the Shape tiles of the element menu', () => {
     expect(shapeKindLabel('square')).toBe('Square');
@@ -123,5 +134,80 @@ describe('describeSelected', () => {
 
   it('is describeOne for anything else', () => {
     expect(describeSelected(travel, [travel])).toBe("'Travel'");
+  });
+});
+
+// docs/specs/004-interface-design/canvas-accessibility.md "Names on elements": an img's children are presentational,
+// so an element whose face holds controls is a named group, and one that is only drawn stays a picture.
+describe('a session button’s kind', () => {
+  // It names the tool it starts: "Session button" said nothing about what pressing it does.
+  it('reads as the tool, a timer by default', () => {
+    const button = (session?: object) =>
+      ({
+        id: 'b',
+        type: 'shape',
+        shape: 'session-button',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        ...(session ? { session } : {}),
+      }) as Element;
+    expect(kindLabel(button())).toBe('Timer');
+    expect(kindLabel(button({ tool: 'poll', question: 'Q' }))).toBe('Poll');
+    expect(kindLabel(button({ tool: 'vote', dots: 3 }))).toBe('Dot vote');
+    expect(kindLabel(button({ tool: 'stopwatch' }))).toBe('Stopwatch');
+  });
+});
+
+describe('elementRole', () => {
+  const shape = (kind: string) =>
+    ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
+  it('keeps a drawn element a picture', () => {
+    expect(elementRole(shape('square'))).toBe('img');
+    expect(
+      elementRole({
+        id: 'i',
+        type: 'image',
+        imageId: 'pic',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      }),
+    ).toBe('img');
+  });
+
+  it('makes an element with controls on its face a group', () => {
+    for (const kind of [
+      'session-button',
+      'checklist',
+      'qa-board',
+      'agenda',
+      'quiz',
+      'reaction-pad',
+    ])
+      expect(elementRole(shape(kind))).toBe('group');
+    expect(
+      elementRole({
+        id: 'i',
+        type: 'image',
+        imageId: null,
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      }),
+    ).toBe('group');
+    expect(
+      elementRole({
+        id: 'v',
+        type: 'video',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      } as unknown as Element),
+    ).toBe('group');
   });
 });

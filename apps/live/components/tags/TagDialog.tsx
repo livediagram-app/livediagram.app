@@ -85,7 +85,7 @@ export function TagDialog({
             </button>
           </div>
           <label className="mt-4 block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Name
             </span>
             <TextInput
@@ -108,7 +108,7 @@ export function TagDialog({
             </p>
           ) : null}
           <div className="mt-4">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Colour
             </span>
             <div className="mt-2">

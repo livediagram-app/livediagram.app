@@ -106,6 +106,26 @@ describe('TimelineCard', () => {
     expect(onContextMenu).toHaveBeenCalledTimes(1);
   });
 
+  // docs/specs/013-workspace/timeline.md §2: one real button carries the card for the keyboard and a screen reader; the
+  // card itself is no button, so the ⋯ menu is not a control nested in a control.
+  it('opens through one named button that holds none of the host’s controls', () => {
+    const onClick = vi.fn();
+    const { container } = render(
+      <TimelineCard
+        event={event()}
+        rendered={{ icon, subject: 'Payments', label: 'Document Created', onClick }}
+        slots={{ menu: <button type="button">Menu</button> }}
+      />,
+    );
+    const card = container.querySelector('[data-timeline-event="e1"]')!;
+    expect(card.getAttribute('role')).toBeNull();
+    const open = screen.getByRole('button', { name: 'Payments, Document Created' });
+    expect(open.querySelector('button')).toBeNull();
+    expect(open.contains(screen.getByText('Menu'))).toBe(false);
+    fireEvent.click(open);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('is dimmed and inert when there is nowhere to go', () => {
     const { container } = render(<TimelineCard event={event()} rendered={{ icon }} />);
     const card = container.querySelector('[data-timeline-event="e1"]')!;

@@ -118,12 +118,12 @@ function SelectedMetric({
             <EventIcon category={metric.category} action={metric.action} type={metric.type} />
           </span>
           <div className="min-w-0">
-            <h3
+            <h2
               style={rise(1)}
               className="metric-rise text-base font-semibold text-slate-900 dark:text-slate-100"
             >
               {metric.label}
-            </h3>
+            </h2>
             <p
               style={rise(2)}
               className="metric-rise mt-0.5 text-sm text-slate-500 dark:text-slate-400"

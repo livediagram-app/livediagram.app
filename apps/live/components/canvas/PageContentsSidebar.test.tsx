@@ -78,12 +78,18 @@ const centredOn = (i: number) => {
   return { zoom: 1, offset: { x: -(r.x + r.width / 2), y: -(r.y + r.height / 2) } };
 };
 
+// The page rows' own buttons, in order (a row opens through one button stretched across it).
+const rowButtons = () =>
+  screen
+    .getAllByRole('listitem')
+    .map((li) => li.querySelector<HTMLElement>('button[data-page-row]')!);
+
 describe('PageContentsSidebar', () => {
   it('is a named region of every page, with its count, below the strip', () => {
     show();
     const aside = screen.getByRole('complementary', { name: 'Contents' });
     expect(aside.style.top).toBe('68px');
-    expect(screen.getAllByRole('option')).toHaveLength(3);
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.queryByText('3 pages')).toBeNull();
   });
 
@@ -138,9 +144,9 @@ describe('PageContentsSidebar', () => {
 
   it('glides to the page pressed and marks it here, staying open', () => {
     const h = show();
-    fireEvent.click(screen.getAllByRole('option')[1]!);
+    fireEvent.click(rowButtons()[1]!);
     expect(h.focusPage).toHaveBeenLastCalledWith('p2');
-    expect(screen.getAllByRole('option')[1]!.getAttribute('aria-selected')).toBe('true');
+    expect(rowButtons()[1]!.getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('complementary', { name: 'Contents' })).toBeTruthy();
   });
 
@@ -149,11 +155,11 @@ describe('PageContentsSidebar', () => {
     const h = show();
     act(() => h.store.setView(centredOn(2)));
     // Not on every frame: only once the view has rested.
-    expect(screen.getAllByRole('option')[2]!.getAttribute('aria-selected')).toBe('false');
+    expect(rowButtons()[2]!.getAttribute('aria-current')).toBeNull();
     act(() => {
       vi.advanceTimersByTime(CONTENTS_FOLLOW_SETTLE_MS);
     });
-    expect(screen.getAllByRole('option')[2]!.getAttribute('aria-selected')).toBe('true');
+    expect(rowButtons()[2]!.getAttribute('aria-current')).toBe('page');
   });
 
   it('offers Add Page to an Editor alone', () => {
@@ -166,6 +172,6 @@ describe('PageContentsSidebar', () => {
     cleanup();
     show({ canEdit: false });
     expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
-    expect(screen.getAllByRole('option')).toHaveLength(3);
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

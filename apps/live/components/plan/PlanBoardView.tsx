@@ -542,61 +542,68 @@ export function PlanBoardView({
                             {...{ [COLUMN_ATTR]: col.column.id }}
                             data-plan-status={col.column.status}
                             data-plan-lane={lane.key}
-                            role="list"
-                            aria-label={`${col.column.name}${withLanes && lane.label ? `, ${lane.label}` : ''}, ${cell.length} ${cell.length === 1 ? 'item' : 'items'}`}
                             className="flex min-h-16 flex-col gap-2 rounded-b-lg px-2 pb-2 pt-1"
                             style={{ backgroundColor: palette.column }}
                           >
-                            {loading
-                              ? [0, 1].map((k) => (
-                                  <div
-                                    key={k}
-                                    className="h-16 animate-pulse rounded-lg motion-reduce:animate-none"
-                                    style={{ backgroundColor: palette.card, opacity: 0.6 }}
-                                  />
-                                ))
-                              : null}
-                            {cell.map((item) => (
-                              <PlanBoardCard
-                                key={item.id}
-                                item={item}
-                                palette={palette}
-                                placeholderBefore={
-                                  slotHere?.beforeId === item.id && held?.itemId !== item.id
-                                    ? held?.height
-                                    : undefined
-                                }
-                                lifted={dragging?.itemId === item.id}
-                                done={done}
-                                // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
-                                setupFields={CARD_FIELDS}
-                                cardSize={look.cardSize}
-                                faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
-                                presence={plan?.presence.get(item.id)}
-                                interactive={interactive}
-                                onPress={onCardPress}
-                                onOpen={() => plan?.openItem(item.id)}
-                                onKey={onCardKey}
-                                onMenu={(it, at) => setMenu({ itemId: it.id, at })}
-                                cardVote={cardVote}
-                                {...(interactive && canEditCards
-                                  ? {
-                                      onLongPress: (it: Item, at: { x: number; y: number }) => {
-                                        // The held press opens the menu instead of becoming a drag or a click.
-                                        drag.cancelPress();
-                                        setMenu({ itemId: it.id, at });
-                                      },
-                                    }
-                                  : {})}
-                              />
-                            ))}
-                            {slotHere && slotHere.beforeId === null ? (
-                              <DropGap
-                                height={held!.height}
-                                palette={palette}
-                                refused={held?.refused}
-                              />
-                            ) : null}
+                            {/* The cards are the list; the column's Add card button follows it rather than sitting in it,
+                                since a list holds only its items. Empty, it takes no room, so the button sits where it
+                                always did. */}
+                            <div
+                              role="list"
+                              aria-label={`${col.column.name}${withLanes && lane.label ? `, ${lane.label}` : ''}, ${cell.length} ${cell.length === 1 ? 'item' : 'items'}`}
+                              className="flex flex-col gap-2 empty:hidden"
+                            >
+                              {loading
+                                ? [0, 1].map((k) => (
+                                    <div
+                                      key={k}
+                                      className="h-16 animate-pulse rounded-lg motion-reduce:animate-none"
+                                      style={{ backgroundColor: palette.card, opacity: 0.6 }}
+                                    />
+                                  ))
+                                : null}
+                              {cell.map((item) => (
+                                <PlanBoardCard
+                                  key={item.id}
+                                  item={item}
+                                  palette={palette}
+                                  placeholderBefore={
+                                    slotHere?.beforeId === item.id && held?.itemId !== item.id
+                                      ? held?.height
+                                      : undefined
+                                  }
+                                  lifted={dragging?.itemId === item.id}
+                                  done={done}
+                                  // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
+                                  setupFields={CARD_FIELDS}
+                                  cardSize={look.cardSize}
+                                  faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
+                                  presence={plan?.presence.get(item.id)}
+                                  interactive={interactive}
+                                  onPress={onCardPress}
+                                  onOpen={() => plan?.openItem(item.id)}
+                                  onKey={onCardKey}
+                                  onMenu={(it, at) => setMenu({ itemId: it.id, at })}
+                                  cardVote={cardVote}
+                                  {...(interactive && canEditCards
+                                    ? {
+                                        onLongPress: (it: Item, at: { x: number; y: number }) => {
+                                          // The held press opens the menu instead of becoming a drag or a click.
+                                          drag.cancelPress();
+                                          setMenu({ itemId: it.id, at });
+                                        },
+                                      }
+                                    : {})}
+                                />
+                              ))}
+                              {slotHere && slotHere.beforeId === null ? (
+                                <DropGap
+                                  height={held!.height}
+                                  palette={palette}
+                                  refused={held?.refused}
+                                />
+                              ) : null}
+                            </div>
                             {canEditCards &&
                             !loading &&
                             !setup.archive &&

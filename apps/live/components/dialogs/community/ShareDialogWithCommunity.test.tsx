@@ -29,12 +29,14 @@ vi.mock('@/components/dialogs/ShareDialog', () => ({
   ShareDialog: (p: {
     passwordLockedReason?: string | null;
     communityListed?: boolean;
+    initialTab?: string;
     community?: ReactNode;
   }) => (
     <div
       data-testid="share"
       data-locked={p.passwordLockedReason ?? ''}
       data-listed={String(!!p.communityListed)}
+      data-tab={p.initialTab ?? ''}
     >
       {p.community}
     </div>
@@ -118,6 +120,15 @@ describe('ShareDialogWithCommunity', () => {
     expect(screen.queryByTestId('share')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
     expect(screen.getByTestId('share')).toBeTruthy();
+  });
+
+  // Saving Edit Listing came back on Passes, away from the post just edited.
+  it('opens on Passes, and on Community once it comes back from the publish dialog', () => {
+    renderDialog();
+    expect(screen.getByTestId('share').dataset.tab).toBe('passes');
+    fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
+    expect(screen.getByTestId('share').dataset.tab).toBe('community');
   });
 
   it('is the plain Share dialog while the Community is switched off', () => {

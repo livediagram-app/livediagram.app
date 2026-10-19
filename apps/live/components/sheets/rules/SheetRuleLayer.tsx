@@ -13,6 +13,7 @@ import { useSheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 import { RULE_ARROW_PX } from './sheet-rule-draw';
 import { SheetDropdownList } from './SheetDropdownList';
+import { SheetCellSlot } from '../SheetCellSlot';
 
 const ChevronGlyph = lucideGlyph(lucideChevronDown, 13);
 const SheetValidationEditor = lazy(() =>
@@ -81,25 +82,27 @@ export function SheetRuleLayer({ actions }: { actions: SheetActions }) {
         />
       ) : null}
       {plainArrow ? (
-        <Tooltip label={`Options for ${formatA1(active.r, active.c)}`}>
-          <button
-            type="button"
-            aria-label={`Options for ${formatA1(active.r, active.c)}`}
-            aria-haspopup="listbox"
-            aria-expanded={!!open}
-            className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
-            style={{
-              left: box.x + box.w - RULE_ARROW_PX + 1,
-              top: box.y + (box.h - 20) / 2,
-              backgroundColor: c.palette.column,
-              color: c.palette.text,
-            }}
-            onPointerDown={stop}
-            onClick={() => actions.openDropdown()}
-          >
-            <ChevronGlyph />
-          </button>
-        </Tooltip>
+        <SheetCellSlot r={active.r} c={active.c}>
+          <Tooltip label={`Options for ${formatA1(active.r, active.c)}`}>
+            <button
+              type="button"
+              aria-label={`Options for ${formatA1(active.r, active.c)}`}
+              aria-haspopup="listbox"
+              aria-expanded={!!open}
+              className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
+              style={{
+                left: box.x + box.w - RULE_ARROW_PX + 1,
+                top: box.y + (box.h - 20) / 2,
+                backgroundColor: c.palette.column,
+                color: c.palette.text,
+              }}
+              onPointerDown={stop}
+              onClick={() => actions.openDropdown()}
+            >
+              <ChevronGlyph />
+            </button>
+          </Tooltip>
+        </SheetCellSlot>
       ) : null}
       {open && openRule && dropAnchor && (openRule.is === 'list' || openRule.is === 'range') ? (
         <SheetDropdownList

@@ -104,6 +104,10 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
 - **A press on the writing puts the caret there**, at once, in any tool that is not a drawing
   tool; a drag selects text across blocks and pages; double-click selects a word, triple-click a
   block. Text selection spans blocks, lists and pages freely.
+- **The caret stays in sight.** After the writer types or moves the caret (the arrow keys, Page Down, a paste), the
+  view pans the least it must to show the caret, as the canvas brings any element into view (`scrollIntoView`), so
+  writing that runs onto the next page, or below the window, is never written blind. A collaborator's writing never
+  moves the view, nor does a press, which lands where the caret already shows.
 - **Typing**, the arrow keys, Home / End, word jumps (Alt / Ctrl+Arrow), Page Up / Down, Shift to
   extend, the browser's spell check, IME composition, dictation and the system emoji picker all
   work as in any editor. The canvas's own shortcuts (tool keys, Delete for elements, arrow nudges,

@@ -71,7 +71,21 @@ describe('the grid frame', () => {
   it('says the active cell and its value to assistive technology', async () => {
     const h = await mountGrid({ cells: { B2: '42' } });
     select(h, 1, 1);
-    expect(screen.getByRole('gridcell').textContent).toBe('B2 42');
+    const cell = document.getElementById(h.grid.getAttribute('aria-activedescendant')!)!;
+    expect(cell.getAttribute('role')).toBe('gridcell');
+    expect(cell.textContent).toBe('B2 42');
+    // In its row, by index, so the grid owns only rows.
+    expect(cell.getAttribute('aria-colindex')).toBe('2');
+    expect(cell.parentElement!.getAttribute('aria-rowindex')).toBe('2');
+  });
+
+  it('speaks the active cell as it is drawn, in its own number format', async () => {
+    // A percent was heard as 0.12 and a date as its serial number.
+    const h = await mountGrid({ cells: { B2: '12%' }, formats: { B2: { nf: 'percent' } } });
+    select(h, 1, 1);
+    expect(
+      document.getElementById(h.grid.getAttribute('aria-activedescendant')!)!.textContent,
+    ).toBe('B2 12.00%');
   });
 
   it('takes no keys and draws no selection outside Plan mode', async () => {
@@ -79,7 +93,9 @@ describe('the grid frame', () => {
     expect(h.grid.tabIndex).toBe(-1);
     expect(h.container.querySelector('[data-sheet-fill-handle]')).toBeNull();
     expect(
-      screen.queryAllByRole('columnheader').some((el) => el.dataset.selected !== undefined),
+      screen
+        .queryAllByRole('columnheader', { hidden: true })
+        .some((el) => el.dataset.selected !== undefined),
     ).toBe(false);
   });
 
@@ -89,7 +105,7 @@ describe('the grid frame', () => {
     Object.defineProperty(h.grid, 'scrollLeft', { configurable: true, value: 0 });
     fireEvent.scroll(h.grid);
     expect(h.c().scroll).toEqual({ top: 480, left: 0 });
-    expect(screen.getAllByRole('rowheader')[0]!.textContent).not.toBe('1');
+    expect(screen.getAllByRole('rowheader', { hidden: true })[0]!.textContent).not.toBe('1');
   });
 
   it('scrolls to keep the active cell in view', async () => {
@@ -172,7 +188,7 @@ describe('the keyboard map', () => {
     key(h, { key: 'ArrowDown' });
     expect(active(h)).toEqual({ r: 0, c: 0 });
     act(() => h.c().setEditing(null));
-    fireEvent.keyDown(screen.getAllByRole('rowheader')[0]!, { key: 'ArrowDown' });
+    fireEvent.keyDown(screen.getAllByRole('rowheader', { hidden: true })[0]!, { key: 'ArrowDown' });
     expect(active(h)).toEqual({ r: 0, c: 0 });
     // A key the map does not know does nothing.
     key(h, { key: 'Shift', shiftKey: true });
@@ -480,5 +496,21 @@ describe('presence', () => {
     h.unmount();
     await new Promise((r) => setTimeout(r, 200));
     expect(sent.at(-1)).toMatchObject({ ranges: null });
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Formula bar": an edit left open with focus on the grid (a formula it could not save,
+// then a toolbar button) kept every key from it, Escape included. The keys are the edit's.
+describe('keys on the grid while an edit stays open', () => {
+  it('give the edit up on Escape, and return any other key to the edit', async () => {
+    const h = await mountGrid({ rows: 5, cols: 3 });
+    act(() => h.c().setEditing({ r: 0, c: 0, origin: 'cell', draft: '=(1+2' }));
+    const editor = document.querySelector<HTMLTextAreaElement>('textarea[data-sheet-editor]')!;
+    act(() => h.grid.focus());
+    key(h, { key: 'x' });
+    expect(document.activeElement).toBe(editor);
+    act(() => h.grid.focus());
+    key(h, { key: 'Escape' });
+    expect(h.c().editing).toBeNull();
   });
 });

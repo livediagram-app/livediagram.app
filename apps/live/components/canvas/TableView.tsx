@@ -10,6 +10,7 @@ import {
   type ElementLink,
   type TableCellStyle,
   type TableElement,
+  plural,
 } from '@livediagram/document';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
@@ -363,7 +364,7 @@ export function TableView({
         ref={gridRef}
         onMouseLeave={scheduleHoverClear}
         role="table"
-        aria-label={`Table, ${rows} rows by ${cols} columns`}
+        aria-label={`Table, ${plural(rows, 'row')} by ${plural(cols, 'column')}`}
         aria-rowcount={rows}
         aria-colcount={cols}
         key={gridKey}

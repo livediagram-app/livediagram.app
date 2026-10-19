@@ -14,6 +14,7 @@ import {
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
 import { COLUMN_ATTR } from './column-move-flip';
+import { plural } from '@livediagram/document';
 
 export function PlanColumnHeader({
   col,
@@ -84,7 +85,7 @@ export function PlanColumnHeader({
             label={
               column.wipLimit
                 ? `${col.count} of a WIP limit of ${column.wipLimit}${col.overLimit ? ', over the limit' : ''}`
-                : `${col.count} items`
+                : plural(col.count, 'item')
             }
           >
             {column.wipLimit ? `${col.count} / ${column.wipLimit}` : col.count}

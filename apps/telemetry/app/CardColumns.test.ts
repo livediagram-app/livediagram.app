@@ -34,3 +34,16 @@ describe('weightOf', () => {
     expect(weightOf(card({ weight: 12 }))).toBe(12);
   });
 });
+
+describe('CardColumns', () => {
+  it('sizes its single phone column by the width, not by a long unbreakable label', async () => {
+    // A bare `grid` gets an `auto` track that grows to a card's min-content ("Http404.DriveToken.DriveNotConnected"
+    // stretched the Health tab past a 390px phone); grid-cols-1 is minmax(0, 1fr), so rows truncate instead.
+    const { renderToStaticMarkup } = await import('react-dom/server');
+    const { CardColumns } = await import('./CardColumns');
+    const html = renderToStaticMarkup(
+      createElement(CardColumns, null, createElement('div', { key: 'a' })),
+    );
+    expect(html).toMatch(/class="grid grid-cols-1 /);
+  });
+});

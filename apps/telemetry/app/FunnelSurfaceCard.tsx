@@ -2,6 +2,7 @@ import { Tooltip, Glyph } from '@livediagram/ui';
 import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
 import { useCategoryColor } from './useCategoryColor';
+import { LeaderTag } from './LeaderTag';
 
 // One public surface's landing funnel (docs/specs/019-marketing/landing-funnel.md): its three counts as a
 // shrinking bar, the step rate between each, then every CTA slot on it with
@@ -86,14 +87,14 @@ export function FunnelSurfaceCard({
             return (
               <tr
                 key={slot.source}
-                className={`border-t border-slate-100 dark:border-slate-800 ${unused ? 'text-slate-500' : 'text-slate-700 dark:text-slate-200'}`}
+                className={`border-t border-slate-100 dark:border-slate-800 ${unused ? 'text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}
               >
                 <td className="py-2 pr-3">
                   <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
                     <Tooltip label={slot.label}>
                       <span className="min-w-0 sm:truncate">{slot.label}</span>
                     </Tooltip>
-                    {slot.source === best ? <BestTag /> : null}
+                    {slot.source === best ? <LeaderTag>Most documents</LeaderTag> : null}
                   </span>
                   <span
                     aria-hidden
@@ -168,13 +169,5 @@ function StepRate({ value, verb }: { value: number | null; verb: string }) {
         {verb}
       </span>
     </li>
-  );
-}
-
-function BestTag() {
-  return (
-    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-      Most documents
-    </span>
   );
 }

@@ -224,7 +224,7 @@ export function SlideDeckRow({
             {/* Quiet markers for what the slide carries: its notes, its minutes, that it is hidden. */}
             {slide.notes ? (
               <Tooltip label="Has speaker notes">
-                <span aria-label="Has speaker notes" className="flex shrink-0">
+                <span role="img" aria-label="Has speaker notes" className="flex shrink-0">
                   <NotesIcon />
                 </span>
               </Tooltip>
@@ -238,6 +238,7 @@ export function SlideDeckRow({
                 description="This slide is skipped when you present. Show it again from its menu."
               >
                 <span
+                  role="img"
                   aria-label="Hidden from the presentation"
                   className="flex shrink-0 items-center gap-0.5"
                 >

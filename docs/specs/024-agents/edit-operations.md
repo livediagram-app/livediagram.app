@@ -195,6 +195,9 @@ nothing was applied
 | `not_expressible`    | A strict source's tab would hold residue (`422`)                                                                                                                                                                                                  | Each element and field                 |
 | `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap                                                                                                                                                                                                    | The cap                                |
 
+A `parse_error` on an `add` whose stray word reads as a placement (`right:n3` for `right-of:n3`) names the placements
+there are, in its expectation and its hint, rather than the hint for quoting a value with spaces.
+
 ## Where the engine lives
 
 One pure engine, `@livediagram/edit-operations`, on top of `@livediagram/document`:

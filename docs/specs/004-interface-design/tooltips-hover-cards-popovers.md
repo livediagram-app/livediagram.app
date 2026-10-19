@@ -55,6 +55,9 @@ A control has at most one hint. If a hover card is present, it carries the name 
 - **A bold title over a one-line description.** The description may run to two or three short lines.
 - **White card** on light pages, with a border, a soft shadow and a pointer.
 - Hover cards are not part of the tooltip warm-up; they have no delay to skip.
+- **Quiet while the control's own popover is open** (the Explorer, a cluster button, a palette group), since it
+  would sit over what it names: the card is `disabled`, never unwrapped. Unwrapping re-parented the control, which
+  remounted it and dropped a keyboard user's focus to the page as the popover opened.
 
 ### On canvas elements, sparingly
 
@@ -138,7 +141,11 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
   `[data-bottom-sheet]`, `[data-menu-surface]`, `role="dialog"`, `role="menu"`, or failing those the field's nearest
   fixed ancestor short of a whole-screen layer) has focus on a touch screen, every change of the visible area
   (`visualViewport` resize and scroll, focus in and out) checks it again, after the frame's own placement.
-- The surface moves into the visible area, 8 px clear of its edges: all of it when it fits there, else just far enough
+- A surface still arriving (a sheet sliding up, a popover fading in) is checked once its animation ends, never
+  mid-way: measured mid-slide, a phone's column sheet whose name field took focus as it rose was lifted by the
+  distance it still had to travel and came to rest above the screen. A looping animation is not waited for.
+- The surface moves into the visible area, 8 px clear of its edges (the keyboard's: a sheet docked at the foot of the
+  screen stays flush there while no keyboard is up): all of it when it fits there, else just far enough
   to show the field, never past the surface's top. A surface capped at the room its placement had, so that it scrolls,
   first grows to its content's height or the visible area's, whichever is less, and so moves up whole rather than
   cutting a line under its top edge; one still taller then scrolls the field into its own view. It gets its own cap

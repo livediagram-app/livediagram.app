@@ -433,7 +433,8 @@ In Plan mode:
     - after a gap, the **⋯** menu and **Close**, each named by a tooltip.
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
-  - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
+  - **Labels** are coloured chips in one field (each label keeps its colour everywhere: a 12% tint of it, inked with
+    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch), with the document's
     other labels offered as it is typed in; Backspace in an empty field takes the last one off.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
     a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
@@ -772,7 +773,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
   size is the board's again on a wider screen. Nothing is saved.
-- **The header has no widgets** on a phone: the title, then the header's controls. The quick filter the widgets set
+- **The header has no widgets** on a phone: the title, taking the room up to the header's controls (beside widgets
+  it keeps to 40% of the header), then the controls. The quick filter the widgets set
   stands down with them, so a filter set on a wider screen never hides cards with nothing on screen saying so.
 - A board that scrolls on its own (maximised, filling its tab, or in a Dashboard slot) shows one column a screen (see
   "Five slots across"); covering the canvas, its body ends 8.5 rem (and the home indicator's safe area) past its last
@@ -799,8 +801,9 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   pickers and the style presets set them. The board's fill is its surface, its stroke its focus and, mixed 35% into the fill so the lines stay quiet
   (`PLAN_BORDER_ACCENT_SHARE`; sheets and the start panel share it), its border
   colour, its text colour its ink; columns, cards, card borders and muted text are mixed from those. Ink that
-  would not read on the fill is swapped for a readable one. With no colours of their own (the Default theme)
-  they take the canvas surface's neutral set, light or dark.
+  would not read on the fill is swapped for a readable one, and muted text leans toward the ink until it reads at
+  4.5:1 on the column, a card and the board alike (`readableMuted`). With no colours of their own (the Default theme)
+  they take the canvas surface's neutral set, light or dark, whose muted text meets the same bar.
 - Corners follow Quick Style's Corners (12 px by default), text follows the tab's font (or the element's own),
   and a shadow sits under the board like any shape's.
 - The same colours draw the board in exports, thumbnails and images.

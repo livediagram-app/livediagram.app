@@ -12,6 +12,7 @@ import {
   TEXT_PX_MIN,
   THEMES,
   type Element,
+  withArticle,
 } from '@livediagram/document';
 import { fillSlotNames } from './colours';
 import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
@@ -207,7 +208,7 @@ export function elementFormatText(kind: string): string | null {
   const el = (built && 'el' in built ? built.el : { type: 'arrow' }) as Element;
   const head = isArrow
     ? 'arrow: connect <a> -> <b> [id=<id>] key=value… [again]'
-    : `${kind}: ${el.type === 'shape' ? 'a shape' : `a ${el.type}`}. add ${kind} [id=<id>] key=value… [<placement>]`;
+    : `${kind}: ${el.type === 'shape' ? 'a shape' : withArticle(el.type)}. add ${kind} [id=<id>] key=value… [<placement>]`;
   const size =
     'width' in el ? [`Size: ${el.width}×${el.height} at first, grown to fit its label.`] : [];
   const aliases = aliasesOf(el).map((a) => `${a}=${aliasValue(el, a)}`);

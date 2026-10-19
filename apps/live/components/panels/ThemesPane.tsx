@@ -59,7 +59,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
   };
 
   if (loading) {
-    return <p className="px-1 py-8 text-sm text-slate-500">Loading themes…</p>;
+    return <p className="px-1 py-8 text-sm text-slate-500 dark:text-slate-400">Loading themes…</p>;
   }
 
   return (
@@ -76,7 +76,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
             onClick={() => setBuilding('new')}
             className={`rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
           >
-            New theme
+            New Theme
           </button>
         </EmptyState>
       ) : (
@@ -98,7 +98,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
               </span>
               <div className="flex items-center gap-1">
                 <HoverCard title="Edit" description="Open this theme in the builder.">
-                  <IconBtn label="Edit theme" onClick={() => setBuilding({ id: t.id })}>
+                  <IconBtn label="Edit Theme" onClick={() => setBuilding({ id: t.id })}>
                     <PencilIcon />
                   </IconBtn>
                 </HoverCard>
@@ -124,14 +124,14 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
             className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-700 dark:border-slate-600 dark:text-slate-400"
           >
             <PlusIcon size={20} />
-            <span className="text-xs font-medium">New theme</span>
+            <span className="text-xs font-medium">New Theme</span>
           </button>
         </div>
       )}
 
       {building !== null ? (
         <ThemeBuilderModal
-          title={editing ? 'Edit theme' : 'New theme'}
+          title={editing ? 'Edit Theme' : 'New Theme'}
           initial={editing ? { name: editing.name, definition: editing.definition } : undefined}
           saving={saving}
           onSave={(draft) => void handleSave(draft)}

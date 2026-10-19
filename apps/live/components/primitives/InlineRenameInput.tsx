@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { refocusAfterField } from './refocus-after-field';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
@@ -39,9 +40,9 @@ export function InlineRenameInput({
   initial: string;
   onCommit: (name: string) => void;
   onCancel: () => void;
-  // For a row whose label is only the name being edited, so the field
-  // is still announced once the label it replaced has gone.
-  ariaLabel?: string;
+  // The field's name, as the rows name it ("Rename Q4 Plans"): the label it replaced has gone, and without one
+  // a screen reader heard only "edit text" and the old name. Required, so no row forgets it.
+  ariaLabel: string;
   className?: string;
 }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -92,9 +93,11 @@ export function InlineRenameInput({
         e.stopPropagation();
         if (e.key === 'Enter') {
           e.preventDefault();
+          refocusAfterField(e.currentTarget);
           onCommit(draft);
         } else if (e.key === 'Escape') {
           e.preventDefault();
+          refocusAfterField(e.currentTarget);
           onCancel();
         }
       }}

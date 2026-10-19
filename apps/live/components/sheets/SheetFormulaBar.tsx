@@ -3,6 +3,7 @@
 // The formula bar (docs/specs/029-sheets/sheet.md "Formula bar"): the name box (the selection; a reference or range
 // typed there and Enter selects it) and fx with the active cell's input as typed, edited there as in the cell. A
 // spilled cell shows its formula greyed. Read-only for someone who may not edit.
+import { focusOpenEdit } from './focus-open-edit';
 import { useEffect, useRef, useState } from 'react';
 import {
   findRangeName,
@@ -85,6 +86,7 @@ export function SheetFormulaBar({
   useEffect(() => {
     if (editing?.origin === 'bar') barRef.current?.focus();
   }, [editing?.origin]);
+  const backToEdit = () => focusOpenEdit(c.sheet.id);
   return (
     <div
       data-keeps-escape
@@ -98,7 +100,7 @@ export function SheetFormulaBar({
       <input
         aria-label="Name box"
         // A small rounded field, as the name box reads in a modern spreadsheet.
-        className="my-[3px] ml-1.5 h-[22px] w-20 shrink-0 rounded-md border px-2 text-center font-mono text-[11.5px] outline-none transition focus:ring-2"
+        className="my-[2px] ml-1.5 h-6 w-20 shrink-0 rounded-md border px-2 text-center font-mono text-[11.5px] outline-none transition focus:ring-2"
         style={
           {
             borderColor: c.palette.cardBorder,
@@ -113,12 +115,24 @@ export function SheetFormulaBar({
         onKeyDown={(e) => {
           e.stopPropagation();
           if (e.key === 'Enter') {
+            // An open edit is saved first, as a press on another cell saves it; one that cannot be saved (a formula
+            // missing its bracket) keeps the edit, back in it with its error, rather than stranding it open while the
+            // selection moves on and every key after it goes nowhere.
+            if (editing && !input.save()) {
+              // The Enter is the name box's: left to the browser, it typed a new line into the edit it returns to.
+              e.preventDefault();
+              setBox(null);
+              backToEdit();
+              return;
+            }
             enterNameBox(c, actions, (box ?? '').trim());
             setBox(null);
             c.focusGrid();
           } else if (e.key === 'Escape') {
+            e.preventDefault();
             setBox(null);
-            c.focusGrid();
+            if (editing) backToEdit();
+            else c.focusGrid();
           }
         }}
       />

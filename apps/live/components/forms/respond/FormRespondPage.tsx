@@ -155,7 +155,7 @@ export function FormRespondPage() {
 
 function Skeleton() {
   return (
-    <div aria-busy className="flex flex-col gap-3" aria-label="Loading the form">
+    <div role="status" aria-busy className="flex flex-col gap-3" aria-label="Loading the form">
       <div className="h-44 animate-pulse rounded-xl bg-white/70 motion-reduce:animate-none dark:bg-slate-900/70" />
       {[0, 1, 2].map((i) => (
         <div

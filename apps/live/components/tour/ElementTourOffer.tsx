@@ -2,7 +2,13 @@
 
 // The element tour offer (docs/specs/007-editor/element-tours.md "The tour offer"): a small toolbar beside the
 // selection toolbar, the Tour glyph and word, then Play and Cancel. It only draws what ElementTourHost publishes.
-import { CloseIcon, HoverCard, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import {
+  CloseIcon,
+  HoverCard,
+  lucideGlyph,
+  SOLID_BRAND_DARK_CONTROL,
+  withArticle,
+} from '@livediagram/ui';
 import { lucideFootprints } from '@livediagram/icons/lucide';
 import { PlayIcon } from '@/components/primitives/PlayIcon';
 import type { ElementTourOffer as Offer } from '@/lib/element-tour-offer';
@@ -29,7 +35,7 @@ export function ElementTourOffer({ offer }: { offer: Offer }) {
       </span>
       <HoverCard
         title="Take the Tour"
-        description={`A short tour of how a ${name} works, on this one.`}
+        description={`A short tour of how ${withArticle(name)} works, on this one.`}
       >
         <button
           type="button"

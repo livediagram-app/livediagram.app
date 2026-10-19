@@ -5,6 +5,7 @@
 // picture of what it measures (a ring for completion, a bar split by type, a bar per column against its
 // WIP limit, pips for votes). Filter, Only Mine and Not on Board are controls. The pictures are CSS, so
 // they stay crisp at any zoom.
+import { plural } from '@livediagram/document';
 import {
   PRIORITY_LABELS,
   UNASSIGNED,
@@ -402,7 +403,9 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           }
           role="img"
           aria-label={
-            over > 0 ? `${over} columns over their WIP limit` : 'Every column within its WIP limit'
+            over > 0
+              ? `${plural(over, 'column')} over ${over === 1 ? 'its' : 'their'} WIP limit`
+              : 'Every column within its WIP limit'
           }
         >
           {/* A bar per column: its cards against its limit (or the busiest column), warning when over. */}
@@ -609,7 +612,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           type="button"
           className={`${WIDGET_PILL} max-w-[16rem] cursor-pointer transition hover:bg-black/5 dark:hover:bg-white/10`}
           style={pill}
-          aria-label={`Top voted: ${itemTitle(top.item)}, ${top.votes} votes. Open it`}
+          aria-label={`Top voted: ${itemTitle(top.item)}, ${plural(top.votes, 'vote')}. Open it`}
           onClick={() => ctx.onOpenItem(top.item.id)}
         >
           <Lead kind="top-voted" color={SOON_AMBER} />
@@ -631,7 +634,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           role="img"
           aria-label={
             n > 0
-              ? `${n} cards unchanged for ${STALE_DAYS} days`
+              ? `${plural(n, 'card')} unchanged for ${STALE_DAYS} days`
               : `Every card changed in the last ${STALE_DAYS} days`
           }
         >

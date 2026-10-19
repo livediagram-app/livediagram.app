@@ -4,6 +4,7 @@
 // "Export"): All pages or One page (the shared segmented control), with One page the page itself,
 // and a line saying what the download will be. With All pages a page is still picked, for the
 // preview.
+import { plural } from '@livediagram/document';
 import type { LaidOutPage } from '@livediagram/document';
 import { ACTIVE_SEGMENT, SEGMENT_TRACK, Select } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
@@ -21,7 +22,7 @@ function outcome(scope: PageScope, format: PageExportFormat | 'gif', count: numb
       : `One GIF of the ${count} pages in turn, looping.`;
   if (scope === 'one') return format === 'pdf' ? 'A one-page PDF.' : `One ${format.toUpperCase()}.`;
   if (format === 'pdf') return count === 1 ? 'The page, as a PDF.' : `${count} pages, one PDF.`;
-  return `A .zip of ${count} ${format.toUpperCase()} files, one per page.`;
+  return `A .zip of ${plural(count, `${format.toUpperCase()} file`)}, one per page.`;
 }
 
 export function ExportPagePicker({

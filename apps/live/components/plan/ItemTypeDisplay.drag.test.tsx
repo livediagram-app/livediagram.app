@@ -137,6 +137,6 @@ describe('custom fields in the Display', () => {
         onChange={() => {}}
       />,
     );
-    expect(screen.getByLabelText('Person: Person')).toBeTruthy();
+    expect(screen.getByText('Person: Person')).toBeTruthy();
   });
 });

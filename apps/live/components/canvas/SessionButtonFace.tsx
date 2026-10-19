@@ -129,6 +129,7 @@ export function SessionButtonFace({
   if (!plan) {
     return (
       <div
+        role="button"
         aria-disabled
         // Only a Choices poll can land here: every other answer style is
         // startable the moment it has a question (see sessionButtonPlan).

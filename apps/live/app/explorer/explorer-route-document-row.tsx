@@ -52,6 +52,7 @@ export function DocumentRow(props: DocumentEntryProps) {
   const titleNode = renaming ? (
     <InlineRenameInput
       initial={liveDoc.name}
+      ariaLabel={`Rename ${liveDoc.name}`}
       onCommit={onCommitRename}
       onCancel={onCancelRename}
       className="rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"

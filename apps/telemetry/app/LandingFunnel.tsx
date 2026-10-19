@@ -110,7 +110,7 @@ function Headline({
         <p className="mt-1 text-2xl font-semibold tabular-nums text-brand-900 dark:text-brand-100">
           {formatRate(overall)}
         </p>
-        <p className="mt-1 text-xs text-brand-700/80 dark:text-brand-300/80">
+        <p className="mt-1 text-xs text-brand-700 dark:text-brand-300/80">
           {before && against
             ? overallBefore === null
               ? `No public page views in ${against}`

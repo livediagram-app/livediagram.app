@@ -52,9 +52,18 @@ export function MetaPill({
           ? { backgroundColor: tint(tone), color: tone }
           : { backgroundColor: palette.column, color: palette.muted }
       }
-      {...(label ? { 'aria-label': label } : {})}
     >
-      {children}
+      {/* A label is spoken as text: aria-label on a plain span is prohibited, and screen readers drop it. */}
+      {label ? (
+        <>
+          <span aria-hidden className="contents">
+            {children}
+          </span>
+          <span className="sr-only">{label}</span>
+        </>
+      ) : (
+        children
+      )}
     </span>
   );
 }

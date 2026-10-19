@@ -17,6 +17,9 @@ export type HoverCardProps = {
   // to take part in its parent's layout (a flex child, a bar sized by %).
   className?: string;
   style?: CSSProperties;
+  // Keeps the card from showing (while the control's own popover is open, which the card would sit over). The
+  // wrapper stays, so the control is never re-parented: unwrapping it remounted the button and dropped its focus.
+  disabled?: boolean;
   children: ReactNode;
 };
 
@@ -30,6 +33,7 @@ export function HoverCard({
   block = false,
   className,
   style,
+  disabled = false,
   children,
 }: HoverCardProps) {
   const { open, attach, anchor, triggerProps, surfaceProps } = useHint('hover-card');
@@ -43,7 +47,7 @@ export function HoverCard({
       >
         {children}
       </span>
-      {open ? (
+      {open && !disabled ? (
         <HintSurface kind="hover-card" anchor={anchor} surfaceProps={surfaceProps}>
           <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</p>
           {description ? (

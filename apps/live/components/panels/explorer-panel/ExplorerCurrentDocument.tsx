@@ -83,6 +83,7 @@ export function ExplorerCurrentDocument({
         {editing ? (
           <InlineRenameInput
             initial={item.name}
+            ariaLabel={`Rename ${item.name}`}
             onCommit={commit}
             onCancel={() => setEditing(false)}
             className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-sm font-semibold text-slate-900 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-50"

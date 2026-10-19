@@ -1,7 +1,7 @@
 'use client';
 
 // The theme picker with custom-theme support (docs/specs/011-theme/custom-themes.md): the one flat
-// ThemeBrowser, which lists the built-in themes, then the owner's saved themes and a "+ New theme" tile.
+// ThemeBrowser, which lists the built-in themes, then the owner's saved themes and a "+ New Theme" tile.
 // This component owns the builder: picking New / Edit swaps the whole
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //

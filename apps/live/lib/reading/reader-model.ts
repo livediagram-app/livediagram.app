@@ -75,6 +75,10 @@ export async function loadReader(
     // ONE engine per load, chosen before anything is fetched (see the
     // worker). Falling back from WebGPU to WASM inside one load left the
     // runtime half on each: the reader stalled mid-download or crashed.
+    // ONNX Runtime writes its warnings (an op it keeps on the processor, say) through console.error: a page that
+    // read a photo then showed errors with nothing wrong (docs/specs/003-system-architecture/console-logging.md,
+    // a production console stays clean). Its own errors still show.
+    const session_options = { logSeverityLevel: 3 } as const;
     const model = await AutoModelForVision2Seq.from_pretrained(
       MODEL_ID,
       backend === 'webgpu'
@@ -83,12 +87,13 @@ export async function loadReader(
               device: 'webgpu',
               dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
               progress_callback,
+              session_options,
             }
           : // No half precision: the q4 weights in full precision. The same
             // answers as the processor on the labelled notes, 0.53 s a note
             // on an RTX 4090 against ~10 s. Not the q8 embedding: on the
             // graphics card it produced garbage.
-            { device: 'webgpu', dtype: 'q4', progress_callback }
+            { device: 'webgpu', dtype: 'q4', progress_callback, session_options }
         : // On the processor the embedding is q8: its q4 file is the fp32
           // table, so q8 is 85 MB less to download for the same answers
           // (docs/research/vision/handwriting-readers.md).
@@ -96,6 +101,7 @@ export async function loadReader(
             device: 'wasm',
             dtype: { embed_tokens: 'q8', vision_encoder: 'q4', decoder_model_merged: 'q4' },
             progress_callback,
+            session_options,
           },
     );
     // However the files arrived — from the network or the browser's cache —

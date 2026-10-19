@@ -1,5 +1,6 @@
 'use client';
 
+import { withArticle } from '@livediagram/ui';
 import dynamic from 'next/dynamic';
 import {
   isBoxed,
@@ -154,7 +155,7 @@ export function EditorElementDialogs() {
           subtitle: isWebsiteEmbed
             ? 'Paste any web address. The page loads right here on the canvas.'
             : embedNamed
-              ? `Paste a ${embedNamed} link. It loads right here on the canvas.`
+              ? `Paste ${withArticle(embedNamed)} link. It loads right here on the canvas.`
               : 'Paste a link. The content plays or loads right here on the canvas.',
           fieldLabel: isWebsiteEmbed
             ? 'Web address'

@@ -185,7 +185,9 @@ invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
 common case is a tombstone for a folder, theme or team: the emit
 deliberately omits its id, so the renderer has nothing to link and the
 dimming is structural rather than a rule someone has to remember. (A
-deleted document has no tombstone at all; see §3.5.)
+deleted document has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
+button stretched across the card, named by its subject and reason ("Payments, Document Created"); the card itself is
+no button, and the ⋯ menu and an inline rename sit above that button as controls of their own, never nested in it.
 
 ### Colour means what happened, not where
 
@@ -463,7 +465,7 @@ the mode buttons in §2.2.
   scroll-and-pulse-only implementation left this control — offered in the
   header in both modes — doing nothing at all in one of them.
 
-- **Show more** appends the next page when the read returns a cursor.
+- **Show More** appends the next page when the read returns a cursor.
   Page size 50, capped server-side at 200.
 
 **The Filter dot means "this feed is narrowed", whichever control did
@@ -498,7 +500,7 @@ popover is clipped no matter its z-index.
   **Clear Filters** action. Distinct copy from the new-user case, so the
   user isn't told they have no history when they do. The filters run on
   the loaded pages only, so while the read still returns a cursor the
-  copy is "No loaded events match these filters" ("Show more to look further back, or remove a filter.") instead, and Show
+  copy is "No loaded events match these filters" ("Show More to look further back, or remove a filter.") instead, and Show
   more (§2.3) stays under it: claiming nothing matches while older
   pages are unread is the same lie in a smaller voice.
 - **Failed**: "Couldn't load your timeline", with a Try again action.
@@ -1531,7 +1533,9 @@ livediagram has a class-based dark mode ([Live app](../007-editor/live-app.md)),
 Toolkit which is dark-only, so every tint needs two, and dark mode
 lifts the bold value (a 600-weight hue goes muddy on slate-900) while
 dropping the soft one (an alpha tint over a dark surface reads far
-stronger than the same alpha over white). `eventTone` reads the var
+stronger than the same alpha over white). In light mode each bold value is a 700 step where the 600 fell short:
+it labels a card's reason in 12 px text, so amber (`#b45309`) and emerald (`#047857`) read at 4.5:1 or better on
+white and on their own tint. `eventTone` reads the var
 with a fallback baked into the package, so the components render
 standalone.
 
@@ -1631,7 +1635,7 @@ New category `Timeline` in the closed enum in
   toggled.
 - `Timeline`/`Opened` with `type` `Stack` — a stacked run expanded.
   Tells us whether stacking thresholds are right.
-- `Timeline`/`Loaded` with `type` `More` — Show more.
+- `Timeline`/`Loaded` with `type` `More` — Show More.
 - `Timeline`/`Opened` with `type` `Menu` — a card's ⋯ menu opened
   (§2.8), so we can see whether people act on the feed or only read it.
 - `Timeline`/`Removed` with `type` `Entry` | `Stack` — a card, or a

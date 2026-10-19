@@ -2446,6 +2446,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       if (el && isBoxed(el) && elementActions(el).length > 0) openActionPopover(id);
       else openAssignActionDialog(id);
     },
+    reveal: (x, y, w, h) => scrollIntoView(x, y, w, h),
   });
   useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
   // Set once element creation exists (below): an Insert at the caret places through it.

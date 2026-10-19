@@ -119,7 +119,7 @@ export function ClientPicker() {
                 <p
                   aria-hidden
                   id={groupId(client.group)}
-                  className={`hidden px-3 text-xs font-semibold tracking-wider text-slate-500 uppercase lg:block dark:text-slate-400 ${
+                  className={`hidden px-3 text-xs font-semibold tracking-wider text-slate-600 uppercase lg:block dark:text-slate-400 ${
                     i === 0 ? '' : 'mt-4'
                   }`}
                 >
@@ -238,7 +238,7 @@ function ClientPanel({ client, hidden }: { client: AiClient; hidden: boolean }) 
 
       <a
         href="#prompts"
-        className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
+        className="mt-6 inline-flex min-h-6 items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
       >
         Connected? Try a prompt
         <DownIcon aria-hidden />

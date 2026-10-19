@@ -73,8 +73,8 @@ describe('the card face', () => {
     expect(screen.getByText('Task')).toBeTruthy();
     expect(screen.getByText('#7')).toBeTruthy();
     expect(screen.getByRole('img', { name: 'High priority' })).toBeTruthy();
-    expect(screen.getByLabelText('Estimate 3')).toBeTruthy();
-    expect(screen.getByLabelText('Checklist 1 of 2 done')).toBeTruthy();
+    expect(screen.getByText('Estimate 3')).toBeTruthy();
+    expect(screen.getByText('Checklist 1 of 2 done')).toBeTruthy();
     expect(screen.getByText('Design')).toBeTruthy();
     expect(screen.getByText('Frontend')).toBeTruthy();
   });
@@ -91,7 +91,9 @@ describe('the card face', () => {
     expect(dueState(dayKey(10), false)).toBe('later');
     expect(dueState(dayKey(-1), true)).toBe('later');
     face(card({ due: dayKey(-3) }));
-    expect(screen.getByLabelText(/^Due .*, overdue$/)).toBeTruthy();
+    expect(screen.getByText(/^Due .*, overdue$/)).toBeTruthy();
+    // Its label is text, never an aria-label on a role-less span (prohibited there, and dropped by readers).
+    expect(document.querySelector('span[aria-label]:not([role])')).toBeNull();
   });
 
   it('puts an item’s own colour beside its type, on Detailed and Compact cards', () => {
@@ -125,12 +127,13 @@ describe('the card number', () => {
         </PlanProvider>,
       );
     draw('p1');
-    expect(screen.getByLabelText('Parent: Launch')).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Orange colour' })).toBeTruthy();
+    expect(screen.getByText('Parent: Launch')).toBeTruthy();
+    // The dot is drawn (hidden from readers: the pill's text already names the project).
+    expect(screen.getByRole('img', { name: 'Orange colour', hidden: true })).toBeTruthy();
     cleanup();
     draw('p2');
-    expect(screen.getByLabelText('Parent: Plain')).toBeTruthy();
-    expect(screen.queryByRole('img', { name: /colour$/ })).toBeNull();
+    expect(screen.getByText('Parent: Plain')).toBeTruthy();
+    expect(screen.queryByRole('img', { name: /colour$/, hidden: true })).toBeNull();
   });
 
   it('reads at 4.5:1 or better on every type colour', () => {

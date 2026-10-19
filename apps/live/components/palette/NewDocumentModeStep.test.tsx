@@ -80,6 +80,31 @@ describe('NewDocumentModeStep', () => {
     expect(onChoose).not.toHaveBeenCalled();
   });
 
+  // After a click on the backdrop the focus is on the page, not a card: the keys still choose.
+  it('chooses with a number key pressed anywhere on the page, once', () => {
+    const onChoose = vi.fn();
+    render(<NewDocumentModeStep selected={null} onChoose={onChoose} />);
+    fireEvent.keyDown(document.body, { key: '2' });
+    expect(onChoose).toHaveBeenCalledExactlyOnceWith('draw');
+    fireEvent.keyDown(cards()[0]!, { key: '3' });
+    expect(onChoose).toHaveBeenCalledTimes(2);
+    expect(onChoose).toHaveBeenLastCalledWith('workshop');
+  });
+
+  it('leaves a digit typed in a field, or in a chord, alone', () => {
+    const onChoose = vi.fn();
+    render(
+      <>
+        <input aria-label="Elsewhere" />
+        <NewDocumentModeStep selected={null} onChoose={onChoose} />
+      </>,
+    );
+    fireEvent.keyDown(screen.getByLabelText('Elsewhere'), { key: '2' });
+    fireEvent.keyDown(document.body, { key: '2', metaKey: true });
+    fireEvent.keyDown(document.body, { key: '2', ctrlKey: true });
+    expect(onChoose).not.toHaveBeenCalled();
+  });
+
   it('chooses on a click and moves focus with the arrows, wrapping', () => {
     const onChoose = vi.fn();
     render(<NewDocumentModeStep selected="draw" onChoose={onChoose} />);

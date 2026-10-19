@@ -272,7 +272,7 @@ export function MetricPicker({
           aria-label="Clear search"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => reset('')}
-          className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
           <CloseIcon size={10} />
         </button>
@@ -331,7 +331,7 @@ export function MetricPicker({
                       {row.meta}
                     </span>
                   ) : null}
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                     {row.count.toLocaleString()}
                   </span>
                   {row.branch ? <Chevron /> : null}

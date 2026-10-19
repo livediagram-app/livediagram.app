@@ -1,3 +1,4 @@
+import { PLAN_PRESET_HUES } from './plan-presets';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
 import { accentOn, liftAccent, planPalette, PLAN_BORDER_ACCENT_SHARE } from './plan-palette';
@@ -38,5 +39,19 @@ describe('type accents on dark surfaces', () => {
     expect(liftAccent('#eab308')).toBe('#eab308');
     expect(accentOn('#18181b', planPalette('light'))).toBe('#18181b');
     expect(accentOn('#18181b', planPalette('dark'))).toBe(liftAccent('#18181b'));
+  });
+
+  it('keeps muted words at WCAG AA on the column, a card and the board, plain or in any preset', () => {
+    // At 62% of the ink every preset's muted text fell to about 3.8:1 (light) and 4.2:1 (dark), and the plain
+    // light set's slate 500 to 4.3:1 on its column.
+    for (const surface of ['light', 'dark'] as const)
+      for (const preset of [undefined, ...PLAN_PRESET_HUES.map((h) => h.id)]) {
+        const p = planPalette(surface, preset ? { preset } : {});
+        for (const fill of [p.column, p.card, p.surface])
+          expect(
+            contrastRatio(p.muted, fill),
+            `${surface} ${preset ?? 'plain'} on ${fill}`,
+          ).toBeGreaterThanOrEqual(4.5);
+      }
   });
 });

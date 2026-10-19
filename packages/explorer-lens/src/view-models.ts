@@ -1,6 +1,7 @@
 // What the chips, the pills and the live region show and announce (docs/specs/013-workspace/
 // explorer-filters.md "The field", "Accessibility"). The copy lives here, once.
 
+import { withArticle } from '@livediagram/document';
 import {
   DIMENSION_LABELS,
   LENS_DIMENSIONS,
@@ -119,7 +120,7 @@ export function issueMessage(issue: LensIssue): string {
     case 'missing_value':
       return `“${issue.raw}” needs a value, so it’s searched as text.`;
     case 'unknown_value':
-      return `“${issue.value}” isn’t a ${DIMENSION_LABELS[issue.dimension]} option, so it’s searched as text.`;
+      return `“${issue.value}” isn’t ${withArticle(DIMENSION_LABELS[issue.dimension])} option, so it’s searched as text.`;
     case 'unknown_team':
       return 'That team isn’t one of yours, so it’s searched as text.';
     case 'space_not_here':

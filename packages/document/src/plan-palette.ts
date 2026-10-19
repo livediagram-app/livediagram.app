@@ -75,7 +75,8 @@ const LIGHT: PlanPalette = {
   card: '#ffffff',
   cardBorder: '#e2e8f0',
   text: '#0f172a',
-  muted: '#64748b',
+  // Slate 500 leaned 8% toward the ink: 4.8:1 on the column (slate 500 itself was 4.3:1), so muted words read at AA.
+  muted: '#5d6d83',
   warning: '#b45309',
   warningBg: 'rgba(180, 83, 9, 0.1)',
   focus: '#2563eb',
@@ -83,6 +84,20 @@ const LIGHT: PlanPalette = {
 
 // Readable ink reaches this contrast on its fill (WCAG AA for body text).
 const INK_CONTRAST = 4.5;
+
+// Muted ink starts at this share of the ink, mixed into the paper, and leans further toward the ink, a step at a
+// time, until it reads at INK_CONTRAST on every fill it sits on (the column, a card and the board): at 62% every
+// preset's muted words fell to about 3.8:1 in light and 4.2:1 in dark.
+const MUTED_SHARE = 0.62;
+const MUTED_STEP = 0.04;
+
+function readableMuted(text: string, paper: string, fills: readonly string[]): string {
+  for (let share = MUTED_SHARE; share < 1; share += MUTED_STEP) {
+    const muted = mixHex(text, paper, share);
+    if (fills.every((f) => contrastRatio(muted, f) >= INK_CONTRAST)) return muted;
+  }
+  return text;
+}
 
 const hex = (v: string | null | undefined): string | undefined =>
   v && hexToRgb(v) ? v : undefined;
@@ -109,14 +124,16 @@ export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): P
     : fill
       ? mixHex(text, paper, 0.16)
       : base.border;
+  const column = mixHex(text, paper, light ? 0.05 : 0.08);
+  const card = light ? mixHex('#ffffff', paper, 0.75) : mixHex(text, paper, 0.04);
   return {
     surface: paper,
     border,
-    column: mixHex(text, paper, light ? 0.05 : 0.08),
-    card: light ? mixHex('#ffffff', paper, 0.75) : mixHex(text, paper, 0.04),
+    column,
+    card,
     cardBorder: mixHex(border, paper, 0.55),
     text,
-    muted: mixHex(text, paper, 0.62),
+    muted: readableMuted(text, paper, [column, card, paper]),
     warning: light ? LIGHT.warning : DARK.warning,
     warningBg: light ? LIGHT.warningBg : DARK.warningBg,
     focus: stroke ?? base.focus,

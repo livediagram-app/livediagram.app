@@ -17,6 +17,7 @@ import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
   DARK_READER_LOCK,
+  RANDOM_UUID_BOOT_SCRIPT,
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
@@ -134,6 +135,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        {/* Ids work outside a secure context too (docs/specs/016-platform/secure-context.md), before any app code. */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(RANDOM_UUID_BOOT_SCRIPT) }} />
         {/* Then the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
             guard"), listening before any build asset can fail to load. Its source is static; its
             settings ride as data attributes on this element. */}

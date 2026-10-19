@@ -1,7 +1,7 @@
 'use client';
 
 // The per-tab canvas-style controls: the static pattern grid (with the
-// "Show more patterns" toggle), a separate Animated pattern grid, the
+// "Show More Patterns" toggle), a separate Animated pattern grid, the
 // Canvas + Pattern colour swatches, and the opacity + size sliders. Lifted
 // out of TabSection so the same block renders in both the palette's Canvas
 // accordion AND the Canvas tab of the right-click CanvasThemeDialog
@@ -136,7 +136,7 @@ export function CanvasStyleControls({
             onPick={onSetBackgroundPattern}
           />
           {!showAllPatterns && staticList.hasMore && !staticList.showAll ? (
-            <ShowMoreButton label="Show more patterns" onClick={staticList.reveal} />
+            <ShowMoreButton label="Show More Patterns" onClick={staticList.reveal} />
           ) : null}
           <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
             Animated

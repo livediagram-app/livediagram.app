@@ -52,6 +52,7 @@ export function ShareDialog({
   syncReady = true,
   community,
   communityListed = false,
+  initialTab = 'passes',
   teamDocument = false,
   passwordLockedReason,
   onClose,
@@ -63,7 +64,7 @@ export function ShareDialog({
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   // Passes first; Community is its own tab, there only when the caller supplies its section.
-  const [tab, setTab] = useState<ShareTab>('passes');
+  const [tab, setTab] = useState<ShareTab>(community ? initialTab : 'passes');
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
   // The pass issued in this dialog session, which opens into the list on arrival.
   const [freshCode, setFreshCode] = useState<string | null>(null);

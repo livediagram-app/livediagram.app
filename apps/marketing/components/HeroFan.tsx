@@ -15,6 +15,7 @@ import {
 } from '@/lib/hero-starts';
 import { HeroFanMine } from './HeroFanMine';
 import { useRecentDiagrams } from './useRecentDiagrams';
+import { createLabelPrefix } from '@/lib/create-label';
 
 // The fan of template cards along the hero's foot (docs/specs/019-marketing/marketing-site.md "Hero"):
 // each the editor picker's preview on a card, tilted out from the middle, its lower part running off
@@ -159,7 +160,7 @@ export function HeroFan() {
                   className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
                 >
                   <span className="truncate text-xs font-semibold sm:text-sm">
-                    <span className="sr-only">Create a </span>
+                    <span className="sr-only">{createLabelPrefix(t.title)}</span>
                     {t.title}
                   </span>
                   <span className="flex h-20 items-center justify-center rounded-lg bg-slate-50 sm:h-32 sm:rounded-xl [&>svg]:h-14 [&>svg]:w-auto sm:[&>svg]:h-24">

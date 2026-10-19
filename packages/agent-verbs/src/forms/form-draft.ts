@@ -26,6 +26,7 @@ import {
   resolveType,
   type CustomFieldDef,
   type ItemTypeDef,
+  withArticle,
 } from '@livediagram/items';
 import {
   boardsOf,
@@ -267,7 +268,7 @@ export function setGoesTo(d: FormDraft, q: FormQuestion, goesTo: string): FormRe
   if (field && !MAPPABLE_KINDS[q.type].includes(field.kind))
     return refuse(
       'field_does_not_fit',
-      `The ${type.label} field "${field.label}" is ${field.kind}; a ${QUESTION_TYPE_NAMES[q.type]} answer goes to ${MAPPABLE_KINDS[q.type].join(' or ')} fields. Name another field, or a new name for a new one.`,
+      `The ${type.label} field "${field.label}" is ${field.kind}; ${withArticle(QUESTION_TYPE_NAMES[q.type])} answer goes to ${MAPPABLE_KINDS[q.type].join(' or ')} fields. Name another field, or a new name for a new one.`,
     );
   if (field && q.other && (field.kind === 'choice' || field.kind === 'multichoice'))
     return refuse(

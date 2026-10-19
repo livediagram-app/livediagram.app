@@ -1,6 +1,7 @@
 // A plan view's settings and their changes (docs/specs/026-plan/plan-views.md "Card types", "Swimlanes", "Row
 // order", "Statuses"), shared by its element menu's View flyout and a Gantt chart's cog (GanttSettingsPanel): what it
 // can show, what it shows, and one element edit per change through PlanContext, each tracked.
+import { withArticle } from '@livediagram/ui';
 import {
   breakdownGroupingOf,
   readPlanViewSettings,
@@ -128,6 +129,7 @@ const NEED_LABELS: Record<string, string> = {
 export function viewTypesNote(needs: readonly string[]): string {
   if (needs.length === 0) return 'The card types this view charts.';
   const names = needs.map((f) => NEED_LABELS[f] ?? f);
-  const list = names.length === 1 ? `a ${names[0]} field` : `${names.join(' and ')} fields`;
+  const list =
+    names.length === 1 ? `${withArticle(names[0]!)} field` : `${names.join(' and ')} fields`;
   return `The card types this view charts; only those with ${list} are listed.`;
 }

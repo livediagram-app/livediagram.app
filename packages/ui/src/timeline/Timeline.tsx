@@ -179,7 +179,7 @@ export function Timeline({
   // kind of small lie that erodes trust in a feed. The filters run on
   // the loaded pages only, so while the server has more, "nothing
   // matches" would be the same lie; the copy narrows its claim and
-  // Show more stays reachable.
+  // Show More stays reachable.
   if (visibleEvents.length === 0) {
     return (
       <div>
@@ -189,7 +189,7 @@ export function Timeline({
           className="py-10"
           things={hasMore ? 'loaded events' : 'events'}
           filters={1}
-          hint={hasMore ? 'Show more to look further back, or remove a filter.' : undefined}
+          hint={hasMore ? 'Show More to look further back, or remove a filter.' : undefined}
           onClear={controls.resetFilters}
         />
         {hasMore && <ShowMore loading={loadingMore} onClick={onLoadMore} />}
@@ -294,7 +294,7 @@ function ShowMore({ loading, onClick }: { loading?: boolean; onClick?: () => voi
         onClick={onClick}
         className="rounded-lg border border-slate-200 px-4 py-2 text-xs text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
       >
-        {loading ? 'Loading…' : 'Show more'}
+        {loading ? 'Loading…' : 'Show More'}
       </button>
     </div>
   );

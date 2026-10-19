@@ -4,15 +4,18 @@
 // native scroll container over a spacer the size of the whole sheet, with a sticky viewport inside that draws only
 // what is in view: the cells, the headers, the selection, the editor. One tab stop; its keys are the grid's while it
 // has focus, and Escape hands them back to the canvas.
+import { focusOpenEdit } from './focus-open-edit';
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
 import { SheetCardRows } from './SheetCardRows';
+import { SheetCellSlot } from './SheetCellSlot';
 import { SheetRuleLayer } from './rules/SheetRuleLayer';
 import { invalidWhy } from './rules/sheet-rule-hover';
 import { previewFormatRules } from './rules/useSheetRulesState';
 import { SheetCellComments } from './SheetCellComments';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
+  cellKey,
   cycleInRange,
   selectsSeveral,
   displayValue,
@@ -249,9 +252,25 @@ export function SheetGrid({
     }
     return { r: p.r1, cols };
   }, [c.sheet.layout]);
+  // The header cells that show a filter button keep room for it (SheetCells); a stable object, so the memoised cells
+  // draw again only when the filter changes.
+  const filterHead = useMemo(
+    () =>
+      filter && c.interactive ? { r: filter.r, cols: new Set(filter.cols.map((x) => x.c)) } : null,
+    [filter, c.interactive],
+  );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (c.editing || e.target !== e.currentTarget) return;
+    if (e.target !== e.currentTarget) return;
+    // The grid holds focus while an edit stays open (a toolbar button pressed mid-way through a formula it could not
+    // save): the key is the edit's, never lost. Escape gives it up; any other key goes on in it.
+    if (c.editing) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        actions.cancelEdit();
+      } else focusOpenEdit(c.sheet.id);
+      return;
+    }
     // A bare Space is held for Space-drag panning; it types a space on release when no pan used it.
     if (pointer.pan.onKeyDown(e)) return;
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'v') {
@@ -429,6 +448,7 @@ export function SheetGrid({
             >
               <SheetCells
                 padEnd={dropdownCols}
+                filterHead={filterHead}
                 formatRules={formatRules}
                 sheet={c.sheet}
                 workbook={c.workbook}
@@ -475,22 +495,42 @@ export function SheetGrid({
                   onFilterButton={null}
                 />
               ) : null}
-              <span id={`${elementId}-${active}`} role="gridcell" aria-selected className="sr-only">
-                {active}{' '}
-                {
-                  displayValue(
-                    c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
-                    undefined,
-                    c.locale,
-                  ).text
-                }
+              {/* The active cell, in its row: what the grid's aria-activedescendant names. */}
+              <span role="row" aria-rowindex={c.selection.active.r + 1} className="sr-only">
+                <span
+                  id={`${elementId}-${active}`}
+                  role="gridcell"
+                  aria-colindex={c.selection.active.c + 1}
+                  aria-selected
+                  className="sr-only"
+                >
+                  {active}{' '}
+                  {
+                    // As the cell draws it, in its own format: 12% and a date, never 0.12 and a serial number.
+                    displayValue(
+                      c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
+                      c.sheet.cells.get(
+                        cellKey(
+                          c.sheet.layout.rows[c.selection.active.r] ?? '',
+                          c.sheet.layout.cols[c.selection.active.c] ?? '',
+                        ),
+                      )?.format,
+                      c.locale,
+                    ).text
+                  }
+                </span>
               </span>
             </div>
+            {/* The editor is the active cell's, so it sits in that cell's row: the grid owns only rows. */}
             <div
+              role="row"
+              aria-rowindex={c.selection.active.r + 1}
               className="absolute select-text"
               style={{ left: c.geometry.headW, top: c.geometry.headH }}
             >
-              <SheetCellEditor input={input} fontFamily={fontFamily} />
+              <div role="gridcell" aria-colindex={c.selection.active.c + 1}>
+                <SheetCellEditor input={input} fontFamily={fontFamily} />
+              </div>
             </div>
             {/* A finger held on the cells (useSheetTouch): the hold ring, portalled to the finger. */}
             <LongPressRing point={pointer.ring} />
@@ -536,19 +576,23 @@ export function SheetGrid({
               />
             ) : null}
             {footer && total.height - c.scroll.top < c.view.height ? (
-              <SheetAddRows top={total.height - c.scroll.top} onAdd={actions.appendRows} />
+              <SheetCellSlot>
+                <SheetAddRows top={total.height - c.scroll.top} onAdd={actions.appendRows} />
+              </SheetCellSlot>
             ) : null}
-            {hoverError && hoverBox ? (
-              <div
-                role="tooltip"
-                className="pointer-events-none absolute z-[10] max-w-64 rounded-md bg-slate-800 px-2 py-1 text-[11px] text-white shadow"
-                style={{
-                  left: c.geometry.headW + hoverBox.x,
-                  top: c.geometry.headH + hoverBox.y + hoverBox.h + 2,
-                }}
-              >
-                {hoverError}
-              </div>
+            {hovered && hoverError && hoverBox ? (
+              <SheetCellSlot r={hovered.r} c={hovered.c}>
+                <div
+                  role="tooltip"
+                  className="pointer-events-none absolute z-[10] max-w-64 rounded-md bg-slate-800 px-2 py-1 text-[11px] text-white shadow"
+                  style={{
+                    left: c.geometry.headW + hoverBox.x,
+                    top: c.geometry.headH + hoverBox.y + hoverBox.h + 2,
+                  }}
+                >
+                  {hoverError}
+                </div>
+              </SheetCellSlot>
             ) : null}
           </div>
         </div>

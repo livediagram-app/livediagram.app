@@ -103,6 +103,54 @@ describe('Delete and Backspace', () => {
   });
 });
 
+// A Viewer's or Participant's canvas chord is the canvas's even when it may not run it (share-roles.md): the browser's
+// select-all highlighted the whole page and Cmd+D opened the bookmark dialog.
+describe('a canvas chord a role may not run', () => {
+  it.each([{ participant: true }, { participant: false }])(
+    'is swallowed, not left to the browser (%o)',
+    ({ participant }) => {
+      const { bag } = deps({ isReadOnly: true, participant });
+      renderHook(() => useEditorKeyboardShortcuts(bag));
+      expect(press('a', { metaKey: true }).defaultPrevented).toBe(true);
+      expect(press('d', { metaKey: true }).defaultPrevented).toBe(true);
+      // Copy stays the browser's: a Viewer copies text off the page.
+      expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);
+    },
+  );
+});
+
+// docs/specs/013-workspace/share-roles.md "The Participant palette": each tile works as an Editor's does, its key too.
+describe("a Participant's palette keys", () => {
+  it('add what its tiles add, and nothing an Editor alone adds', () => {
+    const addSticky = vi.fn();
+    const addText = vi.fn();
+    const addShape = vi.fn();
+    const { bag } = deps({
+      selectedId: null,
+      isReadOnly: true,
+      participant: true,
+      addSticky,
+      addText,
+      addShape,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('n').defaultPrevented).toBe(true);
+    press('t');
+    press('r');
+    expect(addSticky).toHaveBeenCalledTimes(1);
+    expect(addText).toHaveBeenCalledTimes(1);
+    expect(addShape).not.toHaveBeenCalled();
+  });
+
+  it("are not a Viewer's", () => {
+    const addSticky = vi.fn();
+    const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('n').defaultPrevented).toBe(false);
+    expect(addSticky).not.toHaveBeenCalled();
+  });
+});
+
 describe('onShortcutUsed', () => {
   it('counts a key the editor acted on, once', () => {
     const { bag, spies } = deps();

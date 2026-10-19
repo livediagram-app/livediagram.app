@@ -904,3 +904,5 @@ export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
+// The a / an rule for copy built around a name, shared with every package above this one.
+export { indefiniteArticle, withArticle } from '@livediagram/items';

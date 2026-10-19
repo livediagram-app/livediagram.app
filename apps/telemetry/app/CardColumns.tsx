@@ -49,7 +49,7 @@ export function CardColumns({ children }: { children: ReactNode }) {
   const nodes = Children.toArray(children);
   const columns = balanceColumns(nodes.map(weightOf));
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
       {columns.map((column, i) => (
         <div key={i} className="flex flex-col gap-6">
           {column.map((index) => nodes[index])}

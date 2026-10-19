@@ -247,13 +247,15 @@ export function SheetCellMenu({
             )}
           </MenuFlyoutSection>
           <MenuFlyoutSection title="Sort" icon={<SortIcon />} {...flyout('sort')}>
+            {/* The whole sheet by the active cell's column, as the toolbar's Sort, and named as it is there: over a
+                selection, "Sort A to Z" read as sorting just the selection, and sorted a header into the data. */}
             {row(
-              'Sort A to Z',
+              'Sort Sheet A to Z',
               <SortAToZIcon />,
               act(() => actions.sortColumn(true)),
             )}
             {row(
-              'Sort Z to A',
+              'Sort Sheet Z to A',
               <SortZToAIcon />,
               act(() => actions.sortColumn(false)),
             )}
