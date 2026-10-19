@@ -2,7 +2,7 @@
 
 // The first run's field (docs/specs/013-workspace/explorer-home.md "First run"): the hero's large field, searching
 // templates rather than documents (there are none). Enter opens the New document wizard with the words in its search;
-// Start Blank inside its end makes a blank diagram at once.
+// Start Blank inside its end asks which mode, then makes that mode's blank.
 
 import { useState } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';

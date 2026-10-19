@@ -506,7 +506,8 @@ default document name) without walking the wizard:
 
 ### Start Blank after a mode
 
-**`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)).
+**`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)),
+and the Start Blank in Explorer Home's first-run field ([Explorer Home](../013-workspace/explorer-home.md)).
 It is **not a bypass**: the wizard shows as usual and asks for a mode. The mode chosen (a card, a number key, a card
 clicked before hydration, or **Create**) makes that mode's blank exactly as without the flag, but opens it **with its
 start closed** (`closeStartForBlank`), as Skip's Blank Diagram does, so whoever asked for a blank is not shown
