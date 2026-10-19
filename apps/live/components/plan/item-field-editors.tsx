@@ -283,10 +283,7 @@ export function LabelsEditor({
       compact
       id={id}
       chips={labels}
-      chipStyle={(l) => {
-        const c = labelColour(l);
-        return { backgroundColor: `${c}1f`, color: c };
-      }}
+      chipColour={labelColour}
       removeLabel={(l) => `Remove label ${l}`}
       draft={draft}
       onDraftChange={(value) => {

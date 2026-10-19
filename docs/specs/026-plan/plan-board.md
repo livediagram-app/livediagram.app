@@ -433,7 +433,8 @@ In Plan mode:
     - after a gap, the **⋯** menu and **Close**, each named by a tooltip.
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
-  - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
+  - **Labels** are coloured chips in one field (each label keeps its colour everywhere: a 12% tint of it, inked with
+    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch), with the document's
     other labels offered as it is typed in; Backspace in an empty field takes the last one off.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
     a rounded box, and taken off with ×; **Add a step** keeps its place for the next.

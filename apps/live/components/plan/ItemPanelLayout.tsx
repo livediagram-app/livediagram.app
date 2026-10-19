@@ -56,7 +56,7 @@ export function ItemDetailsRow({
     <div className="-mx-2 grid min-h-9 grid-cols-[6.5rem_1fr] items-center gap-2 rounded-lg px-2 py-1 max-sm:mx-0 max-sm:grid-cols-1 max-sm:items-start max-sm:gap-1.5 max-sm:px-0 max-sm:py-2">
       <label
         htmlFor={htmlFor}
-        className="self-start pt-2 text-[12px] text-slate-500 max-sm:pt-0 max-sm:font-medium"
+        className="self-start pt-2 text-[12px] text-slate-500 max-sm:pt-0 max-sm:font-medium dark:text-slate-400"
       >
         {label}
       </label>
