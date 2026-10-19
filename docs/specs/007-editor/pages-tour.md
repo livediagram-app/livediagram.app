@@ -38,18 +38,22 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
   `pagesTourSeen` true counts every kind as toured only while [Power user mode](power-user-mode.md) is on: an
   answer given before the tour offered each kind once named no kind, so each kind is offered once more
   (`apps/live/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
-- **Replayable from Settings**: the **Pages Tour** switch in Settings' **Tours** category, built as the other
-  tours' are (on means a kind is still owed). Turning it off answers every kind; turning it on clears both
-  preferences, so every kind offers its track again; closing Settings runs the track for the page on screen straight away when the person is in Pages,
-  or offers it the next time they enter Pages.
+- **Replayable from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
+  while any is owed; off answers them all, on forgets every answer), and one switch per kind sits nested beneath
+  it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Logo Tour**). On means that kind
+  is still owed. Turning one off answers that kind alone; turning one on forgets that kind alone (and folds a
+  Power user's single `pagesTourSeen` into the answered list first, so the other kinds stay as they were).
+  Closing Settings with a kind newly owed runs the track for the page on screen straight away when the person is
+  in Pages, or offers it the next time they enter Pages. Power user mode's readout lists **Pages Tours**.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
   ([Show Me](show-me.md)), wherever the offer stands.
 
 ## Tour content
 
-None of its own. The tour opens popovers, the page's panel and the Slide Deck, and closes them again on leaving
-the step; it places nothing and changes nothing. Its controls stay live: a layout or background the person picks
-while its step is up is theirs, kept as any pick is (one edit, undoable).
+The tour opens popovers, the page's panel and the Slide Deck, and closes them again on leaving the step. Its
+controls stay live: a layout or background the person picks while its step is up is theirs, kept as any pick is (one
+edit, undoable). The Logo track alone places something: two shapes to combine (below), placed, united and taken away
+with no undo step (`useTourSquare`), so the page is left as it was and Undo never brings them back.
 
 ## The steps
 
@@ -75,21 +79,27 @@ Layouts) and closes it on leaving.
 
 ### Slides track
 
-0. **Getting started with slides?** (offer): a quick look at making a slide, choosing its layout and background,
-   adding it to the deck and presenting.
+0. **Getting started with Slides?** (offer): a quick look at making a slide, choosing its layout and background,
+   the deck and presenting.
 1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it;
    Change Theme restyles every page.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
-3. **Add It to the Deck** (the slide's deck button): Add to Slides puts it in the deck; once in, the eye hides or
-   shows it, and Notes beside it holds what to say.
-4. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
-5. **Present** (the Slide Deck, opened from the Slides button): the deck's order, then **Present** for full screen.
-6. **You're ready to present** (outro).
+3. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
+4. **Your Slide Deck** (the Slide Deck, opened from the Slides button, ringing its rows): every slide page is in the
+   deck already; drag a row to reorder, press one to go to that slide.
+5. **Each Slide's Menu** (a row's ⋯ menu, opened): speaker notes, hide from the show, rename, duplicate.
+6. **Set Up the Show** (the deck's Presentation settings, opened): transitions and their speed, auto-advance, slide
+   size.
+7. **Present** (the deck's Present button): full screen, arrow keys to move, Escape to end.
+8. **You're ready to present** (outro).
+
+The deck stays open from step 4 to step 7 and closes after them, however the tour leaves them
+(`holdSlideDeck` / `releaseSlideDeck`).
 
 ### Infographic track
 
-0. **Getting started with infographics?** (offer): a quick look at laying out a page.
+0. **Getting started with Infographics?** (offer): a quick look at laying out a page.
 1. **Your Page** (the page's name): press it to fit the page to the screen, drag it to reorder.
 2. **Start From a Layout** (the Layout popover, opened).
 3. **Change the Background** (the Background popover, opened).
@@ -100,7 +110,7 @@ Layouts) and closes it on leaving.
 
 ### Article track
 
-0. **Getting started with articles?** (offer): a quick look at writing an article.
+0. **Getting started with Articles?** (offer): a quick look at writing an article.
 1. **Write on the Page** (a centred card, no ring): click to write, `/` for blocks; full pages flow onto the next.
 2. **The Page Toolbar** (the article's page toolbar, held up on the tour page through the step: it otherwise shows
    only while a page is hovered or written on).
@@ -112,8 +122,11 @@ Layouts) and closes it on leaving.
 ### Logo track
 
 The logo page's Show Me steps ([Logo pages](logo-pages.md#show-me)) behind the offer **Getting started with
-logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on Guides**, **Mirror As You Draw**,
-**Combine Shapes**, then **That Is a Logo Page**.
+Logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on Guides** and **Mirror As You Draw**
+(each popover opened), then Combine shown for real (`logo-combine-demo.ts`): **Combine Shapes** places a square and
+a circle overlapping in the page's lower third and selects them, so Combine shows; **Four Ways to Combine** opens its
+menu; **One Shape** unites them, as Unite does, and highlights the result. Then **That Is a Logo Page**. The shapes and
+their union go when the tour ends.
 
 ### Filtering
 
@@ -139,7 +152,9 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
   (`Slide`, `Infographic`, `Article`, `Logo`): `PagesTourStepSlideLayouts`,
   `PagesTourStepInfographicPageSize`, `PagesTourStepArticleStyle`, `PagesTourStepLogoOutro`, ...
 - **End**: `UI` · `Ended` · `PagesTourCompleted` | `PagesTourSkipped`.
-- **Settings row**: `UI` · `Toggled` · `PagesTourSeenOn` | `PagesTourSeenOff`.
+- **Settings rows**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`, for `SlidesTour`,
+  `InfographicTour`, `ArticleTour` and `LogoTour` (`PagesTourSeenOn` | `PagesTourSeenOff` until the row split
+  per kind in October 2026).
 - **Page Show Me**: `UI` · `Started` · `<Kind>Tour`, and `UI` · `Ended` · `<Kind>TourCompleted` |
   `<Kind>TourSkipped`, for `SlideTour`, `InfographicTour`, `ArticleTour` and `LogoTour` ([Show Me](show-me.md)).
 

@@ -31,5 +31,5 @@ export function CardTypeShowMeButton({ tour }: { tour: TourEngine<CardTypeTourAp
 }
 
 export function CardTypeTourStage({ tour }: { tour: TourEngine<CardTypeTourApi> }) {
-  return <ShowMeStage tour={tour} article="planCardTypes" helpLabel="Card Types Help" />;
+  return <ShowMeStage tour={tour} article="planCardTypes" />;
 }

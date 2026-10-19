@@ -7,7 +7,6 @@ export type TourCardCopy = {
   decline: string;
   outroEyebrow: string;
   helpHref: string;
-  helpLabel: string;
   finish: string;
 };
 
@@ -24,6 +23,5 @@ export const WELCOME_TOUR_COPY: TourCardCopy = {
   decline: 'No',
   outroEyebrow: 'Tour complete',
   helpHref: '/help',
-  helpLabel: 'Help',
   finish: TOUR_FINISH,
 };

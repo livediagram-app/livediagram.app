@@ -53,6 +53,7 @@ function Harness({ canEdit }: { canEdit: boolean }) {
   const actions: FormActions = {
     startForm: vi.fn(),
     newFormFor: vi.fn(),
+    changeFormQuietly: vi.fn(),
     setDestinationType: vi.fn(),
     setResponsesTo: vi.fn(),
     newResponsesSheet: vi.fn(),

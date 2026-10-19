@@ -19,12 +19,17 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 
 ## Domain language
 
-| Term                  | Means                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------- |
-| **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                          |
-| **Tour offer**        | The small toolbar that offers an element tour: the Tour glyph and word, **Play** and **Cancel** |
-| **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                                 |
-| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md))    |
+| Term                  | Means                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                            |
+| **Tour offer**        | The small toolbar that offers an element tour: the glyph and **Show Me**, **Play** and **Cancel** |
+| **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                                   |
+| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md))      |
+
+## Naming
+
+An element tour is called **Show Me** wherever a person sees it: the offer's word, its Play button, and its Settings
+section. "Element tour" is the code's and the specs' word only.
 
 ## The tour offer
 
@@ -33,10 +38,10 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
   Where the line is too narrow it wraps onto its own line on the far side from the element.
   styled as that toolbar (white card, border, shadow, 32px buttons). It moves, flips above or below and is nudged
   inside the canvas with the selection toolbar, as one group.
-- **What it holds.** The Tour glyph (footprints, as Show Me's) and the word **Tour**, then **Play** (a play glyph)
-  and **Cancel** (a cross), each with a hover card: Play is **Take the Tour** ("A short tour of how a Sankey diagram
-  works, on this one."), Cancel is **No Thanks** ("Hide this tour. Settings › Tours offers it again."). Play wears
-  the tab's accent, as the primary choice.
+- **What it holds.** Show Me's glyph (footprints) and the words **Show Me**, then **Play** (a play glyph) and
+  **Cancel** (a cross), each with a hover card: Play is **Show Me** ("A short walkthrough of how a Sankey diagram
+  works, on this one."), Cancel is **No Thanks** ("Hide this. Settings › Tours › Show Me offers it again."). The
+  toolbar is named "Show Me for this Sankey Diagram". Play wears the tab's accent, as the primary choice.
 - **On a phone** (narrower than 640px, or a phone held sideways: `useIsMobileViewport`) no element tour is offered at
   all: the selection toolbar alone fills the width there. Nothing is answered, so the offer still comes on a wider
   screen.
@@ -65,16 +70,29 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 
 ## Settings
 
-Settings' **Tours** category holds element tours in their own section, **Element Tours**, below the mode tours'
+Settings' **Tours** category holds element tours in their own section, **Show Me**, below the mode tours'
 **Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
-how many element tours are on (`1 of 1 On`). Opened, it shows the section's line ("The first time you select a
-complex element, a small Tour toolbar beside it offers to show how it works. Switch one back on to be offered it
-again."), then **Element Tours**, one switch over them all ("Every element tour at once": on while any is still
-offered; off answers every kind, on forgets every answer), with one switch per toured kind nested beneath it,
-**Sankey Diagram Tour** ("The first time you select a Sankey diagram.", linking the Sankey Diagram article). On
-means "offer it": switching one on forgets its answer, so the offer shows the next time such an element is
-selected. The accordion opens on its own when Settings is opened on one of its rows (a search result) or on the
-section. Power user mode's readout lists the switch over them all as **Element Tours**.
+how many are on (`1 of 1 On`). Opened, it shows the section's line ("The first time you select a complex element, a
+small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again."), then
+**Show Me on Every Element**, one switch over them all ("Every element’s Show Me at once": on while any is still
+offered; off answers every kind, on forgets every answer), with one switch per toured kind nested beneath it, named
+for the element alone: **Sankey Diagram** ("The first time you select a Sankey diagram.", linking the Sankey
+Diagram article). On means "offer it": switching one on forgets its answer, so the offer shows the next time such an
+element is selected. The accordion opens on its own when Settings is opened on one of its rows (a search result) or
+on the section. Power user mode's readout lists the switch over them all as **Show Me on Every Element**.
+
+## Menu steps
+
+A step whose copy names a part of the element's own menu ("In its menu, Tools › Rows…", "More, then Tools ›
+Stack…") opens that menu on the element (`openElementMenu`, as a right-click does), opens each row of its path in
+turn (an accordion section, or a flyout such as **Tools**), highlights the part the last row opened, and closes the
+menu as the step ends, however it ends (`inTheMenu`, `menuStep`, `element-menu-tour.ts`). A path that cannot be
+followed (a row missing) highlights the deepest part it reached.
+
+## The page waits
+
+While an element tour's step is up the page takes no clicks or wheel, only the step card does, as on the
+[Diagram tour](editor-tour.md#the-page-waits).
 
 ## The tour
 

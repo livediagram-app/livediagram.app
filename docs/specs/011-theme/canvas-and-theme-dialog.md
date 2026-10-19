@@ -270,12 +270,18 @@ The editor chrome **follows the active tab's theme** so it matches the diagram y
 ## Show Me
 
 The dialog is a [Show Me](../007-editor/show-me.md) surface: its title row carries **Show Me** left of Help. The tour
-runs on the home (a panel that is open goes back to it first), points at live controls and ends on a closing card
-linking Tab Style Help:
+starts on the home (a panel that is open goes back to it first), points at live controls and ends on a closing card
+linking Tab Style Help as **Learn More**:
 
 1. **One-Click Looks**: the looks carousel. Each look sets the tab's colours, finish, font and canvas at once.
-2. **More Looks**: the carousel's arrows and page dots.
-3. **Fine-Tune Any Part**: the Fine-tune rows, each showing what the tab uses now.
+2. **Mashup**: the Mashup card, which rolls a fresh mix of colours, font and canvas on each press.
+3. **More Looks**: the carousel's arrows and page dots.
+4. **Fine-Tune Any Part**: the Fine-tune rows, each showing what the tab uses now.
+5. **Finish**: opens the Finish panel and points at its four tiles.
+6. **See It Change**: really redraws the tab in another finish (Sketch, or Marker on a tab already in Sketch), as a
+   press on its tile would, so the person watches the tab change. The step puts the person's own finish back as it
+   ends, however it ends (Next, Back, Skip, Escape). Both changes are ordinary edits, in the history and seen by
+   everyone on the tab.
 
 While it runs, Escape belongs to the tour. Telemetry: `UI · Started · TabStyleTour`, `UI · Ended ·
 TabStyleTourCompleted` / `TabStyleTourSkipped`.

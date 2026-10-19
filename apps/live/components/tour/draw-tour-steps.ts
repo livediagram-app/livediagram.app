@@ -4,6 +4,7 @@
 
 import { findTour, waitForTour } from './tour-dom';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
+import { opensFrom } from './tour-open';
 
 const dockItem = (key: string) =>
   document.querySelector<HTMLElement>(`[data-whiteboard-dock] [data-dock-item="${key}"]`);
@@ -51,18 +52,24 @@ export const DRAW_TOUR_STEPS: DrawTourStep[] = [
       dockItem('select')?.click();
     },
   },
-  {
-    id: 'shapes',
-    title: 'Shapes',
-    body: 'Stickies and shapes, one tap away. Shapes has the rest, and you can pin favourites.',
-    target: 'dock-shapes',
-  },
-  {
-    id: 'settings',
-    title: 'Board Settings',
-    body: "The board's background, your cursor, and whether rough shapes you draw snap into clean ones.",
-    target: 'dock-settings',
-  },
+  opensFrom(
+    {
+      id: 'shapes',
+      title: 'Shapes',
+      body: 'Stickies and shapes, one tap away. Shapes has the rest, and you can pin favourites.',
+      target: 'dock-shapes',
+    },
+    () => '[data-tour-id="dock-shapes"]',
+  ),
+  opensFrom(
+    {
+      id: 'settings',
+      title: 'Board Settings',
+      body: "The board's background, your cursor, and whether rough shapes you draw snap into clean ones.",
+      target: 'dock-settings',
+    },
+    () => '[data-tour-id="dock-settings"]',
+  ),
   {
     id: 'outro',
     card: 'outro',

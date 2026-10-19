@@ -58,7 +58,6 @@ type ElementTourDef = {
   // The closing card's eyebrow ("Sankey tour").
   eyebrow: string;
   helpArticle: HelpArticleKey;
-  helpLabel: string;
   steps: (el: Element, env: ElementTourEnv) => TourStepOf<ElementTourApi>[];
   // Puts away what the tour opened, on Done (a Skip leaves the person where they are).
   onDone?: (api: ElementTourApi) => void;
@@ -75,7 +74,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'SankeyTour',
     eyebrow: 'Sankey tour',
     helpArticle: 'sankeyDiagram',
-    helpLabel: 'Sankey Diagram Help',
     steps: (el, env) =>
       sankeyElementTourSteps({
         elementId: el.id,
@@ -90,14 +88,12 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'LayerStackTour',
     eyebrow: 'Layer stack tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => layerStackTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   pyramid: {
     token: 'PyramidTour',
     eyebrow: 'Pyramid tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) =>
       pyramidTourSteps({
         elementId: el.id,
@@ -110,49 +106,42 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'FunnelTour',
     eyebrow: 'Funnel tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => funnelTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   cycle: {
     token: 'CycleTour',
     eyebrow: 'Cycle tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => cycleTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   hub: {
     token: 'HubTour',
     eyebrow: 'Hub and spoke tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => hubTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   onion: {
     token: 'OnionTour',
     eyebrow: 'Onion tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => onionTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   chevrons: {
     token: 'ChevronsTour',
     eyebrow: 'Chevrons tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   timeline: {
     token: 'TimelineTour',
     eyebrow: 'Timeline tour',
     helpArticle: 'conceptGraphics',
-    helpLabel: 'Concept Graphics Help',
     steps: (el, env) => timelineTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
   'mind-node': {
     token: 'MindMapTour',
     eyebrow: 'Mind map tour',
     helpArticle: 'mindMaps',
-    helpLabel: 'Mind Maps Help',
     steps: (el, env) =>
       mindNodeTourSteps({
         elementId: el.id,
@@ -165,7 +154,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'FlowchartTour',
     eyebrow: 'Flowchart tour',
     helpArticle: 'flowcharts',
-    helpLabel: 'Flowcharts Help',
     steps: (el, env) =>
       flowchartTourSteps({
         elementId: el.id,
@@ -183,7 +171,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'OrgChartTour',
     eyebrow: 'Org chart tour',
     helpArticle: 'orgCharts',
-    helpLabel: 'Org Charts Help',
     steps: (el, env) =>
       orgChartTourSteps({
         elementId: el.id,
@@ -196,7 +183,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'SequenceTour',
     eyebrow: 'Sequence tour',
     helpArticle: 'sequenceDiagram',
-    helpLabel: 'Sequence Diagrams Help',
     steps: (el, env) =>
       sequenceTourSteps({
         elementId: el.id,
@@ -210,7 +196,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'ChartTour',
     eyebrow: 'Chart tour',
     helpArticle: 'dataElements',
-    helpLabel: 'Data Elements Help',
     steps: (el, env) =>
       chartTourSteps({
         elementId: el.id,
@@ -225,7 +210,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'StackTour',
     eyebrow: 'Stack tour',
     helpArticle: 'stacks',
-    helpLabel: 'Stacks Help',
     steps: (el, env) =>
       stackTourSteps({
         elementId: el.id,
@@ -239,7 +223,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'EntityTour',
     eyebrow: 'Entity tour',
     helpArticle: 'entities',
-    helpLabel: 'Entities Help',
     steps: (el, env) =>
       entityTourSteps({
         elementId: el.id,
@@ -252,7 +235,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'TabWindowTour',
     eyebrow: 'Tab window tour',
     helpArticle: 'tabWindows',
-    helpLabel: 'Tab Windows Help',
     steps: (el, env) =>
       tabWindowTourSteps({
         elementId: el.id,
@@ -265,14 +247,12 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'LaneTour',
     eyebrow: 'Lane tour',
     helpArticle: 'lanes',
-    helpLabel: 'Lanes Help',
     steps: (el, env) => laneTourSteps({ elementId: el.id, hasMore: env.hasMore, touch: env.touch }),
   },
   boundary: {
     token: 'BoundaryTour',
     eyebrow: 'Boundary tour',
     helpArticle: 'boundaries',
-    helpLabel: 'Boundaries Help',
     steps: (el, env) =>
       boundaryTourSteps({
         elementId: el.id,
@@ -286,7 +266,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'DiagramKeyTour',
     eyebrow: 'Diagram key tour',
     helpArticle: 'diagramKeys',
-    helpLabel: 'Diagram Keys Help',
     steps: (el, env) =>
       diagramKeyTourSteps({
         elementId: el.id,
@@ -298,7 +277,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     token: 'PortalTour',
     eyebrow: 'Portal tour',
     helpArticle: 'portals',
-    helpLabel: 'Portals Help',
     steps: (el, env) =>
       portalTourSteps({
         elementId: el.id,

@@ -45,6 +45,7 @@ import {
   DashboardShowMeButton,
   DashboardTourStage,
   useDashboardTour,
+  useDashboardTourOffer,
 } from '@/components/tour/DashboardTour';
 
 const SetupGlyph = lucideGlyph(lucideLayoutGrid, 14);
@@ -83,6 +84,13 @@ export function DashboardSettings({
   const covered = useMaximisedPlanId() !== null;
   // Show Me: the tour of arranging and filling this dashboard, run on the page (plan-tabs.md "Show Me").
   const { tour, freeze } = useDashboardTour(!canEdit || covered);
+  // The Dashboards tour offers itself here, once (plan-tour.md "The Dashboards tour").
+  useDashboardTourOffer({
+    tour,
+    freeze,
+    canWork: canEdit && !covered,
+    slots: () => slotsNow(layout),
+  });
   if (!canEdit || covered) return null;
   return createPortal(
     <div

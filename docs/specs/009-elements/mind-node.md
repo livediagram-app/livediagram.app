@@ -642,7 +642,7 @@ centred one would land underneath the very "+" the actions live in.
 
 ## Element tour
 
-The first time an Editor selects a mind node, a small **Tour** toolbar beside its selection toolbar offers the
+The first time an Editor selects a mind node, a small **Show Me** toolbar beside its selection toolbar offers the
 [Mind Map tour](../007-editor/element-tours.md#the-mind-map-tour): Add Child and Add Sibling (with their keys), a
 branch moved as one, and the Mind Map menu. A person node is the org chart's, with its own tour.
 

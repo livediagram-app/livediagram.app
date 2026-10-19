@@ -5,7 +5,13 @@
 // and the settle delay has passed, or Show Me Around in the form's cog asks for a rerun. Its destination step opens the board
 // or sheet the form feeds and comes back to the form after; any other move away ends it.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { readForm, questionsOf } from '@livediagram/forms';
+import {
+  addQuestion,
+  deleteQuestion,
+  newFormPartId,
+  questionsOf,
+  readForm,
+} from '@livediagram/forms';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -42,6 +48,9 @@ const ART_PALETTE = {
   focus: '#0284c7',
 };
 
+// The example question's wording.
+const TOUR_QUESTION_PROMPT = 'What should we call you?';
+
 export function FormTourHost() {
   const ctx = useEditorContext();
   const selectTab = useSelectTab();
@@ -50,13 +59,60 @@ export function FormTourHost() {
   const form = onForm ? readForm(tab.form) : null;
   const destTabId = form?.sheet?.tabId ?? form?.destination?.tabId ?? null;
   const destKind: 'board' | 'sheet' | null = !destTabId ? null : form?.sheet ? 'sheet' : 'board';
-  const hasQuestions = !!form && questionsOf(form).length > 0;
 
   // The Form tab the tour began on: the destination step leaves it and comes back.
   const formTabRef = useRef<string | null>(null);
   // Where its responses go, fixed as the tour starts: on that tab the form is not the tab open, so it cannot be read.
   const destTabRef = useRef<string | null>(null);
+  // The example question the tour added, while it is on the form (no undo step: changeFormQuietly).
+  const questionRef = useRef<string | null>(null);
+  const previewButton = () =>
+    [...document.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')].find((b) =>
+      /^(Preview|Back to Editing)$/.test(b.textContent?.trim() ?? ''),
+    ) ?? null;
+  const removeQuestion = () => {
+    const id = questionRef.current;
+    if (!id) return;
+    questionRef.current = null;
+    ctx.forms.changeFormQuietly((f) => deleteQuestion(f, id));
+  };
   const apiRef = useLatest<FormTourApi>({
+    addQuestion: () => {
+      if (questionRef.current) return questionRef.current;
+      const id = newFormPartId('q');
+      ctx.forms.changeFormQuietly((f) => {
+        const last = questionsOf(f).at(-1)?.id ?? null;
+        const added = addQuestion(f, 'short', last, () => id).form;
+        return {
+          ...added,
+          sections: added.sections.map((s) => ({
+            ...s,
+            questions: s.questions.map((q) =>
+              q.id === id ? { ...q, prompt: TOUR_QUESTION_PROMPT } : q,
+            ),
+          })),
+        };
+      });
+      questionRef.current = id;
+      return id;
+    },
+    editQuestion: () => {
+      const id = questionRef.current;
+      if (!id) return;
+      const card = document.querySelector<HTMLElement>(`[data-form-question="${id}"]`);
+      card?.querySelector<HTMLButtonElement>('button[aria-label^="Edit question"]')?.click();
+      // Opened, it grows in place at the foot of the form: brought to the middle of the view so all of it shows.
+      requestAnimationFrame(() =>
+        document
+          .querySelector(`[data-form-question="${id}"]`)
+          ?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+      );
+    },
+    questionId: () => questionRef.current,
+    preview: (on) => {
+      const button = previewButton();
+      if (button && (button.getAttribute('aria-pressed') === 'true') !== on) button.click();
+    },
     destination: () => (destTabId && destKind ? { tabId: destTabId, kind: destKind } : null),
     openTab: (id) => selectTab(id),
     backToForm: () => {
@@ -66,7 +122,7 @@ export function FormTourHost() {
   });
 
   // The steps fixed as the tour starts: the form as it was when offered.
-  const [shape, setShape] = useState({ destination: destKind, hasQuestions });
+  const [shape, setShape] = useState({ destination: destKind });
   const steps = useMemo(() => formTourSteps(shape), [shape]);
   const engine = useTourEngine<FormTourApi>({
     steps,
@@ -110,6 +166,9 @@ export function FormTourHost() {
 
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.backToForm();
+    // The form is left as the person had it: out of Preview, the example question gone.
+    apiRef.current.preview(false);
+    removeQuestion();
     formTabRef.current = null;
     destTabRef.current = null;
     const next = rebaseUserPreferences(ctx.userPreferences, {
@@ -135,7 +194,7 @@ export function FormTourHost() {
         setRerun(false);
         formTabRef.current = tab.id;
         destTabRef.current = destTabId;
-        setShape({ destination: destKind, hasQuestions });
+        setShape({ destination: destKind });
         debugLog('[form-tour] offer');
         engineRef.current.start();
         track('UI', 'Opened', 'FormTourOffer');
@@ -156,7 +215,6 @@ export function FormTourHost() {
     tab.id,
     destTabId,
     destKind,
-    hasQuestions,
   ]);
 
   // Show Me Around: offers again at once.

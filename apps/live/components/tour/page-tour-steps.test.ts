@@ -8,24 +8,25 @@ import { pagesTourSteps, pageTourSteps, shownPageTourSteps, stepShown } from './
 import { pagesTourStepTelemetryType } from './PagesTourHost';
 
 const api: PageTourApi = { pageId: 'p1', openPanel: () => {}, closePanel: () => {} };
-const NOW = { combineShowing: false };
 const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Slides: layout, background, the deck, another slide, present', () => {
-    expect(ids(pageTourSteps('slide', NOW))).toEqual([
+  it('Slides: layout, background, another slide, then the deck: its rows, a slide’s menu, the show, present', () => {
+    expect(ids(pageTourSteps('slide'))).toEqual([
       'layouts',
       'background',
-      'deck',
       'add-page',
+      'deck',
+      'slide-menu',
+      'show-settings',
       'present',
       'outro',
     ]);
   });
 
   it('Infographic: its name, layout, background, size, another page, present', () => {
-    expect(ids(pageTourSteps('infographic', NOW))).toEqual([
+    expect(ids(pageTourSteps('infographic'))).toEqual([
       'page-name',
       'layouts',
       'background',
@@ -37,28 +38,24 @@ describe('the tracks', () => {
   });
 
   it('Article: the page, its toolbar, its style and type', () => {
-    expect(ids(pageTourSteps('article', NOW))).toEqual([
-      'write',
-      'toolbar',
-      'style',
-      'text',
-      'outro',
-    ]);
+    expect(ids(pageTourSteps('article'))).toEqual(['write', 'toolbar', 'style', 'text', 'outro']);
   });
 
   it('Logo: the logo page’s Show Me steps', () => {
-    expect(ids(pageTourSteps('logo', NOW))).toEqual([
+    expect(ids(pageTourSteps('logo'))).toEqual([
       'layouts',
       'guides',
       'mirror',
       'combine',
+      'combine-menu',
+      'combine-unite',
       'outro',
     ]);
   });
 
   it('holds the article toolbar up on the tour page through its step', () => {
-    const toolbar = pageTourSteps('article', NOW).find((s) => s.id === 'toolbar')!;
-    expect(toolbar.selector?.(api)).toBe('[data-page-toolbar]');
+    const toolbar = pageTourSteps('article').find((s) => s.id === 'toolbar')!;
+    expect(toolbar.selector?.(api)).toBe('[role="toolbar"][aria-label="Article Formatting"]');
     void toolbar.prepare?.(api);
     expect(readPinnedPageToolbar()).toBe('p1');
     toolbar.cleanup?.(api);
@@ -67,7 +64,7 @@ describe('the tracks', () => {
 
   it('holds every control to the tour page, never the first page', () => {
     for (const kind of ['slide', 'infographic', 'article', 'logo'] as const) {
-      for (const step of pageTourSteps(kind, NOW)) {
+      for (const step of pageTourSteps(kind)) {
         const selectors = [step.requires?.(api), step.selector?.(api)].filter(Boolean) as string[];
         for (const sel of selectors) {
           if (sel.includes('aria-label="Layout"') || sel.includes('page-cog'))
@@ -80,22 +77,22 @@ describe('the tracks', () => {
 
 describe('what the tour starts with', () => {
   it('opens the offer on the track’s own welcome card', () => {
-    const steps = pagesTourSteps('slide', NOW, api, everything);
+    const steps = pagesTourSteps('slide', api, everything);
     expect(steps[0]).toMatchObject({ id: 'welcome', card: 'welcome' });
-    expect(steps[0]!.title).toBe('Getting started with slides?');
-    expect(pagesTourSteps('article', NOW, api, everything)[0]!.title).toBe(
-      'Getting started with articles?',
+    expect(steps[0]!.title).toBe('Getting started with Slides?');
+    expect(pagesTourSteps('article', api, everything)[0]!.title).toBe(
+      'Getting started with Articles?',
     );
   });
 
   it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {
     const exists = (sel: string) => !sel.includes('data-tour-id="slides"');
-    expect(ids(shownPageTourSteps('slide', NOW, api, exists))).not.toContain('present');
-    expect(ids(shownPageTourSteps('slide', NOW, api, exists))).toContain('layouts');
+    expect(ids(shownPageTourSteps('slide', api, exists))).not.toContain('present');
+    expect(ids(shownPageTourSteps('slide', api, exists))).toContain('layouts');
   });
 
   it('checks what a step opens by the button that opens it', () => {
-    const layouts = pageTourSteps('slide', NOW).find((s) => s.id === 'layouts')!;
+    const layouts = pageTourSteps('slide').find((s) => s.id === 'layouts')!;
     const seen: string[] = [];
     stepShown(layouts, api, (sel) => {
       seen.push(sel);
@@ -105,7 +102,7 @@ describe('what the tour starts with', () => {
   });
 
   it('always keeps a card with nothing to point at', () => {
-    const outro = pageTourSteps('slide', NOW).find((s) => s.id === 'outro')!;
+    const outro = pageTourSteps('slide').find((s) => s.id === 'outro')!;
     expect(stepShown(outro, api, () => false)).toBe(true);
   });
 });

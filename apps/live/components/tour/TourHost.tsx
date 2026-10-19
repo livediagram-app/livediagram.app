@@ -43,6 +43,9 @@ export function TourHost() {
   // check, and resolved once offered or found already seen. Only the offer effect reads it and it
   // never turns back on, so it is a ref rather than state.
   const offerPendingRef = useRef<boolean | null>(null);
+  // The element the element-menu step selected to open its menu on, deselected again as the step closes the menu:
+  // left selected, its toolbar and Quick Style panel came up behind the next step.
+  const selectedByTourRef = useRef<string | null>(null);
   const apiRef = useLatest<TourApi>({
     openElementContextMenu: async () => {
       // Reuse the first boxed element (template diagrams come populated);
@@ -70,6 +73,7 @@ export function TourHost() {
         elementId = el.id;
       }
       ctx.setSelectedId(elementId);
+      selectedByTourRef.current = elementId;
       const node = await waitForSelector(elementSelector(elementId), 2000);
       const r = node?.getBoundingClientRect();
       // Open beside the element; the menu clamps itself into the viewport.
@@ -80,7 +84,12 @@ export function TourHost() {
         y: r ? Math.max(12, r.top) : window.innerHeight / 3,
       });
     },
-    closeContextMenu: () => ctx.closeContextMenu(),
+    closeContextMenu: () => {
+      ctx.closeContextMenu();
+      if (selectedByTourRef.current === null) return;
+      selectedByTourRef.current = null;
+      ctx.setSelectedId(null);
+    },
   });
 
   const engine = useTourEngine<TourApi>({
@@ -179,7 +188,7 @@ export function TourHost() {
     // finally go.
     apiRef.current.closeContextMenu();
     // The square it placed on an empty tab goes, so the document is left as the person had it.
-    if (ctx.tourSquare.remove() !== null) ctx.setSelectedId(null);
+    if (ctx.tourSquare.remove().length > 0) ctx.setSelectedId(null);
     clearTourPending();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     const next = rebaseUserPreferences(ctx.userPreferences, {
@@ -202,5 +211,5 @@ export function TourHost() {
     endTourRef.current('skipped');
   }, [active, inDiagram, engineRef, endTourRef]);
 
-  return <TourStage engine={engine} />;
+  return <TourStage engine={engine} blockInput />;
 }

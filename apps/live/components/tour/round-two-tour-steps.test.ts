@@ -24,12 +24,15 @@ const step = (steps: Step[], id: string) => steps.find((s) => s.id === id)!;
 const ringed = (s: Step) => s.selector!({} as ElementTourApi);
 
 describe('menuStep', () => {
-  it('rings More while it shows, and the element where a power user right-clicks instead', () => {
-    const more = menuStep(env, 'menu', 'Menu', 'Tools, then Stack.');
-    expect(ringed(more)).toBe('#selection-more-actions');
+  it('opens the menu to its path and rings it, saying how to get there', () => {
+    const more = menuStep(env, 'menu', 'Menu', 'Tools, then Stack.', ['Tools', 'Stack']);
+    expect(ringed(more)).toBe('[data-tour-menu-target]');
     expect(more.body).toBe('More, then Tools, then Stack.');
-    const right = menuStep({ ...env, hasMore: false }, 'menu', 'Menu', 'Tools, then Stack.');
-    expect(ringed(right)).toBe('[data-element-id="el"]');
+    const right = menuStep({ ...env, hasMore: false }, 'menu', 'Menu', 'Tools, then Stack.', [
+      'Tools',
+      'Stack',
+    ]);
+    expect(ringed(right)).toBe('[data-tour-menu-target]');
     expect(right.body).toBe('Right-click it, then Tools, then Stack.');
   });
 });

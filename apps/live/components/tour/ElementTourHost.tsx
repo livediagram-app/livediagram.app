@@ -29,6 +29,9 @@ import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { useAnyModalOpen } from '@/lib/modal-guard';
 import type { ElementTourApi } from './element-tour-api';
+import { CONTEXT_MENU } from './element-menu-tour';
+import { waitForSelector } from './tour-dom';
+import { elementSelector } from '@/lib/canvas-selectors';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import { TourStage } from './TourStage';
 import type { TourStepOf } from './tour-step';
@@ -94,6 +97,21 @@ export function ElementTourHost() {
       if (id) setConceptTourPreview({ elementId: id, bar: index, run: Date.now() });
     },
     clearPreview: () => setConceptTourPreview(null),
+    openElementMenu: async () => {
+      const id = touringRef.current?.id;
+      // Always set, never skipped for a menu already on screen: the step before may have just closed it.
+      if (!id) return;
+      // Beside the element, where a right-click on it opens it; the menu nudges itself into the viewport.
+      const r = document.querySelector(elementSelector(id))?.getBoundingClientRect();
+      ctx.setContextMenu({
+        mode: 'element',
+        elementId: id,
+        x: r ? r.right + 10 : window.innerWidth / 2,
+        y: r ? Math.max(12, r.top) : window.innerHeight / 3,
+      });
+      await waitForSelector(CONTEXT_MENU, 2000);
+    },
+    closeElementMenu: () => ctx.closeContextMenu(),
   };
   const apiRef = useLatest(api);
 
@@ -245,13 +263,14 @@ export function ElementTourHost() {
   return (
     <TourStage
       engine={engine}
+      // The page waits while a step is up, as on the Diagram tour: a press on what a step opened closed it.
+      blockInput
       ariaPrefix={def?.eyebrow ?? 'Element tour'}
       copy={
         def
           ? {
               outroEyebrow: def.eyebrow,
               helpHref: helpArticleHref(def.helpArticle),
-              helpLabel: def.helpLabel,
               finish: 'Done',
             }
           : undefined

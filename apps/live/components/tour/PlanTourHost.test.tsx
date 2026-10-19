@@ -316,10 +316,11 @@ describe('PlanTourHost tracks', () => {
     expect(stage.helpHref).toBe('/help/canvas/plan-mode/sheets/');
   });
 
-  it('a board with no cards leaves out the card steps', () => {
+  // spec "Tour content": the tour adds its own card to show the card steps on, so an empty board gets them too.
+  it('a board with no cards still gets the card steps, on the card the tour adds', () => {
     drawBoard([]);
     start(BOARD);
-    expect(stage.engine!.countableSteps).toBe(4);
+    expect(stage.engine!.countableSteps).toBe(6);
   });
 
   it('a tab with both asks which, and picking Spreadsheets runs the sheet track', async () => {

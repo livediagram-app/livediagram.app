@@ -5,22 +5,22 @@ import type { PageKind } from '@livediagram/document';
 import { ARTICLE_WELCOME, articleTourSteps } from './article-tour-steps';
 import { INFOGRAPHIC_WELCOME, infographicTourSteps } from './infographic-tour-steps';
 import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
-import type { PageTourApi, PageTourNow, PageTourStep } from './page-tour-api';
+import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { SLIDE_WELCOME, slideTourSteps } from './slide-tour-steps';
 import { stepTelemetryType } from './tour-step';
 
 // The DOM tidy-up a page's tour needs, loaded with its steps so neither sits in the editor's first load.
 export { resetPageTour, tidyPageTour } from './page-tour-dom';
 
-/** A kind's steps, fixed from what is showing now. */
-export function pageTourSteps(kind: PageKind, now: PageTourNow): PageTourStep[] {
+/** A kind's steps. */
+export function pageTourSteps(kind: PageKind): PageTourStep[] {
   switch (kind) {
     case 'slide':
       return slideTourSteps();
     case 'article':
       return articleTourSteps();
     case 'logo':
-      return logoTourSteps(now.combineShowing);
+      return logoTourSteps();
     default:
       return infographicTourSteps();
   }
@@ -51,21 +51,19 @@ export function stepShown(
 /** A kind's steps whose controls are on screen: what Show Me runs. */
 export function shownPageTourSteps(
   kind: PageKind,
-  now: PageTourNow,
   api: PageTourApi,
   exists: (selector: string) => boolean,
 ): PageTourStep[] {
-  return pageTourSteps(kind, now).filter((step) => stepShown(step, api, exists));
+  return pageTourSteps(kind).filter((step) => stepShown(step, api, exists));
 }
 
 /** The offered track: its welcome card, then its steps whose controls are on screen. */
 export function pagesTourSteps(
   kind: PageKind,
-  now: PageTourNow,
   api: PageTourApi,
   exists: (selector: string) => boolean,
 ): PageTourStep[] {
-  return [WELCOMES[kind], ...shownPageTourSteps(kind, now, api, exists)];
+  return [WELCOMES[kind], ...shownPageTourSteps(kind, api, exists)];
 }
 
 /** The telemetry `type` of a step view: ('slide', 'add-page') → 'PagesTourStepSlideAddPage'. */

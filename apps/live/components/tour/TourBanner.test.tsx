@@ -86,6 +86,6 @@ describe('TourBanner', () => {
     const { onNext } = open('outro');
     fireEvent.click(screen.getByRole('button', { name: WELCOME_TOUR_COPY.finish }));
     expect(onNext).toHaveBeenCalledOnce();
-    expect(screen.getByRole('link', { name: WELCOME_TOUR_COPY.helpLabel })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Learn More' })).toBeTruthy();
   });
 });

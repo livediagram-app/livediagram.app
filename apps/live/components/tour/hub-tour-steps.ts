@@ -35,7 +35,12 @@ export function hubTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourApi
     ),
     addRowStep('add', 'Add a Satellite', 'Add Satellite adds one, up to eight.', 'Add Satellite'),
     ...(ctx.hasMore
-      ? [inTheMenu('spokes', 'Spokes or None', 'In its menu, Spokes turns the lines on or off.')]
+      ? [
+          inTheMenu('spokes', 'Spokes or None', 'In its menu, Spokes turns the lines on or off.', [
+            'Tools',
+            'Hub and Spoke',
+          ]),
+        ]
       : []),
     onGraphic(
       'animate',

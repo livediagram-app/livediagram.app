@@ -56,7 +56,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     activeTab: { id: 'tab1', locked: false },
     userPreferences: { tourSeen: false },
     closeContextMenu: vi.fn(),
-    tourSquare: { place: vi.fn(), remove: tourSquareRemove },
+    tourSquare: { place: vi.fn(), replace: vi.fn(), remove: tourSquareRemove },
     setSelectedId,
     setUserPreferences: vi.fn(),
     writeUserPreferences,
@@ -65,7 +65,7 @@ const editor = (over: Record<string, unknown> = {}) => {
   };
 };
 const writeUserPreferences = vi.fn();
-const tourSquareRemove = vi.fn((): string | null => null);
+const tourSquareRemove = vi.fn((): string[] => []);
 const setSelectedId = vi.fn();
 const offered = () => track.mock.calls.some((c) => c[0] === 'UI' && c[2] === 'TourOffer');
 
@@ -289,7 +289,7 @@ describe('TourHost running', () => {
   });
 
   it('takes away the square it placed, and its selection, when it ends', async () => {
-    tourSquareRemove.mockReturnValueOnce('sq1');
+    tourSquareRemove.mockReturnValueOnce(['sq1']);
     await runToOutro();
     act(() => popover.props!.onNext());
     expect(tourSquareRemove).toHaveBeenCalled();

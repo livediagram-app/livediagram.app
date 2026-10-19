@@ -68,5 +68,5 @@ export function PhotoReviewShowMe({
 }
 
 export function PhotoReviewTourStage({ tour }: { tour: TourEngine<PhotoReviewTourApi> }) {
-  return <ShowMeStage tour={tour} article="eventStormingBoards" helpLabel="Event Storming Help" />;
+  return <ShowMeStage tour={tour} article="eventStormingBoards" />;
 }

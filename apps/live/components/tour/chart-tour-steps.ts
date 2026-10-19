@@ -107,6 +107,7 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
         'menu',
         "The Chart's Own Menu",
         `Tools › Chart Type switches the kind of chart and keeps the data. ${dataInMenu(ctx)}`,
+        ['Tools', 'Chart Type'],
       ),
     ),
     ...(dialog

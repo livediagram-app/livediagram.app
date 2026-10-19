@@ -38,7 +38,10 @@ export function entityTourSteps(ctx: EntityTourContext): TourStepOf<ElementTourA
           ),
         ]
       : []),
-    menuStep(ctx, 'menu', 'Edit the Fields', 'Tools › Fields adds, edits and removes fields.'),
+    menuStep(ctx, 'menu', 'Edit the Fields', 'Tools › Fields adds, edits and removes fields.', [
+      'Tools',
+      'Fields',
+    ]),
     onGraphic(
       'relate',
       'Join Them Up',

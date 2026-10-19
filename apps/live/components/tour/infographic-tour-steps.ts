@@ -19,7 +19,7 @@ import {
 export const INFOGRAPHIC_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with infographics?',
+  title: 'Getting started with Infographics?',
   body: 'A quick look at layouts, backgrounds, page size and presenting?',
 };
 

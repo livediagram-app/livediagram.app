@@ -66,6 +66,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
               'menu',
               'The Sequence Menu',
               'In its menu, Sequence edits it or numbers the messages.',
+              ['Tools', 'Sequence'],
             ),
             prepare: (api: ElementTourApi) => api.closeSequence(),
           },

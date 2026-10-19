@@ -14,16 +14,13 @@ import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { isOnScreen } from './tour-dom';
 import { useTourEngine, type TourEngine } from './useTourEngine';
+import { clearCombineDemo } from './logo-combine-demo';
 
 /** The page's panel, opened on a tab or closed, through the request CanvasPages follows. */
 export const PAGE_PANEL: Pick<PageTourApi, 'openPanel' | 'closePanel'> = {
   openPanel: (pageId, tab) => requestPagePanel(pageId, tab),
   closePanel: () => requestPagePanel(null),
 };
-
-/** Whether Combine shows: two or more shapes selected on a logo page. */
-export const combineShowing = () =>
-  document.querySelector('[aria-label="Combine shapes"]') !== null;
 
 type Frozen = { pageId: string; kind: PageKind };
 
@@ -59,7 +56,11 @@ export function usePageTour(editable: (pageId: string) => boolean): {
     steps,
     apiRef,
     onStepView: () => {},
-    onFinish: (outcome) => trackEnded(frozen.kind, outcome === 'completed'),
+    onFinish: (outcome) => {
+      // What a step placed to show something (the Logo track's Combine shapes) goes however Show Me ended.
+      clearCombineDemo();
+      trackEnded(frozen.kind, outcome === 'completed');
+    },
   });
   const gone = tour.active && !editable(frozen.pageId);
   const { stop } = tour;
@@ -74,7 +75,7 @@ export function usePageTour(editable: (pageId: string) => boolean): {
   const freeze = async (pageId: string, kind: PageKind) => {
     const { shownPageTourSteps, resetPageTour } = await import('./page-tour-steps');
     const api = { pageId, ...PAGE_PANEL };
-    const next = shownPageTourSteps(kind, { combineShowing: combineShowing() }, api, isOnScreen);
+    const next = shownPageTourSteps(kind, api, isOnScreen);
     resetPageTour();
     // The panel Show Me was pressed in makes way for the page: a step that is about the panel opens it again.
     PAGE_PANEL.closePanel();
@@ -105,22 +106,14 @@ export function PageShowMeButton({
 }
 
 // Each kind's help article, linked beside Show Me and from the tour's closing card.
-export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey; label: string }> = {
-  slide: { article: 'slidePages', label: 'Slide Pages Help' },
-  infographic: { article: 'infographicLayouts', label: 'Infographic Help' },
-  article: { article: 'articlePages', label: 'Articles Help' },
-  logo: { article: 'logoPages', label: 'Logo Pages Help' },
+export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
+  slide: { article: 'slidePages' },
+  infographic: { article: 'infographicLayouts' },
+  article: { article: 'articlePages' },
+  logo: { article: 'logoPages' },
 };
 
 export function PageTourStage({ tour, kind }: { tour: TourEngine<PageTourApi>; kind: PageKind }) {
   const help = PAGE_TOUR_HELP[kind];
-  return (
-    <ShowMeStage
-      tour={tour}
-      article={help.article}
-      helpLabel={help.label}
-      layer="overlay"
-      pad={8}
-    />
-  );
+  return <ShowMeStage tour={tour} article={help.article} layer="overlay" pad={8} />;
 }

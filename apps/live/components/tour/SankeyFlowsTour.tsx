@@ -55,5 +55,5 @@ export function SankeyFlowsShowMeButton({
 }
 
 export function SankeyFlowsTourStage({ tour }: { tour: TourEngine<SankeyFlowsTourApi> }) {
-  return <ShowMeStage tour={tour} article="sankeyDiagram" helpLabel="Sankey Diagram Help" />;
+  return <ShowMeStage tour={tour} article="sankeyDiagram" />;
 }

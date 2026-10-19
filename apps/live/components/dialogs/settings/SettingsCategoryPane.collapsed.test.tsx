@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A closed section (docs/specs/007-editor/element-tours.md "Settings"): the Tours' Element Tours sit in a closed
+// A closed section (docs/specs/007-editor/element-tours.md "Settings"): the Tours' Show Me section (element tours) sits in a closed
 // accordion naming how many are on, opened by its heading, or on its own when Settings lands on one of its rows.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -14,9 +14,10 @@ afterEach(cleanup);
 Element.prototype.scrollIntoView = vi.fn();
 
 const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
-const header = () => screen.getByRole('button', { name: /Element Tours/ });
+// The section's heading names it Show Me and says how many are on.
+const header = () => screen.getByRole('button', { name: /^Show Me/ });
 
-describe('Element Tours section', () => {
+describe('Show Me section (element tours)', () => {
   it('starts closed, saying how many tours are on', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
@@ -29,8 +30,8 @@ describe('Element Tours section', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     fireEvent.click(header());
     expect(header().getAttribute('aria-expanded')).toBe('true');
-    const group = screen.getByRole('group', { name: 'Element Tours settings' });
-    expect(group.textContent).toContain('Sankey Diagram Tour');
+    const group = screen.getByRole('group', { name: 'Show Me on Every Element settings' });
+    expect(group.textContent).toContain('Sankey Diagram');
   });
 
   it('counts an answered tour as off', () => {
@@ -66,7 +67,7 @@ describe('Element Tours section', () => {
         focusRowKey="elementTour-sankey"
       />,
     );
-    fireEvent.click(screen.getByRole('switch', { name: 'Sankey Diagram Tour' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Sankey Diagram' }));
     expect(onChange).toHaveBeenCalledWith({ elementTourKinds: [], elementToursSeen: false });
   });
 

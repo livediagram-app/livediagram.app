@@ -142,10 +142,10 @@ export function TourBanner({
               href={copy.helpHref}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 underline underline-offset-2 transition hover:text-white"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 transition hover:text-white"
             >
               <HelpIcon aria-hidden />
-              {copy.helpLabel}
+              Learn More
             </a>
             <BannerButton onClick={onNext}>{copy.finish}</BannerButton>
           </div>

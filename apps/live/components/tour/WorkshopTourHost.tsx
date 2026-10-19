@@ -13,8 +13,12 @@ import { findTour } from './tour-dom';
 import {
   workshopTourSteps,
   workshopTourStepTelemetryType,
+  type WorkshopDemo,
   type WorkshopTourApi,
 } from './workshop-tour-steps';
+import { createShape, defaultSessionConfig, type Element } from '@livediagram/document';
+import { deriveNewBoxedColours } from '@/lib/themes';
+import { computeViewportCenter } from '@/lib/viewport';
 import { WorkshopTourArt } from './WorkshopTourArt';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
@@ -28,7 +32,13 @@ const WORKSHOP_TOUR_COPY = {
   helpHref: '/help/canvas/workshop-mode/',
 };
 
-const NO_API: WorkshopTourApi = {};
+// The demo elements' row: a Timer, a Dot Vote and a Poll, at their palette sizes, this far apart.
+const DEMO_GAP = 32;
+const DEMOS: readonly { which: WorkshopDemo; width: number; height: number }[] = [
+  { which: 'timer', width: 224, height: 64 },
+  { which: 'vote', width: 104, height: 96 },
+  { which: 'poll', width: 240, height: 116 },
+];
 
 // Orchestrates the Workshop tour (docs/specs/012-collaboration/workshop-tour.md). Mounted once in
 // EditorView beside TourHost; renders nothing until a person who has not seen it is in Workshop mode with an
@@ -37,7 +47,40 @@ const NO_API: WorkshopTourApi = {};
 // steps point at the chrome.
 export function WorkshopTourHost() {
   const ctx = useEditorContext();
-  const apiRef = useLatest(NO_API);
+  // The session elements the tour placed, by kind, while they are on the canvas (no history: ctx.tourSquare).
+  const demoRef = useRef<Partial<Record<WorkshopDemo, string>>>({});
+  const apiRef = useLatest<WorkshopTourApi>({
+    placeDemo: () => {
+      if (Object.keys(demoRef.current).length > 0) return;
+      const host = ctx.canvasMainRef.current?.getBoundingClientRect();
+      const centre = host
+        ? computeViewportCenter(host, ctx.viewport.get().offset)
+        : { x: 400, y: 300 };
+      const total = DEMOS.reduce((w, d) => w + d.width, 0) + DEMO_GAP * (DEMOS.length - 1);
+      let x = centre.x - total / 2;
+      const placed: Element[] = [];
+      for (const d of DEMOS) {
+        const base = createShape('session-button', 0, 0);
+        placed.push({
+          ...base,
+          ...deriveNewBoxedColours(base, {
+            backgroundColor: ctx.activeTab.backgroundColor,
+            patternColor: ctx.activeTab.patternColor,
+            theme: ctx.activeTab.theme,
+          }),
+          session: defaultSessionConfig(d.which),
+          x,
+          y: centre.y - d.height / 2,
+          width: d.width,
+          height: d.height,
+        });
+        demoRef.current[d.which] = base.id;
+        x += d.width + DEMO_GAP;
+      }
+      ctx.tourSquare.place(...placed);
+    },
+    demoId: (which) => demoRef.current[which] ?? null,
+  });
 
   // Whether the header's Share button is on this surface, read when the tour starts.
   const [canShare, setCanShare] = useState(true);
@@ -87,6 +130,9 @@ export function WorkshopTourHost() {
   if (armed && seen) setArmed(false);
 
   const endTour = (outcome: TourOutcome) => {
+    // The session elements it placed go however it ended: the canvas is left as the person had it.
+    demoRef.current = {};
+    ctx.tourSquare.remove();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,

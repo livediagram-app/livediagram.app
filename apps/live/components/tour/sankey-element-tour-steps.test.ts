@@ -42,6 +42,8 @@ const api = (): SankeyElementTourApi => ({
   closeSequence: vi.fn(),
   showSequenceTab: vi.fn(),
   clearPreview: vi.fn(),
+  openElementMenu: vi.fn(async () => undefined),
+  closeElementMenu: vi.fn(),
 });
 
 describe('sankeyElementTourSteps', () => {
@@ -87,7 +89,7 @@ describe('sankeyElementTourSteps', () => {
     const sel = (id: string) => steps.find((s) => s.id === id)!.selector!(a);
     expect(sel('bands')).toBe('[data-element-id="sk1"] [data-sankey-band="0"]');
     expect(sel('leftover')).toBe('[data-element-id="sk1"] [data-sankey-band="4"]');
-    expect(sel('style')).toBe('#selection-more-actions');
+    expect(sel('style')).toBe('[data-tour-menu-target]');
     expect(sel('flows')).toBe('[data-element-id="sk1"]');
   });
 

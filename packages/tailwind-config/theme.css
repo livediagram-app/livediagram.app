@@ -78,6 +78,12 @@
   --animate-view-forward: view-forward var(--transition-duration-short)
     cubic-bezier(0.16, 1, 0.3, 1);
   --animate-view-back: view-back var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
+  /* A guided tour's spotlight opening on a step's target (docs/specs/007-editor/editor-tour.md "Motion"): the ring
+   * fades in and draws in from a little wider, so the eye is led onto the target. Long motion token. */
+  /* A tour's arrival (docs/specs/007-editor/editor-tour.md "Motion"), staged: the dim settles in first, the step card
+   * after it. Slower than a dialog: it changes the whole screen, and should feel like the lights dimming, not a cut. */
+  --animate-tour-dim-in: fade-in var(--transition-duration-long) cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-tour-card-in: dialog-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1) 50ms both;
 }
 
 @keyframes view-forward {
@@ -451,9 +457,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* A dialog only fades in: no rise, no scale. So does a speech bubble: no pop. */
+  /* A dialog only fades in: no rise, no scale. So does a speech bubble (no pop) and a tour's step card (no rise). */
   .animate-dialog-in,
-  .animate-speech-pop {
+  .animate-speech-pop,
+  .animate-tour-card-in {
     animation-name: fade-in;
   }
 

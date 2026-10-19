@@ -135,13 +135,12 @@ describe('Photo review Show Me', () => {
     ).toBeTruthy();
   });
 
-  it('keeps Escape from leaving the review while it runs', async () => {
+  it('keeps Escape from leaving the review while it runs: Escape ends the tour, not the review', async () => {
     const { onCancel } = show([sticky(0)]);
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     await settle();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onCancel).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PhotoReviewTourSkipped');
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalled();

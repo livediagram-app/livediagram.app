@@ -72,6 +72,8 @@ const editor = (over: Record<string, unknown> = {}) => {
     userPreferences: { tourSeen: true },
     setUserPreferences,
     writeUserPreferences,
+    // The demonstration elements a tour places (useTourSquare).
+    tourSquare: { place: vi.fn(), replace: vi.fn(), remove: vi.fn(() => []) },
     selfParticipant: { id: 'me' },
     prefsSettled: true,
     ...over,
@@ -118,7 +120,7 @@ describe('PagesTourHost offer', () => {
     await wait(1);
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with slides?');
+    expect(stage.engine?.step?.title).toBe('Getting started with Slides?');
     expect(stage.helpHref).toBe('/help/canvas/pages-mode/slide-pages/');
   });
 
@@ -271,20 +273,20 @@ describe('PagesTourHost end', () => {
     await start({
       activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p2', kind: 'article', flow: 'f' }] },
     });
-    expect(stage.engine?.step?.title).toBe('Getting started with articles?');
+    expect(stage.engine?.step?.title).toBe('Getting started with Articles?');
     expect(stage.helpHref).toBe('/help/canvas/pages-mode/articles/');
     expect(stage.engine!.countableSteps).toBe(4);
   });
 
   it('counts the slide’s steps on screen', async () => {
     await start();
-    expect(stage.engine!.countableSteps).toBe(5);
+    expect(stage.engine!.countableSteps).toBe(7);
   });
 
   it('leaves out a step whose control is not on screen', async () => {
     dom.hidden = ['data-tour-id="slides"'];
     await start();
-    expect(stage.engine!.countableSteps).toBe(4);
+    expect(stage.engine!.countableSteps).toBe(3);
   });
 
   // docs/specs/007-editor/start-diagramming.md "The tours wait".
@@ -345,7 +347,7 @@ describe('PagesTourHost per kind', () => {
     rerender(<PagesTourHost />);
     await wait(800);
     expect(offered()).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with logos?');
+    expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
   });
 
   it('waits out the first page’s kind choice', async () => {

@@ -45,6 +45,7 @@ export function pyramidTourSteps(
             'shape',
             'Pyramid, Inverted or Funnel',
             'In its menu, Shape switches between Pyramid, Inverted and Funnel.',
+            ['Tools', 'Pyramid'],
           ),
         ]
       : []),

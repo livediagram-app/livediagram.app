@@ -32,7 +32,7 @@ function Surface({
     <div>
       <ShowMeButton tour={tour} onStart={onStart} />
       <div data-tour-id="show-me-one">Target</div>
-      <ShowMeStage tour={tour} article="sharing" helpLabel="Sharing Help" />
+      <ShowMeStage tour={tour} article="sharing" />
     </div>
   );
 }
@@ -60,7 +60,7 @@ describe('Show Me', () => {
     await settle();
     fireEvent.click(screen.getByRole('button', { name: /next/i }));
     await settle();
-    const link = screen.getByRole('link', { name: /Sharing Help/ });
+    const link = screen.getByRole('link', { name: /Learn More/ });
     expect(link.getAttribute('href')).toBe('/help/collaboration/sharing/');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onFinish).toHaveBeenCalledWith('completed');

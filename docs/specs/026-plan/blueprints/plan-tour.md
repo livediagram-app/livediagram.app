@@ -14,7 +14,7 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 | tour subject  | `Subject` (`{ boardId, sheetId }`, element ids) in `PlanTourHost`, fixed at offer by `visiblePlanWork` |
 | plan work     | `plan-board` / `plan-sheet` shape elements on `activeTab.elements` (`isBoard`, `isSheet`)              |
 | leftovers     | `PlanTourContent` and its leftover record, swept by `usePlanTourLeftovers` (old tour only)             |
-| seen guard    | `UserPreferences.planTourTracks` (the answered tracks), read by `planTrackSeen` / `planTourOwed`       |
+| seen guard    | `UserPreferences.planTourTracks` (the answered tracks), read by `planTrackSeen`                        |
 
 ## Files
 
@@ -30,7 +30,7 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 | `apps/live/components/tour/art/plan-tour-art.tsx` | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/live/components/tour/art/TourArtFrame.tsx`)                          |
 | `apps/live/lib/tour-tracks.ts`                    | `tourTrackSeen`, `withTracksAnswered`: a tour of several tracks, each offered once                                                                                     |
 | `apps/live/lib/tour-active.ts`                    | Which tour is on screen (`'welcome' \| 'plan' \| 'workshop' \| null`), a module store                                                                                  |
-| `apps/live/lib/plan-tour.ts`                      | Relaunch event, tracks, `planTrackSeen` / `planTourOwed` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                               |
+| `apps/live/lib/plan-tour.ts`                      | Relaunch event, tracks, `planTrackSeen` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                                                |
 | `apps/live/hooks/plan/usePlanTourLeftovers.ts`    | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
 
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
@@ -148,17 +148,24 @@ another document is kept. Nothing writes a record any more.
 
 ## Interfaces and contracts
 
-- `UserPreferences.planTourTracks?: PlanTourTrack[]`; missing = none answered. `planTourSeen?: boolean` counts every
+- `UserPreferences.planTourTracks?: PlanTourTrack[]` (`'boards' | 'sheets' | 'dashboards'`; PlanTourHost runs the
+  first two, `BoardSheetTrack`); missing = none answered. `planTourSeen?: boolean` counts every
   track only while `powerUserMode` is on. No migration (free-form preferences blob).
 - `PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch'`, dispatched by `requestPlanTourRelaunch()`.
 - Leftover record (read only): `localStorage['livediagram:v2:plan-tour-content']` = JSON `PlanTourContent`; a
   malformed value is dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its
   `elementId`.
-- Settings switch: `planTourSeen` (`tourTracksSwitch`), label **Plan Tour**, second toggle row in the Tours category; reads on while
-  `planTourOwed`, writes off as `{ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }` and on as
-  `planTourSeen: false` with `planTourTracks` removed; help article
-  `planTour`, event `{ on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' }`. `SettingsDialog`'s close relaunches
-  when the row is on (`planTourOwed`) and was off at open.
+- Settings switches: **Plan Tours** (`tourTracksSwitch`, key `planTourSeen`, label **Plan Tours**, the second toggle
+  row in the Tours category; reads on while any of `PLAN_TOUR_TRACKS` is owed; off writes `planTourSeen: true` with
+  every track answered, on removes `planTourTracks` and clears `planTourSeen`; events `PlanTourSeenOff` /
+  `PlanTourSeenOn`), then one row per track nested beneath it (`tourTrackSwitch`, `parent: 'planTourSeen'`), keys
+  `planTourSeen-boards`, `planTourSeen-sheets` and `planTourSeen-dashboards`, labels **Boards Tour**, **Sheets Tour**
+  and **Dashboards Tour**. A track's row reads on while `!planTrackSeen(p, track)`; it writes `planTourSeen: false`
+  and `planTourTracks` = the tracks seen in `p` (the single flag folded in) with its own track added (off) or removed
+  (on). Help articles `planTour` (Boards, Sheets) and `planDashboards` (Dashboards); events
+  `{ on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' }`, `{ on: 'SheetsTourSeenOff', off: 'SheetsTourSeenOn' }` and
+  `{ on: 'DashboardsTourSeenOff', off: 'DashboardsTourSeenOn' }`. `SettingsDialog`'s close relaunches when a track is
+  owed that was not owed at open.
 - `POWER_USER_PRESET.planTourSeen = { planTourSeen: true }`.
 
 ## Data and persistence

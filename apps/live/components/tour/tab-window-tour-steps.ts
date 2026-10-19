@@ -35,7 +35,10 @@ export function tabWindowTourSteps(ctx: TabWindowTourContext): TourStepOf<Elemen
           `${pressWord(ctx)} it to pick which tab it shows.`,
           elementSelector(id, '[data-tab-window-choose]'),
         ),
-    menuStep(ctx, 'menu', 'The Tab Window Menu', 'Tools › Tab Window switches the tab it shows.'),
+    menuStep(ctx, 'menu', 'The Tab Window Menu', 'Tools › Tab Window switches the tab it shows.', [
+      'Tools',
+      'Tab Window',
+    ]),
     onGraphic(
       'size',
       'Any Size',

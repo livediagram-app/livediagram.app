@@ -46,6 +46,7 @@ export function funnelTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTour
             'shape',
             'Funnel, Pyramid or Inverted',
             'In its menu, Shape switches between Funnel, Pyramid and Inverted.',
+            ['Tools', 'Pyramid'],
           ),
         ]
       : []),

@@ -2354,6 +2354,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeId,
     tabs,
     commitTabs,
+    tickTabs,
     itemTypes,
     statusNames: planStatusNames,
     markTabLoaded,

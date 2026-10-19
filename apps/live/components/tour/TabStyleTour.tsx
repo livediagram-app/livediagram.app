@@ -31,5 +31,5 @@ export function TabStyleShowMeButton({ tour }: { tour: TourEngine<TabStyleTourAp
 }
 
 export function TabStyleTourStage({ tour }: { tour: TourEngine<TabStyleTourApi> }) {
-  return <ShowMeStage tour={tour} article="changingTheme" helpLabel="Tab Style Help" />;
+  return <ShowMeStage tour={tour} article="changingTheme" />;
 }

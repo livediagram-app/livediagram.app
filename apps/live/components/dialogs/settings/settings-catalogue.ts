@@ -19,8 +19,8 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { PAGES_TOUR_KINDS, pagesTourOwed } from '@/lib/pages-tour';
-import { PLAN_TOUR_TRACKS, planTourOwed } from '@/lib/plan-tour';
+import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
+import { PLAN_TOUR_TRACKS, planTrackSeen } from '@/lib/plan-tour';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -455,7 +455,39 @@ function elementTourSwitch(
   };
 }
 
-const ELEMENT_TOURS_SECTION = 'Element Tours';
+// Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
+const ELEMENT_TOURS_SECTION = 'Show Me';
+
+// One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
+// (Plan Tours, Pages Tours): the Plan tour's Boards and Sheets, the Pages tour's page kinds
+// (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
+// answer. Each track is named for itself ("Slides Tour"), never the mode. The tour's single seen flag (set by Power
+// user mode) is folded into the answered list first, so turning one track back on leaves the others as they were.
+function tourTrackSwitch<T extends string>(
+  key: 'planTourSeen' | 'pagesTourSeen',
+  tracksKey: 'planTourTracks' | 'pagesTourKinds',
+  tracks: readonly T[],
+  seen: (p: UserPreferences, track: T) => boolean,
+  track: T,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key: `${key}-${track}`,
+    section: 'Offer Again',
+    parent: key,
+    ...row,
+    read: (p) => !seen(p, track),
+    write: (p, v) => {
+      const answered = tracks.filter((t) => seen(p, t) && (v ? t !== track : true));
+      return {
+        ...p,
+        [key]: false,
+        [tracksKey]: v ? answered : [...new Set([...answered, track])],
+      };
+    },
+  };
+}
 
 function tourTracksSwitch(
   key: 'planTourSeen' | 'pagesTourSeen' | 'elementToursSeen',
@@ -1133,14 +1165,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), one switch each. A tour
-    // offers itself once, in its own mode, and its switch turns itself off once taken or dismissed.
+    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), one switch each, a tour of several
+    // tracks one per track ("Boards Tour", "Slides Tour"). A tour offers itself once, in its own mode, and its switch
+    // turns itself off once taken or dismissed.
     id: 'tours',
     label: 'Tours',
     collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
       [ELEMENT_TOURS_SECTION]: {
-        note: 'The first time you select a complex element, a small Tour toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
+        note: 'The first time you select a complex element, a small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
       },
       'Offer Again': {
         note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
@@ -1156,14 +1189,50 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
         helpArticle: 'diagramTour',
       }),
-      tourTracksSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTourOwed, {
-        label: 'Plan Tour',
-        event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial plan board kanban cards sheet spreadsheet replay',
-        description: 'The first time you work on a board, and on a sheet, in Plan.',
+      // The Plan tour: one switch over both tracks, then each track's own row beneath it (docs/specs/026-plan/plan-tour.md).
+      tourTracksSwitch(
+        'planTourSeen',
+        'planTourTracks',
+        PLAN_TOUR_TRACKS,
+        (p) => PLAN_TOUR_TRACKS.some((t) => !planTrackSeen(p, t)),
+        {
+          label: 'Plan Tours',
+          event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
+          keywords:
+            'tour walkthrough onboarding tutorial plan board kanban sheet spreadsheet all replay',
+          description: 'Every Plan tour at once: boards, sheets and dashboards.',
+          helpArticle: 'planTour',
+        },
+      ),
+      tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'boards', {
+        label: 'Boards Tour',
+        event: { category: 'UI', on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial plan board kanban cards columns replay',
+        description: 'On a board in Plan: cards, columns, the card panel and card types.',
         helpArticle: 'planTour',
       }),
+      tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'sheets', {
+        label: 'Sheets Tour',
+        event: { category: 'UI', on: 'SheetsTourSeenOff', off: 'SheetsTourSeenOn' },
+        keywords:
+          'tour walkthrough onboarding tutorial plan sheet spreadsheet cells formulas replay',
+        description: 'On a sheet in Plan: cells, formulas, the toolbar and its settings.',
+        helpArticle: 'planTour',
+      }),
+      tourTrackSwitch(
+        'planTourSeen',
+        'planTourTracks',
+        PLAN_TOUR_TRACKS,
+        planTrackSeen,
+        'dashboards',
+        {
+          label: 'Dashboards Tour',
+          event: { category: 'UI', on: 'DashboardsTourSeenOff', off: 'DashboardsTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial plan dashboard slots rows replay',
+          description: 'On a dashboard in Plan: rows of slots, filling them, and its settings.',
+          helpArticle: 'planDashboards',
+        },
+      ),
       tourSwitch('workshopTourSeen', {
         label: 'Workshop Tour',
         event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
@@ -1193,13 +1262,62 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you walk as an avatar.',
         helpArticle: 'avatarTour',
       }),
-      tourTracksSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesTourOwed, {
-        label: 'Pages Tour',
-        event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial pages pages slides infographic article logo present replay',
-        description:
-          'The first time you work on each kind of page: slides, infographics, articles and logos.',
+      // The Pages tour: one switch over every kind of page, then each kind's own row beneath it
+      // (docs/specs/007-editor/pages-tour.md).
+      tourTracksSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        (p) => PAGES_TOUR_KINDS.some((k) => !pagesKindSeen(p, k)),
+        {
+          label: 'Pages Tours',
+          event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
+          keywords:
+            'tour walkthrough onboarding tutorial pages slides infographic article logo all replay',
+          description: 'Every Pages tour at once: slides, infographics, articles and logos.',
+          helpArticle: 'pagesTour',
+        },
+      ),
+      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'slide', {
+        label: 'Slides Tour',
+        event: { category: 'UI', on: 'SlidesTourSeenOff', off: 'SlidesTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial pages slides deck present replay',
+        description: 'On a slide: layouts, backgrounds, the deck and presenting.',
+        helpArticle: 'pagesTour',
+      }),
+      tourTrackSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        pagesKindSeen,
+        'infographic',
+        {
+          label: 'Infographic Tour',
+          event: { category: 'UI', on: 'InfographicTourSeenOff', off: 'InfographicTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial pages infographic poster layout replay',
+          description: 'On an infographic page: layouts, backgrounds, page size and presenting.',
+          helpArticle: 'pagesTour',
+        },
+      ),
+      tourTrackSwitch(
+        'pagesTourSeen',
+        'pagesTourKinds',
+        PAGES_TOUR_KINDS,
+        pagesKindSeen,
+        'article',
+        {
+          label: 'Article Tour',
+          event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
+          keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
+          description: 'On an article: writing, the page toolbar, its style and fonts.',
+          helpArticle: 'pagesTour',
+        },
+      ),
+      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'logo', {
+        label: 'Logo Tour',
+        event: { category: 'UI', on: 'LogoTourSeenOff', off: 'LogoTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial pages logo artboard brand replay',
+        description: 'On a logo artboard: layouts, guides, mirroring and combining shapes.',
         helpArticle: 'pagesTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
@@ -1210,36 +1328,36 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         ELEMENT_TOUR_KINDS,
         (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
         {
-          label: 'Element Tours',
+          label: 'Show Me on Every Element',
           event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
           keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
-          description: 'Every element tour at once.',
+          description: 'Every element’s Show Me at once.',
         },
         ELEMENT_TOURS_SECTION,
       ),
       elementTourSwitch('sankey', {
-        label: 'Sankey Diagram Tour',
+        label: 'Sankey Diagram',
         event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
         keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
         description: 'The first time you select a Sankey diagram.',
         helpArticle: 'sankeyDiagram',
       }),
       elementTourSwitch('layer-stack', {
-        label: 'Layer Stack Tour',
+        label: 'Layer Stack',
         event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
         keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
         description: 'The first time you select a layer stack.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('pyramid', {
-        label: 'Pyramid Tour',
+        label: 'Pyramid',
         event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
         keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
         description: 'The first time you select a pyramid.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('funnel', {
-        label: 'Funnel Tour',
+        label: 'Funnel',
         event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
         keywords:
           'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
@@ -1247,7 +1365,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('cycle', {
-        label: 'Cycle Tour',
+        label: 'Cycle',
         event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
         keywords:
           'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
@@ -1255,14 +1373,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('hub', {
-        label: 'Hub and Spoke Tour',
+        label: 'Hub and Spoke',
         event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
         keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
         description: 'The first time you select a hub and spoke.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('onion', {
-        label: 'Onion Tour',
+        label: 'Onion',
         event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
         keywords:
           'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
@@ -1270,7 +1388,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('chevrons', {
-        label: 'Chevrons Tour',
+        label: 'Chevrons',
         event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
         keywords:
           'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
@@ -1278,7 +1396,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('timeline', {
-        label: 'Timeline Tour',
+        label: 'Timeline',
         event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
         keywords:
           'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
@@ -1286,7 +1404,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('mind-node', {
-        label: 'Mind Map Tour',
+        label: 'Mind Map',
         event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
         keywords:
           'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
@@ -1294,7 +1412,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'mindMaps',
       }),
       elementTourSwitch('flowchart', {
-        label: 'Flowchart Tour',
+        label: 'Flowchart',
         event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
         keywords:
           'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
@@ -1302,7 +1420,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'flowcharts',
       }),
       elementTourSwitch('org-chart', {
-        label: 'Org Chart Tour',
+        label: 'Org Chart',
         event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
         keywords:
           'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
@@ -1310,7 +1428,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'orgCharts',
       }),
       elementTourSwitch('sequence', {
-        label: 'Sequence Tour',
+        label: 'Sequence',
         event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
         keywords:
           'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
@@ -1318,56 +1436,56 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'sequenceDiagram',
       }),
       elementTourSwitch('chart', {
-        label: 'Chart Tour',
+        label: 'Chart',
         event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
         keywords: 'chart pie bar column line area scatter doughnut data graph tour',
         description: 'The first time you select a chart.',
         helpArticle: 'dataElements',
       }),
       elementTourSwitch('stack', {
-        label: 'Stack Tour',
+        label: 'Stack',
         event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
         keywords: 'stack row column grid layout container reflow tour',
         description: 'The first time you select a stack.',
         helpArticle: 'stacks',
       }),
       elementTourSwitch('entity', {
-        label: 'Entity Tour',
+        label: 'Entity',
         event: { category: 'UI', on: 'EntityTourSeenOff', off: 'EntityTourSeenOn' },
         keywords: 'entity uml class er table fields record tour',
         description: 'The first time you select an entity.',
         helpArticle: 'entities',
       }),
       elementTourSwitch('tab-window', {
-        label: 'Tab Window Tour',
+        label: 'Tab Window',
         event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
         keywords: 'tab window live slide embed another tab tour',
         description: 'The first time you select a tab window.',
         helpArticle: 'tabWindows',
       }),
       elementTourSwitch('lane', {
-        label: 'Lane Tour',
+        label: 'Lane',
         event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
         keywords: 'lane swimlane band gutter seam column tour',
         description: 'The first time you select a lane.',
         helpArticle: 'lanes',
       }),
       elementTourSwitch('boundary', {
-        label: 'Boundary Tour',
+        label: 'Boundary',
         event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
         keywords: 'boundary zone region vpc cluster c4 container tour',
         description: 'The first time you select a boundary.',
         helpArticle: 'boundaries',
       }),
       elementTourSwitch('diagram-key', {
-        label: 'Diagram Key Tour',
+        label: 'Diagram Key',
         event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
         keywords: 'diagram key legend line styles tag colours meanings tour',
         description: 'The first time you select a diagram key.',
         helpArticle: 'diagramKeys',
       }),
       elementTourSwitch('portal', {
-        label: 'Portal Tour',
+        label: 'Portal',
         event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
         keywords: 'portal link travel teleport avatar shortcut tour',
         description: 'The first time you select a portal.',

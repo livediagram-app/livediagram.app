@@ -40,6 +40,7 @@ export function portalTourSteps(ctx: PortalTourContext): TourStepOf<ElementTourA
       'menu',
       'Link It',
       'Tools › Portal names it and picks where it leads. Create Portal makes its partner.',
+      ['Tools', 'Portal'],
     ),
     onGraphic(
       'walk',

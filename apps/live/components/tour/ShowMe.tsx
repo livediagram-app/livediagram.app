@@ -3,10 +3,11 @@
 // Show Me (docs/specs/007-editor/show-me.md): the button that starts a tour of one surface, there and then, and the
 // tour drawn over that surface. Never offered: only the button runs it. Each surface keeps its own steps and its own
 // literal telemetry (so the dashboard's emitter scan reads them); these are the parts every Show Me shares.
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideFootprints } from '@livediagram/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
+import { setActiveTour } from '@/lib/tour-active';
 import { TourStage } from './TourStage';
 import type { TourEngine } from './useTourEngine';
 
@@ -50,20 +51,24 @@ export function ShowMeButton<Api>({
 }
 
 // The running tour: the ring around each step's real control and the step card, the closing card linking `article`
-// as `helpLabel` ("Card Types Help"). `layer` 'modal' rings controls inside a dialog; 'overlay' rings the editor's own chrome.
+// as Learn More. `layer` 'modal' rings controls inside a dialog; 'overlay' rings the editor's own chrome.
 export function ShowMeStage<Api>({
   tour,
   article,
-  helpLabel,
   layer = 'modal',
   pad = 14,
 }: {
   tour: TourEngine<Api>;
   article: HelpArticleKey;
-  helpLabel: string;
   layer?: 'overlay' | 'modal';
   pad?: number;
 }) {
+  // While it runs, the tours that offer themselves wait (one tour at a time): an offer came up beside a page's Show Me.
+  useEffect(() => {
+    if (!tour.active) return;
+    setActiveTour('show-me', true);
+    return () => setActiveTour('show-me', false);
+  }, [tour.active]);
   return (
     <TourStage
       engine={tour}
@@ -71,7 +76,6 @@ export function ShowMeStage<Api>({
       copy={{
         outroEyebrow: 'Show Me',
         helpHref: helpArticleHref(article),
-        helpLabel,
         finish: 'Done',
       }}
       layer={layer}
