@@ -17,12 +17,12 @@ import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
   DARK_READER_LOCK,
+  RANDOM_UUID_BOOT_SCRIPT,
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@livediagram/ui';
 import {
-  RANDOM_UUID_BOOT_SCRIPT,
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
   WEBFONTS_SWAP_SCRIPT,

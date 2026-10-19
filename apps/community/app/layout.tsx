@@ -9,6 +9,7 @@ import {
   PageViewBoot,
   pageMetadata,
   PUBLIC_VIEWPORT,
+  RANDOM_UUID_BOOT_SCRIPT,
   SITE_URL,
   SiteFooter,
   WebVitalsBoot,
@@ -64,6 +65,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Trusted Types first (docs/specs/016-platform/trusted-types.md). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        {/* The like key is a randomUUID, outside a secure context too (docs/specs/016-platform/secure-context.md). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(RANDOM_UUID_BOOT_SCRIPT) }} />
       </head>
       <body className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
