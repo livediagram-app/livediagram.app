@@ -16,7 +16,7 @@ async function arrange() {
   await createCommunityPost(db.env, 'd1', 'user_author', {
     title: 'Team offsite mind map',
     description: 'Five branches for a two-day offsite.',
-    category: 'brainstorm',
+    category: 'mindmaps',
     tags: [],
     anonymous: true,
   });

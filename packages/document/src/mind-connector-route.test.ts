@@ -209,7 +209,7 @@ describe('finishMindConnectorRoute', () => {
     for (const finish of ['flexible', 'sketch', 'marker'] as const) {
       expect(finishRoutedArrow(arrowOf(els, 'ra'), els, finish).arrowStyle).toBe('straight');
     }
-    const bowed = { ...arrowOf(els, 'ra'), curveOffset: 40 };
+    const bowed: ArrowElement = { ...arrowOf(els, 'ra'), curveOffset: { dx: 0, dy: 40 } };
     expect(finishMindConnectorRoute(bowed, els, 'flexible')).toBeNull();
   });
 
