@@ -562,8 +562,8 @@ A **Diagram** slot is a card with the tab's mode icon and name over its drawing,
 too, at a deferred priority) and still: drawn as the split view's other pane draws a tab, in this person's
 appearance, fitted to the slot, as one image (it never scrolls or zooms the page, and runs nothing). Pressing it opens
 the tab (**Open <name>**). It needs 320 by 220 px (What fits). Before the tab's content arrives it says "Loading
-<name>…" (or offers Retry); a tab with nothing on it says "Nothing on <name> yet."; a deleted one "This Diagram was
-deleted." The renderer loads only once a Diagram slot is shown.
+<name>…" (or offers Retry); a tab with nothing to draw (no elements, and neither in Pages nor a Form tab with its form)
+says "Nothing on <name> yet."; a deleted one "This Diagram was deleted." The renderer loads only once a Diagram slot is shown.
 
 ## Moving a slot
 
