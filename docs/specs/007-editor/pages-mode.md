@@ -1036,8 +1036,10 @@ swipe, with no X.
   card's own tiles. The card goes as
   soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
   the tab is next opened; the title bar's Layout button still opens the layouts. It
-  never shows while the first page offers its kind, while the page's panel is open, when presenting
-  or in zen, or when the page is too small on screen to hold it.
+  never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
+  (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
+  the tool is put down with the page still empty), when presenting or in zen, or when the page is too small on
+  screen to hold it.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
   page's own content is hidden meanwhile (left out of the page clip), so the two never mix. The
