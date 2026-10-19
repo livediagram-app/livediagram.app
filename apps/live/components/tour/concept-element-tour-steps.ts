@@ -5,6 +5,7 @@
 import type { ConceptRow } from '@livediagram/document';
 import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
 import type { ElementTourApi } from './element-tour-api';
+import { clearMenuPath, MENU_TARGET, openMenuPath } from './element-menu-tour';
 import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
 
@@ -68,9 +69,34 @@ export function onGraphic(
   };
 }
 
-// The step on the More button, left out where it is not shown (a power user on a desktop right-clicks instead).
-export function inTheMenu(id: string, title: string, body: string): Step {
-  return onGraphic(id, title, body, '#selection-more-actions');
+// Whether the menu step on screen has been left, so a menu still opening as it ends is closed too.
+let menuLeft = false;
+
+// A step on the element's own menu (docs/specs/007-editor/element-tours.md "Menu steps"): it opens the menu and the
+// rows of `path` ("Tools", "Rows"), rings the part they open, and closes the menu again on leaving.
+export function inTheMenu(id: string, title: string, body: string, path: readonly string[]): Step {
+  return {
+    id,
+    title,
+    body,
+    selector: () => MENU_TARGET,
+    prepare: async (api) => {
+      menuLeft = false;
+      api.clearPreview();
+      await api.openElementMenu();
+      await openMenuPath(path);
+      // Left while the menu was still opening: it closes as it arrives.
+      if (menuLeft) {
+        clearMenuPath();
+        api.closeElementMenu();
+      }
+    },
+    cleanup: (api) => {
+      menuLeft = true;
+      clearMenuPath();
+      api.closeElementMenu();
+    },
+  };
 }
 
 // The closing card.

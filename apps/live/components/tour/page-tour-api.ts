@@ -16,9 +16,3 @@ export type PageTourStep = TourStepOf<PageTourApi> & {
   // it (a popover, the page's panel, the Slide Deck): the step is left out without it (spec "Filtering").
   requires?: (api: PageTourApi) => string;
 };
-
-// What a track's steps are fixed from when the tour starts: whether controls that come and go are showing.
-export type PageTourNow = {
-  // Two or more shapes selected, so a logo page's Combine shows.
-  combineShowing: boolean;
-};

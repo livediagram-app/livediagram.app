@@ -310,6 +310,13 @@ export const TOURS_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'PlanTourSeenOff',
+      'PlanTourSeenOn',
+      'Plan Tours',
+      'Every Plan tour (boards, sheets and dashboards) switched back on or off at once.',
+    ),
+    toggle(
+      'UI',
       'BoardsTourSeenOff',
       'BoardsTourSeenOn',
       'Boards Tour',
@@ -321,6 +328,13 @@ export const TOURS_SETTINGS = settingsStack(
       'SheetsTourSeenOn',
       'Sheets Tour',
       "The Plan tour's sheets track switched back on or off.",
+    ),
+    toggle(
+      'UI',
+      'DashboardsTourSeenOff',
+      'DashboardsTourSeenOn',
+      'Dashboards Tour',
+      "The Plan tour's dashboards track switched back on or off.",
     ),
     toggle(
       'UI',
@@ -342,6 +356,13 @@ export const TOURS_SETTINGS = settingsStack(
       'AvatarTourSeenOn',
       'Avatar Tour',
       'The Avatar tour switched back on or off.',
+    ),
+    toggle(
+      'UI',
+      'PagesTourSeenOff',
+      'PagesTourSeenOn',
+      'Pages Tours',
+      'Every Pages tour (slides, infographics, articles and logos) switched back on or off at once.',
     ),
     toggle(
       'UI',

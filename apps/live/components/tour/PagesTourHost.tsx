@@ -13,7 +13,7 @@ import { rebaseUserPreferences } from '@/lib/user-preferences';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { resetPageTour, tidyPageTour } from './page-tour-dom';
 import { pickTourPage, type TourPage } from './pages-tour-page';
-import { combineShowing, PAGE_PANEL, PAGE_TOUR_HELP } from './PageTour';
+import { PAGE_PANEL, PAGE_TOUR_HELP } from './PageTour';
 import { isOnScreen } from './tour-dom';
 import { stepTelemetryType } from './tour-step';
 import { PagesTourArt } from './art/pages-tour-art';
@@ -21,6 +21,8 @@ import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { helpArticleHref } from '@/lib/help-articles';
+import { useLogoCombineDemo } from './useLogoCombineDemo';
+import { clearCombineDemo } from './logo-combine-demo';
 
 // The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
@@ -46,6 +48,8 @@ const EYEBROW: Record<PageKind, string> = {
 // on screen of a kind whose track they have not seen, no other tour on screen and the settle delay passed, or the
 // Settings row asks for a rerun. The tour page's kind picks the track; its steps load at the offer.
 export function PagesTourHost() {
+  // The Logo track's Combine demonstration acts on this editor (logo-combine-demo.ts).
+  useLogoCombineDemo();
   const ctx = useEditorContext();
   const [subject, setSubject] = useState<TourPage>({ pageId: '', kind: 'infographic' });
   const apiRef = useLatest<PageTourApi>({ pageId: subject.pageId, ...PAGE_PANEL });
@@ -109,6 +113,8 @@ export function PagesTourHost() {
   if (armed && !anyUnseen) setArmed(false);
 
   const endTour = (outcome: TourOutcome) => {
+    // What a step placed to show something (the Logo track's Combine shapes) goes however the tour ended.
+    clearCombineDemo();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     const next = rebaseUserPreferences(
       ctx.userPreferences,
@@ -135,7 +141,12 @@ export function PagesTourHost() {
     // The pages draw a moment after the editor is usable (a template's tab arriving): look again, a bounded number
     // of times, before letting the offer go until the next arming.
     const look = () => {
-      if (document.querySelector('[data-first-page-choice]')) return;
+      // The first page's kind still being chosen: keep looking (not counted as a miss) until it is. Returning here
+      // left the offer armed and idle once the kind was picked, until a reload.
+      if (document.querySelector('[data-first-page-choice]')) {
+        t = setTimeout(look, OFFER_DELAY_MS);
+        return;
+      }
       const page = pickTourPage((kind) => !pagesKindSeen(prefsRef.current, kind));
       if (!page) {
         tries += 1;
@@ -150,14 +161,7 @@ export function PagesTourHost() {
         debugLog('[pages-tour] offer', { kind: page.kind });
         resetPageTour();
         setSubject(page);
-        setSteps(
-          pagesTourSteps(
-            page.kind,
-            { combineShowing: combineShowing() },
-            { pageId: page.pageId, ...PAGE_PANEL },
-            isOnScreen,
-          ),
-        );
+        setSteps(pagesTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen));
         engineRef.current.start();
         track('UI', 'Opened', 'PagesTourOffer');
       });
@@ -167,7 +171,19 @@ export function PagesTourHost() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [armed, active, anyUnseen, inPages, canWork, otherTour, modalOpen, engineRef, prefsRef]);
+    // The kinds on the tab restart the look: a kind arriving while already armed has a fresh page to offer on.
+  }, [
+    armed,
+    active,
+    anyUnseen,
+    inPages,
+    canWork,
+    otherTour,
+    modalOpen,
+    kindsKey,
+    engineRef,
+    prefsRef,
+  ]);
 
   // Settings rerun (a Tours › "Slides Tour" (or another kind's) row, turned on from off + closed): offers again in Pages, and
   // otherwise the next time the person enters it (the row has cleared the preferences).

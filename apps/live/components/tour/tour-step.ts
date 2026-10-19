@@ -28,6 +28,9 @@ export type TourStepOf<Api> = {
   layer?: 'overlay' | 'modal';
   // Where the engine scrolls the target to (tour-reveal.ts): 'center' (the default) centres it in its scroller when it
   // is not wholly in view; 'start' brings it to the top (a section further down a dialog, read from its heading).
+  // The step puts the caret somewhere on purpose (the card type editor's Name, to type into straight away): the engine
+  // leaves that focus be, where it otherwise releases a field a step's surface focused on opening.
+  keepFocus?: true;
   revealAt?: RevealBlock;
   // Centred bookend cards, outside the step count, each with its own
   // illustration and button set: 'welcome' offers the tour (accept /

@@ -8,13 +8,12 @@ const ALL = new Set([
   'alignmentGuides',
   'autoRebindArrows',
   'tourSeen',
-  // A tour of several tracks is reached through its first track's row.
-  'planTourSeen-boards',
+  'planTourSeen',
   'workshopTourSeen',
   'drawTourSeen',
   'formTourSeen',
   'avatarTourSeen',
-  'pagesTourSeen-slide',
+  'pagesTourSeen',
   'elementToursSeen',
   'aiSuggestedPrompts',
 ]);
@@ -33,7 +32,7 @@ describe('presetSummaryLines', () => {
       ['Forms Tour', 'Off', 'Tours'],
       ['Avatar Tour', 'Off', 'Tours'],
       ['Pages Tours', 'Off', 'Tours'],
-      ['Element Tours', 'Off', 'Tours'],
+      ['Show Me on Every Element', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

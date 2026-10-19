@@ -41,6 +41,7 @@ export function onionTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourA
             'rows',
             'Reorder in the Menu',
             'In its menu, Tools › Rows lets you rename, reorder or remove rings.',
+            ['Tools', 'Rows'],
           ),
         ]
       : []),

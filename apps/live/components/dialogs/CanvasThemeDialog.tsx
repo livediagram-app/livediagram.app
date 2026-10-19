@@ -158,7 +158,12 @@ export function CanvasThemeDialog({
   // On a phone it is a bottom sheet, its grab handle dragging it taller or down to close (BottomSheet's).
   const sheet = useSheetDrag(onClose);
   // Show Me: the tour of the home, run on this dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me").
-  const tour = useTabStyleTour({ showHome: () => (tab === 'looks' ? undefined : go('looks')) });
+  const tour = useTabStyleTour({
+    showHome: () => (tab === 'looks' ? undefined : go('looks')),
+    showFinish: () => (tab === 'finish' ? undefined : go('finish')),
+    finish: () => resolveFinish(finish, undefined),
+    setFinish: eased(onSetFinish),
+  });
   // While Show Me runs, Escape is the tour's, never the dialog's.
   useEscape(onClose, { enabled: !tour.active });
 

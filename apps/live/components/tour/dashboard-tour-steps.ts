@@ -2,6 +2,7 @@
 // filling a dashboard, run on the page itself. Each step rings a real part of the page, which stays usable, so the
 // Editor can fill a slot or drag a divider while the step is up.
 import type { TourStepOf } from './tour-step';
+import { opensFrom } from './tour-open';
 
 // Nothing to drive: the steps only point, and the slot step shows the slot's hover-only controls itself.
 export type DashboardTourApi = null;
@@ -31,13 +32,16 @@ const ROWS: DashboardTourStep = {
   // A card on its own, no ring: one round a row runs the page's width.
 };
 
-const FILL: DashboardTourStep = {
-  id: 'fill',
-  title: 'Fill a Slot',
-  body: 'Add to Slot picks what it shows: a tab, a board, a metric, a chart or a note.',
-  // The slot's Add to Slot, not the slot: a ring round a slot lights a large part of the page.
-  selector: () => `${FIRST_EMPTY_SLOT} [aria-haspopup="dialog"]`,
-};
+const FILL: DashboardTourStep = opensFrom(
+  {
+    id: 'fill',
+    title: 'Fill a Slot',
+    body: 'Add to Slot picks what it shows: a tab, a board, a metric, a chart or a note.',
+    // The slot's Add to Slot, not the slot: a ring round a slot lights a large part of the page.
+    selector: () => `${FIRST_EMPTY_SLOT} [aria-haspopup="dialog"]`,
+  },
+  () => `${FIRST_EMPTY_SLOT} [aria-haspopup="dialog"]`,
+);
 
 const SLOT: DashboardTourStep = {
   id: 'slot',
@@ -53,12 +57,16 @@ const SLOT: DashboardTourStep = {
   cleanup: hideSlot,
 };
 
-const SETTINGS: DashboardTourStep = {
-  id: 'settings',
-  title: 'Dashboard Settings',
-  body: 'Rename it, add a row, or start from another layout.',
-  selector: () => '[data-dashboard-settings]',
-};
+// Opened for the step and closed after: Show Me starts with the panel closed (the button closes it first).
+const SETTINGS: DashboardTourStep = opensFrom(
+  {
+    id: 'settings',
+    title: 'Dashboard Settings',
+    body: 'Rename it, add a row, or start from another layout.',
+    selector: () => '[data-dashboard-settings]',
+  },
+  () => '[data-dashboard-settings] button',
+);
 
 const OUTRO: DashboardTourStep = {
   id: 'outro',
@@ -67,13 +75,26 @@ const OUTRO: DashboardTourStep = {
   body: 'Run this again from Dashboard Settings › Show Me.',
 };
 
-// The steps for this dashboard: Fill only with an empty slot to fill, the slot step only with a filled one.
-export function dashboardTourSteps({
-  hasEmpty,
-  hasFilled,
-}: {
-  hasEmpty: boolean;
-  hasFilled: boolean;
-}): DashboardTourStep[] {
-  return [ROWS, ...(hasEmpty ? [FILL] : []), ...(hasFilled ? [SLOT] : []), SETTINGS, OUTRO];
+// The offer, the first time an Editor has a dashboard open (DashboardTour.tsx, docs/specs/026-plan/plan-tour.md).
+const WELCOME: DashboardTourStep = {
+  id: 'welcome',
+  card: 'welcome',
+  title: 'Getting started with Dashboards?',
+  body: 'A quick look at rows of slots, filling them, and the dashboard’s settings? Nothing on it changes.',
+};
+
+// The steps for this dashboard: Fill only with an empty slot to fill, the slot step only with a filled one; led by
+// the offer when the tour offers itself (not when Show Me runs it).
+export function dashboardTourSteps(
+  { hasEmpty, hasFilled }: { hasEmpty: boolean; hasFilled: boolean },
+  offered = false,
+): DashboardTourStep[] {
+  return [
+    ...(offered ? [WELCOME] : []),
+    ROWS,
+    ...(hasEmpty ? [FILL] : []),
+    ...(hasFilled ? [SLOT] : []),
+    SETTINGS,
+    OUTRO,
+  ];
 }

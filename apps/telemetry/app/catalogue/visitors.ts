@@ -679,6 +679,16 @@ export const SHOW_ME_TOURS_SKIPPED = chart(
   { types: SHOW_ME_SURFACES.map((s) => `${s.token}Skipped`), rising: 'neutral' },
 );
 
+// The Dashboards tour is also offered, once, on a first Dashboard (docs/specs/026-plan/plan-tour.md): its offer turned
+// down on the welcome card.
+export const DASHBOARD_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Dashboards Tours Declined',
+  'The Dashboards tour turned down on its welcome card, before it started.',
+  { types: ['DashboardTourOffer'], rising: 'neutral' },
+);
+
 export const SHOW_ME_TOURS: MetricStack = {
   stack: true,
   title: 'Show Me Tours',
@@ -688,6 +698,7 @@ export const SHOW_ME_TOURS: MetricStack = {
     ...SHOW_ME_TOURS_BY_SURFACE,
     SHOW_ME_TOURS_COMPLETED,
     SHOW_ME_TOURS_SKIPPED,
+    DASHBOARD_TOUR_DECLINED,
   ],
   headline: SHOW_ME_TOURS_STARTED,
 };

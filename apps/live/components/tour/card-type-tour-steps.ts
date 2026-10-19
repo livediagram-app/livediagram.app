@@ -28,6 +28,7 @@ export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
     body: 'Name it (a Risk, a Request) and pick a colour and glyph. Every card of this type wears them.',
     target: 'card-type-general',
     prepare: typeInto('configuration', 'card-type-general'),
+    keepFocus: true,
   },
   {
     id: 'fields',

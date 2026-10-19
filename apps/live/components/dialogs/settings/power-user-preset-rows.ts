@@ -52,18 +52,6 @@ function findRow(key: string): {
         };
     }
   }
-  // A setting standing for several rows (the Plan and Pages tours' tracks): named for them together, On while any is.
-  for (const category of SETTINGS_CATEGORIES) {
-    const rows = category.rows.filter((r) => r.presetGroup?.key === key);
-    const first = rows[0];
-    if (!first?.presetGroup) continue;
-    return {
-      category,
-      rowKey: first.key,
-      label: first.presetGroup.label,
-      read: (p) => (rows.some((r) => formatValue(r, p) === 'On') ? 'On' : 'Off'),
-    };
-  }
   throw new Error(`No settings row "${key}" for the power user preset`);
 }
 

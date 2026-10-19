@@ -26,6 +26,8 @@ const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: strin
   hub: { label: 'Add Satellite', description: 'Add another satellite round the hub.' },
   onion: { label: 'Add Ring', description: 'Add another ring round the outside.' },
   chevrons: { label: 'Add Stage', description: 'Add another stage to the end.' },
+  // Missing until October 2026, so a timeline's ring offered no Add Milestone (concept-graphics.md promises one).
+  'timeline-rail': { label: 'Add Milestone', description: 'Add another milestone to the end.' },
 };
 
 // The four quick-connect "+" buttons around a single selected element (docs/specs/008-canvas/canvas-and-palette.md),

@@ -5,6 +5,7 @@ import { sankeyFrame, type ShapeElement } from '@livediagram/document';
 import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
 import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
 import { sankeyFlowsTourSteps, type SankeyFlowsTourContext } from './sankey-flows-tour-steps';
+import { inTheMenu } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
@@ -75,12 +76,10 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
     );
   if (ctx.hasMore)
     steps.push(
-      canvasStep(
-        'style',
-        'Style It',
-        'In its menu, Sankey sets colours, labels and the unit.',
-        '#selection-more-actions',
-      ),
+      inTheMenu('style', 'Style It', 'In its menu, Sankey sets colours, labels and the unit.', [
+        'Tools',
+        'Sankey',
+      ]),
     );
   steps.push(
     canvasStep(

@@ -2,14 +2,22 @@
 // own article page, where to write, its page toolbar, and its Style and Text beside the cog (PageArticleButtons).
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourStep } from './page-tour-api';
-import { closeTitlePopover, openTitlePopover, pageButton, pageOrPopover } from './page-tour-dom';
+import {
+  closeTitlePopover,
+  openTitlePopover,
+  pageButton,
+  pageOrPopover,
+  pageSheet,
+} from './page-tour-dom';
 
 export const ARTICLE_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with articles?',
+  title: 'Getting started with Articles?',
   body: 'A quick look at writing an article: where to type, the toolbar, and giving it a look of its own.',
 };
+
+const ARTICLE_TOOLBAR = '[role="toolbar"][aria-label="Article Formatting"]';
 
 const TOOLBAR_BODY =
   'Headings, bold, colours, lists and alignment. Insert adds images, tables and charts.';
@@ -26,7 +34,11 @@ export function articleTourSteps(): PageTourStep[] {
       id: 'toolbar',
       title: 'The Page Toolbar',
       body: `${TOOLBAR_BODY} It acts on what you have selected.`,
-      selector: () => '[data-page-toolbar]',
+      // The article's own formatting toolbar, by its name: the Contents panel's page rows carry data-page-toolbar too,
+      // and with two pages or more (the panel open) the step rang one of those instead.
+      selector: () => ARTICLE_TOOLBAR,
+      // The toolbar shows only once the step holds it up: the step needs only its page on screen (spec "Filtering").
+      requires: (api) => pageSheet(api.pageId),
       // Held up on the tour page through the step: it otherwise shows only while the page is hovered or written on.
       prepare: (api) => pinPageToolbar(api.pageId),
       cleanup: () => pinPageToolbar(null),

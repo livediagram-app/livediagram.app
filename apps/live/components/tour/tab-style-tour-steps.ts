@@ -1,11 +1,18 @@
 // The steps of Show Me in the Tab Style dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me"): a tour of
-// the dialog's home, run on the dialog itself. Each step brings the home forward (a panel may be open) and scrolls
-// its control into view; the control stays usable, so the person can pick a look or open a panel while it is up.
+// the dialog, run on the dialog itself. The home's steps bring it forward (a panel may be open) and scroll their
+// control into view; the Finish steps open the Finish panel, and one of them really redraws the tab in another finish,
+// putting the person's own back as it ends, however it ends.
+import type { Finish } from '@livediagram/document';
 import type { TourStepOf } from './tour-step';
 
 export type TabStyleTourApi = {
   // Brings the home (the looks and the Fine-tune rows) forward.
   showHome: () => void;
+  // Opens the Finish panel.
+  showFinish: () => void;
+  // The tab's finish now, and setting it (as a press on a Finish tile does).
+  finish: () => Finish;
+  setFinish: (finish: Finish) => void;
 };
 
 type TabStyleTourStep = TourStepOf<TabStyleTourApi>;
@@ -25,6 +32,15 @@ const LOOKS = step(
   'tab-style-looks',
 );
 
+// The Mashup card leads the looks: a fresh mix rolled on each press.
+const MASHUP: TabStyleTourStep = {
+  id: 'mashup',
+  title: 'Mashup',
+  body: 'Mashup rolls a fresh mix of colours, font and canvas. Press it again for another.',
+  selector: () => '[data-tour-id="tab-style-looks"] button[aria-label^="Mashup"]',
+  prepare: (api) => api.showHome(),
+};
+
 const PAGES = step(
   'pages',
   'More Looks',
@@ -39,6 +55,39 @@ const FINE_TUNE = step(
   'tab-style-fine-tune',
 );
 
+const FINISH_GROUP = '[role="radiogroup"][aria-label="Finish"]';
+
+const FINISH: TabStyleTourStep = {
+  id: 'finish',
+  title: 'Finish',
+  body: 'How everything is drawn: clean Flexible, crisp Professional, hand-drawn Sketch or bold Marker.',
+  selector: () => FINISH_GROUP,
+  prepare: (api) => api.showFinish(),
+};
+
+// The finish shown off: the one the tab does not wear (Sketch, or Marker on a sketched tab), worn for the step.
+const showcaseFinish = (current: Finish): Finish => (current === 'sketch' ? 'marker' : 'sketch');
+// The person's own finish while the step has it changed; null otherwise.
+let ownFinish: Finish | null = null;
+
+const TRY_FINISH: TabStyleTourStep = {
+  id: 'try-finish',
+  title: 'See It Change',
+  body: 'Your whole tab is redrawn in the finish you pick, as you pick it. Yours comes back on Next.',
+  selector: () => FINISH_GROUP,
+  prepare: (api) => {
+    api.showFinish();
+    if (ownFinish !== null) return;
+    ownFinish = api.finish();
+    api.setFinish(showcaseFinish(ownFinish));
+  },
+  cleanup: (api) => {
+    if (ownFinish === null) return;
+    api.setFinish(ownFinish);
+    ownFinish = null;
+  },
+};
+
 const OUTRO: TabStyleTourStep = {
   id: 'outro',
   card: 'outro',
@@ -47,5 +96,5 @@ const OUTRO: TabStyleTourStep = {
 };
 
 export function tabStyleTourSteps(): TabStyleTourStep[] {
-  return [LOOKS, PAGES, FINE_TUNE, OUTRO];
+  return [LOOKS, MASHUP, PAGES, FINE_TUNE, FINISH, TRY_FINISH, OUTRO];
 }

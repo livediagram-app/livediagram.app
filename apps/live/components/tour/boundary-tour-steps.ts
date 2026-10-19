@@ -40,7 +40,10 @@ export function boundaryTourSteps(ctx: BoundaryTourContext): TourStepOf<ElementT
           ),
         ]
       : []),
-    menuStep(ctx, 'menu', 'Three Styles', 'Tools › Boundary picks the style: Tab, Inset or C4.'),
+    menuStep(ctx, 'menu', 'Three Styles', 'Tools › Boundary picks the style: Tab, Inset or C4.', [
+      'Tools',
+      'Boundary',
+    ]),
     conceptOutro(
       'That Is a Boundary',
       'Arrows connect to it like any shape. Undo takes back any change.',

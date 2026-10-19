@@ -55,6 +55,7 @@ export function mindNodeTourSteps(ctx: MindNodeTourContext): TourStepOf<ElementT
             'menu',
             'The Mind Map Menu',
             'In its menu, Mind Map changes the layout, tidies the map, or lets you edit it as a list.',
+            ['Tools', 'Mind Map'],
           ),
         ]
       : []),

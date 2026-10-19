@@ -20,9 +20,12 @@ export function requestPlanTourRelaunch(): void {
   window.dispatchEvent(new Event(PLAN_TOUR_RELAUNCH_EVENT));
 }
 
-// Which half of Plan the tour shows, picked on its welcome card.
-export const PLAN_TOUR_TRACKS = ['boards', 'sheets'] as const;
+// The Plan tour's tracks: boards and sheets (PlanTourHost, the half picked on its welcome card), and dashboards (the
+// dashboard's own tour, offered on a dashboard, DashboardTour.tsx).
+export const PLAN_TOUR_TRACKS = ['boards', 'sheets', 'dashboards'] as const;
 export type PlanTourTrack = (typeof PLAN_TOUR_TRACKS)[number];
+// The tracks PlanTourHost runs, on a board or a sheet (the dashboard's tour is its own).
+export type BoardSheetTrack = Exclude<PlanTourTrack, 'dashboards'>;
 
 // Each track offers itself once (docs/specs/026-plan/plan-tour.md "Where it appears"): `planTourTracks` lists the
 // tracks answered; `planTourSeen` counts both only for a power user (tourTrackSeen).

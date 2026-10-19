@@ -6,12 +6,21 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 import { TourBanner } from './TourBanner';
 import { TourPopover } from './TourPopover';
 import { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
+import { TOUR_DIM } from './tour-motion';
+import { TourSpotlight } from './TourSpotlight';
+import { TourShield } from './TourShield';
+import { useTourGlide } from './useTourGlide';
 import type { TourEngine } from './useTourEngine';
 
 // What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), shared by every tour:
 // the subtle backdrop behind a bookend card, the dimming highlight ring around a step's target, and the
 // step popover. Nothing while the tour is not running. The card and the ring wear the active tab's colours, as the
 // start panels do (useStartPalette, tour-colours.ts).
+//
+// The hand-over between steps ("Motion", useTourGlide): the ring stays on the current target while the next step
+// prepares (a menu opening, a panel scrolling), then the ring and the card glide to the next target together and the
+// card's words cross-fade as it goes. One ring and one card for the whole run, never remounted per step. Once landed,
+// both follow their target exactly, with no easing to lag behind a scroll or a zoom.
 export function TourStage<Api>({
   engine,
   ariaPrefix,
@@ -20,6 +29,7 @@ export function TourStage<Api>({
   welcomeChoices,
   layer = 'overlay',
   pad = 6,
+  blockInput = false,
 }: {
   engine: TourEngine<Api>;
   // The popover's label before "step N of M" ("Tour", "Plan tour").
@@ -33,35 +43,44 @@ export function TourStage<Api>({
   layer?: 'overlay' | 'modal';
   // The room between the target and its ring, in px (a dialog's tightly packed rows want more).
   pad?: number;
+  // A step takes no clicks on the page, only on its card (the Diagram tour): a press on what a step opened (a palette
+  // category's shape) closed it, and the step reopened it, flickering the page.
+  blockInput?: boolean;
 }) {
   const palette = useStartPalette();
+  const { shown, gliding } = useTourGlide(engine);
   const { step, stepIndex, targetRect } = engine;
   // Stepped aside for a dialog that is not the tour's (useTourEngine): back on the same step once it closes.
   if (!engine.active || !step || engine.yielded) return null;
   const ringLayer = step.layer ?? layer;
+  const z =
+    ringLayer === 'modal'
+      ? 'z-[calc(var(--z-modal)+1)]'
+      : step.ringOverMenu
+        ? 'z-[calc(var(--z-overlay)+1)]'
+        : 'z-[var(--z-overlay)]';
+  const anchored = !step.card;
+  // The card speaks for the step on screen as soon as Next is pressed (a press must always visibly move the tour on),
+  // waiting where it is, its buttons held and marked as waiting, until the step's target is ready to glide to. Before
+  // the run's first target lands there is no card yet.
+  const said = shown ? step : null;
+  const saidIndex = stepIndex;
   return (
     <Portal>
-      {/* The bookend cards ask nothing of the editor (TourBanner): no backdrop behind them. */}
-      {targetRect ? (
-        // The spotlight: a ring around the target whose giant box-shadow
-        // dims everything else. pointer-events-none so the user can still
-        // interact with whatever is highlighted; portalled menus (higher
-        // z / later portals) paint above the dim. transition-all makes it
-        // glide when the rect moves between steps; fade-in covers its
-        // first appearance.
+      {/* The bookend cards ask nothing of the editor (TourBanner): no backdrop behind them. Nothing is drawn while
+          the first step prepares, so the spotlight fades in once, as one layer; a step whose target went away
+          mid-step dims the whole screen instead, at the spotlight's own shade. */}
+      {anchored && engine.landed && !targetRect ? (
         <div
           aria-hidden
-          className={`pointer-events-none fixed ${ringLayer === 'modal' ? 'z-[calc(var(--z-modal)+1)]' : step.ringOverMenu ? 'z-[calc(var(--z-overlay)+1)]' : 'z-[var(--z-overlay)]'} animate-fade-in rounded-xl border-2 transition-all duration-long ease-out`}
-          style={{
-            left: targetRect.left - pad,
-            top: targetRect.top - pad,
-            width: targetRect.width + pad * 2,
-            height: targetRect.height + pad * 2,
-            borderColor: palette.focus,
-            boxShadow: '0 0 0 100vmax rgba(15, 23, 42, 0.4)',
-          }}
+          className={`pointer-events-none fixed inset-0 ${z} animate-fade-in`}
+          style={{ background: TOUR_DIM }}
         />
       ) : null}
+      {anchored ? (
+        <TourSpotlight rect={targetRect} gliding={gliding} pad={pad} layerClass={z} />
+      ) : null}
+      {anchored && blockInput ? <TourShield /> : null}
       {step.card ? (
         // The offer and the last card: a banner at the bottom, as the sign-in banner is (TourBanner).
         <TourBanner
@@ -75,24 +94,26 @@ export function TourStage<Api>({
           onNext={engine.next}
           onSkip={engine.skip}
         />
-      ) : (
+      ) : said ? (
         <TourPopover
+          stepId={said.id}
           // Real steps count from 1 (welcome occupies index 0, so a step's index IS its number; a tour without one
           // counts from its first step).
-          stepNumber={stepIndex + (engine.hasWelcome ? 0 : 1)}
+          stepNumber={saidIndex + (engine.hasWelcome ? 0 : 1)}
           stepCount={engine.countableSteps}
-          stepId={step.id}
-          stepDir={engine.stepDir}
-          title={step.title}
-          body={step.body}
+          title={said.title}
+          body={said.body}
           targetRect={targetRect}
+          gliding={gliding}
+          // Between steps the buttons wait: a second press would skip the step being prepared.
+          busy={!engine.landed}
           palette={palette}
           {...(ariaPrefix ? { ariaPrefix } : {})}
-          onBack={stepIndex > (engine.hasWelcome ? 1 : 0) ? engine.back : undefined}
+          onBack={saidIndex > (engine.hasWelcome ? 1 : 0) ? engine.back : undefined}
           onNext={engine.next}
           onSkip={engine.skip}
         />
-      )}
+      ) : null}
     </Portal>
   );
 }

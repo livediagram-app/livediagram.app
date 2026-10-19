@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { clamp, type PlanPalette } from '@livediagram/document';
 import { tourColourVars } from './tour-colours';
+import { glideTransition } from './tour-motion';
 import { placeTourPopover } from './tour-position';
 import type { TourTargetRect } from './useTourEngine';
 
@@ -17,23 +18,23 @@ export { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './
 
 // The tour's step card (docs/specs/007-editor/editor-tour.md): step count, title, copy, dots, Back / Next / Skip,
 // anchored to the highlighted target. The bookend cards (the offer and the last card) are TourBanner's.
-// Positioning is measured two-pass (render off-screen, measure, place)
-// against the current target rect; once placed, left/top transitions are
-// enabled so the card GLIDES between steps instead of teleporting, and
-// the content slides directionally (the wizard's tip-next / tip-prev).
+// Positioning is measured two-pass (render off-screen, measure, place) against the current target rect, before the
+// first paint. One card for the whole run: it fades in on the first step (dialog-in), then glides beside the ring to
+// each next step while its words cross-fade (useTourGlide), and otherwise follows its target exactly.
 // A caret on the popover's edge points at the target, so the card reads
 // as attached to what it explains — on phones the narrow viewport means
 // side placements never fit, so steps naturally land below (or above)
 // their target with the caret pointing up at it.
 export function TourPopover({
+  stepId,
   stepNumber,
   stepCount,
-  stepId,
-  stepDir,
   title,
   body,
   targetRect,
   ariaPrefix = 'Tour',
+  gliding = false,
+  busy = false,
   palette,
   onBack,
   onNext,
@@ -42,15 +43,17 @@ export function TourPopover({
   // 1-based within the countable steps.
   stepNumber: number;
   stepCount: number;
-  // Stable step id — keys the content wrapper so the slide animation
-  // replays exactly once per step change.
+  // The step the words are for: they cross-fade when it changes.
   stepId: string;
-  stepDir: 'forward' | 'backward';
   title: string;
   body: string;
   // Viewport rect of the highlighted target; null while the step is still
   // preparing (the card then centres itself).
   targetRect: TourTargetRect | null;
+  // Mid-glide to the next step's target: position changes animate (tour-motion.ts); otherwise they are immediate.
+  gliding?: boolean;
+  // The next step is preparing: the buttons wait, so a second press does not skip it.
+  busy?: boolean;
   // The dialog label's lead ("Tour step 2 of 7: ...").
   ariaPrefix?: string;
   // The active tab's colours (tour-colours.ts): the card, its text and its accent wear them.
@@ -68,25 +71,30 @@ export function TourPopover({
     // centre even after viewport clamping. Null = centred card, no caret.
     caret: { edge: 'top' | 'bottom' | 'left' | 'right'; offset: number } | null;
   } | null>(null);
-  // Position transitions are enabled one frame AFTER the first placement,
-  // so the initial park-offscreen → placed jump doesn't animate as a fly-in
-  // from the corner (a first-paint animation gate).
-  const [animatePos, setAnimatePos] = useState(false);
-
-  // Escape is the card's way out (docs/specs/007-editor/editor-tour.md): from a step it skips the tour, as Skip tour
-  // does (the bookend banners take it from inside themselves, TourBanner). Not while the key is editing something, where
-  // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it.
-  const onEscape = useEffectEvent((e: KeyboardEvent) => {
-    if (e.key !== 'Escape' || e.defaultPrevented) return;
+  // The card's keys (docs/specs/007-editor/editor-tour.md "Keyboard"): Escape skips the tour, as Skip tour does (the
+  // bookend banners take it from inside themselves, TourBanner); the right and left arrows are Next and Back. Not
+  // while the key is editing something, where Escape puts the text back and the arrows move the caret (an element
+  // tour asks for exactly that), nor when something else already took it, nor with a modifier held.
+  const onKey = useEffectEvent((e: KeyboardEvent) => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const t = e.target;
     if (t instanceof HTMLElement && (t.isContentEditable || t.closest('input, textarea, select')))
       return;
-    onSkip();
+    if (e.key !== 'Escape' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    // The tour's keys first: a menu a step opened takes focus and would otherwise move through its own items on the
+    // arrows (the Shapes flyout stepping Square, Circle, Diamond) while the tour stood still.
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    // Between steps the arrows wait, as the buttons do; Escape still skips.
+    if (busy && e.key !== 'Escape') return;
+    if (e.key === 'Escape') onSkip();
+    else if (e.key === 'ArrowRight') onNext();
+    else if (onBack) onBack();
   });
   useEffect(() => {
-    const listener = (e: KeyboardEvent) => onEscape(e);
-    document.addEventListener('keydown', listener);
-    return () => document.removeEventListener('keydown', listener);
+    const listener = (e: KeyboardEvent) => onKey(e);
+    window.addEventListener('keydown', listener, { capture: true });
+    return () => window.removeEventListener('keydown', listener, { capture: true });
   }, []);
 
   useLayoutEffect(() => {
@@ -119,13 +127,9 @@ export function TourPopover({
       setPos({ left: placed.left, top: placed.top, caret });
     };
     place();
-    const raf = requestAnimationFrame(() => setAnimatePos(true));
     window.addEventListener('resize', place);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', place);
-    };
-  }, [targetRect, stepId]);
+    return () => window.removeEventListener('resize', place);
+  }, [targetRect]);
 
   return (
     <div
@@ -134,9 +138,10 @@ export function TourPopover({
       role="dialog"
       aria-label={`${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`pointer-events-auto fixed z-[var(--z-toast)] flex outline-none max-w-[calc(100vw-1.5rem)] w-80 flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
+      className="pointer-events-auto fixed z-[var(--z-toast)] flex w-[22rem] max-w-[calc(100vw-1.5rem)] animate-tour-card-in flex-col rounded-2xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-5 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 outline-none dark:shadow-black/40"
       style={{
         ...tourColourVars(palette),
+        transition: glideTransition(gliding, ['left', 'top']),
         ...(pos
           ? { left: pos.left, top: pos.top }
           : // First paint before measurement: park off-screen so the
@@ -161,46 +166,44 @@ export function TourPopover({
           } border-[var(--tour-border)]`}
           style={
             pos.caret.edge === 'top' || pos.caret.edge === 'bottom'
-              ? { left: pos.caret.offset - 7 }
-              : { top: pos.caret.offset - 7 }
+              ? { left: pos.caret.offset - 7, transition: glideTransition(gliding, ['left']) }
+              : { top: pos.caret.offset - 7, transition: glideTransition(gliding, ['top']) }
           }
         />
       ) : null}
-      {/* Keyed on the step so each phase slides in directionally (forward
-          from the right, back from the left) — the same motion the New
-          Document wizard uses between its phases. */}
       {/* Its buttons are small (xs), so on a touch screen each reaches a 44px-tall tap area
           (touch-targets.md); vertical only, as they sit side by side 8px apart. */}
+      {/* Keyed on the step, so the words cross-fade in as the card glides to the next target. Between steps the
+          buttons wait (busy). */}
       <div
         key={stepId}
-        className={`flex flex-col gap-2 [&_button]:relative [&_button]:touch-target-y ${stepDir === 'forward' ? 'animate-tip-next' : 'animate-tip-prev'}`}
+        className={`flex animate-fade-in flex-col [&_button]:relative [&_button]:touch-target-y ${busy ? 'pointer-events-none [&_button]:opacity-50' : ''}`}
       >
         <>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
               {stepNumber} of {stepCount}
             </span>
             <button
               type="button"
               onClick={onSkip}
-              className="text-[11px] font-medium text-[var(--tour-muted)] transition hover:text-[var(--tour-text)]"
+              className="rounded-md px-1.5 py-0.5 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
             >
               Skip tour
             </button>
           </div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          <p className="text-xs leading-relaxed text-[var(--tour-muted)]">{body}</p>
-          <div className="mt-1 flex items-center justify-between gap-2">
+          <h3 className="mt-2 text-[15px] font-semibold leading-snug">{title}</h3>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--tour-muted)]">{body}</p>
+          <div className="mt-4 flex items-center justify-between gap-2">
             {/* Progress dots keep place without reading like pagination. */}
             <div className="flex items-center gap-1" aria-hidden>
               {Array.from({ length: stepCount }, (_, i) => (
                 <span
                   key={i}
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    i < stepNumber
-                      ? 'bg-[var(--tour-accent)]'
-                      : 'bg-[var(--tour-border)] opacity-50'
-                  }`}
+                  // The current step's dot is drawn long, so the row reads as where you are, not a count.
+                  className={`h-1.5 rounded-full transition-[width] duration-long ease-out motion-reduce:transition-none ${
+                    i === stepNumber - 1 ? 'w-4' : 'w-1.5'
+                  } ${i < stepNumber ? 'bg-[var(--tour-accent)]' : 'bg-[var(--tour-border)]'}`}
                 />
               ))}
             </div>
@@ -209,7 +212,7 @@ export function TourPopover({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
+                  className="inline-flex h-8 items-center rounded-lg px-3 text-[13px] font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
                 >
                   Back
                 </button>
@@ -231,7 +234,7 @@ function AccentButton({ onClick, children }: { onClick: () => void; children: Re
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-7 cursor-pointer items-center justify-center rounded-md bg-[var(--tour-accent)] px-2.5 text-xs font-medium text-[var(--tour-on-accent)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
+      className="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg bg-[var(--tour-accent)] px-3.5 text-[13px] font-medium text-[var(--tour-on-accent)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
     >
       {children}
     </button>

@@ -39,6 +39,9 @@ export type FormActions = {
   newFormFor: (boardElementId: string) => void;
   // One builder edit to the active Form tab's form; `kind` names it for telemetry where it is counted.
   changeForm: (change: (form: FormDefinition) => FormDefinition) => void;
+  // The same with no undo step, for what the Forms tour adds and takes away itself (its example question), which Undo
+  // must never bring back (docs/specs/030-forms/forms.md "The Forms tour").
+  changeFormQuietly: (change: (form: FormDefinition) => FormDefinition) => void;
   // The heading, which is the tab's name too: both in one step, and the board or sheet its responses go to follows
   // while it is still on its automatic name ("<Form> Responses").
   renameForm: (name: string) => void;
@@ -73,6 +76,7 @@ export function useFormActions({
   activeId,
   tabs,
   commitTabs: commitAnyTabs,
+  tickTabs,
   itemTypes,
   statusNames,
   markTabLoaded,
@@ -83,6 +87,8 @@ export function useFormActions({
   activeId: string;
   tabs: readonly Tab[];
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
+  // A change to the tabs with no undo step (changeFormQuietly).
+  tickTabs: (map: (ts: Tab[]) => Tab[]) => void;
   itemTypes: Pick<ItemTypesSlice, 'types' | 'saveType'>;
   statusNames: ReadonlyMap<string, string>;
   markTabLoaded?: (tabId: string) => void;
@@ -214,6 +220,19 @@ export function useFormActions({
         }),
       ),
     [activeId, commitTabs],
+  );
+
+  const changeFormQuietly = useCallback<FormActions['changeFormQuietly']>(
+    (change) =>
+      tickTabs((ts) =>
+        ts.map((t) => {
+          if (t.id !== activeId) return t;
+          const before = readForm(t.form) ?? blankForm(t.name);
+          const after = change(before);
+          return after === before ? t : { ...t, form: after };
+        }),
+      ),
+    [activeId, tickTabs],
   );
 
   const renameForm = useCallback<FormActions['renameForm']>(
@@ -422,6 +441,7 @@ export function useFormActions({
       startForm,
       newFormFor,
       changeForm,
+      changeFormQuietly,
       renameForm,
       addFieldFor,
       syncFieldOptions,
@@ -435,6 +455,7 @@ export function useFormActions({
       startForm,
       newFormFor,
       changeForm,
+      changeFormQuietly,
       renameForm,
       addFieldFor,
       syncFieldOptions,

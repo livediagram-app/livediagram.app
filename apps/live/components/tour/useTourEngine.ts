@@ -78,6 +78,47 @@ function anchorSelector<Api>(step: TourStepOf<Api>, api: Api): string | null {
   return step.target ? `[data-tour-id="${step.target}"]` : null;
 }
 
+// How long a found target may keep moving or growing before the step lands on it anyway.
+export const SETTLE_WAIT_MS = 600;
+
+// A found target's own entrance (a dropdown or flyout opening, as a step's prepare asked) run to its end, or
+// SETTLE_WAIT_MS: the CSS animations and transitions on it, on what it contains, and on its secondary anchor. A
+// menu is found the moment it mounts, before it has visibly started opening; landing then sent the ring towards a
+// half-open menu, chasing it as it grew while the menu ran its own animation.
+async function entranceDone(els: readonly (Element | null)[]): Promise<boolean> {
+  // Where the Web Animations API is missing (an older browser, the test DOM) there is nothing to wait for.
+  const running = els.flatMap((el) =>
+    el && typeof el.getAnimations === 'function' ? el.getAnimations({ subtree: true }) : [],
+  );
+  const looping = (a: Animation) => a.effect?.getComputedTiming().iterations === Infinity;
+  const finite = running.filter((a) => !looping(a)).map((a) => a.finished.catch(() => undefined));
+  if (finite.length === 0) return false;
+  await Promise.race([
+    Promise.all(finite),
+    new Promise<void>((resolve) => setTimeout(resolve, SETTLE_WAIT_MS)),
+  ]);
+  return true;
+}
+
+// The rect once its entrance is done and three frames in a row agree, or the latest after SETTLE_WAIT_MS. A target with
+// no entrance running is at rest already: it lands at once.
+async function settledRect(
+  measure: () => TourTargetRect,
+  els: readonly (Element | null)[],
+): Promise<TourTargetRect> {
+  const started = performance.now();
+  if (!(await entranceDone(els))) return measure();
+  let last = measure();
+  let steady = 0;
+  for (;;) {
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const next = measure();
+    steady = rectsEqual(last, next) ? steady + 1 : 0;
+    if (steady >= 2 || performance.now() - started > SETTLE_WAIT_MS * 1.5) return next;
+    last = next;
+  }
+}
+
 async function waitForAnchor<Api>(step: TourStepOf<Api>, api: Api): Promise<HTMLElement | null> {
   const selector = anchorSelector(step, api);
   return selector ? waitForSelector(selector, TARGET_WAIT_MS) : null;
@@ -109,6 +150,9 @@ export function useTourEngine<Api>({
   const stepDirRef = useRef(stepDir);
   useAssignRef(stepDirRef, stepDir);
   const [targetRect, setTargetRect] = useState<TourTargetRect | null>(null);
+  // The step whose target was last found (or whose anchorless card is up): the stage shows a step only once it has
+  // landed, so a step's copy never sits beside the previous step's target while its prepare opens a menu.
+  const [landedIndex, setLandedIndex] = useState<number | null>(null);
   const targetElRef = useRef<HTMLElement | null>(null);
   // Monotonic token: bumping it invalidates any in-flight async step run
   // (prepare + waits) so a fast Next/Next can't land a stale target.
@@ -161,6 +205,7 @@ export function useTourEngine<Api>({
         targetElRef.current = null;
         setTargetRect(null);
         setAwaitingTarget(false);
+        setLandedIndex(stepIndex);
         try {
           await step.prepare?.(api);
         } catch {
@@ -192,10 +237,29 @@ export function useTourEngine<Api>({
         } else finishRef.current('completed');
         return;
       }
-      targetElRef.current = el;
       adoptRef.current(step, el);
       revealInScrollers(el, step.revealAt);
-      setTargetRect(measureStep(el, step.alsoHighlight));
+      // Land on the target's resting rect, not mid-way through its own opening (a menu growing in, a panel
+      // scrolling): the ring and the card glide there once, rather than chasing it.
+      const rect = await settledRect(
+        () => measureStep(el, step.alsoHighlight),
+        [el, step.alsoHighlight ? findTour(step.alsoHighlight) : null],
+      );
+      if (cancelled || token !== runTokenRef.current) return;
+      // Tracked only from here: tracked while it settled, the ring jumped to the target before the glide began.
+      targetElRef.current = el;
+      // What a step opened is shown, not typed into: a panel that focuses its own field on opening (a card's title)
+      // would otherwise keep the tour's arrow keys for its cursor.
+      const focused = document.activeElement;
+      if (
+        !step.keepFocus &&
+        focused instanceof HTMLElement &&
+        el.contains(focused) &&
+        (focused.isContentEditable || focused.matches('input, textarea, select'))
+      )
+        focused.blur();
+      setTargetRect(rect);
+      setLandedIndex(stepIndex);
     })();
     return () => {
       cancelled = true;
@@ -251,6 +315,7 @@ export function useTourEngine<Api>({
     targetElRef.current = null;
     setTargetRect(null);
     setAwaitingTarget(false);
+    setLandedIndex(null);
   };
 
   // Ends without an outcome: the host's own reason (edit rights gone, the mode left).
@@ -308,6 +373,9 @@ export function useTourEngine<Api>({
     stepDir,
     targetRect,
     yielded,
+    // The current step's target is found and showing (an anchorless card counts as soon as it is up). False between
+    // steps and while a dismissed target is reopened.
+    landed: active && landedIndex === stepIndex && !awaitingTarget,
     // The bookend cards sit outside the step count: "1 of N" is the first real step.
     countableSteps: steps.filter((s) => !s.card).length,
     // Whether the tour opens on a welcome card (an offered tour) or straight on its first step (Show Me).

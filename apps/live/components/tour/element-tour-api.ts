@@ -23,4 +23,7 @@ export type ElementTourApi = SankeyFlowsTourApi & {
   // A chevron process: hold one stage's bar open, as if pointed at.
   showStageBar: (index: number) => void;
   clearPreview: () => void;
+  // Open the element's own menu (as More or a right-click does), or close it.
+  openElementMenu: () => Promise<void>;
+  closeElementMenu: () => void;
 };

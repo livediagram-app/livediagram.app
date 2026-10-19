@@ -25,6 +25,11 @@ export function useHasSelectionStore(): boolean {
   return useContext(SelectionStoreContext) !== null;
 }
 
+/** The selection store, or null outside an editor that provides one. */
+export function useOptionalSelectionStore(): SelectionStore | null {
+  return useContext(SelectionStoreContext);
+}
+
 export function useSelectionStore(): SelectionStore {
   const store = useContext(SelectionStoreContext);
   if (!store) throw new Error('SelectionStoreMissing: [selection] store missing');

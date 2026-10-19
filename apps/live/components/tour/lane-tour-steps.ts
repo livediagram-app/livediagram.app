@@ -41,6 +41,7 @@ export function laneTourSteps(ctx: LaneTourContext): TourStepOf<ElementTourApi>[
       'menu',
       'Rows or Columns',
       'Text: put the title on top to make the lane a column.',
+      ['Text'],
     ),
     conceptOutro('That Is a Lane', 'Undo takes back any change.'),
   ];

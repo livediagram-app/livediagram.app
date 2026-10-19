@@ -6,7 +6,17 @@ import { createListeners } from '@/lib/listeners';
 // once, so each host publishes itself here while it is active and waits for the others to clear. A module
 // store, like the modal guard: one editor per page.
 type ActiveTour =
-  'welcome' | 'plan' | 'workshop' | 'draw' | 'pages' | 'avatar' | 'form' | 'element';
+  | 'welcome'
+  | 'plan'
+  | 'dashboard'
+  | 'workshop'
+  | 'draw'
+  | 'pages'
+  | 'avatar'
+  | 'form'
+  | 'element'
+  // Any Show Me running (ShowMeStage): an offer never comes up beside one.
+  | 'show-me';
 
 let current: ActiveTour | null = null;
 const listeners = createListeners();

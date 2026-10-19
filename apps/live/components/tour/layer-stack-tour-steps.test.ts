@@ -41,6 +41,8 @@ const api = (): ElementTourApi => ({
   closeSequence: vi.fn(),
   showSequenceTab: vi.fn(),
   clearPreview: vi.fn(),
+  openElementMenu: vi.fn(async () => undefined),
+  closeElementMenu: vi.fn(),
 });
 
 describe('layerStackTourSteps', () => {
@@ -73,7 +75,7 @@ describe('layerStackTourSteps', () => {
     expect(sel('notes')).toBe('[data-element-id="st"] [data-concept-note="0"]');
     expect(sel('colours')).toBe('[data-element-id="st"] [data-concept-row="2"]');
     expect(sel('add')).toBe('[data-quick-ring] button[aria-label="Add Layer"]');
-    expect(sel('rows')).toBe('#selection-more-actions');
+    expect(sel('rows')).toBe('[data-tour-menu-target]');
   });
 
   it('says tap on a touch screen, and counts the layers in the colour step', () => {

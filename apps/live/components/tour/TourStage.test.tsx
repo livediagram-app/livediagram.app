@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TourStepOf } from './tour-step';
 import type { TourEngine } from './useTourEngine';
 import { TourStage } from './TourStage';
+import { holePath } from './TourSpotlight';
 import { BoardsTourArt } from './art/plan-tour-art';
 // The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
 vi.mock('@/components/start/useStartPalette', async () => {
@@ -24,6 +25,7 @@ function engine(step: TourStepOf<unknown>, over: Partial<TourEngine<unknown>> = 
     stepDir: 'forward',
     targetRect: null,
     yielded: false,
+    landed: true,
     countableSteps: 2,
     hasWelcome: true,
     start: vi.fn(),
@@ -86,7 +88,7 @@ describe('TourStage', () => {
       />,
     );
     expect(screen.getByRole('button', { name: 'Start planning' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Help' }).getAttribute('href')).toBe('/help/x/');
+    expect(screen.getByRole('link', { name: 'Learn More' }).getAttribute('href')).toBe('/help/x/');
   });
 
   it('offers each way in on a welcome card with choices, in place of the accept', () => {
@@ -125,8 +127,8 @@ describe('TourStage', () => {
     expect(e.skip).toHaveBeenCalled();
   });
 
-  // docs/specs/007-editor/editor-tour.md "Look": the ring and the card wear the active tab's colours.
-  it("rings the target and paints the card in the tab's accent", async () => {
+  // docs/specs/007-editor/editor-tour.md "Look": the spotlight dims round the target; the card wears the tab's colours.
+  it("spotlights the target and paints the card in the tab's accent", async () => {
     const { planPalette } = await import('@livediagram/document');
     const accent = planPalette('light').focus;
     const e = engine(
@@ -134,15 +136,14 @@ describe('TourStage', () => {
       { targetRect: { left: 10, top: 10, width: 50, height: 20 } },
     );
     render(<TourStage engine={e} ariaPrefix="Plan tour" />);
-    const ring = document.querySelector<HTMLElement>('[aria-hidden].rounded-xl.border-2')!;
-    expect(ring.style.borderColor).not.toBe('');
+    expect(document.querySelector('[data-tour-spotlight]')).not.toBeNull();
     const card = document.querySelector<HTMLElement>('[data-tour-popover]')!;
     expect(card.style.getPropertyValue('--tour-accent')).toBe(accent);
     expect(card.style.getPropertyValue('--tour-on-accent')).toMatch(/^#/);
   });
 
   // Show Me (the card type editor) has no welcome card: its first step is "1 of N", with no Back.
-  it('counts a tour without a welcome card from its first step, ringed over a dialog', () => {
+  it('counts a tour without a welcome card from its first step, spotlit over a dialog', () => {
     const e = engine(
       { id: 'general', title: 'General', body: 'Copy' },
       {
@@ -155,10 +156,16 @@ describe('TourStage', () => {
     render(<TourStage engine={e} ariaPrefix="Show Me" layer="modal" pad={14} />);
     expect(screen.getByRole('dialog', { name: 'Show Me step 1 of 5: General' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
-    const ring = document.querySelector<HTMLElement>('[aria-hidden].rounded-xl.border-2');
-    expect(ring?.className).toContain('z-[calc(var(--z-modal)+1)]');
-    expect(ring?.style.left).toBe('6px');
-    expect(ring?.style.width).toBe('128px');
+    const spot = document.querySelector<HTMLElement>('[data-tour-spotlight]');
+    expect(spot?.className).toContain('z-[calc(var(--z-modal)+1)]');
+  });
+
+  // The hole is the target grown by the padding, its corners rounded but never past half its height.
+  it('cuts the spotlight hole round the padded target', () => {
+    const path = holePath({ x: 6, y: 6, w: 128, h: 68 });
+    expect(path).toMatch(/^path\(evenodd, '/);
+    expect(path).toContain('M16 6H124');
+    expect(holePath({ x: 0, y: 0, w: 100, h: 8 })).toContain('A4 4');
   });
 
   // Keyboard (docs/specs/007-editor/editor-tour.md): Escape is each card's way out, as its own button is.

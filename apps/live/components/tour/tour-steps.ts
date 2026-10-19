@@ -49,6 +49,12 @@ const closeDropdown = (menuId: string, triggerId: string) => {
   if (findTour(menuId)) clickTour(triggerId);
 };
 
+// The Tab Style panel the paintbrush opens (CanvasThemeDialog), closed by a press on its backdrop (Escape is the
+// tour's while it runs). Whether its step has been left, so a panel still opening as the step ends is closed too.
+const TAB_STYLE = '[role="dialog"][aria-label="Tab style"]';
+const closeTabStyle = () => document.querySelector<HTMLElement>(TAB_STYLE)?.parentElement?.click();
+let tabStyleLeft = false;
+
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
@@ -59,7 +65,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'palette',
     title: 'The Palette',
-    body: 'Shapes, arrows and icons live here. Click one, or drag it onto the canvas.',
+    body: 'Add whatever you need to your canvas to start drawing after the tour.',
     target: 'palette',
     prepare: ensurePaletteOpen,
   },
@@ -101,16 +107,35 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tabs',
     title: 'Tabs',
-    body: 'Each tab is its own diagram. + adds another, and the tab’s menu has tools to tidy it.',
-    // The active pill and the add button highlight as one region.
-    target: 'active-tab',
-    alsoHighlight: 'add-tab',
+    body: 'Each tab holds its own work, in its own mode. + adds a tab, and a tab’s ⋯ menu renames, duplicates, locks or exports it, or opens it side by side.',
+    // The tab's own ⋯ menu, opened for the step and closed again after, ringed with the tab it belongs to.
+    target: 'tab-menu',
+    alsoHighlight: 'active-tab',
+    prepare: () => {
+      if (!findTour('tab-menu')) clickTour('tab-menu-trigger');
+    },
+    cleanup: () => closeDropdown('tab-menu', 'tab-menu-trigger'),
   },
   {
     id: 'theme-canvas',
     title: 'Theme & Canvas',
-    body: "The paintbrush restyles the whole tab in one place: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
-    target: 'canvas-theme',
+    body: "The paintbrush opens Tab Style for the whole tab: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
+    // The Tab Style panel itself, opened for the step and closed again after (docs/specs/007-editor/editor-tour.md
+    // "Steps open what they explain"), ringed with the brush that opens it, over the dialog layer it sits in.
+    selector: () => TAB_STYLE,
+    alsoHighlight: 'canvas-theme',
+    layer: 'modal',
+    prepare: async () => {
+      tabStyleLeft = false;
+      if (!document.querySelector(TAB_STYLE)) clickTour('canvas-theme');
+      await waitForSelector(TAB_STYLE, 2000);
+      // Left while it was still opening (Escape mid-step): it closes as it arrives.
+      if (tabStyleLeft) closeTabStyle();
+    },
+    cleanup: () => {
+      tabStyleLeft = true;
+      closeTabStyle();
+    },
     // The paintbrush dock button is desktop chrome (mobile reaches the
     // same dialog through the canvas menu).
     mobileSkip: true,

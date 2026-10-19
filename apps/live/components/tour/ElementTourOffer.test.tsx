@@ -21,9 +21,9 @@ describe('ElementTourOffer', () => {
   it('names the tour, and plays or cancels it', () => {
     const o = offer();
     render(<ElementTourOffer offer={o} />);
-    const bar = screen.getByRole('toolbar', { name: 'Tour of this Sankey diagram' });
-    expect(bar.textContent).toContain('Tour');
-    fireEvent.click(screen.getByRole('button', { name: 'Take the Tour' }));
+    const bar = screen.getByRole('toolbar', { name: 'Show Me for this Sankey diagram' });
+    expect(bar.textContent).toContain('Show Me');
+    fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
     expect(o.play).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: 'No Thanks' }));
     expect(o.dismiss).toHaveBeenCalledTimes(1);
@@ -31,7 +31,7 @@ describe('ElementTourOffer', () => {
 
   it('gives its buttons the toolbar touch targets', () => {
     render(<ElementTourOffer offer={offer()} />);
-    for (const name of ['Take the Tour', 'No Thanks'])
+    for (const name of ['Show Me', 'No Thanks'])
       expect(screen.getByRole('button', { name }).className).toContain('touch-target-y');
   });
 });

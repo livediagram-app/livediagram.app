@@ -188,3 +188,43 @@ export function PlanChoiceTourArt() {
     </TourArtFrame>
   );
 }
+
+// The Dashboards tour's hero: a row of three slots over a row of two, a chart filling in one slot as if just added.
+const DASHBOARD_CSS = `
+  @keyframes plan-art-fill {
+    0%, 20% { opacity: 0; transform: translateY(4px); }
+    34%, 86% { opacity: 1; transform: translateY(0px); }
+    100% { opacity: 0; transform: translateY(4px); }
+  }
+  .plan-art-fill { animation: plan-art-fill 4.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .plan-art-fill { animation: none; }
+  }
+`;
+
+/** Dashboards: rows of slots, one filling with a small chart. */
+export function DashboardsTourArt() {
+  return (
+    <TourArtFrame css={DASHBOARD_CSS}>
+      {[44, 124, 204].map((x) => (
+        <rect key={x} x={x} y="14" width="72" height="34" rx="5" className={ART.paper} />
+      ))}
+      {[44, 164].map((x) => (
+        <rect key={x} x={x} y="56" width="112" height="36" rx="5" className={ART.paper} />
+      ))}
+      <g className="tour-art-el plan-art-fill">
+        {[0, 1, 2, 3].map((i) => (
+          <rect
+            key={i}
+            x={136 + i * 14}
+            y={40 - [10, 18, 14, 22][i]!}
+            width="8"
+            height={[10, 18, 14, 22][i]}
+            rx="1.5"
+            className={ART.accent}
+          />
+        ))}
+      </g>
+    </TourArtFrame>
+  );
+}

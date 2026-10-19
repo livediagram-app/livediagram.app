@@ -63,6 +63,7 @@ export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<Elemen
             'menu',
             'The Flowchart Menu',
             `In its menu, Flowchart: ${ctx.hasLanes ? 'Add Lane for another swimlane' : 'Add Lane for swimlanes'}, Tidy Flowchart and Direction.`,
+            ['Tools', 'Flowchart'],
           ),
         ]
       : []),

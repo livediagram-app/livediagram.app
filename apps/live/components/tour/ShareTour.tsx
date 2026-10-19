@@ -46,5 +46,5 @@ export function ShareShowMeButton({
 }
 
 export function ShareTourStage({ tour }: { tour: TourEngine<ShareTourApi> }) {
-  return <ShowMeStage tour={tour} article="sharing" helpLabel="Sharing Help" />;
+  return <ShowMeStage tour={tour} article="sharing" />;
 }

@@ -29,6 +29,7 @@ function rename(tabs: Tab[], name: string) {
       activeId: 'f',
       tabs,
       commitTabs: (map) => (now = map(now)),
+      tickTabs: (map) => (now = map(now)),
       itemTypes: { types: [], saveType: vi.fn() },
       statusNames: new Map(),
       retitleSheets,
@@ -75,6 +76,7 @@ describe('newResponsesBoard', () => {
         activeId: 'f',
         tabs: now,
         commitTabs: (map) => (now = map(now)),
+        tickTabs: (map) => (now = map(now)),
         itemTypes: {
           types: [{ id: 'bug', label: 'Bug', fields: ['title'], custom: [] } as never],
           saveType: vi.fn(),

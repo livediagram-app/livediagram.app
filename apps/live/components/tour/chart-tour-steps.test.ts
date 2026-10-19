@@ -23,6 +23,8 @@ const api = () =>
     closeChartData: vi.fn(),
     previewConcept: vi.fn(),
     clearPreview: vi.fn(),
+    openElementMenu: vi.fn(async () => undefined),
+    closeElementMenu: vi.fn(),
   }) as unknown as ElementTourApi;
 
 describe('chartTourSteps', () => {

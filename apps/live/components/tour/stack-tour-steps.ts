@@ -53,6 +53,7 @@ export function stackTourSteps(ctx: StackTourContext): TourStepOf<ElementTourApi
       'menu',
       'The Stack Menu',
       'Tools › Stack picks row, column or grid, and the spacing.',
+      ['Tools', 'Stack'],
     ),
     conceptOutro('That Is a Stack', 'Undo takes back any change, reflow included.'),
   ];

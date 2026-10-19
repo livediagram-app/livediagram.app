@@ -59,6 +59,8 @@ const editor = (over: Record<string, unknown> = {}) => {
     userPreferences: { tourSeen: true },
     setUserPreferences,
     writeUserPreferences,
+    // The demonstration elements a tour places (useTourSquare).
+    tourSquare: { place: vi.fn(), replace: vi.fn(), remove: vi.fn(() => []) },
     selfParticipant: { id: 'me' },
     prefsSettled: true,
     ...over,
@@ -236,12 +238,12 @@ describe('WorkshopTourHost end', () => {
   it('leaves the Share step out where there is no Share button', () => {
     dom.share = false;
     start();
-    expect(stage.engine!.countableSteps).toBe(2);
+    expect(stage.engine!.countableSteps).toBe(5);
   });
 
   it('keeps the Share step where there is one', () => {
     start();
-    expect(stage.engine!.countableSteps).toBe(3);
+    expect(stage.engine!.countableSteps).toBe(6);
   });
 
   it('ends as skipped when the person leaves Workshop or the tab', () => {

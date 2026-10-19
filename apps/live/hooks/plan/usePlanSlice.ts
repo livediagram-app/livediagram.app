@@ -618,6 +618,8 @@ export function usePlanSlice(opts: {
     },
     // Opens an item without counting it as the person's (the Plan tour's card panel step).
     showItem: setOpenItemId,
+    // A write with no undo step, for the card the Plan tour makes and takes away itself.
+    writeQuiet,
     editingType,
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,

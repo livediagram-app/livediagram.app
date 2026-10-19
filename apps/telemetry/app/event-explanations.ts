@@ -1266,7 +1266,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone left the card type editor's Show Me tour before its end.",
   'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",
   'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
-  'UI|Ended|DashboardTourCompleted': "Someone reached the end of Dashboard Settings' Show Me tour.",
+  'UI|Ended|DashboardTourCompleted':
+    "Someone reached the end of the dashboard's tour: Dashboard Settings' Show Me, or the Dashboards tour it offers.",
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
@@ -1814,9 +1815,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TourSeenOn':
     'Someone switched off Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|PagesTourSeenOff':
-    'Someone switched on Tours › "Pages Tour" in Settings, marking the Pages tour as not yet seen (until October 2026, when the row split into one per kind of page).',
+    'Someone switched on Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), so every kind\'s Pages tour is offered again.',
   'UI|Toggled|PagesTourSeenOn':
-    'Someone switched off Tours › "Pages Tour" in Settings, marking the Pages tour as seen (until October 2026, when the row split into one per kind of page).',
+    'Someone switched off Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), answering every kind\'s Pages tour.',
   'UI|Toggled|SlidesTourSeenOff':
     'Someone switched on Tours › "Slides Tour" in Settings, so the Pages tour\'s slides track is offered again.',
   'UI|Toggled|SlidesTourSeenOn':
@@ -1938,9 +1939,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|WorkshopTourSeenOn':
     'Someone switched off Tours › "Workshop Tour" in Settings, marking the Workshop tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen (until October 2026, when the row split into Boards Tour and Sheets Tour).',
+    'Someone switched on Tours › "Plan Tours" in Settings (the switch over Boards Tour, Sheets Tour and Dashboards Tour; "Plan Tour" until October 2026), so each is offered again.',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again (until October 2026, when the row split into Boards Tour and Sheets Tour).',
+    'Someone switched off Tours › "Plan Tours" in Settings (the switch over Boards Tour, Sheets Tour and Dashboards Tour; "Plan Tour" until October 2026), answering each.',
   'UI|Toggled|BoardsTourSeenOff':
     'Someone switched on Tours › "Boards Tour" in Settings, so the Plan tour\'s boards track is offered again.',
   'UI|Toggled|BoardsTourSeenOn':
@@ -1949,6 +1950,13 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Sheets Tour" in Settings, so the Plan tour\'s sheets track is offered again.',
   'UI|Toggled|SheetsTourSeenOn':
     'Someone switched off Tours › "Sheets Tour" in Settings, marking the Plan tour\'s sheets track as answered.',
+  'UI|Toggled|DashboardsTourSeenOff':
+    'Someone switched on Tours › "Dashboards Tour" in Settings, so the Dashboards tour is offered again on a dashboard.',
+  'UI|Toggled|DashboardsTourSeenOn':
+    'Someone switched off Tours › "Dashboards Tour" in Settings, marking the Dashboards tour as answered.',
+  'UI|Opened|DashboardTourOffer':
+    'The Dashboards tour offered itself, the first time an Editor had a dashboard open in Plan.',
+  'UI|Closed|DashboardTourOffer': 'Someone declined the Dashboards tour from its welcome card.',
   'UI|Toggled|LandscapeBarsOff':
     'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
   'UI|Toggled|LandscapeBarsOn':
@@ -2320,9 +2328,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|FormTourStepStatus':
     'The Forms tour reached its "Responses and Preview" step, ringing the form status bar.',
   'UI|View|WorkshopTourStepSessionStrip':
-    'The Workshop tour reached its "Run the room" step, on the Session strip.',
+    'The Workshop tour reached its "Run the Room" step, on the Session strip.',
   'UI|View|WorkshopTourStepShare':
-    'The Workshop tour reached its "Bring people in" step, on Share.',
+    'The Workshop tour reached its "Bring People In" step, on Share.',
   'UI|View|WorkshopTourStepOutro':
     'The Workshop tour reached its closing "You\'re ready to run a workshop" card.',
   'UI|View|PlanTourStepBoard':

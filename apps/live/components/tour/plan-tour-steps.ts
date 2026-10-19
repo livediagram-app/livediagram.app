@@ -6,8 +6,9 @@
 // never at its canvas node, which sits hidden under a maximised or tab-filling body. It changes nothing on it: its
 // steps only point, and the one thing they open is a card's panel, closed again on leaving the step.
 
-import type { PlanTourTrack } from '@/lib/plan-tour';
+import type { BoardSheetTrack } from '@/lib/plan-tour';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
+import { opensFrom } from './tour-open';
 
 export type PlanTourApi = {
   // The element ids of the tour subject: the board the Boards track shows, the Sheet the Sheets track shows.
@@ -17,14 +18,20 @@ export type PlanTourApi = {
   firstCardId: () => string | null;
   openCard: () => void;
   closeCard: () => void;
+  // The Boards track's own example card (docs/specs/026-plan/plan-tour.md "Tour content"): added to the board's first
+  // column, moved to its next, opened, and taken away when the tour ends, however it ends. Its id, once added.
+  addTourCard: () => Promise<string | null>;
+  moveTourCard: () => void;
+  openTourCard: () => void;
+  tourCardId: () => string | null;
   // Brings the subject on screen when it sits on the canvas out of view (a maximised or tab-filling one already is).
-  reveal: (track: PlanTourTrack) => void;
+  reveal: (track: BoardSheetTrack) => void;
 };
 
 export type PlanTourStep = TourStepOf<PlanTourApi>;
 
 // What the welcome card offers: the one track the tab has plan work for, or a choice when it has both.
-export type PlanTourOffer = PlanTourTrack | 'choice';
+export type PlanTourOffer = BoardSheetTrack | 'choice';
 
 // A board's or a Sheet's body, wherever it is drawn: its canvas slot, or the canvas cover while it is maximised or
 // fills its tab. Its canvas node (`data-element-id`) is not: under a maximised or tab-filling body it is hidden.
@@ -88,25 +95,22 @@ const WELCOMES: Record<PlanTourOffer, PlanTourStep> = {
   boards: {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with boards?',
-    body: `A quick look around your board: columns, cards and the card panel? ${NEVER_CHANGES}`,
+    title: 'Getting started with Boards?',
+    body: `A quick look around your board: columns, cards and the card panel? We add an example card to show you, and take it away after.`,
   },
   sheets: {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with sheets?',
+    title: 'Getting started with Sheets?',
     body: `A quick look around your sheet: cells, formulas and the toolbar? ${NEVER_CHANGES}`,
   },
   choice: {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with boards and sheets?',
-    body: `This tab has a board and a sheet. Which would you like a quick look at? ${NEVER_CHANGES}`,
+    title: 'Getting started with Boards and Sheets?',
+    body: `This tab has a board and a sheet. Which would you like a quick look at? Anything we add to show you goes when we finish.`,
   },
 };
-
-// The Boards steps that need a card on the board, left out up front when it has none.
-const CARD_STEPS = new Set(['move-card', 'card-panel']);
 
 const BOARD_STEPS: PlanTourStep[] = [
   {
@@ -120,16 +124,23 @@ const BOARD_STEPS: PlanTourStep[] = [
   {
     id: 'add-cards',
     title: 'Add Cards',
-    body: 'Add card at the bottom of a column adds a new one.',
-    // The first column's Add card, not the column: a ring round a column runs the board's height.
-    selector: (api) => onBoard(api.boardId(), ' [data-add-card-trigger]'),
+    body: 'Add card at the bottom of a column adds a new one. Here is one: Your First Card.',
+    // The tour's own card, added for the step: the person sees one appear where Add card puts it.
+    prepare: async (api) => {
+      await api.addTourCard();
+    },
+    selector: (api) => {
+      const id = api.tourCardId();
+      return id ? onBoard(api.boardId(), ` [data-plan-card="${id}"]`) : null;
+    },
   },
   {
     id: 'move-card',
     title: 'Move Work Along',
-    body: 'Drag a card to the next column as work moves on. Everyone sees it.',
+    body: 'Drag a card to the next column as work moves on. Everyone sees it move, as you just did.',
+    prepare: (api) => api.moveTourCard(),
     selector: (api) => {
-      const id = api.firstCardId();
+      const id = api.tourCardId();
       return id ? onBoard(api.boardId(), ` [data-plan-card="${id}"]`) : null;
     },
   },
@@ -138,7 +149,7 @@ const BOARD_STEPS: PlanTourStep[] = [
     title: 'The Card Panel',
     body: 'Click a card to open it: description, checklist, who and when. It saves as you type.',
     selector: () => '[role="dialog"][aria-label^="Item #"]',
-    prepare: (api) => api.openCard(),
+    prepare: (api) => api.openTourCard(),
     cleanup: (api) => api.closeCard(),
   },
   {
@@ -148,12 +159,15 @@ const BOARD_STEPS: PlanTourStep[] = [
     selector: (api) => onBoard(api.boardId(), ' [data-board-header]'),
     prepare: (api) => api.closeCard(),
   },
-  {
-    id: 'card-types',
-    title: 'Card Types',
-    body: 'Each kind of card has its own colour and fields. Make your own in Card Types.',
-    target: 'card-types',
-  },
+  opensFrom(
+    {
+      id: 'card-types',
+      title: 'Card Types',
+      body: 'Each kind of card has its own colour and fields. Make your own in Card Types.',
+      target: 'card-types',
+    },
+    () => '[data-tour-id="card-types"]',
+  ),
   {
     id: 'outro',
     card: 'outro',
@@ -190,12 +204,15 @@ const SHEET_STEPS: PlanTourStep[] = [
     body: 'Pick a category on the left to see its tools for the selected cells.',
     selector: (api) => onSheet(api.sheetElementId(), ' [role="toolbar"]'),
   },
-  {
-    id: 'sheet-settings',
-    title: 'Sheet Settings',
-    body: "The sheet's cog holds its title, CSV import and download, gridlines, sizes, freeze and named ranges.",
-    selector: (api) => onSheet(api.sheetElementId(), ' button[aria-label="Sheet Settings"]'),
-  },
+  opensFrom<PlanTourApi, PlanTourStep>(
+    {
+      id: 'sheet-settings',
+      title: 'Sheet Settings',
+      body: "The sheet's cog holds its title, CSV import and download, gridlines, sizes, freeze and named ranges.",
+      selector: (api) => onSheet(api.sheetElementId(), ' button[aria-label="Sheet Settings"]'),
+    },
+    (api) => onSheet(api.sheetElementId(), ' button[aria-label="Sheet Settings"]'),
+  ),
   {
     id: 'outro',
     card: 'outro',
@@ -205,15 +222,13 @@ const SHEET_STEPS: PlanTourStep[] = [
 ];
 
 // The tour's steps: the welcome card for what is on offer, then the track's steps and outro. Before a pick on
-// a choice card the Boards track stands in, so the welcome card always has a step after it. A board with no
-// cards leaves out the steps that need one, so the count stays honest.
+// a choice card the Boards track stands in, so the welcome card always has a step after it. Every board has the card
+// steps: the tour adds its own card to show them on.
 export function planTourSteps(
-  track: PlanTourTrack,
-  { offer = track, hasCards = true }: { offer?: PlanTourOffer; hasCards?: boolean } = {},
+  track: BoardSheetTrack,
+  { offer = track }: { offer?: PlanTourOffer } = {},
 ): PlanTourStep[] {
-  const steps =
-    track === 'sheets' ? SHEET_STEPS : BOARD_STEPS.filter((s) => hasCards || !CARD_STEPS.has(s.id));
-  return [WELCOMES[offer], ...steps];
+  return [WELCOMES[offer], ...(track === 'sheets' ? SHEET_STEPS : BOARD_STEPS)];
 }
 
 // Telemetry `type` token for a step-viewed event: 'add-cards' → 'PlanTourStepAddCards'.

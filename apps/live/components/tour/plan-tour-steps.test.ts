@@ -21,6 +21,10 @@ const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
   openCard: vi.fn(),
   closeCard: vi.fn(),
   reveal: vi.fn(),
+  addTourCard: vi.fn(async () => 'tour-card'),
+  moveTourCard: vi.fn(),
+  openTourCard: vi.fn(),
+  tourCardId: () => 'tour-card',
   ...over,
 });
 const PLAN_TOUR_STEPS = planTourSteps('boards');
@@ -73,11 +77,12 @@ describe('PLAN_TOUR_STEPS', () => {
     const a = api();
     // The opening step is a card with no ring: one round the whole board would light most of the screen.
     expect(step('board').selector).toBeUndefined();
+    // The add and move steps point at the card the tour added, where it is now.
     expect(step('add-cards').selector!(a)).toBe(
-      '[data-plan-board="board1"] [data-add-card-trigger]',
+      '[data-plan-board="board1"] [data-plan-card="tour-card"]',
     );
     expect(step('move-card').selector!(a)).toBe(
-      '[data-plan-board="board1"] [data-plan-card="card1"]',
+      '[data-plan-board="board1"] [data-plan-card="tour-card"]',
     );
     expect(step('card-panel').selector!(a)).toBe('[role="dialog"][aria-label^="Item #"]');
     expect(step('board-header').selector!(a)).toBe(
@@ -93,31 +98,45 @@ describe('PLAN_TOUR_STEPS', () => {
     expect(step('board-header').selector!(a)).toBeNull();
   });
 
-  // Spec "Tour subject": it changes nothing; the only step that prepares anything opens a card's panel.
-  it('changes nothing on the board: it brings the board into view, and only the card panel step opens anything', async () => {
+  // Spec "Tour content": the only content it makes is its own card, taken away when it ends (PlanTourHost).
+  it('brings the board into view, works its own card, and closes the panel after', async () => {
     const a = api();
     const preparing = PLAN_TOUR_STEPS.filter((s) => s.prepare).map((s) => s.id);
-    expect(preparing).toEqual(['board', 'card-panel', 'board-header']);
+    expect(preparing).toEqual([
+      'board',
+      'add-cards',
+      'move-card',
+      'card-panel',
+      'board-header',
+      'card-types',
+    ]);
     await step('board').prepare!(a);
     expect(a.reveal).toHaveBeenCalledWith('boards');
-    await step('card-panel').prepare!(a);
-    expect(a.openCard).toHaveBeenCalledTimes(1);
     step('card-panel').cleanup!(a);
     expect(a.closeCard).toHaveBeenCalledTimes(1);
     await step('board-header').prepare!(a);
     expect(a.closeCard).toHaveBeenCalledTimes(2);
-    expect(a.openCard).toHaveBeenCalledTimes(1);
   });
 
-  it('leaves out the card steps for a board with no cards', () => {
-    expect(planTourSteps('boards', { hasCards: false }).map((s) => s.id)).toEqual([
+  it('adds its own card, moves it along and opens it, on any board', async () => {
+    const a = api();
+    expect(planTourSteps('boards').map((s) => s.id)).toEqual([
       'welcome',
       'board',
       'add-cards',
+      'move-card',
+      'card-panel',
       'board-header',
       'card-types',
       'outro',
     ]);
+    await step('add-cards').prepare!(a);
+    expect(a.addTourCard).toHaveBeenCalledTimes(1);
+    expect(step('add-cards').selector!(a)).toContain('[data-plan-card="tour-card"]');
+    await step('move-card').prepare!(a);
+    expect(a.moveTourCard).toHaveBeenCalledTimes(1);
+    await step('card-panel').prepare!(a);
+    expect(a.openTourCard).toHaveBeenCalledTimes(1);
   });
 
   it('says the board is left as it was', () => {
@@ -128,9 +147,9 @@ describe('PLAN_TOUR_STEPS', () => {
 
 describe('the welcome card', () => {
   it('names the track on offer in its title, never the mode', () => {
-    expect(planTourSteps('boards')[0]!.title).toBe('Getting started with boards?');
-    expect(planTourSteps('sheets')[0]!.title).toBe('Getting started with sheets?');
-    expect(planTourSteps('boards', { offer: 'choice' })[0]!.title).toMatch(/boards and sheets/);
+    expect(planTourSteps('boards')[0]!.title).toBe('Getting started with Boards?');
+    expect(planTourSteps('sheets')[0]!.title).toBe('Getting started with Sheets?');
+    expect(planTourSteps('boards', { offer: 'choice' })[0]!.title).toMatch(/Boards and Sheets/);
     for (const offer of ['boards', 'sheets', 'choice'] as const)
       expect(planTourSteps('boards', { offer })[0]!.title).not.toMatch(/Plan/);
   });
@@ -140,8 +159,10 @@ describe('the welcome card', () => {
     expect(planTourSteps('sheets')[0]!.body).toMatch(/your sheet/);
     expect(planTourSteps('boards', { offer: 'choice' })[0]!.body).toMatch(/Which/);
     expect(planTourSteps('sheets', { offer: 'choice' })[0]!.body).toMatch(/Which/);
-    for (const offer of ['boards', 'sheets', 'choice'] as const)
-      expect(planTourSteps('boards', { offer })[0]!.body).toMatch(/never change anything/);
+    // Honest about what it does: the boards track adds an example card and takes it away; the sheets track only points.
+    expect(planTourSteps('boards')[0]!.body).toMatch(/example card/);
+    expect(planTourSteps('sheets')[0]!.body).toMatch(/never change anything/);
+    expect(planTourSteps('boards', { offer: 'choice' })[0]!.body).toMatch(/goes when we finish/);
   });
 });
 
@@ -176,8 +197,11 @@ describe("planTourSteps('sheets')", () => {
       expect(sheetStep(id).selector!(none), id).toBeNull();
   });
 
-  it('prepares nothing but bringing the sheet into view: no step selects a cell or places anything', async () => {
-    expect(SHEET_STEPS.filter((s) => s.prepare || s.cleanup).map((s) => s.id)).toEqual(['sheet']);
+  it('brings the sheet into view and opens its settings, and never selects a cell or places anything', async () => {
+    expect(SHEET_STEPS.filter((s) => s.prepare || s.cleanup).map((s) => s.id)).toEqual([
+      'sheet',
+      'sheet-settings',
+    ]);
     const a = api();
     await sheetStep('sheet').prepare!(a);
     expect(a.reveal).toHaveBeenCalledWith('sheets');
