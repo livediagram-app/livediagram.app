@@ -42,6 +42,7 @@ export * from './tab-items';
 export * from './tab-import';
 export * from './views';
 export * from './person';
+export * from './sha256';
 export * from './store';
 export * from './refs';
 export * from './rich-text-field';

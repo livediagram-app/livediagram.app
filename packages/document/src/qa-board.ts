@@ -6,6 +6,7 @@
 // collab-shapes.ts is one. Re-exported from './index'.
 
 import type { Element, ShapeKind } from './index';
+import { sha256 } from '@livediagram/items';
 
 export type QaNoteState = 'discussing' | 'done';
 
@@ -217,10 +218,8 @@ export function qaView(notes: QaNote[] | undefined): QaView {
 // credential nor a way to follow a person between boards.
 export async function qaVoterId(ownerId: string, elementId: string): Promise<string> {
   const bytes = new TextEncoder().encode(`livediagram:qa-vote:v1:${ownerId}:${elementId}`);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return Array.from(new Uint8Array(digest).slice(0, 8), (b) =>
-    b.toString(16).padStart(2, '0'),
-  ).join('');
+  const digest = await sha256(bytes);
+  return Array.from(digest.slice(0, 8), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 // --- Consistency -----------------------------------------------------------------

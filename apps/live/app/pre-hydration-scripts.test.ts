@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import {
+  RANDOM_UUID_BOOT_SCRIPT,
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
   WEBFONTS_SWAP_SCRIPT,
@@ -94,5 +95,35 @@ describe('the webfonts stylesheet', () => {
 
   it('does nothing, and throws nothing, without the link', () => {
     expect(() => run(null)).not.toThrow();
+  });
+});
+
+describe('the randomUUID pre-hydration script', () => {
+  it('is inlined by the layout right after Trusted Types, before any app code', () => {
+    const tt = LAYOUT.indexOf('trustedHtml(TRUSTED_TYPES_BOOT)');
+    const uuid = LAYOUT.indexOf('trustedHtml(RANDOM_UUID_BOOT_SCRIPT)');
+    expect(tt).toBeGreaterThan(-1);
+    expect(uuid).toBeGreaterThan(tt);
+    expect(uuid).toBeLessThan(LAYOUT.indexOf('<StaleBuildBoot'));
+  });
+
+  it('mints version 4 ids from getRandomValues where randomUUID is missing', () => {
+    // Outside a secure context (an embed on a plain-http page) the browser leaves randomUUID out.
+    const crypto: { getRandomValues: (b: Uint8Array) => Uint8Array; randomUUID?: () => string } = {
+      getRandomValues: (b) => globalThis.crypto.getRandomValues(b),
+    };
+    runInlineScript(RANDOM_UUID_BOOT_SCRIPT, { crypto });
+    const ids = Array.from({ length: 200 }, () => crypto.randomUUID!());
+    for (const id of ids)
+      expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('keeps a real randomUUID, and never throws without crypto', () => {
+    const real = () => 'real';
+    const crypto = { getRandomValues: (b: Uint8Array) => b, randomUUID: real };
+    runInlineScript(RANDOM_UUID_BOOT_SCRIPT, { crypto });
+    expect(crypto.randomUUID).toBe(real);
+    expect(() => runInlineScript(RANDOM_UUID_BOOT_SCRIPT, {})).not.toThrow();
   });
 });
