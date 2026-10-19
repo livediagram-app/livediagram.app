@@ -14,7 +14,6 @@ import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
-import { usePalettePopoverOpen } from '@/lib/palette-popover-open';
 
 // The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time
 // an empty tab offers one, never on the editor's first load.
@@ -56,8 +55,6 @@ export function EditorStartPanels() {
     renameTab,
   } = ctx;
   const selectTab = useSelectTab();
-  // A category's flyout, More or Search hangs from the palette: the template start steps aside for it.
-  const paletteOpen = usePalettePopoverOpen();
   const isOffline = useIsOfflineDocument(ctx.documentId);
   // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
   // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
@@ -208,22 +205,16 @@ export function EditorStartPanels() {
       the card's place (docs/specs/007-editor/start-diagramming.md). */}
         {templateStart ? (
           <>
-            {/* Kept mounted but out of sight while a palette popover is open, so its search and group survive. */}
-            <div
-              className={paletteOpen ? 'hidden' : 'contents'}
-              data-start-stepped-aside={paletteOpen || undefined}
-            >
-              <StartFromTemplates
-                key={`${activeTab.id}:${templateStart}`}
-                mode={templateStart}
-                tabId={activeTab.id}
-                onTemplate={(kind) => {
-                  void ctx.chooseTemplate(kind);
-                  moveOnTemplatePick(kind);
-                }}
-                onOtherModeTemplate={chooseFromOtherMode}
-              />
-            </div>
+            <StartFromTemplates
+              key={`${activeTab.id}:${templateStart}`}
+              mode={templateStart}
+              tabId={activeTab.id}
+              onTemplate={(kind) => {
+                void ctx.chooseTemplate(kind);
+                moveOnTemplatePick(kind);
+              }}
+              onOtherModeTemplate={chooseFromOtherMode}
+            />
             {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
             <StartAgainTray
               key={`tray:${activeTab.id}:${templateStart}`}

@@ -88,7 +88,7 @@ same empty tab). Choosing the blank closes the panel, as the × does, since it l
 While one of the palette's popovers is open (a category's flyout, More or Search), the start **steps aside**: it
 stays mounted, so its search, its group and its scroll are kept, but is hidden, and the tiles hang over a clear
 canvas. Closing the popover brings it back as it was; using a tile closes the popover, and the content it lands
-hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`.
+hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`, and `StartPanel` hides its own root, so every start (Start Planning too) steps aside alike. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents` wrapper has no box to picture, so a mode change lost its crossfade.
 
 A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
