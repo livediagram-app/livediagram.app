@@ -119,6 +119,62 @@ describe('checkFloatingField', () => {
     expect(panel.style.maxHeight).toBe(`${200 - 2 * M}px`);
   });
 
+  // A phone's column sheet focused its name field while it slid up: measured mid-slide it was lifted by the distance
+  // still to travel, and came to rest above the screen.
+  it('waits for a surface still arriving, then measures it where it rests', async () => {
+    viewport(800);
+    const { panel, input } = popover(500);
+    let rising = true;
+    let settle = () => {};
+    const finished = new Promise<void>((resolve) => {
+      settle = resolve;
+    });
+    const resting = panel.getBoundingClientRect;
+    // Mid-slide it sits low, past the visible band.
+    panel.getBoundingClientRect = () => (rising ? rect(900, 200)() : resting());
+    panel.getAnimations = () =>
+      rising
+        ? [
+            {
+              playState: 'running',
+              effect: { getTiming: () => ({ iterations: 1 }) },
+              finished,
+            } as unknown as Animation,
+          ]
+        : [];
+    input.focus();
+    checkFloatingField();
+    expect(panel.style.transform).toBe('scale(1)');
+    rising = false;
+    settle();
+    await new Promise((r) => setTimeout(r, 50));
+    // At rest it is in view: nothing to lift.
+    expect(panel.style.transform).toBe('scale(1)');
+  });
+
+  it('leaves a sheet docked flush at the foot of the screen while no keyboard is up', () => {
+    viewport(window.innerHeight);
+    const { panel, input } = popover(window.innerHeight - 200);
+    input.focus();
+    checkFloatingField();
+    expect(panel.style.transform).toBe('scale(1)');
+  });
+
+  it('does not wait on a looping animation', () => {
+    viewport(400);
+    const { panel, input } = popover(500);
+    panel.getAnimations = () => [
+      {
+        playState: 'running',
+        effect: { getTiming: () => ({ iterations: Infinity }) },
+        finished: new Promise(() => {}),
+      } as unknown as Animation,
+    ];
+    input.focus();
+    checkFloatingField();
+    expect(panel.style.transform).toBe('translateY(-308px) scale(1)');
+  });
+
   it('leaves a field outside any floating surface, and a button, alone', () => {
     viewport(400);
     const input = document.createElement('input');
