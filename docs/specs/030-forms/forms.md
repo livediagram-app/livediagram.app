@@ -286,6 +286,10 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
   kept as the answer.
 - A **required** question is marked with a red asterisk and its accessible name says "required". A required
   Checkbox must be ticked.
+- A **Number** answer is read as the respondent's locale writes it: the box offers a decimal keypad, which has a comma
+  on a German or French phone, so the browser reads `3,5` as 3.5 and `1.234,5` as 1234.5 before it checks the answer
+  and sends it (`withLocaleNumbers`, `packages/forms/src/locale-number.ts`); the box keeps showing what was typed. A
+  group mark counts only between thousands, so an en-US `3,5` is not read as 35. The server checks plain numbers.
 
 ### Mapping: where an answer goes
 
