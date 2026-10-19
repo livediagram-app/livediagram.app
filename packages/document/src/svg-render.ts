@@ -40,7 +40,7 @@ import {
   svgSketchedBody,
   svgSketchFace,
 } from './svg-render-sketch';
-import { svgProfessionalFace } from './svg-render-face-finish';
+import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
 import { inlineIconLayout } from './svg-render-inline-icon';
@@ -205,6 +205,13 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   if (finish === 'sketch') return out.slice(0, open) + svgSketchFace(inner) + out.slice(close);
   if (finish === 'professional')
     return out.slice(0, open) + svgProfessionalFace(inner) + out.slice(close);
+  // Under Marker its frames and shapes are drawn in marker ("Faces: frames and shapes").
+  if (finish === 'marker')
+    return (
+      out.slice(0, open) +
+      svgMarkerFace(inner, source.id, { width: source.width, height: source.height }) +
+      out.slice(close)
+    );
   return out;
 }
 
