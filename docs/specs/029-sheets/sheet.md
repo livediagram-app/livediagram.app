@@ -483,6 +483,8 @@ at a glance rather than as a long list. Each row names what it will do to this s
 - **Toolbar**: **Cut**, **Copy**, **Paste**, **Paste Values**, **Clear Contents** and **Clear Formatting** (icon
   buttons with their names, and keys where they have them, in the hover card: Cut ⌘X, Copy ⌘C, Paste ⌘V, Paste
   Values ⇧⌘V, Clear Contents Delete; Ctrl on other systems).
+- **Open Link**, under the comment row, when the active cell holds a [HYPERLINK](formulas.md) with an allowed target:
+  opens it in a new tab, for every role.
 - **Categories**, each a side flyout of rows:
 
 | Category        | Rows                                                                                                                                                                                                                                                                                                                   |

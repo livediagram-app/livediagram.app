@@ -10,7 +10,8 @@ import { nameHome } from '../range-names';
 import { RECALC_READS_MAX } from '../limits';
 import { cellKey, type Sheet } from '../sheet';
 import { CARD_FUNCTION_NAMES } from '../formula/registry';
-import { callsOf } from '../formula/ast';
+import { callsOf, type Node } from '../formula/ast';
+import { safeHyperlink } from '../hyperlink';
 import { storedAst, type SheetHandle, type SheetsCtx } from '../formula/stored';
 import type { StoredFormula } from '../sheet';
 import {
@@ -165,14 +166,39 @@ export class Workbook {
   evaluateAt(sheetId: string, r: number, c: number, stored: StoredFormula): Value {
     const ast = storedAst(stored);
     if (!ast) return err('#ERROR!');
-    const id = `${sheetId}|~rule`;
+    return this.evaluateNodeAt(`${sheetId}|~rule`, sheetId, r, c, ast, stored.r);
+  }
+
+  // Where a cell's HYPERLINK goes (docs/specs/029-sheets/formulas.md "Text"): the url argument of a formula that is a
+  // HYPERLINK call at its top, worked out in the cell as evaluateAt works a rule out (no value kept, no dependency),
+  // and kept only when safeHyperlink allows it. Null for any other cell, so the value stays the label everywhere.
+  hyperlinkOf(sheetId: string, r: number, c: number): string | null {
+    const id = this.idAt(sheetId, r, c);
+    if (!id) return null;
+    const input = this.sheets.get(sheetId)?.cells.get(id.slice(id.indexOf('|') + 1))?.input;
+    if (!input || !('f' in input)) return null;
+    const ast = storedAst(input.f);
+    if (ast?.k !== 'call' || ast.name.toUpperCase() !== 'HYPERLINK' || !ast.args[0]) return null;
+    return safeHyperlink(
+      this.evaluateNodeAt(`${sheetId}|~link`, sheetId, r, c, ast.args[0], input.f.r),
+    );
+  }
+
+  private evaluateNodeAt(
+    id: string,
+    sheetId: string,
+    r: number,
+    c: number,
+    ast: Node,
+    refs: StoredFormula['r'],
+  ): Value {
     for (;;) {
       try {
         if (this.depth === 0) this.startRead();
         this.depth++;
         try {
           const frame = this.frame(id, sheetId, r, c);
-          return scalarCell(deref(evaluate(ast, stored.r, frame), frame));
+          return scalarCell(deref(evaluate(ast, refs, frame), frame));
         } finally {
           this.depth--;
           this.deps.clear(id);

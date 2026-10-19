@@ -4,6 +4,7 @@
 // native scroll container over a spacer the size of the whole sheet, with a sticky viewport inside that draws only
 // what is in view: the cells, the headers, the selection, the editor. One tab stop; its keys are the grid's while it
 // has focus, and Escape hands them back to the canvas.
+import { keyLabel } from '@/lib/key-label';
 import { focusOpenEdit } from './focus-open-edit';
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
@@ -374,8 +375,13 @@ export function SheetGrid({
       : hovered
         ? invalidWhy(c, hovered.r, hovered.c)
         : null;
+  // A HYPERLINK under the pointer says where it goes and how to open it (formulas.md "Text").
+  const hoverLink =
+    hovered && !hoverError ? c.workbook.hyperlinkOf(c.sheet.id, hovered.r, hovered.c) : null;
   const hoverBox =
-    hovered && hoverError ? cellBox(c.geometry, hovered.r, hovered.c, c.scroll) : null;
+    hovered && (hoverError || hoverLink)
+      ? cellBox(c.geometry, hovered.r, hovered.c, c.scroll)
+      : null;
 
   const active = formatA1(c.selection.active.r, c.selection.active.c);
   // A callback ref of its own: a property of `c` passed as `ref` would make the whole controller read as a ref.
@@ -580,7 +586,7 @@ export function SheetGrid({
                 <SheetAddRows top={total.height - c.scroll.top} onAdd={actions.appendRows} />
               </SheetCellSlot>
             ) : null}
-            {hovered && hoverError && hoverBox ? (
+            {hovered && (hoverError || hoverLink) && hoverBox ? (
               <SheetCellSlot r={hovered.r} c={hovered.c}>
                 <div
                   role="tooltip"
@@ -590,7 +596,12 @@ export function SheetGrid({
                     top: c.geometry.headH + hoverBox.y + hoverBox.h + 2,
                   }}
                 >
-                  {hoverError}
+                  {hoverError ?? (
+                    <>
+                      <span className="block truncate">{hoverLink}</span>
+                      <span className="block text-slate-300">{`${keyLabel('Mod-Click')} to open`}</span>
+                    </>
+                  )}
                 </div>
               </SheetCellSlot>
             ) : null}

@@ -147,8 +147,13 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
       const pending = shownValue(value);
       const px = fontPx(f);
       let text = pending.pending ? pending.text : shown.text;
-      const colours = cellColours(f, surface);
-      const deco = [f?.u ? 'underline' : '', f?.st ? 'line-through' : ''].filter(Boolean).join(' ');
+      // A HYPERLINK draws as a link (formulas.md "Text"): underlined, in the sheet's accent unless the cell has its
+      // own text colour, kept readable on the cell's fill like any ink. Ctrl/⌘ and a click opens it (useSheetPointer).
+      const link = text && !pending.pending ? workbook.hyperlinkOf(sheet.id, r, c) : null;
+      const colours = cellColours(link && !f?.fc ? { ...f, fc: palette.focus } : f, surface);
+      const deco = [f?.u || link ? 'underline' : '', f?.st ? 'line-through' : '']
+        .filter(Boolean)
+        .join(' ');
       const textStyle: CSSProperties = {
         fontSize: px,
         fontFamily: resolveFontStack(f?.ff),

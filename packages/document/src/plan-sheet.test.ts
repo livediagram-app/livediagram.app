@@ -158,3 +158,36 @@ describe('copies of a Sheet', () => {
     expect(isPlanSheetRef({ sheetId: 'sheet0001', fillTab: false })).toBe(false);
   });
 });
+
+// docs/specs/029-sheets/formulas.md "Text": a HYPERLINK stays a link in an SVG export, its target escaped like any
+// text, in the sheet's accent unless the cell has its own colour.
+describe('a HYPERLINK cell in the static render', () => {
+  it('wraps its text in an escaped link that opens in a new tab', () => {
+    const svg = svgPlanSheet(
+      sheet,
+      {
+        ...MODEL,
+        cells: [
+          {
+            r: 0,
+            c: 0,
+            text: 'Docs',
+            align: 'l',
+            valign: 'm',
+            underline: true,
+            link: 'https://example.com/?a=1&b="2"',
+          },
+        ],
+      },
+      'light',
+    );
+    expect(svg).toContain(
+      '<a href="https://example.com/?a=1&amp;b=&quot;2&quot;" target="_blank" rel="noopener noreferrer"><text',
+    );
+    expect(svg).toMatch(/<a [^>]*><text[^>]*text-decoration="underline"[^>]*>Docs<\/text><\/a>/);
+  });
+
+  it('leaves a cell without a link unwrapped', () => {
+    expect(svgPlanSheet(sheet, MODEL, 'light')).not.toContain('<a ');
+  });
+});

@@ -29,6 +29,7 @@ import { ruleHitAt } from './rules/sheet-rule-draw';
 import { FILL_HANDLE_PX, fillHandleAt } from './SheetSelectionLayer';
 import type { SheetActions } from './useSheetActions';
 import { useSheetPan } from './useSheetPan';
+import { openHyperlink } from '@/lib/open-hyperlink';
 import { TOUCH_GRIP_HIT_PX, useSheetTouch } from './useSheetTouch';
 
 const DRAG_START_PX = 4;
@@ -418,6 +419,15 @@ export function useSheetPointer(
       }
       e.preventDefault();
       cc.focusGrid();
+      // Ctrl/⌘ and a click on a HYPERLINK opens it in a new tab (formulas.md "Text"); on any other cell it adds to
+      // the selection as before, and a plain click on a link only selects it.
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !cc.rules.paint) {
+        const link = cc.workbook.hyperlinkOf(cc.sheet.id, h.r, h.c);
+        if (link) {
+          openHyperlink(link);
+          return;
+        }
+      }
       // A press on a checkbox's box toggles it; on a chip or a dropdown's arrow, opens its options
       // (data-validation.md "Using a dropdown", "Using a checkbox"). Paint Format paints instead.
       const ruleHit =
