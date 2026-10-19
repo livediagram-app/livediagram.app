@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip, Glyph } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip, Glyph, withArticle } from '@livediagram/ui';
 import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
@@ -390,7 +390,7 @@ function EmptyState({
             {provider === 'website'
               ? 'add a web address'
               : named
-                ? `add a ${named} link`
+                ? `add ${withArticle(named)} link`
                 : 'add a link'}
           </span>
           <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">

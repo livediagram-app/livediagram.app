@@ -1,6 +1,7 @@
 // An agent's validation and format rules (docs/specs/029-sheets/data-validation.md "Agents",
 // conditional-formatting.md "Agents"): rules named in words and A1 ranges, built by the engine's own rule commands
 // (setValidationRule, removeValidation, the frule change), and the rules read back in the same words.
+import { withArticle } from '@livediagram/items';
 import {
   CONDITION_OPS,
   compileFormula,
@@ -184,7 +185,7 @@ function validationSettings(
       if (!op)
         return refuse(
           'rule_invalid',
-          `"${rule.condition}" is not a ${rule.type} condition: ${Object.keys(words).join(', ')}.`,
+          `"${rule.condition}" is not ${withArticle(rule.type)} condition: ${Object.keys(words).join(', ')}.`,
         );
       const is = rule.type === 'number' ? 'num' : rule.type;
       if (op === 'valid' || op === 'email' || op === 'url')
@@ -271,7 +272,7 @@ export function buildRuleChange(
       return {
         ok: true,
         writes: [set.write],
-        line: `made ${formatRange(g)} a ${change.rule.type} rule`,
+        line: `made ${formatRange(g)} ${withArticle(change.rule.type)} rule`,
       };
     }
     case 'clear_validation': {

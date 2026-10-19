@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusIcon, Tooltip } from '@livediagram/ui';
+import { PlusIcon, Tooltip, withArticle } from '@livediagram/ui';
 import {
   ES_NOTE_GAP,
   eventStormingKindOf,
@@ -63,7 +63,7 @@ function tabsFor(elements: Element[], selectedId: string | null): Tab[] {
     fromId: from.id,
     side,
     next,
-    name: `Add a ${noteLabel(next).toLowerCase()} ${side} this ${noteLabel(fromKind).toLowerCase()}`,
+    name: `Add ${withArticle(noteLabel(next).toLowerCase())} ${side} this ${noteLabel(fromKind).toLowerCase()}`,
     edgeX: side === 'before' ? from.x : from.x + from.width,
     centreY: from.y + from.height / 2,
     tabWidth: from.height * TAB_WIDTH_RATIO,

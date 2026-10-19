@@ -2,7 +2,7 @@
 
 import type { PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
-import { HoverCard, Tooltip, GlyphDisc } from '@livediagram/ui';
+import { HoverCard, Tooltip, GlyphDisc, withArticle } from '@livediagram/ui';
 import type { Corner } from '@/lib/photo-boxes';
 
 // What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each
@@ -74,7 +74,7 @@ export function BoxEditControls({
             {ticked ? '✓' : ''}
           </button>
           {EVENT_STORMING_NOTES.map((note) => {
-            const name = `Make this a ${note.label.toLowerCase()}`;
+            const name = `Make this ${withArticle(note.label.toLowerCase())}`;
             return (
               <Tooltip key={note.kind} label={name}>
                 <button

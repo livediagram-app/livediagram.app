@@ -1,6 +1,7 @@
 // Changing card types by name (docs/specs/026-plan/plan-agents.md "Changing card types"): an agent's add, set,
 // delete and restore changes applied in order to a document's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
+import { withArticle } from './indefinite-article';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
@@ -175,14 +176,14 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
   if (edit.options) {
     if (field.kind !== 'choice' && field.kind !== 'multichoice')
       throw invalid(
-        `"${field.label}" is a ${field.kind} field: only a choice or multichoice field has options.`,
+        `"${field.label}" is ${withArticle(field.kind)} field: only a choice or multichoice field has options.`,
       );
     next.options = edit.options.map((o) => o.trim());
   }
   if (edit.currency) {
     if (field.kind !== 'currency')
       throw invalid(
-        `"${field.label}" is a ${field.kind} field: only a currency field has a currency.`,
+        `"${field.label}" is ${withArticle(field.kind)} field: only a currency field has a currency.`,
       );
     const code = currencyOf(edit.currency);
     if (code === CURRENCY_DEFAULT) delete next.currency;
