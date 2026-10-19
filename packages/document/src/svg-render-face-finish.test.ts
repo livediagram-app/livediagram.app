@@ -3,7 +3,7 @@ import { faceFinishOf, finishFaceCornerPx, finishFaceShadows } from './finish';
 import { faceAttrs, isPillRect } from './face-finish';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
-import { svgProfessionalFace } from './svg-render-face-finish';
+import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Faces".
 describe('faceFinishOf', () => {
@@ -63,9 +63,9 @@ describe('faceAttrs', () => {
 
 describe('svgProfessionalFace', () => {
   it('squares a rounded rectangle', () => {
-    expect(svgProfessionalFace('<rect x="0" y="0" width="80" height="40" rx="8" fill="#fff"/>')).toBe(
-      '<rect x="0" y="0" width="80" height="40" fill="#fff"/>',
-    );
+    expect(
+      svgProfessionalFace('<rect x="0" y="0" width="80" height="40" rx="8" fill="#fff"/>'),
+    ).toBe('<rect x="0" y="0" width="80" height="40" fill="#fff"/>');
   });
 
   it('keeps a pill, a disc and a part marked to keep', () => {
@@ -87,5 +87,25 @@ describe('svgProfessionalFace', () => {
     const professional = svgBoxed(stack, { tabFinish: 'professional' });
     expect(flexible).toMatch(/rx="8"/);
     expect(professional).not.toMatch(/rx="8"/);
+  });
+});
+
+describe('a sticker in its finish', () => {
+  const sticker =
+    '<rect x="8" y="12" width="84" height="84" rx="26" fill="#0f172a" opacity="0.14" data-sticker-shadow="" data-finish-keep=""/>' +
+    '<rect x="8" y="8" width="84" height="84" rx="26" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>' +
+    '<svg x="23" y="23" width="54" height="54" viewBox="0 0 36 36" data-finish-keep=""><path d="M0 0 L36 0 L36 36 Z" fill="#fc0"/></svg>';
+
+  it('drops the shadow and squares the plate under Professional', () => {
+    const out = svgProfessionalFace(sticker);
+    expect(out).not.toContain('data-sticker-shadow');
+    expect(out).not.toMatch(/rx="26"/);
+  });
+
+  it('drops the shadow and outlines the plate in marker, the emoji kept', () => {
+    const out = svgMarkerFace(sticker, 's', { width: 104, height: 104 });
+    expect(out).not.toContain('data-sticker-shadow');
+    expect(out).toContain('data-marker-part="frame"');
+    expect(out).toContain('<path d="M0 0 L36 0 L36 36 Z" fill="#fc0"/>');
   });
 });

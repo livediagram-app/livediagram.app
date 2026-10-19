@@ -13,7 +13,13 @@ import {
   MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
 } from './border-style';
-import { finishBorderStroke, finishCornerFallbackPx, finishHatches, type Finish } from './finish';
+import {
+  finishBorderStroke,
+  finishCornerFallbackPx,
+  finishHatches,
+  finishOwnCorner,
+  type Finish,
+} from './finish';
 import type { BoxedElement } from './index';
 import { shapeGeometry, type ShapePartRole } from './shape-geometry';
 import { FILLED_ROLES } from './shape-hit';
@@ -44,6 +50,8 @@ export type SketchDrawing = {
   /** The solid fill, in the fill colour, under the shading and the strokes. Every filled element keeps it, so
    *  its text keeps the contrast it was coloured for on either canvas (light or dark). */
   solid: string;
+  /** The solid layer is a combined path whose holes show through (a Path-tool shape): filled even-odd. */
+  solidEvenOdd?: boolean;
 };
 
 /** How strongly the pencil shading shows over a filled shape: enough to read as hand-shaded, faint enough
@@ -182,7 +190,7 @@ export function sketchElementPaint(
     dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
     const kindDefault = el.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX;
     radiusPx = cornerRadiusPx(
-      el.borderRadius,
+      finishOwnCorner(el, finish),
       el.width,
       el.height,
       finishCornerFallbackPx(kindDefault, finish),

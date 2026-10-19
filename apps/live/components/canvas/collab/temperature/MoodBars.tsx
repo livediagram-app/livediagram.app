@@ -31,11 +31,16 @@ export function MoodBars({ tally, textColor }: { tally: number[]; textColor: str
               {count}
             </span>
             <span
-              className="flex min-h-0 w-full max-w-[28px] flex-1 items-end overflow-hidden rounded-full"
+              // Track and bar are a shape each under Marker and Sketch (docs/specs/008-canvas/finish.md "Faces"); the
+              // bar's gradient is drawn in its hue.
+              data-marker-shape=""
+              className="relative flex min-h-0 w-full max-w-[28px] flex-1 items-end overflow-hidden rounded-full"
               style={{ backgroundColor: tint(textColor, 0.06) }}
             >
               <span
-                className="mood-bar w-full rounded-full"
+                data-marker-shape=""
+                data-marker-fill={hue}
+                className="mood-bar relative w-full rounded-full"
                 style={{
                   // A share of the track, with a floor so one vote in a tall
                   // card is still a visible bar rather than a hairline.

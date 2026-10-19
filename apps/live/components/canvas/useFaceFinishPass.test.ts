@@ -74,4 +74,45 @@ describe('drawMarkerFace', () => {
     drawMarkerFace(a, 'el');
     expect(a.querySelector('[data-marker-ink]')!.innerHTML).toBe(first);
   });
+
+  it("colours the face's own box in, once, under its contents", () => {
+    document.body.innerHTML =
+      '<div id="root" data-w="400" data-h="200" style="position:absolute;background-color:rgb(14, 165, 233)">' +
+      '<div class="inner" data-w="400" data-h="200" style="position:absolute;background-color:rgb(14, 165, 233)">Banner</div></div>';
+    const root = document.getElementById('root')!;
+    expect(drawMarkerFace(root, 'el')).toBe(1);
+    const ink = root.querySelector(':scope > svg[data-marker-ink]') as SVGElement;
+    expect(ink.innerHTML).toContain('data-marker-part="shape"');
+    expect(ink.style.zIndex).toBe('-1');
+    expect(root.style.isolation).toBe('isolate');
+    expect(root.querySelector('.inner [data-marker-ink]')).toBeNull();
+    clearMarkerFace(root);
+    expect(root.style.isolation).toBe('');
+  });
+
+  it('leaves the own box of a body that fills its tab plain (the page)', () => {
+    document.body.innerHTML =
+      '<div id="root" data-w="400" data-h="200" style="position:absolute;background-color:rgb(241, 245, 249)"></div>';
+    expect(drawMarkerFace(document.getElementById('root')!, 'el', 'marker', true)).toBe(0);
+  });
+
+  it('draws a part a face marks as a shape, pill or not (a progress bar)', () => {
+    const root = face(
+      '<div data-marker-shape="" data-w="200" data-h="24" style="position:relative;border-radius:999px;background-color:rgb(14, 165, 233)"></div>',
+    );
+    expect(drawMarkerFace(root, 'el')).toBe(1);
+  });
+
+  it('outlines a box framed by an inset ring and hides the ring', () => {
+    const root = face(
+      '<div class="ring" data-w="200" data-h="100" style="position:relative;box-shadow:rgb(203, 213, 225) 0px 0px 0px 1px inset"></div>',
+    );
+    expect(drawMarkerFace(root, 'el')).toBe(1);
+    expect(root.querySelector('.ring')!.getAttribute('data-marker-drawn')).toBe('ring');
+  });
+
+  it('shades only shapes in pencil under Sketch, leaving frames to the wobble', () => {
+    const root = face(card());
+    expect(drawMarkerFace(root, 'el', 'pencil')).toBe(0);
+  });
 });

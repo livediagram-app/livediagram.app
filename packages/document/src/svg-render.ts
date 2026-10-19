@@ -202,7 +202,14 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const inner = out.slice(open, close);
   // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
   // drawn by hand too"); under Professional its rectangles go square and its lines thin ("Faces").
-  if (finish === 'sketch') return out.slice(0, open) + svgSketchFace(inner) + out.slice(close);
+  if (finish === 'sketch')
+    return (
+      out.slice(0, open) +
+      svgSketchFace(
+        svgMarkerFace(inner, source.id, { width: source.width, height: source.height }, 'pencil'),
+      ) +
+      out.slice(close)
+    );
   if (finish === 'professional')
     return out.slice(0, open) + svgProfessionalFace(inner) + out.slice(close);
   // Under Marker its frames and shapes are drawn in marker ("Faces: frames and shapes").
@@ -260,9 +267,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     return `<g${opAttr}${rotAttr}>${sketch ?? svgFreehandShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"); drawn by hand in its finish, it keeps
-    // its own fill under the hand-drawn line (finish.md "Polygons and paths").
-    return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, sketch ? 'none' : shape.stroke, shape.fill, finish)}${sketch ?? ''}</g>`;
+    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"), or drawn by hand in its finish
+    // (finish.md "Polygons and paths").
+    return `<g${opAttr}${rotAttr}>${sketch ?? svgPathElementShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {
     // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
@@ -318,7 +325,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
         ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
-      // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
+      // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
+      // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
+      (sketch ?? '') +
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
     shapeStr = sketch;

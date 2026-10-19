@@ -4,22 +4,35 @@
 // markerFacePartSvg, so the two draw the same parts the same way.
 import { MARKER_LINE_PX } from './finish';
 import { isPillRect } from './face-finish';
-import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY, markerColouring, markerStrokes } from './marker';
+import {
+  MARKER_INK_OPACITY,
+  MARKER_STREAK_OPACITY,
+  markerColouring,
+  markerStrokes,
+} from './marker';
 import {
   outlineOfEllipse,
   outlineOfPath,
   outlineOfPolygon,
   outlineOfRect,
+  sketchHatching,
   sketchSeed,
   type Pt,
   type SketchOutline,
 } from './sketch';
+import { SKETCH_HATCH_OPACITY } from './sketch-element';
 import { xmlEscape } from './svg-render-primitives';
 
 /** An outlined box counts as a frame (a card, a column, a panel) when both its sides are at least this, px. */
 export const MARKER_FACE_FRAME_MIN_PX = 40;
 /** A part is drawn in marker only when its longest side is past this, px: glyphs, ticks and dots stay plain. */
 export const MARKER_FACE_SHAPE_MIN_PX = 24;
+/** A filled disc (a timeline's milestone, a step's number) is a shape from this diameter, px: smaller than other
+ *  parts, since a disc is a mark in itself, not a glyph's dot. */
+export const MARKER_FACE_DISC_MIN_PX = 14;
+/** A straight rule (an SVG line) is drawn in marker from this width, px (a timeline's spine); hairline axes, grid
+ *  lines and ticks stay plain. */
+export const MARKER_FACE_RULE_MIN_PX = 2.5;
 /** ... and its shortest side at least this, px: hairline rules and slivers stay plain. */
 export const MARKER_FACE_SHAPE_THIN_PX = 6;
 /** A rectangle within this of the face's own box, px, on both sides, is the face's box itself. */
@@ -49,6 +62,8 @@ export type FacePartPaint = {
   opacity?: number;
   // The line is dashed (a progress arc is a dashed ring): redrawn whole it would close, so it keeps its look.
   dashed?: boolean;
+  // The face marks this part a shape (`data-marker-shape`: a progress bar's track and fill), pill or not.
+  shape?: boolean;
 };
 
 /** What a part is under Marker: a frame (outlined, its fill kept solid), a shape (coloured in and outlined in its
@@ -56,6 +71,16 @@ export type FacePartPaint = {
 export type FacePartRole = 'frame' | 'shape' | 'line';
 
 export type FacePartDrawing = { role: FacePartRole; svg: string };
+
+/** The face's own box: its size, and whether the element's body is already drawn by hand (Sketch's or Marker's
+ *  body), which then is the box's drawing. */
+export type FaceBox = { width: number; height: number; bodyDrawn?: boolean };
+
+/** How strong the colouring's streaks are, at most, on a part with no line of its own (a band, a ring, a bar), drawn
+ *  in a deeper shade of its fill: a shape's streaks are its dark line colour at MARKER_STREAK_OPACITY, and a shade of
+ *  the fill at that strength barely shows on a deep fill, so it is laid down up to this much heavier, scaled by how
+ *  colourful the fill is (a grey or near-white card keeps MARKER_STREAK_OPACITY). */
+export const MARKER_FACE_STREAK_OPACITY = 0.2;
 
 /** How far a frame's ink is pulled from its fill, 0..1: a card's hairline border is a pale grey that, drawn as is,
  *  reads as no marker at all; pulled this far toward black on a light card (white on a dark one) it reads as felt-tip
@@ -70,17 +95,32 @@ function parseColour(c: string): Rgba | null {
   const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(v);
   if (hex) {
     const h = hex[1]!.length === 3 ? [...hex[1]!].map((d) => d + d).join('') : hex[1]!;
-    return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: 1 };
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16),
+      a: 1,
+    };
   }
   const fn = /^rgba?\(([^)]+)\)$/.exec(v);
   if (!fn) return null;
-  const n = fn[1]!.split(/[\s,/]+/).filter(Boolean).map(Number);
+  const n = fn[1]!
+    .split(/[\s,/]+/)
+    .filter(Boolean)
+    .map(Number);
   if (n.length < 3 || n.some((x) => !Number.isFinite(x))) return null;
   return { r: n[0]!, g: n[1]!, b: n[2]!, a: n[3] ?? 1 };
 }
 
 const hexOf = ({ r, g, b }: { r: number; g: number; b: number }) =>
-  '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+  '#' +
+  [r, g, b]
+    .map((v) =>
+      Math.max(0, Math.min(255, Math.round(v)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('');
 
 /** A frame's marker ink: its border colour as it shows on its fill (a see-through border laid over it), pulled
  *  MARKER_FACE_FRAME_INK_SHIFT toward black on a light fill or white on a dark one. A colour it cannot read is
@@ -98,7 +138,50 @@ export function markerFrameInk(stroke: string, fill: string | null): string {
   const light = (under.r * 299 + under.g * 587 + under.b * 114) / 1000 > 128;
   const to = light ? 0 : 255;
   const k = MARKER_FACE_FRAME_INK_SHIFT;
-  return hexOf({ r: shown.r + (to - shown.r) * k, g: shown.g + (to - shown.g) * k, b: shown.b + (to - shown.b) * k });
+  return hexOf({
+    r: shown.r + (to - shown.r) * k,
+    g: shown.g + (to - shown.g) * k,
+    b: shown.b + (to - shown.b) * k,
+  });
+}
+
+/** A hand-drawn line must stand this far from its fill (WCAG contrast ratio) to read as drawn; a paler one (a card's
+ *  or a page's hairline grey on white) is drawn in a stronger shade (markerFrameInk). */
+export const HAND_DRAWN_INK_MIN_CONTRAST = 1.8;
+
+function luminance({ r, g, b }: { r: number; g: number; b: number }): number {
+  const c = (v: number) => {
+    const s = v / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b);
+}
+
+// How colourful a fill is, 0 (a grey, white or black) to 1 (a pure hue); a colour it cannot read counts as mid.
+function fillChroma(fill: string | null): number {
+  const c = fill ? parseColour(fill) : null;
+  if (!c) return 0.5;
+  return (Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b)) / 255;
+}
+
+/** The colour a hand-drawn body's line and shading are drawn in (Sketch's pencil, Marker's felt-tip): its line colour,
+ *  unless that is too close to its fill to read (HAND_DRAWN_INK_MIN_CONTRAST), then a stronger shade of it. */
+export function handDrawnInk(stroke: string, fill: string | null): string {
+  // No line of its own (a sticky's paper): a deeper shade of its fill.
+  if (!isInkColour(stroke) && fill && isInkColour(fill)) return markerFrameInk(fill, fill);
+  const s = parseColour(stroke);
+  if (!s) return stroke;
+  const f = (fill && parseColour(fill)) || null;
+  const under = f && f.a > 0 ? f : { r: 255, g: 255, b: 255, a: 1 };
+  const shown = {
+    r: s.r * s.a + under.r * (1 - s.a),
+    g: s.g * s.a + under.g * (1 - s.a),
+    b: s.b * s.a + under.b * (1 - s.a),
+  };
+  const [hi, lo] = [luminance(shown), luminance(under)].sort((a, b) => b - a) as [number, number];
+  return (hi + 0.05) / (lo + 0.05) >= HAND_DRAWN_INK_MIN_CONTRAST
+    ? stroke
+    : markerFrameInk(stroke, fill);
 }
 
 /** Whether a colour paints anything: not absent, none, transparent, a fully clear rgba, or a paint server. */
@@ -121,7 +204,9 @@ function outlineOf(shape: FacePartShape): SketchOutline {
       return outlineOfPolygon(shape.points);
     case 'polyline':
       return {
-        segments: shape.points.slice(1).map((to, i) => ({ kind: 'line' as const, from: shape.points[i]!, to })),
+        segments: shape.points
+          .slice(1)
+          .map((to, i) => ({ kind: 'line' as const, from: shape.points[i]!, to })),
         area: null,
       };
   }
@@ -152,24 +237,30 @@ export function facePartRole(
   shape: FacePartShape,
   outline: SketchOutline,
   paint: FacePartPaint,
-  face: { width: number; height: number },
+  face: FaceBox,
 ): FacePartRole | null {
+  if (paint.shape && isInkColour(paint.fill) && outline.area) return 'shape';
   if (shape.kind === 'rect' && isPillRect(shape.width, shape.height, shape.rx)) return null;
   if (paint.dashed) return null;
   const b = boundsOf(outline);
   if (!b) return null;
   const long = Math.max(b.w, b.h);
   const short = Math.min(b.w, b.h);
-  if (long <= MARKER_FACE_SHAPE_MIN_PX) return null;
   const stroked = isInkColour(paint.stroke) && paint.strokePx > 0;
   const filled = isInkColour(paint.fill);
+  const disc = shape.kind === 'ellipse' && filled;
+  if (long <= (disc ? MARKER_FACE_DISC_MIN_PX - 0.5 : MARKER_FACE_SHAPE_MIN_PX)) return null;
   const closed = (shape.kind !== 'path' && shape.kind !== 'polyline') || outline.area !== null;
   if (shape.kind === 'rect') {
-    // The face's own box (a banner, a timer, a panel): its edge in marker, whether it is outlined or only filled.
+    // The face's own box (a banner, a timer, a panel): coloured in and edged in marker, as a shape's body is, whether
+    // it is outlined or only filled.
     const body =
       Math.abs(shape.width - face.width) <= MARKER_FACE_BODY_SLACK_PX &&
       Math.abs(shape.height - face.height) <= MARKER_FACE_BODY_SLACK_PX;
-    if (body && (stroked || filled)) return 'frame';
+    // ... unless the element's body is already drawn by hand (it is coloured in there).
+    if (body && filled && !face.bodyDrawn) return 'shape';
+    if (body && stroked && !face.bodyDrawn) return 'frame';
+    if (body && face.bodyDrawn) return null;
     // An outlined box is a frame: a card, a column, an input big enough to be one.
     if (stroked && short >= MARKER_FACE_FRAME_MIN_PX) return 'frame';
     // An unoutlined fill across most of the face is what the face sits on.
@@ -187,7 +278,7 @@ const LINE_ATTRS = ' fill="none" stroke-linecap="round" stroke-linejoin="round"'
 export function markerFacePart(
   shape: FacePartShape,
   paint: FacePartPaint,
-  face: { width: number; height: number },
+  face: FaceBox,
   seed: number,
   index: number,
 ): FacePartDrawing | null {
@@ -205,7 +296,7 @@ export function markerFacePart(
         ? markerFrameInk(paint.fill!, paint.fill)
         : role === 'frame'
           ? markerFrameInk(paint.stroke!, paint.fill)
-          : paint.stroke!,
+          : handDrawnInk(paint.stroke!, paint.fill),
   );
   const px =
     role === 'frame'
@@ -216,10 +307,16 @@ export function markerFacePart(
   const parts: string[] = [];
   if (role === 'shape' && outline.area) {
     const { streaks, nibPx } = markerColouring(outline.area, partSeed);
+    // A shape's streaks are its line colour, faint; a part with no line its fill's own deeper shade, laid down as
+    // much heavier as its fill is colourful (a grey, white or navy card barely streaked, a saturated band clearly).
+    const streakOpacity = stroked
+      ? MARKER_STREAK_OPACITY
+      : MARKER_STREAK_OPACITY +
+        (MARKER_FACE_STREAK_OPACITY - MARKER_STREAK_OPACITY) * fillChroma(paint.fill);
     for (const d of streaks)
       if (d)
         parts.push(
-          `<path d="${d}" stroke="${colour}" stroke-opacity="${MARKER_STREAK_OPACITY}" stroke-width="${nibPx}"${LINE_ATTRS}/>`,
+          `<path d="${d}" stroke="${colour}" stroke-opacity="${streakOpacity}" stroke-width="${nibPx}"${LINE_ATTRS}/>`,
         );
   }
   for (const d of markerStrokes(outline, partSeed))
@@ -228,8 +325,51 @@ export function markerFacePart(
         `<path d="${d}" stroke="${colour}" stroke-opacity="${MARKER_INK_OPACITY}" stroke-width="${px}"${LINE_ATTRS}/>`,
       );
   if (parts.length === 0) return null;
-  const opacity = paint.opacity !== undefined && paint.opacity < 1 ? ` opacity="${paint.opacity}"` : '';
+  const opacity =
+    paint.opacity !== undefined && paint.opacity < 1 ? ` opacity="${paint.opacity}"` : '';
   return { role, svg: `<g data-marker-part="${role}"${opacity}>${parts.join('')}</g>` };
+}
+
+/** Sketch's shading on a face part with no line of its own, in a deeper shade of its fill: opacity (at most, scaled
+ *  by how colourful the fill is, as Marker's streaks are) and width, heavier than a body's (SKETCH_HATCH_OPACITY at half
+ *  its line) since a shade of the fill shows less on that fill. */
+export const SKETCH_FACE_HATCH_OPACITY = 0.4;
+export const SKETCH_FACE_HATCH_PX = 1.5;
+
+/** One part of a face shaded in pencil under Sketch (spec "Every other face is drawn by hand too"): a shape (a band,
+ *  a disc, a bar, the face's own box) gets the hatching a shape's body gets, in the same colour rule as Marker's
+ *  colouring; frames and lines need nothing more, the face's wobble draws them by hand. Null otherwise. */
+export function sketchFacePart(
+  shape: FacePartShape,
+  paint: FacePartPaint,
+  face: FaceBox,
+  seed: number,
+  index: number,
+): FacePartDrawing | null {
+  const outline = outlineOf(shape);
+  if (facePartRole(shape, outline, paint, face) !== 'shape' || !outline.area) return null;
+  const partSeed = (seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
+  const stroked = isInkColour(paint.stroke);
+  const colour = xmlEscape(
+    stroked ? handDrawnInk(paint.stroke!, paint.fill) : markerFrameInk(paint.fill!, paint.fill),
+  );
+  const strokePx = stroked ? Math.max(1, paint.strokePx) : 2;
+  const d = sketchHatching(outline.area, partSeed, strokePx);
+  if (!d) return null;
+  const opacity =
+    paint.opacity !== undefined && paint.opacity < 1 ? ` opacity="${paint.opacity}"` : '';
+  // A line colour shades as a shape's body does; a shade of the fill itself needs more weight to show on that fill.
+  const hatchOpacity = stroked
+    ? SKETCH_HATCH_OPACITY
+    : SKETCH_HATCH_OPACITY +
+      (SKETCH_FACE_HATCH_OPACITY - SKETCH_HATCH_OPACITY) * fillChroma(paint.fill);
+  const hatchPx = stroked ? Math.max(1, strokePx / 2) : SKETCH_FACE_HATCH_PX;
+  return {
+    role: 'shape',
+    svg:
+      `<g data-marker-part="shape"${opacity}><path d="${d}" stroke="${colour}" stroke-opacity="${hatchOpacity}"` +
+      ` stroke-width="${hatchPx}"${LINE_ATTRS}/></g>`,
+  };
 }
 
 /** A face's marker seed: its element's, on a stream of its own so its parts never repeat its body's wobble. */
@@ -240,7 +380,10 @@ export function markerFaceSeed(elementId: string): number {
 /** A polygon's or polyline's `points` attribute as points (numbers in pairs, comma or space separated); null for
  *  fewer than 2. */
 export function polygonPoints(attr: string): Pt[] | null {
-  const n = attr.trim().split(/[\s,]+/).map(Number);
+  const n = attr
+    .trim()
+    .split(/[\s,]+/)
+    .map(Number);
   if (n.some((v) => !Number.isFinite(v))) return null;
   const points: Pt[] = [];
   for (let i = 0; i + 1 < n.length; i += 2) points.push({ x: n[i]!, y: n[i + 1]! });

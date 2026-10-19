@@ -26,13 +26,21 @@ describe('isInkColour', () => {
   it('tells a colour from nothing', () => {
     expect(isInkColour('#123')).toBe(true);
     expect(isInkColour('rgb(1, 2, 3)')).toBe(true);
-    for (const none of [null, '', 'none', 'transparent', 'url(#g)', 'rgba(0, 0, 0, 0)', 'rgb(0 0 0 / 0)'])
+    for (const none of [
+      null,
+      '',
+      'none',
+      'transparent',
+      'url(#g)',
+      'rgba(0, 0, 0, 0)',
+      'rgb(0 0 0 / 0)',
+    ])
       expect(isInkColour(none)).toBe(false);
   });
 });
 
 describe('markerFrameInk', () => {
-  it("pulls a pale border toward black on a light card", () => {
+  it('pulls a pale border toward black on a light card', () => {
     expect(markerFrameInk('#e2e8f0', '#ffffff')).toBe('#7c8084');
   });
 
@@ -56,9 +64,8 @@ describe('facePartRole', () => {
   const roleOf = (w: number, h: number, p: FacePartPaint, rx = 0) =>
     facePartRole(rect(w, h, rx), outlineOfRect(0, 0, w, h, rx), p, face);
 
-  it('outlines a card as a frame, at any size', () => {
+  it('outlines a card as a frame', () => {
     expect(roleOf(120, 60, paint({ fill: '#fff', stroke: '#ccc', strokePx: 1 }))).toBe('frame');
-    expect(roleOf(400, 300, paint({ fill: '#fff', stroke: '#ccc', strokePx: 1 }))).toBe('frame');
   });
 
   it('colours in a band or a bar', () => {
@@ -74,21 +81,38 @@ describe('facePartRole', () => {
     expect(roleOf(120, 60, paint({}))).toBeNull();
   });
 
-  it("edges the face's own box in marker, outlined or only filled", () => {
-    expect(roleOf(400, 300, paint({ fill: '#0ea5e9' }))).toBe('frame');
-    expect(roleOf(396, 296, paint({ fill: '#0ea5e9' }))).toBe('frame');
+  it("colours the face's own box in, outlined or only filled, unless its body is already drawn", () => {
+    expect(roleOf(400, 300, paint({ fill: '#0ea5e9' }))).toBe('shape');
+    expect(roleOf(396, 296, paint({ fill: '#fff', stroke: '#ccc', strokePx: 1 }))).toBe('shape');
+    expect(roleOf(400, 300, paint({ stroke: '#ccc', strokePx: 1 }))).toBe('frame');
+    const drawn = { ...face, bodyDrawn: true };
+    expect(
+      facePartRole(
+        rect(400, 300),
+        outlineOfRect(0, 0, 400, 300, 0),
+        paint({ fill: '#0ea5e9' }),
+        drawn,
+      ),
+    ).toBeNull();
   });
 
   it('keeps a dashed line as drawn (a progress arc would close)', () => {
     const ring = { kind: 'ellipse', cx: 50, cy: 50, rx: 40, ry: 40 } as const;
     expect(
-      facePartRole(ring, outlineOfEllipse(50, 50, 40, 40), paint({ stroke: '#333', strokePx: 8, dashed: true }), face),
+      facePartRole(
+        ring,
+        outlineOfEllipse(50, 50, 40, 40),
+        paint({ stroke: '#333', strokePx: 8, dashed: true }),
+        face,
+      ),
     ).toBeNull();
   });
 
   it('colours in a disc that fills its face (an onion ring), which is never a backdrop', () => {
     const disc = { kind: 'ellipse', cx: 200, cy: 150, rx: 200, ry: 150 } as const;
-    expect(facePartRole(disc, outlineOfEllipse(200, 150, 200, 150), paint({ fill: '#bae6fd' }), face)).toBe('shape');
+    expect(
+      facePartRole(disc, outlineOfEllipse(200, 150, 200, 150), paint({ fill: '#bae6fd' }), face),
+    ).toBe('shape');
   });
 
   it('draws a polyline (a chart series) as a line', () => {
@@ -99,22 +123,40 @@ describe('facePartRole', () => {
     ];
     const line = { kind: 'polyline', points } as const;
     expect(
-      facePartRole(line, { segments: [], area: null }, paint({ stroke: '#0ea5e9', strokePx: 2 }), face),
+      facePartRole(
+        line,
+        { segments: [], area: null },
+        paint({ stroke: '#0ea5e9', strokePx: 2 }),
+        face,
+      ),
     ).toBeNull();
-    expect(markerFacePart(line, paint({ fill: 'none', stroke: '#0ea5e9', strokePx: 2 }), face, 1, 0)?.role).toBe('line');
+    expect(
+      markerFacePart(line, paint({ fill: 'none', stroke: '#0ea5e9', strokePx: 2 }), face, 1, 0)
+        ?.role,
+    ).toBe('line');
   });
 
   it('draws a ring as a line', () => {
     const ring = { kind: 'ellipse', cx: 50, cy: 50, rx: 40, ry: 40 } as const;
     expect(
-      facePartRole(ring, outlineOfEllipse(50, 50, 40, 40), paint({ stroke: '#333', strokePx: 2 }), face),
+      facePartRole(
+        ring,
+        outlineOfEllipse(50, 50, 40, 40),
+        paint({ stroke: '#333', strokePx: 2 }),
+        face,
+      ),
     ).toBe('line');
   });
 
   it('draws an open arc as a line, never colours it in', () => {
     const d = 'M 10 80 A 60 60 0 0 1 130 80';
     expect(
-      facePartRole({ kind: 'path', d }, outlineOfPath(d), paint({ fill: '#38bdf8', stroke: '#333', strokePx: 2 }), face),
+      facePartRole(
+        { kind: 'path', d },
+        outlineOfPath(d),
+        paint({ fill: '#38bdf8', stroke: '#333', strokePx: 2 }),
+        face,
+      ),
     ).toBe('line');
   });
 });
@@ -134,12 +176,22 @@ describe('markerFacePart', () => {
     expect(part.role).toBe('shape');
     expect(part.svg).toContain(`stroke="${markerFrameInk('#38bdf8', '#38bdf8')}"`);
     expect(part.svg).not.toContain('stroke="#38bdf8"');
-    expect(part.svg).toMatch(/stroke-opacity="0\.07"/);
+    // A colourful fill's own shade is laid down heavier than a line's (MARKER_FACE_STREAK_OPACITY scaled by chroma).
+    const streak = Number(/stroke-opacity="([\d.]+)"/.exec(part.svg)![1]);
+    expect(streak).toBeGreaterThan(0.07);
+    const grey = markerFacePart(band, paint({ fill: '#f1f5f9' }), face, seed, 0)!;
+    expect(Number(/stroke-opacity="([\d.]+)"/.exec(grey.svg)![1])).toBeLessThan(streak);
   });
 
   it("outlines a part in its own line's colour when it has one", () => {
     const slim = { ...band, height: 30 };
-    const part = markerFacePart(slim, paint({ fill: '#38bdf8', stroke: '#0369a1', strokePx: 1 }), face, seed, 0)!;
+    const part = markerFacePart(
+      slim,
+      paint({ fill: '#38bdf8', stroke: '#0369a1', strokePx: 1 }),
+      face,
+      seed,
+      0,
+    )!;
     expect(part.role).toBe('shape');
     expect(part.svg).toContain('stroke="#0369a1"');
   });
@@ -157,7 +209,9 @@ describe('svgMarkerFace', () => {
       'el',
       face,
     );
-    expect(out).toContain('<rect x="0" y="0" width="300" height="40" rx="8" fill="#38bdf8"/><g data-marker-part="shape"');
+    expect(out).toContain(
+      '<rect x="0" y="0" width="300" height="40" rx="8" fill="#38bdf8"/><g data-marker-part="shape"',
+    );
     expect(out).toContain('<circle cx="5" cy="5" r="4" fill="#000"/>');
     expect(out).toContain('<text>Hi</text>');
   });
@@ -168,7 +222,9 @@ describe('svgMarkerFace', () => {
       'el',
       face,
     );
-    expect(out).toMatch(/^<rect x="0" y="0" width="200" height="100" fill="#fff"\/><g data-marker-part="frame"/);
+    expect(out).toMatch(
+      /^<rect x="0" y="0" width="200" height="100" fill="#fff"\/><g data-marker-part="frame"/,
+    );
   });
 
   it('keeps clips, definitions, a drawn body, arrowed lines and kept parts as they are', () => {
@@ -179,19 +235,30 @@ describe('svgMarkerFace', () => {
   });
 
   it('wraps a part with its own transform in it', () => {
-    const out = svgMarkerFace('<rect width="300" height="40" fill="#38bdf8" transform="rotate(5)"/>', 'el', face);
+    const out = svgMarkerFace(
+      '<rect width="300" height="40" fill="#38bdf8" transform="rotate(5)"/>',
+      'el',
+      face,
+    );
     expect(out).toContain('<g transform="rotate(5)"><g data-marker-part="shape"');
   });
 
   it(`draws at most ${MARKER_FACE_MAX_PARTS} parts`, () => {
-    const many = Array.from({ length: MARKER_FACE_MAX_PARTS + 5 }, (_, i) =>
-      `<rect x="0" y="${i}" width="100" height="30" fill="#38bdf8"/>`,
+    const many = Array.from(
+      { length: MARKER_FACE_MAX_PARTS + 5 },
+      (_, i) => `<rect x="0" y="${i}" width="100" height="30" fill="#38bdf8"/>`,
     ).join('');
-    expect(svgMarkerFace(many, 'el', face).match(/data-marker-part/g)).toHaveLength(MARKER_FACE_MAX_PARTS);
+    expect(svgMarkerFace(many, 'el', face).match(/data-marker-part/g)).toHaveLength(
+      MARKER_FACE_MAX_PARTS,
+    );
   });
 
   it('colours in a chevron drawn as a polygon', () => {
-    const out = svgMarkerFace('<polygon points="0,0 120,0 150,40 120,80 0,80 30,40" fill="#38bdf8"/>', 'el', face);
+    const out = svgMarkerFace(
+      '<polygon points="0,0 120,0 150,40 120,80 0,80 30,40" fill="#38bdf8"/>',
+      'el',
+      face,
+    );
     expect(out).toContain('<g data-marker-part="shape"');
   });
 

@@ -181,11 +181,11 @@ export function svgFreehandShape(
   // Polygon-tool outline's unset width follows its finish (Professional's Thin).
   const strokeWidth = isPolygonOutline(el)
     ? polygonStrokePx(el, finish)
-    : el.penWidth ??
-    (BORDER_STROKE_PX[
-      (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
-    ] ||
-      2);
+    : (el.penWidth ??
+      (BORDER_STROKE_PX[
+        (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
+      ] ||
+        2));
   const dash =
     BORDER_DASH_ARRAY[
       (el as { strokeStyle?: keyof typeof BORDER_DASH_ARRAY }).strokeStyle ?? 'solid'

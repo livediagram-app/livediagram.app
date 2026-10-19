@@ -8,6 +8,7 @@ import {
   SHAPE_DETAIL_STROKE_PX,
   SKETCH_HATCH_OPACITY,
   handDrawnElementPaint,
+  handDrawnInk,
   type BoxedElement,
   type Finish,
   type HandDrawnPaint,
@@ -43,18 +44,18 @@ export function useSketchPaint(
     nodes,
     subpaths,
   } = element as {
-      strokeWidth?: string;
-      strokeStyle?: string;
-      borderRadius?: string;
-      // A Polygon-tool outline's own points (docs/specs/008-canvas/finish.md "Polygons").
-      packedPoints?: string;
-      closed?: boolean;
-      straightEdges?: boolean;
-      penWidth?: number;
-      // A Path-tool curve's nodes.
-      nodes?: unknown;
-      subpaths?: unknown;
-    };
+    strokeWidth?: string;
+    strokeStyle?: string;
+    borderRadius?: string;
+    // A Polygon-tool outline's own points (docs/specs/008-canvas/finish.md "Polygons").
+    packedPoints?: string;
+    closed?: boolean;
+    straightEdges?: boolean;
+    penWidth?: number;
+    // A Path-tool curve's nodes.
+    nodes?: unknown;
+    subpaths?: unknown;
+  };
   return useMemo(
     () => handDrawnElementPaint(element, finish, fill, backdrop),
     // The fields the paint reads, so moving the element keeps the drawing.
@@ -86,7 +87,7 @@ function SketchOverlayImpl({
   width,
   height,
   fill,
-  stroke,
+  stroke: lineColour,
 }: {
   paint: SketchPaint;
   width: number;
@@ -95,6 +96,8 @@ function SketchOverlayImpl({
   stroke: string;
 }) {
   const { drawing, strokePx, dash } = paint;
+  // A line too pale to read on its fill (a card's or a page's hairline grey) is drawn in a stronger shade.
+  const stroke = handDrawnInk(lineColour, fill);
   const line = { fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
   if (drawing.pen === 'marker') {
     // Bottom to top: the fill, the colouring's streaks, the outline's ink, the chrome (svg-render-sketch.ts's
@@ -107,7 +110,13 @@ function SketchOverlayImpl({
         data-finish="marker"
         aria-hidden
       >
-        {drawing.solid ? <path d={drawing.solid} fill={fill} /> : null}
+        {drawing.solid ? (
+          <path
+            d={drawing.solid}
+            fill={fill}
+            fillRule={drawing.solidEvenOdd ? 'evenodd' : undefined}
+          />
+        ) : null}
         {drawing.streaks.map((d, i) =>
           d ? (
             <path
@@ -153,7 +162,13 @@ function SketchOverlayImpl({
       data-finish="sketch"
       aria-hidden
     >
-      {drawing.solid ? <path d={drawing.solid} fill={fill} /> : null}
+      {drawing.solid ? (
+        <path
+          d={drawing.solid}
+          fill={fill}
+          fillRule={drawing.solidEvenOdd ? 'evenodd' : undefined}
+        />
+      ) : null}
       {drawing.hatch ? (
         <path
           d={drawing.hatch}

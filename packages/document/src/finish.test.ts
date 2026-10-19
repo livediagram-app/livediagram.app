@@ -106,12 +106,15 @@ describe('finishHatches', () => {
     expect(finishHatches(createShape('cloud', 0, 0), '#ffffff')).toBe(true);
   });
 
-  it('keeps containers, self-painting kinds, see-through fills and non-shapes solid', () => {
-    expect(finishHatches(createShape('frame', 0, 0), '#ffffff')).toBe(false);
-    expect(finishHatches(createShape('lane', 0, 0), '#ffffff')).toBe(false);
+  // Every box with a body of its own is shaded (docs/specs/008-canvas/finish.md "Fills"): containers and panels too.
+  it('shades containers, cards and panels like any box', () => {
+    for (const kind of ['frame', 'lane', 'agenda', 'page', 'card', 'entity'] as const)
+      expect(finishHatches(createShape(kind, 0, 0), '#ffffff'), kind).toBe(true);
+  });
+
+  it('keeps self-painting kinds, a sequence diagram, see-through fills and non-shapes solid', () => {
     expect(finishHatches(createShape('bar-chart', 0, 0), '#ffffff')).toBe(false);
-    expect(finishHatches(createShape('agenda', 0, 0), '#ffffff')).toBe(false);
-    expect(finishHatches(createShape('page', 0, 0), '#ffffff')).toBe(false);
+    expect(finishHatches(createShape('sequence', 0, 0), '#ffffff')).toBe(false);
     expect(finishHatches(createShape('square', 0, 0), 'transparent')).toBe(false);
     expect(finishHatches(createSticky(0, 0), '#fde68a')).toBe(false);
     expect(finishHatches(createText(0, 0), '#ffffff')).toBe(false);

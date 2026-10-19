@@ -3,7 +3,9 @@
 // pencil shading (the stroke colour, faint), outline, chrome. Marker's felt-tip body (marker-element.ts) goes the same
 // way, its ink in see-through layers.
 import { finishSplitsFace, finishWobblesArt, resolveFinish, type Finish } from './finish';
+import { defaultStrokeColor } from './colors';
 import { handDrawnElementPaint } from './hand-drawn';
+import { handDrawnInk } from './marker-face';
 import type { BoxedElement, Element } from './index';
 import { MARKER_DETAIL_PX, MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
 import type { MarkerDrawing } from './marker-element';
@@ -22,7 +24,10 @@ function svgSketchDrawing(
   const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
   const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="sketch">`];
-  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${fill}"/>`);
+  if (drawing.solid)
+    parts.push(
+      `<path d="${drawing.solid}" fill="${fill}"${drawing.solidEvenOdd ? ' fill-rule="evenodd"' : ''}/>`,
+    );
   if (drawing.hatch)
     parts.push(
       `<path d="${drawing.hatch}" stroke="${stroke}" stroke-opacity="${SKETCH_HATCH_OPACITY}" stroke-width="${r2(Math.max(1, paint.strokePx / 2))}"${line}/>`,
@@ -52,7 +57,10 @@ function svgMarkerDrawing(
   const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
   const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="marker">`];
-  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"/>`);
+  if (drawing.solid)
+    parts.push(
+      `<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"${drawing.solidEvenOdd ? ' fill-rule="evenodd"' : ''}/>`,
+    );
   for (const d of drawing.streaks)
     if (d)
       parts.push(
@@ -80,12 +88,25 @@ export function svgSketchedBody(
   // Something sits on this shape (sketch-backdrop.ts): a solid fill, never hatching.
   backdrop = false,
 ): string | null {
-  if (shape.kind !== 'rect' && shape.kind !== 'ellipse' && shape.kind !== 'diamond') return null;
-  const paint = handDrawnElementPaint(el, finish, shape.fill, backdrop);
+  if (
+    shape.kind !== 'rect' &&
+    shape.kind !== 'ellipse' &&
+    shape.kind !== 'diamond' &&
+    shape.kind !== 'image'
+  )
+    return null;
+  // An image has no fill of its own to shade, and its edge takes its line colour or the default ink.
+  const fill = shape.kind === 'image' ? 'none' : shape.fill;
+  const line =
+    shape.kind === 'image'
+      ? ((el as { strokeColor?: string }).strokeColor ?? defaultStrokeColor(el))
+      : shape.stroke;
+  const paint = handDrawnElementPaint(el, finish, fill, backdrop);
   if (!paint) return null;
   const body = {
-    fill: shape.fill,
-    stroke: shape.stroke,
+    fill,
+    // A line too pale to read on its fill is drawn in a stronger shade (handDrawnInk), as on the canvas.
+    stroke: handDrawnInk(line, fill),
     strokePx: paint.strokePx,
     dash: paint.dash,
   };

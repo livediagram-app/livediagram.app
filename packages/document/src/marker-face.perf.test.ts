@@ -36,7 +36,10 @@ describe('marker face budgets', { timeout: PERF_TEST_TIMEOUT_MS }, () => {
   it('a concept graphic stays under 2 ms (x10 for CI and coverage)', () => {
     for (const kind of ['layer-stack', 'pyramid', 'chevrons', 'cycle', 'hub', 'onion'] as const) {
       const el = { ...createShape(kind, 0, 0), id: 'budget' };
-      expect(fastest(() => svgBoxed(el, { tabFinish: 'marker' }), 3, 10), kind).toBeLessThan(cpuBudgetMs(20));
+      expect(
+        fastest(() => svgBoxed(el, { tabFinish: 'marker' }), 3, 10),
+        kind,
+      ).toBeLessThan(cpuBudgetMs(20));
     }
   });
 });

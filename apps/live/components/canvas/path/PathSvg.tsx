@@ -35,8 +35,8 @@ export function PathSvg({
   const d = pathElementD(element, { x: 0, y: 0 });
   const fillRule = isCompoundPath(element) ? 'evenodd' : undefined;
   // A path follows its tab's finish (docs/specs/008-canvas/finish.md "Polygons and paths"): under Sketch and Marker
-  // the element's SketchOverlay draws its line by hand and this keeps only its fill; under Professional an unset
-  // line is Thin.
+  // the element's SketchOverlay draws it (fill, shading and line) and this keeps only its hit line; under
+  // Professional an unset line is Thin.
   const finish = useElementFinish(undefined);
   const handDrawn = isHandDrawn(finish);
   const width = polygonStrokePx({ strokeWidth: element.strokeWidth }, finish);
@@ -56,7 +56,7 @@ export function PathSvg({
         <path
           {...anim.mainProps}
           d={d}
-          fill={filled ? fill : 'none'}
+          fill={filled && !handDrawn ? fill : 'none'}
           fillRule={fillRule}
           stroke={handDrawn ? 'none' : stroke}
           strokeWidth={width}

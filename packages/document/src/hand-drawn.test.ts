@@ -22,9 +22,13 @@ describe('handDrawnElementPaint', () => {
     expect(handDrawnElementPaint(box(), 'professional', '#fff')).toBeNull();
   });
 
-  it('leaves a sticky as paper under Marker', () => {
+  it('keeps a sticky as paper under Marker, unoutlined, but coloured in', () => {
     const sticky = { ...createSticky(0, 0), id: 's' };
-    expect(handDrawnElementPaint(sticky, 'marker', '#fef08a')).toBeNull();
+    const paint = handDrawnElementPaint(sticky, 'marker', '#fef08a');
+    if (paint?.drawing.pen !== 'marker') throw new Error('expected marker');
+    expect(paint.drawing.ink).toEqual(['', '']);
+    expect(paint.drawing.solid).not.toBe('');
+    expect(paint.drawing.streaks[0]).not.toBe('');
     expect(handDrawnElementPaint(sticky, 'sketch', '#fef08a')).not.toBeNull();
   });
 
@@ -39,7 +43,8 @@ describe('handDrawnElementPaint', () => {
     expect(handDrawnElementPaint(box({ strokeWidth: 'none' }), 'marker', '#fff')?.strokePx).toBe(0);
   });
 
-  it('colours a standing shape in, and keeps a backdrop’s or see-through fill plain', () => {
+  // Marker colours a backdrop in too (finish.md "Marker"): one shape left solid beside a coloured one read as missed.
+  it('colours a standing shape and a backdrop in, and keeps a see-through fill plain', () => {
     const coloured = handDrawnElementPaint(box(), 'marker', '#dbeafe');
     if (coloured?.drawing.pen !== 'marker') throw new Error('expected marker');
     expect(coloured.drawing.solid).not.toBe('');
@@ -47,7 +52,7 @@ describe('handDrawnElementPaint', () => {
     const backdrop = handDrawnElementPaint(box(), 'marker', '#dbeafe', true);
     if (backdrop?.drawing.pen !== 'marker') throw new Error('expected marker');
     expect(backdrop.drawing.solid).not.toBe('');
-    expect(backdrop.drawing.streaks).toEqual(['', '']);
+    expect(backdrop.drawing.streaks[0]).not.toBe('');
     const clear = handDrawnElementPaint(box(), 'marker', 'transparent');
     if (clear?.drawing.pen !== 'marker') throw new Error('expected marker');
     expect(clear.drawing.solid).toBe('');
@@ -169,9 +174,11 @@ describe('a Marker tab in the export', () => {
     expect(svg).toMatch(/fill-opacity="0\.86"/);
   });
 
-  it('keeps a sticky as paper', () => {
+  it('keeps a sticky as paper, coloured in with no outline', () => {
     const svg = renderElementsToSvg(tab([{ ...createSticky(0, 0), id: 's' }]));
-    expect(svg).not.toContain('data-finish="marker"');
+    const body = /<g [^>]*data-finish="marker">[\s\S]*?<\/g>/.exec(svg)?.[0] ?? '';
+    expect(body).toMatch(/stroke-opacity="0\.07"/);
+    expect(body).not.toMatch(/stroke-opacity="0\.86"/);
   });
 
   it('keeps a backdrop solid, as under Sketch', () => {

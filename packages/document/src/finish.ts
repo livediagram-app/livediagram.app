@@ -12,7 +12,6 @@ import type { BorderStroke } from './border-style';
 import { DEFAULT_BORDER_STROKE } from './border-style';
 import { SELF_PAINTING_SHAPES } from './colors';
 import type { Element } from './index';
-import { shapeGeometry } from './shape-geometry';
 
 export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
 
@@ -121,6 +120,44 @@ export function finishFaceShadows(finish: Finish): boolean {
   return finish === 'flexible' || finish === 'sketch';
 }
 
+// The corner each kind is created with (shape-factory.ts): a stored default, not a pick, so it follows the finish
+// like an unset corner. A test holds this to the factory (finish.test.ts).
+export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
+  banner: 'lg',
+  callout: 'md',
+  card: 'md',
+  'pointer-note': 'md',
+  'diagram-key': 'md',
+  stack: 'md',
+  boundary: 'md',
+  'stat-row': 'md',
+  'site-header': 'md',
+  'mode-button': 'lg',
+  'session-button': 'lg',
+  reveal: 'lg',
+  picker: 'lg',
+  'reaction-pad': 'lg',
+  estimate: 'lg',
+  temperature: 'lg',
+  'idea-box': 'lg',
+  'qa-board': 'lg',
+  agenda: 'lg',
+  decision: 'lg',
+  'roll-call': 'lg',
+};
+
+/** An element's own corner as its finish reads it: a corner picked on it wins, but under Professional the corner
+ *  its kind is created with (FACTORY_CORNERS) reads as unset, so a panel or a banner goes square like a box. */
+export function finishOwnCorner<R>(
+  el: { shape?: string; borderRadius?: R },
+  finish: Finish,
+): R | undefined {
+  if (el.borderRadius === undefined) return undefined;
+  if (finish === 'professional' && (el.borderRadius as unknown) === FACTORY_CORNERS[el.shape ?? ''])
+    return undefined;
+  return el.borderRadius;
+}
+
 /** A face's own rectangle's corner (a card, a panel, a band, a chip) in its finish: square under Professional. */
 export function finishFaceCornerPx(px: number, finish: Finish): number {
   return finish === 'professional' ? Math.min(PROFESSIONAL_CORNER_PX, px) : px;
@@ -133,8 +170,12 @@ export function faceFinishOf(
   el: { type: string; shape?: string; iconId?: string; borderRadius?: unknown },
   finish: Finish,
 ): Finish | undefined {
-  if (finish === 'flexible' || !finishSplitsFace(el)) return undefined;
-  if (finish === 'professional' && el.borderRadius !== undefined) return undefined;
+  if (finish === 'flexible') return undefined;
+  // A sticker's plate is squared under Professional and drawn in marker under Marker; Sketch wobbles it with its art.
+  if (el.type === 'shape' && el.shape === 'sticker')
+    return finish === 'sketch' ? undefined : finish;
+  if (!finishSplitsFace(el)) return undefined;
+  if (finish === 'professional' && finishOwnCorner(el, finish) !== undefined) return undefined;
   return finish;
 }
 
@@ -242,19 +283,18 @@ export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined {
   return finish === 'professional' ? 'angled' : undefined;
 }
 
-// The plain boxes whose fill Sketch hatches; every drawn silhouette but the frame hatches too. Cards, panels,
-// buttons, records, pages, lanes and frames keep a solid fill under a sketched edge: hatching behind their
-// faces and rows makes them hard to read.
-const HATCHED_BOXES = new Set<string>(['square', 'circle', 'stadium', 'mind-node']);
-
-/** Whether a shape's kind takes Sketch hatching at all (plain boxes and drawn silhouettes, not frames or
- *  self-painting faces), whatever its fill and whatever sits on it. */
+/** Whether a shape's kind takes Sketch's hatching and Marker's colouring at all, whatever its fill and whatever sits
+ *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards, panels, records, pages, lanes and
+ *  frames, docs/specs/008-canvas/finish.md), not a self-painting face, whose own parts are its drawing. The shading is
+ *  light enough to read words over; what sits on a shape (a backdrop) still keeps it solid. */
 export function finishHatchesKind(element: Element): boolean {
   if (element.type !== 'shape') return false;
-  if (SELF_PAINTING_SHAPES.has(element.shape)) return false;
-  const drawn = element.shape !== 'frame' && shapeGeometry(element.shape) !== null;
-  return HATCHED_BOXES.has(element.shape) || drawn;
+  return !SELF_PAINTING_SHAPES.has(element.shape) && !UNSHADED_BODIES.has(element.shape);
 }
+
+// Bodies whose face paints its own panel over most of them (a sequence diagram's lifeline area): shading them would
+// show only round the edges.
+const UNSHADED_BODIES = new Set<string>(['sequence']);
 
 /** Whether a hand-drawn element's fill (`fill`, already resolved) is shaded (Sketch's hatching, Marker's colouring in)
  *  rather than solid:

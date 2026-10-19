@@ -36,7 +36,8 @@
 }
 
 /* No hover lift: a part that rises under the pointer stays put. */
-[data-face-finish='professional'] :is([class*='hover:-translate-y'], [class*='hover:translate-y']):hover,
+[data-face-finish='professional']
+  :is([class*='hover:-translate-y'], [class*='hover:translate-y']):hover,
 [data-face-finish='professional']
   :is(.group:hover, .group\/card:hover, .group\/el:hover)
   [class*='group-hover:-translate-y'],
@@ -71,9 +72,26 @@
 [data-face-finish='marker'][data-marker-drawn='frame'] {
   border-color: transparent !important;
 }
-[data-face-finish='marker'] [data-marker-drawn='shape'] {
+[data-face-finish='marker'] [data-marker-drawn='shape'],
+[data-face-finish='marker'][data-marker-drawn='shape'] {
   stroke: transparent !important;
+  border-color: transparent !important;
 }
 [data-face-finish='marker'] [data-marker-drawn='line'] {
   opacity: 0 !important;
+}
+[data-face-finish='marker'] [data-marker-rules~='r'] {
+  border-right-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-rules~='b'] {
+  border-bottom-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-drawn='ring'],
+[data-face-finish='marker'][data-marker-drawn='ring'] {
+  box-shadow: none !important;
+}
+
+/* A sticker's shadow (sticker-markup.ts): a flat or a marker drawing casts none. */
+:is([data-face-finish='professional'], [data-face-finish='marker']) [data-sticker-shadow] {
+  display: none;
 }

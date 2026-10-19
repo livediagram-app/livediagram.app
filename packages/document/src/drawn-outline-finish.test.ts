@@ -32,7 +32,9 @@ describe('polygonStrokePx', () => {
     expect(polygonStrokePx(polygon(), 'flexible')).toBe(2);
     expect(polygonStrokePx(polygon(), 'professional')).toBe(1);
     expect(polygonStrokePx(polygon(), 'marker')).toBe(MARKER_LINE_PX);
-    expect(polygonStrokePx({ ...polygon(), strokeWidth: 'thick' }, 'professional')).toBeGreaterThan(2);
+    expect(polygonStrokePx({ ...polygon(), strokeWidth: 'thick' }, 'professional')).toBeGreaterThan(
+      2,
+    );
   });
 });
 
@@ -60,7 +62,9 @@ describe('a polygon drawn by hand', () => {
   });
 
   it('leaves a pencil stroke and Flexible as drawn', () => {
-    expect(handDrawnElementPaint({ ...polygon(), straightEdges: undefined }, 'sketch', '#fff')).toBeNull();
+    expect(
+      handDrawnElementPaint({ ...polygon(), straightEdges: undefined }, 'sketch', '#fff'),
+    ).toBeNull();
     expect(handDrawnElementPaint(polygon(), 'flexible', '#fff')).toBeNull();
   });
 
@@ -85,12 +89,13 @@ describe('a path drawn by hand', () => {
     id: 'path',
   });
 
-  it('draws its line by hand and shades a closed path, leaving the fill to the path', () => {
+  it('draws its line by hand and shades a closed path over its own fill, holes kept even-odd', () => {
     const sketch = handDrawnElementPaint(path(), 'sketch', '#bae6fd');
     if (sketch?.drawing.pen !== 'pencil') throw new Error('expected pencil');
     expect(sketch.drawing.strokes).not.toBe('');
     expect(sketch.drawing.hatch).not.toBe('');
-    expect(sketch.drawing.solid).toBe('');
+    expect(sketch.drawing.solid).not.toBe('');
+    expect(sketch.drawing.solidEvenOdd).toBe(true);
     const marker = handDrawnElementPaint(path(), 'marker', '#bae6fd');
     if (marker?.drawing.pen !== 'marker') throw new Error('expected marker');
     expect(marker.drawing.streaks.join('')).not.toBe('');
@@ -103,10 +108,11 @@ describe('a path drawn by hand', () => {
     expect(paint.drawing.hatch).toBe('');
   });
 
-  it('exports its fill without its plain line, under the hand-drawn one', () => {
-    const out = svgBoxed(path(), { tabFinish: 'marker' });
+  it('exports as its hand-drawn drawing in place of the plain path', () => {
+    const out = svgBoxed({ ...path(), fillColor: '#fde68a' }, { tabFinish: 'marker' });
     expect(out).toContain('data-finish="marker"');
-    expect(out).toMatch(/<path d="[^"]*" fill="[^"]*" stroke="none"/);
+    expect(out).toContain('fill-rule="evenodd"');
+    expect(out).not.toMatch(/stroke-width="2"/);
     expect(svgBoxed(path(), { tabFinish: 'professional' })).toContain('stroke-width="1"');
   });
 });

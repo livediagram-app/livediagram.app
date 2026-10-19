@@ -31,8 +31,10 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 ### Professional
 
 - **Corners:** an unset corner on a free-corner box draws square (0 px) instead of the kind's default (8 px for a
-  shape, 12 px for a mind node) ([Corner radius](corner-radius.md)). Fixed silhouettes (the stadium's pill, the
-  circle) keep their shape.
+  shape, 12 px for a mind node, 4 px for an image, 10 px for a video) ([Corner radius](corner-radius.md)). Fixed
+  silhouettes (the stadium's pill, the circle, an avatar's circle) keep their shape. The corner a kind is created
+  with (a panel's, a card's, a banner's) is a default, not a pick, so it goes square too; a corner changed on the
+  element wins.
 - **Lines:** an unset border width draws at 1 px (Thin) instead of 2 px; an unset arrow thickness draws at 1 px.
 - **Shadows:** the default soft shadow on boxed shapes and the paper peel under stickies are not drawn. An
   element's own shadow ([Element shadows](element-shadows.md)) still draws.
@@ -63,8 +65,9 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   changes when its size or kind does.
 - **Fills** of shapes keep their solid colour, shaded over with faint diagonal pencil hatching in the outline colour,
   like coloured pencil on paper. The fill never goes away, so a label keeps the contrast it was coloured for on a
-  light or a dark canvas. Stickies, frames, lanes, tables, charts and code blocks take no shading: a note or a
-  container with lines behind its writing is harder to read.
+  light or a dark canvas. Every box with a body of its own is shaded (cards, panels, records, pages, lanes and
+  frames included); stickies, tables and self-painting faces (charts, code blocks, concept graphics) are not, their
+  own parts being their drawing.
 - **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
   centre inside the shape, such as a flowchart key's card under its captions) is not shaded, so what sits on it
   stays readable. Only a shape that stands alone is shaded.
@@ -130,13 +133,14 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
   Marker would come out in fine lines. Medium and wider are drawn as picked, in the same ink.
 - **Fills** of shapes are coloured in: the fill colour laid down in broad, overlapping back-and-forth marker
   strokes, their ends not quite meeting the outline, with the overlaps showing as faint darker streaks. The strokes
-  overlap enough that no gap opens under a label, so a label keeps the contrast it was coloured for. Backdrops
-  (shapes something sits on, as under Sketch), frames, lanes, cards and the other kinds Sketch keeps unshaded keep a
-  solid fill under the marker outline.
+  overlap enough that no gap opens under a label, so a label keeps the contrast it was coloured for. Every box with a
+  body of its own is coloured in, cards, panels, records, pages, lanes and frames included, and so is a shape
+  something sits on: the streaks are light enough to read over, and one shape left solid beside a coloured one read
+  as missed.
 - **Shadows:** a marker drawing casts none, so the default soft shadow on boxes is not drawn. An element's own
   shadow still draws.
 - **Stickies** stay paper: a sheet with its peel, no outline, its writing in marker (a sticky note on a wall is
-  written on with a marker, never outlined).
+  written on with a marker, never outlined), coloured in like any filled body in a deeper shade of its paper.
 - **Lettering:** an element without its own font, on a tab without one, is written in Permanent Marker. The same
   precedence as Sketch: a font picked on the element or the tab wins, Marker picked on the element itself wins over
   the tab's font. A code block keeps its monospace font.
@@ -148,7 +152,8 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Faces: frames and shapes.** What an element draws for itself is drawn in marker where it is a frame or a shape:
   - A **frame** (a Plan card, a column, a panel, a web component's card, any outlined box inside a face at least
     `MARKER_FACE_FRAME_MIN_PX` on both sides) loses its own border and shadow and is outlined in one marker stroke
-    per edge, its fill kept solid behind its words, as a card's body is.
+    per edge, its fill kept solid behind its words. The face's own box (a panel's, a banner's, a timer's), whichever
+    part paints it, is coloured in as a shape's body is.
   - A **shape** (a concept graphic's band, tier, disc, ring or arc, a chart's bar, slice or ring, a Sankey's
     node) is coloured in and outlined in marker in its own colour: the outline in its stroke, or its fill when it
     has none, the colouring in streaks over its solid fill. A ring or arc drawn as a line is one bold marker
@@ -160,6 +165,22 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Not affected:** pencil, pen and highlighter strokes, images, photos inside a face, and a tab window's content (it keeps the
   finish of the tab it shows).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
+
+### Every hand-drawn finish
+
+- **Pale lines:** a hand-drawn line too close to its own fill to read (a card's or a page's hairline grey on white,
+  under a contrast ratio of 1.8) is drawn in a stronger shade of it, pulled 45% toward black on a light fill and
+  toward white on a dark one; a body with no line of its own (a sticky) is coloured in a deeper shade of its fill.
+- **Images** stay photos: under Sketch and Marker a hand-drawn line goes round one (a circle round an avatar), in
+  its own line colour or the default ink; its picture is never shaded or wobbled.
+- **Tables:** under Marker a table's grid is drawn as whole rules, one marker stroke per row and column line. A
+  spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame.
+
+### Stickers
+
+A sticker's emoji or word is art and is drawn as it is in every finish; its plate (the white die-cut tile, a badge's
+coloured pill) follows the finish like any frame: square and flat under Professional, outlined in marker with no
+shadow under Marker (a badge's pill coloured in), wobbled with its art under Sketch. Exports agree.
 
 ### Polygons and paths
 
@@ -200,6 +221,11 @@ Draws exactly as livediagram did before finishes existed.
 ## Where it shows
 
 - **The canvas and every export** (SVG, PNG, PDF, thumbnails, the Map, live images) draw each element in its finish.
+- **Plan surfaces:** a board, view or sheet, on the canvas, filling its tab or maximised, and a Dashboard tab's page
+  (drawn over the canvas, outside any element) take their tab's finish and lettering. One that fills its tab or the
+  screen is the page itself: its contents follow the finish, its own background stays plain. Sketch's handwriting is
+  lifted to the UI face's x-height on these compact surfaces; Marker's lettering is drawn at its own size (it has no
+  true lowercase, so brought down it read too small).
 - **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
   glyphs are square and fine, under Sketch they are drawn wobbly and doubled, under Marker they are drawn bold with round ends. Full-colour art (technology icons,
   stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.

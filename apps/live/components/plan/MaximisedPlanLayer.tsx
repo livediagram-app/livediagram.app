@@ -422,7 +422,7 @@ export function MaximisableSlot({
 function OverFace({ id, over, children }: { id: string; over: boolean; children: ReactNode }) {
   const finish = useFaceFinish();
   const ref = useRef<HTMLDivElement>(null);
-  useFaceFinishPass(ref, over ? finish : undefined, id);
+  useFaceFinishPass(ref, over ? finish : undefined, id, { page: true });
   return (
     <div
       ref={ref}

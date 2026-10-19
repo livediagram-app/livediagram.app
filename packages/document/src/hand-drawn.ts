@@ -6,7 +6,11 @@ import { finishDrawsBodyByHand, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { MARKER_INK_OPACITY } from './marker';
 import { markerArrow, markerElementPaint } from './marker-element';
-import { handDrawnPathPaint, handDrawnPolygonPaint } from './drawn-outline-finish';
+import {
+  handDrawnImagePaint,
+  handDrawnPathPaint,
+  handDrawnPolygonPaint,
+} from './drawn-outline-finish';
 import { sketchArrow, sketchElementPaint } from './sketch-element';
 
 /** An element's hand-drawn body: the drawing (`drawing.pen` says whose), and the width and dash its outline takes. */
@@ -22,9 +26,12 @@ export function handDrawnElementPaint(
   // Something sits on this shape (sketch-backdrop.ts): a solid fill, never shading.
   backdrop = false,
 ): HandDrawnPaint | null {
+  // A sticky's paper is never redrawn by Marker (finishDrawsBodyByHand), but it is coloured in.
+  if (finish === 'marker' && el.type === 'sticky') return markerElementPaint(el, fill, backdrop);
   if (!finishDrawsBodyByHand(finish, el.type)) return null;
   if (el.type === 'freehand') return handDrawnPolygonPaint(el, finish, fill);
   if (el.type === 'path') return handDrawnPathPaint(el, finish, fill);
+  if (el.type === 'image') return handDrawnImagePaint(el, finish);
   return finish === 'marker'
     ? markerElementPaint(el, fill, backdrop)
     : sketchElementPaint(el, finish, fill, backdrop);

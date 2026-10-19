@@ -311,6 +311,62 @@ has words or photos. `svgTabWindow(..., sketched, fontFamily)` puts only its hai
 `svgSketchArtDefs` emits the art filter when an icon or sticker is sketched and the face filter when a split face
 is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the element's face.
 
+### Faces in their finish (spec "Faces", "Faces: frames and shapes")
+
+- `finish.ts`: `faceFinishOf(el, finish)` (the finish a face's own parts follow: undefined for Flexible, a face that
+  is only its label, or Professional on an element whose own corner wins), `finishFaceShadows(finish)` (Flexible and
+  Sketch), `finishFaceCornerPx(px, finish)`, `FACTORY_CORNERS` (each kind's created corner) and
+  `finishOwnCorner(el, finish)` (a factory corner reads as unset under Professional), read by every body-corner site
+  (`BoxedElementView`, `element-variant`, `svg-render-border`, `sketch-element`).
+- `face-finish.ts`: `isPillRect` (`FACE_PILL_SLACK_PX`), `faceAttrs`.
+- `marker-face.ts`: `markerFacePart(shape, paint, face, seed, index)` describes a part (`rect`, `ellipse`, `path`,
+  `polygon`, `polyline`) and returns its marker `<g data-marker-part>` or null; `facePartRole` names it `frame`,
+  `shape` or `line` from `MARKER_FACE_FRAME_MIN_PX` (40), `MARKER_FACE_SHAPE_MIN_PX` (24), `MARKER_FACE_DISC_MIN_PX`
+  (14), `MARKER_FACE_SHAPE_THIN_PX` (6), `MARKER_FACE_BACKDROP_SHARE` (0.6, rectangles only),
+  `MARKER_FACE_BODY_SLACK_PX` (6, the face's own box: coloured in when filled), a pill or a dashed line is null.
+  Colour: a line its stroke; a part with no line a deeper shade of its fill (`markerFrameInk`,
+  `MARKER_FACE_FRAME_INK_SHIFT` 0.45) streaked at `MARKER_FACE_STREAK_OPACITY` (0.2); a frame `markerFrameInk` at
+  `MARKER_FACE_FRAME_PX` (2.5). `handDrawnInk(stroke, fill)` draws a line under `HAND_DRAWN_INK_MIN_CONTRAST` (1.8)
+  in `markerFrameInk`, used by every hand-drawn body (`SketchOverlay`, `svgSketchedBody`). At most
+  `MARKER_FACE_MAX_PARTS` (120) parts; `MARKER_FACE_RULE_MIN_PX` (2.5) admits an SVG `<line>`.
+- Export: `svg-render-face-finish.ts` `svgProfessionalFace(markup)` (rect corners off unless a pill or
+  `data-finish-keep`, `stroke-width="2"` to 1) and `svgMarkerFace(markup, id, face)` (clips, definitions,
+  foreignObjects and the marker body held; each part kept with its line removed, its marker after it, in its own
+  transform), called by `svgBoxed` by `faceFinishOf`.
+- Canvas: the wrapper carries `data-face-finish` and `FaceFinishProvider` (`useFaceFinish`, `useFaceShadow` for
+  inline shadows); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
+  flattens (`--tw-shadow`, hover `--tw-translate-y`) and thins (`border-2`, `stroke-width="2"`) under Professional and
+  hides each redrawn part's own line under Marker (`[data-marker-drawn]`, `[data-marker-rules]`).
+  `useFaceFinishPass(rootRef, finish, id)` re-takes on settle (`watchUntilSettled` with `ignore` for its own
+  changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
+  positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
+  `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
+- A Plan body over the canvas (`MaximisableSlot`'s `OverFace`) carries `data-face-finish`, its own pass and a
+  stable-tree `SketchFace` (`keepTree`).
+- `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `handDrawnPathPaint`
+  (line and shading only; a combined path is never shaded), `imageCornerPx`, `handDrawnImagePaint` (an edge round
+  the picture), reached through `handDrawnElementPaint`. Marker's sticky is a colouring drawing over its paper.
+
+- Sketch's face shading: `sketchFacePart` (marker-face.ts) hatches a face's shapes (`SKETCH_FACE_HATCH_OPACITY` 0.4,
+  `SKETCH_FACE_HATCH_PX` 1.5 at most, scaled by the fill's chroma) through the same pass (`pen` `'pencil'`), and
+  `svgMarkerFace(..., 'pencil')` before `svgSketchFace` in the export. Sketch hides a live face's fills, so the pass
+  sets `data-sketch-measure` (sketch-face.css stands down) while it reads them.
+- Marks a face may set: `data-marker-shape` (a part drawn as a shape whatever its size or roundness: a progress bar's
+  track and fill, a mood bar), `data-marker-fill` (its colour when painted with a gradient), `data-marker-grid` (a
+  table: cell borders joined into whole rules, `data-marker-rules` hiding the pieces). An inset hairline ring
+  (`box-shadow: c 0 0 0 Npx inset`) counts as a frame's line (`data-marker-drawn="ring"` drops it).
+- The face's own box (`MARKER_FACE_BODY_SLACK_PX`) is coloured in once, its ink at `z-index: -1` in a box the pass
+  isolates (`data-marker-isolated`), and never when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
+  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`: OverFace and the
+  Dashboard page).
+- Dashboard (`components/plan/dashboard/DashboardPage.tsx`): the page provides `FaceFinishProvider` and
+  `data-face-finish` from `resolveFinish(undefined, tab.finish)`, letters itself with
+  `planFontStyle(resolveFontStack(elementFontId({}, tab.font, tab.finish)))`, and runs the pass as a page.
+- `lib/plan-font.ts`: only Sketch's Caveat takes `fontSizeAdjust: ex-height PLAN_HANDWRITING_EX`.
+- Stickers: `sticker-markup.ts` marks the shadow `data-sticker-shadow` and the emoji art `data-finish-keep`;
+  `faceFinishOf` returns Professional and Marker for a sticker (Sketch wobbles it whole); face-finish.css and
+  `svgProfessionalFace` / `svgMarkerFace` drop the shadow.
+
 ### Menus and dialog
 
 - `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`

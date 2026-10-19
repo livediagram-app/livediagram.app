@@ -115,12 +115,12 @@ describe('the preview resolvers', () => {
       resolveEmojiArt,
     } = previewResolvers(new Map([['👍', art]]));
     expect(sticker('emoji-thumbs-up')?.markup).toContain(
-      '<svg x="23" y="23" width="54" height="54" viewBox="0 0 36 36"><path d="M0 0h36v36z"/></svg>',
+      '<svg x="23" y="23" width="54" height="54" viewBox="0 0 36 36" data-finish-keep=""><path d="M0 0h36v36z"/></svg>',
     );
     expect(resolveIconArt('emoji-thumbs-up')).toEqual({
       colored: true,
       markup:
-        '<svg x="2" y="2" width="20" height="20" viewBox="0 0 36 36"><path d="M0 0h36v36z"/></svg>',
+        '<svg x="2" y="2" width="20" height="20" viewBox="0 0 36 36" data-finish-keep=""><path d="M0 0h36v36z"/></svg>',
     });
     // An emoji not fetched stays the disc; anything else draws as ever.
     expect(sticker('emoji-fire')?.markup).toContain('>emoji<');
