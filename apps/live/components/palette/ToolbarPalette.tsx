@@ -62,6 +62,7 @@ import {
 import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
+import { setPalettePopoverOpen } from '@/lib/palette-popover-open';
 import { useBarLabels } from './useBarLabels';
 import { useStripCrowded } from './useStripCrowded';
 import { SessionBrowse } from './session-category';
@@ -176,6 +177,12 @@ export function ToolbarPalette(props: Props) {
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   const moreOpen = more.open;
+  // The template start steps aside while a popover hangs from the strip (palette-popover-open).
+  const popoverOpen = bar.popover.open || more.open || search.open;
+  useEffect(() => {
+    setPalettePopoverOpen(popoverOpen);
+    return () => setPalettePopoverOpen(false);
+  }, [popoverOpen]);
   const setMoreOpen = more.setOpen;
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
     usePaletteCatalogue({
@@ -437,9 +444,7 @@ export function ToolbarPalette(props: Props) {
       // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
       className={`pointer-events-none absolute inset-x-0 top-3 ${
-        bar.popover.open || more.open || search.open
-          ? 'z-[var(--z-popover)]'
-          : 'z-[var(--z-toolbar)]'
+        popoverOpen ? 'z-[var(--z-popover)]' : 'z-[var(--z-toolbar)]'
       } flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
