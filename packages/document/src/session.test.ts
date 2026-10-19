@@ -95,6 +95,25 @@ describe('isVotable', () => {
     }
   });
 
+  // A readout shows what the board says and a checklist is a to-do list: neither is an idea to rank
+  // (the Retrospective's stat row and action checklists sit on its Stickies layer).
+  it('rejects the readouts and checklists', () => {
+    for (const kind of [
+      'stat-row',
+      'progress-bar',
+      'progress-ring',
+      'pie-chart',
+      'bar-chart',
+      'line-chart',
+      'sankey',
+      'legend',
+      'diagram-key',
+      'checklist',
+    ] as const) {
+      expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
+    }
+  });
+
   it('rejects frames (section backdrops) and non-content kinds', () => {
     expect(isVotable(shape('f', { shape: 'frame' }))).toBe(false);
     expect(isVotable({ id: 't', type: 'text', x: 0, y: 0, width: 1, height: 1, label: 'x' })).toBe(

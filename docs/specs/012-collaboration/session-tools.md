@@ -224,6 +224,11 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   collaboration panels (estimate, temperature, done check, idea box, Q&A, agenda,
   roll call, decision, quiz), whose own presses answer them, so a dot would give
   one tap two meanings.
+  Nor the readouts (stat row, pie, bar and line charts, Sankey, progress bar and
+  ring, legend, diagram key) or a checklist: a readout shows what the board says
+  and a checklist is a to-do list, like the action panel, so neither is an idea
+  to rank. A template's numbers and checklists can then sit on the Stickies layer
+  (usable when the board is locked) without picking up a stepper.
 - **Casting**: while `vote.active`, pressing a votable element places one of
   your dots (`BoxedElementView` intercepts the pointer-down before
   select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.

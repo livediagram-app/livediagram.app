@@ -16,9 +16,18 @@ afterEach(() => {
 });
 
 describe('SignInPrompt', () => {
+  // The documents are saved on the server; only the guest id lives in the browser, so the bar never says
+  // "Browser only" beside a card that reads Private.
+  it('says the bar form is about who can open the documents, never Browser only', () => {
+    render(<SignInPrompt bar />);
+    expect(screen.getByText(/^No sign-in here\.$/)).toBeTruthy();
+    expect(screen.getByText('Only this browser can open your documents.')).toBeTruthy();
+    expect(screen.queryByText(/Browser only/)).toBeNull();
+  });
+
   it('shows the prompt until dismissed, then the fallback, and remembers it', () => {
     render(<SignInPrompt fallback={<span>fallback</span>} />);
-    expect(screen.getByText('Documents saved to this browser')).toBeTruthy();
+    expect(screen.getByText('No sign-in on this deployment')).toBeTruthy();
     act(() => {
       fireEvent.click(screen.getByRole('button'));
     });
@@ -29,7 +38,7 @@ describe('SignInPrompt', () => {
   it('shows the fallback straight away for a dismissal made earlier', () => {
     window.localStorage.setItem(KEY, 'true');
     render(<SignInPrompt fallback={<span>fallback</span>} />);
-    expect(screen.queryByText('Documents saved to this browser')).toBeNull();
+    expect(screen.queryByText('No sign-in on this deployment')).toBeNull();
     expect(screen.getByText('fallback')).toBeTruthy();
   });
 });

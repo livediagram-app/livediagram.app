@@ -6,8 +6,8 @@
 // supports:
 //
 //   - Clerk disabled, any session
-//        → "Documents are saved to this browser only — sign-in isn't
-//          enabled on this deployment."
+//        → "No sign-in on this deployment": the documents are saved, but
+//          only this browser's guest id can open them.
 //
 //   - Clerk enabled, signed out
 //        → "Sign in to keep your documents across devices." + CTA to
@@ -158,11 +158,14 @@ function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
   return (
     <PromptShell
       bar={bar}
-      title={bar ? 'Browser only' : 'Documents saved to this browser'}
+      // The documents are saved on the server ("Private" on the card), but without sign-in they belong to this
+      // browser's guest id: what clearing site data loses is the way back to them. Never "Browser only", which is
+      // what a This Browser document is.
+      title={bar ? 'No sign-in here' : 'No sign-in on this deployment'}
       body={
         bar
-          ? 'Clearing site data deletes it.'
-          : "Sign-in isn't enabled on this deployment, so documents stay local to this browser. Clear your storage and they're gone."
+          ? 'Only this browser can open your documents.'
+          : 'Your documents are saved, but only this browser can open them. Clear its site data and you lose them.'
       }
       onDismiss={dismiss}
     />
