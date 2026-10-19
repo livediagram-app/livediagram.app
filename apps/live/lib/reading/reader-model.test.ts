@@ -47,6 +47,16 @@ describe('loadReader', () => {
       expect.objectContaining({ device: 'webgpu', dtype: 'q4' }),
     );
   });
+
+  // docs/specs/003-system-architecture/console-logging.md: ONNX Runtime's warnings came out as console errors.
+  it('keeps the runtime to its errors on every engine', async () => {
+    await loadReader(() => {}, 'wasm');
+    await loadReader(() => {}, 'webgpu', { f16: true });
+    await loadReader(() => {}, 'webgpu', { f16: false });
+    for (const [, options] of fromPretrained.mock.calls as unknown as [string, object][])
+      expect(options).toMatchObject({ session_options: { logSeverityLevel: 3 } });
+    expect(fromPretrained).toHaveBeenCalledTimes(3);
+  });
 });
 
 // A model that answers its prompt's five token ids and then three of its own, and a processor that
