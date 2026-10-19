@@ -142,156 +142,164 @@ export function SheetChartsLayer({ fontFamily }: { fontFamily?: string | undefin
     <div
       ref={layerRef}
       data-sheet-charts
+      // The layer lives inside role="grid", which may own only rows: the charts sit in one row and cell of their own.
+      role="row"
+      aria-label="Charts"
       className="pointer-events-none absolute inset-0 z-[6]"
       // A press on a chart is the chart's, never the cells' or the canvas's.
       onPointerDown={(e) => {
         if ((e.target as HTMLElement).closest('[data-sheet-chart]')) e.stopPropagation();
       }}
     >
-      {charts.map((el) => {
-        const at = el.sheetAnchor!;
-        const d = drag?.id === el.id ? drag : null;
-        const pos = d?.kind === 'move' ? movedAnchor(at, d.dx, d.dy) : at;
-        const size = d?.kind === 'resize' ? resizedChart(el, d.dx, d.dy) : el;
-        // The element itself unless it is being resized: a new object every render (a scroll frame, a canvas drag)
-        // would have its chart read its range again each time.
-        const shown = d?.kind === 'resize' ? { ...el, width: size.width, height: size.height } : el;
-        const isSelected = editable && selected === el.id;
-        return (
-          <div
-            key={el.id}
-            data-sheet-chart={el.id}
-            role={editable ? 'group' : 'img'}
-            aria-label={`${chartName(el)} chart`}
-            tabIndex={editable ? 0 : -1}
-            // Escape lets a selected chart go before it restores a maximised Sheet.
-            data-keeps-escape={isSelected ? '' : undefined}
-            className={`absolute outline-none ${drawn ? '' : 'rounded-lg border'} ${editable ? 'pointer-events-auto cursor-move' : ''}`}
-            style={{
-              left: pos.x - c.scroll.left,
-              top: pos.y - c.scroll.top,
-              width: size.width,
-              height: size.height,
-              ...(drawn ? ringStyle(isSelected, c.palette) : cardStyle(isSelected, c.palette)),
-            }}
-            // Taken on the way down, before the chart view under it (whose canvas gestures would drag or select it on
-            // the canvas), except a press on the frame's own controls or on the chart's indicators.
-            onPointerDownCapture={(e) => {
-              if (!framePress(e)) return;
-              e.stopPropagation();
-              begin(e, el, 'move');
-            }}
-            onPointerUpCapture={(e) => viewPress(e) && e.stopPropagation()}
-            onClickCapture={(e) => viewPress(e) && e.stopPropagation()}
-            onDoubleClickCapture={(e) => framePress(e) && e.stopPropagation()}
-            onContextMenuCapture={(e) => {
-              if (!framePress(e)) return;
-              e.stopPropagation();
-              if (!editable) return;
-              // The canvas's element menu for this chart, at the pointer (as a right-click on the canvas opens it).
-              e.preventDefault();
-              setSelected(el.id);
-              openElementMenu(el.id, new DOMRect(e.clientX, e.clientY - MENU_GAP_PX, 0, 0));
-            }}
-            aria-keyshortcuts={editable ? CHART_KEYS : undefined}
-            aria-description={editable ? CHART_KEYS_HELP : undefined}
-            onKeyDown={(e) => {
-              if (!editable || e.target !== e.currentTarget) return;
-              // A selected chart's keys are its own: none reaches the grid or the canvas's shortcuts (a typed r
-              // would add a rectangle), except undo and redo.
-              if (isUndoChord(e)) return;
-              e.stopPropagation();
-              const step = arrowStep(e.key, e.shiftKey ? KEY_STEP_LARGE_PX : 1);
-              if (e.key === 'Delete' || e.key === 'Backspace') {
-                e.preventDefault();
-                remove(el.id);
-              } else if (e.key === 'Escape') {
-                e.preventDefault();
-                setSelected(null);
-                c.focusGrid();
-              } else if (step) {
-                // Arrows move it, Alt and the arrows resize it (the corner handle's keyboard way): one undo step each.
-                e.preventDefault();
-                commit(el.id, (cur) =>
-                  e.altKey
-                    ? resizedChart(cur, step.dx, step.dy)
-                    : cur.sheetAnchor
-                      ? { sheetAnchor: movedAnchor(cur.sheetAnchor, step.dx, step.dy) }
-                      : null,
-                );
-              }
-            }}
-            onBlur={(e) => {
-              const next = e.relatedTarget;
-              if (next instanceof Node && e.currentTarget.contains(next)) return;
-              setSelected((s) => (s === el.id ? null : s));
-            }}
-            onFocus={() => editable && setSelected(el.id)}
-          >
-            {/* Drawn by the canvas's own element view when there is a canvas (sheet-chart-renderer): its style,
-                shadow, animations and indicators as on the canvas. It takes no pointer; this frame does. */}
+      <div role="gridcell" className="absolute inset-0">
+        {charts.map((el) => {
+          const at = el.sheetAnchor!;
+          const d = drag?.id === el.id ? drag : null;
+          const pos = d?.kind === 'move' ? movedAnchor(at, d.dx, d.dy) : at;
+          const size = d?.kind === 'resize' ? resizedChart(el, d.dx, d.dy) : el;
+          // The element itself unless it is being resized: a new object every render (a scroll frame, a canvas drag)
+          // would have its chart read its range again each time.
+          const shown =
+            d?.kind === 'resize' ? { ...el, width: size.width, height: size.height } : el;
+          const isSelected = editable && selected === el.id;
+          return (
             <div
-              className={`pointer-events-none absolute inset-0 ${drawn ? '' : 'overflow-hidden rounded-lg'}`}
-            >
-              <SheetLinkedChart element={shown}>
-                {(live) =>
-                  drawn ? (
-                    drawn(live, !!ctx?.editable)
-                  ) : (
-                    <DataChartView
-                      element={live}
-                      fontFamily={fontFamily}
-                      textColor={c.palette.text}
-                      palette={ctx?.chartPalette}
-                    />
-                  )
+              key={el.id}
+              data-sheet-chart={el.id}
+              role={editable ? 'group' : 'img'}
+              aria-label={`${chartName(el)} chart`}
+              tabIndex={editable ? 0 : -1}
+              // Escape lets a selected chart go before it restores a maximised Sheet.
+              data-keeps-escape={isSelected ? '' : undefined}
+              className={`absolute outline-none ${drawn ? '' : 'rounded-lg border'} ${editable ? 'pointer-events-auto cursor-move' : ''}`}
+              style={{
+                left: pos.x - c.scroll.left,
+                top: pos.y - c.scroll.top,
+                width: size.width,
+                height: size.height,
+                ...(drawn ? ringStyle(isSelected, c.palette) : cardStyle(isSelected, c.palette)),
+              }}
+              // Taken on the way down, before the chart view under it (whose canvas gestures would drag or select it on
+              // the canvas), except a press on the frame's own controls or on the chart's indicators.
+              onPointerDownCapture={(e) => {
+                if (!framePress(e)) return;
+                e.stopPropagation();
+                begin(e, el, 'move');
+              }}
+              onPointerUpCapture={(e) => viewPress(e) && e.stopPropagation()}
+              onClickCapture={(e) => viewPress(e) && e.stopPropagation()}
+              onDoubleClickCapture={(e) => framePress(e) && e.stopPropagation()}
+              onContextMenuCapture={(e) => {
+                if (!framePress(e)) return;
+                e.stopPropagation();
+                if (!editable) return;
+                // The canvas's element menu for this chart, at the pointer (as a right-click on the canvas opens it).
+                e.preventDefault();
+                setSelected(el.id);
+                openElementMenu(el.id, new DOMRect(e.clientX, e.clientY - MENU_GAP_PX, 0, 0));
+              }}
+              aria-keyshortcuts={editable ? CHART_KEYS : undefined}
+              aria-description={editable ? CHART_KEYS_HELP : undefined}
+              onKeyDown={(e) => {
+                if (!editable || e.target !== e.currentTarget) return;
+                // A selected chart's keys are its own: none reaches the grid or the canvas's shortcuts (a typed r
+                // would add a rectangle), except undo and redo.
+                if (isUndoChord(e)) return;
+                e.stopPropagation();
+                const step = arrowStep(e.key, e.shiftKey ? KEY_STEP_LARGE_PX : 1);
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                  e.preventDefault();
+                  remove(el.id);
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setSelected(null);
+                  c.focusGrid();
+                } else if (step) {
+                  // Arrows move it, Alt and the arrows resize it (the corner handle's keyboard way): one undo step each.
+                  e.preventDefault();
+                  commit(el.id, (cur) =>
+                    e.altKey
+                      ? resizedChart(cur, step.dx, step.dy)
+                      : cur.sheetAnchor
+                        ? { sheetAnchor: movedAnchor(cur.sheetAnchor, step.dx, step.dy) }
+                        : null,
+                  );
                 }
-              </SheetLinkedChart>
+              }}
+              onBlur={(e) => {
+                const next = e.relatedTarget;
+                if (next instanceof Node && e.currentTarget.contains(next)) return;
+                setSelected((s) => (s === el.id ? null : s));
+              }}
+              onFocus={() => editable && setSelected(el.id)}
+            >
+              {/* Drawn by the canvas's own element view when there is a canvas (sheet-chart-renderer): its style,
+                shadow, animations and indicators as on the canvas. It takes no pointer; this frame does. */}
+              <div
+                className={`pointer-events-none absolute inset-0 ${drawn ? '' : 'overflow-hidden rounded-lg'}`}
+              >
+                <SheetLinkedChart element={shown}>
+                  {(live) =>
+                    drawn ? (
+                      drawn(live, !!ctx?.editable)
+                    ) : (
+                      <DataChartView
+                        element={live}
+                        fontFamily={fontFamily}
+                        textColor={c.palette.text}
+                        palette={ctx?.chartPalette}
+                      />
+                    )
+                  }
+                </SheetLinkedChart>
+              </div>
+              {isSelected ? (
+                <>
+                  {/* Top left: the chart's indicators sit along its top right, where these would cover them. */}
+                  <div
+                    className="absolute left-1 top-1 flex gap-1"
+                    data-sheet-chart-control
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    <ChartButton
+                      label="Chart Options"
+                      palette={c.palette}
+                      menu
+                      onClick={(e) =>
+                        openElementMenu(el.id, e.currentTarget.getBoundingClientRect())
+                      }
+                    >
+                      <MoreIcon />
+                    </ChartButton>
+                    <ChartButton
+                      label="Delete Chart"
+                      palette={c.palette}
+                      onClick={() => remove(el.id)}
+                    >
+                      <DeleteIcon />
+                    </ChartButton>
+                  </div>
+                  <div
+                    aria-hidden
+                    data-sheet-chart-resize
+                    data-sheet-chart-control
+                    className="absolute cursor-nwse-resize rounded-sm border"
+                    style={{
+                      right: -HANDLE_PX / 2,
+                      bottom: -HANDLE_PX / 2,
+                      width: HANDLE_PX,
+                      height: HANDLE_PX,
+                      backgroundColor: c.palette.surface,
+                      borderColor: c.palette.focus,
+                    }}
+                    onPointerDown={(e) => begin(e, el, 'resize')}
+                  />
+                </>
+              ) : null}
             </div>
-            {isSelected ? (
-              <>
-                {/* Top left: the chart's indicators sit along its top right, where these would cover them. */}
-                <div
-                  className="absolute left-1 top-1 flex gap-1"
-                  data-sheet-chart-control
-                  onPointerDown={(e) => e.stopPropagation()}
-                >
-                  <ChartButton
-                    label="Chart Options"
-                    palette={c.palette}
-                    menu
-                    onClick={(e) => openElementMenu(el.id, e.currentTarget.getBoundingClientRect())}
-                  >
-                    <MoreIcon />
-                  </ChartButton>
-                  <ChartButton
-                    label="Delete Chart"
-                    palette={c.palette}
-                    onClick={() => remove(el.id)}
-                  >
-                    <DeleteIcon />
-                  </ChartButton>
-                </div>
-                <div
-                  aria-hidden
-                  data-sheet-chart-resize
-                  data-sheet-chart-control
-                  className="absolute cursor-nwse-resize rounded-sm border"
-                  style={{
-                    right: -HANDLE_PX / 2,
-                    bottom: -HANDLE_PX / 2,
-                    width: HANDLE_PX,
-                    height: HANDLE_PX,
-                    backgroundColor: c.palette.surface,
-                    borderColor: c.palette.focus,
-                  }}
-                  onPointerDown={(e) => begin(e, el, 'resize')}
-                />
-              </>
-            ) : null}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

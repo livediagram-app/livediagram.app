@@ -71,7 +71,12 @@ describe('the grid frame', () => {
   it('says the active cell and its value to assistive technology', async () => {
     const h = await mountGrid({ cells: { B2: '42' } });
     select(h, 1, 1);
-    expect(screen.getByRole('gridcell').textContent).toBe('B2 42');
+    const cell = document.getElementById(h.grid.getAttribute('aria-activedescendant')!)!;
+    expect(cell.getAttribute('role')).toBe('gridcell');
+    expect(cell.textContent).toBe('B2 42');
+    // In its row, by index, so the grid owns only rows.
+    expect(cell.getAttribute('aria-colindex')).toBe('2');
+    expect(cell.parentElement!.getAttribute('aria-rowindex')).toBe('2');
   });
 
   it('takes no keys and draws no selection outside Plan mode', async () => {

@@ -228,7 +228,12 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 - What `aria-activedescendant` names is one `sr-only` `role="gridcell"` (`aria-colindex`, `aria-selected`) inside a
   `role="row"` (`aria-rowindex`), holding the address and its shown value. The drawn column and row header strips
   (`SheetHeaders`) are `aria-hidden`: the cell's own text carries its address. The card-row overlay's controls
-  (`SheetCardRows`, `role="group"`) sit in the grid outside any row, a known gap left open.
+  (`SheetCardRows`: Open Card, and an unsaved row's Save and Cancel, named "Unsaved card row") each sit in their own
+  `role="row"` (`aria-rowindex` the row's) and `role="gridcell"`, so the grid holds only rows. The same holds for
+  every other control drawn over a cell: the filter arrows (`SheetSelectionLayer`), comment markers and their
+  preview (`SheetCellComments`), the rule dropdown arrow (`SheetRuleLayer`) and a card field's Choose arrow each sit
+  in `SheetCellSlot` (an unstyled row and gridcell by the cell's index); the cell editor sits in the active cell's
+  row and cell; the charts layer is one row ("Charts") with one cell.
 - The canvas's Undo/Redo are called (not re-implemented) for Ctrl+Z / Shift+Z / Y.
 - Editing focuses `SheetCellEditor`: a textarea with a coloured overlay, for predictable caret handling.
 - Announcements through the editor's live region: the active cell on move ("B4, 1,250.00"), "Copied 3 by 4

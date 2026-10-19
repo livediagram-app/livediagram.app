@@ -27,6 +27,7 @@ import {
   isCommentShortcut,
   type CellMarker,
 } from './sheet-cell-comments';
+import { SheetCellSlot } from './SheetCellSlot';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -118,24 +119,25 @@ export function SheetCellComments({ hover }: { hover: { r: number; c: number } |
         if (!box) return null;
         const a1 = formatA1(m.r, m.c);
         return (
-          <button
-            key={m.cell}
-            type="button"
-            data-comment-trigger
-            aria-label={`Show Comments on ${a1}`}
-            disabled={!c.interactive}
-            className="absolute z-[7] cursor-pointer p-0 disabled:cursor-default"
-            style={{
-              left: box.x + box.w - CELL_MARKER_PX,
-              top: box.y,
-              width: CELL_MARKER_PX,
-              height: CELL_MARKER_PX,
-              background: `linear-gradient(to bottom left, ${CELL_COMMENT_COLOUR} 50%, transparent 50%)`,
-            }}
-            onPointerDown={stop}
-            onDoubleClick={stop}
-            onClick={() => comments.open(own.elementId, m.cell)}
-          />
+          <SheetCellSlot key={m.cell} r={m.r} c={m.c}>
+            <button
+              type="button"
+              data-comment-trigger
+              aria-label={`Show Comments on ${a1}`}
+              disabled={!c.interactive}
+              className="absolute z-[7] cursor-pointer p-0 disabled:cursor-default"
+              style={{
+                left: box.x + box.w - CELL_MARKER_PX,
+                top: box.y,
+                width: CELL_MARKER_PX,
+                height: CELL_MARKER_PX,
+                background: `linear-gradient(to bottom left, ${CELL_COMMENT_COLOUR} 50%, transparent 50%)`,
+              }}
+              onPointerDown={stop}
+              onDoubleClick={stop}
+              onClick={() => comments.open(own.elementId, m.cell)}
+            />
+          </SheetCellSlot>
         );
       })}
       {anchorBox && openHere ? (
@@ -147,7 +149,9 @@ export function SheetCellComments({ hover }: { hover: { r: number; c: number } |
         />
       ) : null}
       {previewBox && hovered && hovered.cell !== openHere ? (
-        <CellPreview marker={hovered} box={previewBox} />
+        <SheetCellSlot r={hovered.r} c={hovered.c}>
+          <CellPreview marker={hovered} box={previewBox} />
+        </SheetCellSlot>
       ) : null}
     </>
   );
