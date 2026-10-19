@@ -15,3 +15,4 @@ export * from './publish-check';
 export * from './sheet-row';
 export * from './edits';
 export * from './lock';
+export * from './locale-number';

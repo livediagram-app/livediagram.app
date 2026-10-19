@@ -22,7 +22,9 @@ import {
   formatRanges,
   freeze,
   hideAxis,
+  displayValue,
   inputAsText,
+  readTypedInput,
   insertAxis,
   mergeRange,
   moveAxis,
@@ -79,12 +81,21 @@ function activeFormat(c: SheetController): CellFormat | undefined {
   return rowId && colId ? c.sheet.cells.get(cellKey(rowId, colId))?.format : undefined;
 }
 
-// The text an edit of the active cell starts from (Enter, F2, a double-click): the input as typed.
+// The text an edit of the active cell starts from (Enter, F2, a double-click), and what the formula bar shows: the
+// input as typed. A number in a Date format reads as that date, in the locale's short form (formulas.md "What a
+// typed input becomes"), never as its serial number, when the date reads back as the same number; else plainly.
 export function inputTextAt(c: SheetController, r: number, col: number): string {
   const rowId = c.sheet.layout.rows[r];
   const colId = c.sheet.layout.cols[col];
-  const input = rowId && colId ? c.sheet.cells.get(cellKey(rowId, colId))?.input : undefined;
-  return inputAsText(input, c.workbook.ctxFor(c.sheet.id));
+  const cell = rowId && colId ? c.sheet.cells.get(cellKey(rowId, colId)) : undefined;
+  const input = cell?.input;
+  const ctx = c.workbook.ctxFor(c.sheet.id);
+  if (input && 'n' in input && cell?.format?.nf === 'date') {
+    const date = displayValue(input.n, { nf: 'date' }, c.locale).text;
+    const back = readTypedInput(date, c.locale, ctx);
+    if (back.kind === 'value' && 'n' in back.input && back.input.n === input.n) return date;
+  }
+  return inputAsText(input, ctx);
 }
 
 // What the first value a Reject rule refuses in a typed write says (the rule's Help Text, else its line), or null.

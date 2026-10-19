@@ -33,6 +33,7 @@ import {
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
+import { altGraphHeld } from '@/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -149,7 +150,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // checks: even Delete / Backspace bail BEFORE preventDefault
       // when read-only so the browser's default behaviour for
       // those keys stays intact.
-      const mod = e.metaKey || e.ctrlKey;
+      // AltGr's Ctrl is not one the person pressed (lib/composed-key.ts): AltGr+E types € into a label.
+      const mod = e.metaKey || (e.ctrlKey && !altGraphHeld(e));
       const key = e.key;
       const lower = key.toLowerCase();
 

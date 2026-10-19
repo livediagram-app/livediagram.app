@@ -229,7 +229,7 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
   canvas with the element selected (`bridge.selectElement`). Commands act on `selectionNow()`, the selection as
   last set, so a key pressed in the frame after a drag acts on the dragged range.
 - What `aria-activedescendant` names is one `sr-only` `role="gridcell"` (`aria-colindex`, `aria-selected`) inside a
-  `role="row"` (`aria-rowindex`), holding the address and its shown value. The drawn column and row header strips
+  `role="row"` (`aria-rowindex`), holding the address and its value as the cell draws it (in the cell's own format: `12.00%`, a date, never `0.12` or a serial number). The drawn column and row header strips
   (`SheetHeaders`) are `aria-hidden`: the cell's own text carries its address. The card-row overlay's controls
   (`SheetCardRows`: Open Card, and an unsaved row's Save and Cancel, named "Unsaved card row") each sit in their own
   `role="row"` (`aria-rowindex` the row's) and `role="gridcell"`, so the grid holds only rows. The same holds for

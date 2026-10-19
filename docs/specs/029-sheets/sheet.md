@@ -296,8 +296,9 @@ inset, as the menu box's mode tile does), and to its right the chosen category's
   with its error, and the selection does not move. Escape there also returns to the edit. Wherever focus lands on the
   grid while an edit stays open (a toolbar button pressed mid-way through such a formula), a key is the edit's:
   Escape gives it up and any other key goes on in it (`focusOpenEdit`). Before, every key after went nowhere.
-- **fx** and the bar show the active cell's input (a formula as typed, a number unformatted); editing there edits
-  the cell, as typing in it does. It grows to three lines for a long input, then scrolls.
+- **fx** and the bar show the active cell's input (a formula as typed, a number unformatted, a number in a Date
+  format as that date in the locale's short form when it reads back as the same date); editing there, or Enter or F2
+  on the cell, starts from that text, as typing in it does. It grows to three lines for a long input, then scrolls.
 
 ## The grid
 
@@ -370,6 +371,9 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   Enter goes back to the column the run started in, one row down. **Escape** throws the edit away. A click
   elsewhere saves.
 - **Alt+Enter** (⌥ Enter) adds a line break inside the cell.
+- A character the keyboard composes with Alt types like any other: a Mac's Option (⌥3 is `£` on a UK layout, ⌥⇧2
+  is `€`) and AltGr on Windows and Linux (`€` is AltGr+E on a German layout, reported as Ctrl+Alt) start typing over
+  the cell, never a shortcut. A bare Alt+letter still types nothing (`apps/live/lib/composed-key.ts`).
 - **Ctrl+Enter** saves the input into every cell of the selection.
 - What is typed is read the way a spreadsheet reads it ([Formulas](formulas.md#what-a-typed-input-becomes)): `12`
   is a number, `12%` a percent, `£12` currency, `8/10/2026` a date (day and month in the person's locale order),

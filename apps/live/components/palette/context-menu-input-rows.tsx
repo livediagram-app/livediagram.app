@@ -200,7 +200,7 @@ export function MenuToggleRow({
       <span className="flex flex-col">
         <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{label}</span>
         {description ? (
-          <span className="text-[10px] text-slate-500 dark:text-slate-400">{description}</span>
+          <span className="text-[10px] text-slate-600 dark:text-slate-400">{description}</span>
         ) : null}
       </span>
       <ToggleSwitch presentational checked={checked} label={label} />

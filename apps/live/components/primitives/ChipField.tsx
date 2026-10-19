@@ -26,8 +26,10 @@ type ChipFieldProps = {
   chips: readonly string[];
   // What a chip reads (Community prefixes `#`); its text by default.
   chipText?: (chip: string) => string;
-  // A chip's own colours (Plan's label swatches); brand chips by default.
-  chipStyle?: (chip: string) => CSSProperties;
+  // A chip's own colour (Plan's label swatches); brand chips by default. The chip draws on a 12% tint of it, in ink
+  // leaned 30% toward the page's ink (dark in light mode, white in dark), which reads at WCAG AA for every swatch:
+  // the bare colour did not (#2563eb on its tint was 4.4:1 light, 3:1 dark).
+  chipColour?: (chip: string) => string;
   removeLabel: (chip: string) => string;
   draft: string;
   onDraftChange: (value: string) => void;
@@ -58,7 +60,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
   {
     chips,
     chipText = (c) => c,
-    chipStyle,
+    chipColour,
     removeLabel,
     draft,
     onDraftChange,
@@ -113,9 +115,11 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
         <span
           key={chip}
           className={`inline-flex items-center gap-1 rounded-full py-0.5 pr-1 font-medium ${chipSize} ${
-            chipStyle ? '' : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
+            chipColour
+              ? 'bg-[color-mix(in_srgb,var(--chip)_12%,transparent)] text-[color-mix(in_srgb,var(--chip)_70%,#0f172a)] dark:text-[color-mix(in_srgb,var(--chip)_70%,#ffffff)]'
+              : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
           }`}
-          style={chipStyle?.(chip)}
+          style={chipColour ? ({ '--chip': chipColour(chip) } as CSSProperties) : undefined}
         >
           {chipText(chip)}
           {readOnly ? null : (
@@ -129,7 +133,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
               data-remove-chip
               aria-label={removeLabel(chip)}
               className={`flex h-4 w-4 items-center justify-center rounded-full transition ${
-                chipStyle
+                chipColour
                   ? 'hover:bg-black/10 dark:hover:bg-white/15'
                   : 'text-brand-700 hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100'
               }`}

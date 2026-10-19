@@ -79,6 +79,15 @@ describe('the grid frame', () => {
     expect(cell.parentElement!.getAttribute('aria-rowindex')).toBe('2');
   });
 
+  it('speaks the active cell as it is drawn, in its own number format', async () => {
+    // A percent was heard as 0.12 and a date as its serial number.
+    const h = await mountGrid({ cells: { B2: '12%' }, formats: { B2: { nf: 'percent' } } });
+    select(h, 1, 1);
+    expect(
+      document.getElementById(h.grid.getAttribute('aria-activedescendant')!)!.textContent,
+    ).toBe('B2 12.00%');
+  });
+
   it('takes no keys and draws no selection outside Plan mode', async () => {
     const h = await mountGrid({ interactive: false });
     expect(h.grid.tabIndex).toBe(-1);

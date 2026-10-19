@@ -169,7 +169,9 @@ export function LinkedCardField({
                 </span>
               </>
             ) : (
-              <span className={`min-w-0 flex-1 truncate ${missing ? 'italic' : ''} text-slate-400`}>
+              <span
+                className={`min-w-0 flex-1 truncate ${missing ? 'italic' : ''} text-slate-500 dark:text-slate-400`}
+              >
                 {name}
               </span>
             )}

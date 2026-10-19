@@ -234,3 +234,15 @@ describe('the formula bar', () => {
     expect(outer).not.toHaveBeenCalled();
   });
 });
+
+describe('the formula bar on a formatted number', () => {
+  it('shows a date as the date, and a percent unformatted (formulas.md)', async () => {
+    const h = await makeSheet({ cells: { A1: '8/10/2026', A2: '12%' } });
+    show(h);
+    act(() => h.select('A1'));
+    // Never the serial number (46303): the date in the locale's short form, which reads back as the same date.
+    expect(fx().value).toMatch(/^0?8\/10\/2026$/);
+    act(() => h.select('A2'));
+    expect(fx().value).toBe('0.12');
+  });
+});

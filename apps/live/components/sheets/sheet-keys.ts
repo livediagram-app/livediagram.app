@@ -1,6 +1,7 @@
 // The grid's keys when no cell is being edited (docs/specs/029-sheets/sheet.md "Keyboard"), as a pure map from a key
 // to a command, so every row of the spec's table is tested without a DOM. Undo and redo are left to the canvas.
 import type { Dir } from '@livediagram/sheets';
+import { altGraphHeld, composedWithAlt } from '@/lib/composed-key';
 
 export type KeyLike = {
   key: string;
@@ -9,6 +10,8 @@ export type KeyLike = {
   metaKey: boolean;
   shiftKey: boolean;
   altKey: boolean;
+  // A KeyboardEvent's own: AltGraph says the key was composed with AltGr.
+  getModifierState?: (key: 'AltGraph') => boolean;
 };
 
 type SheetKeyCommand =
@@ -42,7 +45,8 @@ const ARROWS: Record<string, Dir> = {
 };
 
 export function sheetKey(e: KeyLike): SheetKeyCommand | null {
-  const mod = e.ctrlKey || e.metaKey;
+  // AltGr's Ctrl is not one the person pressed: AltGr+E types €, never a Ctrl shortcut.
+  const mod = (e.ctrlKey && !altGraphHeld(e)) || e.metaKey;
   const dir = ARROWS[e.key];
   if (dir && !e.altKey) return { kind: 'move', dir, jump: mod, extend: e.shiftKey };
   if (e.key === 'ArrowDown' && e.altKey && !mod && !e.shiftKey) return { kind: 'dropdown' };
@@ -80,7 +84,7 @@ export function sheetKey(e: KeyLike): SheetKeyCommand | null {
     if (k === 'r' && !e.shiftKey) return { kind: 'fill', dir: 'right' };
     return null;
   }
-  // A printable character starts typing over the cell.
-  if (e.key.length === 1 && !e.altKey) return { kind: 'type', text: e.key };
+  // A printable character starts typing over the cell, one composed with Alt included.
+  if (e.key.length === 1 && (!e.altKey || composedWithAlt(e))) return { kind: 'type', text: e.key };
   return null;
 }

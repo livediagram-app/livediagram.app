@@ -10,6 +10,7 @@ import {
   checkAnswer,
   checkResponse,
   sectionsShown,
+  withLocaleNumbers,
   type AnswerError,
   type PublicForm,
 } from '@livediagram/forms';
@@ -78,6 +79,16 @@ export function useFormFill(
     () => new Map(form.sections.flatMap((s) => s.questions.map((q) => [q.id, q] as const))),
     [form],
   );
+  // Number answers as the respondent's locale writes them (`3,5` in German), read before every check and the send
+  // (@livediagram/forms locale-number.ts); the field keeps showing what was typed.
+  const read = useCallback(
+    (s: FillState): FillState => {
+      const locale = typeof navigator === 'undefined' ? 'en-GB' : navigator.language || 'en-GB';
+      const answers = withLocaleNumbers(byId.values(), s.answers, locale);
+      return answers === s.answers ? s : { ...s, answers };
+    },
+    [byId],
+  );
 
   useEffect(() => {
     if (status === 'filling') writeDraft(draftKey, state);
@@ -89,14 +100,14 @@ export function useFormFill(
       if (!q) return;
       setErrors((prev) => {
         if (!(id in prev)) return prev;
-        const r = checkAnswer(q, next.answers[id], next.other[id]);
+        const r = checkAnswer(q, read(next).answers[id], next.other[id]);
         const copy = { ...prev };
         if (r.error) copy[id] = r.error;
         else delete copy[id];
         return copy;
       });
     },
-    [byId],
+    [byId, read],
   );
 
   const setAnswer = useCallback(
@@ -124,7 +135,7 @@ export function useFormFill(
       const q = byId.get(id);
       if (!q) return;
       const prev = stateRef.current;
-      const r = checkAnswer(q, prev.answers[id], prev.other[id]);
+      const r = checkAnswer(q, read(prev).answers[id], prev.other[id]);
       // An empty field left alone is not an error until Next: a respondent tabbing through is not wrong yet.
       const empty = r.error === 'required' || r.error === 'must_tick';
       setErrors((e) => {
@@ -137,11 +148,11 @@ export function useFormFill(
         return e;
       });
     },
-    [byId],
+    [byId, read],
   );
 
   const checkSection = (): boolean => {
-    const r = checkResponse(form, stateRef.current, current.questions);
+    const r = checkResponse(form, read(stateRef.current), current.questions);
     if (r.ok) return true;
     setErrors((e) => ({ ...e, ...r.errors }));
     setSummary(current.questions.filter((q) => r.errors[q.id]).map((q) => q.id));
@@ -164,7 +175,7 @@ export function useFormFill(
     sendingRef.current = true;
     setStatus('sending');
     setFailure(null);
-    const outcome = await submit(stateRef.current).finally(() => {
+    const outcome = await submit(read(stateRef.current)).finally(() => {
       sendingRef.current = false;
     });
     if (outcome.kind === 'sent') {
