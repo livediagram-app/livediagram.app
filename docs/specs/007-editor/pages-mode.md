@@ -153,7 +153,7 @@ field after `orientation` is optional and absent on a page that never set it:
 A stored page that is malformed in any optional field keeps its valid fields and drops the rest; a
 page with no valid `id` or `orientation` is skipped (as today), as is a repeat of an id already read.
 A new page's id is random (`page-` and eight hex digits) and never one the tab's pages have had, so
-a page slide of a deleted page stays empty rather than finding a new page under the old id.
+a slide of a deleted page can never find a new page under the old id.
 
 ## Sizes
 
@@ -1470,8 +1470,15 @@ separate pages. It is explicit: never run on entering the mode.
     the page whose slide comes after it; nothing moves while it already sits between them.
   - A slide page's only slide has no Delete (it would come straight back); **Hide** leaves it out
     of the show. A copy of it, and a slide of any other page, delete as before.
-  - A slide of a deleted page stays where it is, empty, as below; the follow pass never removes a
-    slide.
+  - **A deleted page leaves the deck with it.** The follow pass removes every slide of a page its
+    tab no longer has: the slide page's own slide, its copies, and a slide added for a non-slide
+    page. Only on a tab whose pages have loaded, so a tab still loading never loses its slides,
+    and a page's id is never reused, so a missing id is a deleted page. The session remembers
+    the slides it removed (`GoneSlides`, at most `GONE_SLIDES_MAX` = 200), and the page coming
+    back, by an undo or a peer's undo, brings them back as they were, hidden ones hidden, into the
+    tab's run in page order. A slide handed back is forgotten, so one deleted by hand after it came
+    back stays deleted. A reload forgets the memory: a slide page then gets a fresh slide, as any
+    slide page does.
 - In Pages mode the Slide Deck panel also adds slides **a page at a time**, for the pages that
   are not slide pages (an infographic, article or logo page): a page picker (each page by its
   label) and **Add as slide**, in place of "Select elements to make a slide". Such a page slide
@@ -1480,9 +1487,10 @@ separate pages. It is explicit: never run on entering the mode.
   resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
   follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`, the
   label read from the slide's own tab (so a slide on another tab names its page too), or
-  `<tab> · Page deleted` once the page is gone; its thumbnail is the page on its background, its
-  elements inked for the page's surface as the export inks them. A page deleted leaves its slide
-  empty (shown, fixable), as an element slide's deleted elements do.
+  `<tab> · Page deleted` while its page is missing and the deck has not yet followed (its tab still
+  loading); its thumbnail is the page on its background, its elements inked for the page's surface
+  as the export inks them. Once the tab's pages are read, a deleted page's slides leave the deck
+  (above).
 - Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
   Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
   says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.

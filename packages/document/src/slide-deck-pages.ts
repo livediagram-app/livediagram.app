@@ -29,6 +29,52 @@ function followedPages(tab: Tab): Page[] | null {
 
 const isSlidePage = (p: Page) => p.kind === 'slide';
 
+// The slides that left the deck with their page, kept for the session (useSlideDeck holds one) so the page coming
+// back brings them back. Bounded: the oldest are forgotten past GONE_SLIDES_MAX, well past a tab's 100 pages.
+export const GONE_SLIDES_MAX = 200;
+export class GoneSlides {
+  private readonly byPage = new Map<string, Slide[]>();
+  private count = 0;
+  private static key = (tabId: string, pageId: string) => `${tabId}\n${pageId}`;
+  // Idempotent, as a state updater may run twice: a slide already remembered is replaced by its latest self.
+  remember(slide: Slide): void {
+    const key = GoneSlides.key(slide.tabId, slide.pageId!);
+    const list = this.byPage.get(key) ?? [];
+    const at = list.findIndex((s) => s.id === slide.id);
+    if (at >= 0) list[at] = slide;
+    else {
+      list.push(slide);
+      this.count++;
+    }
+    // Newest last, so the oldest page is the first forgotten.
+    this.byPage.delete(key);
+    this.byPage.set(key, list);
+    while (this.count > GONE_SLIDES_MAX) {
+      const [oldest, dropped] = this.byPage.entries().next().value as [string, Slide[]];
+      this.byPage.delete(oldest);
+      this.count -= dropped.length;
+    }
+  }
+  // The slides a returning page left with that the deck does not hold, forgotten as they are handed back (so a slide
+  // deleted by hand after it came back stays deleted). A state updater may run twice over the same deck: `run` is
+  // that deck's slides, and a second run over it is handed the same slides again.
+  private given: { run: readonly Slide[]; byPage: Map<string, Slide[]> } | null = null;
+  take(tabId: string, pageId: string, slides: readonly Slide[], run: readonly Slide[]): Slide[] {
+    const key = GoneSlides.key(tabId, pageId);
+    if (this.given?.run !== run) this.given = { run, byPage: new Map() };
+    const again = this.given.byPage.get(key);
+    if (again) return again;
+    const list = this.byPage.get(key);
+    if (!list) return [];
+    this.byPage.delete(key);
+    this.count -= list.length;
+    const held = new Set(slides.map((s) => s.id));
+    const back = list.filter((s) => !held.has(s.id));
+    this.given.byPage.set(key, back);
+    return back;
+  }
+}
+
 // One line per followed tab, its pages in order with the slide pages marked: what the deck follows, so a caller can
 // re-run the deck only when it changes, not on every element edit.
 export function deckPagesKey(tabs: readonly Tab[]): string {
@@ -44,27 +90,40 @@ export function deckPagesKey(tabs: readonly Tab[]): string {
 // The deck with every followed tab's slide pages in it and its page slides in page order. The slots a tab's page
 // slides already take keep their places among the other slides (another tab's, an element slide, a card), only which
 // page fills which slot follows the pages; a new slide page's slide goes into the tab's run (its last slot, or the
-// deck's end when the tab has none yet). A slide of a page that has gone stays where it is, as it always has. The
-// same deck object when nothing changes.
-export function deckFollowingPages(deck: Deck, tabs: readonly Tab[]): Deck {
+// deck's end when the tab has none yet). A slide of a page that has gone leaves the deck with it: on a followed tab
+// (its pages loaded) a page id it no longer has was deleted, and a page's id is never reused. `gone`, the session's
+// memory of those slides, brings them back as they were (hidden, copies, a slide added for a non-slide page) when
+// the page returns, by an undo or a peer's. The same deck object when nothing changes.
+export function deckFollowingPages(deck: Deck, tabs: readonly Tab[], gone?: GoneSlides): Deck {
   let slides = deck.slides;
   for (const tab of tabs) {
     const pages = followedPages(tab);
     if (!pages) continue;
     const order = new Map(pages.map((p, i) => [p.id, i] as const));
+    const kept = slides.filter((s) => {
+      if (s.tabId !== tab.id || !s.pageId || order.has(s.pageId)) return true;
+      gone?.remember(s);
+      return false;
+    });
+    if (kept.length !== slides.length) slides = kept;
+    // A page back again takes back the slides it left with, unless the deck has them already.
+    const back = gone ? pages.flatMap((p) => gone.take(tab.id, p.id, slides, deck.slides)) : [];
     const slots: number[] = [];
     slides.forEach((s, i) => {
       if (s.tabId === tab.id && s.pageId && order.has(s.pageId)) slots.push(i);
     });
-    const present = new Set(slots.map((i) => slides[i]!.pageId));
-    const added: Slide[] = pages
-      .filter((p) => isSlidePage(p) && !present.has(p.id))
-      .map((p) => ({
-        id: pageSlideIdFor(tab.id, p.id),
-        tabId: tab.id,
-        elementIds: [],
-        pageId: p.id,
-      }));
+    const present = new Set([...slots.map((i) => slides[i]!.pageId), ...back.map((s) => s.pageId)]);
+    const added: Slide[] = [
+      ...back,
+      ...pages
+        .filter((p) => isSlidePage(p) && !present.has(p.id))
+        .map((p) => ({
+          id: pageSlideIdFor(tab.id, p.id),
+          tabId: tab.id,
+          elementIds: [],
+          pageId: p.id,
+        })),
+    ];
     // By page, a page's own copies (a duplicated slide) keeping their deck order: a stable sort.
     const run = [...slots.map((i) => slides[i]!), ...added].sort(
       (a, b) => order.get(a.pageId!)! - order.get(b.pageId!)!,
