@@ -1,7 +1,8 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx, type ImageElement } from '@livediagram/document';
+import { imageCornerPx, type ImageElement } from '@livediagram/document';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
 import {
@@ -71,12 +72,8 @@ function ImageElementViewImpl({
   // the final shape. `objectFit` defaults to 'contain' (whole image shows);
   // the hero + avatar set 'cover' so a photo fills the box / circle.
   // Never more than a quarter of the shorter side (docs/specs/008-canvas/corner-radius.md).
-  const radius = cornerRadiusPx(
-    element.borderRadius,
-    element.width,
-    element.height,
-    IMAGE_DEFAULT_RADIUS_PX,
-  );
+  // Square by default under Professional (docs/specs/008-canvas/finish.md "Images").
+  const radius = imageCornerPx(element, useElementFinish(undefined));
   const radiusStyle = { borderRadius: radius };
   const fit = element.objectFit ?? 'contain';
 

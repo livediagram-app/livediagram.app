@@ -8,6 +8,7 @@ import {
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
+  finishOwnCorner,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
   PADDING_PX,
@@ -27,6 +28,7 @@ import {
   withTagAccent,
   rotationOf,
   finishSplitsFace,
+  faceFinishOf,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -55,6 +57,8 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
+import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
@@ -221,6 +225,7 @@ function BoxedElementViewImpl({
   // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
   // the SketchOverlay below, in place of the wrapper's border and background.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
+  const faceFinish = faceFinishOf(element, finish);
   const sketchBackdrop = useIsSketchBackdrop(element.id);
   const sketch = useSketchPaint(
     element,
@@ -228,6 +233,18 @@ function BoxedElementViewImpl({
     own.fill ?? defaultFillColor(element, surface),
     sketchBackdrop,
   );
+  // Rendered where it belongs below (under the content, or over an image's picture); a function, as it reads the
+  // border colour worked out further down.
+  const sketchOverlay = () =>
+    sketch ? (
+      <SketchOverlay
+        paint={sketch}
+        width={element.width}
+        height={element.height}
+        fill={own.fill ?? defaultFillColor(element, surface)}
+        stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
+      />
+    ) : null;
 
   // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag
@@ -249,6 +266,8 @@ function BoxedElementViewImpl({
   // The element's wrapper node, so the context-menu handlers can read its
   // live screen rect to anchor the menu at the bottom-right corner.
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // The face's own parts in its finish: Marker's frames and shapes, Professional's pills (finish.md "Faces").
+  useFaceFinishPass(wrapperRef, faceFinish, element.id);
 
   // Gesture routing (press / double-click / context menu / long-press)
   // lives in useBoxedElementGestures; the wrapper JSX mounts its
@@ -336,7 +355,7 @@ function BoxedElementViewImpl({
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
   const cornerPx = cornerRadiusPx(
-    element.type === 'shape' ? element.borderRadius : undefined,
+    element.type === 'shape' ? finishOwnCorner(element, finish) : undefined,
     element.width,
     element.height,
     // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes"), sharper under
@@ -456,6 +475,8 @@ function BoxedElementViewImpl({
       // coplanar with its contents under preserve-3d, and coplanar layers
       // z-fight (flicker) while the camera orbits.
       data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
+      // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
+      data-face-finish={faceFinish}
       onPointerDown={(e) => {
         // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
         if (isPanThrough(e)) return;
@@ -563,220 +584,216 @@ function BoxedElementViewImpl({
         ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
-      {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"). */}
-      {sketch ? (
-        <SketchOverlay
-          paint={sketch}
-          width={element.width}
-          height={element.height}
-          fill={own.fill ?? defaultFillColor(element, surface)}
-          stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
-        />
-      ) : null}
+      {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"); an image's edge goes over
+          its picture, below. */}
+      {element.type !== 'image' ? sketchOverlay() : null}
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
           (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
           the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
-      <SketchFace
-        active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
-      >
-        <AccentEdgeOverlay
-          element={withTagAccent(element, tagColours)}
-          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-        />
-        {element.type === 'shape' && element.shape === 'pointer-note' ? (
-          <PointerNoteOverlay
-            element={element}
+      <FaceFinishProvider finish={faceFinish ?? 'flexible'}>
+        <SketchFace
+          active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+        >
+          <AccentEdgeOverlay
+            element={withTagAccent(element, tagColours)}
             stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            editable={isSelected && !readOnly && !isLocked}
-            onSetTip={onSetPointerTip}
           />
-        ) : null}
-        <ShapeContentRouter
-          element={element}
-          isEditing={isEditing}
-          artAnimClass={artAnimClass}
-          accent={accent}
-          textColor={textColor}
-          remoteBorderColor={remoteBorderColor}
-          isLocked={isLocked}
-          isSelected={isSelected}
-          readOnly={readOnly}
-          onToggleChecklistItem={onToggleChecklistItem}
-          chartPalette={chartPalette}
-          fontFamily={fontFamily}
-          svgAnim={svgAnim}
-        />
-        {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+          {element.type === 'shape' && element.shape === 'pointer-note' ? (
+            <PointerNoteOverlay
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              editable={isSelected && !readOnly && !isLocked}
+              onSetTip={onSetPointerTip}
+            />
+          ) : null}
+          <ShapeContentRouter
+            element={element}
+            isEditing={isEditing}
+            artAnimClass={artAnimClass}
+            accent={accent}
+            textColor={textColor}
+            remoteBorderColor={remoteBorderColor}
+            isLocked={isLocked}
+            isSelected={isSelected}
+            readOnly={readOnly}
+            onToggleChecklistItem={onToggleChecklistItem}
+            chartPalette={chartPalette}
+            fontFamily={fontFamily}
+            svgAnim={svgAnim}
+          />
+          {/* CSS-rendered shapes (square / circle / stadium / browser) paint
           their border via the wrapper's CSS `border`, which can't draw the
           composite dash patterns. When one of those is picked, stroke the
           outline here instead (element-variant drops the CSS border to
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
-        {element.type === 'shape' &&
-        !sketch &&
-        !isSvgRenderedShape(element.shape) &&
-        !remoteBorderColor &&
-        !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
-          <BoxBorderOverlay
-            shape={element.shape}
-            width={element.width}
-            height={element.height}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
-            dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-            radiusPx={cornerPx}
-          />
-        ) : null}
-        {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
-        {element.type === 'shape' && element.shape === 'entity' ? (
-          <EntityView
-            element={element}
-            textColor={textColor}
-            fontFamily={fontFamily}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            actions={
-              // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
-              isSelected &&
-              !readOnly &&
-              !isLocked &&
-              !remotelyLocked &&
-              !element.rotation &&
-              onSetEntityFields &&
-              onStartFieldArrow
-                ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
-                : undefined
-            }
-          />
-        ) : null}
-        {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
+          {element.type === 'shape' &&
+          !sketch &&
+          !isSvgRenderedShape(element.shape) &&
+          !remoteBorderColor &&
+          !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
+            <BoxBorderOverlay
+              shape={element.shape}
+              width={element.width}
+              height={element.height}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
+              dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
+              radiusPx={cornerPx}
+            />
+          ) : null}
+          {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
+          {element.type === 'shape' && element.shape === 'entity' ? (
+            <EntityView
+              element={element}
+              textColor={textColor}
+              fontFamily={fontFamily}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              actions={
+                // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
+                isSelected &&
+                !readOnly &&
+                !isLocked &&
+                !remotelyLocked &&
+                !element.rotation &&
+                onSetEntityFields &&
+                onStartFieldArrow
+                  ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
+                  : undefined
+              }
+            />
+          ) : null}
+          {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
           drawn for its facing, plus whoever presence says is sitting in it. */}
-        {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
-          <FurnitureView
-            element={element}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            fill={own.fill ?? defaultFillColor(element, surface)}
-            sitters={chairSitters?.(element.id) ?? []}
-            animClass={artAnimClass}
-          />
-        ) : null}
-        {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
+          {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
+            <FurnitureView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              fill={own.fill ?? defaultFillColor(element, surface)}
+              sitters={chairSitters?.(element.id) ?? []}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
           back wall (the ordinary label, which sits there). */}
-        {element.type === 'shape' && element.shape === 'room' ? (
-          <RoomView
-            element={element}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            floor={own.fill ?? defaultFillColor(element, surface)}
-            animClass={artAnimClass}
-          />
-        ) : null}
-        {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
-        {element.type === 'shape' && element.shape === 'fence' ? (
-          <FenceView
-            element={element}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            animClass={artAnimClass}
-          />
-        ) : null}
-        {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
-        {element.type === 'shape' && element.shape === 'avatar-pad' ? (
-          <AvatarPadView animClass={artAnimClass} />
-        ) : null}
-        {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
-        {element.type === 'shape' && element.shape === 'lane' ? (
-          <LaneGutter
-            stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-            headerFill={element.headerFill}
-            headerSize={element.headerSize}
-            titleOrientation={element.titleOrientation}
-            width={element.width}
-            height={element.height}
-            onCommitSize={
-              onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
-            }
-            onSnapSeam={onSnapSeam}
-            elementId={element.id}
-            elementX={element.x}
-            elementY={element.y}
-            alignX={alignX}
-            alignY={alignY}
-          />
-        ) : null}
-        {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
-        {element.type === 'shape' && element.shape === 'page' ? (
-          <PageCornerFold
-            width={element.width}
-            height={element.height}
-            fill={element.fillColor ?? '#ffffff'}
-            stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          />
-        ) : null}
-        {/* Browser-only HTML chrome overlay. SVG handles only the
+          {element.type === 'shape' && element.shape === 'room' ? (
+            <RoomView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              floor={own.fill ?? defaultFillColor(element, surface)}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
+          {element.type === 'shape' && element.shape === 'fence' ? (
+            <FenceView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
+          {element.type === 'shape' && element.shape === 'avatar-pad' ? (
+            <AvatarPadView animClass={artAnimClass} />
+          ) : null}
+          {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
+          {element.type === 'shape' && element.shape === 'lane' ? (
+            <LaneGutter
+              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+              headerFill={element.headerFill}
+              headerSize={element.headerSize}
+              titleOrientation={element.titleOrientation}
+              width={element.width}
+              height={element.height}
+              onCommitSize={
+                onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
+              }
+              onSnapSeam={onSnapSeam}
+              elementId={element.id}
+              elementX={element.x}
+              elementY={element.y}
+              alignX={alignX}
+              alignY={alignY}
+            />
+          ) : null}
+          {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
+          {element.type === 'shape' && element.shape === 'page' ? (
+            <PageCornerFold
+              width={element.width}
+              height={element.height}
+              fill={element.fillColor ?? '#ffffff'}
+              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+            />
+          ) : null}
+          {/* Browser-only HTML chrome overlay. SVG handles only the
           outer frame + divider so the user's border style applies;
           the dots / nav / URL bar render here so their geometry is
           fixed-pixel and doesn't deform with the box's aspect
           ratio. */}
-        {element.type === 'shape' && element.shape === 'browser' ? (
-          <BrowserChrome
-            stroke={
-              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-            }
-          />
-        ) : null}
+          {element.type === 'shape' && element.shape === 'browser' ? (
+            <BrowserChrome
+              stroke={
+                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+              }
+            />
+          ) : null}
 
-        {/* Whatever this element shows in place of a plain label: a pressable
+          {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
-        <ElementFaceRouter
-          hitLine={hitLine}
-          element={element}
-          isEditing={isEditing}
-          isSelected={isSelected}
-          readOnly={readOnly}
-          writable={writable}
-          fontFamily={fontFamily}
-          activeMode={activeMode}
-          collab={collab}
-          commentActions={commentActions}
-          actionSelfId={actionSelfId}
-          actionActions={actionActions}
-          commentSelfId={commentSelfId}
-          imageContext={imageContext}
-          tabSummaries={tabSummaries}
-          tabTimer={tabTimer}
-          timerControls={timerControls}
-          timerState={timerState}
-          sessionStartBlocked={sessionStartBlocked}
-          sessionRunBy={sessionRunBy}
-          revealedForMe={revealedForMe}
-          onCommitTable={onCommitTable}
-          onEnterPortal={onEnterPortal}
-          onFireReaction={onFireReaction}
-          onFollowLink={onFollowLink}
-          onLinkCell={onLinkCell}
-          onPressModeButton={onPressModeButton}
-          onPressFocusButton={onPressFocusButton}
-          onPressSessionButton={onPressSessionButton}
-          onRollPicker={onRollPicker}
-          onSetPageHeading={onSetPageHeading}
-          onSetWebRows={onSetWebRows}
-          onSetHeroCaptionLine={onSetHeroCaptionLine}
-          onSetSessionConfig={onSetSessionConfig}
-          onOpenElementSettings={onOpenElementSettings}
-          onToggleReveal={onToggleReveal}
-          label={label}
-          labelNode={labelNode}
-          // Clear of the indicators and on the label body (a cylinder's, under its lid).
-          contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
-          textColor={textColor}
-          textSize={textSize}
-          alignX={alignX}
-          alignY={alignY}
-          isLocked={isLocked}
-          remoteBorderColor={remoteBorderColor}
-          inlineIcon={inlineIcon}
-          marker={marker}
-          iconCaptionBand={iconCaptionBand}
-          labelFrame={labelFrame}
-        />
-      </SketchFace>
+          <ElementFaceRouter
+            hitLine={hitLine}
+            element={element}
+            isEditing={isEditing}
+            isSelected={isSelected}
+            readOnly={readOnly}
+            writable={writable}
+            fontFamily={fontFamily}
+            activeMode={activeMode}
+            collab={collab}
+            commentActions={commentActions}
+            actionSelfId={actionSelfId}
+            actionActions={actionActions}
+            commentSelfId={commentSelfId}
+            imageContext={imageContext}
+            tabSummaries={tabSummaries}
+            tabTimer={tabTimer}
+            timerControls={timerControls}
+            timerState={timerState}
+            sessionStartBlocked={sessionStartBlocked}
+            sessionRunBy={sessionRunBy}
+            revealedForMe={revealedForMe}
+            onCommitTable={onCommitTable}
+            onEnterPortal={onEnterPortal}
+            onFireReaction={onFireReaction}
+            onFollowLink={onFollowLink}
+            onLinkCell={onLinkCell}
+            onPressModeButton={onPressModeButton}
+            onPressFocusButton={onPressFocusButton}
+            onPressSessionButton={onPressSessionButton}
+            onRollPicker={onRollPicker}
+            onSetPageHeading={onSetPageHeading}
+            onSetWebRows={onSetWebRows}
+            onSetHeroCaptionLine={onSetHeroCaptionLine}
+            onSetSessionConfig={onSetSessionConfig}
+            onOpenElementSettings={onOpenElementSettings}
+            onToggleReveal={onToggleReveal}
+            label={label}
+            labelNode={labelNode}
+            // Clear of the indicators and on the label body (a cylinder's, under its lid).
+            contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
+            textColor={textColor}
+            textSize={textSize}
+            alignX={alignX}
+            alignY={alignY}
+            isLocked={isLocked}
+            remoteBorderColor={remoteBorderColor}
+            inlineIcon={inlineIcon}
+            marker={marker}
+            iconCaptionBand={iconCaptionBand}
+            labelFrame={labelFrame}
+          />
+        </SketchFace>
+      </FaceFinishProvider>
+      {element.type === 'image' ? sketchOverlay() : null}
 
       {shapeHit && element.type === 'shape' ? (
         <ShapeHitOutline

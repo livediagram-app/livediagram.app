@@ -6,8 +6,11 @@ import {
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
+  finishOwnCorner,
   finishDrawsBodyByHand,
   finishDrawsDefaultShadow,
+  finishFaceCornerPx,
+  finishFaceShadows,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
@@ -49,7 +52,8 @@ export function describeVariant(
 ): { className: string; style: CSSProperties } {
   // Sketch and Marker hand the body to the SketchOverlay (a sticky stays paper under Marker).
   const sketched = finishDrawsBodyByHand(finish, element.type);
-  const softShadow = finishDrawsDefaultShadow(finish) ? 'shadow-sm ' : '';
+  // A marker drawing casts none either (finish.md "Marker"): a box whose face draws itself keeps no soft shadow.
+  const softShadow = finishDrawsDefaultShadow(finish) && finish !== 'marker' ? 'shadow-sm ' : '';
   // Multi-selection uses a much louder ring (solid brand-500, offset)
   // so a busy canvas with many selected elements reads unambiguously.
   // Single selection keeps the subtler brand-200 / brand-300 rings, and in
@@ -112,9 +116,11 @@ export function describeVariant(
         element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
       // Never more than a quarter of the shorter side (docs/specs/008-canvas/corner-radius.md),
       // the kind's own default corner included.
+      // A kind's factory corner follows Professional like an unset one (finishOwnCorner).
+      const ownCorner = finishOwnCorner(element, finish);
       const userRadius =
-        element.borderRadius !== undefined
-          ? cornerRadiusPx(element.borderRadius, element.width, element.height, 0)
+        ownCorner !== undefined
+          ? cornerRadiusPx(ownCorner, element.width, element.height, 0)
           : null;
       const fallbackPx = finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish);
       // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
@@ -287,7 +293,7 @@ export function describeVariant(
       // colours, fully round. The note glyph paints as the child content.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
-        className: `shadow-sm ${ring}`,
+        className: `${finishFaceShadows(finish) ? 'shadow-sm ' : ''}${ring}`,
         style: {
           borderRadius: '50%',
           backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
@@ -306,10 +312,11 @@ export function describeVariant(
     case 'video': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
-        className: `overflow-hidden shadow-sm ${ring}`,
+        // Square and flat under Professional, no shadow under Marker (docs/specs/008-canvas/finish.md "Faces").
+        className: `overflow-hidden ${finishFaceShadows(finish) ? 'shadow-sm ' : ''}${ring}`,
         style: {
           ...boxShadow,
-          borderRadius: '10px',
+          borderRadius: `${finishFaceCornerPx(10, finish)}px`,
           backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
           borderColor:
             remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),

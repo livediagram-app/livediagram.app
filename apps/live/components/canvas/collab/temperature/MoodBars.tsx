@@ -8,10 +8,12 @@ import { useState } from 'react';
 import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livediagram/document';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from './mood-grid';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function MoodBars({ tally, textColor }: { tally: number[]; textColor: string }) {
   const [initial] = useState(tally);
   const peak = Math.max(1, ...tally);
+  const shadow = useFaceShadow();
   return (
     // Takes whatever height the card has spare, so a tall card gets taller
     // bars rather than dead space.
@@ -29,17 +31,22 @@ export function MoodBars({ tally, textColor }: { tally: number[]; textColor: str
               {count}
             </span>
             <span
-              className="flex min-h-0 w-full max-w-[28px] flex-1 items-end overflow-hidden rounded-full"
+              // Track and bar are a shape each under Marker and Sketch (docs/specs/008-canvas/finish.md "Faces"); the
+              // bar's gradient is drawn in its hue.
+              data-marker-shape=""
+              className="relative flex min-h-0 w-full max-w-[28px] flex-1 items-end overflow-hidden rounded-full"
               style={{ backgroundColor: tint(textColor, 0.06) }}
             >
               <span
-                className="mood-bar w-full rounded-full"
+                data-marker-shape=""
+                data-marker-fill={hue}
+                className="mood-bar relative w-full rounded-full"
                 style={{
                   // A share of the track, with a floor so one vote in a tall
                   // card is still a visible bar rather than a hairline.
                   height: count === 0 ? 0 : `max(10px, ${(count / peak) * 100}%)`,
                   background: `linear-gradient(180deg, ${hue}, ${tint(hue, 0.75)})`,
-                  boxShadow: count ? `0 0 12px -2px ${tint(hue, 0.6)}` : undefined,
+                  boxShadow: shadow(count ? `0 0 12px -2px ${tint(hue, 0.6)}` : undefined),
                 }}
               />
             </span>

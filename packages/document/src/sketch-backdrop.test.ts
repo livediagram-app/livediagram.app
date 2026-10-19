@@ -48,8 +48,8 @@ describe('sketchBackdropIds', () => {
     expect([...sketchBackdropIds(own, undefined)]).toEqual(['card']);
   });
 
-  it('ignores kinds that never hatch (frames)', () => {
-    const els = [shape('f', 0, 0, 200, 300, { shape: 'frame' }), text('caption', 20, 20)];
+  it('ignores kinds that never hatch (self-painting faces)', () => {
+    const els = [shape('f', 0, 0, 200, 300, { shape: 'bar-chart' }), text('caption', 20, 20)];
     expect(sketchBackdropIds(els, 'sketch').size).toBe(0);
   });
 

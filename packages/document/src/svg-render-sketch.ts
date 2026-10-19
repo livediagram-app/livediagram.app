@@ -3,7 +3,9 @@
 // pencil shading (the stroke colour, faint), outline, chrome. Marker's felt-tip body (marker-element.ts) goes the same
 // way, its ink in see-through layers.
 import { finishSplitsFace, finishWobblesArt, resolveFinish, type Finish } from './finish';
+import { defaultStrokeColor } from './colors';
 import { handDrawnElementPaint } from './hand-drawn';
+import { handDrawnInk } from './marker-face';
 import type { BoxedElement, Element } from './index';
 import { MARKER_DETAIL_PX, MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
 import type { MarkerDrawing } from './marker-element';
@@ -11,6 +13,7 @@ import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
 import { SKETCH_HATCH_OPACITY, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { markedGroup, replaceBlocks } from './svg-markup-blocks';
 
 function svgSketchDrawing(
   at: { x: number; y: number },
@@ -22,7 +25,10 @@ function svgSketchDrawing(
   const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
   const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="sketch">`];
-  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${fill}"/>`);
+  if (drawing.solid)
+    parts.push(
+      `<path d="${drawing.solid}" fill="${fill}"${drawing.solidEvenOdd ? ' fill-rule="evenodd"' : ''}/>`,
+    );
   if (drawing.hatch)
     parts.push(
       `<path d="${drawing.hatch}" stroke="${stroke}" stroke-opacity="${SKETCH_HATCH_OPACITY}" stroke-width="${r2(Math.max(1, paint.strokePx / 2))}"${line}/>`,
@@ -52,7 +58,10 @@ function svgMarkerDrawing(
   const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
   const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="marker">`];
-  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"/>`);
+  if (drawing.solid)
+    parts.push(
+      `<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"${drawing.solidEvenOdd ? ' fill-rule="evenodd"' : ''}/>`,
+    );
   for (const d of drawing.streaks)
     if (d)
       parts.push(
@@ -80,12 +89,25 @@ export function svgSketchedBody(
   // Something sits on this shape (sketch-backdrop.ts): a solid fill, never hatching.
   backdrop = false,
 ): string | null {
-  if (shape.kind !== 'rect' && shape.kind !== 'ellipse' && shape.kind !== 'diamond') return null;
-  const paint = handDrawnElementPaint(el, finish, shape.fill, backdrop);
+  if (
+    shape.kind !== 'rect' &&
+    shape.kind !== 'ellipse' &&
+    shape.kind !== 'diamond' &&
+    shape.kind !== 'image'
+  )
+    return null;
+  // An image has no fill of its own to shade, and its edge takes its line colour or the default ink.
+  const fill = shape.kind === 'image' ? 'none' : shape.fill;
+  const line =
+    shape.kind === 'image'
+      ? ((el as { strokeColor?: string }).strokeColor ?? defaultStrokeColor(el))
+      : shape.stroke;
+  const paint = handDrawnElementPaint(el, finish, fill, backdrop);
   if (!paint) return null;
   const body = {
-    fill: shape.fill,
-    stroke: shape.stroke,
+    fill,
+    // A line too pale to read on its fill is drawn in a stronger shade (handDrawnInk), as on the canvas.
+    stroke: handDrawnInk(line, fill),
     strokePx: paint.strokePx,
     dash: paint.dash,
   };
@@ -158,14 +180,14 @@ const INK_TAGS = /<(rect|circle|ellipse|path|line|polyline|polygon|use)\b/g;
 const HAS_INK = /<(rect|circle|ellipse|path|line|polyline|polygon|use)\b/;
 const HAS_WORDS = /<(text|image|foreignObject)\b/;
 // Shapes that clip, mask or paint (never drawn themselves): hiding one would empty its clip, so they are kept whole.
-const DEFINITIONS = /<(clipPath|mask|defs|pattern|marker)\b[^>]*>[\s\S]*?<\/\1>/g;
+const DEFINITIONS = ['clipPath', 'mask', 'defs', 'pattern', 'marker'] as const;
 // The hand-drawn body (svgSketchDrawing) is already drawn by hand; it is drawn once, under the face, never wobbled.
-const SKETCHED_BODY = /<g [^>]*data-finish="sketch">[\s\S]*?<\/g>/;
+const SKETCHED_BODY = 'data-finish="sketch"';
 
 /** Every ink tag in `markup` hidden, leaving its words and photos; definitions untouched. */
 function hideInk(markup: string): string {
   const kept: string[] = [];
-  const held = markup.replace(DEFINITIONS, (d) => `<!--lvd-def-${kept.push(d) - 1}-->`);
+  const held = replaceBlocks(markup, DEFINITIONS, (d) => `<!--lvd-def-${kept.push(d) - 1}-->`);
   return held
     .replace(INK_TAGS, '<$1 visibility="hidden"')
     .replace(/<!--lvd-def-(\d+)-->/g, (_, i: string) => kept[Number(i)]!);
@@ -175,8 +197,9 @@ function hideInk(markup: string): string {
  *  copy (every ink tag hidden) over it, so the words keep their place and stay sharp. A sketched body inside is
  *  drawn once, untouched, where it was: under a box's face, over a table's grid. */
 export function svgSketchFace(markup: string): string {
-  const body = SKETCHED_BODY.exec(markup)?.[0] ?? '';
-  const face = body ? markup.replace(body, '') : markup;
+  const at = markedGroup(markup, SKETCHED_BODY);
+  const body = at ? markup.slice(at[0], at[1]) : '';
+  const face = at ? markup.slice(0, at[0]) + markup.slice(at[1]) : markup;
   const ink = face.replace(WORDS, '').replace(PHOTOS, '');
   const inkLayer = HAS_INK.test(ink) ? `<g filter="url(#${SKETCH_FACE_FILTER.id})">${ink}</g>` : '';
   const wordsLayer = HAS_WORDS.test(face) ? hideInk(face) : '';

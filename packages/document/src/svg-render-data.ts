@@ -82,9 +82,9 @@ export function svgProgressBar(
   const r = el.height / 2;
   const fillW = (el.width * pct) / 100;
   return (
-    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(r)}" fill="${xmlEscape(track)}"/>` +
+    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(r)}" fill="${xmlEscape(track)}" data-marker-shape=""/>` +
     (fillW > 0
-      ? `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(fillW)}" height="${r2(el.height)}" rx="${r2(r)}" fill="${xmlEscape(accent)}"/>`
+      ? `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(fillW)}" height="${r2(el.height)}" rx="${r2(r)}" fill="${xmlEscape(accent)}" data-marker-shape=""/>`
       : '') +
     progressBarLabel(el, pct, fillW, accent, track, textColor, fontFamily)
   );

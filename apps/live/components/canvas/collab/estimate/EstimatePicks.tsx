@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function EstimatePicks({
   values,
@@ -54,6 +55,7 @@ function PickCard({
   onPress?: () => void;
 }) {
   const press = usePressWithoutDrag(() => onPress?.());
+  const shadow = useFaceShadow();
   return (
     <button
       type="button"
@@ -67,7 +69,7 @@ function PickCard({
         color: chosen ? QA_ON_ACCENT : textColor,
         backgroundColor: chosen ? QA_ACCENT : tint(textColor, 0.04),
         borderColor: chosen ? QA_ACCENT : tint(textColor, 0.14),
-        boxShadow: chosen ? `0 10px 18px -10px ${QA_ACCENT}` : undefined,
+        boxShadow: shadow(chosen ? `0 10px 18px -10px ${QA_ACCENT}` : undefined),
         transform: chosen ? 'translateY(-3px)' : undefined,
       }}
     >

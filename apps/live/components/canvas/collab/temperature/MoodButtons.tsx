@@ -12,6 +12,7 @@ import { tint } from '../collab-chrome';
 import { stopPointer } from '../qa/qa-parts';
 import { MoodGlyph } from './MoodGlyph';
 import { MOOD_GRID } from './mood-grid';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function MoodButtons({
   mine,
@@ -62,6 +63,7 @@ function MoodButton({
   const press = usePressWithoutDrag(() => onPress?.());
   const hue = TEMPERATURE_COLORS[index]!;
   const word = TEMPERATURE_MOODS[index]!;
+  const shadow = useFaceShadow();
   const button = (
     <button
       type="button"
@@ -75,7 +77,7 @@ function MoodButton({
         color: chosen ? hue : textColor,
         backgroundColor: chosen ? tint(hue, 0.16) : tint(textColor, 0.04),
         borderColor: chosen ? tint(hue, 0.7) : tint(textColor, 0.1),
-        boxShadow: chosen ? `0 8px 16px -8px ${hue}` : undefined,
+        boxShadow: shadow(chosen ? `0 8px 16px -8px ${hue}` : undefined),
         transform: chosen ? 'translateY(-2px)' : undefined,
       }}
     >

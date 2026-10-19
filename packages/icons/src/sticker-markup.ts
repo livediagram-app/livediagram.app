@@ -27,6 +27,9 @@ const SHADOW_OPACITY = 0.14;
 // The hairline around the white plate. Without it a white sticker on a white
 // canvas is invisible except for its shadow.
 const PLATE_EDGE = '#e2e8f0';
+// The plate follows its tab's finish where the art does not (docs/specs/008-canvas/finish.md "Stickers"): its shadow
+// is marked so Professional and Marker drop it, and the emoji's own drawing is kept out of the finish's redraw.
+const SHADOW_ATTRS = 'data-sticker-shadow="" data-finish-keep=""';
 
 // A badge's word has to fit its pill, and the words run from "P0" to
 // "OUT OF SCOPE". Bold uppercase at this letter-spacing measures ~0.70em per
@@ -43,7 +46,7 @@ const BADGE_TRACKING = 1.2;
 
 // An emoji sticker's plate: its shadow and its white, hairlined tile.
 const EMOJI_PLATE =
-  `<rect x="8" y="12" width="84" height="84" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}"/>` +
+  `<rect x="8" y="12" width="84" height="84" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}" ${SHADOW_ATTRS}/>` +
   `<rect x="8" y="8" width="84" height="84" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>`;
 
 // An emoji's own drawing (its SVG's viewBox and contents), for a render with no emoji font (resolve.ts).
@@ -55,7 +58,7 @@ const STICKER_GLYPH_BOX = { x: 23, y: 23, size: 54 };
 export const ICON_GLYPH_BOX = { x: 2, y: 2, size: 20 };
 
 export function emojiArtMarkup(art: EmojiArt, box: { x: number; y: number; size: number }): string {
-  return `<svg x="${box.x}" y="${box.y}" width="${box.size}" height="${box.size}" viewBox="${art.viewBox}">${art.markup}</svg>`;
+  return `<svg x="${box.x}" y="${box.y}" width="${box.size}" height="${box.size}" viewBox="${art.viewBox}" data-finish-keep="">${art.markup}</svg>`;
 }
 
 // An emoji sticker drawn from its emoji's own art rather than a font's glyph: the same plate, the art where the
@@ -76,7 +79,7 @@ export function stickerArt(def: StickerDef): StickerArt {
     return {
       viewBox: '0 0 220 88',
       markup:
-        `<rect x="6" y="10" width="208" height="76" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}"/>` +
+        `<rect x="6" y="10" width="208" height="76" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}" ${SHADOW_ATTRS}/>` +
         `<rect x="6" y="6" width="208" height="76" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>` +
         `<rect x="${BADGE_PILL.x}" y="${BADGE_PILL.y}" width="${BADGE_PILL.width}" height="${BADGE_PILL.height}" rx="20" fill="${fill}"/>` +
         `<text x="${num(x)}" y="${num(y)}" font-family="system-ui, sans-serif" font-size="${fs}"` +

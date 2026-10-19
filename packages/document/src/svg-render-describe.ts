@@ -9,7 +9,7 @@ import type { TagColour } from './tag-colours';
 import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
-import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
+import { imageCornerPx } from './drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
   defaultFillColor,
@@ -21,7 +21,7 @@ import {
 } from './colors';
 import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
 import { fontIdsUsed, resolveFontStack } from './fonts';
-import { elementFontId, isFinish, type Finish } from './finish';
+import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
@@ -218,7 +218,8 @@ export function describeBoxedExport(
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar
     // 'full' → circle), objectFit defaults to 'contain'.
-    const radius = cornerRadiusPx(el.borderRadius, el.width, el.height, IMAGE_DEFAULT_RADIUS_PX);
+    // Square by default under Professional (docs/specs/008-canvas/finish.md "Images").
+    const radius = imageCornerPx(el, resolveFinish(undefined, opts.tabFinish));
     const objectFit = el.objectFit ?? 'contain';
     const href = el.imageId ? resolveImageHref?.(el.imageId) : undefined;
     return {
