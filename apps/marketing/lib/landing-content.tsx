@@ -968,9 +968,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore slide decks',
     title: 'Build the deck, then present it',
     description:
-      'Start a slide from one of 46 ready-made layouts, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
+      'Start a slide from one of 61 ready-made layouts, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
     metaDescription:
-      'Slide decks from 46 ready-made layouts or from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
+      'Slide decks from 61 ready-made layouts or from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
     highlights: [
       'Slide pages, ready-made layouts',
       'Slides made from what you drew',
@@ -983,7 +983,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides',
         title: 'Slide pages, ready-made layouts',
         description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 61 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
       },
       {
         art: <SlideDeckArt />,

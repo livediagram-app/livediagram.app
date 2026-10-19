@@ -12,8 +12,9 @@ import { apiFetchImageDataUrl } from './api/images';
 type ExportImageEntry = {
   // base64 data URL — embedded into the SVG export's <image href>.
   href: string;
-  // Decoded element for the PNG/PDF canvas's ctx.drawImage.
-  image: HTMLImageElement;
+  // Decoded element for the PNG/PDF canvas's ctx.drawImage; absent for an SVG-only render (a
+  // layout tile's sample picture), which the canvas path then draws as the placeholder.
+  image?: HTMLImageElement;
 };
 
 // imageId → loaded bytes. An imageId absent from the map (fetch failed, or no

@@ -1007,6 +1007,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageFitToContent':
     "A tab's board was put onto a page made around it, nothing moved, as it entered Pages mode.",
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto a page.',
+  'Tab|Changed|PageLayoutSurprise':
+    "Someone pressed Surprise Me in a page's layout gallery, putting a random layout onto the page.",
   'Tab|Changed|OpensInPages':
     "Someone set a tab to open in Pages mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
@@ -1244,8 +1246,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
     'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
-  'UI|Closed|EmptyPageLayouts':
-    'Someone hid the Start From a Layout card on an empty infographic page.',
+  'UI|Opened|EmptyPageInvite':
+    'Someone pressed Choose a Layout on an empty page too small on screen for its layout card (a phone, or zoomed out).',
+  'UI|Closed|EmptyPageLayouts': 'Someone hid the Start From a Layout card on an empty page.',
   'UI|Closed|EmptyPageLayoutsBlank':
     'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
   'UI|Closed|NewDocument':

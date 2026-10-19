@@ -15,6 +15,7 @@ import {
   PEN_INK,
 } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
+import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isBoxed, isVoteHost, threadAt } from '@livediagram/document';
@@ -489,8 +490,12 @@ export function EditorCanvasHost() {
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
+  const shownElements = presentingElements ?? activeTab.elements;
+  // On a page with a fill of its own, an element is drawn for that page rather than the chrome
+  // (stock-colour-projector.ts "PageView"); off Pages mode, or with no filled page, nothing to do.
+  const pageView = usePageView(shownElements, pagesMode?.pages, activeTab.theme);
   const canvasElements = projectStockColours(
-    presentingElements ?? activeTab.elements,
+    shownElements,
     surface,
     themeViewMap(activeTab.theme, appearance),
     labelsFollowCanvas(activeTab)
@@ -499,6 +504,7 @@ export function EditorCanvasHost() {
           drawn: backdrop.backgroundColor,
         }
       : undefined,
+    pageView,
   );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so

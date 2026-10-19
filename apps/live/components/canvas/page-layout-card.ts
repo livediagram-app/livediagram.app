@@ -1,12 +1,17 @@
-// When an empty page shows its in-page layout card (EmptyPageLayouts; docs/specs/007-editor/pages-mode.md "An empty
-// infographic page shows its layouts inside itself"). Pure, so each rule is tested on its own.
+// When an empty page offers its layouts on itself (docs/specs/007-editor/pages-mode.md "An empty
+// page offers its layouts"): the Start From a Layout card (EmptyPageLayouts) where the page on
+// screen has room for it, else a Choose a Layout button in its middle (EmptyPageInvite). Pure, so
+// each rule is tested on its own.
 import type { LaidOutPage } from '@livediagram/document';
-import { EMPTY_PAGE_LAYOUTS_WIDTH } from './EmptyPageLayouts';
 
-// Screen px an empty page needs round the in-page layout card, and the least height on screen that holds it.
+// Screen px an empty page needs round the in-page layout card.
 export const LAYOUT_CARD_MARGIN = 16;
-// Six categories make three rows of cards.
-export const LAYOUT_CARD_MIN_HEIGHT = 440;
+// The least room on screen the card is shown in (its header, the search and chips, a row of tiles).
+export const LAYOUT_CARD_MIN_WIDTH = 340;
+export const LAYOUT_CARD_MIN_HEIGHT = 380;
+// The most the card grows to, however large the page is on screen.
+export const LAYOUT_CARD_MAX_WIDTH = 900;
+export const LAYOUT_CARD_MAX_HEIGHT = 660;
 
 export type LayoutCardContext = {
   // The session may edit this page's tab.
@@ -24,7 +29,8 @@ export type LayoutCardContext = {
   zoom: number;
 };
 
-export function layoutCardShows(page: LaidOutPage, c: LayoutCardContext): boolean {
+/** Whether the empty page offers its layouts on itself at all, whatever its size on screen. */
+export function layoutOfferShows(page: LaidOutPage, c: LayoutCardContext): boolean {
   return (
     c.editable &&
     !c.placing &&
@@ -37,8 +43,26 @@ export function layoutCardShows(page: LaidOutPage, c: LayoutCardContext): boolea
     c.contentCount === 0 &&
     !c.offersKind &&
     !c.panelOpen &&
-    !c.hidden &&
-    page.rect.width * c.zoom >= EMPTY_PAGE_LAYOUTS_WIDTH + LAYOUT_CARD_MARGIN * 2 &&
-    page.rect.height * c.zoom >= LAYOUT_CARD_MIN_HEIGHT
+    !c.hidden
   );
+}
+
+/** The card's size on screen for the page: the room the page leaves inside its margin, capped. */
+export function layoutCardSize(page: LaidOutPage, zoom: number): { width: number; height: number } {
+  return {
+    width: Math.min(LAYOUT_CARD_MAX_WIDTH, page.rect.width * zoom - LAYOUT_CARD_MARGIN * 2),
+    height: Math.min(LAYOUT_CARD_MAX_HEIGHT, page.rect.height * zoom - LAYOUT_CARD_MARGIN * 2),
+  };
+}
+
+/** The card shows where the page offers its layouts and has room on screen for it. */
+export function layoutCardShows(page: LaidOutPage, c: LayoutCardContext): boolean {
+  if (!layoutOfferShows(page, c)) return false;
+  const { width, height } = layoutCardSize(page, c.zoom);
+  return width >= LAYOUT_CARD_MIN_WIDTH && height >= LAYOUT_CARD_MIN_HEIGHT;
+}
+
+/** The Choose a Layout button shows where the page offers its layouts but the card has no room. */
+export function layoutInviteShows(page: LaidOutPage, c: LayoutCardContext): boolean {
+  return layoutOfferShows(page, c) && !layoutCardShows(page, c);
 }

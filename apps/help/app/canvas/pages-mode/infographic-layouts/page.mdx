@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { LayoutCategoriesScene } from '@/components/illustrations/pages';
+import { LayoutGalleryScene } from '@/components/illustrations/pages';
 
 export const metadata = helpMetadata({
   title: 'Infographic Layouts',
@@ -25,17 +25,23 @@ New to infographic pages? Open the page's cog and press **Show Me** at the top o
 
 ## Choosing a Layout
 
-Every infographic page has a **Layout** button in its title bar, above its top-right corner, before **Background**, **Tidy**, the padlock and the cog. Press it, on an empty page or a full one, and the page's layouts open in a popover under it, the eight categories first, four across; on a phone they open in a sheet from the bottom of the screen, two across. Zoomed out, or on a phone, the button shows just its icon.
+Every infographic page has a **Layout** button in its title bar, above its top-right corner, before **Background**, **Tidy**, the padlock and the cog. Press it, on an empty page or a full one, and the page's layout gallery opens in a popover under it; on a phone it opens in a sheet from the bottom of the screen. Zoomed out, or on a phone, the button shows just its icon.
 
-<Figure caption="The Layout button in an infographic page's title bar, its popover open on the eight categories with how many layouts each holds.">
-  <LayoutCategoriesScene />
+<Figure caption="The Layout button in an infographic page's title bar, its popover open on the layout gallery: the search, Surprise Me, the category chips and the first layouts.">
+  <LayoutGalleryScene />
 </Figure>
 
-Press a category to see its layouts. They slide in from the right, and **All layouts** in the bar above them (the category named beside it) slides you back to the categories. Each tile is the real layout, drawn for **this** page at its size and orientation, in your tab's theme and font, with its sample words, icons and charts, so what you see is what you get.
+The gallery shows every layout at once, in large tiles grouped under each category's heading as you scroll. To narrow it down:
+
+- **Press a category chip** (Covers, Posters, Data and the rest, each with its count) to see that category alone; **All** brings them all back.
+- **Type in the search** to find a layout by its name or what it holds: "picture", "chart", "timeline", "quote". Every word you type must match.
+- **Press Surprise Me** for a random layout from those shown. In the Layout popover it stays open, so you can keep pressing it and watch your page change until one feels right.
+
+Each tile is the real layout, drawn for **this** page at its size and orientation, in your tab's theme and font, with its sample words, icons and charts, and on the page as you see it (dark in dark mode), so what you see is what you get. Where a layout leaves room for a picture, its tile shows a sample picture so you can tell at a glance; the page gets an empty picture for your own.
 
 **Hover a tile to preview it on the page.** The page shows that layout as it would land, with your own words and pictures already moved into it, in the page's own background; move away and your page comes back. A preview is only a picture: nothing is placed and nothing is added to your undo history until you press a tile.
 
-**An empty page** also offers its layouts inside itself, on a card headed Start From a Layout in the middle of the page. Press a layout there to place it (the card has no hover preview, since it would cover the card's own tiles), or **Hide** the card until you next open the tab. It goes on its own once anything lands on the page, and the **Layout** button still has every layout.
+**An empty page** also offers its layouts inside itself, on a card headed Start From a Layout in the middle of the page, as large as the page on your screen allows, with the same search, chips and Surprise Me. Press a layout there to place it (the card has no hover preview, since it would cover the card's own tiles), or **Hide** the card until you next open the tab. It goes on its own once anything lands on the page, and the **Layout** button still has every layout. On a phone, or when the page is too small on screen for the card, a **Choose a Layout** button sits in the middle of the page instead and opens the same gallery.
 
 ## Placing It
 

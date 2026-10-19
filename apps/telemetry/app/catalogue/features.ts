@@ -438,7 +438,16 @@ export const PAGE_BUILDING = chart(
   'Changed',
   'Pages Built',
   'A layout put onto a page, a page duplicated, moved or split, or a board put onto a page.',
-  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut', 'PageFitToContent'] },
+  {
+    types: [
+      'PageLayout',
+      'PageLayoutSurprise',
+      'PageDuplicated',
+      'PageMoved',
+      'PagesLaidOut',
+      'PageFitToContent',
+    ],
+  },
 );
 
 // Leaving Pages past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
