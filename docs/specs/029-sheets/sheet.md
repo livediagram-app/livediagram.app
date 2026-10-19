@@ -594,7 +594,8 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
 ### Filter
 
 - **Filter** turns on a filter over the filled range around the selection (or the selection): its first row
-  becomes a header with a filter button in each cell.
+  becomes a header with a filter button in each cell. A header cell keeps room at its right for the button, so a
+  right-aligned heading is never covered by it.
 - A column's filter button opens: **Sort A to Z**, **Sort Z to A**, **Filter by Values** (a searchable list of the
   column's values with counts, **Select All** and **Clear**), and **Filter by Condition** (is empty, is not empty,
   text contains, does not contain, starts with, ends with, is exactly, date is before / after / on, greater than,

@@ -251,6 +251,13 @@ export function SheetGrid({
     }
     return { r: p.r1, cols };
   }, [c.sheet.layout]);
+  // The header cells that show a filter button keep room for it (SheetCells); a stable object, so the memoised cells
+  // draw again only when the filter changes.
+  const filterHead = useMemo(
+    () =>
+      filter && c.interactive ? { r: filter.r, cols: new Set(filter.cols.map((x) => x.c)) } : null,
+    [filter, c.interactive],
+  );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return;
@@ -440,6 +447,7 @@ export function SheetGrid({
             >
               <SheetCells
                 padEnd={dropdownCols}
+                filterHead={filterHead}
                 formatRules={formatRules}
                 sheet={c.sheet}
                 workbook={c.workbook}

@@ -134,7 +134,10 @@ SheetToolbarMenus.tsx    number format, colours, font size, borders, merge (with
 SheetFreezeRows.tsx      Freeze's rows, in the toolbar's Freeze menu
 SheetFormulaBar.tsx      name box + fx (edits through useFormulaInput, as the cell editor does)
 SheetGrid.tsx            the scroll container, sticky viewport, keys (sheet-keys.ts), overlays, Add Rows footer
-SheetCells.tsx           the visible cells in four regions (frozen corner, rows, columns, body), overflow, fit
+SheetCells.tsx           the visible cells in four regions (frozen corner, rows, columns, body), overflow, fit;
+                         right padding where an arrow sits (DROPDOWN_PAD_PX 22, RULE_ARROW_PX, FILTER_PAD_PX 20 on
+                         the filter's header cells, `filterHead`)
+SheetCellSlot.tsx        an unstyled row + gridcell (by index) for a control drawn over a cell
 SheetHeaders.tsx         column letters and row numbers, selection tint, unhide arrows
 SheetSelectionLayer.tsx  selection, fill handle, copy and cut marquee, reference / presence / Find outlines,
                          peer name tags, filter buttons
