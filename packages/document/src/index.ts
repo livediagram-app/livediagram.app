@@ -608,6 +608,7 @@ export * from './marker-element';
 export * from './face-finish';
 export * from './marker-face';
 export * from './hand-drawn';
+export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';

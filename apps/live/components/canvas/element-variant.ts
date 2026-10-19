@@ -49,7 +49,8 @@ export function describeVariant(
 ): { className: string; style: CSSProperties } {
   // Sketch and Marker hand the body to the SketchOverlay (a sticky stays paper under Marker).
   const sketched = finishDrawsBodyByHand(finish, element.type);
-  const softShadow = finishDrawsDefaultShadow(finish) ? 'shadow-sm ' : '';
+  // A marker drawing casts none either (finish.md "Marker"): a box whose face draws itself keeps no soft shadow.
+  const softShadow = finishDrawsDefaultShadow(finish) && finish !== 'marker' ? 'shadow-sm ' : '';
   // Multi-selection uses a much louder ring (solid brand-500, offset)
   // so a busy canvas with many selected elements reads unambiguously.
   // Single selection keeps the subtler brand-200 / brand-300 rings, and in

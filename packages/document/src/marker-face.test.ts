@@ -70,8 +70,38 @@ describe('facePartRole', () => {
     expect(roleOf(20, 20, paint({ fill: '#38bdf8' }))).toBeNull();
     expect(roleOf(80, 20, paint({ fill: '#38bdf8' }), 10)).toBeNull();
     expect(roleOf(200, 3, paint({ fill: '#38bdf8' }))).toBeNull();
-    expect(roleOf(390, 290, paint({ fill: '#f8fafc' }))).toBeNull();
+    expect(roleOf(370, 270, paint({ fill: '#f8fafc' }))).toBeNull();
     expect(roleOf(120, 60, paint({}))).toBeNull();
+  });
+
+  it("edges the face's own box in marker, outlined or only filled", () => {
+    expect(roleOf(400, 300, paint({ fill: '#0ea5e9' }))).toBe('frame');
+    expect(roleOf(396, 296, paint({ fill: '#0ea5e9' }))).toBe('frame');
+  });
+
+  it('keeps a dashed line as drawn (a progress arc would close)', () => {
+    const ring = { kind: 'ellipse', cx: 50, cy: 50, rx: 40, ry: 40 } as const;
+    expect(
+      facePartRole(ring, outlineOfEllipse(50, 50, 40, 40), paint({ stroke: '#333', strokePx: 8, dashed: true }), face),
+    ).toBeNull();
+  });
+
+  it('colours in a disc that fills its face (an onion ring), which is never a backdrop', () => {
+    const disc = { kind: 'ellipse', cx: 200, cy: 150, rx: 200, ry: 150 } as const;
+    expect(facePartRole(disc, outlineOfEllipse(200, 150, 200, 150), paint({ fill: '#bae6fd' }), face)).toBe('shape');
+  });
+
+  it('draws a polyline (a chart series) as a line', () => {
+    const points = [
+      { x: 0, y: 80 },
+      { x: 100, y: 20 },
+      { x: 200, y: 60 },
+    ];
+    const line = { kind: 'polyline', points } as const;
+    expect(
+      facePartRole(line, { segments: [], area: null }, paint({ stroke: '#0ea5e9', strokePx: 2 }), face),
+    ).toBeNull();
+    expect(markerFacePart(line, paint({ fill: 'none', stroke: '#0ea5e9', strokePx: 2 }), face, 1, 0)?.role).toBe('line');
   });
 
   it('draws a ring as a line', () => {
@@ -99,11 +129,19 @@ describe('markerFacePart', () => {
     expect(markerFacePart(band, paint({ fill: '#38bdf8' }), face, seed, 1)).not.toEqual(a);
   });
 
-  it("colours a shape in streaks and outlines it in its fill when it has no line", () => {
+  it('colours a shape in streaks and outlines it in a deeper shade of its fill when it has no line', () => {
     const part = markerFacePart(band, paint({ fill: '#38bdf8' }), face, seed, 0)!;
     expect(part.role).toBe('shape');
-    expect(part.svg).toContain('stroke="#38bdf8"');
+    expect(part.svg).toContain(`stroke="${markerFrameInk('#38bdf8', '#38bdf8')}"`);
+    expect(part.svg).not.toContain('stroke="#38bdf8"');
     expect(part.svg).toMatch(/stroke-opacity="0\.07"/);
+  });
+
+  it("outlines a part in its own line's colour when it has one", () => {
+    const slim = { ...band, height: 30 };
+    const part = markerFacePart(slim, paint({ fill: '#38bdf8', stroke: '#0369a1', strokePx: 1 }), face, seed, 0)!;
+    expect(part.role).toBe('shape');
+    expect(part.svg).toContain('stroke="#0369a1"');
   });
 
   it('carries the part opacity', () => {

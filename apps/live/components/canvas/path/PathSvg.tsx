@@ -1,14 +1,15 @@
 import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 import {
   BORDER_DASH_ARRAY,
-  BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   isCompoundPath,
+  isHandDrawn,
+  polygonStrokePx,
   pathElementD,
   type PathElement,
 } from '@livediagram/document';
 import { FREEHAND_SVG_CLASS, StrokeHitPath } from '@/components/canvas/boxed-element-overlays';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 // A path element as the canvas draws it (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
 // "Rendering"): its curve in canvas px, in an svg with a viewBox the size of its box, so the canvas
@@ -33,7 +34,12 @@ export function PathSvg({
   // Every contour; a combined shape's holes show through (docs/specs/007-editor/logo-pages.md).
   const d = pathElementD(element, { x: 0, y: 0 });
   const fillRule = isCompoundPath(element) ? 'evenodd' : undefined;
-  const width = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+  // A path follows its tab's finish (docs/specs/008-canvas/finish.md "Polygons and paths"): under Sketch and Marker
+  // the element's SketchOverlay draws its line by hand and this keeps only its fill; under Professional an unset
+  // line is Thin.
+  const finish = useElementFinish(undefined);
+  const handDrawn = isHandDrawn(finish);
+  const width = polygonStrokePx({ strokeWidth: element.strokeWidth }, finish);
   const dash = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const filled = element.closed && fill !== 'transparent';
   // A Drawing animation (docs/specs/028-animation/element-animations.md) on the drawn line.
@@ -52,7 +58,7 @@ export function PathSvg({
           d={d}
           fill={filled ? fill : 'none'}
           fillRule={fillRule}
-          stroke={stroke}
+          stroke={handDrawn ? 'none' : stroke}
           strokeWidth={width}
           strokeDasharray={dash ?? undefined}
           strokeLinecap="round"

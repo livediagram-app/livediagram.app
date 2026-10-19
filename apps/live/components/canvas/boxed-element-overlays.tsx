@@ -9,7 +9,11 @@ import {
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   type FreehandElement,
+  isHandDrawn,
+  isPolygonOutline,
+  polygonStrokePx,
 } from '@livediagram/document';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import type { SVGProps } from 'react';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
@@ -161,9 +165,16 @@ export function FreehandSvg({
         ? vbPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
           (element.closed ? ' Z' : '')
         : catmullRomToBezierPath(vbPoints, element.closed);
+  // A Polygon-tool outline follows its tab's finish (docs/specs/008-canvas/finish.md "Polygons"): drawn by hand
+  // under Sketch and Marker (the element's SketchOverlay draws it; this keeps only its hit line), its unset width
+  // Thin under Professional.
+  const finish = useElementFinish(undefined);
+  const polygon = isPolygonOutline(element);
+  const handDrawn = polygon && isHandDrawn(finish);
   // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset.
-  const widthPx =
-    element.penWidth ?? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+  const widthPx = polygon
+    ? polygonStrokePx(element, finish)
+    : (element.penWidth ?? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]);
   // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
   // (fixed wide round stroke, multiply blend, never filled) so the
   // border-preset widths and dash styles don't apply. Kept in sync
@@ -216,7 +227,7 @@ export function FreehandSvg({
         aria-hidden
       >
         {anim.defs}
-        {d ? (
+        {d && !handDrawn ? (
           <path
             {...anim.mainProps}
             d={d}

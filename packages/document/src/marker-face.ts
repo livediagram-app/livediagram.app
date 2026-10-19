@@ -22,7 +22,9 @@ export const MARKER_FACE_FRAME_MIN_PX = 40;
 export const MARKER_FACE_SHAPE_MIN_PX = 24;
 /** ... and its shortest side at least this, px: hairline rules and slivers stay plain. */
 export const MARKER_FACE_SHAPE_THIN_PX = 6;
-/** A part covering at least this share of its face is the face's backdrop, drawn as it is. */
+/** A rectangle within this of the face's own box, px, on both sides, is the face's box itself. */
+export const MARKER_FACE_BODY_SLACK_PX = 6;
+/** An unoutlined rectangle covering at least this share of its face is the face's backdrop, drawn as it is. */
 export const MARKER_FACE_BACKDROP_SHARE = 0.6;
 /** Most parts one face draws in marker (document order), bounding a busy face's cost. */
 export const MARKER_FACE_MAX_PARTS = 120;
@@ -36,7 +38,8 @@ export type FacePartShape =
   | { kind: 'rect'; x: number; y: number; width: number; height: number; rx: number }
   | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
   | { kind: 'path'; d: string }
-  | { kind: 'polygon'; points: Pt[] };
+  | { kind: 'polygon'; points: Pt[] }
+  | { kind: 'polyline'; points: Pt[] };
 
 /** How a part is painted: colours as CSS colours or null for none, its line width, its own opacity. */
 export type FacePartPaint = {
@@ -44,6 +47,8 @@ export type FacePartPaint = {
   stroke: string | null;
   strokePx: number;
   opacity?: number;
+  // The line is dashed (a progress arc is a dashed ring): redrawn whole it would close, so it keeps its look.
+  dashed?: boolean;
 };
 
 /** What a part is under Marker: a frame (outlined, its fill kept solid), a shape (coloured in and outlined in its
@@ -114,6 +119,11 @@ function outlineOf(shape: FacePartShape): SketchOutline {
       return outlineOfPath(shape.d);
     case 'polygon':
       return outlineOfPolygon(shape.points);
+    case 'polyline':
+      return {
+        segments: shape.points.slice(1).map((to, i) => ({ kind: 'line' as const, from: shape.points[i]!, to })),
+        area: null,
+      };
   }
 }
 
@@ -145,6 +155,7 @@ export function facePartRole(
   face: { width: number; height: number },
 ): FacePartRole | null {
   if (shape.kind === 'rect' && isPillRect(shape.width, shape.height, shape.rx)) return null;
+  if (paint.dashed) return null;
   const b = boundsOf(outline);
   if (!b) return null;
   const long = Math.max(b.w, b.h);
@@ -152,11 +163,18 @@ export function facePartRole(
   if (long <= MARKER_FACE_SHAPE_MIN_PX) return null;
   const stroked = isInkColour(paint.stroke) && paint.strokePx > 0;
   const filled = isInkColour(paint.fill);
-  const closed = shape.kind !== 'path' || outline.area !== null;
-  // An outlined box is a frame at any size: the panel's own frame, as well as a card in it.
-  if (stroked && closed && shape.kind === 'rect' && short >= MARKER_FACE_FRAME_MIN_PX) return 'frame';
-  // An unoutlined fill across most of the face is what the face sits on.
-  if (b.w * b.h >= MARKER_FACE_BACKDROP_SHARE * face.width * face.height) return null;
+  const closed = (shape.kind !== 'path' && shape.kind !== 'polyline') || outline.area !== null;
+  if (shape.kind === 'rect') {
+    // The face's own box (a banner, a timer, a panel): its edge in marker, whether it is outlined or only filled.
+    const body =
+      Math.abs(shape.width - face.width) <= MARKER_FACE_BODY_SLACK_PX &&
+      Math.abs(shape.height - face.height) <= MARKER_FACE_BODY_SLACK_PX;
+    if (body && (stroked || filled)) return 'frame';
+    // An outlined box is a frame: a card, a column, an input big enough to be one.
+    if (stroked && short >= MARKER_FACE_FRAME_MIN_PX) return 'frame';
+    // An unoutlined fill across most of the face is what the face sits on.
+    if (b.w * b.h >= MARKER_FACE_BACKDROP_SHARE * face.width * face.height) return null;
+  }
   if (filled && closed) return short >= MARKER_FACE_SHAPE_THIN_PX ? 'shape' : null;
   if (stroked) return 'line';
   return null;
@@ -177,12 +195,17 @@ export function markerFacePart(
   const role = facePartRole(shape, outline, paint, face);
   if (!role) return null;
   const partSeed = (seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
+  // A line in its own colour; an edge with no line of its own (a filled band, a bar, a banner) in a deeper shade of
+  // its fill, which on the fill itself would not show; a frame's line pulled from its fill (markerFrameInk).
+  const stroked = isInkColour(paint.stroke);
   const colour = xmlEscape(
-    role === 'frame'
-      ? markerFrameInk(paint.stroke!, paint.fill)
-      : role === 'shape' && !isInkColour(paint.stroke)
-        ? paint.fill!
-        : paint.stroke!,
+    role === 'line'
+      ? paint.stroke!
+      : !stroked
+        ? markerFrameInk(paint.fill!, paint.fill)
+        : role === 'frame'
+          ? markerFrameInk(paint.stroke!, paint.fill)
+          : paint.stroke!,
   );
   const px =
     role === 'frame'
@@ -214,11 +237,12 @@ export function markerFaceSeed(elementId: string): number {
   return (sketchSeed(elementId) ^ 0x5f3759df) >>> 0;
 }
 
-/** A polygon's `points` attribute as points (numbers in pairs, comma or space separated); null for fewer than 3. */
+/** A polygon's or polyline's `points` attribute as points (numbers in pairs, comma or space separated); null for
+ *  fewer than 2. */
 export function polygonPoints(attr: string): Pt[] | null {
   const n = attr.trim().split(/[\s,]+/).map(Number);
   if (n.some((v) => !Number.isFinite(v))) return null;
   const points: Pt[] = [];
   for (let i = 0; i + 1 < n.length; i += 2) points.push({ x: n[i]!, y: n[i + 1]! });
-  return points.length >= 3 ? points : null;
+  return points.length >= 2 ? points : null;
 }

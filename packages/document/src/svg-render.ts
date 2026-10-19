@@ -255,12 +255,14 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}${sketch ?? ''}</g>`;
   }
   if (el.type === 'freehand' && shape.kind === 'rect') {
-    // The sketch's actual polyline instead of its bounding box.
-    return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
+    // The sketch's actual polyline instead of its bounding box; a Polygon-tool outline drawn by hand in its finish
+    // (docs/specs/008-canvas/finish.md "Polygons").
+    return `<g${opAttr}${rotAttr}>${sketch ?? svgFreehandShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export").
-    return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, shape.stroke, shape.fill)}</g>`;
+    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"); drawn by hand in its finish, it keeps
+    // its own fill under the hand-drawn line (finish.md "Polygons and paths").
+    return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, sketch ? 'none' : shape.stroke, shape.fill, finish)}${sketch ?? ''}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {
     // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.

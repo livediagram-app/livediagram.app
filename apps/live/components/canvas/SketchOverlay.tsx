@@ -32,11 +32,29 @@ export function useSketchPaint(
   backdrop = false,
 ): SketchPaint | null {
   const shape = element.type === 'shape' ? element.shape : undefined;
-  const { strokeWidth, strokeStyle, borderRadius } = element as {
-    strokeWidth?: string;
-    strokeStyle?: string;
-    borderRadius?: string;
-  };
+  const {
+    strokeWidth,
+    strokeStyle,
+    borderRadius,
+    packedPoints,
+    closed,
+    straightEdges,
+    penWidth,
+    nodes,
+    subpaths,
+  } = element as {
+      strokeWidth?: string;
+      strokeStyle?: string;
+      borderRadius?: string;
+      // A Polygon-tool outline's own points (docs/specs/008-canvas/finish.md "Polygons").
+      packedPoints?: string;
+      closed?: boolean;
+      straightEdges?: boolean;
+      penWidth?: number;
+      // A Path-tool curve's nodes.
+      nodes?: unknown;
+      subpaths?: unknown;
+    };
   return useMemo(
     () => handDrawnElementPaint(element, finish, fill, backdrop),
     // The fields the paint reads, so moving the element keeps the drawing.
@@ -50,6 +68,12 @@ export function useSketchPaint(
       strokeWidth,
       strokeStyle,
       borderRadius,
+      packedPoints,
+      closed,
+      straightEdges,
+      penWidth,
+      nodes,
+      subpaths,
       finish,
       fill,
       backdrop,

@@ -31,7 +31,7 @@ export function svgProfessionalFace(markup: string): string {
 // and the hand-drawn body (svgMarkerDrawing, already drawn in marker): kept whole, never redrawn.
 const HELD =
   /<(clipPath|mask|defs|pattern|marker|symbol|foreignObject)\b[^>]*>[\s\S]*?<\/\1>|<g [^>]*data-finish="marker">[\s\S]*?<\/g>/g;
-const PART = /<(rect|circle|ellipse|path|polygon)\b([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/g;
+const PART = /<(rect|circle|ellipse|path|polygon|polyline)\b([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/g;
 
 function partShape(tag: string, a: Record<string, string>): FacePartShape | null {
   const n = (k: string) => Number(a[k] ?? 0);
@@ -42,9 +42,10 @@ function partShape(tag: string, a: Record<string, string>): FacePartShape | null
       return { kind: 'ellipse', cx: n('cx'), cy: n('cy'), rx: n('r'), ry: n('r') };
     case 'ellipse':
       return { kind: 'ellipse', cx: n('cx'), cy: n('cy'), rx: n('rx'), ry: n('ry') };
-    case 'polygon': {
+    case 'polygon':
+    case 'polyline': {
       const points = a.points ? polygonPoints(a.points) : null;
-      return points ? { kind: 'polygon', points } : null;
+      return points ? { kind: tag, points } : null;
     }
     default:
       return a.d ? { kind: 'path', d: a.d } : null;
@@ -76,6 +77,7 @@ export function svgMarkerFace(
         stroke,
         strokePx: stroke ? Number(a['stroke-width'] ?? 1) : 0,
         ...(a.opacity ? { opacity: Number(a.opacity) } : {}),
+        ...(a['stroke-dasharray'] && a['stroke-dasharray'] !== 'none' ? { dashed: true } : {}),
       };
       const part = markerFacePart(shape, paint, face, seed, drawn);
       if (!part) return tag;

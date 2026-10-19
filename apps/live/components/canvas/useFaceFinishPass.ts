@@ -30,7 +30,7 @@ const DRAWN_ATTR = 'data-marker-drawn';
 const PILL_ATTR = 'data-finish-pill';
 /** What the pass never reads into: the hand-drawn body, photos, embeds, kept parts and its own ink. */
 const SKIP = `[data-finish="marker"], [data-finish-keep], [${INK_ATTR}], img, video, iframe, canvas, foreignObject, text`;
-const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'polygon']);
+const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'polygon', 'polyline']);
 
 /** The face under `root` in its finish, re-taken whenever it settles after a change: Marker draws its frames and
  *  shapes in marker; Professional keeps its SVG pills round (face-finish.css squares every other rectangle). */
@@ -101,7 +101,7 @@ export function drawMarkerFace(root: HTMLElement, elementId: string): number {
     if (drawn >= MARKER_FACE_MAX_PARTS) break;
     const part =
       el instanceof HTMLElement
-        ? frameInk(el, face, seed, drawn)
+        ? frameInk(el, face, seed, drawn, el === root)
         : isSvgShape(el)
           ? shapeInk(el, face, seed, drawn)
           : null;
@@ -117,6 +117,8 @@ function frameInk(
   face: { width: number; height: number },
   seed: number,
   index: number,
+  // The face's own box: a fill alone gives it a marker edge (a banner, a timer), as a border does.
+  own = false,
 ): FacePartDrawing | null {
   const w = el.offsetWidth;
   const h = el.offsetHeight;
@@ -129,13 +131,17 @@ function frameInk(
       parseFloat(css.getPropertyValue(`border-${s.toLowerCase()}-width`)) > 0 &&
       css.getPropertyValue(`border-${s.toLowerCase()}-style`) !== 'none',
   );
-  if (!bordered) return null;
+  if (!bordered && !own) return null;
   const rx = parseFloat(css.borderTopLeftRadius) || 0;
   if (isPillRect(w, h, rx)) return null;
   const inset = 2;
   const part = markerFacePart(
     { kind: 'rect', x: inset, y: inset, width: w - 2 * inset, height: h - 2 * inset, rx },
-    { fill: css.backgroundColor, stroke: css.borderTopColor, strokePx: parseFloat(css.borderTopWidth) },
+    {
+      fill: css.backgroundColor,
+      stroke: bordered ? css.borderTopColor : null,
+      strokePx: bordered ? parseFloat(css.borderTopWidth) : 0,
+    },
     face,
     seed,
     index,
@@ -150,7 +156,7 @@ function frameInk(
     css.borderTopWidth,
   )}px;overflow:visible;pointer-events:none`;
   svg.innerHTML = part.svg;
-  el.setAttribute(DRAWN_ATTR, part.role);
+  if (bordered) el.setAttribute(DRAWN_ATTR, part.role);
   el.appendChild(svg);
   return part;
 }
@@ -171,6 +177,7 @@ function shapeInk(
     stroke: css.stroke,
     strokePx: css.stroke === 'none' ? 0 : parseFloat(css.strokeWidth) || 0,
     ...(Number(css.opacity) < 1 ? { opacity: Number(css.opacity) } : {}),
+    ...(css.strokeDasharray && css.strokeDasharray !== 'none' ? { dashed: true } : {}),
   };
   const part = markerFacePart(shape, paint, face, seed, index);
   if (!part) return null;
@@ -215,9 +222,10 @@ function shapeOf(el: SVGGeometryElement): FacePartShape | null {
       rx: el.rx.baseVal.value,
       ry: el.ry.baseVal.value,
     };
-  if (el instanceof SVGPolygonElement) {
+  if (el instanceof SVGPolygonElement || el instanceof SVGPolylineElement) {
     const points = Array.from(el.points, (p) => ({ x: p.x, y: p.y }));
-    return points.length >= 3 ? { kind: 'polygon', points } : null;
+    const kind = el instanceof SVGPolygonElement ? 'polygon' : 'polyline';
+    return points.length >= 2 ? { kind, points } : null;
   }
   const d = el.getAttribute('d');
   return d ? { kind: 'path', d } : null;

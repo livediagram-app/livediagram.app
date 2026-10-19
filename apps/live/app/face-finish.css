@@ -27,7 +27,9 @@
 
 /* No shadows: the utilities' shadow layers are emptied, so a ring (a focus or presence ring, drawn in the same
  * box-shadow) still shows. Inline shadows are dropped by their parts (finishFaceShadows). */
+[data-face-finish='professional'],
 [data-face-finish='professional'] *,
+[data-face-finish='marker'],
 [data-face-finish='marker'] * {
   --tw-shadow: 0 0 #0000 !important;
   --tw-inset-shadow: 0 0 #0000 !important;
