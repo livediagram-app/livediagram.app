@@ -100,7 +100,7 @@ export function SheetFormulaBar({
       <input
         aria-label="Name box"
         // A small rounded field, as the name box reads in a modern spreadsheet.
-        className="my-[3px] ml-1.5 h-[22px] w-20 shrink-0 rounded-md border px-2 text-center font-mono text-[11.5px] outline-none transition focus:ring-2"
+        className="my-[2px] ml-1.5 h-6 w-20 shrink-0 rounded-md border px-2 text-center font-mono text-[11.5px] outline-none transition focus:ring-2"
         style={
           {
             borderColor: c.palette.cardBorder,

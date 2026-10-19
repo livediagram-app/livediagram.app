@@ -21,7 +21,9 @@ delete, undo, label edit via Space) that already work on a selection.
 - **No wrap, no trap:** Tab past the last element (or Shift+Tab before the
   first) falls through to the browser default, so keyboard focus can always
   leave the canvas. Escape keeps its existing behaviour (clear selection /
-  exit transient modes).
+  exit transient modes). An element that grows on Tab (a mind node, a flowchart step) gives way only when a
+  pointer or an edit selected it: one the walk itself just reached keeps Tab as traversal, or every press would
+  grow a new node and focus could never leave.
 - **F6 moves between regions.** Tab is busy inside the canvas, walking its elements, so on a real document the
   chrome after it in the tab order (the palette strip, the bottom controls, the tab bar) sat behind dozens of
   presses. F6 moves focus to the next region and Shift+F6 to the previous, wrapping round, in screen order:

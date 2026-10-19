@@ -240,7 +240,10 @@ Tab is also the canvas's element-traversal key ([Canvas accessibility baseline](
 and both listeners sit on `window`. The traversal one is mounted first, so the
 selected element gets first refusal on the key; otherwise pressing Tab on a mind
 node would cycle the tab's elements instead of growing a branch.
-Shift+Tab stays traversal, since only plain Tab grows.
+Shift+Tab stays traversal, since only plain Tab grows. A node the traversal itself just landed on does not
+claim Tab: there Tab walks on, so a keyboard user walking the canvas is never trapped on a node that grows a
+child per press. A pointer press on it, or editing it (Tab in the label editor), grows as usual, and Enter still
+adds a sibling.
 
 ### New lines
 
