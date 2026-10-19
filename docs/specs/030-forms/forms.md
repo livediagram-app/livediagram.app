@@ -119,7 +119,9 @@ side panel. The Form tab shows the form as respondents will see it, centred in a
 previewing), the help link and the form's **cog**.
 
 - The answer controls the builder draws (unselected questions, and a selected one's control) are a picture of the
-  form: they show a not-allowed cursor and take no input; a press on one selects its question.
+  form: they show a not-allowed cursor and take no input; a press on one selects its question. For a screen reader an
+  unselected question is one button, "Edit question: <prompt>", stretched across the card (the picture of it hidden
+  behind that name), with its grip a control of its own beside it rather than inside it.
 - **Share Form** is the header's Share button: on a Form tab, for someone who may edit it, the header's **Share** is
   **Share Form** (filled once the form is published), so the page never shows two share buttons. Everyone else keeps
   the document's Share.

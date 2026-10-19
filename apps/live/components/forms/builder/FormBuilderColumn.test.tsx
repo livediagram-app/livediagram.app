@@ -111,6 +111,16 @@ describe('an Editor', () => {
     expect(screen.queryByRole('textbox', { name: 'Question' })).toBeNull();
   });
 
+  // A question opens through its own edit button; the card is no button, so its grip is not a control in a control.
+  it('opens a question through an edit button that holds none of the card’s other controls', () => {
+    const { container } = render(<Harness canEdit />);
+    const edit = screen.getByRole('button', { name: 'Edit question: Summary' });
+    const card = container.querySelector('[data-form-question]')!;
+    expect(card.getAttribute('role')).toBeNull();
+    expect(edit.querySelector('button')).toBeNull();
+    expect(edit.contains(screen.getByRole('button', { name: 'Move Summary' }))).toBe(false);
+  });
+
   it('turns Required off, duplicates, moves and deletes, each one edit', () => {
     render(<Harness canEdit />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit question: Summary' }));

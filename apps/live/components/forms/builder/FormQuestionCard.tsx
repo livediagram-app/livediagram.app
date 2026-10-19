@@ -104,22 +104,23 @@ export function FormQuestionCard({
       <div
         ref={cardRef}
         data-form-question={q.id}
-        role={b.canEdit ? 'button' : undefined}
-        tabIndex={b.canEdit ? 0 : undefined}
-        aria-label={b.canEdit ? `Edit question: ${promptOf(q)}` : undefined}
         onClick={b.canEdit ? () => b.select(q.id) : undefined}
-        onKeyDown={
-          b.canEdit
-            ? (e) => {
-                if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  b.select(q.id);
-                }
-              }
-            : undefined
-        }
-        className={`group/q relative rounded-xl outline-none transition ${b.canEdit ? 'cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--form-accent)]' : ''} ${dragging ? 'opacity-40' : ''}`}
+        // The card wears its edit button's keyboard focus: that button lies under the question's picture.
+        className={`group/q relative rounded-xl outline-none transition ${b.canEdit ? 'cursor-pointer has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-[var(--form-accent)]' : ''} ${dragging ? 'opacity-40' : ''}`}
       >
+        {b.canEdit ? (
+          // The card opens for editing through one button stretched across it, with the grip above it as a control of
+          // its own: a card that was itself a button held the grip, a control nested in a control.
+          <button
+            type="button"
+            aria-label={`Edit question: ${promptOf(q)}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              b.select(q.id);
+            }}
+            className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
+          />
+        ) : null}
         {b.canEdit ? (
           <button
             type="button"
@@ -131,7 +132,8 @@ export function FormQuestionCard({
             <GripIcon className="rotate-90" />
           </button>
         ) : null}
-        <div>
+        {/* What respondents see, drawn disabled: a picture of the question for an Editor, whose edit button names it. */}
+        <div aria-hidden={b.canEdit || undefined}>
           <QuestionView
             question={q}
             value={undefined}
