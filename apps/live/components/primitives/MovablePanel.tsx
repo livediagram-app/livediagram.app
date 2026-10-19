@@ -14,6 +14,7 @@ import { announcePanelPresence } from '@/lib/panel-presence';
 import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.types';
 import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
+import { useDockPopoverKeys } from './useDockPopoverKeys';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -115,6 +116,9 @@ export function MovablePanel({
   // A popover off a button (the Toolbar layout's Explorer, the cluster
   // popovers): shown only while the button has it open.
   const popoverShown = asPopover && popoverOpen === true;
+
+  // As a popover off a dock button: keyboard focus in on a keyboard open, Escape out (useDockPopoverKeys).
+  useDockPopoverKeys(ref, popoverShown, onPopoverClose);
 
   // Outside-tap auto-close, for a popover that opts in with
   // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity /
