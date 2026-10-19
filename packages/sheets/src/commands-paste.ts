@@ -229,7 +229,9 @@ export function pasteExternal(
         const read = readTypedInput(cell.text, wb.locale, toCtx, current?.nf === 'text');
         ch.i =
           read.kind === 'value' ? read.input : read.kind === 'invalid' ? { s: cell.text } : null;
-        if (read.kind === 'value' && read.hint && mode === 'all')
+        // A formula's hint never overrides the copied cell's own format.
+        const own = cell.format?.nf && cell.format.nf !== 'auto';
+        if (read.kind === 'value' && read.hint && mode === 'all' && !(read.hint.ifAutomatic && own))
           ch.f = hintFormat(cell.format, read.hint);
         else if (mode === 'all') ch.f = cell.format ?? null;
       } else {
