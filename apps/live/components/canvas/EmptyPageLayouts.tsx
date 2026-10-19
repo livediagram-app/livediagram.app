@@ -1,22 +1,32 @@
 'use client';
 
-// An empty infographic page's own invitation (docs/specs/007-editor/pages-mode.md "Layouts"):
-// the page panel's Layouts, on a card centred inside the page, held at one screen size like the
-// first page's kind choice. A layout pressed lands on the page at once. No hover preview here: drawn
-// over the page the card sits on, it hid the very tiles being pointed at. Hide puts the card away
-// for the page; the host takes it away once anything lands there.
-import type { LaidOutPage } from '@livediagram/document';
-import type { PageLayoutId } from '@livediagram/templates';
-import { CloseIcon, Tooltip } from '@livediagram/ui';
+// An empty page's own invitation (docs/specs/007-editor/pages-mode.md "An empty page offers its
+// layouts"): the layout gallery on a card centred inside the page, as large as the page on screen
+// leaves room for (layoutCardSize) and held at that screen size whatever the zoom. A layout pressed
+// lands on the page at once. No hover preview here: drawn over the page the card sits on, it hid
+// the very tiles being pointed at. Hide puts the card away for the page; the host takes it away
+// once anything lands there. Where the card has no room, the page shows EmptyPageInvite instead.
+import { lucideSparkles } from '@livediagram/icons/lucide';
+import { pageKindOf, type LaidOutPage } from '@livediagram/document';
+import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
+import { CloseIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
 import { ChangeThemeButton } from './ChangeThemeButton';
-import { LayoutBrowser } from './infographic-page-layouts-section';
+import { LayoutGallery } from './layout-gallery/LayoutGallery';
+import { layoutCardSize } from './page-layout-card';
 
-// The card's width in screen px; the host shows it only on a page with room for it.
-export const EMPTY_PAGE_LAYOUTS_WIDTH = 340;
-// The wide card, four layouts across, so a category opens without scrolling; shown where the page
-// on screen has room for it.
-export const EMPTY_PAGE_LAYOUTS_WIDE_WIDTH = 560;
+const SparklesIcon = lucideGlyph(lucideSparkles, 18);
+
+// The card's header, search and chips (and a logo page's Start From Scratch): what the gallery's
+// scrolling area leaves of the card's height.
+const CARD_CHROME_HEIGHT = 168;
+const LOGO_SCRATCH_HEIGHT = 48;
+// Wide enough to read each tile's description under its name, and for the header's badge beside
+// its title (narrower, the title takes the room).
+const DESCRIBED_MIN_WIDTH = 520;
+
+// What the card calls a page's layouts, by its kind.
+const KIND_NOUN = { slide: 'slide', logo: 'logo', infographic: 'page', article: 'page' } as const;
 
 export function EmptyPageLayouts({
   page,
@@ -25,7 +35,6 @@ export function EmptyPageLayouts({
   onHide,
   onBlank,
   onChangeTheme,
-  wide = false,
 }: {
   page: LaidOutPage;
   zoom: number;
@@ -35,9 +44,11 @@ export function EmptyPageLayouts({
   onBlank: () => void;
   // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
   onChangeTheme?: (() => void) | undefined;
-  // The wide card (EMPTY_PAGE_LAYOUTS_WIDE_WIDTH, four across).
-  wide?: boolean;
 }) {
+  const { width, height } = layoutCardSize(page, zoom);
+  const kind = pageKindOf(page);
+  const count = layoutCatalogueFor(kind).layouts.length;
+  const logo = page.kind === 'logo';
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       <div
@@ -47,41 +58,67 @@ export function EmptyPageLayouts({
         // A press on the card is the card's, never the canvas's (no marquee, no deselect).
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
-        className="pointer-events-auto animate-fade-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
+        className="pointer-events-auto relative flex animate-dialog-in flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
         style={{
-          width: wide ? EMPTY_PAGE_LAYOUTS_WIDE_WIDTH : EMPTY_PAGE_LAYOUTS_WIDTH,
+          width,
+          maxHeight: height,
           transform: `scale(${1 / zoom})`,
           transformOrigin: 'center',
         }}
       >
-        <div className="mb-2 flex items-center justify-between gap-2 px-0.5">
-          <p
-            id={`empty-page-layouts-${page.id}`}
-            className="text-sm font-semibold text-slate-900 dark:text-slate-100"
-          >
-            Start From a Layout
-          </p>
-          <div className="flex items-center gap-1">
+        {/* A soft wash of the brand behind the header: the card's one flourish. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-brand-50 to-transparent dark:from-brand-500/10"
+        />
+        <div className="relative mb-3 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {width >= DESCRIBED_MIN_WIDTH ? (
+              <span
+                aria-hidden
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-md shadow-brand-900/20"
+              >
+                <SparklesIcon />
+              </span>
+            ) : null}
+            <div className="min-w-0">
+              <p
+                id={`empty-page-layouts-${page.id}`}
+                className="whitespace-nowrap text-base font-semibold text-slate-900 dark:text-slate-50"
+              >
+                Start From a Layout
+              </p>
+              <p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+                {count} {KIND_NOUN[kind]} layouts in your theme. Pick one, then make it yours.
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
             {onChangeTheme ? <ChangeThemeButton onClick={onChangeTheme} /> : null}
             <Tooltip label="Hide">
               <button
                 type="button"
                 aria-label="Hide"
                 onClick={onHide}
-                className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 <CloseIcon />
               </button>
             </Tooltip>
           </div>
         </div>
-        {/* A long category scrolls inside the card rather than running off the page. */}
-        <div className="-mr-1 max-h-[380px] overflow-y-auto pr-1">
-          <LayoutBrowser page={page} onApply={onApply} onPreview={() => {}} wide={wide} />
+        <div className="relative min-h-0">
+          <LayoutGallery
+            page={page}
+            onApply={onApply}
+            onPreview={() => {}}
+            described={width >= DESCRIBED_MIN_WIDTH}
+            maxHeight={`${Math.max(160, height - CARD_CHROME_HEIGHT - (logo ? LOGO_SCRATCH_HEIGHT : 0))}px`}
+          />
         </div>
         {/* A logo page can start from nothing: the card goes for good on that page, its layouts
             still in its panel (docs/specs/007-editor/logo-pages.md "Logo layouts"). */}
-        {page.kind === 'logo' ? (
+        {logo ? (
           <DashedAddButton label="Start From Scratch" className="mt-2" onClick={onBlank} />
         ) : null}
       </div>

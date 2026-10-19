@@ -199,9 +199,8 @@ Exclude), **Wordmark**, **Logo Kit**.
 buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's rect and
   background, the tab's theme and font, and `useIconCatalogs()`; set as the markup of a div of the
   tile's width and the page's aspect. Measured 0.04 ms a layout.
-- The in-page card is `EMPTY_PAGE_LAYOUTS_WIDE_WIDTH` (560) with `LayoutBrowser wide` (four
-  columns, tiles `WIDE_THUMB_W` 104 px) when `page.rect.width * zoom` holds it and
-  `LAYOUT_CARD_MARGIN` either side, else `EMPTY_PAGE_LAYOUTS_WIDTH` (340, two columns).
+- The in-page card is sized by `layoutCardSize` and holds `LayoutGallery` (pages-mode blueprint
+  "In-page layout card"); too small on screen, `EmptyPageInvite` stands in for it.
 - Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/
 DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scratch** on a logo page,
   calling `onBlank`: `CanvasPages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls

@@ -971,11 +971,8 @@ swipe, with no X.
   Persona, Shout-outs), **Social** (Announcement, Did You Know?, Save the Date, Carousel Cover, Tip
   of the Day, Milestone, Behind the Scenes, Countdown, Product Spotlight, Giveaway, Welcome Aboard,
   Webinar) and **Explainers** (How It Works, Anatomy, Key Concepts, Cheat Sheet, Glossary, Myths and
-  Facts, Fact File, Lesson Summary, Formula Explained). A category with no layouts is not offered. The Layouts tab opens on the categories, each a card fronted
-  by its first two layouts fanned, with its count; a card opens its layouts, under the shared back bar (**All layouts**, the
-  category named in its chip, as the import and export screens browse) to go back. Each move
-  slides: a category's layouts in from the right, the categories back in from the left (the
-  template wizard's slide; none under reduced motion).
+  Facts, Fact File, Lesson Summary, Formula Explained). A category with no layouts is not offered. Every picker browses them in the **layout gallery**
+  (below).
 - **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
   are large text scaled to their box (`textScale`), so they read the same on the canvas and in
   every export.
@@ -1015,31 +1012,59 @@ swipe, with no X.
     words afterwards, by element id.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
+- **The layout gallery** is how every picker offers a page's layouts (the Layout popover, the empty
+  page's card, Choose a Layout's dialog, a logo page's Layouts tab), all of them at once:
+  - Along the top, a **search** ("Search n layouts") and **Surprise Me**. The search narrows every
+    category at once: each word typed must appear in a layout's name, its description or its
+    category's name. Nothing matches: "No layouts match" with Clear Search.
+  - Under them, **category chips** in one row that scrolls sideways: **All** first, then each
+    category, each with its count. All (the default) shows every layout in sections, one per
+    category, its heading (the category's name and count) held at the top while its layouts scroll
+    past; a chip shows that category's layouts alone. A chip and the search combine.
+  - The layouts in **large tiles**, as many columns as the gallery's width holds at 156 px each (a
+    tall page's at 112 px), never fewer than two: each tile is the layout's preview, its name and,
+    where the gallery is wide (the card from 520 px, the popover and the dialog), its one-line
+    description. Under the pointer a tile lifts and takes the brand ring with a **Use** pill at
+    its corner (the same on keyboard focus); none of the motion under reduced motion. Tiles cascade
+    in as a view opens, and draw their preview once they scroll near view (a soft placeholder of
+    the page's shape until then), so ninety layouts open without drawing them all.
+  - **Surprise Me** places a random layout from those shown (never the one it last landed on while
+    there is another), and its dice tumble. In the Layout popover it keeps the popover open, so
+    pressing it again rolls again with the page changing behind it; elsewhere it places and
+    closes as a press does. Tracked as `Tab / Changed / PageLayoutSurprise`.
+  - A picture a layout leaves for the author shows in its tile as a **sample picture** (a soft
+    drawn landscape, the palettes taken in turn), so a picture-led layout reads as one; what lands
+    is the ordinary picture placeholder.
 - **The Layout button**: an infographic or slide page's title bar always holds a **Layout**
   button (an icon and its name on a desktop, the icon alone on a phone, tooltip **Layout**) before
   its Background button, for an Editor, on any page that is not locked, empty or not. It opens the
-  page's layouts (a slide page's the slide layouts) in a popover anchored to it, four tiles across
-  (560 px), with the categories first; on a phone it opens as a bottom sheet, two across. Hovering
-  a tile previews it on the page; pressing one places it (over anything there, at once) and closes
-  the popover; closing it takes any preview away. Opening it is tracked as
+  page's layout gallery (a slide page's the slide layouts) in a popover anchored to it (580 px,
+  headed **Layouts**, the search taking the keyboard); on a phone it opens as a bottom sheet.
+  Hovering a tile previews it on the page; pressing one places it (over anything there, at once)
+  and closes the popover; closing it takes any preview away. Opening it is tracked as
   `UI / Opened / PageLayoutsButton`. These pages' panels hold no Layouts tab: the button is their
   one way in, besides an empty page's own card. A **logo** page keeps its Layouts tab, and its
   empty artboard still invites them: a "Start From a Layout" button beside the cog, only while the
   page is empty, opening the panel on Layouts, with its words while the title bar has room for
   them beside its other buttons and the label, else just its icon, else hidden.
-- **An empty infographic page shows its layouts inside itself**: while an infographic page is
-  empty, on a tab the viewer can edit, a **Start From a Layout** card sits centred on the page,
-  held at one screen size like the first page's kind choice, with the panel's Layouts in it: the
-  categories (Covers, Posters, Data, Steps and Time, Compare, People and Ideas, Social, Explainers, each with its count), then a
-  category's layouts with a way back. Pressing a layout places it (the page is empty, so at once,
-  as one undo step); there is no hover preview here, since drawn over the page it would cover the
-  card's own tiles. The card goes as
+- **An empty page offers its layouts**: while an infographic, slide or logo page is empty, on a tab
+  the viewer can edit, a **Start From a Layout** card sits centred on the page, held at its screen
+  size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
+  most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
+  Layout**, "n slide layouts in your theme. Pick one, then make it yours." naming the page's kind,
+  Change Theme and Hide) over the layout gallery. Pressing a layout places it (the page is empty,
+  so at once, as one undo step); there is no hover preview here, since drawn over the page it
+  would cover the card's own tiles. The card goes as
   soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
   the tab is next opened; the title bar's Layout button still opens the layouts. It
   never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
   (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
   the tool is put down with the page still empty), when presenting or in zen, or when the page is too small on
-  screen to hold it.
+  screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
+  small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
+  sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
+  sheet on a phone, a centred dialog on a desktop, headed like the card; a press or Surprise Me
+  places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
   page's own content is hidden meanwhile (left out of the page clip), so the two never mix. The
@@ -1047,13 +1072,12 @@ swipe, with no X.
   so it shows exactly what a press lands. It is a picture only: nothing is placed and nothing
   enters the history; leaving the tiles (or closing the panel) takes it away.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
-  orientation and rendered as it lands: in the tab's theme and font, its placeholder words, icons
-  and charts, on the page's own background, through the same renderer the exports use. Only
+  orientation and rendered as it lands, as the viewer sees it: placed in the tab's theme as a
+  press places it, drawn in the viewer's half on the page's own background, and on a plain page
+  in dark chrome on the dark paper the canvas shows (not an export's white), through the same
+  renderer the exports use. Only
   outside the editor (no tab to paint with) is a tile a wireframe (text as bars, images shaded,
   icons as dots).
-- **The in-page card's width**: four across (560 px) wherever the page on screen has room for it,
-  so a category's layouts show without scrolling; else two across (340 px). The panel's Layouts
-  tab is always two across.
 
 ## Contents
 
@@ -1159,8 +1183,8 @@ Both show the same list:
 ## Slide layouts
 
 A **slide** page's **Layout** button, and its in-page **Start From a Layout** card, offer the **slide
-layouts** in place of the infographic ones, in the same browser (categories first, then a
-category's layouts, placed at once, hover previews and rendered tiles). They are
+layouts** in place of the infographic ones, in the same layout gallery (placed at once, hover
+previews and rendered tiles). They are
 built for a landscape slide's content box (16:9 or 4:3), in the tab's theme, with type sized to
 be read across a room:
 
@@ -1171,17 +1195,35 @@ be read across a room:
   centred: an eyebrow, a large title, a rule, a subtitle, the event at the foot), **Opening
   Question** (an eyebrow, one question set very large, a rule and a line), **About the Speaker** (a
   round photo, an eyebrow, the name, the role, a rule and three facts), **Objectives** (three
-  numbered cards, each a name and a note) and **Agenda Grid** (four cards, two by two, each a large
-  number, the part and its time).
+  numbered cards, each a name and a note), **Agenda Grid** (four cards, two by two, each a large
+  number, the part and its time) and **Agenda and Image** (a picture down the left edge, full
+  bleed, four numbered parts beside it).
 - **Content**: **Title and Bullets** (a title over five bullet points, each a dot beside a line),
   **Two Columns** (a title over two columns, each a heading and three bullet points), **Image and
   Text** (an image filling the left half, a title, a line and three bullet points to its right),
   **Statement** (an accent rule, one sentence set very large, centred, and a line under it),
   **Quote** (the infographic Quote), **Three Points** (three icons in discs, each a heading and a
   line), **Full Image** (a picture filling the slide under a caption card at its lower left), **Key
-  Takeaway** (a card holding the one thing to remember, set large, beside three supporting points)
-  and **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line).
-- **Data**: **Big Number**, **Key Stats**, **Chart Story**, **Comparison**, **KPI Dashboard** and
+  Takeaway** (a card holding the one thing to remember, set large, beside three supporting points),
+  **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line), **Title
+  Only** (a title, a lead line and a rule, the rest of the slide left for the author's own content),
+  **Sidebar Title** (a panel in the theme's fill down the left edge, full bleed, holding an eyebrow
+  and the title, five bullet points beside it) and **Compare Two** (two cards side by side, each a
+  name, a line and three points, a "vs" disc between them).
+- **Pictures**: slides led by a picture, as a slide app lays them out. **Text and Picture** (an
+  eyebrow, a two-line title, a rule, a lead and three points on the left half, a picture filling
+  the right half to the slide's edges), **Picture and Text** (the same words on the right, a
+  picture filling the left two-fifths), **Hero Picture** (a picture filling the slide under a dark
+  scrim, an eyebrow, a large title and a line centred over it in white), **Picture Band** (a
+  picture across the top half, edge to edge, an eyebrow and title beside a paragraph under it),
+  **Picture and Card** (a picture filling the slide, a full-height card on its right holding an
+  eyebrow, a title, a rule and three points), **Quote and Picture** (a quotation mark, the quote, a
+  rule, the name and role on the left, a picture filling the right to the edges), **Two
+  Pictures** and **Three Pictures** (a title over pictures side by side, a name and a caption under
+  each) and **Picture Mosaic** (an eyebrow, a title, a rule and a line beside one large picture and
+  two small ones stacked).
+- **Data**: **Big Number**, **Number and Picture** (a picture down the left edge, full bleed, an
+  eyebrow, one large figure, a rule, what it counts, a note and a source beside it), **Key Stats**, **Chart Story**, **Comparison**, **KPI Dashboard** and
   **Market Share** (the infographic ones, side by side), **Three Big Numbers** (three figures
   across, fitted as the longest so all stand the same size, a rule, a caption and a note under
   each), **Big Chart** (a full-height bar chart and its headline figure on a card beside it),
@@ -1193,7 +1235,7 @@ be read across a room:
   each), **Milestones** (five years along a rail, a dot on it for each, what happened under it) and
   **Now, Next, Later** (three cards of bullet points).
 - **Closers**: **Thank You** (a large "Thank you", "Questions?", and a contact line), **Team** (the
-  infographic Team), **Summary** (three numbered takeaways, each a bold line and a note), **Call to
+  infographic Team), **Team of Three** (three round photos, each a name, a role and a line), **Summary** (three numbered takeaways, each a bold line and a note), **Call to
   Action** (an eyebrow, one bold ask centred, a button-like pill and a link), **Next Steps** (four
   actions, each with a tick, its owner and its date, a hairline between), **Contact** (a round
   photo, an eyebrow, the name, the role and three ways to get in touch), **Questions** (an icon in
@@ -1201,10 +1243,18 @@ be read across a room:
   beside a full-height picture) and **Resources** (four links, each an icon in a disc, a title and
   where to find it).
 
-Forty-six in all, at least nine to a category; a slide layout reused from the infographics is the
-same layout (same id, same build), filed under the slide category. Every one fits a 16:9 and a
-4:3 slide inside its margins, every icon is one the catalogue draws, and no two of its text boxes
-overlap on either shape.
+Sixty-one in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
+least nine to a category; a slide layout reused from the infographics is the same layout (same id,
+same build), filed under the slide category. Every one fits a 16:9 and a 4:3 slide inside its
+margins, every icon is one the catalogue draws, and no two of its text boxes overlap on either
+shape.
+
+**Full bleed.** A layout is built in the page's content box, and is told how far the page runs
+past it (the margin, its **bleed**). A picture or panel set to the slide's edges reaches exactly that
+far, square-cornered, so it meets the page's own edge; it never stops in the margin short of it, and
+nothing else passes the margins. The words always stay inside them. Words a layout sets over a
+picture (Hero Picture) carry their own colours on a scrim of their own, so they read on any picture
+in any theme.
 
 ## Page actions
 
@@ -1383,7 +1433,7 @@ are diagram formats and are not offered.
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
 `PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
-`PageLocked`, `PageUnlocked`,
+`PageLayoutSurprise` (the layout gallery's Surprise Me), `PageLocked`, `PageUnlocked`,
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
 `PageKindLogo` (the first page's own choice);
@@ -1392,7 +1442,8 @@ are diagram formats and are not offered.
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
-**Start From a Layout** card's Hide). Never a colour, name or layout content.
+**Start From a Layout** card's Hide); `UI · Opened · EmptyPageInvite` (Choose a Layout, where the
+card has no room). Never a colour, name or layout content.
 A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".
 
 ## Into pages

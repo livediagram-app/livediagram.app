@@ -63,6 +63,8 @@
    * from off-screen. Dialogs are the long motion token (motion.md). fly-up-in is the bolder 16px lift the
    * banners, search and template picker keep. */
   --animate-dialog-in: dialog-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  /* The layout gallery's Surprise Me: its dice tumble once as it picks. */
+  --animate-dice-roll: dice-roll var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
    * bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
@@ -83,7 +85,8 @@
   /* A tour's arrival (docs/specs/007-editor/editor-tour.md "Motion"), staged: the dim settles in first, the step card
    * after it. Slower than a dialog: it changes the whole screen, and should feel like the lights dimming, not a cut. */
   --animate-tour-dim-in: fade-in var(--transition-duration-long) cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-tour-card-in: dialog-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1) 50ms both;
+  --animate-tour-card-in: dialog-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1)
+    50ms both;
 }
 
 @keyframes view-forward {
@@ -108,6 +111,18 @@
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes dice-roll {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(200deg) scale(1.25);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
   }
 }
 
@@ -471,7 +486,8 @@
   }
 
   .animate-empty-float,
-  .animate-empty-ring {
+  .animate-empty-ring,
+  .animate-dice-roll {
     animation: none;
   }
 

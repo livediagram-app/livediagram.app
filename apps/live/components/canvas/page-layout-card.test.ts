@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { LaidOutPage } from '@livediagram/document';
-import { layoutCardShows, type LayoutCardContext } from './page-layout-card';
+import {
+  LAYOUT_CARD_MAX_HEIGHT,
+  LAYOUT_CARD_MAX_WIDTH,
+  layoutCardShows,
+  layoutCardSize,
+  layoutInviteShows,
+  type LayoutCardContext,
+} from './page-layout-card';
 
 const page = (over: Partial<LaidOutPage> = {}) =>
   ({
@@ -44,5 +51,28 @@ describe('layoutCardShows', () => {
     expect(layoutCardShows(page({ locked: true }), ok)).toBe(false);
     expect(layoutCardShows(page({ startedBlank: true }), ok)).toBe(false);
     expect(layoutCardShows(page(), { ...ok, zoom: 0.2 })).toBe(false);
+  });
+});
+
+describe('layoutCardSize', () => {
+  it('fills the page on screen inside its margin, up to the most it grows to', () => {
+    expect(layoutCardSize(page(), 0.5)).toEqual({ width: 568, height: 418 });
+    expect(layoutCardSize(page(), 2)).toEqual({
+      width: LAYOUT_CARD_MAX_WIDTH,
+      height: LAYOUT_CARD_MAX_HEIGHT,
+    });
+  });
+});
+
+describe('layoutInviteShows', () => {
+  it('stands in for the card where the page is too small on screen for it (a phone)', () => {
+    expect(layoutInviteShows(page(), { ...ok, zoom: 0.3 })).toBe(true);
+    expect(layoutCardShows(page(), { ...ok, zoom: 0.3 })).toBe(false);
+  });
+
+  it('never shows beside the card, nor where the card would not be offered at all', () => {
+    expect(layoutInviteShows(page(), ok)).toBe(false);
+    expect(layoutInviteShows(page(), { ...ok, zoom: 0.3, contentCount: 2 })).toBe(false);
+    expect(layoutInviteShows(page(), { ...ok, zoom: 0.3, hidden: true })).toBe(false);
   });
 });

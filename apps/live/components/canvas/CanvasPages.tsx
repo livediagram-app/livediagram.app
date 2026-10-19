@@ -3,8 +3,10 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
-import { layoutCardShows, LAYOUT_CARD_MARGIN } from './page-layout-card';
-import { EMPTY_PAGE_LAYOUTS_WIDE_WIDTH, EmptyPageLayouts } from './EmptyPageLayouts';
+import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
+import { EmptyPageLayouts } from './EmptyPageLayouts';
+import { EmptyPageInvite } from './EmptyPageInvite';
+import { LayoutGalleryDialog } from './LayoutGalleryDialog';
 import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
@@ -195,16 +197,21 @@ export function CanvasPages({
   // An empty infographic page shows its layouts inside itself (EmptyPageLayouts): never on the first
   // page while it offers its kind, under its open panel, while a palette tile is armed to place something on it, or
   // on a page too small on screen to hold the card.
-  const showsLayoutCard = (page: LaidOutPage) =>
-    layoutCardShows(page, {
-      editable: !!edit,
-      placing,
-      contentCount: edit ? edit.contentCount(page.id) : 0,
-      offersKind: offersPageKindChoice(pages, page.id, 0),
-      panelOpen: openId === page.id,
-      hidden: layoutsHidden.has(page.id),
-      zoom,
-    });
+  const layoutCardContext = (page: LaidOutPage): LayoutCardContext => ({
+    editable: !!edit,
+    placing,
+    contentCount: edit ? edit.contentCount(page.id) : 0,
+    offersKind: offersPageKindChoice(pages, page.id, 0),
+    panelOpen: openId === page.id,
+    hidden: layoutsHidden.has(page.id),
+    zoom,
+  });
+  const showsLayoutCard = (page: LaidOutPage) => layoutCardShows(page, layoutCardContext(page));
+  // Where the card has no room on screen (a phone, a page zoomed out small): a Choose a Layout
+  // button in the page's middle instead (EmptyPageInvite), opening the gallery on its own.
+  const [galleryFor, setGalleryFor] = useState<string | null>(null);
+  const galleryPage = galleryFor ? pages.find((p) => p.id === galleryFor) : undefined;
+  const showsLayoutInvite = (page: LaidOutPage) => layoutInviteShows(page, layoutCardContext(page));
   // The page a layout is previewed on: its panel's, or its in-page card's.
   const previewed = view.layoutPreview
     ? pages.find((p) => p.id === view.layoutPreview!.pageId)
@@ -533,13 +540,43 @@ export function CanvasPages({
                   track('UI', 'Closed', 'EmptyPageLayoutsBlank');
                   edit.startBlank(page.id);
                 }}
-                wide={
-                  page.rect.width * zoom >= EMPTY_PAGE_LAYOUTS_WIDE_WIDTH + LAYOUT_CARD_MARGIN * 2
-                }
               />
             </div>
           ))
         : null}
+      {edit
+        ? pages.filter(showsLayoutInvite).map((page) => (
+            <div
+              key={page.id}
+              // The page's invitation is the editor's (lib/gif-export/gif-omit.ts).
+              {...{ [GIF_OMIT_ATTR]: '' }}
+              className="pointer-events-none absolute"
+              style={{
+                left: page.rect.x,
+                top: page.rect.y,
+                width: page.rect.width,
+                height: page.rect.height,
+              }}
+            >
+              <EmptyPageInvite
+                pageId={page.id}
+                zoom={zoom}
+                onOpen={() => {
+                  track('UI', 'Opened', 'EmptyPageInvite');
+                  setGalleryFor(page.id);
+                }}
+              />
+            </div>
+          ))
+        : null}
+      {edit && galleryPage ? (
+        <LayoutGalleryDialog
+          page={galleryPage}
+          onApply={(layout) => void edit.applyLayout(galleryPage.id, layout)}
+          onClose={() => setGalleryFor(null)}
+          onChangeTheme={onOpenTheme}
+        />
+      ) : null}
       {open && opened && edit ? (
         <PagePanel
           // One panel per page: switching cogs starts the next page's panel afresh, its pending

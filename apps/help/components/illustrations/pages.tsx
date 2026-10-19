@@ -3,7 +3,7 @@
 // the real surface with its real labels: the pages in a row with their labels, title-bar buttons,
 // cogs, navigator and add button (CanvasPages.tsx, PageNavigator.tsx, AddPageButton.tsx), the
 // page panel (PagePanel.tsx, page-panel-sections.tsx), the Layout button's
-// popover (PageLayoutsButton.tsx, infographic-page-layouts-section.tsx), the export page picker (ExportPagePicker.tsx) and the
+// popover's layout gallery (PageLayoutsButton.tsx, layout-gallery/LayoutGallery.tsx), the export page picker (ExportPagePicker.tsx) and the
 // article formatting toolbar (article/PageToolbar.tsx). Composed from the shared primitives.
 
 import type { ReactNode } from 'react';
@@ -418,9 +418,9 @@ const LAYOUT_CATEGORIES: [string, number, number][] = [
 const THUMB_W = 52;
 const THUMB_H = 37;
 
-/** A small landscape layout tile, drawn as the card's front (each category's own look) or as the
- *  plainer layout peeking behind it. */
-function MiniLayout({ x, y, motif }: { x: number; y: number; motif: number | 'back' }) {
+/** A small landscape layout tile in one of the categories' own looks (a title and lines past the
+ *  last). */
+function MiniLayout({ x, y, motif }: { x: number; y: number; motif: number }) {
   const W = THUMB_W;
   const H = THUMB_H;
   let body: ReactNode;
@@ -561,7 +561,7 @@ function MiniLayout({ x, y, motif }: { x: number; y: number; motif: number | 'ba
         </g>
       );
       break;
-    default: // The layout behind: a title and a few lines
+    default: // A title and a few lines
       body = (
         <g>
           <TextBar x={x + 5} y={y + 6} w={22} h={3.5} tone="accent" />
@@ -588,9 +588,9 @@ function MiniLayout({ x, y, motif }: { x: number; y: number; motif: number | 'ba
 }
 
 /** An infographic page's title bar with its Layout button pressed, and the Layout popover open
- *  under it on the eight categories: each a card fronted by its first two layouts (drawn upright,
- *  the second peeking behind the first), its name and how many layouts it holds. */
-export function LayoutCategoriesScene() {
+ *  under it on the layout gallery: Layouts, the search beside Surprise Me, the category chips with
+ *  All on, and the Covers section's first tiles, one under the pointer (ringed, its Use pill). */
+export function LayoutGalleryScene() {
   // The page: A4 landscape, its only page, so its label is its size alone.
   const pageX = 20;
   const pageW = 360;
@@ -601,18 +601,34 @@ export function LayoutCategoriesScene() {
   const tidyCx = right - 18 - 4 - 22 - 4 - 10;
   const bgX = tidyCx - 10 - 4 - titleButtonWidth('Background');
   const layoutX = bgX - 4 - titleButtonWidth('Layout');
-  // The popover, left-aligned under the Layout button: four cards across.
+  // The popover, left-aligned under the Layout button: the gallery, four tiles across.
   const cols = 4;
-  const cw = 110;
-  const ch = 88;
-  const gap = 6;
-  const pad = 10;
+  const tw = THUMB_W * 2;
+  const th = THUMB_H * 2;
+  const gap = 10;
+  const pad = 12;
   const popX = layoutX;
   const popY = barY + 16;
-  const popW = pad * 2 + cols * cw + (cols - 1) * gap;
-  const popH = pad * 2 + 2 * ch + gap;
+  const popW = pad * 2 + cols * tw + (cols - 1) * gap;
+  const searchY = popY + 30;
+  const chipY = searchY + 30;
+  const sectionY = chipY + 30;
+  const tileY = sectionY + 10;
+  const popH = tileY - popY + th + 34 + pad;
+  const surpriseW = 86;
+  // The chips in one row: All (on), then the first categories; the rest scroll in from the right.
+  let chipX = popX + pad;
+  const chips = [['All', 92] as [string, number], ...LAYOUT_CATEGORIES.slice(0, 4)].map(
+    ([name, count], i) => {
+      const w = name.length * 5.6 + (count > 9 ? 30 : 26);
+      const chip = { name, count, x: chipX, w, on: i === 0 };
+      chipX += w + 6;
+      return chip;
+    },
+  );
+  const TILES = ['Title Page', 'Quote', 'Event', 'Report Cover'];
   return (
-    <Scene w={popX + popW + 12} h={318}>
+    <Scene w={popX + popW + 12} h={popY + popH + 14}>
       {/* The title bar */}
       <Label x={pageX} y={barY} size={10} weight={600} tone="body">
         A4 · Landscape
@@ -628,17 +644,6 @@ export function LayoutCategoriesScene() {
         <TextBar x={pageX + 18} y={barY + 54} w={60} />
         <TextBar x={pageX + 18} y={barY + 66} w={70} tone="faint" />
         <TextBar x={pageX + 18} y={barY + 76} w={52} tone="faint" />
-        {[34, 52, 42, 64, 48].map((bh, i) => (
-          <rect
-            key={i}
-            x={pageX + 22 + i * 18}
-            y={barY + 248 - bh}
-            width={11}
-            height={bh}
-            rx={2}
-            className="fill-brand-400"
-          />
-        ))}
       </Sheet>
       {/* The popover, its soft shadow under it */}
       <rect
@@ -658,47 +663,113 @@ export function LayoutCategoriesScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.3}
       />
-      {LAYOUT_CATEGORIES.map(([name, count, textW], i) => {
-        const cx = popX + pad + (i % cols) * (cw + gap);
-        const cy = popY + pad + Math.floor(i / cols) * (ch + gap);
-        const mid = cx + cw / 2;
-        const badgeW = count > 9 ? 18 : 14;
-        const startX = mid - (textW + 5 + badgeW) / 2;
+      <Label x={popX + pad} y={popY + 16} size={11} weight={700} tone="strong">
+        Layouts
+      </Label>
+      {/* The search, and Surprise Me beside it */}
+      <rect
+        x={popX + pad}
+        y={searchY - 10}
+        width={popW - pad * 2 - surpriseW - 8}
+        height={20}
+        rx={6}
+        className="fill-white stroke-slate-300"
+        strokeWidth={1}
+      />
+      <Label x={popX + pad + 10} y={searchY} size={9.5} tone="muted">
+        Search 92 layouts
+      </Label>
+      <rect
+        x={popX + popW - pad - surpriseW}
+        y={searchY - 10}
+        width={surpriseW}
+        height={20}
+        rx={6}
+        className="fill-brand-50 stroke-brand-200"
+        strokeWidth={1}
+      />
+      <Label
+        x={popX + popW - pad - surpriseW / 2}
+        y={searchY}
+        anchor="middle"
+        size={9.5}
+        weight={700}
+        tone="accent"
+      >
+        Surprise Me
+      </Label>
+      {/* The category chips, All on */}
+      {chips.map((c) => (
+        <g key={c.name}>
+          <rect
+            x={c.x}
+            y={chipY - 8}
+            width={c.w}
+            height={16}
+            rx={8}
+            className={c.on ? 'fill-brand-600' : 'fill-slate-100'}
+          />
+          <text
+            x={c.x + 9}
+            y={chipY + 3.2}
+            fontSize={9}
+            fontWeight={600}
+            className={c.on ? 'fill-white' : 'fill-slate-700'}
+          >
+            {c.name}
+            <tspan dx={4} fontWeight={500} className={c.on ? 'fill-white/80' : 'fill-slate-500'}>
+              {c.count}
+            </tspan>
+          </text>
+        </g>
+      ))}
+      <Label x={popX + pad + 2} y={sectionY} size={8.5} weight={700} tone="muted">
+        COVERS 12
+      </Label>
+      {TILES.map((name, i) => {
+        const x = popX + pad + i * (tw + gap);
+        const hovered = i === 1;
         return (
           <g key={name}>
-            <rect
-              x={cx}
-              y={cy}
-              width={cw}
-              height={ch}
-              rx={7}
-              className="fill-slate-50 stroke-slate-200"
-              strokeWidth={1}
-            />
-            {/* The second layout behind, the first in front, offset as the real card sets them */}
-            <MiniLayout x={mid - THUMB_W / 2 + 9} y={cy + 9} motif="back" />
-            <MiniLayout x={mid - THUMB_W / 2 - 9} y={cy + 15} motif={i} />
-            <Label x={startX} y={cy + 72} size={10} weight={600} tone="strong">
+            <g transform={`translate(${x} ${tileY}) scale(2)`}>
+              <MiniLayout x={0} y={0} motif={i} />
+            </g>
+            {hovered ? (
+              <g>
+                <rect
+                  x={x - 1}
+                  y={tileY - 1}
+                  width={tw + 2}
+                  height={th + 2}
+                  rx={4}
+                  fill="none"
+                  className="stroke-brand-500"
+                  strokeWidth={2}
+                />
+                <rect
+                  x={x + tw - 30}
+                  y={tileY + th - 18}
+                  width={24}
+                  height={12}
+                  rx={6}
+                  className="fill-brand-600"
+                />
+                <text
+                  x={x + tw - 18}
+                  y={tileY + th - 9.5}
+                  textAnchor="middle"
+                  fontSize={7.5}
+                  fontWeight={700}
+                  className="fill-white"
+                >
+                  Use
+                </text>
+              </g>
+            ) : null}
+            <Label x={x + 2} y={tileY + th + 13} size={9.5} weight={700} tone="strong">
               {name}
             </Label>
-            <rect
-              x={startX + textW + 5}
-              y={cy + 65.5}
-              width={badgeW}
-              height={13}
-              rx={6.5}
-              className="fill-slate-200"
-            />
-            <Label
-              x={startX + textW + 5 + badgeW / 2}
-              y={cy + 72.5}
-              anchor="middle"
-              size={10}
-              weight={600}
-              tone="body"
-            >
-              {String(count)}
-            </Label>
+            <TextBar x={x + 2} y={tileY + th + 21} w={tw - 20} h={3} tone="faint" />
           </g>
         );
       })}

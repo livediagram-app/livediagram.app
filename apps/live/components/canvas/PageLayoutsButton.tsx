@@ -1,11 +1,12 @@
 'use client';
 
 // An infographic or slide page's Layout button beside its cog (docs/specs/007-editor/pages-mode.md
-// "Beside the cog", "Layouts"): the page's layouts by category in a popover anchored to the button
-// (a bottom sheet on a phone), as Background opens its swatches. Hovering a tile previews it on the
-// page; a press places it (over anything there, one undo step back) and closes the popover; closing it
-// takes any preview away. Its top right offers Change Theme (the Tab Style popover, as the dock's
-// Theme button opens it) beside an X that closes it.
+// "Beside the cog", "The layout gallery"): the page's layout gallery in a popover anchored to the
+// button (a bottom sheet on a phone), as Background opens its swatches. Hovering a tile previews it
+// on the page; a press places it (over anything there, one undo step back) and closes the popover;
+// Surprise Me places one and keeps it open, to roll again; closing it takes any preview away. Its
+// top offers Change Theme (the Tab Style popover, as the dock's Theme button opens it) beside an
+// X that closes it.
 import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@livediagram/icons/lucide';
 import type { LaidOutPage } from '@livediagram/document';
@@ -14,7 +15,7 @@ import { CloseIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import { ChangeThemeButton } from './ChangeThemeButton';
-import { LayoutBrowser } from './infographic-page-layouts-section';
+import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
 const LayoutsIcon = lucideGlyph(lucidePanelsTopLeft, 14);
@@ -23,8 +24,8 @@ const LayoutsIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 // truncates first.
 const LAYOUTS_ROOM = 28;
 const LAYOUTS_LABELLED_ROOM = 78;
-// Four tiles across, as the wide in-page card sets them, so a category shows without scrolling.
-const POPOVER_WIDTH = 560;
+// Three slide tiles across (four of a tall page's), each with its description.
+const POPOVER_WIDTH = 580;
 
 /** The room the button takes in the title bar: named on a desktop, its icon alone on a phone. */
 export function pageLayoutsRoom(labelled: boolean): number {
@@ -34,6 +35,8 @@ export function pageLayoutsRoom(labelled: boolean): number {
 type BodyProps = {
   page: LaidOutPage;
   onApply: (layout: PageLayoutId) => void;
+  // Surprise Me: places a layout without closing (Body's host passes the plain apply).
+  onSurprise?: (layout: PageLayoutId) => void;
   onPreview: (layout: PageLayoutId | null) => void;
   // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
   onChangeTheme?: (() => void) | undefined;
@@ -43,6 +46,7 @@ type BodyProps = {
 function Body({
   page,
   onApply,
+  onSurprise,
   onPreview,
   onChangeTheme,
   wide,
@@ -56,30 +60,45 @@ function Body({
   useEffect(() => () => clearPreview.current(null), []);
   return (
     <div data-page-layouts-popover="" className={wide ? '' : 'px-3'}>
-      <div className="mb-2 flex items-center justify-end gap-1">
-        {onChangeTheme ? (
-          <ChangeThemeButton
-            onClick={() => {
-              onClose();
-              onChangeTheme();
-            }}
-          />
-        ) : null}
-        {/* A phone's bottom sheet closes by a swipe or an outside press: no X there. */}
+      <div className="mb-2.5 flex items-center justify-between gap-2">
         {wide ? (
-          <Tooltip label="Close">
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <CloseIcon size={12} />
-            </button>
-          </Tooltip>
-        ) : null}
+          <p className="pl-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">Layouts</p>
+        ) : (
+          <span />
+        )}
+        <div className="flex items-center gap-1">
+          {onChangeTheme ? (
+            <ChangeThemeButton
+              onClick={() => {
+                onClose();
+                onChangeTheme();
+              }}
+            />
+          ) : null}
+          {/* A phone's bottom sheet closes by a swipe or an outside press: no X there. */}
+          {wide ? (
+            <Tooltip label="Close">
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <CloseIcon size={12} />
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
       </div>
-      <LayoutBrowser page={page} onApply={onApply} onPreview={onPreview} wide={wide} />
+      <LayoutGallery
+        page={page}
+        onApply={onApply}
+        onSurprise={onSurprise}
+        onPreview={onPreview}
+        described={wide}
+        autoFocus={wide}
+        maxHeight={wide ? 'min(520px, 62vh)' : '58vh'}
+      />
     </div>
   );
 }
@@ -119,6 +138,7 @@ export function PageLayoutsButton({
               props.onApply(layout);
               close();
             }}
+            onSurprise={props.onApply}
           />
         )}
       </TitlePopoverButton>
