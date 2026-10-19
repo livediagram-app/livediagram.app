@@ -125,6 +125,9 @@ export type ImageExportOpts = {
   // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
   // Only a tab window passes it (an inline SVG on the page); every file export is a still.
   motion?: SvgMotion;
+  // A page's writing as estimated without a browser (svg-render-pages.ts pagesWithWriting), drawn where the editor has
+  // not laid that article out (no handle): a tab window onto a Pages tab passes it. SVG only.
+  estimatedWriting?: (page: LaidOutPage) => string | undefined;
 };
 
 // How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
@@ -593,6 +596,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
+  const estimated =
+    !writing && opts.page && opts.estimatedWriting ? opts.estimatedWriting(opts.page) : undefined;
   const clips = exportZoneClips(tab, opts.page);
   const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) =>
@@ -649,12 +654,13 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
             ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
             ...(opts.tabWindowFontIds ?? []),
           ],
-          writing,
+          writing ?? (estimated && opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null),
         ),
       );
   if (fontDefs) parts.push(fontDefs);
   // The writing, over the page and under every element.
   if (writing) parts.push(articleOpsToSvg(writing.ops));
+  else if (estimated) parts.push(estimated);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);

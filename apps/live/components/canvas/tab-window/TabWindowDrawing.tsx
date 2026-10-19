@@ -13,6 +13,7 @@ import { useTabSvg } from '@/components/split/useTabSvg';
 import { usePlanImageExport } from '@/components/dialogs/usePlanImageExport';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTabBackdropPaint } from '@/components/split/useTabBackdropPaint';
+import { renderTabWindowSvg } from '@/lib/tab-window-render';
 import { windowMotion } from './tab-window-motion';
 
 export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: string }) {
@@ -21,7 +22,8 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
   const { tabs } = useEditorContext();
   const plan = usePlanImageExport(tab, tabs);
   // The drawing moves as the tab does on the canvas ("The drawing"): its elements' animations play in the window.
-  const svg = useTabSvg(plan.imageTab, windowMotion, plan.opts);
+  // A Pages tab is drawn as its pages and a Form tab as its form (renderTabWindowSvg).
+  const svg = useTabSvg(plan.imageTab, windowMotion, plan.opts, renderTabWindowSvg);
   const paint = useTabBackdropPaint(tab);
   const svgRef = useRef<SVGSVGElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);

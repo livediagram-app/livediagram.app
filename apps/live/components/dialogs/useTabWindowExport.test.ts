@@ -71,6 +71,29 @@ describe('tabWindowArts', () => {
     expect(arts.has('gone')).toBe(false);
   });
 
+  it('draws a Pages tab as its pages, a Form tab as its form and a Board tab laid out', () => {
+    const shown = [
+      ...tabs,
+      tab('deck', 'Deck', [], { opensIn: 'pages' }),
+      tab('survey', 'Survey', [], {
+        kind: 'form',
+        form: { v: 1, heading: 'Team Survey', sections: [{ id: 's', title: '', questions: [] }] },
+      }),
+    ];
+    const arts = tabWindowArts('slides', ['deck', 'survey'], shown, new Map());
+    expect(arts.get('deck')?.drawing?.markup).toContain('<svg x="');
+    expect(arts.get('survey')?.drawing?.markup).toContain('Team Survey');
+    // A Board tab is its board alone (planImageOf), never the canvas's other elements.
+    const board = tab(
+      'board',
+      'Board',
+      [{ ...box('b', ''), shape: 'plan-board' } as Element, box('loose', 'Loose Note')],
+      { kind: 'board' },
+    );
+    const boardArt = tabWindowArts('slides', ['board'], [...tabs.slice(0, 3), board], new Map());
+    expect(boardArt.get('board')?.drawing?.markup).not.toContain('Loose Note');
+  });
+
   it('puts the drawing inside the window in the tab export', () => {
     const arts = tabWindowArts('slides', ['flow'], tabs, new Map());
     const slides = tab('slides', 'Slides', [win('w', 'flow')]);

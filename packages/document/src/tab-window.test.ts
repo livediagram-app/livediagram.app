@@ -6,6 +6,7 @@ import {
   prefixSvgIds,
   svgTabWindow,
   TAB_WINDOW_SIZE,
+  tabWindowHasDrawing,
   tabWindowMayShow,
   tabWindowNames,
   tabWindowOffers,
@@ -138,5 +139,21 @@ describe('the tab-window kind', () => {
     expect(resolved).toContain('>Flow<');
     // No standard label under or over it.
     expect(resolved.match(/<text/g)).toHaveLength(1);
+  });
+});
+
+describe('tabWindowHasDrawing', () => {
+  it('draws a tab with elements, a tab in Pages (it always has a page) and a Form tab with its form', () => {
+    const el = { id: 'a' };
+    expect(tabWindowHasDrawing({ id: 't', elements: [el] })).toBe(true);
+    expect(tabWindowHasDrawing({ id: 't', elements: [] })).toBe(false);
+    expect(tabWindowHasDrawing({ id: 't', elements: [], opensIn: 'draw' })).toBe(false);
+    expect(tabWindowHasDrawing({ id: 't', elements: [], opensIn: 'pages' })).toBe(true);
+    expect(tabWindowHasDrawing({ id: 't', elements: [], kind: 'form', form: { v: 1 } })).toBe(true);
+    expect(tabWindowHasDrawing({ id: 't', elements: [], kind: 'form' })).toBe(false);
+    // A Plan tab is in Plan, never Pages, whatever a stale `opensIn` says.
+    expect(tabWindowHasDrawing({ id: 't', elements: [], kind: 'board', opensIn: 'pages' })).toBe(
+      false,
+    );
   });
 });

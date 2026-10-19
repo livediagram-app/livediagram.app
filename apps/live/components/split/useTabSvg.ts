@@ -35,10 +35,14 @@ export type TabSvg = {
 //
 // `planOpts` adds what a Plan tab's picture needs beyond its cards (usePlanImageExport): its Sheets' cells and its
 // plan views' pictures. A tab window passes them, so it draws a Board, Sheet or Dashboard tab as laid out.
+//
+// `render` draws the tab: the canvas renderer by default; a tab window passes its own (renderTabWindowSvg), which
+// draws a Pages tab as its pages and a Form tab as its form. A module-level function, so its identity is stable.
 export function useTabSvg(
   tab: Tab | undefined,
   motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
   planOpts?: Pick<NonNullable<Parameters<typeof renderTabToSvg>[1]>, 'sheets' | 'resolvePlanArt'>,
+  render: typeof renderTabToSvg = renderTabToSvg,
 ): TabSvg | null {
   const { imageContext, tabs } = useEditorContext();
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
@@ -79,7 +83,7 @@ export function useTabSvg(
     // `iconsReady` re-renders once the glyph catalogues land, so icons replace their placeholders.
     void iconsReady;
     const seen = tabAsSeen(deferredTab, appearance);
-    const markup = renderTabToSvg(seen, {
+    const markup = render(seen, {
       pattern: false,
       motion: motionFor?.(canvasSurface(seen.backgroundColor)),
       images: images?.map,
@@ -92,5 +96,5 @@ export function useTabSvg(
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor, planOpts]);
+  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor, planOpts, render]);
 }
