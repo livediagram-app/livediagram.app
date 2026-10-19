@@ -60,6 +60,7 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({
 const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {
     hydrated: true,
+    prefsSettled: true,
     anyWelcomeOpen: false,
     isReadOnly: false,
     embedMode: false,
@@ -120,13 +121,44 @@ describe('TourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('makes no offer without a handoff', () => {
+  // Ignoring is not an answer (docs/specs/007-editor/coach-dock.md "The offer"): until it is taken or declined, the
+  // tour is offered on every Diagram tab the person comes to, with or without the /new handoff.
+  it('offers the tour to anyone who has not answered it, without a handoff', () => {
     editor();
+    render(<TourHost />);
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
+  });
+
+  it('makes no offer before the synced preferences are in', () => {
+    editor({ prefsSettled: false });
     render(<TourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
+  });
+
+  it('withdraws an offer left alone when the tab leaves Diagram, recording nothing, and offers it again on return', () => {
+    editor();
+    const { rerender } = render(<TourHost />);
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
+    editor({ editorMode: { mode: 'draw' } });
+    rerender(<TourHost />);
+    expect(writeUserPreferences).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', 'TourSkipped');
+    track.mockClear();
+    editor();
+    rerender(<TourHost />);
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
   });
 
   // docs/specs/007-editor/editor-tour.md "Where it appears": Diagram mode only.

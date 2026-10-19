@@ -403,10 +403,21 @@ describe('PlanTourHost end', () => {
 
   it('ends as skipped when the person opens another tab', () => {
     const r = start();
+    act(() => stage.engine!.next());
     editor({ activeTab: { id: 'tab2', locked: false, elements: [BOARD] } });
     r.rerender(<PlanTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PlanTourSkipped');
     expect(stage.engine?.active).toBe(false);
+  });
+
+  it('withdraws an offer nobody answered on another tab, recording nothing, and offers it again', () => {
+    const r = start();
+    editor({ activeTab: { id: 'tab2', locked: false, elements: [BOARD] } });
+    r.rerender(<PlanTourHost />);
+    expect(stage.engine?.active).toBe(false);
+    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', 'PlanTourSkipped');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Closed', 'PlanTourOffer');
+    expect(writeUserPreferences).not.toHaveBeenCalled();
   });
 
   it('ends as skipped when its board is deleted', () => {

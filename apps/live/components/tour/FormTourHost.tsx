@@ -125,7 +125,6 @@ export function FormTourHost() {
     if (outcome === 'declined') track('UI', 'Closed', 'FormTourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'FormTourCompleted' : 'FormTourSkipped');
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
   // The offer: armed, on a Form tab, usable, not seen (a rerun clears that), and no other tour on screen.
@@ -178,10 +177,10 @@ export function FormTourHost() {
     if (!active) return;
     const here = tab.id;
     if (!canWork || (here !== formTabRef.current && here !== destTabRef.current)) {
-      engineRef.current.stop();
-      endTourRef.current('skipped');
+      // An offer nobody answered is withdrawn, to be offered again; a tour under way ends as skipped.
+      engineRef.current.leave();
     }
-  }, [active, canWork, tab.id, engineRef, endTourRef]);
+  }, [active, canWork, tab.id, engineRef]);
 
   useEffect(() => () => setActiveTour('form', false), []);
 

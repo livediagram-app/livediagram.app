@@ -1032,14 +1032,14 @@ export const MIND_OUTLINE_OPENED = opened(
 
 export const TOUR_OFFERED = opened(
   'Tour Offered',
-  'The Diagram tour (the welcome tour until October 2026) offered.',
+  'The Diagram tour (the welcome tour until October 2026) offered on a Diagram tab, each visit until it is answered.',
   (t) => t === 'TourOffer',
 );
 
 // The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
 export const PLAN_TOUR_OFFERED = opened(
   'Plan Tour Offered',
-  'The Plan tour offered, the first time someone works in Plan mode.',
+  'The Plan tour offered in Plan mode, each visit until it is answered.',
   (t) => t === 'PlanTourOffer',
 );
 
@@ -1047,35 +1047,35 @@ export const PLAN_TOUR_OFFERED = opened(
 // the Visitors tab.
 export const WORKSHOP_TOUR_OFFERED = opened(
   'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode.',
+  'The Workshop tour offered in Workshop mode, each visit until it is answered.',
   (t) => t === 'WorkshopTourOffer',
 );
 
 // The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
 export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode.',
+  'The Draw tour offered in Draw mode, each visit until it is answered.',
   (t) => t === 'DrawTourOffer',
 );
 
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
 export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',
-  'The Forms tour offered, the first time an Editor opens a Form tab.',
+  'The Forms tour offered when an Editor opens a Form tab, each visit until it is answered.',
   (t) => t === 'FormTourOffer',
 );
 
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
 export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar.',
+  'The Avatar tour offered in Avatar mode, each visit until it is answered.',
   (t) => t === 'AvatarTourOffer',
 );
 
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
 export const PAGES_TOUR_OFFERED = opened(
   'Pages Tour Offered',
-  'The Pages tour offered, the first time someone works in Pages mode.',
+  'The Pages tour offered in Pages mode, each visit until it is answered.',
   (t) => t === 'PagesTourOffer',
 );
 

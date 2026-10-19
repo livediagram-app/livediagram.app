@@ -135,7 +135,6 @@ export function PagesTourHost() {
     if (outcome === 'declined') track('UI', 'Closed', 'PagesTourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'PagesTourCompleted' : 'PagesTourSkipped');
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
   const prefsRef = useLatest(prefs);
 
@@ -208,12 +207,12 @@ export function PagesTourHost() {
     }
     startedOnRef.current ??= activeId;
     if (!canWork || !inPages || startedOnRef.current !== activeId || pageGone) {
-      engineRef.current.stop();
       tidyPageTour(apiRef.current.pageId);
       PAGE_PANEL.closePanel();
-      endTourRef.current('skipped');
+      // An offer nobody answered is withdrawn, to be offered again; a tour under way ends as skipped.
+      engineRef.current.leave();
     }
-  }, [active, canWork, inPages, activeId, pageGone, engineRef, endTourRef, apiRef]);
+  }, [active, canWork, inPages, activeId, pageGone, engineRef, apiRef]);
 
   useEffect(() => () => setActiveTour('pages', false), []);
 

@@ -1504,7 +1504,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|TourChip':
     'Someone started the Diagram tour from the tab bar chip its offer folded into.',
   'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
+    'The Diagram tour\'s offer was shown on a Diagram tab: each time someone who has not answered it comes to one (since October 2026; before then only on a first document), or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|PagesTourChip':
     'Someone started the Pages tour from the tab bar chip its offer folded into.',
   'UI|Opened|PagesTourOffer':

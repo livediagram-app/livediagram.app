@@ -25,14 +25,14 @@ proved the better introduction.
   in Plan); an offer owed there waits until the person is on a Diagram tab. Leaving Diagram mid-tour
   (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at
   chrome the other modes do not show.
-- **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
-  the count from the Jump-back-in fetch; `null` = unknown = no offer) creates a document through the wizard
-  (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
-  shows the **offer** in the [coach dock](coach-dock.md) once the editor is ready, and once its start is done (a
-  template picked or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Take the
-  Tour** starts the tour, **No Thanks** dismisses it, and left alone it folds into the **Diagram Tour** chip in the
-  tab bar. A document made from a Plan, Draw, Pages or Workshop template does not show it
-  there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
+- **Each time, until answered.** Whenever a person who has not answered it comes to a Diagram tab they can edit
+  (opening the editor on one, or switching to one), the **offer** shows in the [coach dock](coach-dock.md) once the
+  editor is ready, the synced preferences are in and its start is done (a template picked or Start Diagramming
+  closed, [Template starts](start-diagramming.md) "The tours wait"): **Take the Tour** starts the tour, **No
+  Thanks** dismisses it, and left alone it folds into the **Diagram Tour** chip in the tab bar. Ignoring it, or
+  moving to another mode before answering, is not an answer: it is offered again the next time ([Coach
+  dock](coach-dock.md) "Only an answer is an answer"). Until October 2026 it was offered only on a brand-new
+  user's first document, through the /new handoff flag, so ignoring it once lost it for good.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
 - **Every tour looks and behaves as one.** This tour, and every other (the mode tours, the Pages tour, the element
   tours, every Show Me), speaks through the [coach dock](coach-dock.md): the offer, each step and the closing in
@@ -50,7 +50,7 @@ proved the better introduction.
   tech"): on the offer it declines (as **No Thanks**), on a step it ends the tour (as **End Tour**), on the closing
   it finishes. Escape anywhere else is the person's own (an element tour asking for Escape to put text back, a
   popover a step opened).
-- **Once ever per user.** However the offer ends (declined, skipped mid-tour, or completed), the synced
+- **Answered once per user.** However it is answered (declined, skipped mid-tour, or completed), the synced
   `tourSeen` user preference ([User preferences](user-preferences.md)) stops it ever reappearing: the offer
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
   the same via their owner-keyed preference row + the localStorage warm cache). The preference keeps the
@@ -84,16 +84,12 @@ proved the better introduction.
 
 ## Handoff
 
-Create hard-navigates to `/document/<id>`, so the intent crosses pages via a **sessionStorage flag**
-(`livediagram:v2:tour-pending`), set just before `window.location.assign`. The editor PEEKS at the flag and
-clears it only when the offer is **resolved** (completed, skipped, or declined), never on mere page load, so
-reloading mid-offer or mid-tour brings the offer back instead of silently swallowing an unanswered tour. The
-flag is also what keeps the offer owed across a document that opened in another mode. sessionStorage keeps it
-per-tab; a URL param would survive into copy-pasted links. The editor shows the offer only when it's actually
-usable: hydrated, no welcome overlay, no start on screen, not read-only, not an embed, and the open tab in
-Diagram. The Settings
-relaunch crosses no navigation, so it's a window event (`livediagram:tour-relaunch`), which also re-marks the
-flag, so a mid-rerun reload re-offers the same way.
+The offer no longer needs a handoff: `tourSeen` alone decides it. Create still sets the **sessionStorage flag**
+(`livediagram:v2:tour-pending`) before `window.location.assign`, and the editor clears it once `tourSeen` is
+known to be set; it gates nothing (the e2e helper `dismissQuickTour` reads it to know an offer may come). The
+editor shows the offer only when it's actually usable: hydrated, the synced preferences in, no welcome overlay, no
+start on screen, no dialog, not read-only, not an embed, and the open tab in Diagram. The Settings relaunch
+crosses no navigation, so it's a window event (`livediagram:tour-relaunch`).
 
 ## The steps
 

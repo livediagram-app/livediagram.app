@@ -1,15 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import {
-  clearTourPending,
-  hasTourPending,
-  markTourPending,
-  TOUR_RELAUNCH_EVENT,
-} from '@/lib/tour-pending';
+import { clearTourPending, markTourPending, TOUR_RELAUNCH_EVENT } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
@@ -27,9 +22,9 @@ import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { elementSelector } from '@/lib/canvas-selectors';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
-// Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
-// handoff flag is set (a brand-new user's first document → the welcome offer card, waiting for a Diagram tab
-// when the document opened in another mode) or the Settings dialog requests a relaunch. The steps run on the
+// Mounted once in EditorView; renders nothing until a person who has not answered it is on a Diagram tab with an
+// editor they can use (offered each time they come to one, until they take it or say No Thanks), or the Settings
+// dialog requests a relaunch. The steps run on the
 // shared engine (useTourEngine) and draw through the coach dock (CoachDockStage); this host owns the offer, the
 // step list and what ending means.
 
@@ -48,10 +43,6 @@ export function TourHost() {
   // dropdowns it doesn't render (docs/specs/021-event-storming/event-storming.md).
   const esBoard = ctx.esBoard === true;
   const steps = useMemo(() => tourStepsFor({ mobile: isMobile, esBoard }), [isMobile, esBoard]);
-  // Whether this mount still owes the /new handoff an offer: read from storage on the first offer
-  // check, and resolved once offered or found already seen. Only the offer effect reads it and it
-  // never turns back on, so it is a ref rather than state.
-  const offerPendingRef = useRef<boolean | null>(null);
   const apiRef = useLatest<TourApi>({
     openElementContextMenu: async () => {
       // Reuse the first boxed element (template diagrams come populated);
@@ -119,14 +110,9 @@ export function TourHost() {
     track('UI', 'Opened', 'TourOffer');
   };
 
-  // Peek at the /new handoff flag (NOT consume: it stays set until the
-  // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
-  // of silently swallowing the tour), then wait for the editor to be
-  // usable before offering (the small delay lets the fit-to-screen pass
-  // and the chrome settle). The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md)
-  // makes the offer once-ever for the user, however it was dismissed;
-  // checked again at fire time below in case the preferences fetch lands
-  // after mount.
+  // The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md) is the one answer: taken,
+  // skipped mid-way or declined. Until it is set the offer comes each time the person is on a Diagram tab; an
+  // offer left alone (folded into its chip, or withdrawn as the person moved on) is not an answer.
   const seen = ctx.userPreferences?.tourSeen === true;
   // Diagram mode only (docs/specs/007-editor/editor-tour.md "Where it appears"): a document that opened in
   // another mode keeps the offer owed until the person is on a Diagram tab.
@@ -138,6 +124,8 @@ export function TourHost() {
   const modalOpen = useAnyModalOpen();
   const ready =
     ctx.hydrated &&
+    // The synced preferences are in, so an answer given on another device holds here too.
+    ctx.prefsSettled &&
     !ctx.anyWelcomeOpen &&
     !startPanelOpen &&
     !modalOpen &&
@@ -145,40 +133,44 @@ export function TourHost() {
     !ctx.embedMode &&
     inDiagram &&
     !otherTour;
+  // Armed on coming to a Diagram tab (or mounting on one) and by a relaunch; disarmed once offered. Adjusted
+  // during render when the mode changes.
+  const [armed, setArmed] = useState(false);
+  const [wasIn, setWasIn] = useState(false);
+  if (inDiagram !== wasIn) {
+    setWasIn(inDiagram);
+    setArmed(inDiagram);
+  }
+  // Answered (here, or on another device): nothing is owed on this visit.
+  if (armed && seen) setArmed(false);
+  // A stale /new handoff flag is tidied once the answer is known.
+  useEffect(() => {
+    if (seen) clearTourPending();
+  }, [seen]);
   const offerRef = useLatest(offer);
   useEffect(() => {
-    offerPendingRef.current ??= hasTourPending();
-    if (!offerPendingRef.current || active || !ready) return;
-    if (seen) {
-      // Resolved elsewhere (another tab / device): tidy the stale flag.
-      clearTourPending();
-      offerPendingRef.current = false;
-      return;
-    }
+    if (!armed || active || !ready || seen) return;
+    // The small delay lets the fit-to-screen pass and the chrome settle.
     const t = setTimeout(() => {
-      offerPendingRef.current = false;
+      setArmed(false);
       offerRef.current();
     }, 800);
     return () => clearTimeout(t);
-  }, [active, ready, seen, offerRef]);
+  }, [armed, active, ready, seen, offerRef]);
 
-  // Settings relaunch (the Tours › "Diagram Tour" row, turned on + closed):
-  // rerun from the top: the welcome card is always step 1. Also re-marks
-  // the pending flag so a reload mid-rerun re-offers, exactly like the
-  // first-run path. Off a Diagram tab, or while another tour runs, it waits,
-  // offering once the person is on a Diagram tab with nothing else on screen.
+  // Settings relaunch (the Tours › "Diagram Tour" row, turned on + closed): rerun from the top, the offer first.
+  // Off a Diagram tab, or while another tour runs, it waits, offering once the person is on a Diagram tab with
+  // nothing else on screen.
+  const readyRef = useLatest(ready);
   useEffect(() => {
     const onRelaunch = () => {
       markTourPending();
-      if (!ready) {
-        offerPendingRef.current = true;
-        return;
-      }
-      offerRef.current();
+      if (readyRef.current) offerRef.current();
+      else setArmed(true);
     };
     window.addEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, [ready, offerRef]);
+  }, [readyRef, offerRef]);
 
   const endTour = (outcome: TourOutcome) => {
     // Safety net beyond the current step's cleanup: never strand an open
@@ -200,16 +192,15 @@ export function TourHost() {
     if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
-  // Ends as skipped when the open tab leaves Diagram mid-tour (its mode switched, or a tab in another mode
-  // opened): the steps point at chrome the other modes do not show.
+  // Leaves when the open tab leaves Diagram (its mode switched, or a tab in another mode opened): the steps point
+  // at chrome the other modes do not show. An offer nobody answered is withdrawn, to come back on the next Diagram
+  // tab; a tour under way ends as skipped.
   useEffect(() => {
     if (!active || inDiagram) return;
-    engineRef.current.stop();
-    endTourRef.current('skipped');
-  }, [active, inDiagram, engineRef, endTourRef]);
+    engineRef.current.leave();
+  }, [active, inDiagram, engineRef]);
 
   return (
     <CoachDockStage

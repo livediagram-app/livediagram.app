@@ -149,9 +149,12 @@ function CoachDockBody({
         className="mx-auto flex max-w-6xl animate-fly-up-in flex-col gap-3 py-3 motion-reduce:animate-none sm:min-h-[7.25rem] sm:flex-row sm:items-center sm:gap-5 sm:py-3.5"
       >
         {showArt ? (
+          // The tour's picture, as large as the dock's one height allows (256 x 88, the pictures' own 304 x 104 shape),
+          // so the offer and the closing lead with it; a picture of another shape is fitted inside, centred.
           <div
             aria-hidden
-            className="hidden w-28 shrink-0 overflow-hidden rounded-lg bg-slate-50 sm:block dark:bg-slate-800 [&_svg]:h-auto [&_svg]:w-full"
+            data-coach-art=""
+            className="hidden h-[5.5rem] w-64 shrink-0 overflow-hidden rounded-lg sm:block [&>*]:h-full [&_svg]:h-full [&_svg]:w-full"
           >
             {art}
           </div>

@@ -243,3 +243,27 @@ describe('useTourEngine', () => {
     vi.useRealTimers();
   });
 });
+
+// A host that can no longer run its tour leaves it (docs/specs/007-editor/coach-dock.md "The offer"): ignoring an
+// offer is never an answer, so it is only withdrawn; a tour under way ends as skipped.
+describe('leave', () => {
+  it('withdraws an unanswered offer with no outcome', async () => {
+    const t = run(STEPS);
+    act(() => t.hook.result.current.start());
+    await flush();
+    act(() => t.hook.result.current.leave());
+    expect(t.hook.result.current.active).toBe(false);
+    expect(t.outcomes).toEqual([]);
+  });
+
+  it('ends a tour under way as skipped, cleaning up its step', async () => {
+    found.selectors.add('#one');
+    const t = run(STEPS);
+    act(() => t.hook.result.current.start());
+    act(() => t.hook.result.current.next());
+    await flush();
+    act(() => t.hook.result.current.leave());
+    expect(t.outcomes).toEqual(['skipped']);
+    expect(t.api.log).toContain('cleanup one');
+  });
+});

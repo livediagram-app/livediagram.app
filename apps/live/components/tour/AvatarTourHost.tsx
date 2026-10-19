@@ -101,7 +101,6 @@ export function AvatarTourHost() {
     else
       track('UI', 'Ended', outcome === 'completed' ? 'AvatarTourCompleted' : 'AvatarTourSkipped');
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
   useEffect(() => {
@@ -137,10 +136,10 @@ export function AvatarTourHost() {
     }
     startedOnRef.current ??= activeId;
     if (!canWork || !inAvatar || startedOnRef.current !== activeId) {
-      engineRef.current.stop();
-      endTourRef.current('skipped');
+      // An offer nobody answered is withdrawn, to be offered again; a tour under way ends as skipped.
+      engineRef.current.leave();
     }
-  }, [active, canWork, inAvatar, activeId, engineRef, endTourRef]);
+  }, [active, canWork, inAvatar, activeId, engineRef]);
 
   useEffect(() => () => setActiveTour('avatar', false), []);
 

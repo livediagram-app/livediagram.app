@@ -42,6 +42,9 @@ Transitions:
 - offer · a choice → that choice's `onPick()` (the Plan host sets its track, then calls `engine.next()`).
 - offer · No Thanks / Escape inside the dock → `engine.skip()` (outcome `declined`).
 - offer · fold timer → `folded = true`, `onFolded()`.
+- offer or chip · the host can no longer run the tour (mode left, another tab, subject gone, rights gone) →
+  `engine.leave()`: on the offer, `stop()` with no outcome (nothing recorded, offered again on the next arming);
+  on a step, `finish('skipped')`.
 - chip · ▶ → `folded = false`, `onChipStart()`, then `engine.next()`; with `choices`, the offer only unfolds, to be
   chosen from.
 - chip · × → `engine.skip()` (declined).
@@ -151,7 +154,8 @@ text-slate-600 dark:text-slate-300`.
 - Try it: 16 px circle, brand border; done fills emerald 600 with a white tick and reads "Done".
 - Buttons: shared `Button`, `size="sm"`; Take the Tour / Next / Finish / Start `primary`, No Thanks / Back
   `secondary`, End Tour `ghost`; phone `flex-1 h-10`.
-- Art: 112 px wide tile, `rounded-lg bg-slate-50 dark:bg-slate-800`, desktop only.
+- Art: a 256 × 88 px tile (`w-64 h-[5.5rem]`, the pictures' own 304 × 104 shape at the dock's content height),
+  `rounded-lg`, the picture's own frame inside; a picture of another shape is fitted and centred. Desktop only.
 - Chip: 28 px pill, `bg-brand-50 text-brand-700 ring-1 ring-brand-200` (dark `bg-brand-500/15 text-brand-200
 ring-brand-500/40`), ▶ label then a divider and ×, each a 44 px tap area on touch.
 - Ring: `border-2 border-brand-600 dark:border-brand-400`, halo `0 0 0 4px` brand at 20%, radius 12 px, pad

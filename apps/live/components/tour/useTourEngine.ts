@@ -301,6 +301,16 @@ export function useTourEngine<Api>({
     finish(step?.card === 'welcome' ? 'declined' : 'skipped');
   };
 
+  // The host can no longer run the tour where it started (the mode left, another tab, edit rights gone). An offer
+  // nobody answered is only withdrawn, with no outcome, so it is offered again next time: ignoring a tour is never
+  // an answer (docs/specs/007-editor/coach-dock.md "The offer"). A tour under way ends as skipped.
+  const leave = () => {
+    const offering = step?.card === 'welcome';
+    leaveStep();
+    if (offering) stop();
+    else finish('skipped');
+  };
+
   return {
     active,
     step,
@@ -317,6 +327,7 @@ export function useTourEngine<Api>({
     next,
     back,
     skip,
+    leave,
   };
 }
 

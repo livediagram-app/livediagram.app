@@ -186,7 +186,6 @@ export function PlanTourHost() {
     if (outcome === 'declined') track('UI', 'Closed', 'PlanTourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
   // The offer: armed, in Plan, usable, not seen, a board or Sheet on the tab, and no other tour on screen.
@@ -238,10 +237,10 @@ export function PlanTourHost() {
     }
     startedOnRef.current ??= activeId;
     if (!canWork || !inPlan || startedOnRef.current !== activeId || subjectGone) {
-      engineRef.current.stop();
-      endTourRef.current('skipped');
+      // An offer nobody answered is withdrawn, to be offered again; a tour under way ends as skipped.
+      engineRef.current.leave();
     }
-  }, [active, canWork, inPlan, activeId, subjectGone, engineRef, endTourRef]);
+  }, [active, canWork, inPlan, activeId, subjectGone, engineRef]);
 
   useEffect(() => () => setActiveTour('plan', false), []);
 

@@ -53,7 +53,7 @@ There is no other tour surface: no banner, no floating step card and no dim.
 
 ### The offer
 
-- The tour's picture (desktop only), its eyebrow ("Slides tour"), a question ("New to slides?", "New to
+- The tour's picture, large (256 × 88 px, desktop only), leading the offer at its left, its eyebrow ("Slides tour"), a question ("New to slides?", "New to
   diagrams?", "New to boards?") and one line of what it covers, as a statement, with its length: "4 stops, about a
   minute".
 - **Take the Tour** (primary) starts it. **No Thanks** declines it for good. Every offered tour reads the same two.
@@ -63,8 +63,13 @@ There is no other tour surface: no banner, no floating step card and no dim.
   resting where the dock appeared, or a touch, does not count), the offer folds into the
   tour chip in the tab bar, named for the tour ("Diagram Tour", "Boards Tour", "Slides Tour"). The chip's
   **▶** starts the tour at its first step (an offer of choices opens again instead, to be chosen from); its **×**
-  declines it for good. A folded offer is not an answer: the chip stays for this visit, and the offer comes back on the
-  next visit until it is answered.
+  declines it for good.
+- **Only an answer is an answer.** Only **No Thanks** (in the dock, the chip's ×, or Escape from inside the dock)
+  declines a tour, and only taking it (finished or ended part-way) uses it up. An offer that folds is not an answer:
+  the chip stays for this visit. An offer withdrawn because the person moved on before answering (another tab, the
+  mode left, the page it was about deleted, edit rights gone) is not an answer either: nothing is recorded. Either
+  way the tour is offered again the next time its moment comes (the next visit, or coming back to its mode), and
+  keeps coming back until the person takes it or says No Thanks.
 
 ### A step
 
@@ -108,7 +113,7 @@ card goes, the ring moves to the Layout button, and the popover is not opened be
 - The app's own colours, never the tab's theme: white (slate 900 in dark) with a slate border along its top,
   slate text, the shared Button in its primary, secondary and ghost variants. Contrast is AA on every line in
   light and dark, whatever the canvas.
-- Desktop: one row of one height (116 px) in every state, so the canvas resizes only as the dock comes and goes,
+- Desktop: one row of one height (116 px) in every state, the offer's and the closing's picture filling that height, so the canvas resizes only as the dock comes and goes,
   with the words in a centred column up to 72rem wide and the buttons at its right.
 - Phone (under 640 px): the words, then the buttons in a full-width row of equal buttons, 40 px tall, each with a
   44 px tap area. End Tour sits at the top right of the dock. No picture.

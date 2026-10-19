@@ -92,7 +92,6 @@ export function DrawTourHost() {
     if (outcome === 'declined') track('UI', 'Closed', 'DrawTourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'DrawTourCompleted' : 'DrawTourSkipped');
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
   // The offer: armed, in Draw, usable, not seen, and no other tour on screen. Another tour ending
@@ -131,10 +130,10 @@ export function DrawTourHost() {
     }
     startedOnRef.current ??= activeId;
     if (!canWork || !inDraw || startedOnRef.current !== activeId) {
-      engineRef.current.stop();
-      endTourRef.current('skipped');
+      // An offer nobody answered is withdrawn, to be offered again; a tour under way ends as skipped.
+      engineRef.current.leave();
     }
-  }, [active, canWork, inDraw, activeId, engineRef, endTourRef]);
+  }, [active, canWork, inDraw, activeId, engineRef]);
 
   useEffect(() => () => setActiveTour('draw', false), []);
 

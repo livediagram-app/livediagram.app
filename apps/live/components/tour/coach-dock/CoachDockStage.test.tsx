@@ -51,6 +51,7 @@ const engine = (over: Partial<TourEngine<Api>> = {}): TourEngine<Api> => ({
   next: vi.fn(),
   back: vi.fn(),
   skip: vi.fn(),
+  leave: vi.fn(),
   ...over,
 });
 

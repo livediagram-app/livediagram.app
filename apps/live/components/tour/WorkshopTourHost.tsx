@@ -106,7 +106,6 @@ export function WorkshopTourHost() {
         outcome === 'completed' ? 'WorkshopTourCompleted' : 'WorkshopTourSkipped',
       );
   };
-  const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
   // The offer: armed, in Workshop, usable, not seen, and no other tour on screen. Another tour ending
@@ -146,10 +145,10 @@ export function WorkshopTourHost() {
     }
     startedOnRef.current ??= activeId;
     if (!canWork || !inWorkshop || startedOnRef.current !== activeId) {
-      engineRef.current.stop();
-      endTourRef.current('skipped');
+      // An offer nobody answered is withdrawn, to be offered again; a tour under way ends as skipped.
+      engineRef.current.leave();
     }
-  }, [active, canWork, inWorkshop, activeId, engineRef, endTourRef]);
+  }, [active, canWork, inWorkshop, activeId, engineRef]);
 
   useEffect(() => () => setActiveTour('workshop', false), []);
 

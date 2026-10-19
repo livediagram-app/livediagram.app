@@ -70,6 +70,7 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
       if (
+        prefs.tourSeen !== true ||
         prefs.drawTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
@@ -80,6 +81,9 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
           key,
           JSON.stringify({
             ...prefs,
+            // The Diagram tour now offers itself on every Diagram tab until answered: dismissQuickTour's own
+            // specs clear it again.
+            tourSeen: true,
             drawTourSeen: true,
             avatarTourSeen: true,
             formTourSeen: true,
