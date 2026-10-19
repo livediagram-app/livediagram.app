@@ -6,12 +6,14 @@
 // server rejects every legitimate upload with a hash mismatch, so
 // the function lives here alongside the wire-format types it backs.
 //
-// Implementation: Web Crypto's `crypto.subtle.digest('SHA-256', ...)`
-// is available in every runtime this monorepo targets (modern
-// browsers + Node 22+ + Cloudflare Workers). Lowercase hex output,
+// Implementation: `sha256` from @livediagram/items, Web Crypto wherever the
+// runtime has it (Node 22+, Cloudflare Workers, a secure browser page) and the
+// same digest in plain code in a page that is not a secure context
+// (docs/specs/016-platform/secure-context.md). Lowercase hex output,
 // 64 chars, no separator: matches the `images.sha256` column shape
 // in the api worker's D1 schema.
 
+import { sha256 } from '@livediagram/items';
 import { bytesToBase64Url } from './bytes';
 
 function bytesToHex(buf: Uint8Array): string {
@@ -24,14 +26,13 @@ function bytesToHex(buf: Uint8Array): string {
 }
 
 export async function sha256Hex(bytes: BufferSource): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return bytesToHex(new Uint8Array(digest));
+  return bytesToHex(await sha256(bytes));
 }
 
 // The OAuth PKCE S256 code challenge for a verifier (RFC 7636 section 4.2): the
 // base64url SHA-256 of its ASCII bytes. The CLI computes it and the MCP server
 // checks it, so both take it from here and cannot drift.
 export async function pkceChallenge(verifier: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const digest = await sha256(new TextEncoder().encode(verifier));
   return bytesToBase64Url(digest);
 }

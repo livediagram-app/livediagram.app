@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
+import { RANDOM_UUID_BOOT_SCRIPT } from '@livediagram/ui';
 import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
@@ -94,5 +95,18 @@ describe('the webfonts stylesheet', () => {
 
   it('does nothing, and throws nothing, without the link', () => {
     expect(() => run(null)).not.toThrow();
+  });
+});
+
+describe('the randomUUID pre-hydration script', () => {
+  it('is inlined by the layout right after Trusted Types, before any app code', () => {
+    const tt = LAYOUT.indexOf('trustedHtml(TRUSTED_TYPES_BOOT)');
+    const uuid = LAYOUT.indexOf('trustedHtml(RANDOM_UUID_BOOT_SCRIPT)');
+    expect(tt).toBeGreaterThan(-1);
+    expect(uuid).toBeGreaterThan(tt);
+    expect(uuid).toBeLessThan(LAYOUT.indexOf('<StaleBuildBoot'));
+  });
+  it('is the shared script', () => {
+    expect(RANDOM_UUID_BOOT_SCRIPT).toContain('getRandomValues');
   });
 });

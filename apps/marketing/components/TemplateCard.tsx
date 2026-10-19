@@ -4,6 +4,7 @@ import { templateCreateHref } from '@livediagram/templates';
 import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import type { GalleryTemplate } from '@/lib/template-gallery';
 import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
+import { createLabelPrefix } from '@/lib/create-label';
 
 // One template as a card that creates that document straight away and opens it in the editor
 // (/new?template=<kind>, docs/specs/007-editor/new-document-route.md): the editor picker's own preview
@@ -34,7 +35,7 @@ export function TemplateCard({
         <ModeIcon size={14} aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400" />
         {/* The link's name is its own text, "Create a Blank Diagram" and the description, so its
             visible title is part of it (WCAG 2.5.3). */}
-        <span className="sr-only">Create a </span>
+        <span className="sr-only">{createLabelPrefix(template.title)}</span>
         {template.title}
       </span>
       <span className="mt-1 block text-xs leading-relaxed text-slate-600 dark:text-slate-400">

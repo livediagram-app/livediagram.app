@@ -146,6 +146,7 @@ export function DocumentTagChips({
         <HoverCard title={`${rest.length} more`} description={rest.map((t) => t.name).join(', ')}>
           <span
             tabIndex={0}
+            role="img"
             aria-label={`${rest.length} more tags: ${rest.map((t) => t.name).join(', ')}`}
             className="inline-flex shrink-0 items-center rounded-full border border-slate-200 px-1.5 py-px text-[11px] font-medium leading-4 text-slate-500 dark:border-slate-700 dark:text-slate-400"
           >

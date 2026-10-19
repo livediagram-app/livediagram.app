@@ -1,4 +1,4 @@
-import { CHART_TYPE_LABELS, type ChartType } from '@livediagram/document';
+import { CHART_TYPE_LABELS, type ChartType, withArticle } from '@livediagram/document';
 import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
@@ -76,7 +76,7 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
       onGraphic(
         'chart',
         'Sized by Value',
-        `Each ${one} is a number: change it and the chart redraws. This is a ${typeName} chart.`,
+        `Each ${one} is a number: change it and the chart redraws. This is ${withArticle(typeName)} chart.`,
         elementSelector(id),
       ),
     ),

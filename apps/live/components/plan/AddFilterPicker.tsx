@@ -12,6 +12,7 @@ import {
   PlusIcon,
   SearchIcon,
   TextInput,
+  withArticle,
 } from '@livediagram/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 
@@ -100,8 +101,10 @@ export function AddFilterPicker({
                 </span>
                 <TextInput
                   compact
-                  aria-label={field ? `Find a ${field.label}` : 'Find a field'}
-                  placeholder={field ? `Find a ${field.label.toLowerCase()}` : 'Find a field'}
+                  aria-label={field ? `Find ${withArticle(field.label)}` : 'Find a field'}
+                  placeholder={
+                    field ? `Find ${withArticle(field.label.toLowerCase())}` : 'Find a field'
+                  }
                   className="pl-7"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}

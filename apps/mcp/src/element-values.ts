@@ -4,6 +4,7 @@
 // a text size off the scale and an icon id that names no icon all used to be stored and drawn wrong in silence
 // (a question mark for the icon, tiny text for the size).
 
+import { withArticle } from '@livediagram/items';
 import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@livediagram/document';
 import { iconsLike, isIconId } from '@livediagram/icons/search';
 
@@ -37,7 +38,7 @@ function elementIssue(el: Rec, where: string): string | null {
     if (fields.includes(key)) continue;
     const like = fieldsLike(key, fields);
     return (
-      `${where}: "${key}" is not a field of a ${el.type}` +
+      `${where}: "${key}" is not a field of ${withArticle(el.type)}` +
       (like.length ? `; fields like it: ${like.join(', ')}.` : '.')
     );
   }

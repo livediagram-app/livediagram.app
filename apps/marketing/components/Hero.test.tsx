@@ -65,7 +65,7 @@ const fanTitles = () =>
   screen
     .getAllByRole('link')
     .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'))
-    .map((a) => a.textContent?.replace('Create a ', ''));
+    .map((a) => a.textContent?.replace(/^Create an? /, ''));
 
 describe('the hero', () => {
   it('asks the question under its two promise badges', () => {

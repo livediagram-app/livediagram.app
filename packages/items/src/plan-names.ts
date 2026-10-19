@@ -1,6 +1,7 @@
 // Naming things as people do (docs/specs/026-plan/plan-agents.md "Naming things as people do"): what an agent
 // writes ("In Progress", "Bug", "Severity", "Sam", "#12") resolved to what items store (a status id, a type id, a
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
+import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
 import { isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
 import { knownFieldKind, PRIORITIES, validateFields } from './fields';
@@ -201,7 +202,7 @@ export function resolveFields(
       if (!option)
         return refuse(
           'choice_unknown',
-          `"${value}" is not a ${field.label} option. Options: ${list(field.options ?? [])}.`,
+          `"${value}" is not ${withArticle(field.label)} option. Options: ${list(field.options ?? [])}.`,
         );
       out[key] = option;
     } else if (
@@ -216,7 +217,7 @@ export function resolveFields(
         if (!option)
           return refuse(
             'choice_unknown',
-            `"${String(name)}" is not a ${field.label} option. Options: ${list(field.options ?? [])}.`,
+            `"${String(name)}" is not ${withArticle(field.label)} option. Options: ${list(field.options ?? [])}.`,
           );
         if (!picks.includes(option)) picks.push(option);
       }

@@ -800,8 +800,9 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   pickers and the style presets set them. The board's fill is its surface, its stroke its focus and, mixed 35% into the fill so the lines stay quiet
   (`PLAN_BORDER_ACCENT_SHARE`; sheets and the start panel share it), its border
   colour, its text colour its ink; columns, cards, card borders and muted text are mixed from those. Ink that
-  would not read on the fill is swapped for a readable one. With no colours of their own (the Default theme)
-  they take the canvas surface's neutral set, light or dark.
+  would not read on the fill is swapped for a readable one, and muted text leans toward the ink until it reads at
+  4.5:1 on the column, a card and the board alike (`readableMuted`). With no colours of their own (the Default theme)
+  they take the canvas surface's neutral set, light or dark, whose muted text meets the same bar.
 - Corners follow Quick Style's Corners (12 px by default), text follows the tab's font (or the element's own),
   and a shadow sits under the board like any shape's.
 - The same colours draw the board in exports, thumbnails and images.

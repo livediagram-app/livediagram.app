@@ -243,6 +243,8 @@ export function FixedSizeLabel({
           ...labelTextStyleCss(style ?? {}),
           ...textAnim?.style,
         }}
+        // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
+        role={textAnim?.ariaLabel ? 'img' : undefined}
         aria-label={textAnim?.ariaLabel}
       >
         {textAnim ? renderUnits(text, textAnim.plan, { next: 0 }) : text}
@@ -314,6 +316,8 @@ export function MultilineLabel({
         key={textAnim?.className}
         className={`w-full whitespace-pre-wrap ${textAnim?.className ?? ''}`}
         style={{ ...innerStyle, ...textAnim?.style }}
+        // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
+        role={textAnim?.ariaLabel ? 'img' : undefined}
         aria-label={textAnim?.ariaLabel}
       >
         {textAnim ? renderUnits(text, textAnim.plan, { next: 0 }) : text}
@@ -383,6 +387,8 @@ export function RichLabel({
         // finished play-once would otherwise stay finished.
         key={textAnim?.className}
         className={`w-full whitespace-pre-wrap break-words ${textAnim?.className ?? animClass ?? ''}`}
+        // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
+        role={textAnim?.ariaLabel ? 'img' : undefined}
         aria-label={textAnim?.ariaLabel}
         style={{
           ...textAnim?.style,

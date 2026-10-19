@@ -9,6 +9,7 @@
 // the length. A stopwatch draws a thin sweep ring instead, one lap a minute,
 // because an elapsed time has no "amount left" to fill.
 
+import { plural } from '@livediagram/document';
 import { useRef, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import {
   DIAL_LAP_MINUTES,
@@ -146,7 +147,7 @@ export function TimerDial({
               'aria-valuemin': 1,
               'aria-valuemax': DIAL_LAP_MINUTES,
               'aria-valuenow': setMinutes,
-              'aria-valuetext': `${setMinutes} minutes`,
+              'aria-valuetext': plural(setMinutes, 'minute'),
             }
           : { 'aria-hidden': true })}
       >

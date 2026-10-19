@@ -38,7 +38,6 @@ export function DefaultFolderMarker({
         <span
           data-default-marker=""
           aria-hidden
-          aria-label={description}
           className="inline-flex shrink-0 items-center gap-0.5 text-slate-500 dark:text-slate-400"
         >
           {shown.map((key) => (

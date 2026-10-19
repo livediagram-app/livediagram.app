@@ -5,6 +5,7 @@
 // value), and the empty group last, as long as their cards against the most, split Not Started, In Progress and
 // Done. The rows share the view's height and the bars thicken, and labels grow, where there is room.
 import { useMemo } from 'react';
+import { plural } from '@livediagram/document';
 import {
   STATUS_PHASES,
   STATUS_PHASE_LABELS,
@@ -78,7 +79,7 @@ export function WorkloadView({
                   height: layout.rowHeight,
                   fontSize: layout.font,
                 }}
-                aria-label={`${name}: ${row.total} cards, ${spoken}`}
+                aria-label={`${name}: ${plural(row.total, 'card')}, ${spoken}`}
               >
                 <span className="flex min-w-0 items-center gap-2">
                   {row.person ? (

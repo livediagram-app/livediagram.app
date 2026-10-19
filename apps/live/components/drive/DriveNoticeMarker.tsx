@@ -21,6 +21,7 @@ export function DriveNoticeMarker({ documentId }: { documentId: string }) {
       description="Open Settings › Account › Cloud Sync to show livediagram that folder."
     >
       <span
+        role="img"
         aria-label={DRIVE_NOTICE_TEXT}
         className="inline-flex shrink-0 items-center text-amber-600 dark:text-amber-400"
       >

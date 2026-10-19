@@ -114,6 +114,7 @@ export function TabPresenceStack({
                 <span className="relative inline-flex">
                   {face}
                   <span
+                    role="img"
                     aria-label={`${followed} following you`}
                     className="pointer-events-none absolute -right-1 -top-1.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-700 px-0.5 text-[8px] font-semibold leading-none text-white dark:bg-brand-500"
                   >

@@ -2,6 +2,7 @@
 // a design's charts over its tables, and change_sheet's `chart` over an A1 range. Each is an ordinary chart element
 // linked to the range by row and column ids (so it grows with rows inserted inside it), anchored in its Sheet at a
 // cell, carrying its first read for what draws it before a browser reads it live. Pure: the caller adds the elements.
+import { withArticle } from '@livediagram/items';
 import {
   CHART_SOURCE_COLS_MAX,
   SHEET_ANCHOR_MAX,
@@ -62,7 +63,7 @@ const ONE_SERIES_TYPES: readonly ChartType[] = ['column', 'bar', 'pie', 'doughnu
 // What a chart of a one-series type shows of several value columns, said in its answer.
 export function seriesNote(type: ChartType, values: readonly string[]): string {
   if (!ONE_SERIES_TYPES.includes(type) || values.length < 2) return '';
-  return ` (a ${type} chart shows one series, ${values[0]}; line and area charts show all ${values.length})`;
+  return ` (${withArticle(type)} chart shows one series, ${values[0]}; line and area charts show all ${values.length})`;
 }
 
 // The palette in the family of a table's header fill (a design's accent, light or dark canvas), or undefined when the
@@ -215,7 +216,7 @@ export function buildChartChange(
   return {
     ok: true,
     writes: [],
-    line: `charted ${formatRange(g)} as a ${change.type} chart at ${change.at ?? `the cell right of it`}${seriesNote(change.type, values)}`,
+    line: `charted ${formatRange(g)} as ${withArticle(change.type)} chart at ${change.at ?? `the cell right of it`}${seriesNote(change.type, values)}`,
     charts: [
       {
         type: change.type,
