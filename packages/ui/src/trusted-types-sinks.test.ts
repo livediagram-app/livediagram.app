@@ -43,6 +43,22 @@ describe('Trusted Types sinks', () => {
     expect(raw).toEqual([]);
   });
 
+  // A DOM sink written by hand meets the same default policy, which refuses it and throws: the canvas's Marker
+  // finish set `innerHTML` raw and every Marker tab failed to render in production.
+  it('write markup straight into the DOM only through trustedHtml', () => {
+    const raw = files.flatMap((f) =>
+      [...read(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
+        .filter((m) => {
+          const rest = read(f).slice(m.index + m[0].length);
+          return m[0].startsWith('insertAdjacentHTML')
+            ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
+            : !rest.startsWith('trustedHtml(');
+        })
+        .map((m) => `${f}: ${m[0]}`),
+    );
+    expect(raw).toEqual([]);
+  });
+
   // A server component's `trustedHtml` runs in the prerender, where there is no Trusted Types, so the RSC payload
   // carries a plain string; a client navigation then writes it through innerHTML and the default policy refuses
   // it, crashing the page to blank (the help centre's breadcrumbs did this to every page). So outside the editor

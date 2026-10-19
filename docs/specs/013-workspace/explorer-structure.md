@@ -271,7 +271,7 @@ Top to bottom:
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Document card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
-   line; on a deployment without sign-in, "Browser only. Clearing site data deletes it."), dismissible as the sign-in
+   line; on a deployment without sign-in, "No sign-in here. Only this browser can open your documents.": they are saved, but belong to this browser's guest id, so "Browser only" would contradict the card's Private), dismissible as the sign-in
    notice is. Minimal chrome drops it.
 
 While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step

@@ -28,7 +28,7 @@ import {
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
 import {
   finishCornerFallbackPx,
-  finishSplitsFace,
+  faceFinishOf,
   finishWobblesArt,
   isHandDrawn,
   resolveFinish,
@@ -40,6 +40,7 @@ import {
   svgSketchedBody,
   svgSketchFace,
 } from './svg-render-sketch';
+import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
 import { inlineIconLayout } from './svg-render-inline-icon';
@@ -193,17 +194,32 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
   const drawn = svgBoxedFace(source, opts);
   const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
-  // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
-  // drawn by hand too"). A tab window shows another tab in that tab's own finish: only its frame is drawn by hand.
-  if (
-    resolveFinish(finishOf(source), opts.tabFinish) !== 'sketch' ||
-    !finishSplitsFace(source) ||
-    (source.type === 'shape' && source.shape === 'tab-window')
-  )
-    return out;
+  // A tab window shows another tab in that tab's own finish: only its frame follows this one.
+  if (source.type === 'shape' && source.shape === 'tab-window') return out;
+  const finish = faceFinishOf(source, resolveFinish(finishOf(source), opts.tabFinish));
   const open = out.indexOf('>') + 1;
   const close = out.lastIndexOf('</g>');
-  return out.slice(0, open) + svgSketchFace(out.slice(open, close)) + out.slice(close);
+  const inner = out.slice(open, close);
+  // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
+  // drawn by hand too"); under Professional its rectangles go square and its lines thin ("Faces").
+  if (finish === 'sketch')
+    return (
+      out.slice(0, open) +
+      svgSketchFace(
+        svgMarkerFace(inner, source.id, { width: source.width, height: source.height }, 'pencil'),
+      ) +
+      out.slice(close)
+    );
+  if (finish === 'professional')
+    return out.slice(0, open) + svgProfessionalFace(inner) + out.slice(close);
+  // Under Marker its frames and shapes are drawn in marker ("Faces: frames and shapes").
+  if (finish === 'marker')
+    return (
+      out.slice(0, open) +
+      svgMarkerFace(inner, source.id, { width: source.width, height: source.height }) +
+      out.slice(close)
+    );
+  return out;
 }
 
 function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
@@ -246,12 +262,14 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}${sketch ?? ''}</g>`;
   }
   if (el.type === 'freehand' && shape.kind === 'rect') {
-    // The sketch's actual polyline instead of its bounding box.
-    return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
+    // The sketch's actual polyline instead of its bounding box; a Polygon-tool outline drawn by hand in its finish
+    // (docs/specs/008-canvas/finish.md "Polygons").
+    return `<g${opAttr}${rotAttr}>${sketch ?? svgFreehandShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export").
-    return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, shape.stroke, shape.fill)}</g>`;
+    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"), or drawn by hand in its finish
+    // (finish.md "Polygons and paths").
+    return `<g${opAttr}${rotAttr}>${sketch ?? svgPathElementShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {
     // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
@@ -307,7 +325,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
         ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
-      // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
+      // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
+      // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
+      (sketch ?? '') +
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
     shapeStr = sketch;

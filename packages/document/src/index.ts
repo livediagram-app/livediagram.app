@@ -513,6 +513,7 @@ export * from './page-default-background';
 export * from './pages-edits';
 export * from './pages-background-copy';
 export * from './tab-window';
+export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -604,7 +605,11 @@ export * from './sketch-element';
 export * from './sketch-backdrop';
 export * from './marker';
 export * from './marker-element';
+// A face's own parts in its finish (docs/specs/008-canvas/finish.md "Faces").
+export * from './face-finish';
+export * from './marker-face';
 export * from './hand-drawn';
+export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';

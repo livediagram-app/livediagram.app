@@ -107,7 +107,8 @@ describe('in-place editing', () => {
     ]);
   });
 
-  it('writes nothing for a blank new field, and closes on Escape', () => {
+  // Escape keeps what was typed, as on every canvas label (docs/specs/008-canvas/canvas-and-palette.md "Labels").
+  it('writes nothing for a blank new field, and keeps a change on Escape', () => {
     const a = actions();
     render(<Controls element={entity()} a={a} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 2 }));
@@ -117,7 +118,8 @@ describe('in-place editing', () => {
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 0 }));
     fireEvent.change(screen.getByLabelText('Field name'), { target: { value: 'changed' } });
     fireEvent.keyDown(screen.getByLabelText('Field name'), { key: 'Escape' });
-    expect(a.setFields).not.toHaveBeenCalled();
+    expect(a.setFields).toHaveBeenCalledOnce();
+    expect((a.setFields.mock.calls[0] as [string, EntityField[]])[1][0]!.name).toBe('changed');
     expect(getEntityFieldEdit()).toBeNull();
   });
 

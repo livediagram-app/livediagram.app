@@ -837,6 +837,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone moved a card's due date on a Due Calendar, by dragging it to another day or with Alt and the arrow keys.",
   'Plan|Changed|CalendarStart':
     "Someone moved a card's start date on a Start Calendar, by dragging it to another day or with Alt and the arrow keys.",
+  'Sheet|Opened|Hyperlink':
+    "Someone opened a HYPERLINK cell's link in a new tab, with Ctrl/⌘ and a click or the cell menu's Open Link.",
   'Sheet|Opened|Settings':
     "Someone opened a Sheet's settings cog (title, data, view, cell sizes, freeze and totals).",
   'Sheet|Created|Blank': 'Someone set up a new Sheet from Setup Sheet as a blank grid.',
@@ -1721,6 +1723,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
+  'UI|Toggled|HomeBannerOff':
+    "Someone hid Explorer Home's banner, from its close button or Settings > Documents. Home then opens on its page header.",
+  'UI|Toggled|HomeBannerOn':
+    "Someone turned Explorer Home's banner back on, in Settings > Documents.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':

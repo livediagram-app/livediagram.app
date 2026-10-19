@@ -45,8 +45,8 @@ type ArrowLabelProps = {
   guardPress?: (e: ReactPointerEvent) => boolean;
   // Every keystroke, so the arrow can re-lay out the label (and its knockout) live.
   onDraft?: (text: string) => void;
+  // Blur, Enter and Escape all keep what was typed (canvas-and-palette.md "Labels").
   onCommit: (label: string) => void;
-  onCancel: () => void;
   // Left-click the label to select the arrow (when it isn't draggable yet),
   // and right-click to open the arrow's context menu — without these the
   // click falls through to the canvas.
@@ -75,7 +75,6 @@ export function ArrowLabel({
   guardPress,
   onDraft,
   onCommit,
-  onCancel,
   onSelect,
   onContextMenu,
 }: ArrowLabelProps) {
@@ -135,8 +134,9 @@ export function ArrowLabel({
               e.preventDefault();
               onCommit(e.currentTarget.value.trim());
             } else if (e.key === 'Escape') {
+              // Escape keeps what was typed, as on every canvas label (canvas-and-palette.md "Labels").
               e.preventDefault();
-              onCancel();
+              onCommit(e.currentTarget.value.trim());
             }
             e.stopPropagation();
           }}

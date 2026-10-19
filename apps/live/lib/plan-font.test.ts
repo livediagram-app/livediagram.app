@@ -15,12 +15,10 @@ describe('planFontStyle', () => {
     });
   });
 
-  it('brings the marker face down to the same x-height, so a card’s labels still fit', () => {
+  // Permanent Marker has no true lowercase: shrunk to the UI face's x-height, its column headings read too small.
+  it('draws the marker face at its own size', () => {
     const stack = FONTS.find((f) => f.id === MARKER_FONT_ID)!.stack;
-    expect(planFontStyle(stack)).toEqual({
-      fontFamily: stack,
-      fontSizeAdjust: `ex-height ${PLAN_HANDWRITING_EX}`,
-    });
+    expect(planFontStyle(stack)).toEqual({ fontFamily: stack });
   });
 
   it('leaves any other face at its size', () => {

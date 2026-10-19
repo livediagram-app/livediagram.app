@@ -3,7 +3,8 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { canvasSurface, tabWindowNames, type Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
+import { loadTabImages, type renderTabToSvg } from '@/lib/export-tab';
+import { renderTabDrawingSvg } from '@/lib/tab-drawing';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
@@ -35,6 +36,9 @@ export type TabSvg = {
 //
 // `planOpts` adds what a Plan tab's picture needs beyond its cards (usePlanImageExport): its Sheets' cells and its
 // plan views' pictures. A tab window passes them, so it draws a Board, Sheet or Dashboard tab as laid out.
+//
+// Drawn by renderTabDrawingSvg: a Pages tab as its pages and a Form tab as its form, any other tab as its canvas, so a
+// window, the other pane and a Diagram slot all show a tab the same way.
 export function useTabSvg(
   tab: Tab | undefined,
   motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
@@ -79,7 +83,7 @@ export function useTabSvg(
     // `iconsReady` re-renders once the glyph catalogues land, so icons replace their placeholders.
     void iconsReady;
     const seen = tabAsSeen(deferredTab, appearance);
-    const markup = renderTabToSvg(seen, {
+    const markup = renderTabDrawingSvg(seen, {
       pattern: false,
       motion: motionFor?.(canvasSurface(seen.backgroundColor)),
       images: images?.map,

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { CheckGlyph, LOUD_ACCENT, stopPointer } from '../qa/qa-parts';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function DoneButton({
   mine,
@@ -18,6 +19,7 @@ export function DoneButton({
 }) {
   const [initial] = useState(mine);
   const press = usePressWithoutDrag(() => onToggle?.());
+  const shadow = useFaceShadow();
   return (
     <button
       type="button"
@@ -25,7 +27,11 @@ export function DoneButton({
       {...stopPointer}
       disabled={!onToggle}
       className="done-button pointer-events-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-semibold disabled:cursor-default disabled:opacity-50"
-      style={mine ? { color: textColor, backgroundColor: tint(textColor, 0.08) } : LOUD_ACCENT}
+      style={
+        mine
+          ? { color: textColor, backgroundColor: tint(textColor, 0.08) }
+          : { ...LOUD_ACCENT, boxShadow: shadow(LOUD_ACCENT.boxShadow) }
+      }
     >
       <span
         key={mine ? 'mine' : 'not'}

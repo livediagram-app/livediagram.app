@@ -15,6 +15,7 @@ import {
   VotePill,
   stopPointer,
 } from './qa-parts';
+import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 function SpotButton({
   children,
@@ -28,6 +29,7 @@ function SpotButton({
   textColor: string;
 }) {
   const press = usePressWithoutDrag(onPress);
+  const shadow = useFaceShadow();
   // No hover card: the label says what it does (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
   return (
     <button
@@ -40,7 +42,7 @@ function SpotButton({
           ? {
               color: QA_ON_ACCENT,
               backgroundColor: QA_ACCENT,
-              boxShadow: `0 4px 14px -6px ${QA_ACCENT}`,
+              boxShadow: shadow(`0 4px 14px -6px ${QA_ACCENT}`),
             }
           : { color: textColor, backgroundColor: tint(textColor, 0.08) }
       }
@@ -70,11 +72,12 @@ export function QaSpotlight({
   hasNext: boolean;
   onReturn?: () => void;
 }) {
+  const shadow = useFaceShadow();
   return (
     <section
       aria-label="Now discussing"
       className="qa-spotlight qa-enter relative shrink-0 rounded-2xl p-3"
-      style={{ boxShadow: `0 10px 30px -14px ${QA_ACCENT}` }}
+      style={{ boxShadow: shadow(`0 10px 30px -14px ${QA_ACCENT}`) }}
     >
       <div className="mb-2 flex items-center gap-1.5">
         <span className="qa-live h-2 w-2 rounded-full" style={{ backgroundColor: QA_ACCENT }} />

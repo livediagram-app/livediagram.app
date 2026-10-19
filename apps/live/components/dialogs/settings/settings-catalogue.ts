@@ -1558,6 +1558,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'default folder where new documents go save location place file automatically always save placement',
         description: `Where new ${entry.noun} go when you create one without choosing a place.`,
       })),
+      {
+        // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
+        // and this switch brings it back.
+        kind: 'toggle',
+        key: 'homeBanner',
+        section: 'Explorer',
+        keywords: 'home banner hero greeting welcome header top search explorer hide show close',
+        label: 'Show Home Banner',
+        description:
+          "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
+        read: (p) => p.homeBanner !== false,
+        write: (p, v) => ({ ...p, homeBanner: v }),
+        event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
     ],
   },
   {

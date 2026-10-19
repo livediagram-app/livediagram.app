@@ -364,6 +364,8 @@ export function TableView({
         ref={gridRef}
         onMouseLeave={scheduleHoverClear}
         role="table"
+        // Its cells' borders are one grid, redrawn as whole rules under Marker (useFaceFinishPass).
+        data-marker-grid=""
         aria-label={`Table, ${plural(rows, 'row')} by ${plural(cols, 'column')}`}
         aria-rowcount={rows}
         aria-colcount={cols}

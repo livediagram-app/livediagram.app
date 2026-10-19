@@ -995,6 +995,14 @@ export const SHEET_FIND = chart(
   { types: ['Find', 'Settings'] },
 );
 
+export const SHEET_LINKS = chart(
+  'Sheet',
+  'Opened',
+  'Sheet Links Opened',
+  "A HYPERLINK cell's link opened, by Ctrl/⌘ and a click or the cell menu's Open Link. Never the address.",
+  { types: ['Hyperlink'] },
+);
+
 export const SHEET_CREATED = chart(
   'Sheet',
   'Created',
@@ -1060,6 +1068,7 @@ export const SHEETS: MetricStack = {
     SHEET_FUNCTIONS,
     SHEET_FUNCTIONS_SEARCHED,
     SHEET_FIND,
+    SHEET_LINKS,
     SHEET_CSV_IMPORTED,
     SHEET_CSV_EXPORTED,
     SHEET_DELETED,

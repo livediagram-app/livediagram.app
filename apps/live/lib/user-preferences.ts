@@ -163,6 +163,10 @@ export type UserPreferences = {
   // Missing / undefined / true === shown, the default (and even then only once
   // the tab has a few elements, and on desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
+  // Explorer Home's banner, the hero (docs/specs/013-workspace/explorer-home.md "Hiding the banner"). When `false`,
+  // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
+  // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
+  homeBanner?: boolean;
   // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the

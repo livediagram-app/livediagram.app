@@ -18,6 +18,8 @@ export const HERO_COPY = {
   newDocument: 'New Document',
   // The page header's words for the same drawer button.
   openNav: 'Browse sections',
+  // The banner's close (explorer-home.md "Hiding the banner"), and its Settings switch.
+  hideBanner: 'Hide Home Banner',
 } as const;
 
 export type HeroPill = { id: 'documents' | 'inbox'; label: string; tone: 'emerald' | 'sky' };

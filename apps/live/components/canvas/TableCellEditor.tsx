@@ -89,7 +89,9 @@ export function TableCellEditor({
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
+          // Escape keeps what was typed, as on every canvas label (canvas-and-palette.md "Labels").
           e.preventDefault();
+          commitCell(r, c, editorRef.current?.textContent ?? '');
           setEditing(null);
           return;
         }

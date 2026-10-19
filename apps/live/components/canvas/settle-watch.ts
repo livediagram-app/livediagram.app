@@ -16,7 +16,14 @@ export const SKETCH_INK_MAX_WAIT_MS = 1000;
 export function watchUntilSettled(
   live: Element,
   take: () => void,
-  { resize = false }: { resize?: boolean } = {},
+  {
+    resize = false,
+    ignore,
+  }: {
+    resize?: boolean;
+    // A change the watcher made itself (MarkerFace's ink): not a change to the face.
+    ignore?: (record: MutationRecord) => boolean;
+  } = {},
 ): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let changedSince = 0;
@@ -34,7 +41,9 @@ export function watchUntilSettled(
       Math.max(0, Math.min(SKETCH_INK_SETTLE_MS, SKETCH_INK_MAX_WAIT_MS - waited)),
     );
   };
-  const observer = new MutationObserver(changed);
+  const observer = new MutationObserver((records) => {
+    if (!ignore || records.some((r) => !ignore(r))) changed();
+  });
   observer.observe(live, { subtree: true, childList: true, attributes: true, characterData: true });
   // A resize changes no attribute inside: a resized icon's art is redrawn at its new size. The first callback
   // reports the size it started at, which the first take already drew.

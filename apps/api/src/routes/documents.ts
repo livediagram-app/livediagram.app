@@ -63,6 +63,7 @@ import { documentDates, isDocumentSource } from '@livediagram/api-schema';
 import { clientIp } from '../client-ip';
 import { documentImageSvg } from '../document-image';
 import { countCommunityCopy } from '../community-copy';
+import { getCommunityPostByShareCode } from '../db/community';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -578,7 +579,16 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // including the default, which a long source name pushes past it.
       const requested =
         typeof body.name === 'string' ? capStoredName(body.name, null, 'document') : '';
-      const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'document');
+      // A copy through a Community post's link is named after the post (docs/specs/025-community/community.md
+      // "Making a copy"): its title is what the visitor chose, and the author's own document name was never published.
+      const post =
+        !requested && scope.community && scope.shareCode
+          ? await getCommunityPostByShareCode(env, scope.shareCode)
+          : null;
+      const newName =
+        requested ||
+        (post?.title ? capStoredName(post.title, null, 'document') : '') ||
+        capStoredName(`Copy of ${source.name}`, null, 'document');
       const copy = await copyDocument(
         env,
         id,

@@ -30,6 +30,8 @@ import {
   type CardSlot,
   isCustomCardField,
 } from '@livediagram/items';
+import { finishFaceShadows } from '@livediagram/document';
+import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
@@ -95,6 +97,7 @@ export function PlanCardFace({
   edit,
 }: PlanCardFaceProps) {
   const plan = usePlan();
+  const faceFinish = useFaceFinish();
   const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
   // Lifted on a dark card, so Project's black still shows.
   const accent = accentOn(type.color, palette);
@@ -150,7 +153,8 @@ export function PlanCardFace({
   const frame = {
     backgroundColor: palette.card,
     borderColor: palette.cardBorder,
-    boxShadow: ring ?? REST_SHADOW,
+    // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"); a presence ring still shows.
+    boxShadow: ring ?? (finishFaceShadows(faceFinish) ? REST_SHADOW : undefined),
     opacity: muted ? 0.7 : 1,
   };
   const presenceTag = presence ? <PresenceTag name={presence.name} color={presence.color} /> : null;

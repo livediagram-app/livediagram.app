@@ -12,7 +12,7 @@ import {
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
 } from './border-style';
-import { finishBorderStroke, finishCornerFallbackPx, type Finish } from './finish';
+import { finishBorderStroke, finishCornerFallbackPx, finishOwnCorner, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -31,7 +31,7 @@ export function borderOf(
   const width = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)];
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const wanted = cornerRadiusPx(
-    el.borderRadius,
+    finishOwnCorner(el, finish),
     el.width,
     el.height,
     finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish),

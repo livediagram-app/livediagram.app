@@ -201,6 +201,13 @@ direction, asks the shared chooser (`bestAnchorTowards`). A re-layout
 (tidy growth, Tidy Map, a flow change) re-anchors the map's connectors by the
 same rule.
 
+A bubble map's spokes are drawn **straight in every finish**, not only in Professional. A curve leaves its
+face square to it and bulges sideways, and in a fan that runs every way the bulge passed behind a sibling's card
+(growing Travel's Hotel and Taxi on the Mind Map template made Taxi read as Hotel's child). A straight spoke from
+face to face clears its siblings, since a ring only grows until its nodes clear each other. Like the Professional
+routes, it is how the map is drawn, not what is stored, and a bow or bend dragged onto one spoke wins, as any
+look picked on a connector does.
+
 ### In the Professional finish
 
 The Professional finish ([Finish](../008-canvas/finish.md)) draws a map's connectors right-angled, and neat:
@@ -214,8 +221,8 @@ The Professional finish ([Finish](../008-canvas/finish.md)) draws a map's connec
   halfway down the gap to the nearest child, runs along it, and drops straight into the middle of each
   child's top. A child directly below is one straight drop. **Upward** is the same bus mirrored: up from
   the parent's top into each child's bottom.
-- **Bubble:** straight spokes from face to face. A bubble map fans every way, so a right angle there would
-  cross its own branches; a straight spoke is the neat line.
+- **Bubble:** straight spokes from face to face, as in every finish. A bubble map fans every way, so a right
+  angle there would cross its own branches; a straight spoke is the neat line.
 
 This is how the finish draws the map, not what is stored: the connectors stay curved, so switching the tab
 back to Flexible or Sketch shows the curves, and growth under Professional copies the curved look and is

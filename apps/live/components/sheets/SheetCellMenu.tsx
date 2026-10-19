@@ -9,7 +9,13 @@ import { Fragment, useState } from 'react';
 import { CHART_TYPE_LABELS, CHART_TYPES } from '@livediagram/document';
 import { posRangeOf, unmergeRange } from '@livediagram/sheets';
 import { ContextMenu } from '@/components/palette/ContextMenu';
-import { CopyIcon, CutIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
+import {
+  CopyIcon,
+  CutIcon,
+  LinkMenuIcon,
+  PasteMenuIcon,
+} from '@/components/palette/context-menu-icons';
+import { openHyperlink } from '@/lib/open-hyperlink';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { MenuToolButton, MenuToolbar } from '@/components/primitives/MenuTiles';
@@ -67,6 +73,7 @@ export function SheetCellMenu({
   const [askMerge, setAskMerge] = useState(false);
   const range = c.selection.ranges[c.selection.ranges.length - 1]!;
   const words = cellMenuLabels(range);
+  const link = c.workbook.hyperlinkOf(c.sheet.id, c.selection.active.r, c.selection.active.c);
   const flyout = (id: Flyout) => ({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
@@ -153,6 +160,16 @@ export function SheetCellMenu({
         ) : null}
       </MenuToolbar>
       <SheetCellCommentRow onDone={onClose} />
+      {/* The active cell's HYPERLINK, for every role: the way to it without Ctrl/⌘, on a touch screen above all
+          (formulas.md "Text"). */}
+      {link ? (
+        <MenuActionRow
+          plain
+          label="Open Link"
+          icon={<LinkMenuIcon />}
+          onClick={act(() => openHyperlink(link))}
+        />
+      ) : null}
       {!c.canShape ? null : askMerge ? (
         <SheetMergeConfirm
           range={range}

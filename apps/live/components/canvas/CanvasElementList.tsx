@@ -194,7 +194,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                       onBeginEndpointDrag={h.onBeginEndpointDrag}
                       onBeginEdit={h.onBeginEdit}
                       onCommitLabel={h.onCommitLabel}
-                      onCancelEdit={h.onCancelEdit}
                       onBeginCurveDrag={h.onBeginArrowCurveDrag}
                       onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
                       onBeginArrowBend={h.onBeginArrowBend}

@@ -43,6 +43,7 @@ export type SheetRenderModel = {
     borders?: { t?: RenderBorder; r?: RenderBorder; b?: RenderBorder; l?: RenderBorder };
     chip?: { color?: string };
     arrow?: true;
+    link?: string;
   }[];
   // The sheet's look (Sheet Settings): gridlines and headers left out.
   hideGrid?: true;
@@ -141,7 +142,8 @@ export function svgPlanSheet(
     const ch = (ys[Math.min(cell.r + (cell.rowSpan ?? 1), ys.length - 1)] ?? cy) - cy;
     if (cell.fill || cell.colSpan || cell.rowSpan)
       out += `<rect x="${r2(cx + 0.5)}" y="${r2(cy + 0.5)}" width="${r2(Math.max(0, cw - 1))}" height="${r2(Math.max(0, ch - 1))}" fill="${cell.fill ?? p.surface}"/>`;
-    let ink = cell.error ? ERROR_INK : (cell.color ?? p.text);
+    // A link takes the sheet's accent unless the cell has its own text colour (formulas.md "Text").
+    let ink = cell.error ? ERROR_INK : (cell.color ?? (cell.link ? p.focus : p.text));
     let textX: number | null = null;
     if (cell.chip && cell.text) {
       // The value on a pill in its option's colour (the sheet's column tint without one), its ink black or white.
@@ -193,9 +195,13 @@ export function svgPlanSheet(
       const face = stack ? ` font-family="${xmlEscape(stack)}"` : '';
       const clip = `${id}-${cell.r}-${cell.c}`;
       out += `<clipPath id="${clip}"><rect x="${r2(cx)}" y="${r2(cy)}" width="${r2(cell.wrap === 'o' || !cell.wrap ? Math.max(cw, right - cx) : cw)}" height="${r2(ch)}"/></clipPath>`;
-      out += `<text clip-path="url(#${clip})" x="${r2(tx)}" y="${r2(ty)}" font-size="${size}"${face}${cell.bold ? ' font-weight="700"' : ''}${
+      const text = `<text clip-path="url(#${clip})" x="${r2(tx)}" y="${r2(ty)}" font-size="${size}"${face}${cell.bold ? ' font-weight="700"' : ''}${
         cell.italic ? ' font-style="italic"' : ''
       }${deco ? ` text-decoration="${deco}"` : ''} fill="${ink}"${anchor}>${xmlEscape(cell.text.split('\n')[0]!)}</text>`;
+      // A link stays one in an SVG export: its target was allow-listed (safeHyperlink), and is escaped like all text.
+      out += cell.link
+        ? `<a href="${xmlEscape(cell.link)}" target="_blank" rel="noopener noreferrer">${text}</a>`
+        : text;
     }
     const b = cell.borders;
     if (b?.t) out += line(cx, cy, cx + cw, cy, b.t);

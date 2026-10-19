@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   deckFollowingPages,
+  GoneSlides,
+  GONE_SLIDES_MAX,
   deckPagesKey,
   pageMoveForDeckOrder,
   pageSlideIdFor,
@@ -72,14 +74,40 @@ describe('deckFollowingPages', () => {
     expect(pagesOf(deckFollowingPages(before, [tab]))).toEqual(['i', 'b']);
   });
 
-  it('keeps a duplicated slide beside its page, and a slide of a deleted page where it is', () => {
+  it('keeps a duplicated slide beside its page, and drops a slide of a deleted page', () => {
     const copy = pageSlide('t', 'a', { id: 'copy' });
     const before: Deck = {
       slides: [pageSlide('t', 'b'), pageSlide('t', 'gone'), pageSlide('t', 'a'), copy],
     };
     const tab = deckTab('t', [slidePage('a'), slidePage('b')]);
     const after = deckFollowingPages(before, [tab]);
-    expect(after.slides.map((s) => s.id)).toEqual(['s-t-a', 's-t-gone', 'copy', 's-t-b']);
+    expect(after.slides.map((s) => s.id)).toEqual(['s-t-a', 'copy', 's-t-b']);
+  });
+
+  // A deleted page leaves the deck with it, whatever kind it was and however its slide got there; nothing else does.
+  it("drops every slide of a deleted page, and keeps other slides, other tabs' and a loading tab's", () => {
+    const before: Deck = {
+      slides: [
+        pageSlide('t', 'i'),
+        elementSlide('el', 't'),
+        pageSlide('t', 'a'),
+        pageSlide('t', 'a', { id: 'copy', hidden: true }),
+        pageSlide('u', 'x'),
+        pageSlide('t', 'b'),
+        pageSlide('loading', 'z'),
+      ],
+    };
+    const after = deckFollowingPages(before, [
+      deckTab('t', [slidePage('b')]),
+      deckTab('u', [slidePage('x')]),
+      deckTab('loading', undefined),
+    ]);
+    expect(after.slides.map((s) => s.id)).toEqual(['el', 's-u-x', 's-t-b', 's-loading-z']);
+  });
+
+  it('keeps the same deck when no page has gone and none is new', () => {
+    const before: Deck = { slides: [pageSlide('t', 'a'), elementSlide('el', 't')] };
+    expect(deckFollowingPages(before, [deckTab('t', [slidePage('a')])])).toBe(before);
   });
 
   it('leaves alone a tab not in Pages, a tab not yet loaded, and a deck already in step', () => {
@@ -174,5 +202,58 @@ describe('slidePageOwnSlideIds', () => {
     };
     expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a']);
     expect(slidePageOwnSlideIds(deck, [deckTab('t', [slidePage('a')], 'diagram')]).size).toBe(0);
+  });
+});
+
+// A deleted page's slides are remembered for the session, so the page coming back (an undo, a peer's) brings them
+// back as they were: hidden, copied, added for a page that is not a slide page.
+describe('GoneSlides', () => {
+  const tabWith = (pages: Page[]) => deckTab('t', pages);
+
+  it("brings a deleted page's slides back as they were when the page returns", () => {
+    const gone = new GoneSlides();
+    const start: Deck = {
+      slides: [
+        pageSlide('t', 'a', { hidden: true }),
+        pageSlide('t', 'a', { id: 'copy' }),
+        pageSlide('t', 'i'),
+        pageSlide('t', 'b'),
+      ],
+    };
+    const pages = [slidePage('a'), infoPage('i'), slidePage('b')];
+    const deleted = deckFollowingPages(start, [tabWith([slidePage('b')])], gone);
+    expect(deleted.slides.map((s) => s.id)).toEqual(['s-t-b']);
+    const undone = deckFollowingPages(deleted, [tabWith(pages)], gone);
+    expect(undone.slides).toEqual(start.slides);
+  });
+
+  it('hands back the same slides when an update runs twice over the same deck', () => {
+    const gone = new GoneSlides();
+    const start: Deck = { slides: [pageSlide('t', 'i'), pageSlide('t', 'b')] };
+    const deleted = deckFollowingPages(start, [tabWith([slidePage('b')])], gone);
+    const back = [infoPage('i'), slidePage('b')];
+    const once = deckFollowingPages(deleted, [tabWith(back)], gone);
+    const twice = deckFollowingPages(deleted, [tabWith(back)], gone);
+    expect(twice.slides).toEqual(once.slides);
+    expect(once.slides.map((s) => s.id)).toEqual(['s-t-i', 's-t-b']);
+  });
+
+  it('leaves a slide deleted by hand after it came back deleted', () => {
+    const gone = new GoneSlides();
+    const start: Deck = { slides: [pageSlide('t', 'i'), pageSlide('t', 'b')] };
+    const pages = [infoPage('i'), slidePage('b')];
+    const deleted = deckFollowingPages(start, [tabWith([slidePage('b')])], gone);
+    const back = deckFollowingPages(deleted, [tabWith(pages)], gone);
+    // The person deletes the infographic page's slide by hand; a later change to the pages keeps it gone.
+    const byHand: Deck = { slides: back.slides.filter((s) => s.id !== 's-t-i') };
+    const later = deckFollowingPages(byHand, [tabWith([...pages, slidePage('c')])], gone);
+    expect(later.slides.map((s) => s.pageId)).toEqual(['b', 'c']);
+  });
+
+  it(`forgets the oldest past ${GONE_SLIDES_MAX} slides`, () => {
+    const gone = new GoneSlides();
+    for (let i = 0; i <= GONE_SLIDES_MAX; i++) gone.remember(pageSlide('t', `p${i}`));
+    expect(gone.take('t', 'p0', [], [])).toEqual([]);
+    expect(gone.take('t', `p${GONE_SLIDES_MAX}`, [], [])).toHaveLength(1);
   });
 });
