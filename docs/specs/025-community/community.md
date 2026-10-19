@@ -77,6 +77,8 @@ A post shows every tab of the document. A document that is empty (its first tab 
   first publish the confirmation is announced as it appears, with focus on **Done**.
 - Publishing again on a published document (**Edit Listing**) updates the title, description, category and tags; the
   likes, copies and publish date stay.
+- The publish dialog takes the Share dialog's place while it is open; closing it (Done after publishing, Cancel, or
+  Escape) brings the Share dialog back on its **Community** tab, where it was left.
 - **Remove From Community** deletes the post, its likes, copies and reports. Copies people already made are theirs and
   are untouched.
 - An owner can have at most 50 posts.

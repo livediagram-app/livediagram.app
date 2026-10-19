@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import type { Participant } from '@/lib/identity';
+import type { ShareTab } from './ShareTabs';
 
 export type ShareDialogProps = {
   participant: Participant;
@@ -53,6 +54,8 @@ export type ShareDialogProps = {
   community?: ReactNode;
   // Listed in the public Community: the status line says Public (docs/specs/025-community/community.md).
   communityListed?: boolean;
+  // The tab it opens on: Passes, or Community when it comes back from writing a listing.
+  initialTab?: ShareTab;
   // The document sits in a team library: the status line says every member can open it.
   teamDocument?: boolean;
   // Why the password can't be set right now (a published document: a post and a password exclude each

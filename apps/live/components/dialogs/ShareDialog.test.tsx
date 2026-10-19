@@ -237,3 +237,26 @@ describe('ShareDialog passes', () => {
     expect(props.onClose).toHaveBeenCalled();
   });
 });
+
+// docs/specs/025-community/community.md "Publishing": back from writing a listing, the dialog opens on Community.
+describe('the tab it opens on', () => {
+  const selected = () =>
+    screen.getAllByRole('tab').find((t) => t.getAttribute('aria-selected') === 'true')?.textContent;
+
+  it('is Passes by default', () => {
+    renderDialog({ community: <p>Post</p> });
+    expect(selected()).toBe('Passes');
+  });
+
+  it('is Community when asked, showing its section', () => {
+    renderDialog({ community: <p>Post</p>, initialTab: 'community' });
+    expect(selected()).toBe('Community');
+    expect(screen.getByText('Post')).toBeTruthy();
+  });
+
+  it('stays on Passes when there is no Community section to open', () => {
+    renderDialog({ initialTab: 'community' });
+    expect(screen.queryByRole('tab', { name: 'Community' })).toBeNull();
+    expect(screen.getByText(/Issue a pass/i)).toBeTruthy();
+  });
+});
