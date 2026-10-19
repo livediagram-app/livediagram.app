@@ -118,3 +118,19 @@ export function columns(total: number, n: number, gap: number): { at: number; si
   const size = (total - gap * (n - 1)) / n;
   return Array.from({ length: n }, (_, i) => ({ at: i * (size + gap), size }));
 }
+
+/** A picture set to the page's edges on the sides it touches (`x`, `y`, `w`, `h` may reach past
+ *  the box by its bleed), square-cornered so it meets the page's own edge cleanly. */
+export function bleedImage(k: Kit, x: number, y: number, w: number, h: number): Element {
+  return { ...k.image(x, y, w, h), borderRadius: 'none' };
+}
+
+/** A filled panel set to the page's edges: the theme's fill, square-cornered, no outline (an edge
+ *  drawn down the slide would read as a stray line), nothing on it. */
+export function bleedPanel(k: Kit, x: number, y: number, w: number, h: number): Element {
+  return k.shape('square', x, y, w, h, {
+    label: '',
+    borderRadius: 'none',
+    strokeColor: 'transparent',
+  });
+}

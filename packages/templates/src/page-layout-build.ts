@@ -18,6 +18,7 @@ export function buildPageLayout(
     y: y + m,
     width: width - 2 * m,
     height: height - 2 * m,
+    bleed: m,
   });
   return settleChips([], built, { attachLoose: false });
 }

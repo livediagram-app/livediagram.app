@@ -426,7 +426,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Presentations',
-        us: 'Free: slides from your canvas or 46 layouts, presenter notes, transitions',
+        us: 'Free: slides from your canvas or 61 layouts, presenter notes, transitions',
         them: 'On the Excalidraw+ hosted plan, with a presenter view',
       },
       {
@@ -449,7 +449,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
       'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as documents of their own.',
-      'Presentations free for everyone: build a deck from elements on any tab, or design slides from 46 layouts in Pages, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
+      'Presentations free for everyone: build a deck from elements on any tab, or design slides from 61 layouts in Pages, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
       'Animate a drawing so it draws itself on, or export a Pages tab as an animated GIF.',
       'Built-in charts, an icon library, comments and assigned actions, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
@@ -480,7 +480,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Presentations, free',
         paragraphs: [
-          'Presenting is one of the things Excalidraw+ adds on its paid plan. In livediagram it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does, or switch a tab to Pages and design 16:9 or 4:3 slides from 46 ready-made layouts, with a Tab Window that shows another tab live on a slide.',
+          'Presenting is one of the things Excalidraw+ adds on its paid plan. In livediagram it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does, or switch a tab to Pages and design 16:9 or 4:3 slides from 61 ready-made layouts, with a Tab Window that shows another tab live on a slide.',
           'Present full screen with presenter notes, a time budget per slide, Slide or Fade transitions, auto-advance and loop, a laser pointer and a spotlight. Animate an element so a drawing draws itself on or a title types itself in, and export a Pages tab as PDF, PNG, SVG or an animated GIF.',
         ],
       },
@@ -513,7 +513,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I present from livediagram, like Excalidraw+?',
-        a: 'Yes, for free. Build a slide deck from elements on any tab, or design slides from 46 layouts in Pages, then present full screen with presenter notes, per-slide time budgets, transitions, auto-advance, a laser pointer and a spotlight. Slides made from the canvas point at the real elements, so the deck changes when the diagram does.',
+        a: 'Yes, for free. Build a slide deck from elements on any tab, or design slides from 61 layouts in Pages, then present full screen with presenter notes, per-slide time budgets, transitions, auto-advance, a laser pointer and a spotlight. Slides made from the canvas point at the real elements, so the deck changes when the diagram does.',
       },
       {
         q: 'When should I pick Excalidraw instead?',
@@ -644,7 +644,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
       {
         label: 'Designed slides',
-        us: '16:9 or 4:3 slide pages from 46 layouts',
+        us: '16:9 or 4:3 slide pages from 61 layouts',
         them: 'Themes, layouts and a large template gallery',
       },
       {
@@ -677,7 +677,7 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Slides straight from the work: select elements or a Plan board on any tab and present it, and editing a shape updates every slide it is on.',
-      'Slide pages when you want a designed deck: 16:9 or 4:3, started from 46 layouts (title, agenda, big numbers, roadmap and more).',
+      'Slide pages when you want a designed deck: 16:9 or 4:3, started from 61 layouts (title, agenda, big numbers, roadmap and more).',
       'One document for the whole story: the write-up as pages, the diagram, the plan and the spreadsheet beside the deck that presents them.',
       'Present with presenter notes, a time budget per slide, Slide or Fade transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
@@ -692,7 +692,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Two ways to make a deck',
         paragraphs: [
-          'In Google Slides a deck is its own file, built slide by slide. livediagram gives you two ways in. Switch a tab to Pages and add slide pages, 16:9 or 4:3, each started from one of 46 layouts (a title, an agenda, two columns, image and text, a timeline and more) and painted from your theme. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
+          'In Google Slides a deck is its own file, built slide by slide. livediagram gives you two ways in. Switch a tab to Pages and add slide pages, 16:9 or 4:3, each started from one of 61 layouts (a title, an agenda, two columns, image and text, a timeline and more) and painted from your theme. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
           'Slides made from the canvas point at the real elements rather than copying them, so the deck can never drift from the work: change a shape, a card or a label and every slide it is on changes with it. A Tab Window does the same for a whole tab: put one on a slide page and it shows that tab live, fitted to the frame. Both kinds of slide sit in one deck, ordered in the Slide Deck panel, saved with the document.',
         ],
       },

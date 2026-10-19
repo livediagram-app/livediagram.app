@@ -15,13 +15,17 @@ import {
   type TextElement,
 } from '@livediagram/document';
 
-export type LayoutBox = { x: number; y: number; width: number; height: number };
+// `bleed`: how far the page runs past the box on every side (its margin), for a picture or a
+// panel set to the page's edges (a full-bleed slide layout); none where the box is all there is.
+export type LayoutBox = { x: number; y: number; width: number; height: number; bleed?: number };
 
 export type Kit = {
   box: LayoutBox;
   // The box's short side over 100: the unit every size is measured in.
   u: number;
   wide: boolean;
+  // How far the page runs past the box on every side (LayoutBox.bleed), 0 when unknown.
+  bleed: number;
   shape: (
     kind: ShapeKind,
     x: number,
@@ -64,6 +68,7 @@ export function kit(box: LayoutBox): Kit {
     box,
     u: Math.min(box.width, box.height) / 100,
     wide: box.width > box.height * WIDE_RATIO,
+    bleed: box.bleed ?? 0,
     shape: (kind, x, y, w, h, extra = {}) => ({
       ...createShape(kind, r(box.x + x), r(box.y + y)),
       width: r(w),

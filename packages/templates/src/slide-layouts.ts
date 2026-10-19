@@ -1,6 +1,7 @@
 // Slide layouts (docs/specs/007-editor/pages-mode.md "Slide layouts"): the layouts a slide
 // page starts from, at least nine to a category. Seven built for a slide here, more in the
-// category files (slide-layouts-openers.ts and its siblings), the rest the infographic layouts
+// category files (slide-layouts-openers.ts and its siblings, slide-layouts-pictures.ts and
+// slide-layouts-designed.ts), the rest the infographic layouts
 // that already set things side by side on a landscape page, filed under the slide categories. Pure builders like
 // the page layouts: the slide's content box in, ordinary themed elements out, in proportions of
 // the box so a 16:9 and a 4:3 slide both fit. Type is sized up for reading across a room.
@@ -27,6 +28,25 @@ import {
   takeawaySlide,
   threePointsSlide,
 } from './slide-layouts-content';
+import {
+  heroImageSlide,
+  imageBandSlide,
+  imageMosaicSlide,
+  imageSideCardSlide,
+  quoteImageSlide,
+  splitImageLeftSlide,
+  splitImageRightSlide,
+  threeImagesSlide,
+  twoImagesSlide,
+} from './slide-layouts-pictures';
+import {
+  agendaImageSlide,
+  compareCardsSlide,
+  sidebarTitleSlide,
+  statImageSlide,
+  teamThreeSlide,
+  titleOnlySlide,
+} from './slide-layouts-designed';
 import { milestonesSlide, nowNextLaterSlide, processFlowSlide } from './slide-layouts-steps';
 import {
   callToActionSlide,
@@ -72,14 +92,35 @@ export type SlideLayoutId =
   | 'slide-contact'
   | 'slide-questions'
   | 'slide-thanks-image'
-  | 'slide-resources';
+  | 'slide-resources'
+  | 'slide-split-image-right'
+  | 'slide-split-image-left'
+  | 'slide-image-band'
+  | 'slide-hero-image'
+  | 'slide-image-side-card'
+  | 'slide-three-images'
+  | 'slide-two-images'
+  | 'slide-image-mosaic'
+  | 'slide-quote-image'
+  | 'slide-agenda-image'
+  | 'slide-sidebar-title'
+  | 'slide-compare-cards'
+  | 'slide-title-only'
+  | 'slide-stat-image'
+  | 'slide-team-three';
 
 type SlideLayoutCategoryId =
-  'slide-openers' | 'slide-content' | 'slide-data' | 'slide-steps' | 'slide-closers';
+  | 'slide-openers'
+  | 'slide-content'
+  | 'slide-pictures'
+  | 'slide-data'
+  | 'slide-steps'
+  | 'slide-closers';
 
 export const SLIDE_LAYOUT_CATEGORIES: readonly { id: SlideLayoutCategoryId; label: string }[] = [
   { id: 'slide-openers', label: 'Openers' },
   { id: 'slide-content', label: 'Content' },
+  { id: 'slide-pictures', label: 'Pictures' },
   { id: 'slide-data', label: 'Data' },
   { id: 'slide-steps', label: 'Steps and Time' },
   { id: 'slide-closers', label: 'Closers' },
@@ -290,6 +331,13 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     agendaGridSlide,
   ),
   own(
+    'slide-agenda-image',
+    'slide-openers',
+    'Agenda and Image',
+    'A picture down the left edge, four numbered parts beside it',
+    agendaImageSlide,
+  ),
+  own(
     'slide-bullets',
     'slide-content',
     'Title and Bullets',
@@ -346,7 +394,98 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     'Four cards, two by two, each an icon and a line',
     fourIdeasSlide,
   ),
+  own(
+    'slide-title-only',
+    'slide-content',
+    'Title Only',
+    'A title and a lead line, the rest of the slide yours',
+    titleOnlySlide,
+  ),
+  own(
+    'slide-sidebar-title',
+    'slide-content',
+    'Sidebar Title',
+    'A panel down the left edge holding the title, five points beside it',
+    sidebarTitleSlide,
+  ),
+  own(
+    'slide-compare-cards',
+    'slide-content',
+    'Compare Two',
+    'Two options on cards side by side, a "vs" between',
+    compareCardsSlide,
+  ),
+  own(
+    'slide-split-image-right',
+    'slide-pictures',
+    'Text and Picture',
+    'Words on the left, a picture filling the right half to the edges',
+    splitImageRightSlide,
+  ),
+  own(
+    'slide-split-image-left',
+    'slide-pictures',
+    'Picture and Text',
+    'A picture filling the left to the edges, words on the right',
+    splitImageLeftSlide,
+  ),
+  own(
+    'slide-hero-image',
+    'slide-pictures',
+    'Hero Picture',
+    'A picture filling the slide, darkened, a large title over it',
+    heroImageSlide,
+  ),
+  own(
+    'slide-image-band',
+    'slide-pictures',
+    'Picture Band',
+    'A picture across the top edge, a title and a paragraph under it',
+    imageBandSlide,
+  ),
+  own(
+    'slide-image-side-card',
+    'slide-pictures',
+    'Picture and Card',
+    'A picture filling the slide, a card of points on its right',
+    imageSideCardSlide,
+  ),
+  own(
+    'slide-quote-image',
+    'slide-pictures',
+    'Quote and Picture',
+    'A quote and who said it, a picture filling the right',
+    quoteImageSlide,
+  ),
+  own(
+    'slide-two-images',
+    'slide-pictures',
+    'Two Pictures',
+    'Two pictures side by side, a caption under each',
+    twoImagesSlide,
+  ),
+  own(
+    'slide-three-images',
+    'slide-pictures',
+    'Three Pictures',
+    'Three pictures side by side, a caption under each',
+    threeImagesSlide,
+  ),
+  own(
+    'slide-image-mosaic',
+    'slide-pictures',
+    'Picture Mosaic',
+    'A title beside one large picture and two small ones',
+    imageMosaicSlide,
+  ),
   reused('big-number', 'slide-data'),
+  own(
+    'slide-stat-image',
+    'slide-data',
+    'Number and Picture',
+    'A picture down the left edge, one large figure beside it',
+    statImageSlide,
+  ),
   reused('key-stats', 'slide-data'),
   reused('chart-story', 'slide-data'),
   reused('comparison', 'slide-data'),
@@ -415,6 +554,13 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     closingSlide,
   ),
   reused('team', 'slide-closers'),
+  own(
+    'slide-team-three',
+    'slide-closers',
+    'Team of Three',
+    'Three round photos, each a name, a role and a line',
+    teamThreeSlide,
+  ),
   own(
     'slide-summary',
     'slide-closers',
