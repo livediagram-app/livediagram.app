@@ -299,7 +299,7 @@ Two ways out, because a presenter mid-sentence should not have to remember one:
 - **`Esc`**, any time.
 - **The close button** in the HUD.
 
-Exiting restores the previous tab, viewport and chrome. The viewport matters more than it sounds: a deck leaves the camera wherever the last slide needed it, often 250% on one box, so without the restore you came back to a canvas you had to go and find.
+Exiting restores the previous tab, viewport, chrome and **keyboard focus**: back on the control that started the deck (the header's or the Slides panel's Present), or the canvas when that control is gone, never the page itself, where a keyboard user had to Tab in again from the top. The viewport matters more than it sounds: a deck leaves the camera wherever the last slide needed it, often 250% on one box, so without the restore you came back to a canvas you had to go and find.
 
 - Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared document is a core case.
 

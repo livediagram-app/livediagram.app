@@ -19,6 +19,8 @@ import { planPalette } from '@/components/plan/plan-palette';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { useFocusReturn } from '@/hooks/ui/useFocusReturn';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 import { startTypedTransition } from '@/lib/view-transition';
 import { slideTransitionType, whenScreenSettles } from './slide-transition';
 
@@ -34,12 +36,22 @@ const ItemSlideView = dynamic(
   { ssr: false },
 );
 
+// Where focus lands after a deck when the Present that started it has gone (the header's remounts with the chrome):
+// a Present on screen, else the canvas.
+const presentOrCanvas = () =>
+  [...document.querySelectorAll<HTMLElement>('[data-presentation-start]')].find(
+    (el) => el.getClientRects().length > 0,
+  ) ?? document.querySelector<HTMLElement>(`main${CANVAS_ROOT_SELECTOR}`);
+
 export function PresentationHost() {
   const { slideDeck, canvasTool, setCanvasTool } = useEditorContext();
   const plan = usePlan();
   const surface = useCanvasSurface();
   const at = slideDeck?.presentingAt ?? null;
   const presenting = at !== null;
+  // Leaving the deck hands focus back to the Present that started it (presentation-mode.md "Exiting"). Taken from the
+  // press, while the deck loads: Present is disabled then, and a disabled button lets go of focus.
+  useFocusReturn(presenting || !!slideDeck?.startingDeck, presentOrCanvas);
   // The slide on screen ('end' for the end state): a peer's edit can move the
   // slide's place in the run without the slide changing, which is no move.
   const shown = at === null ? null : (slideDeck?.runnable[at]?.slide.id ?? 'end');
