@@ -111,7 +111,7 @@ export function useAiPanelSession({
                 userTurn,
                 {
                   role: 'assistant',
-                  content: `Applied changes (${plural(elements.length, 'element')})`,
+                  content: `Applied changes to ${plural(elements.length, 'element')}.`,
                 },
               ]);
               track('AI', 'Used', 'Clean');
