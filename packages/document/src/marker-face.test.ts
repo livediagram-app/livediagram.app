@@ -152,6 +152,16 @@ describe('svgMarkerFace', () => {
     expect(svgMarkerFace(many, 'el', face).match(/data-marker-part/g)).toHaveLength(MARKER_FACE_MAX_PARTS);
   });
 
+  it('colours in a chevron drawn as a polygon', () => {
+    const out = svgMarkerFace('<polygon points="0,0 120,0 150,40 120,80 0,80 30,40" fill="#38bdf8"/>', 'el', face);
+    expect(out).toContain('<g data-marker-part="shape"');
+  });
+
+  it("draws a chevron process's stages in marker in the export", () => {
+    const chevrons = { ...createShape('chevrons', 0, 0), id: 'ch' };
+    expect(svgBoxed(chevrons, { tabFinish: 'marker' })).toContain('data-marker-part="shape"');
+  });
+
   it("draws a layer stack's bands in marker in the export", () => {
     const stack = { ...createShape('layer-stack', 0, 0), id: 'ls' };
     expect(svgBoxed(stack, {})).not.toContain('data-marker-part');

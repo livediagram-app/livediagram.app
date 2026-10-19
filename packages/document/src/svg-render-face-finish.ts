@@ -6,6 +6,7 @@ import {
   MARKER_FACE_MAX_PARTS,
   markerFacePart,
   markerFaceSeed,
+  polygonPoints,
   type FacePartPaint,
   type FacePartShape,
 } from './marker-face';
@@ -30,7 +31,7 @@ export function svgProfessionalFace(markup: string): string {
 // and the hand-drawn body (svgMarkerDrawing, already drawn in marker): kept whole, never redrawn.
 const HELD =
   /<(clipPath|mask|defs|pattern|marker|symbol|foreignObject)\b[^>]*>[\s\S]*?<\/\1>|<g [^>]*data-finish="marker">[\s\S]*?<\/g>/g;
-const PART = /<(rect|circle|ellipse|path)\b([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/g;
+const PART = /<(rect|circle|ellipse|path|polygon)\b([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/g;
 
 function partShape(tag: string, a: Record<string, string>): FacePartShape | null {
   const n = (k: string) => Number(a[k] ?? 0);
@@ -41,6 +42,10 @@ function partShape(tag: string, a: Record<string, string>): FacePartShape | null
       return { kind: 'ellipse', cx: n('cx'), cy: n('cy'), rx: n('r'), ry: n('r') };
     case 'ellipse':
       return { kind: 'ellipse', cx: n('cx'), cy: n('cy'), rx: n('rx'), ry: n('ry') };
+    case 'polygon': {
+      const points = a.points ? polygonPoints(a.points) : null;
+      return points ? { kind: 'polygon', points } : null;
+    }
     default:
       return a.d ? { kind: 'path', d: a.d } : null;
   }

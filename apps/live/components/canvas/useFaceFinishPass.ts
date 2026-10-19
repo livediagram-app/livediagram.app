@@ -30,7 +30,7 @@ const DRAWN_ATTR = 'data-marker-drawn';
 const PILL_ATTR = 'data-finish-pill';
 /** What the pass never reads into: the hand-drawn body, photos, embeds, kept parts and its own ink. */
 const SKIP = `[data-finish="marker"], [data-finish-keep], [${INK_ATTR}], img, video, iframe, canvas, foreignObject, text`;
-const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path']);
+const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'polygon']);
 
 /** The face under `root` in its finish, re-taken whenever it settles after a change: Marker draws its frames and
  *  shapes in marker; Professional keeps its SVG pills round (face-finish.css squares every other rectangle). */
@@ -215,6 +215,10 @@ function shapeOf(el: SVGGeometryElement): FacePartShape | null {
       rx: el.rx.baseVal.value,
       ry: el.ry.baseVal.value,
     };
+  if (el instanceof SVGPolygonElement) {
+    const points = Array.from(el.points, (p) => ({ x: p.x, y: p.y }));
+    return points.length >= 3 ? { kind: 'polygon', points } : null;
+  }
   const d = el.getAttribute('d');
   return d ? { kind: 'path', d } : null;
 }

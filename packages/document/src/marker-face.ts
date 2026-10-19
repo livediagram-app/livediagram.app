@@ -8,6 +8,7 @@ import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY, markerColouring, markerStrok
 import {
   outlineOfEllipse,
   outlineOfPath,
+  outlineOfPolygon,
   outlineOfRect,
   sketchSeed,
   type Pt,
@@ -34,7 +35,8 @@ export const MARKER_FACE_BAND_PX = 6;
 export type FacePartShape =
   | { kind: 'rect'; x: number; y: number; width: number; height: number; rx: number }
   | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
-  | { kind: 'path'; d: string };
+  | { kind: 'path'; d: string }
+  | { kind: 'polygon'; points: Pt[] };
 
 /** How a part is painted: colours as CSS colours or null for none, its line width, its own opacity. */
 export type FacePartPaint = {
@@ -110,6 +112,8 @@ function outlineOf(shape: FacePartShape): SketchOutline {
       return outlineOfEllipse(shape.cx, shape.cy, shape.rx, shape.ry);
     case 'path':
       return outlineOfPath(shape.d);
+    case 'polygon':
+      return outlineOfPolygon(shape.points);
   }
 }
 
@@ -208,4 +212,13 @@ export function markerFacePart(
 /** A face's marker seed: its element's, on a stream of its own so its parts never repeat its body's wobble. */
 export function markerFaceSeed(elementId: string): number {
   return (sketchSeed(elementId) ^ 0x5f3759df) >>> 0;
+}
+
+/** A polygon's `points` attribute as points (numbers in pairs, comma or space separated); null for fewer than 3. */
+export function polygonPoints(attr: string): Pt[] | null {
+  const n = attr.trim().split(/[\s,]+/).map(Number);
+  if (n.some((v) => !Number.isFinite(v))) return null;
+  const points: Pt[] = [];
+  for (let i = 0; i + 1 < n.length; i += 2) points.push({ x: n[i]!, y: n[i + 1]! });
+  return points.length >= 3 ? points : null;
 }
