@@ -330,7 +330,8 @@ browsed before signing up.
 - **Choosing a card creates the document at once**, as an empty tab of the mode's blank (`BLANK_TEMPLATE_FOR_MODE`),
   which opens on its start.
 - **Keyboard:** the chosen (else the first) card is focused on a fine pointer; the arrow keys move between cards,
-  and 1 to 5 choose one straight away.
+  and 1 to 5 choose one straight away, wherever the focus is on the page (after a click on the backdrop too), except
+  in a field being typed in or with Cmd, Ctrl or Alt held.
 - **`?mode=`** preselects that mode's card (and its blank for **Create**); **`?q=`** is handed to the new document's
   start as its search ([Template starts](start-diagramming.md) "Search handed over").
 
