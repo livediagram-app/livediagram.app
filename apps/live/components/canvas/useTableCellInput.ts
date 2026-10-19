@@ -6,6 +6,7 @@ import {
   setTableCell,
   type TableElement,
 } from '@livediagram/document';
+import { composedWithAlt } from '@/lib/composed-key';
 
 // The selected-cell INPUT layer for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // spreadsheet-style keyboard handling while a cell is selected but not
@@ -86,7 +87,8 @@ export function useTableCellInput({
         }
         return;
       }
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // A chord is not the cell's, but a character composed with Option or AltGr is (lib/composed-key.ts): £, €, @.
+      if ((e.metaKey || e.ctrlKey || e.altKey) && !composedWithAlt(e)) return;
       if (e.key.startsWith('Arrow')) {
         const nr = r + (e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0);
         const nc = c + (e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0);
