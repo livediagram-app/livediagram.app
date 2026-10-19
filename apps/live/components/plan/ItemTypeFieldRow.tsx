@@ -90,6 +90,7 @@ export function FieldRow({
             <Tooltip label={`${label} is always on this type`}>
               <span
                 tabIndex={0}
+                role="img"
                 aria-label={`${label} is always on this type`}
                 className="flex shrink-0 text-slate-400 dark:text-slate-400"
               >

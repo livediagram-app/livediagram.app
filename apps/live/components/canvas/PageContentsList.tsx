@@ -267,7 +267,7 @@ function NameLine({
         {row.name}
       </span>
       {row.locked ? (
-        <span className="shrink-0 text-slate-400" aria-label="Locked">
+        <span role="img" className="shrink-0 text-slate-400" aria-label="Locked">
           <LockIcon />
         </span>
       ) : null}

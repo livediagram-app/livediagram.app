@@ -113,6 +113,7 @@ export function CommunitySection({
 
       {state === 'loading' ? (
         <div
+          role="status"
           aria-busy="true"
           aria-label="Loading"
           className="h-9 animate-pulse rounded-lg bg-slate-100 motion-reduce:animate-none dark:bg-slate-800"

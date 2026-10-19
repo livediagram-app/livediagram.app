@@ -151,6 +151,7 @@ function Card({
           <span
             className="block h-4 w-4 rounded-full"
             style={{ backgroundColor: tint(textColor, 0.2) }}
+            role="img"
             aria-label="Someone who has since left the room"
           />
         )}

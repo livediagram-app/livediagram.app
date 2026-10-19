@@ -132,10 +132,10 @@ describe('the card face', () => {
 
   it('counts the comments of an open thread, on Detailed and Compact cards', () => {
     face(card({ comments: [comment('a'), comment('b')], resolved: false }));
-    expect(screen.getByLabelText('2 comments')).toBeTruthy();
+    expect(screen.getByText('2 comments')).toBeTruthy();
     cleanup();
     face(card({ comments: [comment('a')], resolved: false }), 'compact');
-    expect(screen.getByLabelText('1 comment')).toBeTruthy();
+    expect(screen.getByText('1 comment')).toBeTruthy();
   });
 
   it('draws nothing for no comments, or a resolved thread', () => {
