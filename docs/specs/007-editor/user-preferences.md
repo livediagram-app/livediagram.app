@@ -763,7 +763,8 @@ and the dialog stays as the one complete, browsable index of them.
   applies on a desktop. The Map's rows (Enable Map, Dim Outside the View,
   Map Size) are desktop only: a phone never draws the Map
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
-  and read as broken.
+  and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
+  Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
   Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
