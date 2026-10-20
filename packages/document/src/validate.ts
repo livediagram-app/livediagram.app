@@ -24,6 +24,7 @@ import { ADDER_KEY_LENGTH } from './adder';
 import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
+import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
 import { parseStrokePoints } from './stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
@@ -246,6 +247,14 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
 const ARROW_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'exactEnd', valid: isBool, rule: 'a boolean' },
   { field: 'labelMaxWidth', valid: (v) => isNum(v) && v > 0, rule: 'a finite number above 0' },
+  // Its bends (docs/specs/008-canvas/arrow-bending.md "Stored bends").
+  {
+    field: 'curvePoints',
+    valid: isCurvePoints,
+    rule: `at most ${MAX_CURVE_POINTS} bend points, each a finite dx and dy`,
+  },
+  { field: 'curveOffset', valid: isBendDelta, rule: 'a bend: a finite dx and dy' },
+  { field: 'elbowOffset', valid: isBendDelta, rule: 'a bend: a finite dx and dy' },
 ];
 
 const PINNED_RULE = `a pinned end: an elementId and an anchor (${ALL_ANCHORS.join(' ')})`;
