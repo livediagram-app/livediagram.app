@@ -34,6 +34,8 @@ import { useToast } from '@/hooks/ui/useToast';
 import { useDeleteUndoHandoff } from '@/hooks/persistence/useDeleteUndoHandoff';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import { useExplorerLens } from './lens/useExplorerLens';
+import { explorerSurfaceFlags, useExplorerSurface } from './explorer-surface';
+import { explorerRouteOfFrame } from '@/lib/workbench/workspace-place';
 import { carriedHref, lensViewOf } from './lens/lens-views';
 import { debugLog } from '@/lib/debug-log';
 import { useTimelineUnread } from './useTimelineUnread';
@@ -66,14 +68,20 @@ export function useExplorerState() {
   const searchParams = useSearchParams();
   // What the tree highlights + the right pane shows, derived from the
   // address bar (routes.ts). /explorer itself redirects to /recent.
-  const selected = useMemo<SelectedNode>(
-    () => selectedFromRoute(pathname ?? '/explorer', searchParams),
-    [pathname, searchParams],
-  );
+  // Inside a workspace frame the address is the frame's (lib/workbench/workspace-place.ts): the view is the one
+  // its /explorer route names.
+  const selected = useMemo<SelectedNode>(() => {
+    const route = explorerRouteOfFrame(pathname ?? '', searchParams);
+    return route
+      ? selectedFromRoute(route.pathname, route.search)
+      : selectedFromRoute(pathname ?? '/explorer', searchParams);
+  }, [pathname, searchParams]);
 
   const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  // In a workspace frame the Explorer drops the app's surroundings and the account (explorer-surface.ts).
+  const surface = explorerSurfaceFlags(useExplorerSurface());
   // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(clerkUserId);
+  usePublishPicture(surface.publishPicture ? clerkUserId : null);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
@@ -126,7 +134,7 @@ export function useExplorerState() {
     acceptInvite,
     declineInvite,
     refresh: refreshTeams,
-  } = useTeams(ownerId, { enabled: teamsEnabled });
+  } = useTeams(ownerId, { enabled: teamsEnabled, invites: surface.administration });
   // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every document
   // view, kept in step with `q` in the address bar.
   const lens = useExplorerLens({
@@ -138,7 +146,7 @@ export function useExplorerState() {
   // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
   // the timeline's token-card menus, which offer Revoke for a token that is
   // still live. Managing them is the Settings API Tokens category.
-  const tokens = useTokens(ownerId, { enabled: teamsEnabled });
+  const tokens = useTokens(ownerId, { enabled: teamsEnabled && surface.administration });
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   // Which list read failed last, so a view says Failed rather than Empty.
@@ -165,12 +173,17 @@ export function useExplorerState() {
   // Open Settings on a category in place: the account menu, and any link
   // that names one (a timeline token card, lib/open-settings.ts).
   // `sectionId` scrolls to and focuses one section of it (settingsSectionId).
-  const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
-    setSettingsFocus(null);
-    setSettingsCategory(categoryId);
-    setSettingsSection(sectionId ?? null);
-    setSettingsOpen(true);
-  }, []);
+  const settingsAvailable = surface.settings;
+  const openSettingsOn = useCallback(
+    (categoryId: string, sectionId?: string) => {
+      if (!settingsAvailable) return;
+      setSettingsFocus(null);
+      setSettingsCategory(categoryId);
+      setSettingsSection(sectionId ?? null);
+      setSettingsOpen(true);
+    },
+    [settingsAvailable],
+  );
   useOpenSettingsRequests(openSettingsOn);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
@@ -183,7 +196,7 @@ export function useExplorerState() {
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);
-    if (settingsLink) {
+    if (settingsLink && settingsAvailable) {
       setSettingsCategory(settingsLink);
       setSettingsSection(sectionLink);
       setSettingsOpen(true);

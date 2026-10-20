@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { WorkbenchDocumentSessionResponse } from '@livediagram/api-schema';
+import type {
+  WorkbenchDocumentSessionResponse,
+  WorkbenchWorkspaceSessionResponse,
+} from '@livediagram/api-schema';
 import {
   endReasonOfInvalidSession,
   INITIAL_WORKBENCH_PHASE,
@@ -25,7 +28,12 @@ const SESSION: WorkbenchDocumentSessionResponse = {
 };
 const RENEWED: WorkbenchDocumentSessionResponse = { ...SESSION, session: `lvw_${'b'.repeat(43)}` };
 
-const redeeming: WorkbenchPhase = { phase: 'redeeming', ticket: TICKET, documentId: 'doc-1' };
+const redeeming: WorkbenchPhase = {
+  phase: 'redeeming',
+  ticket: TICKET,
+  scope: 'document',
+  documentId: 'doc-1',
+};
 const binding: WorkbenchPhase = { phase: 'binding', session: SESSION };
 const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
 
@@ -38,13 +46,23 @@ describe('workbenchTransition', () => {
 
   it('redeems a ticket it read', () => {
     expect(
-      run(INITIAL_WORKBENCH_PHASE, { type: 'read', ticket: TICKET, documentId: 'doc-1' }),
+      run(INITIAL_WORKBENCH_PHASE, {
+        type: 'read',
+        ticket: TICKET,
+        scope: 'document',
+        documentId: 'doc-1',
+      }),
     ).toEqual(redeeming);
   });
 
   it('refuses an address with no ticket', () => {
     expect(
-      run(INITIAL_WORKBENCH_PHASE, { type: 'read', ticket: null, documentId: 'doc-1' }),
+      run(INITIAL_WORKBENCH_PHASE, {
+        type: 'read',
+        ticket: null,
+        scope: 'document',
+        documentId: 'doc-1',
+      }),
     ).toEqual({
       phase: 'refused',
       cause: 'no-ticket',
@@ -127,7 +145,7 @@ describe('workbenchTransition', () => {
     { phase: 'failed' },
   ];
   const events: WorkbenchEvent[] = [
-    { type: 'read', ticket: TICKET, documentId: 'doc-1' },
+    { type: 'read', ticket: TICKET, scope: 'document', documentId: 'doc-1' },
     { type: 'redeemed', session: SESSION },
     { type: 'redeem-refused' },
     { type: 'redeem-failed' },
@@ -155,5 +173,61 @@ describe('endReasonOfInvalidSession', () => {
   it('reads a refusal before the expiry as revoked, and after it as expired', () => {
     expect(endReasonOfInvalidSession(10_000, 9_999)).toBe('revoked');
     expect(endReasonOfInvalidSession(10_000, 10_000)).toBe('expired');
+  });
+});
+
+describe('workbenchTransition, workspace scope', () => {
+  const WORKSPACE: WorkbenchWorkspaceSessionResponse = {
+    ...SESSION,
+    scope: 'workspace',
+    documentId: null,
+    folderId: 'f1',
+    tabId: null,
+  };
+  const redeemingWorkspace: WorkbenchPhase = {
+    phase: 'redeeming',
+    ticket: TICKET,
+    scope: 'workspace',
+    documentId: null,
+  };
+
+  it('reads a workspace address into redeeming', () => {
+    expect(
+      run(INITIAL_WORKBENCH_PHASE, {
+        type: 'read',
+        ticket: TICKET,
+        scope: 'workspace',
+        documentId: null,
+      }),
+    ).toEqual(redeemingWorkspace);
+  });
+
+  it('binds a workspace session on the workspace page', () => {
+    expect(run(redeemingWorkspace, { type: 'redeemed', session: WORKSPACE })).toEqual({
+      phase: 'binding',
+      session: WORKSPACE,
+    });
+  });
+
+  it('refuses a session whose scope is not the address page’s, both ways', () => {
+    expect(run(redeemingWorkspace, { type: 'redeemed', session: SESSION })).toEqual({
+      phase: 'refused',
+      cause: 'mismatch',
+    });
+    expect(run(redeeming, { type: 'redeemed', session: WORKSPACE })).toEqual({
+      phase: 'refused',
+      cause: 'mismatch',
+    });
+  });
+
+  it('renews a workspace session with another of the same scope and origin only', () => {
+    const on: WorkbenchPhase = { phase: 'mounted', session: WORKSPACE, name: 'Acme Editor' };
+    const next = { ...WORKSPACE, session: `lvw_${'c'.repeat(43)}` };
+
+    expect(run(on, { type: 'renewed', session: next })).toEqual({ ...on, session: next });
+    expect(run(on, { type: 'renewed', session: SESSION })).toEqual(on);
+    expect(
+      run(on, { type: 'renewed', session: { ...next, origin: 'https://other.example' } }),
+    ).toEqual(on);
   });
 });

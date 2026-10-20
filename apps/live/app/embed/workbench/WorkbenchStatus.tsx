@@ -1,18 +1,31 @@
 'use client';
 
 // The workbench page's status screens and their copy (docs/specs/013-workspace/blueprints/
-// workbench-embeds.md "Presentation and UX", WB33): bare like an embed's (no header, no Explorer), the
-// copy in a `role="status"` region, `refused` and `unbound` headed by an `h1`.
+// workbench-embeds.md "Presentation and UX", WB33, WB65): bare like an embed's (no header, no Explorer), the
+// copy in a `role="status"` region, `refused` and `unbound` headed by an `h1`. A workspace frame speaks of the
+// workspace, a document frame of the diagram.
 import type { ReactNode } from 'react';
+import type { WorkbenchScope } from '@livediagram/api-schema';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import type { WorkbenchPhase } from './workbench-machine';
 
 type WorkbenchStatusPhase = Exclude<WorkbenchPhase, { phase: 'mounted' | 'ended' }>;
 
-const OPENING_COPY = 'Opening your diagram…';
-const REFUSED_HEADING = 'Open this diagram from your workbench';
-const REFUSED_BODY =
-  'This link works once, for a minute. Open the diagram again from your workbench.';
+const COPY: Record<
+  WorkbenchScope,
+  { opening: string; refusedHeading: string; refusedBody: string }
+> = {
+  document: {
+    opening: 'Opening your diagram…',
+    refusedHeading: 'Open this diagram from your workbench',
+    refusedBody: 'This link works once, for a minute. Open the diagram again from your workbench.',
+  },
+  workspace: {
+    opening: 'Opening your workspace…',
+    refusedHeading: 'Open your workspace from your workbench',
+    refusedBody: 'This link works once, for a minute. Open it again from your workbench.',
+  },
+};
 
 function StatusShell({ children }: { children: ReactNode }) {
   return (
@@ -24,16 +37,23 @@ function StatusShell({ children }: { children: ReactNode }) {
   );
 }
 
-export function WorkbenchStatus({ phase }: { phase: WorkbenchStatusPhase }) {
+export function WorkbenchStatus({
+  phase,
+  scope = 'document',
+}: {
+  phase: WorkbenchStatusPhase;
+  scope?: WorkbenchScope;
+}) {
+  const copy = COPY[scope];
   switch (phase.phase) {
     case 'refused':
       return (
         <StatusShell>
           <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            {REFUSED_HEADING}
+            {copy.refusedHeading}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            {REFUSED_BODY}
+            {copy.refusedBody}
           </p>
         </StatusShell>
       );
@@ -54,7 +74,7 @@ export function WorkbenchStatus({ phase }: { phase: WorkbenchStatusPhase }) {
     default:
       return (
         <StatusShell>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{OPENING_COPY}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{copy.opening}</p>
         </StatusShell>
       );
   }

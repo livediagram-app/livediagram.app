@@ -43,9 +43,6 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { templateTabName } from '@/lib/template-tab-name';
-import { buildTemplatedTabs } from '@/lib/template-builders';
-import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
   templateFamilyOf,
   untitledNameForTemplate,
@@ -62,20 +59,14 @@ import {
   wizardStartsBlank,
 } from '@/lib/new-document-params';
 import { backOutTarget } from '@/lib/back-out';
-import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import {
-  formTemplateStarter,
-  isBlankTemplate,
-  isFormTemplateKind,
-  isPlanTemplateKind,
-} from '@livediagram/templates';
-import { markPendingFormStart } from '@/lib/pending-form-start';
+import { isBlankTemplate } from '@livediagram/templates';
+import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -292,7 +283,7 @@ export default function NewDocumentPage() {
 
   // Single commit point, shared by a mode chosen, Create, Skip and the bypass links. Every new document starts on the
   // Default theme; either way we persist the document so the editor route lands on a real row.
-  const themeId = 'brand';
+  const themeId = NEW_DOCUMENT_THEME_ID;
   const commitNewDocument = async (
     templateKind: TemplateKind | null,
     settings: NewDocumentSettings,
@@ -335,56 +326,13 @@ export default function NewDocumentPage() {
     // and takes the count only if it is already in.
     const priorDocuments = await documentCount.settled(offline ? 0 : undefined);
 
-    // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
-    const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
-    // A form template: the editor starts its form on the tab once it opens (lib/pending-form-start.ts).
-    if (templateKind && isFormTemplateKind(templateKind))
-      markPendingFormStart(tabId, formTemplateStarter(templateKind));
-    // The first tab is named after its template unless the template names it (template-tab-name.ts).
-    const tabs =
-      built && templateKind && built[0]!.name === 'Tab 1'
-        ? [
-            { ...built[0]!, name: templateTabName(templateKind, built[0]!) ?? 'Tab 1' },
-            ...built.slice(1),
-          ]
-        : built;
-    // A Plan template's boards bring their card types (docs/specs/026-plan/plan-templates.md "Card types a template
-    // uses"): the document is made with them. Null (the default types) for every other template.
-    const itemTypes = tabs
-      ? catalogueWithBoardTypes(
-          null,
-          tabs.flatMap((t) => t.elements),
-        )
-      : null;
-    if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via: 'new' });
-    // Its worked example cards, dated from today (docs/specs/026-plan/plan-templates.md "Example cards"): none for
-    // any template but a Plan template with boards.
-    // Loaded only for a Plan template: the example cards' data stays out of /new's first load.
-    const seedItems =
-      templateKind && isPlanTemplateKind(templateKind)
-        ? await import('@livediagram/templates/plan-template-seeds').then((m) =>
-            m.planTemplateSeedItems(templateKind, m.seedToday()),
-          )
-        : [];
-    if (seedItems.length) debugLog('[plan] seed cards', { cards: seedItems.length, via: 'new' });
-    const tab = tabs
-      ? tabs[0]!
-      : {
-          // Skipped: fall through to a blank canvas with the chosen
-          // theme's backdrop so the editor loads in the user's style
-          // without any seeded elements.
-          id: tabId,
-          name: 'Tab 1',
-          elements: [],
-          theme: themeId,
-          backgroundColor: getTheme(themeId).backgroundColor,
-          backgroundPattern: getTheme(themeId).backgroundPattern,
-          patternColor: getTheme(themeId).patternColor,
-          ...(getTheme(themeId).backgroundOpacity != null
-            ? { backgroundOpacity: getTheme(themeId).backgroundOpacity }
-            : {}),
-          templateChosen: true,
-        };
+    // The template's tabs, card types and example cards, or one blank tab (lib/new-document-content.ts).
+    const { tabs, tab, itemTypes, seedItems } = await newDocumentContent({
+      templateKind,
+      themeId,
+      tabId,
+      via: 'new',
+    });
     try {
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This

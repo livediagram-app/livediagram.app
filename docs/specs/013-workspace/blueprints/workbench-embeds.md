@@ -664,7 +664,7 @@ other phase is the document scope's.
 
 **Mounted** (`WorkspaceFrame`), under `WorkbenchAuthBridge` with the workspace session:
 
-1. `setAppNavigationInterceptor(frameNavigate)` in a layout effect, before any child can navigate, and a capture
+1. `setAppNavigationInterceptor(frameNavigate)` (`useWorkspaceNavigation`) in a layout effect, before any child can navigate, and a capture
    `click` listener on the frame root for same-origin `<a href>` without `target` or a modifier key; each passes
    the app href to `frameNavigate`.
 2. `frameNavigate(href, { replace })`: `framePathOfAppHref(href)` maps `/explorer/...` and `/document/<id>[?s=][&tab=]`
@@ -672,12 +672,18 @@ other phase is the document scope's.
    document in place (below); any other app href (help, sign-in, Community, an external page) opens in a new tab
    with `noopener` (WB57). Logged `[workbench] open { kind }` only for `livediagram:open`.
 3. The place (`workspacePlaceOf(usePathname(), useSearchParams())`) renders:
-   - an Explorer view: `ExplorerShell surface="workbench"` around `ExplorerPane`, mounted once for the frame's life
-     and kept mounted (hidden) while a document is open, so its lists and expansion survive the round trip;
-   - a document: `EditorPage surface="workbench"` keyed by the document id, under a nested
+   - an Explorer view: `ExplorerShell` (its surface read from the session, `useExplorerSurface`) around `ExplorerPane`,
+     the pane keyed by the view's path and its `id` and `folder`, as each /explorer page remounts it; unmounted while
+     a document is open, so the editor's shortcuts and panels are the only ones listening, and read again on Back;
+   - a document: `EditorPage surface="workbench"` keyed by the document id and share code, under a nested
      `WorkbenchSessionContext` whose `documentId`, `shareCode` and `tabId` are the place's, with `frame` set
-     (`back`, `returnToExplorer`). The editor runs the workbench branch of every gate, as in the document scope.
-4. `track('Session', 'Opened', 'WorkbenchWorkspace')` once, when the Explorer first mounts.
+     (`back`, `backTitle`, `reportDocumentPlace`) and `end('trashed')` turned into the return to the Explorer. The
+     editor runs the workbench branch of every gate, as in the document scope; its status screens (deleted, load
+     error, not found) carry Back, and its not-found is a document's, never a page's.
+   - a folder the person reaches only as a team member (a team's folder) is the team's page at that folder:
+     the frame replaces its address with it once the lists are in.
+4. `track('Session', 'Opened', 'WorkbenchWorkspace')` once, when the Explorer first mounts; the editor's
+   `Session·Opened·Workbench` counts the document scope only.
 5. `ended`: the Explorer and the editor turn read-only as the document scope's editor does (the Reconnect line over
    both, writes refused locally since the bearer is dead).
 
@@ -696,8 +702,8 @@ the same entries.
 **Open in livediagram**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an
 Explorer view, the same control at the right end of the Explorer's bottom bar linking to `explorerPathFor(node)`.
 
-**`trashed`** in the workspace scope: `useWorkbenchEnd` calls `frame.returnToExplorer()` (Back's target), never
-`end('trashed')`, and the Explorer's own toast says "That document is in the Trash." (WB60).
+**`trashed`** in the workspace scope: the session the frame lends the editor turns `useWorkbenchEnd`'s
+`end('trashed')` into Back (the page never ends), with the toast "That document is in the Trash." (WB60).
 
 #### The Explorer in a workbench (`ExplorerSurface = 'workbench'`)
 
@@ -734,9 +740,9 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 - `place` (`useWorkspacePlaceMessages`) after every move and whenever a field of the current place changes, only
   when it differs from the last sent (WB63): Explorer views from the Explorer's state (`view` = `placeView(node)`:
   the `SelectedNode` kind, `folderId` and `folderName` for `folder`, `documentCount` =
-  `documentsByFolder.get(folderId)?.length ?? 0` for `folder`, else null; a team view's `folderId` its folder), a
-  document from the editor (`view: 'document'`, `documentId`, `documentName`, `tabId`, `tabName`, `role` the
-  editor's `sessionRole`; folder fields the document's). Logged `[workbench] place { view }`.
+  `documentsByFolder.get(folderId)?.length ?? 0` for `folder`, the three null on every other view), once the
+  Explorer's lists are in; a document from the editor (`view: 'document'`, `documentId`, `documentName`, `tabId`,
+  `tabName`, `role` the editor's `sessionRole`, the folder fields null). Logged `[workbench] place { view }`.
 - The editor in a workspace frame sends `place` where the document scope sends `ready`, and `tab`, `selection` and
   `reveal` as in the document scope; on an Explorer view they do nothing.
 - `open` (`livediagram:open`, accepted while mounted): `{ view: 'home' }` → Home, `{ folderId }` → that folder,
@@ -1203,7 +1209,7 @@ CREATE TABLE workbench_session_rooms (
 - Messages: a selection message is under 4 KiB (20 items of at most 60-character labels).
 - Pairing polls: one `GET` per 5 s per waiting CLI, at most 120 in the ten minutes.
 - Workspace: the verdict walks at most 12 patterns; the frame's Explorer reads what `/explorer` reads, once per
-  frame (it stays mounted while a document is open); a room ticket adds one `INSERT OR IGNORE`; a `place` message is
+  frame view and again on Back from a document; a room ticket adds one `INSERT OR IGNORE`; a `place` message is
   under 1 KiB and sent only when it changes.
 
 ## Presentation and UX
@@ -1302,8 +1308,8 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
 - `/workbench/pair` is a small static page; its one request runs after auth settles; layout is the device page's.
 - The workspace frame's LCP is its status text, from the static HTML; the Explorer and the editor chunks start
   loading on mount while redeem and binding run. A move inside the frame is a client render with no page load;
-  the Explorer stays mounted under an open document, so Back paints at once (INP), and nothing above the pane shifts
-  between views (CLS).
+  the frame's own status line stands while a chunk loads, and nothing above the pane shifts between views (CLS);
+  a move is one push and a render, off the input event (INP).
 
 ## Observability
 

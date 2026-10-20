@@ -18,6 +18,7 @@ import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
 import { TeamTimeline } from './ScopedTimeline';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
+import { explorerSurfaceFlags, useExplorerSurface } from '@/app/explorer/explorer-surface';
 
 // Right-pane team view for the Explorer (docs/specs/013-workspace/teams.md): one calm card —
 // header (organisation + member count + an overflow menu for the
@@ -64,6 +65,7 @@ export function TeamPane({
   // Passed straight through: a library this page changed, for the Explorer's own lists.
   onLibraryChange?: ComponentProps<typeof TeamSharedDocuments>['onLibraryChange'];
 }) {
+  const surface = useExplorerSurface();
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -178,14 +180,16 @@ export function TeamPane({
   }
 
   const { team, members, myRole } = detail;
-  const isAdmin = myRole === 'admin';
+  // A workspace frame reaches no team administration (WB62): the team's documents only.
+  const administration = explorerSurfaceFlags(surface).administration;
+  const isAdmin = myRole === 'admin' && administration;
   const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
   // The one rule the whole surface bends around: a team always keeps
   // at least one Admin (docs/specs/013-workspace/teams.md). When that's you, leaving, removing
   // your row, and demoting yourself all disappear as options. Only JOINED admins count, as on the
   // server (team-last-admin.ts).
   const isLastAdmin = lastAdminPinner(members);
-  const canLeave = selfRow !== null && !isLastAdmin(selfRow);
+  const canLeave = administration && selfRow !== null && !isLastAdmin(selfRow);
 
   const joinedCount = members.filter((m) => m.status === 'joined').length;
   // Pending only: a rejected row is a record of an answer, not an invitation still out.
@@ -218,12 +222,14 @@ export function TeamPane({
                 <span className="hidden sm:inline">Invite by Link</span>
               </button>
             ) : null}
-            <EllipsisTriggerButton
-              ref={setMenuButton}
-              label="Team actions"
-              expanded={menuOpen}
-              onClick={() => setMenuOpen((o) => !o)}
-            />
+            {isAdmin || canLeave ? (
+              <EllipsisTriggerButton
+                ref={setMenuButton}
+                label="Team actions"
+                expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+              />
+            ) : null}
           </div>
           {menuOpen ? (
             <PortalMenu anchor={menuButton} placement="below" onClose={() => setMenuOpen(false)}>

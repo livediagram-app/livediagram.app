@@ -35,7 +35,7 @@ import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progre
 import { track } from '@/lib/telemetry';
 import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
 import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
-import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
+import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
@@ -69,7 +69,7 @@ export function useIdentityBootstrap(opts: {
   embed: boolean;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md): the session
   // names the document and the person; see workbench-bootstrap.ts.
-  workbench: WorkbenchSession | null;
+  workbench: WorkbenchDocumentSession | null;
   activeId: string;
   selfParticipant: Participant;
   refreshDocumentList: (ownerId: string) => void;
@@ -287,6 +287,9 @@ export function useIdentityBootstrap(opts: {
             setNameConfirmed,
             setHydrated,
             setLoadingDocument,
+            setSessionShareCode,
+            setSessionTabScope,
+            setSharePasswordGate,
           },
         });
         setLoadStep('done');

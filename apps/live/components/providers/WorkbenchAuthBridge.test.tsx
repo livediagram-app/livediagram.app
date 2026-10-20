@@ -45,6 +45,9 @@ const RENEWED = `lvw_${'b'.repeat(43)}`;
 
 function sessionOf(secret = SECRET): WorkbenchSession {
   return {
+    scope: 'document',
+    shareCode: null,
+    frame: null,
     secret,
     documentId: 'doc-1',
     tabId: null,

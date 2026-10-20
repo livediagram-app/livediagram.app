@@ -4,7 +4,9 @@
 // "Workbench messages"): `ready` once the document is in, `tab` on every later tab change, `selection`
 // once the selection has been still for WORKBENCH_SELECTION_SETTLE_MS and only when its text changed
 // (WB17), and the workbench's `reveal` and `theme`. Messages are built after the settle, off the input
-// event, so a marquee drag costs one reference. Nothing runs outside a workbench.
+// event, so a marquee drag costs one reference. Nothing runs outside a workbench. In a workspace frame the frame
+// owns `ready` and the scheme: the editor reports its document as the frame's place instead of `ready`, on
+// every tab change and rename (blueprint "Workspace messages").
 import { useEffect, useEffectEvent, useRef } from 'react';
 import {
   CHANGESET_REVEAL_MS,
@@ -14,12 +16,12 @@ import {
 import { computeRefs, resolveRef, type Tab } from '@livediagram/document';
 import { selectionReference } from '@livediagram/document-views';
 import { setAppearanceOverride } from '@livediagram/ui';
-import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
+import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import type { RevealStore } from '@/lib/changeset-reveals';
 import { selectionIds, type SelectionStore } from '@/lib/selection-store';
 
 export function useWorkbenchMessages(opts: {
-  workbench: WorkbenchSession | null;
+  workbench: WorkbenchDocumentSession | null;
   hydrated: boolean;
   documentId: string | null;
   documentName: string;
@@ -44,11 +46,12 @@ export function useWorkbenchMessages(opts: {
 
   const activeTabOf = () => opts.tabs.find((t) => t.id === opts.activeId);
 
-  // The scheme follows the workbench (WB15): the system's until it says.
+  const frame = workbench?.frame ?? null;
+  // The scheme follows the workbench (WB15): the system's until it says. A workspace frame set it already.
   useEffect(() => {
-    if (!port) return;
+    if (!port || frame) return;
     setAppearanceOverride('system');
-  }, [port]);
+  }, [port, frame]);
 
   const lastSent = useRef<string | null>(null);
   const sendSelection = useEffectEvent(({ port, documentId }: Target) => {
@@ -102,7 +105,18 @@ export function useWorkbenchMessages(opts: {
     const { port, documentId } = to;
     const tab = activeTabOf();
     if (!tab) return;
-    if (!sentReady.current) {
+    if (frame) {
+      if (sentReady.current)
+        port.send({ type: 'livediagram:tab', v: 1, tabId: tab.id, tabName: tab.name });
+      sentReady.current = true;
+      frame.reportDocumentPlace({
+        documentId,
+        documentName: opts.documentName,
+        tabId: tab.id,
+        tabName: tab.name,
+        role: opts.sessionRole,
+      });
+    } else if (!sentReady.current) {
       sentReady.current = true;
       port.send({
         type: 'livediagram:ready',
@@ -122,6 +136,20 @@ export function useWorkbenchMessages(opts: {
     const to = targetNow();
     if (to) announceTab(to);
   }, [targetKey, activeId]);
+  // A workspace frame hears a rename and a level change too: its place changed.
+  const reportPlace = useEffectEvent(() => {
+    const tab = activeTabOf();
+    if (!frame || !target || !tab || !sentReady.current) return;
+    frame.reportDocumentPlace({
+      documentId: target.documentId,
+      documentName: opts.documentName,
+      tabId: tab.id,
+      tabName: tab.name,
+      role: opts.sessionRole,
+    });
+  });
+  const activeTabName = activeTabOf()?.name ?? null;
+  useEffect(() => reportPlace(), [opts.documentName, activeTabName, opts.sessionRole]);
 
   const revealCount = useRef(0);
   const reveal = useEffectEvent((refs: readonly string[]) => {
@@ -151,8 +179,9 @@ export function useWorkbenchMessages(opts: {
   useEffect(() => {
     if (!port) return;
     return port.subscribe((message) => {
-      if (message.type === 'livediagram:theme') setAppearanceOverride(message.colourScheme);
+      if (message.type === 'livediagram:theme' && !frame)
+        setAppearanceOverride(message.colourScheme);
       else if (message.type === 'livediagram:reveal') reveal(message.refs);
     });
-  }, [port]);
+  }, [port, frame]);
 }

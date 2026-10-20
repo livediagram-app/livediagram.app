@@ -7,7 +7,7 @@ import {
   type WorkbenchToPageMessage,
 } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
-import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
+import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { createRevealStore } from '@/lib/changeset-reveals';
 import { createSelectionStore } from '@/lib/selection-store';
 
@@ -45,19 +45,19 @@ function fakeSession() {
       },
       close: () => {},
     },
-  } as unknown as WorkbenchSession;
+  } as unknown as WorkbenchDocumentSession;
   const deliver = (m: WorkbenchToPageMessage) => listeners.forEach((l) => l(m));
   return { session, sent, deliver, listeners };
 }
 
 type Props = {
-  workbench: WorkbenchSession | null;
+  workbench: WorkbenchDocumentSession | null;
   hydrated: boolean;
   activeId: string;
   documentName: string;
 };
 
-function mount(initial: Partial<Props> & { workbench: WorkbenchSession | null }) {
+function mount(initial: Partial<Props> & { workbench: WorkbenchDocumentSession | null }) {
   const selection = createSelectionStore();
   const reveals = createRevealStore();
   const revealInView = vi.fn();
@@ -276,5 +276,58 @@ describe('useWorkbenchMessages', () => {
 
     expect(revealInView).not.toHaveBeenCalled();
     expect(listeners.size).toBe(0);
+  });
+});
+
+describe('useWorkbenchMessages in a workspace frame', () => {
+  function framed() {
+    const base = fakeSession();
+    const reportDocumentPlace = vi.fn();
+    const session = {
+      ...base.session,
+      frame: { back: vi.fn(), backTitle: 'Home', reportDocumentPlace },
+    } as WorkbenchDocumentSession;
+    return { ...base, session, reportDocumentPlace };
+  }
+
+  it('reports its document as the frame’s place instead of ready, on every tab change and rename', () => {
+    const { session, sent, reportDocumentPlace } = framed();
+    const { rerender } = mount({ workbench: session });
+
+    expect(ofType(sent, 'livediagram:ready')).toEqual([]);
+    expect(reportDocumentPlace).toHaveBeenLastCalledWith({
+      documentId: 'doc-1',
+      documentName: 'Home screen',
+      tabId: 'tab-a',
+      tabName: 'Wireframe',
+      role: 'edit',
+    });
+
+    rerender({
+      workbench: session,
+      hydrated: true,
+      activeId: 'tab-b',
+      documentName: 'Home screen',
+    });
+    expect(ofType(sent, 'livediagram:tab')).toEqual([
+      { type: 'livediagram:tab', v: 1, tabId: 'tab-b', tabName: 'Flow' },
+    ]);
+    expect(reportDocumentPlace).toHaveBeenLastCalledWith(
+      expect.objectContaining({ tabId: 'tab-b', tabName: 'Flow' }),
+    );
+
+    rerender({ workbench: session, hydrated: true, activeId: 'tab-b', documentName: 'Menu' });
+    expect(reportDocumentPlace).toHaveBeenLastCalledWith(
+      expect.objectContaining({ documentName: 'Menu' }),
+    );
+  });
+
+  it('leaves the scheme to the frame', () => {
+    const { session, deliver } = framed();
+    mount({ workbench: session });
+
+    deliver({ type: 'livediagram:theme', v: 1, colourScheme: 'dark' });
+
+    expect(appearance.setAppearanceOverride).not.toHaveBeenCalled();
   });
 });

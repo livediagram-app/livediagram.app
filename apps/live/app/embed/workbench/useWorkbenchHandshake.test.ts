@@ -81,7 +81,9 @@ describe('runWorkbenchHandshake', () => {
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 
-    expect(events).toEqual([{ type: 'read', ticket: null, documentId: 'doc-1' }]);
+    expect(events).toEqual([
+      { type: 'read', ticket: null, scope: 'document', documentId: 'doc-1' },
+    ]);
     expect(redeem).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[workbench] redeem-failed', {
       status: null,

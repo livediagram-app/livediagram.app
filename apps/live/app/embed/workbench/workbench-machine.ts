@@ -1,11 +1,8 @@
 // The workbench page's states (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workbench
-// page", `WorkbenchPhase`), as a pure transition function. The hooks run the effects (redeem, hello,
-// revoke, post `ended`); this decides what each answer means. `ended`, `unbound`, `refused` and
+// page", `WorkbenchPhase`, and "The workspace frame"), as a pure transition function. The hooks run the effects
+// (redeem, hello, revoke, post `ended`); this decides what each answer means. `ended`, `unbound`, `refused` and
 // `failed` are terminal (WB12): a workbench reconnects by framing a fresh URL.
-import type {
-  WorkbenchDocumentSessionResponse,
-  WorkbenchSessionResponse,
-} from '@livediagram/api-schema';
+import type { WorkbenchScope, WorkbenchSessionResponse } from '@livediagram/api-schema';
 
 export type WorkbenchRefusalCause = 'no-ticket' | 'ticket' | 'mismatch';
 // Why a mounted page stopped editing; `refused` is never a mounted page's.
@@ -13,12 +10,12 @@ export type WorkbenchPageEndReason = 'expired' | 'revoked' | 'trashed';
 
 export type WorkbenchPhase =
   | { phase: 'reading' }
-  | { phase: 'redeeming'; ticket: string; documentId: string | null }
-  | { phase: 'binding'; session: WorkbenchDocumentSessionResponse }
-  | { phase: 'mounted'; session: WorkbenchDocumentSessionResponse; name: string }
+  | { phase: 'redeeming'; ticket: string; scope: WorkbenchScope; documentId: string | null }
+  | { phase: 'binding'; session: WorkbenchSessionResponse }
+  | { phase: 'mounted'; session: WorkbenchSessionResponse; name: string }
   | {
       phase: 'ended';
-      session: WorkbenchDocumentSessionResponse;
+      session: WorkbenchSessionResponse;
       name: string;
       reason: WorkbenchPageEndReason;
     }
@@ -27,7 +24,7 @@ export type WorkbenchPhase =
   | { phase: 'failed' };
 
 export type WorkbenchEvent =
-  | { type: 'read'; ticket: string | null; documentId: string | null }
+  | { type: 'read'; ticket: string | null; scope: WorkbenchScope; documentId: string | null }
   | { type: 'redeemed'; session: WorkbenchSessionResponse }
   | { type: 'redeem-refused' }
   | { type: 'redeem-failed' }
@@ -38,19 +35,45 @@ export type WorkbenchEvent =
 
 export const INITIAL_WORKBENCH_PHASE: WorkbenchPhase = { phase: 'reading' };
 
+// Whether a redeemed session is the one the address asked for: the address's page's scope and, in the document
+// scope, its document. Anything else is refused and the session revoked.
+export function sessionFitsAddress(
+  session: WorkbenchSessionResponse,
+  address: { scope: WorkbenchScope; documentId: string | null },
+): boolean {
+  if (session.scope !== address.scope) return false;
+  return session.scope === 'workspace' || session.documentId === address.documentId;
+}
+
+// Whether a renewal's session may take over: the same scope and origin, and the same document in the document scope.
+export function renewalFits(
+  next: WorkbenchSessionResponse,
+  bound: WorkbenchSessionResponse,
+): boolean {
+  return (
+    next.scope === bound.scope &&
+    next.origin === bound.origin &&
+    next.documentId === bound.documentId
+  );
+}
+
 export function workbenchTransition(state: WorkbenchPhase, event: WorkbenchEvent): WorkbenchPhase {
   switch (state.phase) {
     case 'reading':
       if (event.type !== 'read') return state;
       return event.ticket === null
         ? { phase: 'refused', cause: 'no-ticket' }
-        : { phase: 'redeeming', ticket: event.ticket, documentId: event.documentId };
+        : {
+            phase: 'redeeming',
+            ticket: event.ticket,
+            scope: event.scope,
+            documentId: event.documentId,
+          };
     case 'redeeming':
       if (event.type === 'redeem-refused') return { phase: 'refused', cause: 'ticket' };
       if (event.type === 'redeem-failed') return { phase: 'failed' };
       if (event.type !== 'redeemed') return state;
-      // A session of another scope than the address's page, or for another document, is refused.
-      return event.session.scope === 'document' && event.session.documentId === state.documentId
+      return sessionFitsAddress(event.session, state)
         ? { phase: 'binding', session: event.session }
         : { phase: 'refused', cause: 'mismatch' };
     case 'binding':
@@ -61,9 +84,7 @@ export function workbenchTransition(state: WorkbenchPhase, event: WorkbenchEvent
     case 'mounted':
       if (event.type === 'ended') return { ...state, phase: 'ended', reason: event.reason };
       if (event.type !== 'renewed') return state;
-      return event.session.scope === 'document' &&
-        event.session.documentId === state.session.documentId &&
-        event.session.origin === state.session.origin
+      return renewalFits(event.session, state.session)
         ? { ...state, session: event.session }
         : state;
     default:

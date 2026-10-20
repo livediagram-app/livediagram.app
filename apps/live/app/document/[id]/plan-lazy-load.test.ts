@@ -47,11 +47,18 @@ describe('the editor’s first load', () => {
   // docs/specs/026-plan/plan-templates.md "Example cards": the cards' data loads only when a Plan template is made.
   // A static import from /new or the editor seam once added about 12 KiB gzip to /new's first load.
   it('loads the Plan templates’ example cards only when one is made', () => {
-    for (const always of ['app/new/page.tsx', 'lib/template-builders.ts', 'lib/seed-author.ts'])
+    // /new and a workspace frame's New document make their content in one place (lib/new-document-content.ts).
+    for (const always of [
+      'app/new/page.tsx',
+      'lib/new-document-content.ts',
+      'app/embed/workbench/create-in-place.ts',
+      'lib/template-builders.ts',
+      'lib/seed-author.ts',
+    ])
       expect(staticImports(read(always))).not.toContain(
         '@livediagram/templates/plan-template-seeds',
       );
-    expect(read('app/new/page.tsx')).toContain(
+    expect(read('lib/new-document-content.ts')).toContain(
       "import('@livediagram/templates/plan-template-seeds')",
     );
     expect(read('app/document/[id]/useTemplateFlow.ts')).toContain(

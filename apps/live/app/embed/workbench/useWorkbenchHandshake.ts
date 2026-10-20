@@ -13,6 +13,7 @@ import { debugLog } from '@/lib/debug-log';
 import { takeTicketFromAddress } from './workbench-fragment';
 import {
   INITIAL_WORKBENCH_PHASE,
+  sessionFitsAddress,
   workbenchTransition,
   type WorkbenchEvent,
   type WorkbenchPhase,
@@ -41,8 +42,8 @@ export async function runWorkbenchHandshake(
   win: Window,
   dispatch: (event: WorkbenchEvent) => void,
 ): Promise<WorkbenchPort | null> {
-  const { ticket, documentId } = takeTicketFromAddress(win.location, win.history);
-  dispatch({ type: 'read', ticket, documentId });
+  const { ticket, ...address } = takeTicketFromAddress(win.location, win.history);
+  dispatch({ type: 'read', ticket, ...address });
   if (ticket === null) {
     console.warn('[workbench] redeem-failed', { status: null, reason: 'no-ticket' });
     return null;
@@ -61,7 +62,7 @@ export async function runWorkbenchHandshake(
   }
   const { session } = outcome;
   dispatch({ type: 'redeemed', session });
-  if (session.scope !== 'document' || session.documentId !== documentId) {
+  if (!sessionFitsAddress(session, address)) {
     console.warn('[workbench] redeem-failed', { status: 201, reason: 'mismatch' });
     void apiEndWorkbenchSession(session.session);
     win.parent.postMessage({ type: 'livediagram:ended', v: 1, reason: 'refused' }, session.origin);

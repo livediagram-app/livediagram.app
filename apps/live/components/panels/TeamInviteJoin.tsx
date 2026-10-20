@@ -17,6 +17,7 @@ import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useUrlToken } from '@/hooks/ui/useUrlToken';
 import { track } from '@/lib/telemetry';
 import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-client';
+import { assignAppLocation } from '@/lib/app-location';
 
 // Landing for a shareable team invite link (docs/specs/013-workspace/teams.md), served at the
 // top-level `/join?token=<token>` route (outside the Explorer chrome so
@@ -72,7 +73,7 @@ export function TeamInviteJoin() {
       // membership, just via a link instead of an email row.
       if (!result.alreadyMember) track('Team', 'Joined');
       // Land on the team so they see what they just joined.
-      window.location.assign(teamHref(result.teamId));
+      assignAppLocation(teamHref(result.teamId));
     } catch {
       setJoinError('Could not join. Try again.');
     } finally {

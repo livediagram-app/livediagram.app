@@ -9,7 +9,7 @@ import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuse
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
-import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
+import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
@@ -260,7 +260,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // derived consts.
   const surface = opts.surface ?? 'app';
   const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
-  const workbench = useWorkbenchSession();
+  const workbench = useWorkbenchDocumentSession();
   const initialTabs: Tab[] = [createTab('Tab 1')];
 
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —

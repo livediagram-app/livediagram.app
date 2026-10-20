@@ -23,6 +23,7 @@ import { useFirstRun } from '@/app/explorer/home/useFirstRun';
 import { WelcomeSearch } from './WelcomeSearch';
 import { InAppLink } from './HomeSection';
 import { FOCUS_RING, SHEET_FRAME, SHEET_PLACES } from './home-styles';
+import { assignAppLocation } from '@/lib/app-location';
 
 const HEADING_ID = 'home-hero-greeting';
 
@@ -67,7 +68,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
       aria-label={HERO_COPY.newDocument}
       onClick={() => {
         track('Home', 'Selected', 'Hero.NewDocument');
-        window.location.assign('/new');
+        assignAppLocation('/new');
       }}
       className={`optical-edges flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
     >

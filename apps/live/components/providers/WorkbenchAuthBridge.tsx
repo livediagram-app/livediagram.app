@@ -6,6 +6,7 @@
 // token. The provider and the confinement are in place before any child's layout effect runs, so the
 // editor's first request already presents the session (and is judged by the allow-list).
 import { useLayoutEffect, useMemo, type ReactNode, type RefObject } from 'react';
+import type { WorkbenchConfinementSession } from '@livediagram/api-schema';
 import { registerTokenProvider, setWorkbenchConfinement } from '@/lib/api/core';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { DeferredAuthContext, type DeferredAuthState } from './deferred-auth';
@@ -20,7 +21,15 @@ export function WorkbenchAuthBridge({
 }) {
   // Renewal swaps the secret; the provider and the published getter read the newest one.
   const secretRef = useLatest(session.secret);
-  const { person, documentId } = session;
+  const { person } = session;
+  // What the api's allow-list judges every request by: the document scope's one document, or the workspace.
+  const confinement = useMemo<WorkbenchConfinementSession>(
+    () =>
+      session.scope === 'document' && session.documentId !== null
+        ? { scope: 'document', documentId: session.documentId, ownerId: person.id }
+        : { scope: 'workspace', documentId: null, ownerId: person.id },
+    [session.scope, session.documentId, person.id],
+  );
 
   const auth = useMemo<DeferredAuthState>(
     () => ({
@@ -52,8 +61,7 @@ export function WorkbenchAuthBridge({
         <SessionCredentials
           secretRef={secretRef}
           secret={session.secret}
-          documentId={documentId}
-          ownerId={person.id}
+          confinement={confinement}
         />
         {children}
       </WorkbenchSessionContext.Provider>
@@ -64,18 +72,16 @@ export function WorkbenchAuthBridge({
 function SessionCredentials({
   secretRef,
   secret,
-  documentId,
-  ownerId,
+  confinement,
 }: {
   secretRef: RefObject<string>;
   secret: string;
-  documentId: string;
-  ownerId: string;
+  confinement: WorkbenchConfinementSession;
 }) {
   useLayoutEffect(() => registerTokenProvider(async () => secretRef.current), [secretRef]);
   // Set on mount and on every renewal; never cleared, so a dead bearer keeps refusing locally.
   useLayoutEffect(() => {
-    setWorkbenchConfinement({ scope: 'document', documentId, ownerId });
-  }, [documentId, ownerId, secret]);
+    setWorkbenchConfinement(confinement);
+  }, [confinement, secret]);
   return null;
 }

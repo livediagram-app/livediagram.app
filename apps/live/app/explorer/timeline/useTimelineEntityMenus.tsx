@@ -54,6 +54,7 @@ import { track } from '@/lib/telemetry';
 import { requestOpenSettings } from '@/lib/open-settings';
 import { useExplorer } from '../ExplorerContext';
 import type { TimelineMenuItem } from './TimelineCardMenu';
+import { assignAppLocation } from '@/lib/app-location';
 
 export type TimelineEntityMenu = {
   /** The subject as the Explorer knows it now, when it can resolve one. */
@@ -235,7 +236,7 @@ export function useTimelineEntityMenus(): {
             {
               label: 'Open Document',
               icon: <DocumentIcon />,
-              onClick: () => window.location.assign(`/document/${encodeURIComponent(id)}`),
+              onClick: () => assignAppLocation(`/document/${encodeURIComponent(id)}`),
             },
           ],
         };
@@ -344,7 +345,7 @@ export function useTimelineEntityMenus(): {
               {
                 label: 'Open Images',
                 icon: <ImageIcon />,
-                onClick: () => window.location.assign('/explorer/images'),
+                onClick: () => assignAppLocation('/explorer/images'),
               },
             ],
           };

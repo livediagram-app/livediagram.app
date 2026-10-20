@@ -58,6 +58,8 @@ export type SidebarLayoutInput = {
   // The full-page sidebar (default) or the editor's floating Explorer panel, which leaves
   // invites, team creation and the sign-in nudge to the Explorer.
   surface?: 'page' | 'panel';
+  // Team administration rows (Invites, New Team); a workspace frame shows none (WB62).
+  administration?: boolean;
 };
 
 type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
@@ -65,11 +67,12 @@ type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
 export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   const { signedIn, signInAvailable, pendingInvites, offlineDocuments, selected } = input;
   const panel = input.surface === 'panel';
+  const administration = !panel && (input.administration ?? true);
   const spaces: SidebarRowKind[] = ['myDocuments'];
   if (signedIn) {
     spaces.push('teams');
-    if (!panel && (pendingInvites > 0 || selected === 'invites')) spaces.push('invites');
-    if (!panel) spaces.push('newTeam');
+    if (administration && (pendingInvites > 0 || selected === 'invites')) spaces.push('invites');
+    if (administration) spaces.push('newTeam');
   } else if (signInAvailable && !panel) {
     spaces.push('signInNudge');
   }
