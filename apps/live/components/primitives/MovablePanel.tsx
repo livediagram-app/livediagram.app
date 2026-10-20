@@ -15,6 +15,7 @@ import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.ty
 import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
 import { useDockPopoverKeys } from './useDockPopoverKeys';
+import { usePopoverTopClearance } from './usePopoverTopClearance';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -119,6 +120,9 @@ export function MovablePanel({
 
   // As a popover off a dock button: keyboard focus in on a keyboard open, Escape out (useDockPopoverKeys).
   useDockPopoverKeys(ref, popoverShown, onPopoverClose);
+
+  // Opening up from a bottom button, it stops short of a toolbar across the canvas's top.
+  const topClear = usePopoverTopClearance(ref, popoverShown && popoverAnchor?.bottom !== undefined);
 
   // Outside-tap auto-close, for a popover that opts in with
   // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity /
@@ -225,7 +229,7 @@ export function MovablePanel({
               ? {
                   bottom: px(anchor.bottom + 12),
                   left: px(anchor.left),
-                  maxHeight: `calc(100% - ${px(anchor.bottom + 24)}px)`,
+                  maxHeight: `calc(100% - ${px(anchor.bottom + 12 + topClear)}px)`,
                 }
               : anchor
                 ? {
