@@ -71,6 +71,8 @@ export function bigChartSlide(k: Kit): Element[] {
         { label: 'Sep', value: 680 },
       ],
       chartLegend: false,
+      // Values name each column under its baseline, which the legend would otherwise do.
+      chartValues: true,
     }),
     card(k, chartW + u * 6, head.top, cardW, chartH),
     k.title(chartW + u * 6 + pad, head.top + pad, cardW - 2 * pad, u * 18, '+62%'),

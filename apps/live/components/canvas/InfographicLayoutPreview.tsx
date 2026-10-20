@@ -29,7 +29,7 @@ import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-regist
 import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livediagram/templates';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasChartPalette, useCanvasSurface } from './CanvasSurfaceContext';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { useImageSources } from './page-image-access';
 
@@ -52,6 +52,7 @@ export function InfographicLayoutPreview({
 }) {
   const canvas = useCanvasSurface();
   const surface = pageSurface(page) ?? canvas;
+  const chartPalette = useCanvasChartPalette();
   const { rect } = page;
   // A wireframe page previews on its device (WireframeDeviceSheet), not a bare sheet.
   const wireframe = page.kind === 'wireframe';
@@ -96,6 +97,7 @@ export function InfographicLayoutPreview({
       resolveStickerArt: resolveStickerArtLoaded,
       tabFont,
       surface,
+      chartPalette,
     };
     const drawn = [
       ...els.filter(isBoxed).map((el) => svgBoxed(el, opts)),
@@ -108,7 +110,7 @@ export function InfographicLayoutPreview({
       ? `<defs><clipPath id="lvd-layout-screen"><path d="${device.screen}"/></clipPath></defs>` +
           `<g clip-path="url(#lvd-layout-screen)">${drawn}</g>${device.over}`
       : drawn;
-  }, [els, surface, tabFont, imageSource, device]);
+  }, [els, surface, chartPalette, tabFont, imageSource, device]);
   return (
     <div
       aria-hidden
