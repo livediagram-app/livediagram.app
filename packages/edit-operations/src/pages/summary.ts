@@ -3,7 +3,7 @@
 // words. The page and article summaries themselves are api-schema's (pages-summary), shared
 // with the pages view.
 import type { PageRef, PageSummary } from '@livediagram/api-schema';
-import { pageHasOrientation, PAGE_SIZES, type Page } from '@livediagram/document';
+import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@livediagram/document';
 
 export { articleSummaries, describeBackground, pageSummaries } from '@livediagram/api-schema';
 
@@ -12,8 +12,15 @@ export function pageLabel(page: PageSummary): string {
   return `${page.place}${page.name ? ` ${page.name}` : ''} (${page.kind})`;
 }
 
-/** A size in words for a result line: `16:9`, `A4 portrait`, `1024 x 1024`. */
-export function sizeLabel(page: Pick<Page, 'size' | 'orientation' | 'kind'>): string {
+/** A size in words for a result line: `16:9`, `A4 portrait`, `1024 x 1024`, a wireframe page's
+ *  device (`iPhone`, `iPad landscape`). */
+export function sizeLabel(page: Pick<Page, 'size' | 'orientation' | 'kind' | 'device'>): string {
+  if (page.size === 'device') {
+    const label = pageSizeLabel(page);
+    return pageHasOrientation(page) && page.orientation === 'landscape'
+      ? `${label} landscape`
+      : label;
+  }
   const size = PAGE_SIZES[page.size ?? 'a4'];
   const label = page.orientation === 'landscape' ? size.landscape : size.portrait;
   return pageHasOrientation(page) && size.short !== size.long
