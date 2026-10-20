@@ -244,7 +244,9 @@ export function sessionButtonPlan(config: SessionButtonConfig | undefined): Sess
   // one style with nothing to press below it. A Yes/No or rating button is
   // startable the moment it has a question.
   if (pollStyleNeedsOptions(style) && options.length < POLL_OPTIONS_MIN) return null;
-  return { tool, style, question: (config?.question ?? '').trim() || 'Quick question', options };
+  // A question that is not text (an API write, an import) reads as none, like a missing one.
+  const question = typeof config?.question === 'string' ? config.question.trim() : '';
+  return { tool, style, question: question || 'Quick question', options };
 }
 
 // --- Picker (docs/specs/012-collaboration/picker.md) ------------------------------------------------------
