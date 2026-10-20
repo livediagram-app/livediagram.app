@@ -65,6 +65,19 @@ describe('element grid', () => {
     );
   });
 
+  it('answers a query far wider than the board by its occupied cells, quickly', () => {
+    const inside = box(1000, 1000);
+    const corner = box(-2_000_000, -2_000_000);
+    const outside = box(3_000_000, 0);
+    const grid = buildElementGrid([inside, corner, outside]);
+    // 2.5 million px each way: billions of cells to walk one by one.
+    const rect = { x: -2_000_000, y: -2_000_000, width: 2_500_000, height: 2_500_000 };
+    const start = performance.now();
+    const hits = queryElementGrid(grid, rect);
+    expect(performance.now() - start).toBeLessThan(50);
+    expect(ids(hits)).toEqual([inside.id, corner.id]);
+  });
+
   it('answers a bad query rect with the oversize list alone', () => {
     vi.spyOn(console, 'debug').mockImplementation(() => {});
     const grid = buildElementGrid([box(0, 0)]);
