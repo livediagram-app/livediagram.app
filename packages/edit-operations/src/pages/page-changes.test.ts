@@ -576,4 +576,24 @@ describe('wireframe pages', () => {
       refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).code,
     ).toBe('not_a_wireframe');
   });
+
+  it('refuses a device on a page added as another kind, rather than saying it was set', () => {
+    const why = refusal(tabOf({ pages: [page('p1')] }), [
+      { op: 'add', kind: 'slide', device: 'watch' },
+    ]);
+    expect(why.code).toBe('not_a_wireframe');
+    expect(why.message).toMatch(/^A slide page has no device/);
+    expect(
+      refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).message,
+    ).toMatch(/^An infographic page has no device/);
+  });
+
+  it("names the page's size by its device", () => {
+    const out = run(tabOf({ pages: [page('p1')] }), [
+      { op: 'add', kind: 'wireframe', device: 'ipad', orientation: 'landscape' },
+      { op: 'add', kind: 'wireframe', device: 'laptop' },
+    ]);
+    expect(out.lines[0]).toContain('(wireframe, iPad landscape)');
+    expect(out.lines[1]).toContain('(wireframe, Laptop)');
+  });
 });
