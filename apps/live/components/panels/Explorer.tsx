@@ -360,72 +360,85 @@ function ExplorerImpl({
       collapsible
     >
       <div className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}>
-        {/* The card, then the sign-in note under it (an onboarding notice: Minimal chrome drops it,
-            docs/specs/007-editor/power-user-mode.md). */}
-        <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
-          {currentCard}
-          {minimalChrome ? null : <SignInPrompt bar />}
-        </div>
-
-        {/* The rail and the pane (docs/specs/013-workspace/explorer-structure.md "The editor's Explorer"): side by side
-            on a desktop, the rail a row of section chips over the pane on a phone. */}
+        {/* On a phone's sheet the card and the rail and pane scroll as one, over the pinned footer: pinned, the card
+            and the sign-in note left a short phone's pane a sliver (43px on an iPhone SE) that hid its own words.
+            Elsewhere this box is `contents`, adding nothing to the layout. */}
         <div
-          className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
-            // On a phone the chips and pane fill what is left of the sheet under its card and over its footer; a
-            // floating stacked panel shares what is left of the screen.
+          data-explorer-sheet-scroll={sheet ? '' : undefined}
+          className={
             sheet
-              ? 'min-h-0 flex-1 flex-col'
-              : stacked
-                ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col'
-                : 'h-[min(30rem,62vh)]'
-          }`}
+              ? 'scrollbar-slim flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain'
+              : 'contents'
+          }
         >
-          <ExplorerRail
-            groups={groups}
-            selected={section}
-            onPick={pick}
-            badges={badges}
-            teamName={teamName}
-            divider={divider}
-            phone={stacked}
-            onNewDocument={onNewDocument}
-            onDropToMyDocuments={
-              onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined
-            }
-          />
-          <PanelTreeProvider value={paneTree}>
-            <ExplorerPanelPane
-              section={section}
-              teamName={teamName}
-              ownerId={ownerId}
-              currentDocumentId={currentDocumentId}
-              onOpenDocument={onOpenDocument}
+          {/* The card, then the sign-in note under it (an onboarding notice: Minimal chrome drops it,
+            docs/specs/007-editor/power-user-mode.md). */}
+          <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
+            {currentCard}
+            {minimalChrome ? null : <SignInPrompt bar />}
+          </div>
+
+          {/* The rail and the pane (docs/specs/013-workspace/explorer-structure.md "The editor's Explorer"): side by side
+            on a desktop, the rail a row of section chips over the pane on a phone. */}
+          <div
+            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
+              // On a phone the chips and pane fill what is left of the sheet under its card and over its footer, and
+              // never less than 18rem (room for a section's first rows): below that the sheet scrolls the card away instead. A
+              // floating stacked panel shares what is left of the screen.
+              sheet
+                ? 'min-h-[18rem] flex-1 flex-col'
+                : stacked
+                  ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col'
+                  : 'h-[min(30rem,62vh)]'
+            }`}
+          >
+            <ExplorerRail
+              groups={groups}
+              selected={section}
               onPick={pick}
-              onNewFolder={newFolder}
-              inFolder={paneFolderId !== null}
-              onLibraryChanged={onLibraryChanged ?? NOOP}
-              tree={
-                isTreeSection(section) ? (
-                  <PanelExplorerTree
-                    // A new section opens at its root.
-                    key={sectionKey(section)}
-                    section={section}
-                    rootLabel={sectionLabel(section, teamName)}
-                    tree={tree}
-                    busy={loading}
-                    shared={shared}
-                    ownIndex={{ foldersByParent, documentsByFolder }}
-                    offlineDocuments={offlineDocuments}
-                    teams={teams}
-                    foldersByTeam={foldersByTeam}
-                    documentsByTeam={documentsByTeam}
-                    folderId={paneFolderId}
-                    onOpenFolder={openInPane}
-                  />
-                ) : null
+              badges={badges}
+              teamName={teamName}
+              divider={divider}
+              phone={stacked}
+              onNewDocument={onNewDocument}
+              onDropToMyDocuments={
+                onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined
               }
             />
-          </PanelTreeProvider>
+            <PanelTreeProvider value={paneTree}>
+              <ExplorerPanelPane
+                section={section}
+                teamName={teamName}
+                ownerId={ownerId}
+                currentDocumentId={currentDocumentId}
+                onOpenDocument={onOpenDocument}
+                onPick={pick}
+                onNewFolder={newFolder}
+                inFolder={paneFolderId !== null}
+                onLibraryChanged={onLibraryChanged ?? NOOP}
+                tree={
+                  isTreeSection(section) ? (
+                    <PanelExplorerTree
+                      // A new section opens at its root.
+                      key={sectionKey(section)}
+                      section={section}
+                      rootLabel={sectionLabel(section, teamName)}
+                      tree={tree}
+                      busy={loading}
+                      shared={shared}
+                      ownIndex={{ foldersByParent, documentsByFolder }}
+                      offlineDocuments={offlineDocuments}
+                      teams={teams}
+                      foldersByTeam={foldersByTeam}
+                      documentsByTeam={documentsByTeam}
+                      folderId={paneFolderId}
+                      onOpenFolder={openInPane}
+                    />
+                  ) : null
+                }
+              />
+            </PanelTreeProvider>
+          </div>
         </div>
 
         {/* The product's surfaces, which the editor header no longer carries as a menu. */}

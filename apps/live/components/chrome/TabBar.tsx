@@ -352,10 +352,12 @@ export function TabBar({
             along whichever edges the pill touched (bottom + first pill's
             left). */}
         {/* Sideways only: the tab menu's and Add tab's 44px tap areas (touch-target) reach past
-            the row, and a free y axis drew a vertical scrollbar beside Search for them. */}
+            the row, and a free y axis drew a vertical scrollbar beside Search for them. The edge with more
+            tabs beyond it fades (scroll-edge-fade), so a tab cut there reads as more to swipe to, not a
+            label clipped mid-word. */}
         <div
           ref={stripRef}
-          className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1"
+          className="scroll-edge-fade scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1"
         >
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (

@@ -421,13 +421,15 @@ describe('WhiteboardDock position', () => {
     expect(refusePin().dataset.side).toBe('above');
   });
 
-  it('keeps clear of the Explorer menu card (button + mode switch) at the top: beside it below lg, centred from lg', () => {
+  it('keeps clear of the Explorer menu card at the top: right beside it on a phone, clear of it at UI scale on a tablet, centred from lg', () => {
     renderDock();
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
       expect.arrayContaining([
         'left-[7.5rem]',
         'max-w-[calc(100%-8.25rem)]',
+        'phone:left-[4.125rem]',
+        'phone:max-w-[calc(100%-4.875rem)]',
         'lg:left-1/2',
         'lg:-translate-x-1/2',
         'lg:max-w-[calc(100%-15rem)]',

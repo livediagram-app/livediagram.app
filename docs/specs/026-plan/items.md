@@ -230,7 +230,7 @@ author redaction, and the same thread list, composer and resolve control the com
   - The composer sits under the thread beside your own avatar: a one-line field that grows with its text (to
     about eight lines, then scrolls), a soft border taking the brand ring on focus, placeholder **Add a
     comment…**. **Comment** stays disabled until there is text. While the field has focus a hint names the
-    shortcut, **⌘ Enter to send** on Apple devices and **Ctrl Enter to send** elsewhere; a plain Enter adds a line.
+    shortcut, **⌘ Enter to send** on Apple devices and **Ctrl Enter to send** elsewhere, and none on a touch screen (a coarse pointer), which sends with Comment; a plain Enter adds a line.
   - Empty, it reads **No comments yet. Start the conversation.** as a quiet line. Someone who may not comment
     reads the thread with no composer and no Resolve. A type that stops offering comments keeps the card's thread
     stored, unshown, like votes.

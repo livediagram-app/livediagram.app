@@ -219,7 +219,11 @@ export function CommentComposer({
           }`}
         />
         <div className="mt-1.5 flex min-h-6 items-center justify-between gap-2">
-          <p className="text-[11px] text-slate-500 dark:text-slate-400" aria-live="polite">
+          {/* A key combination, so only where there is a keyboard to press it: a touch screen sends with Comment. */}
+          <p
+            className="text-[11px] text-slate-500 pointer-coarse:invisible dark:text-slate-400"
+            aria-live="polite"
+          >
             {focused ? sendShortcutLabel() : ''}
           </p>
           <Button

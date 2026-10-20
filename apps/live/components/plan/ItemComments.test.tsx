@@ -92,7 +92,10 @@ describe('ItemComments', () => {
     const field = screen.getByRole('textbox', { name: 'Add a comment' });
     expect(screen.queryByText(/Enter to send/)).toBeNull();
     fireEvent.focus(field);
-    expect(screen.getByText(/^(⌘|Ctrl) Enter to send$/)).toBeTruthy();
+    // Only where there is a keyboard to press it.
+    expect(screen.getByText(/^(⌘|Ctrl) Enter to send$/).className).toContain(
+      'pointer-coarse:invisible',
+    );
     fireEvent.change(field, { target: { value: '   ' } });
     expect(send.disabled).toBe(true);
     fireEvent.change(field, { target: { value: 'Looks good' } });

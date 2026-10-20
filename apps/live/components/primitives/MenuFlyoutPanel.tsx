@@ -131,7 +131,13 @@ function FlyoutFrame({
           isPanel
             ? 'max-h-[calc(100dvh-1rem)] w-72 overflow-y-auto overscroll-contain'
             : 'w-56 overflow-hidden'
-        } border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40`}
+        } border border-slate-200 text-sm shadow-lg dark:border-slate-700 dark:shadow-slate-950/40 ${
+          // A phone lays the panel straight over its parent menu: see-through, the rows underneath read
+          // through it as ghost text. Beside the menu on a wide screen it keeps the frosted glass.
+          isMobile
+            ? 'bg-white dark:bg-slate-900'
+            : 'bg-white/95 backdrop-blur-sm dark:bg-slate-900/95'
+        }`}
         style={{
           left: pos?.left ?? 0,
           top: pos?.top ?? 0,

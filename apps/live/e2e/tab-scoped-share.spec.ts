@@ -76,7 +76,10 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   const leaks: string[] = [];
   visitor.on('response', async (res) => {
     const body = await res.text().catch(() => '');
-    if (body.includes(SECRET) || body.includes('"Pricing"')) leaks.push(res.url());
+    // The app's own bundles are public and the same for everyone; the template catalogue in them writes "Pricing"
+    // (a sitemap page, a sankey stage, a wireframe link), so only the tab's secret is looked for there.
+    const bundle = new URL(res.url()).pathname.includes('/_next/static/');
+    if (body.includes(SECRET) || (!bundle && body.includes('"Pricing"'))) leaks.push(res.url());
   });
   visitor.on('websocket', (ws) =>
     ws.on('framereceived', ({ payload }) => {

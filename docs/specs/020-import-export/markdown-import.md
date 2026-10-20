@@ -71,7 +71,9 @@ locked import.
 ## How it's triggered — the Import dialog
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
-dialog**, the mirror of the Export dialog. The user picks the format:
+dialog**, the mirror of the Export dialog. Both lay their format cards out three across, two across on a phone
+(three left each card about 110px wide there). Above the cards a warning says the import replaces the tab and Undo
+brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
 
 - **JSON** — a `.json` tab export, restored exactly.
 - **Mermaid** — a flowchart, keeping every connection ([Mermaid import & export](mermaid.md)).

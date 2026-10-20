@@ -5,6 +5,7 @@ import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
+import { PointerWords } from './PointerWords';
 
 // What a category opener (palette-openers: Workshop's Ask, Tools, Record, React) opens on the Toolbar strip
 // (docs/specs/007-editor/editor-modes.md "Popular"): the category named, then its tiles as cards, two to a row, each
@@ -76,7 +77,7 @@ function OpenerCard({
           {name}
         </span>
         <span className="text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
-          {def.blurb ?? def.description}
+          <PointerWords text={def.blurb ?? def.description} />
         </span>
       </span>
     </button>

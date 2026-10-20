@@ -41,10 +41,24 @@ describe('tourStepsFor', () => {
     expect(desktop.indexOf('context-menu')).toBe(desktop.indexOf('categories') + 1);
   });
 
-  it('drops the desktop-only step on mobile', () => {
+  // A phone opens Tab Style as a modal sheet, and the tour stands aside while a modal is open.
+  it('drops the Theme & Canvas step on a phone', () => {
     const mobile = ids({ mobile: true, esBoard: false });
     expect(mobile).not.toContain('theme-canvas');
     expect(mobile).toContain('palette');
+  });
+
+  it('reads tap and long-press words on a touch screen, click and right-click words otherwise', () => {
+    const body = (touch: boolean, id: string) =>
+      tourStepsFor({ mobile: true, esBoard: false, touch }).find((s) => s.id === id)!.body;
+    expect(body(false, 'categories')).toMatch(/Click to add/);
+    expect(body(true, 'categories')).toBe(
+      'Tap a category to see what is in it. Tap to add, or drag onto the canvas.',
+    );
+    expect(body(false, 'context-menu')).toMatch(/^Right-click/);
+    expect(body(true, 'context-menu')).toMatch(/^Long-press anything/);
+    // A step with no touch words keeps its one body.
+    expect(body(true, 'tabs')).toBe(body(false, 'tabs'));
   });
 
   it('drops the palette-header steps on an event-storming board', () => {

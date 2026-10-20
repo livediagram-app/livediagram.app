@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { useEdgeDividers } from './useEdgeDividers';
 import { tileEnterAnimation } from './palette-tile-finish';
@@ -176,9 +177,7 @@ export function ToolbarStripRail({
       ref={railRef}
       data-strip-rail=""
       className={`relative -mx-[3px] flex items-center ${
-        scrollable
-          ? 'min-w-0 -my-[3px] overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-          : 'overflow-x-clip [overflow-clip-margin:3px]'
+        scrollable ? STRIP_RAIL_SCROLL : 'overflow-x-clip [overflow-clip-margin:3px]'
       }${animate ? ' transition-[width] duration-short ease-out' : ''}`}
       style={{ width: width ?? undefined }}
     >

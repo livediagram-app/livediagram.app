@@ -7,7 +7,8 @@ import { Explorer } from './Explorer';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/components/panels/DocumentThumbnail', () => ({ DocumentThumbnail: () => <span /> }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+const viewport = vi.hoisted(() => ({ mobile: false }));
+vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => viewport.mobile }));
 // The views each fetch their own feed; here only which one the pane shows matters.
 vi.mock('./explorer-panel/PanelViews', () => ({
   HomeSection: () => <p>home view</p>,
@@ -79,9 +80,28 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  viewport.mobile = false;
 });
 
 describe('Explorer', () => {
+  // A short phone's sheet: pinned, the card and the sign-in note left the pane a sliver (43px on an iPhone SE).
+  it("scrolls a phone sheet's card and pane as one, the pane never shorter than 18rem", () => {
+    viewport.mobile = true;
+    show({ asPopover: true, popoverOpen: true, onPopoverClose: vi.fn() });
+    const scroll = document.querySelector<HTMLElement>('[data-explorer-sheet-scroll]');
+    expect(scroll).toBeTruthy();
+    expect(scroll!.className).toContain('overflow-y-auto');
+    expect(scroll!.contains(screen.getByRole('region', { name: 'Current document' }))).toBe(true);
+    expect(scroll!.querySelector('.min-h-\\[18rem\\]')).toBeTruthy();
+    // The product links stay pinned under it.
+    expect(scroll!.contains(screen.getByRole('navigation', { name: 'Go to' }))).toBe(false);
+  });
+
+  it('adds no scroll box of its own outside a phone sheet', () => {
+    show();
+    expect(document.querySelector('[data-explorer-sheet-scroll]')).toBeNull();
+  });
+
   it('opens on Home under its Current Document card, and lists My Documents when picked', async () => {
     show();
     expect(screen.getByRole('region', { name: 'Current document' })).toBeTruthy();

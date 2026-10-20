@@ -276,7 +276,7 @@ The notes behave like the physical kit:
   lane lit, exactly as a dragged note is. A press, or a press and drag, lands
   the note centred where the ghost is, never at the drag's corner and never
   sized by it; the dashed draw-to-size box and its corner-snap dot stand down.
-  The banner says so ("Click to place a command note"). One placement rule
+  The banner says so ("Click to place a command note", "Tap to place…" on a phone). One placement rule
   (`stampPlacement`) feeds the ghost, the lane overlay and the drop.
   Ruled 2026-09-25 ("dragging Event Storming stickies shows as if they can be
   drawn to a size; it should show a ghost of what would be added"); the same

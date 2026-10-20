@@ -376,10 +376,11 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
   12 px from the edge ([UI scale blueprint](../../007-editor/blueprints/ui-scale.md)). Its flyouts
   are portalled out of the zoomed wrapper, so they draw at design size, like every menu opened
   from a scaled surface.
-- Wrapper at the **top** (the default): `top-3`; below `lg` `left-[7.5rem]` with
-  `max-w-[calc(100%-8.25rem)]`, clear of the Explorer menu card (the button and the editor mode
-  switch, 12 + 98 px, plus an 8 px gap); from `lg` centred with `max-w-[calc(100%-15rem)]`, the
-  same clearance both sides (D33). Top corner stacks drop to
+- Wrapper at the **top** (the default): `top-3`; on a phone (`phone:`) `left-[4.125rem]` with
+  `max-w-[calc(100%-4.875rem)]`, 8 px after the Explorer menu card (12 + 46 px at the phone's fixed
+  100% UI scale) and 12 px from the right; on a tablet, below `lg`, `left-[7.5rem]` with
+  `max-w-[calc(100%-8.25rem)]`, room for the card at a raised UI scale; from `lg` centred with
+  `max-w-[calc(100%-15rem)]`, the same clearance both sides (D33). Top corner stacks drop to
   68 px when it reaches them (D34); the top-centre stack starts at `top-[4.25rem]`, as under the strip.
 - Wrapper at the **bottom**: bottom centre, `bottom-4` from 1760 px wide (D9), lifted above the
   bottom-right cluster below it.

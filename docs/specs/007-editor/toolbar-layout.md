@@ -85,7 +85,10 @@ under the pointer as a category is switched.
   estimate let Pages mode's bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
   need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
-  sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone").
+  sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
+  the tile rail, an article's dock) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
+  mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
+  icon; an edge with nothing beyond it stays sharp.
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
 ### Opening a flyout
@@ -128,7 +131,8 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
   the glyph on a plate beside the name and its one-line blurb, two to a row (one, in a narrower flyout, for a
   category of three tiles or fewer, such as Media). A shortcut shows as a key cap beside the name.
 - **A footer** saying what the pointed-at tile does and its key, without the hover card's wait; before anything is
-  pointed at, "Click to add one, or drag it onto the canvas." ("Tap to add one, …" on a touch screen). It is **one
+  pointed at, "Click to add one, or drag it onto the canvas." ("Tap to add one, …" on a touch screen). A tile's blurb or description that names a click says it the touch screen's way there too ("Double-click to
+  look underneath" reads "Double-tap to look underneath"; `PointerWords`), each wording shown for its own pointer. It is **one
   fixed height** whatever it says, room for the name and two lines of description (`FLYOUT_FOOTER_HEIGHT`, 69 px),
   a longer description clamped to two lines: a footer that grew and shrank with each tile moved the flyout's edge
   under the pointer as it travelled.
@@ -352,6 +356,10 @@ buttons** ([Live app](live-app.md)): they are not corner panels. Every
 other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
+A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
+toolbar across the canvas's top whose span meets its column, the strip or Draw's dock (`usePopoverTopClearance`), and
+12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
+header hidden.
 
 ## One menu at a time
 
@@ -437,7 +445,9 @@ their bottom-row buttons. What changes to fit the width:
     menu button). It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
-    its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries.
+    its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
+    phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to
+    drop or drag to draw Square" keeps the name it gives.
   - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
   - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
     Templates**, which opens the start again, until the first element lands

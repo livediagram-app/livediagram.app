@@ -101,3 +101,23 @@ describe('ImportTabDialog, offered formats', () => {
     expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
   });
 });
+
+// docs/specs/020-import-export/markdown-import.md: two cards across on a phone; the warning's keys only for a keyboard.
+describe('ImportTabDialog on a phone', () => {
+  it('lays its formats out two across below sm and names Undo’s keys only on a fine pointer', () => {
+    render(
+      <ImportTabDialog
+        tabName="Board"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const grid = screen.getByRole('button', { name: /draw\.io/ }).parentElement!;
+    expect(grid.className).toContain('grid-cols-2');
+    expect(grid.className).toContain('sm:grid-cols-3');
+    const keys = screen.getByText(/⌘Z/);
+    expect(keys.className).toContain('pointer-coarse:hidden');
+    expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
+  });
+});
