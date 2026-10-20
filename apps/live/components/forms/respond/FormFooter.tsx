@@ -35,14 +35,18 @@ export function FormFooter({ code }: { code: string }) {
   const name = useId();
   return (
     <footer className="flex flex-col items-center gap-3 pt-4 text-[13px] text-slate-500 dark:text-slate-400">
-      <div className="flex items-center gap-3">
+      {/* Each part stays whole and the line breaks between them: on a 320px phone it broke inside both ("Made /
+          with", "Report This / Form"). There the two take a line each, with no separator left dangling. */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 whitespace-nowrap">
         <MadeWithLivediagram />
-        <span aria-hidden>·</span>
+        <span aria-hidden className="max-[359px]:hidden">
+          ·
+        </span>
         <button
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="cursor-pointer underline-offset-2 hover:underline"
+          className="relative touch-target cursor-pointer underline-offset-2 hover:underline"
         >
           Report This Form
         </button>
