@@ -140,10 +140,15 @@ function InlineCode({ children }: { children?: ReactNode }) {
 
 // Tables had no overrides at all, so a markdown table rendered as unpadded browser default: columns touching, no
 // rules, a key and its description reading as one run-on line. The shortcut references are mostly tables, which is
-// where it hurt. A table wider than a phone scrolls in its own box rather than running off the page.
+// where it hurt. A table wider than a phone scrolls in its own box rather than running off the page, and its code
+// breaks only at spaces: breaking anywhere, as running text's does, split `POWER(base,` into `POWER(b` and `ase,`.
 function Table({ children }: { children?: ReactNode }) {
   return (
-    <div className="mb-5 overflow-x-auto">
+    // Focusable, as a code block is, so a keyboard reaches a table too wide for the column and scrolls it.
+    <div
+      tabIndex={0}
+      className="mb-5 overflow-x-auto rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand-400 [&_code]:[overflow-wrap:normal]"
+    >
       <table className="w-full border-collapse text-left text-[15px]">{children}</table>
     </div>
   );
