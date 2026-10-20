@@ -111,7 +111,9 @@ describe('useEditorBroadcast cursor', () => {
       1,
     ]);
     now += 40;
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : null))).toEqual([
       1, 9,
     ]);
@@ -130,7 +132,9 @@ describe('useEditorBroadcast cursor', () => {
     now += 5;
     act(() => hook.result.current.broadcastCursor({ x: 3, y: 3 }));
     hook.rerender({ ...deps, canvasTool: 'select', cursorsHidden: true });
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : 'x'))).toEqual([
       1,
       null,

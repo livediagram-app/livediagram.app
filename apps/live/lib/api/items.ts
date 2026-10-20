@@ -18,6 +18,7 @@ import {
   offlineWriteItemComment,
 } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
+import { debugLog } from '../debug-log';
 
 export type ItemsScope = {
   ownerId: string;
@@ -92,7 +93,7 @@ async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: s
       attempt <= ITEM_BUSY_RETRIES &&
       (await refusalCode(res)) === 'item_busy'
     ) {
-      console.info('[items] items.write.busy-retry', { action, attempt });
+      debugLog('[items] items.write.busy-retry', { action, attempt });
       await new Promise((r) => setTimeout(r, ITEM_BUSY_PAUSE_MS * attempt * (0.5 + Math.random())));
       continue;
     }
