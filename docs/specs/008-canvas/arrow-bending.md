@@ -47,6 +47,14 @@ The curve and elbow handles stay: they are the precise controls. The "+" add-poi
 removed. Right-clicking a bend point still deletes it, and deleting the last one still reverts the
 arrow to a straight line.
 
+## Stored bends
+
+An arrow keeps its bends as deltas: `curveOffset` (a curved arrow's one bow), `elbowOffset` (an
+angled arrow's moved elbow), each a finite `dx` and `dy`, and `curvePoints`, a list of at most
+`MAX_CURVE_POINTS` (5,000, a path's node limit) such deltas. A write whose bends are not that shape
+is refused by validation; one that arrives malformed anyway (stored before, a peer's op, a file) has
+that field dropped on the way in, and the arrow draws with its default bend.
+
 ## Angled legs stay square
 
 An angled arrow's bend points are stored as deltas from its chord midpoint, so moving an end

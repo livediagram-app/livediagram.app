@@ -132,6 +132,10 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
+- **Rows on the way in**: validation refuses a slice that is not `{ label, ... }`, a series that is
+  not `{ name, values, ... }` and a category that is not text. A row that arrives malformed anyway
+  (stored before, a peer's op, a file) is settled as it enters (`settleChartRows`): a slice or series
+  that is not an object is dropped; a label, name or category that is not text reads as its number or flag written out, else as empty, and a series' values that are not a list as none, so categories keep their places.
 - All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?` and
   `chartVariant?` (`'horizontal' | 'area' | 'scatter' | 'doughnut'`, Chart types above); `chartTypeOf(el)` and
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it

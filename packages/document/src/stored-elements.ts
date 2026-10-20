@@ -10,6 +10,10 @@ import { migrateLegacyModeButtons } from './legacy-mode-buttons';
 import { migrateLegacyStrokePoints } from './legacy-stroke-points';
 import { migrateLegacyTextSizing } from './legacy-text-sizing';
 import { dropUnturnableRotation } from './unturnable-rotation';
+import { dropMalformedBends } from './malformed-bends';
+import { dropMalformedIds } from './malformed-ids';
+import { dropMalformedStyles } from './malformed-styles';
+import { settleChartRows } from './malformed-chart-rows';
 import { dropUnsafeColours } from './unsafe-colours';
 import type { Element } from './index';
 
@@ -23,13 +27,22 @@ export function migrateStoredElements(elements: Element[]): Element[] {
  *  in its one-element list, so settling it alone would detach every badge, step and pointer note from its host. The
  *  whole list is settled afterwards. */
 export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
+  // Malformed styles, catalogue keys, bends and chart rows are settled first, so no later migration reads them.
   return dropUnsafeColours(
     dropUnturnableRotation(
       stampLegacyEsKinds(
         migrateLegacyModeButtons(
           migrateLegacyTextSizing(
             migrateLegacyStrokePoints(
-              dropLegacyDocks(migrateLegacyGroups(migrateLegacyCallouts(elements))),
+              dropLegacyDocks(
+                migrateLegacyGroups(
+                  migrateLegacyCallouts(
+                    settleChartRows(
+                      dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements))),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
