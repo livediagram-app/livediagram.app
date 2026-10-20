@@ -19,6 +19,7 @@ import {
   formLook,
   laidOutPagesOf,
   migrateStoredTab,
+  pagesOf,
   renderElementsToSvg,
   renderPageToSvg,
   resolveFontStack,
@@ -284,7 +285,8 @@ async function renderTabBodyToSvg(
       ? {
           ...tab,
           elements: elementsOnPage(tab.elements, pages, firstPage.id),
-          pages: tab.pages?.filter((p) => p.id === firstPage.id),
+          // Read as the pages are laid out (pagesOf), so a malformed stored entry is skipped.
+          pages: pagesOf(tab).filter((p) => p.id === firstPage.id),
         }
       : tab,
   );

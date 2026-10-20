@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { createShape, layOutPages, type BoxedElement, type Element } from '@livediagram/document';
+import {
+  createShape,
+  layOutPages,
+  pagesOf,
+  type BoxedElement,
+  type Element,
+} from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useOptionalSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -30,7 +36,7 @@ export function useLogoCombineDemo(): void {
     registerCombineDemo({
       place: async (pageId) => {
         const { ctx: c } = live.current;
-        const page = layOutPages(c.activeTab.pages ?? []).find((p) => p.id === pageId);
+        const page = layOutPages(pagesOf(c.activeTab)).find((p) => p.id === pageId);
         if (!page) return false;
         const { x, y, width, height } = page.rect;
         const size = Math.round(Math.min(width, height) * DEMO_SIZE_OF_PAGE);
