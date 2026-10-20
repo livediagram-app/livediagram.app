@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { pageKindOf, type PageKind } from '@livediagram/document';
+import { pageKindOf, pagesOf, type PageKind } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
@@ -91,7 +91,10 @@ export function PagesTourHost() {
 
   // The kinds on the tab, an unchosen first page apart: a kind arriving (a page added, the first page's kind chosen)
   // arms the offer again.
-  const pages = ctx.activeTab.pages ?? [];
+  // Read through pagesOf, as the canvas reads them, so a malformed stored entry is skipped rather than throwing;
+  // a tab that stores no pages has no kinds to offer a tour for.
+  const stored = ctx.activeTab.pages;
+  const pages = Array.isArray(stored) && stored.length > 0 ? pagesOf(ctx.activeTab) : [];
   const kindsKey = [...new Set(pages.map((p) => (p.kind ? pageKindOf(p) : 'unchosen')))]
     .sort()
     .join(',');

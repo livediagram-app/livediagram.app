@@ -68,7 +68,11 @@ const editor = (over: Record<string, unknown> = {}) => {
     isReadOnly: false,
     embedMode: false,
     editorMode: { mode: 'pages' },
-    activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p1', kind: 'slide' }] },
+    activeTab: {
+      id: 'tab1',
+      locked: false,
+      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide' }],
+    },
     userPreferences: { tourSeen: true },
     setUserPreferences,
     writeUserPreferences,
@@ -271,7 +275,11 @@ describe('PagesTourHost end', () => {
   it('runs the track of the tour page’s kind', async () => {
     dom.page = { pageId: 'p2', kind: 'article' };
     await start({
-      activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p2', kind: 'article', flow: 'f' }] },
+      activeTab: {
+        id: 'tab1',
+        locked: false,
+        pages: [{ id: 'p2', orientation: 'portrait', kind: 'article', flow: 'f' }],
+      },
     });
     expect(stage.engine?.step?.title).toBe('Getting started with Articles?');
     expect(stage.helpHref).toBe('/help/canvas/pages-mode/articles/');
@@ -339,8 +347,8 @@ describe('PagesTourHost per kind', () => {
         id: 'tab1',
         locked: false,
         pages: [
-          { id: 'p1', kind: 'slide' },
-          { id: 'p2', kind: 'logo' },
+          { id: 'p1', orientation: 'landscape', kind: 'slide' },
+          { id: 'p2', orientation: 'landscape', kind: 'logo' },
         ],
       },
     });
@@ -350,12 +358,27 @@ describe('PagesTourHost per kind', () => {
     expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
   });
 
+  it('reads the stored pages as the canvas does, skipping a malformed entry rather than throwing', async () => {
+    editor({
+      activeTab: {
+        id: 'tab1',
+        locked: false,
+        pages: [null, 5, { id: 'p1', orientation: 'landscape', kind: 'slide' }],
+      },
+    });
+    expect(() => render(<PagesTourHost />)).not.toThrow();
+    await wait(800);
+    expect(offered()).toBe(true);
+  });
+
   it('waits out the first page’s kind choice', async () => {
     const choice = document.createElement('div');
     choice.setAttribute('data-first-page-choice', '');
     document.body.append(choice);
     try {
-      editor({ activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p1' }] } });
+      editor({
+        activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p1', orientation: 'landscape' }] },
+      });
       render(<PagesTourHost />);
       await wait(2000);
       expect(offered()).toBe(false);
