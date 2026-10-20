@@ -21,7 +21,9 @@ The `clerkEnabled` flag (`apps/live/lib/clerk-config.ts`) is the single source o
 - `ClerkProvider` becomes a pass-through `<>{children}</>`.
 - `useClerkApiBootstrap` returns a stable stub (`isSignedIn: false`, `authLoaded: true`, `clerkUserId: null`) without ever touching `useAuth`.
 - `AuthControls` renders nothing.
-- `/sign-in/`, `/get-started/`, `/sso-callback/` render an `AuthDisabledNotice` with a "Continue as guest" CTA.
+- `/sign-in/`, `/get-started/`, `/sso-callback/` render an `AuthDisabledNotice` with a "Continue as guest" CTA. It goes back
+  to the page that sent the visitor (a safe `?redirect_url`, as Share's "Sign in to Share" carries for its document,
+  by the same rule as the header's guest link, `guestReturnHref`), else to `/new`; never the marketing front page.
 
 Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-time constant — no per-render cost and Clerk-only code paths can be tree-shaken out of guest-only builds.
 

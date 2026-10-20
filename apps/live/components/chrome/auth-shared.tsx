@@ -13,8 +13,8 @@
 // own auth surface this can be promoted to `packages/ui`.
 
 import { Button, buttonClassName, TextInput, ButtonContent } from '@livediagram/ui';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { sameOriginPath } from '@/lib/same-origin-path';
 import { AUTH_TITLE, AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
@@ -105,7 +105,9 @@ export function RedirectingCard() {
 // Notice shown on the auth routes when Clerk isn't configured for the
 // deployment (self-host path, no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY).
 // The editor still works — only sign-up / sign-in are off — so the
-// CTA points back to the editor's welcome flow.
+// CTA goes back to the page that sent the visitor here (Share's "Sign in
+// to Share" names its document in `?redirect_url`), else the editor's
+// welcome flow, as the header's guest link does (guestReturnHref).
 // ---------------------------------------------------------------------
 
 export function AuthDisabledNotice() {
@@ -125,11 +127,25 @@ export function AuthDisabledNotice() {
         at build time and redeploy.
       </p>
       <div className="mt-6 flex justify-center">
-        <a href="/" className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
-          <ButtonContent>Continue as guest</ButtonContent>
-        </a>
+        {/* The query is read under its own Suspense boundary, as a static export needs; until then the link goes
+            to the welcome flow. */}
+        <Suspense fallback={<ContinueAsGuest href={POST_AUTH_DEFAULT} />}>
+          <ContinueAsGuestBack />
+        </Suspense>
       </div>
     </AuthCard>
+  );
+}
+
+function ContinueAsGuestBack() {
+  return <ContinueAsGuest href={guestReturnHref(useSearchParams())} />;
+}
+
+function ContinueAsGuest({ href }: { href: string }) {
+  return (
+    <a href={href} className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
+      <ButtonContent>Continue as guest</ButtonContent>
+    </a>
   );
 }
 
