@@ -1,22 +1,23 @@
 // Every Sheet function, family by family, with what it takes, what it does and an example
 // (docs/specs/029-sheets/sheet.md "Help"). Read from the formula engine's own catalogue, so the article can never
-// list a function the Sheet does not have, or miss one. Rendered at build time: no script reaches the page.
+// list a function the Sheet does not have, or miss one. Rendered at build time: no script reaches the page. Drawn
+// with the article's own heading, table and code pieces (raw tags skip the MDX map: an unstyled table that ran off a
+// phone's edge, its Example column out of reach).
 import { FUNCTION_DOCS, FUNCTION_FAMILIES } from '@livediagram/sheets';
-
-const anchor = (family: string) => family.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+import { InlineCode, SectionHeading, Table, Td, Th } from '@/mdx-components';
 
 export function SheetFunctionList() {
   return (
     <>
       {FUNCTION_FAMILIES.map(([family, fns]) => (
         <section key={family}>
-          <h2 id={anchor(family)}>{family}</h2>
-          <table>
+          <SectionHeading>{family}</SectionHeading>
+          <Table>
             <thead>
               <tr>
-                <th>Function</th>
-                <th>Does</th>
-                <th>Example</th>
+                <Th>Function</Th>
+                <Th>Does</Th>
+                <Th>Example</Th>
               </tr>
             </thead>
             <tbody>
@@ -26,18 +27,18 @@ export function SheetFunctionList() {
                   const doc = FUNCTION_DOCS[name];
                   return (
                     <tr key={name}>
-                      <td>
-                        <code>
+                      <Td>
+                        <InlineCode>
                           {name}({doc?.args.join(', ') ?? ''})
-                        </code>
-                      </td>
-                      <td>{doc?.summary}</td>
-                      <td>{doc ? <code>{doc.example}</code> : null}</td>
+                        </InlineCode>
+                      </Td>
+                      <Td>{doc?.summary}</Td>
+                      <Td>{doc ? <InlineCode>{doc.example}</InlineCode> : null}</Td>
                     </tr>
                   );
                 })}
             </tbody>
-          </table>
+          </Table>
         </section>
       ))}
     </>
