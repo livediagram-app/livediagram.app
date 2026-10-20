@@ -252,7 +252,8 @@ export function ProductNavLinks({
           href={item.href}
           className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
         >
-          <span aria-hidden className="flex opacity-80">
+          {/* Below 360px (an iPhone SE) the four links fit only as words: with their icons Help ran off the edge. */}
+          <span aria-hidden className="flex opacity-80 max-[359px]:hidden">
             {ICONS[item.key]()}
           </span>
           {item.label}
