@@ -2,6 +2,7 @@
 // rails, and the closed sets and bounded rows of the content-carrying and collaborative kinds. Each
 // check names its field and rule, so a refusal says which value to fix.
 
+import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor } from './office';
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { isPlanSheetRef } from './element-types';
@@ -234,9 +235,22 @@ const isSession = (v: unknown) =>
 const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'titleOrientation', valid: (v) => v === 'upright', rule: oneOfRule(['upright']) },
   dataArray('railLabels'),
-  dataArray('lineCategories'),
-  dataArray('pieSlices'),
-  dataArray('lineSeries'),
+  // A chart's rows (docs/specs/009-elements/pie-chart.md "Model").
+  {
+    field: 'lineCategories',
+    valid: rowsOf(MAX_DATA_ARRAY, isChartCategory),
+    rule: arrayRule(MAX_DATA_ARRAY, 'categories, each text'),
+  },
+  {
+    field: 'pieSlices',
+    valid: rowsOf(MAX_DATA_ARRAY, isChartSlice),
+    rule: arrayRule(MAX_DATA_ARRAY, 'slices, each { label, value }'),
+  },
+  {
+    field: 'lineSeries',
+    valid: rowsOf(MAX_DATA_ARRAY, isChartSeries),
+    rule: arrayRule(MAX_DATA_ARRAY, 'series, each { name, values }'),
+  },
   { field: 'portalTarget', valid: isNonEmptyStr, rule: 'an element id' },
   // A tab id that is gone is legal too: the window says its tab is not available.
   { field: 'windowTabId', valid: isNonEmptyStr, rule: 'a tab id' },

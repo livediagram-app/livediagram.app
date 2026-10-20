@@ -341,6 +341,8 @@ function chartStory(k: Kit): Element[] {
         { label: 'Q4', value: 68 },
       ],
       chartLegend: false,
+      // Values name each column under its baseline, which the legend would otherwise do.
+      chartValues: true,
     });
   const ring = (side: number, x: number, y: number) =>
     k.shape('progress-ring', x, y, side, side, { progress: 68, label: '68%', textSize: 'lg' });

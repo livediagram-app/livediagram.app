@@ -520,7 +520,10 @@ describe('elementValidationIssue', () => {
       pieSlices: Array.from({ length: 5001 }, () => ({ label: 'x', value: 1 })),
       ...box,
     });
-    expect(issue).toEqual({ field: 'pieSlices', rule: 'an array of at most 5000 items' });
+    expect(issue).toEqual({
+      field: 'pieSlices',
+      rule: 'an array of at most 5000 slices, each { label, value }',
+    });
   });
 
   it('names a malformed table cell', () => {

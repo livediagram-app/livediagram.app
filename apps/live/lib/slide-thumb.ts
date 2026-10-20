@@ -14,7 +14,6 @@ import {
   svgArrow,
   sketchBackdropIds,
   svgBoxed,
-  chartPageGrounds,
   type CanvasSurface,
   type Slide,
   type Tab,
@@ -25,6 +24,7 @@ import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
+import { exportChartInk } from '@/lib/export-chart-ink';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 
 export type SlideThumb = { markup: string; viewBox: string };
@@ -83,8 +83,9 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
   }
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(elements, tab.finish);
-  // Charts on a filled page drawn adapted to what they sit on, as on the canvas.
-  const chartGrounds = page ? chartPageGrounds(tab.elements, [page], tab.layers) : undefined;
+  // Charts in the tab theme's colours and, on a filled page, adapted to what they sit on, as on the
+  // canvas and in the exports (without the palette every chart fell back to the built-in ramp).
+  const { chartPalette, chartGrounds } = exportChartInk(tab, page);
   for (const el of elements) {
     if (el.type !== 'arrow') {
       parts.push(
@@ -94,6 +95,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
           tabFinish: tab.finish,
           sketchBackdrop: backdrops.has(el.id),
           surface,
+          chartPalette,
           chartGrounds,
           ...(items ? { items } : {}),
           ...(itemTypes ? { itemTypes } : {}),

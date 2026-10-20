@@ -131,7 +131,7 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
 5. **Tabs**: opens the active tab's ⋯ menu and highlights it with the tab pill (an `alsoHighlight` union): each
    tab holds its own work in its own mode; + adds one; the menu renames, duplicates, locks, exports or sets it
    side by side. The menu closes as the step ends.
-6. **Theme & Canvas** (desktop only): opens Tab Style from the Style (paintbrush) dock button
+6. **Theme & Canvas** (desktop only): opens Tab Style from the Style (painter's palette) dock button, which the step's copy names as **the Style button**
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) and highlights the open panel with the
    button, over the dialog layer. It closes as the step ends, however it ends, including when the step is left
    while the panel is still opening. Mobile reaches the same dialog through the canvas menu, so the step is skipped

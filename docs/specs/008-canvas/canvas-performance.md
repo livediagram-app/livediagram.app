@@ -79,7 +79,9 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
-  not the board. A per-frame pass is never quadratic in the board.
+  not the board. A per-frame pass is never quadratic in the board. A question about a rect wider
+  than the board's occupied cells (a long arrow's) asks those cells instead, so its cost never grows
+  with how far apart two points are.
 - **Whole-board passes stay linear and run once.** What deliberately looks across the whole board
   (alignment and distribution snapping, the endpoint spread, the arrow label pass) makes one
   linear pass per frame at most, shared by everything that reads it.

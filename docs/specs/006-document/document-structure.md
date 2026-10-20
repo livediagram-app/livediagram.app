@@ -137,6 +137,15 @@ fetches from outside a document ([Images](../009-elements/images.md) "External-U
 become the way it does. The same rule holds for a participant's colour (refused by `PUT /api/participants/<id>`,
 blanked in a room hello) and a custom theme's colours (refused on save).
 
+### Styles have their types
+
+An element's style fields are read by name or done arithmetic with: `padding`, `borderRadius`, `strokeStyle`,
+`textAlignX` and `textAlignY` are names, `textSize` a name or a size in px, `rotation` and `opacity` numbers,
+`shadow` its offsets, blur and strength, and `strokeWidth` a named weight (px on an arrow). One of the wrong type
+(`padding: 12`, `opacity: "50%"`) is dropped by the stored-element migrations wherever elements enter, as a colour
+that is no colour is, and the element draws with that style's default. Only the type is checked: a name this build
+does not know is still a name and is kept, so an older browser never drops what a newer one wrote.
+
 ### Why element IDs are unique across the whole document, not per tab
 
 Element IDs are document-scoped so cross-tab links are stable even if elements move between tabs (e.g. cut from Tab A, paste into Tab B). The id doesn't change; the link still resolves.

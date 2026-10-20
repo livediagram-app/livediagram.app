@@ -130,6 +130,10 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 - **Comment**: add a comment, delete one, resolve or reopen the thread ([Comments](#comments)). Comments are
   written only this way, so two people commenting at once never lose a comment.
 - Every write answers with the item as stored.
+- **Busy**: writes racing for the same keys or revisions (a quick run of new cards, people dragging the same
+  card) are retried by the api after a short, jittered pause; when its retries are spent it answers `item_busy`
+  with nothing written, and the editor sends the write again (up to three times, the pause growing) before it
+  tells the person the change was not saved. A burst of new cards keeps every card.
 
 ## Archive
 

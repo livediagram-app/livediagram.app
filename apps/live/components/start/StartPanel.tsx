@@ -306,7 +306,7 @@ export function StartPanel<C extends string>({
           </div>
           <label
             // On a phone the search takes its own row under the title, the help and × staying beside the title.
-            className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] max-sm:order-last sm:w-64"
+            className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] max-sm:order-last sm:w-68"
             style={{
               borderColor: palette.border,
               backgroundColor: palette.surface,

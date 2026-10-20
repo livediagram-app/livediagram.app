@@ -17,7 +17,7 @@ import {
 } from '@livediagram/document';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 
 // Per-layer preview markup (docs/specs/006-document/layers.md), shared by the Layers panel rows and
@@ -39,6 +39,8 @@ export function useLayerThumbnails(
   // The canvas paper (docs/specs/008-canvas/minimap.md "Fidelity"), so a
   // preview on a dark canvas shows the dark cards the canvas shows.
   const surface = useCanvasSurface();
+  // The theme's chart colours, so a chart's row preview matches the canvas.
+  const chartPalette = useCanvasChartPalette();
   // The tab's finish (docs/specs/008-canvas/finish.md), so a sketched layer previews sketched.
   const tabFinish = useTabFinish();
   return useMemo(() => {
@@ -67,6 +69,7 @@ export function useLayerThumbnails(
               tabFinish,
               sketchBackdrop: backdrops.has(el.id),
               surface,
+              chartPalette,
             }),
           );
         }
@@ -100,5 +103,5 @@ export function useLayerThumbnails(
       thumbMarkup: markup,
       thumbViewBox: `${r2(b.x - pad)} ${r2(b.y - pad)} ${r2(b.w + pad * 2)} ${r2(b.h + pad * 2)}`,
     };
-  }, [elements, layers, tabFont, tabFinish, iconsLoaded, surface]);
+  }, [elements, layers, tabFont, tabFinish, iconsLoaded, surface, chartPalette]);
 }

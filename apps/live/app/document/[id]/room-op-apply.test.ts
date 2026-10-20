@@ -136,6 +136,16 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]!.id).toBe('t1');
   });
 
+  it("a tab-meta patch's malformed layers and colours are settled (docs/specs/006-document/layers.md)", () => {
+    const next = applyRoomOpToTabs([tab()], {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { layers: 'x', backgroundColor: true } as never,
+    });
+    expect('layers' in next[0]!).toBe(false);
+    expect('backgroundColor' in next[0]!).toBe(false);
+  });
+
   it('a tab-meta patch never moves the folder', () => {
     const tabs = [tab({ folder: 'mine' })];
     const next = applyRoomOpToTabs(tabs, {

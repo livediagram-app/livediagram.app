@@ -244,9 +244,12 @@ page control is.
   same frame.
 - The `wireframe` kind, `Page.device`, `Page.frameLook` and `Page.systemBars` are part of the
   document schema the api validates and agents read and write: `change_pages` adds a wireframe
-  page (`{"op": "add", "kind": "wireframe", "device": "android"}`), changes its device, frame look
-  and system bars (`{"op": "set", "page": 2, "device": "ipad", "frameLook": "light"}`) and lays it
+  page (`{"op": "add", "kind": "wireframe", "device": "android"}`), changes its frame look and
+  system bars (`{"op": "set", "page": 2, "frameLook": "light", "systemBars": false}`) and lays it
   out from a wireframe layout; a page's rectangle answers the screen's safe area beside the page's.
+  As in the editor, the device is chosen as the page is added and never changed: a `set` naming a
+  device is refused, and so are a device, frame look or system bars on any other kind of page
+  (`not_a_wireframe`). A result line names a wireframe page's size by its device (`iPad landscape`).
 
 ## Telemetry
 

@@ -102,6 +102,10 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   const { roomRef, cursorsHidden, activeId, canvasTool } = deps;
   const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
   const lastCursorSentRef = useRef(0);
+  // The cursor position a throttle window held back, sent when the window ends: the last move of a quick drag or
+  // flick lands inside one, and dropping it left peers seeing the cursor parked short of where it stopped.
+  const pendingCursorRef = useRef<{ x: number; y: number } | null>(null);
+  const cursorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLaserSentRef = useRef(0);
   const lastAvatarSentRef = useRef(0);
   // The packet a throttle window held back, sent when the window ends, so the last thing said (a status picked, the
@@ -111,6 +115,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   useEffect(
     () => () => {
       if (avatarTimerRef.current) clearTimeout(avatarTimerRef.current);
+      if (cursorTimerRef.current) clearTimeout(cursorTimerRef.current);
     },
     [],
   );
@@ -140,6 +145,12 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // so peers drop the entry outright. Sent before the gate below applies.
   useEffect(() => {
     if (!cursorsHidden) return;
+    // A position held back for the end of a throttle window must not follow the retraction.
+    pendingCursorRef.current = null;
+    if (cursorTimerRef.current) {
+      clearTimeout(cursorTimerRef.current);
+      cursorTimerRef.current = null;
+    }
     roomRef.current?.send({
       kind: 'op',
       op: { kind: 'cursor', tabId: activeId, x: null, y: null },
@@ -150,18 +161,31 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
-    const now = performance.now();
-    if (pos && now - lastCursorSentRef.current < BROADCAST_THROTTLE_MS) return;
-    lastCursorSentRef.current = now;
-    deps.roomRef.current?.send({
-      kind: 'op',
-      op: {
-        kind: 'cursor',
-        tabId: deps.activeId,
-        x: pos?.x ?? null,
-        y: pos?.y ?? null,
-      },
-    });
+    const send = (at: { x: number; y: number } | null) => {
+      lastCursorSentRef.current = performance.now();
+      deps.roomRef.current?.send({
+        kind: 'op',
+        op: { kind: 'cursor', tabId: deps.activeId, x: at?.x ?? null, y: at?.y ?? null },
+      });
+    };
+    const wait = BROADCAST_THROTTLE_MS - (performance.now() - lastCursorSentRef.current);
+    if (pos && wait > 0) {
+      pendingCursorRef.current = pos;
+      cursorTimerRef.current ??= setTimeout(() => {
+        cursorTimerRef.current = null;
+        const pending = pendingCursorRef.current;
+        pendingCursorRef.current = null;
+        if (pending) send(pending);
+      }, wait);
+      return;
+    }
+    // Sent now (or the pointer left): nothing held back is still true.
+    pendingCursorRef.current = null;
+    if (cursorTimerRef.current) {
+      clearTimeout(cursorTimerRef.current);
+      cursorTimerRef.current = null;
+    }
+    send(pos);
   };
 
   const broadcastLaser = (x: number, y: number, look?: LaserConfig) => {

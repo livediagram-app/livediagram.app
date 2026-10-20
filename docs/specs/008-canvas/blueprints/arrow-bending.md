@@ -119,6 +119,7 @@ scales a free arrow.
 | `DOUBLE_PRESS_SLOP_PX` | 8     | Screen px between the two presses; 4 to 16            |
 | `MOVE_FRAME_PAD_PX`    | 12    | Frame clearance round the route; 8 to 24              |
 | `MOVE_FRAME_HIT_PX`    | 10    | Grab band width of the frame edge; 8 to 16            |
+| `MAX_CURVE_POINTS`     | 5000  | A path's node limit (MAX_PATH_NODES); 1000 to 5000    |
 
 ## Presentation and UX
 

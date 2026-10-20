@@ -91,19 +91,21 @@ const describePatch = (input: PageBackgroundInput) =>
     .filter(Boolean)
     .join(', ');
 
-function messageFor(why: PageEditRefusal, tab: Tab, page: Page | undefined): string {
+function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | undefined): string {
   const kind = page ? pageKindOf(page) : 'infographic';
+  // "An infographic page", "An article page", "A slide page".
+  const aKind = `${/^[aeiou]/.test(kind) ? 'An' : 'A'} ${kind}`;
   // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
   const words: Record<PageEditRefusal, string> = {
     unknown_page: `No such page. Pages: ${listPages(tab)}.`,
     locked:
       'That page is locked (an article: one of its pages is). Unlock it first with set { locked: false }.',
-    no_orientation: `A ${kind} page has no orientation: it is always the shape its size is.`,
-    size_not_offered: `A ${kind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
+    no_orientation: `${aKind} page has no orientation: it is always the shape its size is.`,
+    size_not_offered: `${aKind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
     pattern_not_offered: 'A logo page takes no pattern; give it a color or gradient.',
     page_limit: 'A tab holds at most 100 pages: delete one first.',
     last_page: "That is the tab's only page (or article): add another before deleting it.",
-    not_a_wireframe: `A ${kind} page has no device: device, frameLook and systemBars are a wireframe page's.`,
+    not_a_wireframe: `${aKind} page has no device: device, frameLook and systemBars are a wireframe page's.`,
   };
   return words[why];
 }
@@ -220,6 +222,9 @@ export function applyPageChanges(
         case 'add': {
           if (change.kind === 'article')
             stop('article_by_write', 'Article pages are made by write_article, from Markdown.');
+          // A device is a wireframe page's alone (docs/specs/007-editor/wireframe-pages.md).
+          if (change.device !== undefined && change.kind !== 'wireframe')
+            stop('not_a_wireframe', messageFor('not_a_wireframe', current, { kind: change.kind }));
           const ps = pages();
           const first = ps[0]!;
           let page: Page;

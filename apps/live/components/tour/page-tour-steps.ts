@@ -21,6 +21,17 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
       return articleTourSteps();
     case 'logo':
       return logoTourSteps();
+    // A wireframe page takes the infographic track, save that its cog sets a device rather than a page size.
+    case 'wireframe':
+      return infographicTourSteps().map((step) =>
+        step.id === 'page-size'
+          ? {
+              ...step,
+              title: 'Device',
+              body: 'The cog picks the device, turns it and sets its frame, and duplicates or deletes the page.',
+            }
+          : step,
+      );
     default:
       return infographicTourSteps();
   }

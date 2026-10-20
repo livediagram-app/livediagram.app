@@ -94,3 +94,52 @@ describe('useEditorBroadcast avatar packets', () => {
     }
   });
 });
+
+// docs/specs/015-api/api.md `cursor`: peers see the cursor where it stopped.
+describe('useEditorBroadcast cursor', () => {
+  it('sends the last position a throttle window held back once the window ends', () => {
+    vi.useFakeTimers();
+    let now = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    const { hook, sent } = setup({ canvasTool: 'select' });
+    act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
+    now += 5;
+    act(() => hook.result.current.broadcastCursor({ x: 2, y: 2 }));
+    now += 5;
+    act(() => hook.result.current.broadcastCursor({ x: 9, y: 9 }));
+    expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : null))).toEqual([
+      1,
+    ]);
+    now += 40;
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : null))).toEqual([
+      1, 9,
+    ]);
+    vi.useRealTimers();
+  });
+
+  it('never follows the pointer leaving, or a hide-cursors vote, with a held-back position', () => {
+    vi.useFakeTimers();
+    let now = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    const { hook, sent, deps } = setup({ canvasTool: 'select' });
+    act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
+    now += 5;
+    act(() => hook.result.current.broadcastCursor({ x: 2, y: 2 }));
+    act(() => hook.result.current.broadcastCursor(null));
+    now += 5;
+    act(() => hook.result.current.broadcastCursor({ x: 3, y: 3 }));
+    hook.rerender({ ...deps, canvasTool: 'select', cursorsHidden: true });
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : 'x'))).toEqual([
+      1,
+      null,
+      null,
+    ]);
+    vi.useRealTimers();
+  });
+});

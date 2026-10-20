@@ -4,6 +4,7 @@ import {
   clampTimerMinutes,
   dialAngle,
   dialDragMinutes,
+  dialPressGrabsHandle,
   dialFraction,
   formatMinutesLabel,
   minutesForDialAngle,
@@ -51,6 +52,18 @@ describe('timer dial', () => {
     expect(dialDragMinutes(58, 2)).toBe(60);
     expect(dialDragMinutes(2, 58)).toBe(1);
     expect(dialDragMinutes(20, 25)).toBe(25);
+  });
+
+  it('takes hold of the handle when a press lands on it, measured round the dial', () => {
+    // A 1-minute handle pressed a hair left of twelve reads as 60: still the handle.
+    expect(dialPressGrabsHandle(1, 60)).toBe(true);
+    expect(dialPressGrabsHandle(1, 2)).toBe(true);
+    expect(dialPressGrabsHandle(30, 31)).toBe(true);
+    // Past one lap the handle sits at twelve.
+    expect(dialPressGrabsHandle(90, 59)).toBe(true);
+    // Anywhere else is a jump.
+    expect(dialPressGrabsHandle(1, 45)).toBe(false);
+    expect(dialPressGrabsHandle(30, 20)).toBe(false);
   });
 
   it('clamps minutes to the shared timer range', () => {

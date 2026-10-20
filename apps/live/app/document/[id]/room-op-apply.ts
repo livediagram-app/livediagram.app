@@ -1,6 +1,7 @@
 import {
   applyArticleOps,
   pagesOf,
+  settleTabFields,
   isArticleId,
   parseArticleOps,
   applyElementDelta,
@@ -113,7 +114,8 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
         for (const key of Array.isArray(op.clear) ? op.clear : []) {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];
         }
-        return merged;
+        // A peer's patch is untrusted like any incoming tab: its raw-read fields are settled.
+        return settleTabFields(merged);
       });
     case 'article':
       // ONE article's writing, block by block (docs/specs/007-editor/article-pages.md

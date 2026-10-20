@@ -18,6 +18,7 @@ import {
   offlineWriteItemComment,
 } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
+import { debugLog } from '../debug-log';
 
 export type ItemsScope = {
   ownerId: string;
@@ -65,13 +66,39 @@ export async function fetchCloudItems(scope: ItemsScope): Promise<ItemStoreState
   return { items: body.items, rev: body.rev, nextKey: maxKey + 1 };
 }
 
+// A write the store answered `item_busy` (a burst of writes racing for its keys or revs, the api's own retries
+// spent, nothing landed) is sent again after a short, jittered pause, so a quick run of new cards keeps every
+// one (docs/specs/026-plan/items.md "Changing items").
+export const ITEM_BUSY_RETRIES = 3;
+const ITEM_BUSY_PAUSE_MS = 80;
+
+async function refusalCode(res: Response): Promise<string | null> {
+  try {
+    const body = (await res.clone().json()) as { error?: unknown };
+    return typeof body.error === 'string' ? body.error : null;
+  } catch {
+    return null;
+  }
+}
+
 async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: string): Promise<T> {
-  const res = await apiFetch(itemsUrl(scope, rest), {
-    method: 'POST',
-    headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
-    body: JSON.stringify(body),
-  });
-  return expectOk<T>(res, action);
+  for (let attempt = 1; ; attempt += 1) {
+    const res = await apiFetch(itemsUrl(scope, rest), {
+      method: 'POST',
+      headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
+      body: JSON.stringify(body),
+    });
+    if (
+      res.status === 409 &&
+      attempt <= ITEM_BUSY_RETRIES &&
+      (await refusalCode(res)) === 'item_busy'
+    ) {
+      debugLog('[items] items.write.busy-retry', { action, attempt });
+      await new Promise((r) => setTimeout(r, ITEM_BUSY_PAUSE_MS * attempt * (0.5 + Math.random())));
+      continue;
+    }
+    return expectOk<T>(res, action);
+  }
 }
 
 // The items a refused many-item request still landed (its body's `items`, the api's partial answer), or none.

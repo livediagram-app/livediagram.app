@@ -5,7 +5,7 @@ import { editorModeLabel } from '@livediagram/document';
 import { TemplatePreview } from '@livediagram/template-previews';
 import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
 import { EDITOR_MODE_ICONS, Glyph, START_BLANK_HREF } from '@livediagram/ui';
-import { useDeferredValue, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useDeferredValue, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { heroSearch } from '@/lib/hero-starts';
 
 // The hero's template search (docs/specs/019-marketing/marketing-site.md "Hero"): a search form whose
@@ -27,6 +27,18 @@ export function HeroSearch() {
   const statusId = useId();
   const rootRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // On a short phone the bar sits low in the first screen, so the list would open below the fold
+  // (and under the keyboard): the moment it opens past what is visible, the search scrolls up to
+  // sit under the sticky header, its scroll-mt, with the matches in view.
+  useEffect(() => {
+    if (!open) return;
+    const list = document.getElementById(listId);
+    const visible = window.visualViewport?.height ?? window.innerHeight;
+    if (list && list.getBoundingClientRect().bottom > visible) {
+      rootRef.current?.scrollIntoView({ block: 'start' });
+    }
+  }, [open, listId]);
 
   const links = () => [
     ...(rootRef.current?.querySelectorAll<HTMLAnchorElement>('[data-hero-result]') ?? []),
@@ -67,11 +79,13 @@ export function HeroSearch() {
       onBlur={(e) => {
         if (!rootRef.current?.contains(e.relatedTarget)) setFocused(false);
       }}
-      className="relative mx-auto mt-12 w-full max-w-2xl text-left"
+      className="relative mx-auto mt-12 w-full max-w-2xl scroll-mt-20 text-left"
     >
+      {/* Tighter gaps and padding below sm: on a 320px phone they leave the box room for its whole
+          placeholder ("Search templates") beside Start Blank, instead of "Search templat". */}
       <div
         data-hero-anchor="target"
-        className="flex h-16 items-center gap-3 rounded-2xl bg-white pl-5 pr-2 shadow-[0_0_0_4px_var(--hero-ring)] transition-shadow focus-within:shadow-[0_0_0_4px_var(--hero-ring-focus)]"
+        className="flex h-16 items-center gap-2 rounded-2xl bg-white pl-4 pr-2 sm:gap-3 sm:pl-5 shadow-[0_0_0_4px_var(--hero-ring)] transition-shadow focus-within:shadow-[0_0_0_4px_var(--hero-ring-focus)]"
       >
         <Glyph size={20} units={24} className="shrink-0 text-slate-500">
           <circle cx="11" cy="11" r="7" />
@@ -95,7 +109,7 @@ export function HeroSearch() {
         <a
           href={ctaHref(START_BLANK_HREF, 'Home.HeroBlank')}
           data-hero-blank=""
-          className="inline-flex h-12 shrink-0 items-center rounded-xl bg-(--hero-cta) px-4 text-sm font-semibold text-white transition-colors hover:bg-(--hero-cta-hover) sm:px-5 sm:text-base"
+          className="inline-flex h-12 shrink-0 items-center rounded-xl bg-(--hero-cta) px-3 text-sm font-semibold text-white transition-colors hover:bg-(--hero-cta-hover) sm:px-5 sm:text-base"
         >
           <span className="text-optical-centre">Start Blank</span>
         </a>

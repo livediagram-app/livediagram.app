@@ -130,6 +130,25 @@ describe('the hero', () => {
     expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
   });
 
+  it('scrolls the search up when its matches would open below what a phone shows', () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    const rect = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ bottom: window.innerHeight + 100 } as DOMRect);
+    render(<Hero />);
+    const box = screen.getByLabelText('Search templates');
+    fireEvent.focus(box);
+    fireEvent.change(box, { target: { value: 'retro' } });
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+    rect.mockReturnValue({ bottom: 10 } as DOMRect);
+    scrollIntoView.mockClear();
+    fireEvent.change(box, { target: { value: '' } });
+    fireEvent.change(box, { target: { value: 'kanban' } });
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    rect.mockRestore();
+  });
+
   it('says so when nothing matches', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
