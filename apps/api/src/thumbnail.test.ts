@@ -454,6 +454,17 @@ describe('a thumbnail of a Pages tab', () => {
     expect(read).not.toContain(ON_SECOND);
   });
 
+  it('skips a malformed stored page rather than failing the thumbnail', async () => {
+    const { env } = setup();
+    const parsed = JSON.parse(tabData) as { pages: unknown[] };
+    db.getTabBody.mockResolvedValue(
+      stored(JSON.stringify({ ...parsed, pages: [null, 5, ...parsed.pages] }), 4),
+    );
+    const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
+    expect(out).toContain('Cover');
+    expect(out).not.toContain('Later');
+  });
+
   it('draws the first page for a Community visitor and a tab image too', async () => {
     const { env } = setup();
     const community = (await getCommunityThumbnailSvg(env, liveDoc()))!;
