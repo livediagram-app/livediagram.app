@@ -15,6 +15,15 @@ export type Globals = {
 
 const VALUED = ['--host', '--profile'] as const;
 
+// Every flag a command takes beside its own, as the spec's command table may name them.
+export const GLOBAL_FLAGS: readonly string[] = [
+  ...VALUED,
+  '--json',
+  '--quiet',
+  '--help',
+  '--version',
+];
+
 export function splitGlobals(argv: readonly string[]): { globals: Globals; words: string[] } {
   const globals: Globals = { help: false, version: false, mode: { json: false, quiet: false } };
   const words: string[] = [];

@@ -149,6 +149,15 @@ export const WORKBENCH_SESSIONS = chart(
   { types: ['Workbench'] },
 );
 
+// The workspace scope (docs/specs/013-workspace/workbench-embeds.md "Two scopes"): the Explorer in a tool's frame.
+export const WORKBENCH_WORKSPACES = chart(
+  'Session',
+  'Opened',
+  'Workbench Workspaces',
+  'The Explorer opened inside a developer tool’s frame, signed in.',
+  { types: ['WorkbenchWorkspace'] },
+);
+
 export const TIMERS_RESUMED = chart(
   'Tab',
   'Toggled',
@@ -529,6 +538,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
     WORKBENCH_SESSIONS,
+    WORKBENCH_WORKSPACES,
     LIVE_IMAGE_TABS,
   ],
   headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],

@@ -53,6 +53,7 @@ import { pagesVerbs } from './verbs/pages';
 import { formVerbs } from './verbs/form';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
+import { folderCreate, folderLs } from './verbs/folder';
 
 export const VERBS: readonly Verb[] = [
   documentLs,
@@ -115,6 +116,8 @@ export const VERBS: readonly Verb[] = [
   sync,
   workbenchOpen,
   workbenchPair,
+  folderLs,
+  folderCreate,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -123,6 +126,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
     alias: 'doc',
     summary: 'Documents: find, read, create, rename, share and remove them',
   },
+  { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },

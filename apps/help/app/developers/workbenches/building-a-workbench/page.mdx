@@ -57,6 +57,25 @@ The document can be a name, an id prefix or a livediagram link to one of the per
 
 If the token is not paired with your origin, the command exits `4` with the code `pairing_required` and names the `workbench pair` command to run. Each token can mint **30 tickets a minute** (pairing requests share that allowance), which is plenty for opening documents but not for polling.
 
+## Opening the Workspace
+
+```bash
+livediagram workbench open --workspace --folder Minigames --origin https://127.0.0.1:5175 --json
+```
+
+The workspace scope frames the person's Explorer: Home, or the folder `--folder` names (its id, id prefix or name, as `livediagram folder ls` prints them). It is a second approval: a token paired only for documents exits `4` naming `livediagram workbench pair --origin <origin> --workspace`. With `--json` it prints:
+
+```json
+{
+  "url": "https://livediagram.app/embed/workbench/explorer/folder/f1…#ticket=…",
+  "scope": "workspace",
+  "folderId": "f1…",
+  "expiresAt": 1791234567890
+}
+```
+
+Inside the frame the person browses, opens documents (with a **Back**) and makes new ones in place; the account, Settings and team administration stay out. The frame moves by itself, so keep listening to `livediagram:place`.
+
 ## The Frame
 
 Frame `url` exactly as printed. It has the form `<app origin>/embed/workbench?d=<documentId>#ticket=<ticket>`: the document id is not a secret, and the ticket travels in the fragment, which no server, log or `Referer` sees. The page reads the ticket and removes it from its address before doing anything else.
@@ -101,8 +120,12 @@ Every message is an object `{ type, v: 1, ... }`. The page sends only to your or
 | `livediagram:reveal`    | Tool to page | `refs`: 1 to 20 element refs, each 1 to 64 characters; brings them into view on the current tab and outlines them       |
 | `livediagram:theme`     | Tool to page | `colourScheme`: `light` or `dark`; until one arrives, the editor follows the system                                     |
 | `livediagram:ended`     | Page to tool | `reason`: `expired`, `revoked`, `trashed` or `refused`                                                                  |
+| `livediagram:place`     | Page to tool | Workspace only, on every move: `view` (`home`, `folder`, `recent`, ..., or `document`), `folderId`, `folderName`, `documentCount`, `documentId`, `documentName`, `tabId`, `tabName`, `role` |
+| `livediagram:open`      | Tool to page | Workspace only: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`                                 |
 
 A `livediagram:selection` is sent once the selection has been still for a quarter of a second, and only when its text changed, so a marquee drag is one message. After `ready` and after each `tab`, the page sends the selection for the tab now shown. A `reveal` skips refs it cannot find on the current tab.
+
+In a workspace frame, `ready` carries `scope: 'workspace'` and `role`, and no document; `tab`, `selection` and `reveal` speak of the document open in the frame and do nothing on an Explorer view. `documentCount` is the documents directly in the folder shown (null on other views), so you can offer something of your own beside an empty folder. A trashed document ends nothing there: the frame returns to the Explorer.
 
 ## Renewing the Session
 

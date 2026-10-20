@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Verb } from '@livediagram/agent-verbs';
 import { fieldsOf, flagOf } from './fields';
+import { GLOBAL_FLAGS } from './globals';
 import { route } from './route';
 
 // The spec's command table (docs/specs/015-api/cli.md "Commands", blueprint "Testing"): every command it lists
@@ -66,10 +67,10 @@ describe('the spec’s command table', () => {
       for (const flag of flagsOf(routed.verb)) known.add(flag);
       flagsBySource.set(source, known);
     }
-    // `presence set|clear ... --status`: a flag belongs to at least one of its row's commands.
+    // `presence set|clear ... --status`: a flag belongs to at least one of its row's commands, or to every command.
     for (const { flags, source } of all)
       for (const flag of flags)
-        if (!flagsBySource.get(source)?.has(flag))
+        if (!GLOBAL_FLAGS.includes(flag) && !flagsBySource.get(source)?.has(flag))
           problems.push(`no command of \`${source}\` takes ${flag}`);
     expect([...new Set(problems)]).toEqual([]);
   });

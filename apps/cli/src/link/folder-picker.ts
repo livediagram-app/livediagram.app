@@ -3,39 +3,12 @@
 // number chooses, other text narrows, Enter alone, end of input or Ctrl-C cancels. Never redrawn, so a screen reader
 // reads each list once. Where stdin or stdout is not a terminal, the folders as runnable commands instead (RL39).
 
-import type { Libraries } from '@livediagram/agent-verbs';
-import type { Folder } from '@livediagram/api-schema';
+import type { FolderChoice } from '@livediagram/agent-verbs';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { PICKER_PAGE } from './constants';
-
-export type FolderChoice = { id: string; path: string; library: string };
-
-const byName = (a: { name: string }, b: { name: string }) =>
-  a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-
-// One library's tree, depth first, siblings by name.
-function treeOf(folders: readonly Folder[], library: string): FolderChoice[] {
-  const walk = (parentId: string | null, prefix: string): FolderChoice[] =>
-    folders
-      .filter((f) => f.parentId === parentId)
-      .sort(byName)
-      .flatMap((f) => {
-        const path = `${prefix}${f.name}`;
-        return [{ id: f.id, path, library }, ...walk(f.id, `${path}/`)];
-      });
-  return walk(null, '');
-}
-
-// The personal folders, then each joined team's, teams in name order.
-export function folderChoices(libraries: Libraries): FolderChoice[] {
-  return [
-    ...treeOf(libraries.personal.folders, 'personal'),
-    ...[...libraries.teams].sort(byName).flatMap((t) => treeOf(t.folders, t.name)),
-  ];
-}
 
 export const noFoldersError = (host: string) =>
   new CliError({

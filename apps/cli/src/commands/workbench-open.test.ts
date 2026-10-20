@@ -25,6 +25,7 @@ function host(mint: Response, env: Record<string, string> = {}) {
             documents: [{ id: DOC, name: 'Home screen', savedAt: NOW, ownerId: 'u' }],
           });
         if (url.pathname === '/api/teams') return Response.json({ teams: [] });
+        if (url.pathname === '/api/folders') return Response.json({ folders: [] });
         if (url.pathname === '/api/workbench/tickets') return mint.clone();
         return undefined;
       },
@@ -91,5 +92,50 @@ describe('workbench open', () => {
   it('exits 2 without --origin', async () => {
     const { io } = host(minted);
     expect(await run(['workbench', 'open', 'Home screen'], io)).toBe(2);
+  });
+});
+
+describe('workbench open --workspace', () => {
+  const WORKSPACE_URL = `https://livediagram.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`;
+  const workspace = (...more: string[]) => [
+    'workbench',
+    'open',
+    '--workspace',
+    '--origin',
+    ORIGIN,
+    ...more,
+  ];
+
+  it('prints the workspace answer with --json', async () => {
+    const answer = {
+      url: WORKSPACE_URL,
+      scope: 'workspace',
+      folderId: null,
+      expiresAt: NOW + 60_000,
+    };
+    const { io } = host(Response.json(answer, { status: 201 }));
+    expect(await run(workspace('--json'), io)).toBe(0);
+    expect(JSON.parse(io.out())).toEqual(answer);
+  });
+
+  it('exits 4 naming the workspace pairing, and 3 for a folder it cannot find', async () => {
+    const unpaired = host(
+      Response.json({ error: 'pairing_required', pairingUrl: 'u', expiresAt: 1 }, { status: 428 }),
+    );
+    expect(await run(workspace(), unpaired.io)).toBe(4);
+    expect(unpaired.io.err()).toContain(
+      `livediagram workbench pair --origin ${ORIGIN} --workspace`,
+    );
+
+    const lost = host(minted);
+    expect(await run(workspace('--folder', 'Nowhere'), lost.io)).toBe(3);
+    expect(lost.io.err()).toContain('no folder matches "Nowhere"');
+  });
+
+  it('exits 2 when it names a document and --workspace both', async () => {
+    const { io } = host(minted);
+    expect(
+      await run(['workbench', 'open', 'Home screen', '--workspace', '--origin', ORIGIN], io),
+    ).toBe(2);
   });
 });

@@ -916,6 +916,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Session|Opened|Embed':
     'A read-only embedded copy of a document was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
   'Session|Opened|Workbench': 'A document opened inside a developer tool’s frame, signed in.',
+  'Session|Opened|WorkbenchWorkspace':
+    'The Explorer opened inside a developer tool’s frame, signed in.',
   'Session|SignedIn|': 'A visitor just signed in to their account.',
   'Session|SignedOut|': 'A visitor just signed out.',
   'Session|SignedUp|': 'A visitor just created an account.',
