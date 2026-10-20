@@ -1322,7 +1322,7 @@ The editor header carries three things:
 - The **document title** (centre). Defaults to `Untitled document`. Click to rename in place — the title becomes a text input with the current name pre-selected. **Enter** commits, **Escape** cancels, **blur** commits. Empty value reverts to the previous name. A small **Private** or **Shared** badge sits immediately to the right of the title and surfaces the current sharing state.
 - The **Share button** (right). Visible only to the document owner — visitors arriving via a share link can't toggle sharing on their host's document. Opens the share dialog (manage links, roles).
 
-The document title persists via the api worker (`apiSaveDocumentMeta`). Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
+The document title persists via the api worker (`apiSaveDocumentMeta`). The **browser tab** reads `<name> | livediagram` (`Untitled document | livediagram` once a nameless document has loaded, the bare brand before then), set by one hook (`useDocumentTitle`) that also holds it: the static export's own `<title>` can be committed again after the page sets its own, which left a fast-loading document's tab reading just "livediagram". A published form's page and New Document use the same hook. Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
 
 Rename and Delete for the **current** document live in the Explorer panel's "Current Document" row, not in the header — the header stays a thin chrome strip. Other participants render as cursors + selection rings on the canvas itself (see [11-api.md → Durable Object room](../015-api/api.md)), not in the header.
 

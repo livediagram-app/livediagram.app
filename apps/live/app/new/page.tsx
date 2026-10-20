@@ -76,6 +76,7 @@ import {
   isPlanTemplateKind,
 } from '@livediagram/templates';
 import { markPendingFormStart } from '@/lib/pending-form-start';
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -209,8 +210,8 @@ export default function NewDocumentPage() {
     else window.location.assign('/');
   };
 
+  useDocumentTitle('New Document | livediagram');
   useEffect(() => {
-    document.title = 'New Document | livediagram';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});

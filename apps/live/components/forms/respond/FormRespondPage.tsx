@@ -14,6 +14,7 @@ import { FORM_ACCENT, FormFill } from './FormFill';
 import type { SubmitOutcome } from './useFormFill';
 import { FormFooter } from './FormFooter';
 import { MadeWithLivediagram } from './MadeWithLivediagram';
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle';
 
 // The tab's canvas style behind the form, fetched only for a form that has one (most keep a plain backdrop).
 const FormCanvasLayer = dynamic(() => import('./FormCanvasLayer').then((m) => m.FormCanvasLayer), {
@@ -52,9 +53,7 @@ export function FormRespondPage() {
         ? page.data.form.heading
         : page.data.heading
       : null;
-  useEffect(() => {
-    if (heading) document.title = `${heading} | livediagram`;
-  }, [heading]);
+  useDocumentTitle(heading ? `${heading} | livediagram` : null);
 
   // The form's look (its tab's theme, finish and font) dresses the whole page, the backdrop included.
   const look = page.kind === 'ready' ? formLookProps(page.data.look) : null;

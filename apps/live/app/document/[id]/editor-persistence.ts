@@ -43,13 +43,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     itemTypes: null,
     itemTypesRev: 0,
   });
-  // Reflect the document name in the browser tab so users with many
-  // tabs open can spot the right one. Falls back to the bare brand
-  // until hydration lands the real name.
-  useEffect(() => {
-    document.title = documentName ? `${documentName} | livediagram` : 'livediagram';
-  }, [documentName]);
-
   // Every document in the local store. Used by the Explorer to render its
   // list. Refreshed on hydration and after we save the current document
   // (so the Explorer's "Your documents" section reflects renames + first

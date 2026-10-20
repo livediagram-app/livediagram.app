@@ -25,6 +25,7 @@ import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { isEditorPath } from '@/lib/legacy-editor-path';
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -80,12 +81,17 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
-  // Tab title reflects the document: "<name> | livediagram" (falls back to
-  // Untitled when the document has no name yet). Updates as the user renames.
-  useEffect(() => {
-    const name = state.documentName?.trim();
-    document.title = `${name || 'Untitled document'} | livediagram`;
-  }, [state.documentName]);
+  // Tab title reflects the document: "<name> | livediagram" ("Untitled document" once it has hydrated without a
+  // name, the bare brand before then), held against the route's own static title (useDocumentTitle). Updates as
+  // the user renames.
+  const titleName = state.documentName?.trim();
+  useDocumentTitle(
+    titleName
+      ? `${titleName} | livediagram`
+      : state.hydrated
+        ? 'Untitled document | livediagram'
+        : null,
+  );
   const {
     documentNotFound,
     loadError,
