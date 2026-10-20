@@ -90,7 +90,9 @@ started.
   up to `TIMER_MINUTES_RANGE.max` (2 hours; a length past one lap draws an
   outer lap ring). The dial is a `role="slider"` and takes arrow keys (±1),
   Page Up/Down (±5), Home / End. Dragging past twelve **sticks at the pin**
-  rather than wrapping 59 → 1 (`dialDragMinutes`). Running, the same dial is
+  rather than wrapping 59 → 1 (`dialDragMinutes`). A press elsewhere on the dial jumps to that time; a press
+  on the handle (within two minutes of it, round the dial) takes hold of it where it is (`dialPressGrabsHandle`),
+  so grabbing a 1-minute handle a hair left of twelve never reads as a full lap. Running, the same dial is
   the readout: the wedge drains toward twelve, turning amber in the last
   minute and red at zero; a stopwatch sweeps a ring once a minute. Under it
   sit round transport buttons, **Reset / Pause|Resume / End** (and **Again**

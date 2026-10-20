@@ -28,7 +28,7 @@ import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-regist
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';
@@ -171,6 +171,7 @@ export function Minimap({
   // dark card on a dark canvas is a dark card here too, not the light skin.
   const surface = useCanvasSurface();
   const tabFinish = useTabFinish();
+  const chartPalette = useCanvasChartPalette();
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
@@ -229,6 +230,7 @@ export function Minimap({
           tabFinish,
           sketchBackdrop: backdrops.has(el.id),
           surface: pageSurfaces?.get(el.id) ?? surface,
+          chartPalette,
           chartGrounds,
         }),
       );
@@ -272,7 +274,7 @@ export function Minimap({
     };
     // `writing` changes with the documents' text, which the bars read off the editors.
     // oxlint-disable-next-line react/exhaustive-deps
-  }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, writing, laidOut]);
+  }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, chartPalette, writing, laidOut]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

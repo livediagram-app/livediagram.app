@@ -300,6 +300,8 @@ function formula(k: Kit): Element[] {
     k.shape('bar-chart', x, y + u * 7, w, h - u * 7, {
       pieSlices: BALANCE.map((value, i) => ({ label: `Yr ${i * 2}`, value })),
       chartLegend: false,
+      // Values name each column under its baseline, which the legend would otherwise do.
+      chartValues: true,
     }),
   ];
   const example = (x: number, y: number, w: number, h: number) =>

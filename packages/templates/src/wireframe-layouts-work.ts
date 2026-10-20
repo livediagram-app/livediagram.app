@@ -11,6 +11,8 @@ const RECENT_MIN = 260;
 const WEEK_BARS = {
   label: '',
   chartLegend: false,
+  // Values name each day under its bar, which the legend would otherwise do.
+  chartValues: true,
   pieSlices: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, i) => ({
     label,
     value: [42, 58, 51, 74, 66, 38, 47][i]!,

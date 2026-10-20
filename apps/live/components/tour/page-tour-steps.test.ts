@@ -37,6 +37,13 @@ describe('the tracks', () => {
     ]);
   });
 
+  it('Wireframe: the infographic track, its size step naming the device instead', () => {
+    expect(ids(pageTourSteps('wireframe'))).toEqual(ids(pageTourSteps('infographic')));
+    const device = pageTourSteps('wireframe').find((s) => s.id === 'page-size')!;
+    expect(device.title).toBe('Device');
+    expect(device.body).toMatch(/device/);
+  });
+
   it('Article: the page, its toolbar, its style and type', () => {
     expect(ids(pageTourSteps('article'))).toEqual(['write', 'toolbar', 'style', 'text', 'outro']);
   });

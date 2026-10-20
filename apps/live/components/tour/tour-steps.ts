@@ -119,7 +119,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'theme-canvas',
     title: 'Theme & Canvas',
-    body: "The paintbrush opens Tab Style for the whole tab: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
+    body: "The Style button opens Tab Style for the whole tab: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
     // The Tab Style panel itself, opened for the step and closed again after (docs/specs/007-editor/editor-tour.md
     // "Steps open what they explain"), ringed with the brush that opens it, over the dialog layer it sits in.
     selector: () => TAB_STYLE,

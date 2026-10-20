@@ -367,7 +367,7 @@ function parsePageFields(v: unknown): Page | undefined {
   };
 }
 
-/** The page's kind: an article, a slide or a logo page, or else an infographic page. */
+/** The page's kind: an article, a slide, a logo or a wireframe page, or else an infographic page. */
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
   return page.kind === 'article' ||
     page.kind === 'slide' ||

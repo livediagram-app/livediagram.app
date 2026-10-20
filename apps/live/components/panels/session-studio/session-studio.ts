@@ -97,6 +97,18 @@ export function voteRules(
 // in one pixel, which reads as the timer collapsing under your finger. Stick
 // at the end you were heading for instead, the way a physical kitchen timer
 // stops at its pin, until the pointer comes back round.
+// How close (in minutes, round the dial) a press must land to the handle to grab it where it is rather than jump.
+export const DIAL_GRAB_MINUTES = 2;
+
+// Whether a press at `pressed` minutes takes hold of the handle showing `current` (docs/specs/012-collaboration/
+// session-tools.md "dial"): measured round the dial, so a press a hair left of twelve on a 1-minute handle is on
+// the handle, not "a full lap" (which jumped the countdown to an hour). Past one lap the handle sits at twelve.
+export function dialPressGrabsHandle(current: number, pressed: number): boolean {
+  const shown = Math.min(current, DIAL_LAP_MINUTES) % DIAL_LAP_MINUTES;
+  const apart = Math.abs((pressed % DIAL_LAP_MINUTES) - shown);
+  return Math.min(apart, DIAL_LAP_MINUTES - apart) <= DIAL_GRAB_MINUTES;
+}
+
 export function dialDragMinutes(prev: number, next: number): number {
   const quarter = DIAL_LAP_MINUTES / 4;
   if (prev >= DIAL_LAP_MINUTES - quarter && next <= quarter) return DIAL_LAP_MINUTES;

@@ -38,13 +38,13 @@ what starts there. A search on a start also finds the other modes' templates, ea
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
-| Template           | Kind id              | Opens in | What it makes                                                                  |
-| ------------------ | -------------------- | -------- | ------------------------------------------------------------------------------ |
-| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                          |
-| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                  |
-| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                            |
-| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
-| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                |
+| Template           | Kind id              | Opens in | What it makes                                                                             |
+| ------------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------- |
+| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                                     |
+| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                             |
+| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                                       |
+| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Article, Slide, Logo or Wireframe). |
+| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                           |
 
 **Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
 holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no

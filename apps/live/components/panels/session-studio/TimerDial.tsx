@@ -16,6 +16,7 @@ import {
   clampTimerMinutes,
   dialAngle,
   dialDragMinutes,
+  dialPressGrabsHandle,
   minutesForDialAngle,
   wedgePath,
 } from './session-studio';
@@ -85,11 +86,16 @@ export function TimerDial({
     e.currentTarget.setPointerCapture(e.pointerId);
     const m = minutesAt(e);
     if (m === null) return;
-    // A fresh press jumps straight to where you pressed; only a DRAG applies
+    svgRef.current?.focus({ preventScroll: true });
+    // A press on the handle takes hold of it where it is, so the drag that follows starts from the time shown.
+    if (dialPressGrabsHandle(setMinutes, m)) {
+      lastRef.current = setMinutes;
+      return;
+    }
+    // Anywhere else a fresh press jumps straight to where you pressed; only a DRAG applies
     // the no-wrap rule, which needs a previous position to mean anything.
     lastRef.current = m;
     onSetMinutes(m);
-    svgRef.current?.focus({ preventScroll: true });
   };
 
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {

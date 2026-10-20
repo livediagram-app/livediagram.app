@@ -45,6 +45,7 @@ import {
   excludedStatus,
   forCaller,
   itemBusy,
+  itemRetryPause,
   itemCaller,
   itemNotFound,
   isItemEditor,
@@ -138,6 +139,7 @@ export async function createMany(
         attempt,
         error: String(err),
       });
+      if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
     }
   }
   return itemBusy();
@@ -218,6 +220,7 @@ export async function writeItem(
       return json(answer);
     }
     console.info('[items] items.write.retry', { documentId: caller.documentId, attempt });
+    if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
   }
   return itemBusy();
 }

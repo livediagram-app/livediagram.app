@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import type { CanvasSurface, ThemeDefinition } from '@livediagram/document';
+import { themeChartPalette, type CanvasSurface, type ThemeDefinition } from '@livediagram/document';
 
 // Which paper the active tab's canvas is: light or dark. Every element that
 // carries no colour of its own is drawn in that paper's ink
@@ -102,4 +102,13 @@ export function CanvasThemeProvider({
 
 export function useCanvasTheme(): ThemeDefinition | null {
   return useContext(CanvasThemeContext);
+}
+
+/** The categorical ramp the active tab's theme gives its charts, as the canvas hands them: for the
+ *  previews drawn by the export renderer (minimap, layer rows, layout previews), which otherwise fall
+ *  back to the built-in ramp and show charts in other colours (docs/specs/009-elements/pie-chart.md).
+ *  Undefined outside the editor canvas, where that built-in ramp is the right answer. */
+export function useCanvasChartPalette(): readonly string[] | undefined {
+  const theme = useContext(CanvasThemeContext);
+  return useMemo(() => (theme ? themeChartPalette(theme) : undefined), [theme]);
 }
