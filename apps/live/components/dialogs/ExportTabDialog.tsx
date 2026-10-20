@@ -585,7 +585,10 @@ export function ExportTabDialog({
             }}
           />
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div
+            // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
+            className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+          >
             {cards.map((c) => (
               <FormatCard
                 key={c.kind}
