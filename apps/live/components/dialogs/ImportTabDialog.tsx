@@ -196,7 +196,9 @@ function ImportChooser({
         <span>
           This replaces everything on{' '}
           <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-          content. Undo (⌘Z / Ctrl&#8209;Z) brings it back.
+          content. Undo
+          {/* The keys only where there is a keyboard to press them. */}
+          <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
         </span>
       </div>
       {activeFormat ? (
@@ -222,7 +224,10 @@ function ImportChooser({
           onBack={single ? undefined : () => onPick(null)}
         />
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <div
+          // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+        >
           {formats.map((f) => (
             <FormatCard
               key={f.key}

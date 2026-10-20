@@ -67,6 +67,9 @@ describe('drawBannerMessage', () => {
     expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, false)).toBe(
       'Click to place a command note',
     );
+    expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, true)).toBe(
+      'Tap to place a command note',
+    );
   });
 
   // docs/specs/008-canvas/canvas-and-palette.md: the banner names a shape as the tile that armed it named it.

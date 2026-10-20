@@ -9,6 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
+import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
 import { track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
@@ -196,11 +197,7 @@ export function CategoryBarButtons({
       role="toolbar"
       aria-label="Palette categories"
       {...(scrollable ? { 'data-strip-rail': '' } : {})}
-      className={`flex items-center ${
-        scrollable
-          ? 'min-w-0 -my-[3px] overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-          : ''
-      }`}
+      className={`flex items-center ${scrollable ? STRIP_RAIL_SCROLL : ''}`}
     >
       {categories.map((c, i) => {
         const open = bar.isOpen(c.id);

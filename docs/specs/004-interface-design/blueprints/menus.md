@@ -173,6 +173,10 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 
 Collapsed accordion content is `inert` and `aria-hidden` in every kind (Chromium keeps inert content in its tree).
 
+A flyout's surface is frosted glass (`bg-white/95` + `backdrop-blur-sm`) beside its menu on a wide screen, and opaque
+(`bg-white`, dark `bg-slate-900`) on a phone, where it is laid straight over the menu it opens from and a see-through
+surface let the menu's rows read through it as ghost text (`MenuFlyoutPanel.test.tsx`).
+
 ### Canvas
 
 `useEditorKeyboardShortcuts` returns early when `isInMenuSurface(e.target)`.
