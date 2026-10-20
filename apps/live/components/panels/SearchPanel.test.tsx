@@ -32,6 +32,43 @@ describe('SearchPanel', () => {
     );
   });
 
+  // docs/specs/008-canvas/canvas-and-palette.md "Search panel": an icon and a sticker can share a name.
+  it('says which catalogue an icon, sticker or technology result comes from', () => {
+    render(
+      <SearchPanel
+        documents={[]}
+        folders={[]}
+        onSelectDocument={vi.fn()}
+        onClose={vi.fn()}
+        onAddPaletteItem={vi.fn()}
+        paletteItems={[
+          { id: 'icon:bell', name: 'Bell', keywords: '', add: { type: 'icon', iconId: 'bell' } },
+          {
+            id: 'sticker:bell',
+            name: 'Bell',
+            keywords: '',
+            add: { type: 'sticker', stickerId: 'emoji-bell' },
+          },
+          { id: 'tech:bell', name: 'Bellows', keywords: '', add: { type: 'tech', iconId: 'b' } },
+          {
+            id: 'shape:bell-curve',
+            name: 'Bell Curve',
+            keywords: '',
+            add: { type: 'shape', shapeKind: 'square' },
+          },
+        ]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText(/Search documents/), {
+      target: { value: 'bell' },
+    });
+    const rows = screen.getAllByRole('option').map((o) => o.textContent);
+    expect(rows).toContain('BellIcon');
+    expect(rows).toContain('BellSticker');
+    expect(rows).toContain('BellowsTechnology');
+    expect(rows).toContain('Bell Curve');
+  });
+
   it('is a modal dialog that hands focus back to what opened it when it closes', () => {
     const opener = document.createElement('button');
     document.body.appendChild(opener);

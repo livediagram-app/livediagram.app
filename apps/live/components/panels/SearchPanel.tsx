@@ -101,6 +101,14 @@ type SearchPanelProps = {
 // Result-grouping logic (matching, capping, fallbacks) lives in
 // `lib/search.ts`; the panel just renders.
 
+// The catalogue an "Add to canvas" result comes from, where its name alone does not say: a line-art icon, a sticker
+// and a technology icon can share a name ("Bell"). Shapes and tiles name themselves.
+const PALETTE_KIND_HINT: Partial<Record<PaletteAdd['type'], string>> = {
+  icon: 'Icon',
+  sticker: 'Sticker',
+  tech: 'Technology',
+};
+
 export function SearchPanel({
   documents: liveDocs,
   folders,
@@ -405,6 +413,13 @@ export function SearchPanel({
                         {(item.kind === 'folder' || item.kind === 'document') && item.team ? (
                           <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             in {item.team.name}
+                          </span>
+                        ) : null}
+                        {/* Which catalogue an add comes from: an icon and a sticker can share a name ("Bell"), and
+                            two identical rows gave no way to tell which one you were adding. */}
+                        {item.kind === 'palette' && PALETTE_KIND_HINT[item.add.type] ? (
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
+                            {PALETTE_KIND_HINT[item.add.type]}
                           </span>
                         ) : null}
                         {item.kind === 'tab' && item.isCurrent ? (
