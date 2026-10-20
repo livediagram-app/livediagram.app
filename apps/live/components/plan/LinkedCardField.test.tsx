@@ -61,6 +61,14 @@ describe('LinkedCardField', () => {
     expect(screen.getByRole('button', { name: 'Parent: Missing card' })).toBeTruthy();
   });
 
+  // The card's selects are 16px on a phone (globals.css, against iOS's focus zoom); a 13px picker among them read small.
+  it('reads at the selects’ 16px on a phone', () => {
+    field(undefined, []);
+    expect(screen.getByRole('button', { name: 'Parent: None' }).className).toContain(
+      'max-sm:text-[16px]',
+    );
+  });
+
   it('closes its list on a press outside the field, keeping it on a press inside', () => {
     field(undefined, [card('a', 1, 'Alpha')]);
     fireEvent.keyDown(screen.getByRole('button', { name: 'Parent: None' }), { key: 'ArrowDown' });

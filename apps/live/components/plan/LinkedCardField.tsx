@@ -147,7 +147,9 @@ export function LinkedCardField({
                 openList();
               }
             }}
-            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-left text-[13px] outline-none enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400"
+            // 16px on a phone, as the card's selects are there (globals.css: iOS zooms a field under 16px on focus):
+            // at 13px it read a size smaller than the Status and Priority beside it.
+            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-left text-[13px] max-sm:text-[16px] outline-none enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400"
           >
             {/* The linked card's own colour, when it has one, tints its type's glyph: no dot beside it. */}
             {type ? (
@@ -237,7 +239,7 @@ export function LinkedCardField({
                   aria-label={card ? `#${card.key} ${itemTitle(card)}` : 'None'}
                   onPointerMove={() => setActive(i)}
                   onClick={() => pick(card)}
-                  className={`flex cursor-pointer items-start gap-1.5 px-2 py-1.5 text-[13px] leading-snug ${
+                  className={`flex cursor-pointer items-start gap-1.5 px-2 py-1.5 text-[13px] leading-snug max-sm:text-[16px] ${
                     i === active ? 'bg-slate-100 dark:bg-slate-800' : ''
                   } ${selected ? 'font-semibold' : ''}`}
                 >

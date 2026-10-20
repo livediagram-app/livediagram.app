@@ -80,6 +80,8 @@ Stored on the element, shared by everyone, undone like any element edit:
 - A name the person types (renaming a column, naming a new status in the column picker, the empty board's first
   column) is saved in Title Case. A status picked from the ones the document already has keeps its name as it
   is. A status with no name on the tab reads as its id in Title Case ("in-review~ab12" is "In Review").
+- A column's settings open with the caret in its name on a desktop. On a phone (a bottom sheet) focus stays off the
+  name, so no keyboard rises over the settings, except for a column just added, which opens there to be named.
 - Names already stored in documents are not rewritten: an older board keeps "To do" until someone renames it.
 
 Where each is set, so a setting lives with what it changes, never in one central panel:

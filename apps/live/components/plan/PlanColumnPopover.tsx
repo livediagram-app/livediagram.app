@@ -271,7 +271,10 @@ export function PlanColumnPopover({
           className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 py-1 text-[14px] font-semibold text-slate-800 outline-none transition hover:border-slate-200 focus:border-brand-400 focus:bg-white dark:text-slate-100 dark:hover:border-slate-700 dark:focus:bg-slate-950"
           defaultValue={column.name}
           maxLength={COLUMN_NAME_MAX}
-          autoFocus
+          // The name takes focus on a desktop; on a phone only for a column just added, there to be named, as a
+          // card's title does (docs/specs/026-plan/plan-board.md): otherwise opening it for its WIP limit raised the
+          // keyboard over the sheet.
+          autoFocus={selectName || !mobile}
           onFocus={selectName ? (e) => e.currentTarget.select() : undefined}
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();
