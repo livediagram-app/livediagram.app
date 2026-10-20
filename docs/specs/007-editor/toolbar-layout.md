@@ -85,7 +85,10 @@ under the pointer as a category is switched.
   estimate let Pages mode's bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
   need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
-  sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone").
+  sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
+  the tile rail, an article's dock) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
+  mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
+  icon; an edge with nothing beyond it stays sharp.
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
 ### Opening a flyout

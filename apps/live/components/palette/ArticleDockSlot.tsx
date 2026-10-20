@@ -5,6 +5,7 @@
 // at the strip's own sizes, rather than over the page (lib/article/article-dock.ts).
 import { useCallback } from 'react';
 import { setArticleDock } from '@/lib/article/article-dock';
+import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
 
 export function ArticleDockSlot() {
   const ref = useCallback((el: HTMLDivElement | null) => setArticleDock(el), []);
@@ -14,7 +15,7 @@ export function ArticleDockSlot() {
       ref={ref}
       data-article-dock=""
       data-strip-rail=""
-      className="-my-[3px] flex min-w-0 items-center overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className={`flex items-center ${STRIP_RAIL_SCROLL}`}
     />
   );
 }
