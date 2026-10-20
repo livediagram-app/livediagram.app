@@ -125,7 +125,10 @@ The bullets above are the document scope. A **workspace** session is confined di
   Favourites, Recent, Search, the Trash, their image gallery, themes and shape libraries; and every document in
   them, opened in the frame as the document scope opens one.
 - **Everything the Explorer does.** Create, rename, move, copy, favourite, share (links, roles, password, expiry),
-  publish, trash, restore, and create, rename, move and delete folders, at the person's own access to each.
+  trash, restore, and create, rename, move and delete folders, at the person's own access to each.
+- **Never Community.** Publishing a document to [Community](../025-community/community.md) makes it public, and only
+  the owner's own signed-in browser does that: a token cannot publish, so neither can a frame. **Open in livediagram**
+  is one click away for it.
 - **Never the account.** Refused `403 workbench_confined`, as in the document scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
   billing), the account itself, and the AI assistant (the person's agent sits beside the frame).
