@@ -210,7 +210,9 @@ export function TeamPane({
                 type="button"
                 onClick={() => setLinkOpen(true)}
                 aria-label="Invite by Link"
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+                // Its glyph alone on a phone, 23px tall: padded to 44px on a touch screen, upward and downward only,
+                // so the Team actions ⋯ beside it keeps its own taps.
+                className="relative touch-target-y inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
               >
                 <LinkIcon />
                 <span className="hidden sm:inline">Invite by Link</span>
