@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   clearTourPending,
@@ -34,11 +35,15 @@ import { elementSelector } from '@/lib/canvas-selectors';
 export function TourHost() {
   const ctx = useEditorContext();
   const isMobile = useIsMobileViewport();
-  // The effective step list: mobile drops the desktop-only step (the
-  // theme dock button), an event-storming board drops the palette-header
+  // A touch screen reads the steps' touch words (a tap, a long-press).
+  const touch = useCoarsePointer();
+  // The effective step list: an event-storming board drops the palette-header
   // dropdowns it doesn't render (docs/specs/021-event-storming/event-storming.md).
   const esBoard = ctx.esBoard === true;
-  const steps = useMemo(() => tourStepsFor({ mobile: isMobile, esBoard }), [isMobile, esBoard]);
+  const steps = useMemo(
+    () => tourStepsFor({ mobile: isMobile, esBoard, touch }),
+    [isMobile, esBoard, touch],
+  );
   // Whether this mount still owes the /new handoff an offer: read from storage on the first offer
   // check, and resolved once offered or found already seen. Only the offer effect reads it and it
   // never turns back on, so it is a ref rather than state.

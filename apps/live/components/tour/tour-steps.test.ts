@@ -41,10 +41,22 @@ describe('tourStepsFor', () => {
     expect(desktop.indexOf('context-menu')).toBe(desktop.indexOf('categories') + 1);
   });
 
-  it('drops the desktop-only step on mobile', () => {
-    const mobile = ids({ mobile: true, esBoard: false });
-    expect(mobile).not.toContain('theme-canvas');
-    expect(mobile).toContain('palette');
+  // The phone's dock has the paintbrush too, and Tab Style opens there as a sheet.
+  it('keeps every step on a phone diagram', () => {
+    expect(ids({ mobile: true, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
+  });
+
+  it('reads tap and long-press words on a touch screen, click and right-click words otherwise', () => {
+    const body = (touch: boolean, id: string) =>
+      tourStepsFor({ mobile: true, esBoard: false, touch }).find((s) => s.id === id)!.body;
+    expect(body(false, 'categories')).toMatch(/Click to add/);
+    expect(body(true, 'categories')).toBe(
+      'Tap a category to see what is in it. Tap to add, or drag onto the canvas.',
+    );
+    expect(body(false, 'context-menu')).toMatch(/^Right-click/);
+    expect(body(true, 'context-menu')).toMatch(/^Long-press anything/);
+    // A step with no touch words keeps its one body.
+    expect(body(true, 'tabs')).toBe(body(false, 'tabs'));
   });
 
   it('drops the palette-header steps on an event-storming board', () => {
@@ -56,12 +68,12 @@ describe('tourStepsFor', () => {
     expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
   });
 
-  it('counts six steps on a desktop diagram, five on a phone and three on a phone board', () => {
+  it('counts six steps on a diagram, desktop or phone, and four on a phone board', () => {
     const count = (opts: { mobile: boolean; esBoard: boolean }) =>
       tourStepsFor(opts).filter((s) => !s.card).length;
     expect(count({ mobile: false, esBoard: false })).toBe(6);
-    expect(count({ mobile: true, esBoard: false })).toBe(5);
-    expect(count({ mobile: true, esBoard: true })).toBe(3);
+    expect(count({ mobile: true, esBoard: false })).toBe(6);
+    expect(count({ mobile: true, esBoard: true })).toBe(4);
   });
 
   it('keeps the bookend cards on every surface', () => {
