@@ -108,6 +108,9 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 6. **Present It** (the Slide Deck, opened): any page can be a slide, picked in the deck and presented.
 7. **You're ready to make pages** (outro).
 
+A **wireframe** page takes this track under its own offer (**Getting started with wireframes?**), save step 4,
+**Device**: its cog picks the device, turns it and sets its frame, rather than a page size.
+
 ### Article track
 
 0. **Getting started with Articles?** (offer): a quick look at writing an article.
