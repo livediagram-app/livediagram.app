@@ -143,9 +143,9 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   as you type (names, then keywords), Up / Down to move, Enter or Tab to choose, Escape to close;
   it closes when the caret leaves the `/`. With nothing matching it says so ("No blocks match"
   and what was typed). Entries: **Text**, **Title**, **Subtitle**, **Heading
-  1 to 3**, **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code**,
-  **Divider**, **Page break**, **Image**, **Table**, **Bar chart**, **Pie chart**, **Line chart**,
-  **Drawing**, **Callout**, **Sticky note**. (An icon comes in from the palette, where one is
+  1 to 3**, **Bulleted List**, **Numbered List**, **To-do List**, **Quote**, **Code**,
+  **Divider**, **Page Break**, **Image**, **Table**, **Bar Chart**, **Pie Chart**, **Line Chart**,
+  **Drawing**, **Callout**, **Sticky Note**, in Title Case like the toolbar's Insert menu and every other menu. (An icon comes in from the palette, where one is
   chosen: dropped or placed on the writing it lands as an object zone.)
 - **Commits**: typing is written to the tab when the writing pauses for **600** ms
   (`ARTICLE_IDLE_COMMIT_MS`), when the caret leaves the writing, before any edit that is not typing
@@ -198,7 +198,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Alignment** (a menu: left, centre, right, justify);
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
-  - **Insert** (a menu: Image, Table, Chart, then Divider, Page break, Quote, Code; a drawing
+  - **Insert** (a menu: Image, Table, Chart, then Divider, Page Break, Quote, Code; a drawing
     starts from a shape dropped on the page or the slash menu's **Drawing**, a callout from the
     slash menu).
   - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected (see "Comments and

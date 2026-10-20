@@ -146,9 +146,9 @@ export function StylePanel({
 }
 
 export const LIST_OPTIONS: { id: ArticleListKind; label: string; short: string; keys: string }[] = [
-  { id: 'bullet', label: 'Bulleted list', short: 'Bullets', keys: 'Mod-Shift-8' },
-  { id: 'numbered', label: 'Numbered list', short: 'Numbers', keys: 'Mod-Shift-7' },
-  { id: 'todo', label: 'To-do list', short: 'To-do', keys: 'Mod-Shift-9' },
+  { id: 'bullet', label: 'Bulleted List', short: 'Bullets', keys: 'Mod-Shift-8' },
+  { id: 'numbered', label: 'Numbered List', short: 'Numbers', keys: 'Mod-Shift-7' },
+  { id: 'todo', label: 'To-do List', short: 'To-do', keys: 'Mod-Shift-9' },
 ];
 
 export function ListPanel({
