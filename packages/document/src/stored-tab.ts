@@ -9,6 +9,7 @@ import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
+import { settleTabFields } from './tab-fields';
 import { tagColoursOf } from './tag-colours';
 import type { Element, Tab } from './index';
 import { isRecord } from './is-record';
@@ -17,7 +18,10 @@ export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
-  const schemed = migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(tab)));
+  // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
+  const schemed = migrateRetiredTheme(
+    migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab))),
+  );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.
   // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.

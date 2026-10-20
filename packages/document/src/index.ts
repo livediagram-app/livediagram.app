@@ -846,6 +846,7 @@ export * from './legacy-stroke-points';
 export * from './stored-elements';
 export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
+export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
