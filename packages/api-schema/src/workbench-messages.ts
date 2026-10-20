@@ -15,7 +15,7 @@ type WorkbenchColourScheme = 'light' | 'dark';
 
 export type HelloMessage = { type: 'livediagram:hello'; v: 1 };
 export type HelloAckMessage = { type: 'livediagram:hello-ack'; v: 1; name: string };
-export type ReadyMessage = {
+export type DocumentReadyMessage = {
   type: 'livediagram:ready';
   v: 1;
   documentId: string;
@@ -24,6 +24,14 @@ export type ReadyMessage = {
   tabName: string;
   role: WorkbenchRole;
 };
+// A workspace frame is ready once its Explorer mounts: no document yet.
+export type WorkspaceReadyMessage = {
+  type: 'livediagram:ready';
+  v: 1;
+  scope: 'workspace';
+  role: WorkbenchRole;
+};
+export type ReadyMessage = DocumentReadyMessage | WorkspaceReadyMessage;
 export type TabMessage = { type: 'livediagram:tab'; v: 1; tabId: string; tabName: string };
 export type SelectionMessage = {
   type: 'livediagram:selection';
@@ -45,11 +53,37 @@ export type ThemeMessage = {
   colourScheme: WorkbenchColourScheme;
 };
 export type EndedMessage = { type: 'livediagram:ended'; v: 1; reason: WorkbenchEndReason };
+// Where a workspace frame is, sent on every move. `view` is the Explorer view's name, or `document`.
+export type PlaceMessage = {
+  type: 'livediagram:place';
+  v: 1;
+  view: string;
+  folderId: string | null;
+  folderName: string | null;
+  // The documents directly in the folder shown; null on every other view.
+  documentCount: number | null;
+  documentId: string | null;
+  documentName: string | null;
+  tabId: string | null;
+  tabName: string | null;
+  role: WorkbenchRole;
+};
+export type WorkbenchOpenTarget =
+  { view: 'home' } | { folderId: string } | { documentId: string; tabId?: string };
+// The workbench moves a workspace frame.
+export type OpenMessage = { type: 'livediagram:open'; v: 1; to: WorkbenchOpenTarget };
 
 // What the page sends its workbench, and what the workbench sends the page.
 export type PageToWorkbenchMessage =
-  HelloMessage | ReadyMessage | TabMessage | SelectionMessage | RenewMessage | EndedMessage;
-export type WorkbenchToPageMessage = HelloAckMessage | TicketMessage | RevealMessage | ThemeMessage;
+  | HelloMessage
+  | ReadyMessage
+  | TabMessage
+  | SelectionMessage
+  | RenewMessage
+  | EndedMessage
+  | PlaceMessage;
+export type WorkbenchToPageMessage =
+  HelloAckMessage | TicketMessage | RevealMessage | ThemeMessage | OpenMessage;
 type WorkbenchMessage = PageToWorkbenchMessage | WorkbenchToPageMessage;
 
 export const WORKBENCH_MESSAGE_TYPES = [
@@ -63,6 +97,8 @@ export const WORKBENCH_MESSAGE_TYPES = [
   'livediagram:reveal',
   'livediagram:theme',
   'livediagram:ended',
+  'livediagram:place',
+  'livediagram:open',
 ] as const;
 
 // Which side is parsing: the page reads `to-page` messages, a workbench `to-workbench` ones. A known
@@ -80,6 +116,11 @@ type Fields = Record<string, unknown>;
 type Parser = (m: Fields) => WorkbenchMessage | null;
 
 const isString = (v: unknown): v is string => typeof v === 'string';
+const isStringOrNull = (v: unknown): v is string | null => v === null || isString(v);
+const isCountOrNull = (v: unknown): v is number | null => v === null || isCount(v);
+// A document, folder or tab id the workbench names (1 to 64 characters, as a ref).
+const isId = (v: unknown): v is string =>
+  isString(v) && v.length >= 1 && v.length <= REF_MAX_LENGTH;
 const isCount = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0;
 const ROLES: readonly unknown[] = ['view', 'participate', 'edit'];
 const REASONS: readonly unknown[] = ['expired', 'revoked', 'trashed', 'refused'];
@@ -93,15 +134,47 @@ const isRefList = (v: unknown): v is string[] =>
 
 const TO_WORKBENCH: Record<string, Parser> = {
   'livediagram:hello': () => ({ type: 'livediagram:hello', v: 1 }),
-  'livediagram:ready': (m) =>
-    isString(m.documentId) &&
-    isString(m.documentName) &&
-    isString(m.tabId) &&
-    isString(m.tabName) &&
-    ROLES.includes(m.role)
+  'livediagram:ready': (m) => {
+    if (m.scope !== undefined) {
+      return m.scope === 'workspace' && ROLES.includes(m.role)
+        ? { type: 'livediagram:ready', v: 1, scope: 'workspace', role: m.role as WorkbenchRole }
+        : null;
+    }
+    return isString(m.documentId) &&
+      isString(m.documentName) &&
+      isString(m.tabId) &&
+      isString(m.tabName) &&
+      ROLES.includes(m.role)
       ? {
           type: 'livediagram:ready',
           v: 1,
+          documentId: m.documentId,
+          documentName: m.documentName,
+          tabId: m.tabId,
+          tabName: m.tabName,
+          role: m.role as WorkbenchRole,
+        }
+      : null;
+  },
+  'livediagram:place': (m) =>
+    isString(m.view) &&
+    m.view.length >= 1 &&
+    m.view.length <= REF_MAX_LENGTH &&
+    isStringOrNull(m.folderId) &&
+    isStringOrNull(m.folderName) &&
+    isCountOrNull(m.documentCount) &&
+    isStringOrNull(m.documentId) &&
+    isStringOrNull(m.documentName) &&
+    isStringOrNull(m.tabId) &&
+    isStringOrNull(m.tabName) &&
+    ROLES.includes(m.role)
+      ? {
+          type: 'livediagram:place',
+          v: 1,
+          view: m.view,
+          folderId: m.folderId,
+          folderName: m.folderName,
+          documentCount: m.documentCount,
           documentId: m.documentId,
           documentName: m.documentName,
           tabId: m.tabId,
@@ -138,7 +211,21 @@ const TO_WORKBENCH: Record<string, Parser> = {
       : null,
 };
 
+function openTargetOf(to: unknown): WorkbenchOpenTarget | null {
+  if (typeof to !== 'object' || to === null) return null;
+  const t = to as Fields;
+  if (t.view === 'home') return { view: 'home' };
+  if (isId(t.folderId)) return { folderId: t.folderId };
+  if (!isId(t.documentId)) return null;
+  if (t.tabId === undefined) return { documentId: t.documentId };
+  return isId(t.tabId) ? { documentId: t.documentId, tabId: t.tabId } : null;
+}
+
 const TO_PAGE: Record<string, Parser> = {
+  'livediagram:open': (m) => {
+    const to = openTargetOf(m.to);
+    return to === null ? null : { type: 'livediagram:open', v: 1, to };
+  },
   'livediagram:hello-ack': (m) => {
     const name = normaliseWorkbenchName(m.name);
     return name === null ? null : { type: 'livediagram:hello-ack', v: 1, name };

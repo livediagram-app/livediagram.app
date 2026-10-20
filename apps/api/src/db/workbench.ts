@@ -9,8 +9,24 @@ import {
   type PairingRequestStatus,
   type WorkbenchPairing,
   type WorkbenchRole,
+  type WorkbenchScope,
 } from '@livediagram/api-schema';
 import type { Env } from '../types';
+
+// What a ticket or session reaches: one document, or the workspace from an optional folder. The table CHECKs hold
+// the same rule, so a row never names a document in the workspace scope or misses one in the document scope.
+export type WorkbenchReach =
+  | { scope: 'document'; documentId: string; folderId: null }
+  | { scope: 'workspace'; documentId: null; folderId: string | null };
+
+type ReachColumns = { scope: WorkbenchScope; document_id: string | null; folder_id: string | null };
+
+function reachOf(row: ReachColumns): WorkbenchReach {
+  if (row.scope === 'workspace')
+    return { scope: 'workspace', documentId: null, folderId: row.folder_id };
+  if (row.document_id === null) throw new Error('workbench: a document row with no document');
+  return { scope: 'document', documentId: row.document_id, folderId: null };
+}
 
 // ---------------------------------------------------------------------
 // Pairing requests
@@ -20,6 +36,8 @@ type OpenPairingRequestInput = {
   ownerId: string;
   tokenId: string;
   origin: string;
+  // What the request asks to reach; one live request per token, origin and scope.
+  scope: WorkbenchScope;
   // Replaces the stored name when given; null keeps it.
   name: string | null;
   // The code a new request takes; ignored when a live one is reused.
@@ -33,6 +51,7 @@ type RequestRow = {
   token_id: string;
   origin: string;
   name: string | null;
+  scope: WorkbenchScope;
   status: 'pending' | 'approved' | 'declined';
   expires_at: number;
 };
@@ -41,38 +60,39 @@ async function livePairingRequest(
   env: Env,
   tokenId: string,
   origin: string,
+  scope: WorkbenchScope,
 ): Promise<RequestRow | null> {
   return env.DB.prepare(
-    `SELECT code, owner_id, token_id, origin, name, status, expires_at FROM workbench_pairing_requests
-      WHERE token_id = ? AND origin = ? AND status = 'pending'`,
+    `SELECT code, owner_id, token_id, origin, name, scope, status, expires_at FROM workbench_pairing_requests
+      WHERE token_id = ? AND origin = ? AND scope = ? AND status = 'pending'`,
   )
-    .bind(tokenId, origin)
+    .bind(tokenId, origin, scope)
     .first<RequestRow>();
 }
 
-// The one live request for a token and origin: reused while it lives (taking a given name), replaced once
+// The one live request for a token, origin and scope: reused while it lives (taking a given name), replaced once
 // it has expired. The partial unique index keeps a race to one row; the loser reads the winner's.
 export async function openPairingRequest(
   env: Env,
   input: OpenPairingRequestInput,
 ): Promise<{ code: string; expiresAt: number; reused: boolean }> {
-  const { ownerId, tokenId, origin, name, code, now } = input;
+  const { ownerId, tokenId, origin, scope, name, code, now } = input;
   await env.DB.prepare(
     `DELETE FROM workbench_pairing_requests
-      WHERE token_id = ? AND origin = ? AND status = 'pending' AND expires_at <= ?`,
+      WHERE token_id = ? AND origin = ? AND scope = ? AND status = 'pending' AND expires_at <= ?`,
   )
-    .bind(tokenId, origin, now)
+    .bind(tokenId, origin, scope, now)
     .run();
   const expiresAt = now + WORKBENCH_PAIRING_TTL_MS;
   const inserted = await env.DB.prepare(
     `INSERT OR IGNORE INTO workbench_pairing_requests
-       (id, code, owner_id, token_id, origin, name, status, created_at, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+       (id, code, owner_id, token_id, origin, name, scope, status, created_at, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
   )
-    .bind(crypto.randomUUID(), code, ownerId, tokenId, origin, name, now, expiresAt)
+    .bind(crypto.randomUUID(), code, ownerId, tokenId, origin, name, scope, now, expiresAt)
     .run();
   if (inserted.meta.changes > 0) return { code, expiresAt, reused: false };
-  const live = await livePairingRequest(env, tokenId, origin);
+  const live = await livePairingRequest(env, tokenId, origin, scope);
   if (!live) throw new Error('workbench: no live pairing request after a refused insert');
   if (name !== null && name !== live.name) {
     await env.DB.prepare('UPDATE workbench_pairing_requests SET name = ? WHERE code = ?')
@@ -92,6 +112,7 @@ type PairingRequestRead = {
   origin: string;
   name: string | null;
   tokenName: string | null;
+  scope: WorkbenchScope;
   expiresAt: number;
   status: PairingRequestStatus;
 };
@@ -102,7 +123,7 @@ export async function readPairingRequest(
   now: number,
 ): Promise<PairingRequestRead | null> {
   const row = await env.DB.prepare(
-    `SELECT r.owner_id, r.token_id, r.origin, r.name, r.status, r.expires_at, t.name AS token_name
+    `SELECT r.owner_id, r.token_id, r.origin, r.name, r.scope, r.status, r.expires_at, t.name AS token_name
        FROM workbench_pairing_requests r JOIN api_tokens t ON t.id = r.token_id
       WHERE r.code = ?`,
   )
@@ -115,20 +136,23 @@ export async function readPairingRequest(
     origin: row.origin,
     name: row.name,
     tokenName: row.token_name,
+    scope: row.scope,
     expiresAt: row.expires_at,
     status: effectiveStatus(row, now),
   };
 }
 
 type PairingAnswer =
-  | { outcome: 'approved'; pairing: WorkbenchPairing }
-  | { outcome: 'declined'; tokenId: string }
+  | { outcome: 'approved'; pairing: WorkbenchPairing; asked: WorkbenchScope }
+  | { outcome: 'declined'; tokenId: string; asked: WorkbenchScope }
   | { outcome: 'missing' }
   | { outcome: 'answered' }
   | { outcome: 'expired' };
 
 // Answered once by the token's owner. Approval flips the request and records the pairing in one batch; the
-// insert reads the request it just flipped (by its answer time), so a lost race records nothing.
+// insert reads the request it just flipped (by its answer time), so a lost race records nothing. A workspace
+// approval on an origin already paired for the document scope widens that pairing in place (same id, its name kept
+// unless the request names one); a document approval never narrows a workspace pairing (WB50).
 export async function answerPairingRequest(
   env: Env,
   input: {
@@ -151,19 +175,22 @@ export async function answerPairingRequest(
   if (answer === 'decline') {
     const res = await flip.run();
     return res.meta.changes > 0
-      ? { outcome: 'declined', tokenId: request.tokenId }
+      ? { outcome: 'declined', tokenId: request.tokenId, asked: request.scope }
       : { outcome: 'answered' };
   }
   const record = env.DB.prepare(
-    `INSERT OR IGNORE INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
-     SELECT ?, owner_id, token_id, origin, name, ? FROM workbench_pairing_requests
-      WHERE code = ? AND status = 'approved' AND answered_at = ?`,
+    `INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, scope, created_at)
+     SELECT ?, owner_id, token_id, origin, name, scope, ? FROM workbench_pairing_requests
+      WHERE code = ? AND status = 'approved' AND answered_at = ?
+     ON CONFLICT (token_id, origin) DO UPDATE
+       SET scope = 'workspace', name = COALESCE(excluded.name, workbench_pairings.name)
+       WHERE excluded.scope = 'workspace'`,
   ).bind(pairingId, now, code, now);
   const results = await env.DB.batch([flip, record]);
   if (results[0]!.meta.changes === 0) return { outcome: 'answered' };
   const pairing = await findWorkbenchPairing(env, request.tokenId, request.origin);
   if (!pairing) throw new Error('workbench: approved request recorded no pairing');
-  return { outcome: 'approved', pairing };
+  return { outcome: 'approved', pairing, asked: request.scope };
 }
 
 // The waiting CLI's poll: only the token that asked may read its request.
@@ -190,6 +217,7 @@ type PairingRow = {
   token_id: string;
   origin: string;
   name: string | null;
+  scope: WorkbenchScope;
   created_at: number;
 };
 
@@ -198,6 +226,7 @@ const toPairing = (row: PairingRow): WorkbenchPairing => ({
   tokenId: row.token_id,
   origin: row.origin,
   name: row.name,
+  scope: row.scope,
   pairedAt: row.created_at,
 });
 
@@ -207,7 +236,8 @@ export async function findWorkbenchPairing(
   origin: string,
 ): Promise<WorkbenchPairing | null> {
   const row = await env.DB.prepare(
-    'SELECT id, token_id, origin, name, created_at FROM workbench_pairings WHERE token_id = ? AND origin = ?',
+    `SELECT id, token_id, origin, name, scope, created_at FROM workbench_pairings
+      WHERE token_id = ? AND origin = ?`,
   )
     .bind(tokenId, origin)
     .first<PairingRow>();
@@ -221,7 +251,7 @@ export async function listWorkbenchPairings(
   now: number,
 ): Promise<WorkbenchPairing[]> {
   const { results } = await env.DB.prepare(
-    `SELECT p.id, p.token_id, p.origin, p.name, p.created_at
+    `SELECT p.id, p.token_id, p.origin, p.name, p.scope, p.created_at
        FROM workbench_pairings p JOIN api_tokens t ON t.id = p.token_id
       WHERE p.owner_id = ? AND t.revoked = 0 AND t.expires_at > ?
       ORDER BY p.created_at DESC, p.id`,
@@ -240,26 +270,28 @@ export type WorkbenchTicketRow = {
   ownerId: string;
   tokenId: string;
   pairingId: string;
-  documentId: string;
   tabId: string | null;
   origin: string;
   role: WorkbenchRole;
   createdAt: number;
   expiresAt: number;
-};
+} & WorkbenchReach;
 
 export async function insertWorkbenchTicket(env: Env, row: WorkbenchTicketRow): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO workbench_tickets
-       (ticket_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (ticket_hash, owner_id, token_id, pairing_id, scope, document_id, folder_id, tab_id, origin, role, created_at,
+        expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       row.ticketHash,
       row.ownerId,
       row.tokenId,
       row.pairingId,
+      row.scope,
       row.documentId,
+      row.folderId,
       row.tabId,
       row.origin,
       row.role,
@@ -273,13 +305,12 @@ type ConsumedTicket = {
   ownerId: string;
   tokenId: string;
   pairingId: string;
-  documentId: string;
   tabId: string | null;
   origin: string;
   role: WorkbenchRole;
   tokenExpiresAt: number;
   tokenReadOnly: boolean;
-};
+} & WorkbenchReach;
 
 // Single use in one statement (the `used_at IS NULL` guard). A ticket whose token is no longer live reads
 // as unknown: its pairing cascades away with the token's revocation, and the answer leaks nothing more.
@@ -291,18 +322,19 @@ export async function consumeWorkbenchTicket(
   const row = await env.DB.prepare(
     `UPDATE workbench_tickets SET used_at = ?
       WHERE ticket_hash = ? AND used_at IS NULL AND expires_at > ?
-      RETURNING owner_id, token_id, pairing_id, document_id, tab_id, origin, role`,
+      RETURNING owner_id, token_id, pairing_id, scope, document_id, folder_id, tab_id, origin, role`,
   )
     .bind(now, ticketHash, now)
-    .first<{
-      owner_id: string;
-      token_id: string;
-      pairing_id: string;
-      document_id: string;
-      tab_id: string | null;
-      origin: string;
-      role: WorkbenchRole;
-    }>();
+    .first<
+      {
+        owner_id: string;
+        token_id: string;
+        pairing_id: string;
+        tab_id: string | null;
+        origin: string;
+        role: WorkbenchRole;
+      } & ReachColumns
+    >();
   if (!row) {
     const seen = await env.DB.prepare(
       'SELECT used_at, expires_at FROM workbench_tickets WHERE ticket_hash = ?',
@@ -324,7 +356,7 @@ export async function consumeWorkbenchTicket(
       ownerId: row.owner_id,
       tokenId: row.token_id,
       pairingId: row.pairing_id,
-      documentId: row.document_id,
+      ...reachOf(row),
       tabId: row.tab_id,
       origin: row.origin,
       role: row.role,
@@ -344,19 +376,19 @@ export type WorkbenchSessionRow = {
   ownerId: string;
   tokenId: string;
   pairingId: string;
-  documentId: string;
   tabId: string | null;
   origin: string;
   role: WorkbenchRole;
   createdAt: number;
   expiresAt: number;
-};
+} & WorkbenchReach;
 
 export async function insertWorkbenchSession(env: Env, row: WorkbenchSessionRow): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO workbench_sessions
-       (id, secret_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, secret_hash, owner_id, token_id, pairing_id, scope, document_id, folder_id, tab_id, origin, role,
+        created_at, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       row.id,
@@ -364,7 +396,9 @@ export async function insertWorkbenchSession(env: Env, row: WorkbenchSessionRow)
       row.ownerId,
       row.tokenId,
       row.pairingId,
+      row.scope,
       row.documentId,
+      row.folderId,
       row.tabId,
       row.origin,
       row.role,
@@ -386,29 +420,30 @@ export async function readWorkbenchSession(
   secretHash: string,
 ): Promise<WorkbenchSessionRead | null> {
   const row = await env.DB.prepare(
-    `SELECT s.id, s.secret_hash, s.owner_id, s.token_id, s.pairing_id, s.document_id, s.tab_id, s.origin,
-            s.role, s.created_at, s.expires_at,
+    `SELECT s.id, s.secret_hash, s.owner_id, s.token_id, s.pairing_id, s.scope, s.document_id, s.folder_id, s.tab_id,
+            s.origin, s.role, s.created_at, s.expires_at,
             t.revoked AS token_revoked, t.read_only AS token_read_only, t.expires_at AS token_expires_at
        FROM workbench_sessions s JOIN api_tokens t ON t.id = s.token_id
       WHERE s.secret_hash = ?`,
   )
     .bind(secretHash)
-    .first<{
-      id: string;
-      secret_hash: string;
-      owner_id: string;
-      token_id: string;
-      pairing_id: string;
-      document_id: string;
-      tab_id: string | null;
-      origin: string;
-      role: WorkbenchRole;
-      created_at: number;
-      expires_at: number;
-      token_revoked: number;
-      token_read_only: number;
-      token_expires_at: number;
-    }>();
+    .first<
+      {
+        id: string;
+        secret_hash: string;
+        owner_id: string;
+        token_id: string;
+        pairing_id: string;
+        tab_id: string | null;
+        origin: string;
+        role: WorkbenchRole;
+        created_at: number;
+        expires_at: number;
+        token_revoked: number;
+        token_read_only: number;
+        token_expires_at: number;
+      } & ReachColumns
+    >();
   if (!row) return null;
   return {
     id: row.id,
@@ -416,7 +451,7 @@ export async function readWorkbenchSession(
     ownerId: row.owner_id,
     tokenId: row.token_id,
     pairingId: row.pairing_id,
-    documentId: row.document_id,
+    ...reachOf(row),
     tabId: row.tab_id,
     origin: row.origin,
     role: row.role,
@@ -430,6 +465,20 @@ export async function readWorkbenchSession(
 
 export async function deleteWorkbenchSession(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM workbench_sessions WHERE id = ?').bind(id).run();
+}
+
+// A room a workspace session joined (WB55): recorded when it mints the room's ticket, so ending access can close
+// the room as it closes a document session's.
+export async function noteWorkbenchSessionRoom(
+  env: Env,
+  sessionId: string,
+  documentId: string,
+): Promise<void> {
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO workbench_session_rooms (session_id, document_id) VALUES (?, ?)',
+  )
+    .bind(sessionId, documentId)
+    .run();
 }
 
 // ---------------------------------------------------------------------

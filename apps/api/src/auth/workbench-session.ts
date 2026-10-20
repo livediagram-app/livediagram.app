@@ -10,7 +10,7 @@ import {
   WORKBENCH_SESSION_SECRET_BYTES,
   WORKBENCH_TICKET_BYTES,
 } from '@livediagram/api-schema';
-import { readWorkbenchSession } from '../db/workbench';
+import { readWorkbenchSession, type WorkbenchReach } from '../db/workbench';
 import type { WorkbenchContext } from '../routes/context';
 import type { Env } from '../types';
 
@@ -18,6 +18,12 @@ export const generateWorkbenchTicket = () => randomBase64Url(WORKBENCH_TICKET_BY
 export const generatePairingCode = () => randomBase64Url(WORKBENCH_PAIRING_CODE_BYTES);
 export const generateWorkbenchSecret = () =>
   WORKBENCH_SESSION_PREFIX + randomBase64Url(WORKBENCH_SESSION_SECRET_BYTES);
+
+// The scope part of a row, as the context carries it.
+const reachOfRow = (row: WorkbenchReach): WorkbenchReach =>
+  row.scope === 'document'
+    ? { scope: 'document', documentId: row.documentId, folderId: null }
+    : { scope: 'workspace', documentId: null, folderId: row.folderId };
 
 export async function hashWorkbenchSecret(secret: string): Promise<string> {
   return sha256Hex(new TextEncoder().encode(secret));
@@ -51,7 +57,7 @@ export async function resolveWorkbenchSession(
       ownerId: row.ownerId,
       tokenId: row.tokenId,
       pairingId: row.pairingId,
-      documentId: row.documentId,
+      ...reachOfRow(row),
       tabId: row.tabId,
       origin: row.origin,
       level: row.tokenReadOnly ? 'view' : row.role,

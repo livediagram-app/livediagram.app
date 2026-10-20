@@ -15,23 +15,24 @@ import {
   type DocumentGrant,
 } from '../auth/document-access';
 import type { SharePasswordAttempt } from '../auth/share-access';
+import type { WorkbenchReach } from '../db/workbench';
 import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
 import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env } from '../types';
 
-// A workbench session as the choke point resolved it (blueprint "A request bearing lvw_").
+// A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
+// scope"): one document in the document scope, the workspace (from an optional folder) in the workspace scope.
 export type WorkbenchContext = {
   sessionId: string;
   ownerId: string;
   tokenId: string;
   pairingId: string;
-  documentId: string;
   tabId: string | null;
   origin: string;
   level: WorkbenchRole;
   expiresAt: number;
-};
+} & WorkbenchReach;
 
 export type RouteContext = {
   request: Request;

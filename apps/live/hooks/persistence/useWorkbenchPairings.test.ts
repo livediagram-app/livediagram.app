@@ -18,6 +18,7 @@ const pairing = (id: string, tokenId: string): WorkbenchPairing => ({
   tokenId,
   origin: `https://${id}.example`,
   name: id,
+  scope: 'document',
   pairedAt: 1_000,
 });
 const A1 = pairing('a1', 'tokA');

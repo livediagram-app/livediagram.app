@@ -61,7 +61,7 @@ export async function runWorkbenchHandshake(
   }
   const { session } = outcome;
   dispatch({ type: 'redeemed', session });
-  if (session.documentId !== documentId) {
+  if (session.scope !== 'document' || session.documentId !== documentId) {
     console.warn('[workbench] redeem-failed', { status: 201, reason: 'mismatch' });
     void apiEndWorkbenchSession(session.session);
     win.parent.postMessage({ type: 'livediagram:ended', v: 1, reason: 'refused' }, session.origin);

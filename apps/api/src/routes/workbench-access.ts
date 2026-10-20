@@ -5,7 +5,7 @@
 
 import type { WorkbenchRole } from '@livediagram/api-schema';
 import { resolveDocumentGrant } from '../auth/document-access';
-import { getDocumentMeta, getTrashedDocumentMeta } from '../db';
+import { getDocumentMeta, getFolder, getMembership, getTrashedDocumentMeta } from '../db';
 import { documentTrashed, notFound } from '../responses';
 import type { Env } from '../types';
 
@@ -44,4 +44,18 @@ export async function ownerDocumentAccess(
   );
   if (!grant) return notFound();
   return { documentId, role: grant.role };
+}
+
+// A folder a workspace ticket may start on (WB52): one of the owner's personal folders, or a folder of a team they
+// are a joined member of. Anything else reads as absent.
+export async function ownerReachesFolder(
+  env: Env,
+  ownerId: string,
+  folderId: string,
+): Promise<boolean> {
+  const folder = await getFolder(env, folderId);
+  if (!folder) return false;
+  if (folder.teamId === null) return folder.ownerId === ownerId;
+  const membership = await getMembership(env, folder.teamId, ownerId);
+  return membership?.status === 'joined';
 }

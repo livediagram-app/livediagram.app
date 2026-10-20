@@ -23,9 +23,31 @@ export async function workbenchDb(base: Partial<Env> = {}): Promise<SqliteD1> {
   return db;
 }
 
-export function pairToken(db: SqliteD1, tokenId = 'tok1', ownerId = 'user_1', id = 'pair1'): void {
-  db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
-               VALUES ('${id}', '${ownerId}', '${tokenId}', '${ORIGIN}', 'Acme Editor', ${NOW})`);
+export function pairToken(
+  db: SqliteD1,
+  tokenId = 'tok1',
+  ownerId = 'user_1',
+  id = 'pair1',
+  scope: 'document' | 'workspace' = 'document',
+): void {
+  db.sql
+    .exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, scope, created_at)
+               VALUES ('${id}', '${ownerId}', '${tokenId}', '${ORIGIN}', 'Acme Editor', '${scope}', ${NOW})`);
+}
+
+// Folders for a workspace ticket to start on: `f-own` (user_1's), `f-team` (a team user_1 joined), `f-left` (a
+// team user_1 left) and `f-other` (user_2's).
+export function arrangeFolders(db: SqliteD1): void {
+  db.sql
+    .exec(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('team1', 'T', 0, 0), ('team2', 'U', 0, 0);
+    INSERT INTO team_members (id, team_id, user_id, role, status, created_at, updated_at)
+      VALUES ('m1', 'team1', 'user_1', 'member', 'joined', 0, 0),
+             ('m2', 'team2', 'user_1', 'member', 'left', 0, 0);
+    INSERT INTO folders (id, owner_id, team_id, parent_id, name, created_at, updated_at)
+      VALUES ('f-own', 'user_1', NULL, NULL, 'Minigames', 0, 0),
+             ('f-team', 'user_9', 'team1', NULL, 'Shared', 0, 0),
+             ('f-left', 'user_9', 'team2', NULL, 'Gone', 0, 0),
+             ('f-other', 'user_2', NULL, NULL, 'Theirs', 0, 0);`);
 }
 
 export const rows = (db: SqliteD1, sql: string) =>

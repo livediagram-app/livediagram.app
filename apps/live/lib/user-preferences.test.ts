@@ -235,7 +235,7 @@ describe('writeUserPreferences (server sync)', () => {
   // workbench-embeds.md, I9): the local write and the event stay.
   it('keeps the write local under a workbench session', () => {
     const { storage, events } = mockBrowser();
-    setWorkbenchConfinement({ documentId: 'doc-1', ownerId: 'user_1' });
+    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-1', ownerId: 'user_1' });
     try {
       writeUserPreferences({ showMinimap: false }, 'user_1');
     } finally {

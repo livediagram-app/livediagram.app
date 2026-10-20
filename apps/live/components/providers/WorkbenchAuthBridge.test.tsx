@@ -134,7 +134,11 @@ describe('WorkbenchAuthBridge', () => {
     );
 
     expect(await headers!).toEqual({ Authorization: `Bearer ${SECRET}` });
-    expect(core.getWorkbenchConfinement()).toEqual({ documentId: 'doc-1', ownerId: 'user_1' });
+    expect(core.getWorkbenchConfinement()).toEqual({
+      scope: 'document',
+      documentId: 'doc-1',
+      ownerId: 'user_1',
+    });
     core.setTokenProvider(null);
     core.setWorkbenchConfinement(null);
   });

@@ -1,14 +1,16 @@
 // The choke point's verdict on a workbench session (docs/specs/013-workspace/blueprints/workbench-embeds.md
-// "A request bearing lvw_", steps 3 to 5): ambient credentials refused beside it, the allow-list, then the
-// session's level. Null lets the request through to its route, which re-gates with the owner's identity.
+// "A request bearing lvw_", steps 3 to 5, and "The choke point by scope"): ambient credentials refused beside it
+// (by scope), the allow-list of its scope, then the session's level. Null lets the request through to its route,
+// which re-gates with the owner's identity.
 
-import { apiRouteLabel, workbenchRouteVerdict } from '@livediagram/api-schema';
+import {
+  apiRouteLabel,
+  workbenchAmbientHeaders,
+  workbenchRouteVerdict,
+} from '@livediagram/api-schema';
 import { forbidden, notFound } from '../responses';
 import type { WorkbenchContext } from '../routes/context';
 import { sessionPrefixOf } from './workbench-session';
-
-// Headers that would lend a session someone else's access: a share code, a guest id, a share password.
-const AMBIENT_HEADERS = ['X-Share-Code', 'X-Owner-Id', 'X-Share-Password'] as const;
 
 const WRITE_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
 
@@ -19,6 +21,13 @@ function isViewExempt(method: string, segments: readonly string[]): boolean {
   return method === 'POST' && segments[1] === 'documents' && segments[3] === 'room-ticket';
 }
 
+// The share-link list carries every code, edit links included: a view session never reads it (WB54).
+const isShareLinkList = (method: string, segments: readonly string[]) =>
+  method === 'GET' &&
+  segments.length === 4 &&
+  segments[1] === 'documents' &&
+  segments[3] === 'share';
+
 export function workbenchRefusal(
   workbench: WorkbenchContext,
   method: string,
@@ -26,19 +35,23 @@ export function workbenchRefusal(
   headers: Headers,
 ): Response | null {
   const sessionPrefix = sessionPrefixOf(workbench.sessionId);
+  const { scope } = workbench;
   const route = apiRouteLabel(method, `/${segments.join('/')}`);
-  if (AMBIENT_HEADERS.some((name) => headers.has(name))) {
-    console.warn('[workbench] confined', { method, route, sessionPrefix });
+  if (workbenchAmbientHeaders(scope).some((name) => headers.has(name))) {
+    console.warn('[workbench] confined', { scope, method, route, sessionPrefix });
     return forbidden('workbench_confined');
   }
   const verdict = workbenchRouteVerdict(method, segments, workbench);
   if (verdict === 'other-document') return notFound();
   if (verdict === 'confined') {
-    console.warn('[workbench] confined', { method, route, sessionPrefix });
+    console.warn('[workbench] confined', { scope, method, route, sessionPrefix });
     return forbidden('workbench_confined');
   }
-  if (workbench.level === 'view' && WRITE_METHODS.has(method) && !isViewExempt(method, segments)) {
-    console.warn('[workbench] read-only-refused', { method, route, sessionPrefix });
+  const readOnlyRefused =
+    (WRITE_METHODS.has(method) && !isViewExempt(method, segments)) ||
+    isShareLinkList(method, segments);
+  if (workbench.level === 'view' && readOnlyRefused) {
+    console.warn('[workbench] read-only-refused', { scope, method, route, sessionPrefix });
     return forbidden('workbench_read_only');
   }
   return null;

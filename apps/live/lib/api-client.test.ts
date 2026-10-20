@@ -867,7 +867,7 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
   // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Route effects under a session").
   it("always names the session's document under a workbench session", async () => {
     const spy = stub404();
-    setWorkbenchConfinement({ documentId: 'doc-wb', ownerId: 'owner' });
+    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-wb', ownerId: 'owner' });
     try {
       await apiFetchImageBlobUrl('owner', 'img1');
       await apiFetchImageBlobUrl('owner', 'img1', { documentId: 'other' });

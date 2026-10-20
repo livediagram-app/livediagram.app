@@ -5,7 +5,14 @@ import type { Env } from '../types';
 import type { WorkbenchContext } from './context';
 import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
-import { NOW, ORIGIN, pairToken, rows, workbenchDb } from './workbench-test-fixtures';
+import {
+  arrangeFolders,
+  NOW,
+  ORIGIN,
+  pairToken,
+  rows,
+  workbenchDb,
+} from './workbench-test-fixtures';
 
 type Opts = {
   token?: { id: string; readOnly?: boolean } | null;
@@ -75,7 +82,9 @@ describe('POST /api/workbench/tickets', () => {
       ],
     );
     expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
+      scope: 'document',
       documentId: 'doc1',
+      folderId: null,
       tokenId: 'tok1',
       role: 'edit',
     });
@@ -134,7 +143,6 @@ describe('POST /api/workbench/tickets', () => {
   });
 
   it.each([
-    ['a missing document id', { origin: ORIGIN }, 'invalid documentId'],
     [
       'an overlong document id',
       { documentId: 'x'.repeat(65), origin: ORIGIN },
@@ -171,6 +179,7 @@ describe('POST /api/workbench/tickets', () => {
       expect(await res.json()).toEqual({ error: 'invalid_origin' });
       expect(console.warn).toHaveBeenCalledWith('[workbench] mint-refused', {
         reason: 'invalid_origin',
+        scope: 'document',
         tokenId: 'tok1',
       });
     },
@@ -230,5 +239,153 @@ describe('POST /api/workbench/tickets', () => {
 
     expect(res.status).toBe(429);
     expect(limit).toHaveBeenCalledWith({ key: 'workbench-ticket:tok1' });
+  });
+});
+
+describe('POST /api/workbench/tickets, workspace scope', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  const workspaceBody = (over: Record<string, unknown> = {}) => ({
+    scope: 'workspace',
+    origin: ORIGIN,
+    ...over,
+  });
+
+  it('asks for a second approval when the origin is paired for the document scope only', async () => {
+    const db = await workbenchDb();
+    pairToken(db);
+
+    const res = await mint(db, { body: workspaceBody() });
+
+    expect(res.status).toBe(428);
+    expect(await res.json()).toEqual({
+      error: 'pairing_required',
+      pairingUrl: expect.stringMatching(/^https:\/\/app\.test\/workbench\/pair\?code=/),
+      expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
+    });
+    expect(rows(db, 'SELECT scope FROM workbench_pairing_requests')).toEqual([
+      { scope: 'workspace' },
+    ]);
+    expect(console.log).toHaveBeenCalledWith('[workbench] pairing-requested', {
+      tokenId: 'tok1',
+      originHost: '127.0.0.1',
+      scope: 'workspace',
+      via: 'mint',
+      reused: false,
+    });
+  });
+
+  it('mints a workspace ticket on a workspace pairing, on Home', async () => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+
+    const res = await mint(db, { body: workspaceBody() });
+
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({
+      url: expect.stringMatching(
+        /^https:\/\/app\.test\/embed\/workbench\/explorer#ticket=[A-Za-z0-9_-]{22}$/,
+      ),
+      scope: 'workspace',
+      folderId: null,
+      expiresAt: NOW + WORKBENCH_TICKET_TTL_MS,
+    });
+    expect(rows(db, 'SELECT scope, document_id, folder_id, role FROM workbench_tickets')).toEqual([
+      { scope: 'workspace', document_id: null, folder_id: null, role: 'edit' },
+    ]);
+    expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
+      scope: 'workspace',
+      documentId: null,
+      folderId: null,
+      tokenId: 'tok1',
+      role: 'edit',
+    });
+  });
+
+  it.each(['f-own', 'f-team'])('starts on a folder the owner reaches: %s', async (folderId) => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    arrangeFolders(db);
+
+    const res = await mint(db, { body: workspaceBody({ folderId }) });
+
+    expect(res.status).toBe(201);
+    expect((await res.json<{ url: string }>()).url).toMatch(
+      new RegExp(`/embed/workbench/explorer/folder/${folderId}#ticket=`),
+    );
+  });
+
+  it.each(['f-other', 'f-left', 'f-none'])(
+    'answers 404 for a folder the owner cannot reach: %s',
+    async (folderId) => {
+      const db = await workbenchDb();
+      pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+      arrangeFolders(db);
+
+      const res = await mint(db, { body: workspaceBody({ folderId }) });
+
+      expect(res.status).toBe(404);
+      expect(rows(db, 'SELECT * FROM workbench_tickets')).toEqual([]);
+    },
+  );
+
+  it('mints a document ticket on a workspace pairing: the workspace covers the document scope', async () => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+
+    const res = await mint(db);
+
+    expect(res.status).toBe(201);
+    expect(rows(db, 'SELECT scope, document_id FROM workbench_tickets')).toEqual([
+      { scope: 'document', document_id: 'doc1' },
+    ]);
+  });
+
+  it('mints a view workspace ticket for a read-only token', async () => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok_ro', 'user_1', 'pair1', 'workspace');
+
+    const res = await mint(db, { token: { id: 'tok_ro', readOnly: true }, body: workspaceBody() });
+
+    expect(res.status).toBe(201);
+    expect(rows(db, 'SELECT role FROM workbench_tickets')).toEqual([{ role: 'view' }]);
+  });
+
+  it.each([
+    [
+      'a workspace ticket naming a document',
+      workspaceBody({ documentId: 'doc1' }),
+      'a workspace ticket names no document',
+    ],
+    [
+      'a workspace ticket naming a tab',
+      workspaceBody({ tabId: 't1' }),
+      'a workspace ticket names no document',
+    ],
+    ['a bad folder id', workspaceBody({ folderId: 7 }), 'invalid folderId'],
+    ['a document ticket without a document', { origin: ORIGIN }, 'invalid documentId'],
+    [
+      'a document ticket naming a folder',
+      { documentId: 'doc1', folderId: 'f-own', origin: ORIGIN },
+      'a document ticket names no folder',
+    ],
+    ['an unknown scope', { scope: 'galaxy', origin: ORIGIN }, 'invalid scope'],
+  ])('refuses %s with invalid_value', async (_why, body, message) => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+
+    const res = await mint(db, { body });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalid_value', message });
   });
 });

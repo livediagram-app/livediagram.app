@@ -106,7 +106,14 @@ describe('workbench pair', () => {
     const { io } = host({
       created: {
         status: 'paired',
-        pairing: { id: 'p', tokenId: 't', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
+        pairing: {
+          id: 'p',
+          tokenId: 't',
+          origin: ORIGIN,
+          name: 'Acme Editor',
+          scope: 'document',
+          pairedAt: NOW,
+        },
       },
     });
     expect(await pair(io)).toBe(0);
@@ -233,7 +240,14 @@ describe('workbench pair', () => {
     const already = host({
       created: {
         status: 'paired',
-        pairing: { id: 'p', tokenId: 't', origin: ORIGIN, name: null, pairedAt: NOW },
+        pairing: {
+          id: 'p',
+          tokenId: 't',
+          origin: ORIGIN,
+          name: null,
+          scope: 'document',
+          pairedAt: NOW,
+        },
       },
       env: { LIVEDIAGRAM_DEBUG: '1' },
     });

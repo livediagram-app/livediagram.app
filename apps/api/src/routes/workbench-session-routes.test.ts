@@ -9,11 +9,33 @@ import type { SqliteD1 } from '../test-sqlite-d1';
 import type { WorkbenchContext } from './context';
 import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
-import { NOW, ORIGIN, pairToken, rows, workbenchDb } from './workbench-test-fixtures';
+import {
+  arrangeFolders,
+  NOW,
+  ORIGIN,
+  pairToken,
+  rows,
+  workbenchDb,
+} from './workbench-test-fixtures';
+
+const SESSION_CONTEXT: WorkbenchContext = {
+  sessionId: 'sess1',
+  ownerId: 'user_1',
+  tokenId: 'tok1',
+  pairingId: 'pair1',
+  scope: 'document',
+  documentId: 'doc1',
+  folderId: null,
+  tabId: null,
+  origin: ORIGIN,
+  level: 'edit',
+  expiresAt: NOW,
+};
 
 async function mintTicket(
   db: SqliteD1,
-  token = { id: 'tok1' } as { id: string; readOnly?: boolean },
+  token: { id: string; readOnly?: boolean } = { id: 'tok1' },
+  body: Record<string, unknown> = { documentId: 'doc1', tabId: 't1', origin: ORIGIN },
 ) {
   const res = await handleWorkbench(
     makeTestRouteContext('POST', '/api/workbench/tickets', {
@@ -21,7 +43,7 @@ async function mintTicket(
       owner: 'user_1',
       verifiedUserId: 'user_1',
       token,
-      body: { documentId: 'doc1', tabId: 't1', origin: ORIGIN },
+      body,
     }),
   );
   const { url } = (await res.json()) as { url: string };
@@ -56,7 +78,9 @@ describe('POST /api/workbench/sessions', () => {
     expect(res.status).toBe(201);
     expect(body).toEqual({
       session: expect.any(String),
+      scope: 'document',
       documentId: 'doc1',
+      folderId: null,
       tabId: 't1',
       origin: ORIGIN,
       role: 'edit',
@@ -68,6 +92,7 @@ describe('POST /api/workbench/sessions', () => {
       { secret_hash: await hashWorkbenchSecret(body.session), pairing_id: 'pair1' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] session-opened', {
+      scope: 'document',
       documentId: 'doc1',
       tokenId: 'tok1',
       sessionPrefix: expect.stringMatching(/^[0-9a-f-]{8}$/),
@@ -116,7 +141,10 @@ describe('POST /api/workbench/sessions', () => {
 
     expect(again.status).toBe(401);
     expect(await again.json()).toEqual({ error: 'invalid_ticket', reason: 'used' });
-    expect(console.warn).toHaveBeenCalledWith('[workbench] session-refused', { reason: 'used' });
+    expect(console.warn).toHaveBeenCalledWith('[workbench] session-refused', {
+      reason: 'used',
+      scope: null,
+    });
   });
 
   it('refuses an expired and an unknown ticket', async () => {
@@ -176,7 +204,7 @@ describe('POST /api/workbench/sessions', () => {
 
   it('refuses a workbench session redeeming another ticket', async () => {
     const db = await workbenchDb();
-    const workbench = { sessionId: 's' } as WorkbenchContext;
+    const workbench = SESSION_CONTEXT;
 
     const res = await handleWorkbench(
       makeTestRouteContext('POST', '/api/workbench/sessions', {
@@ -205,7 +233,7 @@ describe('DELETE /api/workbench/sessions/current', () => {
     const res = await handleWorkbench(
       makeTestRouteContext('DELETE', '/api/workbench/sessions/current', {
         env: db.env,
-        workbench: { sessionId: 'sess1', documentId: 'doc1', tokenId: 'tok1' } as WorkbenchContext,
+        workbench: SESSION_CONTEXT,
       }),
     );
 
@@ -213,6 +241,7 @@ describe('DELETE /api/workbench/sessions/current', () => {
     expect(rows(db, 'SELECT * FROM workbench_sessions')).toEqual([]);
     expect(log).toHaveBeenCalledWith('[workbench] session-ended', {
       reason: 'ended',
+      scope: 'document',
       documentId: 'doc1',
       tokenId: 'tok1',
       sessionPrefix: 'sess1',
@@ -231,5 +260,75 @@ describe('DELETE /api/workbench/sessions/current', () => {
 
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual({ error: 'not_a_workbench_session' });
+  });
+});
+
+describe('POST /api/workbench/sessions, workspace scope', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('opens a workspace session with no document, its folder and the ticket level', async () => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    arrangeFolders(db);
+    const ticket = await mintTicket(
+      db,
+      { id: 'tok1' },
+      {
+        scope: 'workspace',
+        folderId: 'f-own',
+        origin: ORIGIN,
+      },
+    );
+
+    const res = await redeem(db, { ticket });
+
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({
+      session: expect.any(String),
+      scope: 'workspace',
+      documentId: null,
+      folderId: 'f-own',
+      tabId: null,
+      origin: ORIGIN,
+      role: 'edit',
+      expiresAt: NOW + WORKBENCH_SESSION_TTL_MS,
+      person: { id: 'user_1', name: null, color: null, pictureUrl: null },
+    });
+    expect(rows(db, 'SELECT scope, document_id, folder_id FROM workbench_sessions')).toEqual([
+      { scope: 'workspace', document_id: null, folder_id: 'f-own' },
+    ]);
+    expect(console.log).toHaveBeenCalledWith('[workbench] session-opened', {
+      scope: 'workspace',
+      documentId: null,
+      tokenId: 'tok1',
+      sessionPrefix: expect.any(String),
+      role: 'edit',
+    });
+  });
+
+  it('opens a view workspace session for a read-only token', async () => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok_ro', 'user_1', 'pair1', 'workspace');
+    const ticket = await mintTicket(
+      db,
+      { id: 'tok_ro', readOnly: true },
+      {
+        scope: 'workspace',
+        origin: ORIGIN,
+      },
+    );
+
+    const res = await redeem(db, { ticket });
+
+    expect((await res.json<{ role: string }>()).role).toBe('view');
   });
 });

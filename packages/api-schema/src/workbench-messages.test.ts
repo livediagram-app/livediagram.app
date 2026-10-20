@@ -8,7 +8,7 @@ import {
 const TICKET = 'A'.repeat(21) + '_';
 
 describe('WORKBENCH_MESSAGE_TYPES', () => {
-  it('holds the ten types of the spec', () => {
+  it('holds the twelve types of the spec', () => {
     expect(WORKBENCH_MESSAGE_TYPES).toEqual([
       'livediagram:hello',
       'livediagram:hello-ack',
@@ -20,6 +20,8 @@ describe('WORKBENCH_MESSAGE_TYPES', () => {
       'livediagram:reveal',
       'livediagram:theme',
       'livediagram:ended',
+      'livediagram:place',
+      'livediagram:open',
     ]);
   });
 });
@@ -175,5 +177,77 @@ describe('parseWorkbenchMessage', () => {
     ['an ended with another reason', { type: 'livediagram:ended', v: 1, reason: 'bored' }],
   ])('names %s invalid at the workbench', (_label, data) => {
     expect(parseWorkbenchMessage(data, 'to-workbench')).toEqual({ invalid: data.type });
+  });
+});
+
+describe('parseWorkbenchMessage, workspace scope', () => {
+  const place = {
+    type: 'livediagram:place',
+    v: 1,
+    view: 'folder',
+    folderId: 'f1',
+    folderName: 'Minigames',
+    documentCount: 0,
+    documentId: null,
+    documentName: null,
+    tabId: null,
+    tabName: null,
+    role: 'edit',
+  };
+
+  it.each([
+    ['to-workbench', { type: 'livediagram:ready', v: 1, scope: 'workspace', role: 'view' }],
+    ['to-workbench', place],
+    [
+      'to-workbench',
+      {
+        ...place,
+        view: 'document',
+        documentCount: null,
+        documentId: 'doc-1',
+        documentName: 'Home screen',
+        tabId: 't1',
+        tabName: 'Wireframe',
+      },
+    ],
+    ['to-page', { type: 'livediagram:open', v: 1, to: { view: 'home' } }],
+    ['to-page', { type: 'livediagram:open', v: 1, to: { folderId: 'f1' } }],
+    ['to-page', { type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } }],
+    ['to-page', { type: 'livediagram:open', v: 1, to: { documentId: 'doc-1', tabId: 't1' } }],
+  ] as const)('accepts a valid message travelling %s: %o', (direction, data) => {
+    expect(parseWorkbenchMessage(data, direction)).toEqual(data);
+  });
+
+  it.each([
+    [
+      'a workspace ready with an unknown role',
+      { type: 'livediagram:ready', v: 1, scope: 'workspace', role: 'admin' },
+    ],
+    [
+      'a ready of another scope',
+      { type: 'livediagram:ready', v: 1, scope: 'galaxy', role: 'edit' },
+    ],
+    ['a place with no view', { ...place, view: '' }],
+    ['a place with a fractional count', { ...place, documentCount: 1.5 }],
+    ['a place with a numeric folder', { ...place, folderId: 7 }],
+    ['a place missing its role', { ...place, role: undefined }],
+  ])('names %s invalid at the workbench', (_label, data) => {
+    expect(parseWorkbenchMessage(data, 'to-workbench')).toEqual({ invalid: data.type });
+  });
+
+  it.each([
+    ['an open with no target', { type: 'livediagram:open', v: 1 }],
+    ['an open to another view', { type: 'livediagram:open', v: 1, to: { view: 'recent' } }],
+    ['an open to an empty folder id', { type: 'livediagram:open', v: 1, to: { folderId: '' } }],
+    [
+      'an open to an overlong document id',
+      { type: 'livediagram:open', v: 1, to: { documentId: 'x'.repeat(65) } },
+    ],
+    [
+      'an open to a tab that is not a string',
+      { type: 'livediagram:open', v: 1, to: { documentId: 'd', tabId: 4 } },
+    ],
+  ])('names %s invalid at the page', (_label, data) => {
+    expect(parseWorkbenchMessage(data, 'to-page')).toEqual({ invalid: data.type });
   });
 });

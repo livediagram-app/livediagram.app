@@ -32,7 +32,12 @@ async function renewWith(
   }
   const next = outcome.session;
   const bound = current();
-  if (!bound || next.documentId !== bound.documentId || next.origin !== bound.origin) {
+  if (
+    !bound ||
+    next.scope !== bound.scope ||
+    next.documentId !== bound.documentId ||
+    next.origin !== bound.origin
+  ) {
     console.warn('[workbench] renew-failed', { reason: 'mismatch' });
     void apiEndWorkbenchSession(next.session);
     return;

@@ -5,7 +5,9 @@
 
 import {
   DEVICE_POLL_INTERVAL_S,
+  isWorkbenchScope,
   normaliseWorkbenchName,
+  pairingCoversScope,
   parseWorkbenchOrigin,
   type WorkbenchPairingRequestCreated,
   type WorkbenchPairingRequestView,
@@ -34,7 +36,7 @@ import { endWorkbenchAccess } from '../workbench-end';
 import { readBody, type RouteContext } from './context';
 import { pairingUrlOf, workbenchRateLimited } from './workbench-ticket-route';
 
-// POST /api/workbench/pairing-requests: `workbench pair` asks, by token.
+// POST /api/workbench/pairing-requests: `workbench pair` asks, by token, for one scope (absent: `document`).
 export async function openPairing(ctx: RouteContext): Promise<Response> {
   const token = ctx.token;
   const ownerId = ctx.resolveOwner();
@@ -45,9 +47,12 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
   const parsed = parseWorkbenchOrigin(typeof body.origin === 'string' ? body.origin : '');
   if (!parsed.ok) return json({ error: 'invalid_origin' }, { status: 400 });
   const origin = parsed.origin;
+  const scope = body.scope ?? 'document';
+  if (!isWorkbenchScope(scope))
+    return json({ error: 'invalid_value', message: 'invalid scope' }, { status: 400 });
 
   const pairing = await findWorkbenchPairing(ctx.env, token.id, origin);
-  if (pairing) {
+  if (pairing && pairingCoversScope(pairing.scope, scope)) {
     const answer: WorkbenchPairingRequestCreated = { status: 'paired', pairing };
     return json(answer);
   }
@@ -55,6 +60,7 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
     ownerId,
     tokenId: token.id,
     origin,
+    scope,
     name: normaliseWorkbenchName(body.name),
     code: generatePairingCode(),
     now: Date.now(),
@@ -62,6 +68,7 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
   console.log('[workbench] pairing-requested', {
     tokenId: token.id,
     originHost: new URL(origin).hostname,
+    scope,
     via: 'pair',
     reused: request.reused,
   });
@@ -94,6 +101,7 @@ export async function readPairing(ctx: RouteContext, code: string): Promise<Resp
     origin: request.origin,
     name: request.name,
     tokenName: request.tokenName,
+    scope: request.scope,
     expiresAt: request.expiresAt,
     status: request.status,
   };
@@ -123,12 +131,13 @@ export async function answerPairing(
     case 'expired':
       return json({ error: 'pairing_expired' }, { status: 410 });
     case 'declined':
-      console.log('[workbench] pairing-declined', { tokenId: result.tokenId });
+      console.log('[workbench] pairing-declined', { tokenId: result.tokenId, scope: result.asked });
       return noContent();
     case 'approved':
       console.log('[workbench] paired', {
         tokenId: result.pairing.tokenId,
         pairingId: result.pairing.id,
+        scope: result.asked,
       });
       return json({ pairing: result.pairing });
   }

@@ -2,7 +2,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useReducer } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WorkbenchSessionResponse } from '@livediagram/api-schema';
+import type { WorkbenchDocumentSessionResponse } from '@livediagram/api-schema';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { workbenchTransition, type WorkbenchPhase } from './workbench-machine';
@@ -46,9 +46,11 @@ const { WorkbenchPage } = await import('./WorkbenchPage');
 const { default: Page, metadata } = await import('./page');
 const core = await import('@/lib/api/core');
 
-const SESSION: WorkbenchSessionResponse = {
+const SESSION: WorkbenchDocumentSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
+  scope: 'document',
   documentId: 'doc-1',
+  folderId: null,
   tabId: null,
   origin: 'https://127.0.0.1:5175',
   role: 'edit',

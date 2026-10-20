@@ -13,6 +13,7 @@ const ACME: WorkbenchPairing = {
   tokenId: 'tok1',
   origin: 'https://127.0.0.1:5175',
   name: 'Acme Editor',
+  scope: 'document',
   pairedAt: NOW - 2 * DAY,
 };
 const UNNAMED: WorkbenchPairing = {
@@ -20,6 +21,7 @@ const UNNAMED: WorkbenchPairing = {
   tokenId: 'tok1',
   origin: 'http://localhost:4000',
   name: null,
+  scope: 'document',
   pairedAt: NOW - 30_000,
 };
 

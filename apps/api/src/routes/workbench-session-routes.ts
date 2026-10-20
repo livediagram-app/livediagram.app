@@ -1,7 +1,8 @@
 // POST /api/workbench/sessions and DELETE /api/workbench/sessions/current
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Redemption"). Redemption is credential-free: the
-// ticket is the bearer. A session acts as the ticket's owner on its one document, at the lower of the ticket's
-// level and the owner's access now, until WORKBENCH_SESSION_TTL_MS or the token's own expiry.
+// ticket is the bearer. A document session acts as the ticket's owner on its one document, at the lower of the
+// ticket's level and the owner's access now; a workspace session acts as them in their workspace at the ticket's
+// level, each route capping it by their access now. Both last WORKBENCH_SESSION_TTL_MS or until the token's expiry.
 
 import {
   capWorkbenchRole,
@@ -20,6 +21,7 @@ import {
   consumeWorkbenchTicket,
   deleteWorkbenchSession,
   insertWorkbenchSession,
+  type WorkbenchReach,
 } from '../db/workbench';
 import { badRequest, forbidden, json, noContent } from '../responses';
 import { readBody, type RouteContext } from './context';
@@ -36,25 +38,31 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
 
   const consumed = await consumeWorkbenchTicket(ctx.env, await hashWorkbenchSecret(ticket), now);
   if (!consumed.ok) {
-    console.warn('[workbench] session-refused', { reason: consumed.reason });
+    console.warn('[workbench] session-refused', { reason: consumed.reason, scope: null });
     const answer: InvalidTicket = { error: 'invalid_ticket', reason: consumed.reason };
     return json(answer, { status: 401 });
   }
   const t = consumed.ticket;
-  const access = await ownerDocumentAccess(ctx.env, t.documentId, t.ownerId);
-  if (access instanceof Response) {
-    console.warn('[workbench] session-refused', {
-      reason: 'access',
-      documentId: t.documentId,
-      tokenId: t.tokenId,
-    });
-    return access;
+  let ceiling = t.role;
+  if (t.scope === 'document') {
+    const access = await ownerDocumentAccess(ctx.env, t.documentId, t.ownerId);
+    if (access instanceof Response) {
+      console.warn('[workbench] session-refused', {
+        reason: 'access',
+        scope: t.scope,
+        documentId: t.documentId,
+        tokenId: t.tokenId,
+      });
+      return access;
+    }
+    ceiling = capWorkbenchRole(t.role, access.role);
   }
 
-  const role = capWorkbenchRole(
-    capWorkbenchRole(t.role, access.role),
-    t.tokenReadOnly ? 'view' : undefined,
-  );
+  const role = capWorkbenchRole(ceiling, t.tokenReadOnly ? 'view' : undefined);
+  const reach: WorkbenchReach =
+    t.scope === 'document'
+      ? { scope: 'document', documentId: t.documentId, folderId: null }
+      : { scope: 'workspace', documentId: null, folderId: t.folderId };
   const session = generateWorkbenchSecret();
   const id = crypto.randomUUID();
   const expiresAt = Math.min(now + WORKBENCH_SESSION_TTL_MS, t.tokenExpiresAt);
@@ -64,7 +72,7 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
     ownerId: t.ownerId,
     tokenId: t.tokenId,
     pairingId: t.pairingId,
-    documentId: t.documentId,
+    ...reach,
     tabId: t.tabId,
     origin: t.origin,
     role,
@@ -73,6 +81,7 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
   });
   const participant = await getParticipant(ctx.env, t.ownerId);
   console.log('[workbench] session-opened', {
+    scope: t.scope,
     documentId: t.documentId,
     tokenId: t.tokenId,
     sessionPrefix: sessionPrefixOf(id),
@@ -80,8 +89,7 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
   });
   const answer: WorkbenchSessionResponse = {
     session,
-    documentId: t.documentId,
-    tabId: t.tabId,
+    ...(reach.scope === 'document' ? { ...reach, tabId: t.tabId } : { ...reach, tabId: null }),
     origin: t.origin,
     role,
     expiresAt,
@@ -103,6 +111,7 @@ export async function endCurrentWorkbenchSession(ctx: RouteContext): Promise<Res
   await deleteWorkbenchSession(ctx.env, workbench.sessionId);
   console.log('[workbench] session-ended', {
     reason: 'ended',
+    scope: workbench.scope,
     documentId: workbench.documentId,
     tokenId: workbench.tokenId,
     sessionPrefix: sessionPrefixOf(workbench.sessionId),

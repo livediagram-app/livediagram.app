@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   capWorkbenchRole,
+  pairingCoversScope,
+  workbenchAmbientHeaders,
   isWorkbenchSessionFormat,
   normaliseWorkbenchName,
   parseWorkbenchOrigin,
@@ -75,7 +77,7 @@ describe('capWorkbenchRole', () => {
 });
 
 describe('workbenchRouteVerdict', () => {
-  const session = { documentId: 'doc1', ownerId: 'user_1' };
+  const session = { scope: 'document' as const, documentId: 'doc1', ownerId: 'user_1' };
   const verdict = (method: string, path: string) =>
     workbenchRouteVerdict(method, ['api', ...path.split('/')], session);
 
@@ -198,5 +200,114 @@ describe('normaliseWorkbenchName', () => {
     expect(normaliseWorkbenchName('x'.repeat(WORKBENCH_NAME_MAX_LENGTH + 1))).toBeNull();
     expect(normaliseWorkbenchName(42)).toBeNull();
     expect(normaliseWorkbenchName(undefined)).toBeNull();
+  });
+});
+
+describe('pairingCoversScope', () => {
+  it('lets a workspace pairing through for both scopes, a document pairing for its own only', () => {
+    expect(pairingCoversScope('workspace', 'workspace')).toBe(true);
+    expect(pairingCoversScope('workspace', 'document')).toBe(true);
+    expect(pairingCoversScope('document', 'document')).toBe(true);
+    expect(pairingCoversScope('document', 'workspace')).toBe(false);
+  });
+});
+
+describe('workbenchAmbientHeaders', () => {
+  it('refuses every borrowed credential in the document scope, only the guest header in the workspace', () => {
+    expect(workbenchAmbientHeaders('document')).toEqual([
+      'X-Share-Code',
+      'X-Owner-Id',
+      'X-Share-Password',
+    ]);
+    expect(workbenchAmbientHeaders('workspace')).toEqual(['X-Owner-Id']);
+  });
+});
+
+describe('workbenchRouteVerdict, workspace scope', () => {
+  const session = { scope: 'workspace' as const, documentId: null, ownerId: 'user_1' };
+  const verdict = (method: string, path: string) =>
+    workbenchRouteVerdict(method, ['api', ...path.split('/')], session);
+
+  it.each([
+    ['GET', 'capabilities'],
+    ['GET', 'openapi.json'],
+    ['GET', 'templates/kanban'],
+    ['GET', 'icons'],
+    ['GET', 'schema/square'],
+    ['GET', 'preferences'],
+    ['GET', 'participants/user_1'],
+    ['GET', 'share/abc123'],
+    ['GET', 'documents'],
+    ['POST', 'documents'],
+    ['GET', 'documents/any-doc'],
+    ['PUT', 'documents/any-doc/tabs/t1'],
+    ['DELETE', 'documents/any-doc'],
+    ['POST', 'documents/any-doc/copy'],
+    ['PUT', 'documents/any-doc/folder'],
+    ['GET', 'documents/any-doc/share'],
+    ['POST', 'documents/any-doc/share'],
+    ['PUT', 'documents/any-doc/share-password'],
+    ['POST', 'documents/any-doc/room-ticket'],
+    ['POST', 'documents/any-doc/tabs/t1/link'],
+    ['GET', 'folders'],
+    ['POST', 'folders'],
+    ['PUT', 'folders/f1'],
+    ['DELETE', 'folders/f1'],
+    ['GET', 'shared'],
+    ['DELETE', 'shared/doc1'],
+    ['PUT', 'favourites/doc1'],
+    ['GET', 'tags'],
+    ['GET', 'home'],
+    ['GET', 'timeline'],
+    ['GET', 'activity'],
+    ['GET', 'trash'],
+    ['POST', 'trash/doc1/restore'],
+    ['GET', 'placement-defaults'],
+    ['GET', 'images'],
+    ['GET', 'images/usage'],
+    ['DELETE', 'images/img1'],
+    ['POST', 'custom-themes'],
+    ['DELETE', 'shape-libraries/lib1'],
+    ['GET', 'teams'],
+    ['GET', 'teams/team1'],
+    ['GET', 'teams/team1/library'],
+    ['GET', 'teams/team1/members'],
+    ['DELETE', 'workbench/sessions/current'],
+  ])('allows %s %s', (method, path) => {
+    expect(verdict(method, path)).toBe('allow');
+  });
+
+  it.each([
+    ['DELETE', 'account'],
+    ['GET', 'account'],
+    ['POST', 'migrate'],
+    ['POST', 'guest-id'],
+    ['GET', 'tokens'],
+    ['DELETE', 'tokens/current'],
+    ['GET', 'workbench/pairings'],
+    ['DELETE', 'workbench/pairings/p1'],
+    ['POST', 'workbench/tickets'],
+    ['POST', 'workbench/sessions'],
+    ['PUT', 'preferences'],
+    ['PUT', 'participants/user_1'],
+    ['GET', 'participants/user_2'],
+    ['POST', 'ai'],
+    ['POST', 'ai/read-notes'],
+    ['GET', 'drive'],
+    ['POST', 'oauth'],
+    ['POST', 'teams'],
+    ['PUT', 'teams/team1'],
+    ['GET', 'teams/invites'],
+    ['POST', 'teams/team1/members'],
+    ['GET', 'teams/team1/invite-link'],
+    ['GET', 'teams/invite-link/tok'],
+    ['GET', 'community'],
+    ['POST', 'documents/any-doc/community'],
+    ['PUT', 'documents/any-doc/tabs/t1/presence'],
+    ['GET', 'forms/abc'],
+    ['GET', 'telemetry'],
+    ['PATCH', 'documents/any-doc'],
+  ])('confines %s %s', (method, path) => {
+    expect(verdict(method, path)).toBe('confined');
   });
 });

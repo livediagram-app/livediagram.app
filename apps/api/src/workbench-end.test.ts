@@ -73,6 +73,7 @@ describe('endWorkbenchAccess', () => {
     ]);
     expect(log).toHaveBeenCalledWith('[workbench] session-ended', {
       reason: 'unpaired',
+      scope: 'document',
       documentId: 'doc1',
       tokenId: 'tok1',
       sessionPrefix: 's1aaaaaa',
@@ -80,6 +81,7 @@ describe('endWorkbenchAccess', () => {
     expect(log).toHaveBeenCalledWith('[workbench] unpaired', {
       tokenId: 'tok1',
       pairingId: P1,
+      scope: 'document',
       reason: 'unpaired',
       rooms: 2,
       unreached: 0,
@@ -118,5 +120,34 @@ describe('endWorkbenchAccess', () => {
     await endWorkbenchAccess(env, { pairingId: 'nope' }, 'unpaired');
 
     expect(closes).toEqual([]);
+  });
+});
+
+describe('endWorkbenchAccess, workspace scope', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('closes every room a workspace session joined', async () => {
+    const { db, env, closes } = arrange();
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    db.sql.exec(`UPDATE workbench_pairings SET scope = 'workspace' WHERE id = 'p3';
+      INSERT INTO workbench_sessions
+        (id, secret_hash, owner_id, token_id, pairing_id, scope, document_id, origin, role, created_at, expires_at)
+      VALUES ('s5eeeeeeee', 'h5', 'u1', 'tok2', 'p3', 'workspace', NULL, 'https://a.example', 'edit', 1, ${NOW});
+      INSERT INTO workbench_session_rooms (session_id, document_id)
+      VALUES ('s5eeeeeeee', 'doc1'), ('s5eeeeeeee', 'doc2');`);
+
+    await endWorkbenchAccess(env, { tokenId: 'tok2' }, 'revoked');
+
+    expect(closes.map((c) => c.doc).sort()).toEqual(['doc1', 'doc2']);
+    expect(console.log).toHaveBeenCalledWith('[workbench] session-ended', {
+      reason: 'revoked',
+      scope: 'workspace',
+      documentId: null,
+      tokenId: 'tok2',
+      sessionPrefix: 's5eeeeee',
+    });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM workbench_session_rooms').get()).toEqual({
+      n: 0,
+    });
   });
 });

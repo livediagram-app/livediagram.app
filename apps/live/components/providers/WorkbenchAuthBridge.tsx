@@ -75,7 +75,7 @@ function SessionCredentials({
   useLayoutEffect(() => registerTokenProvider(async () => secretRef.current), [secretRef]);
   // Set on mount and on every renewal; never cleared, so a dead bearer keeps refusing locally.
   useLayoutEffect(() => {
-    setWorkbenchConfinement({ documentId, ownerId });
+    setWorkbenchConfinement({ scope: 'document', documentId, ownerId });
   }, [documentId, ownerId, secret]);
   return null;
 }

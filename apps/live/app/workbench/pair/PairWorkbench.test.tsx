@@ -39,6 +39,7 @@ const REQUEST: WorkbenchPairingRequestView = {
   origin: 'https://127.0.0.1:5175',
   name: 'Acme Editor',
   tokenName: 'livediagram CLI',
+  scope: 'document',
   expiresAt: Date.now() + 600_000,
   status: 'pending',
 };
