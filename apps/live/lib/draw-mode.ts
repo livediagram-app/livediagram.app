@@ -256,7 +256,7 @@ export function drawBannerMessage(
       // A workshop note has one size for life (docs/specs/021-event-storming/event-storming.md), so it is placed, not
       // drawn; the ghost under the pointer shows where.
       return intent.esKind
-        ? `Click to place ${withArticle(eventStormingNote(intent.esKind).label.toLowerCase())} note`
+        ? `${isMobile ? 'Tap' : 'Click'} to place ${withArticle(eventStormingNote(intent.esKind).label.toLowerCase())} note`
         : 'Tap to drop or drag to draw a sticky note';
     case 'image':
       return 'Tap to drop or drag to draw image bounds';

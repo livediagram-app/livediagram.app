@@ -437,7 +437,9 @@ their bottom-row buttons. What changes to fit the width:
     menu button). It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
-    its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries.
+    its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
+    phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to
+    drop or drag to draw Square" keeps the name it gives.
   - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
   - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
     Templates**, which opens the start again, until the first element lands
