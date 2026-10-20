@@ -36,6 +36,19 @@ describe('slideHeadline', () => {
     expect(slideHeadline(slide(['a', 'b']), tie)).toBe('Upper');
   });
 
+  it("names a slide by its title, not the longer lead line under it, nor a figure's few letters", () => {
+    const t = tab([
+      text('t', 0, 'Sign-ups by month', { textSize: 'lg', textScale: 2.2 }),
+      text('l', 60, 'Steady growth since the spring relaunch.', {
+        textSize: 'lg',
+        textScale: 1.33,
+      }),
+      text('n', 120, '+62%', { textSize: 'lg', textScale: 4 }),
+      text('q', 200, 'Q3', { textSize: 'lg', textScale: 6 }),
+    ]);
+    expect(slideHeadline(slide(['t', 'l', 'n', 'q']), t)).toBe('Sign-ups by month');
+  });
+
   it('is nothing for a slide without text, a card slide, or a missing tab', () => {
     expect(slideHeadline(slide([]), tab([]))).toBeNull();
     expect(slideHeadline({ ...slide(['a']), itemId: 'i' }, tab([text('a', 0, 'X')]))).toBeNull();

@@ -171,8 +171,9 @@ the screen allows:
 - **Header**: "Slide Deck", a badge with the slide count and the shown slides' planned minutes
   ("6 slides · 14 min"), the presenter settings and help.
 - **Rows**: a large 16:9 picture of the slide with its number on it (ringed in the accent while the
-  slide is open), the slide's name, else its **headline** (the text with the most weight on it, its
-  type size by its length up to 40 characters, so a heading outweighs a huge short figure), else
+  slide is open), the slide's name, else its **headline** (its largest text with words in it: two or more
+  letters, so a huge figure such as "86k" or "+62%" never names a slide; the topmost when two are the same size.
+  Weighing size by length named a layout's slide after its longer lead line under the title), else
   "Slide n"; under it the page's own name (the tab's too when the deck spans tabs), then quiet
   markers: a notes glyph when it has speaker notes, its minutes, and "Hidden" with the crossed eye.
   Hovering a row shows **Present from Here** (a round play button; not on a hidden slide), which
