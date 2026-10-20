@@ -46,14 +46,14 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
 
-// Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left, 12 + 98
-// px with the editor mode switch beside the button, plus an 8px gap): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
-// (D33), so a tablet in portrait still shows the whole dock. The dock is one card that scrolls
-// inside itself, with no bleed, so beside the menu card it starts at 7.5rem. At the
-// bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
-// wide enough for the two side by side (D9).
+// Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left): beside it on a phone or a
+// tablet, centred with the same clearance on both sides from lg (D33), so a tablet in portrait still shows the whole
+// dock. The dock is one card that scrolls inside itself, with no bleed. On a tablet it starts at 7.5rem, room for the
+// card at a raised UI scale; a phone draws at 100% (docs/specs/007-editor/ui-scale.md), where the card is 12 + 46 px,
+// so the dock starts 8 px after it at 4.125rem and keeps the 12 px margin on the right: at 7.5rem it left a gap
+// beside the card and pushed the Eraser off a 390 px phone.
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
+  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] phone:left-[4.125rem] phone:max-w-[calc(100%-4.875rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
