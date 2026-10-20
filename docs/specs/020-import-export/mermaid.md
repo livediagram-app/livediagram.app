@@ -205,6 +205,14 @@ A loop through a group starts where the Mermaid starts it: the contracted layout
 graph wrote them (a group where its first member was), so the first-written node leads, not whichever group came
 first.
 
+### Self-loops
+
+An edge from a node back to itself (`B --> B`, a state's transition to itself) is drawn as a **loop off the node's
+top-right corner**: out of its right side, up past its top, across and down into its top, standing `SELF_LOOP_REACH`
+(32 px) clear of the box (`withSelfLoops`, `graph-self-loops.ts`, the last pass of `layoutGraph`, so every style and
+an agent's graph draw it alike). Its label sits on the loop. Laid out like any other edge, its two ends took the same
+bottom-to-top anchors and the line ran straight up through the node and its label.
+
 ## The engine lives in `packages/document`
 
 Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
