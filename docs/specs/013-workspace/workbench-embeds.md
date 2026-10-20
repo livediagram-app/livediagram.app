@@ -1,12 +1,28 @@
 # Workbench embeds (`/embed/workbench`)
 
-**Status: built.** The api, the page, the pairing page and the CLI commands.
+**Status: built** for the document scope: the api, the page, the pairing page and the CLI commands. **Specified** for
+the workspace scope.
 
 A **workbench** is a developer tool that shows a document live beside an agent: an agent workbench first, then VS Code
 and other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
 there, everything they draw reaches livediagram at once, and their agent, working through the
 [CLI](../015-api/cli.md), sees the drawing and their selection. It is the signed-in sibling of the share-code
 [embed](embeds.md).
+
+## Two scopes
+
+A workbench embed has a **scope**, chosen when it is minted and fixed for the life of its session:
+
+| Scope       | Frame                                     | Starts on                          | Reaches                                            |
+| ----------- | ----------------------------------------- | ---------------------------------- | -------------------------------------------------- |
+| `document`  | `/embed/workbench?d=<id>`                 | that document (or its asked tab)   | one document                                       |
+| `workspace` | `/embed/workbench/explorer[/folder/<id>]` | Explorer Home, or the asked folder | the person's whole workspace, as the Explorer does |
+
+The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's diagrams one
+click away, and a project's folder (a [repository link](../027-repositories/repository-link.md)'s) beside its code.
+It never starts on `/new` or the landing page: a frame with no folder starts on Explorer Home
+([Explorer Home](explorer-home.md)). Where this page says "the document" without a scope, it means the document
+scope's document, or the document open in a workspace frame.
 
 ## Why a ticket, and not the person's session
 
@@ -27,15 +43,22 @@ that acts as the person on one document only.
    calls `POST /api/workbench/tickets { documentId, tabId?, origin }` with its token and prints
    `{ url, documentId, tabId, expiresAt }`. The ticket is 128 random bits, single use, valid for
    `WORKBENCH_TICKET_TTL_MS`, stored with the token's owner, the document, the origin and the token's access level.
+   - **A workspace ticket.** `livediagram workbench open --workspace [--folder <f>] --origin <origin> --json` calls
+     `POST /api/workbench/tickets { scope: 'workspace', folderId?, origin }` and prints
+     `{ url, scope, folderId, expiresAt }`. `scope` is `document` when absent, so today's callers are unchanged. A
+     `folderId` the token's owner cannot reach answers `404` (CLI exit 3); a document scope without a `documentId`,
+     or a workspace scope with one, is refused `400 invalid_value`. The ticket stores the scope and the folder.
    - **The origin** is exactly `scheme://host[:port]`, nothing more: `https` anywhere, `http` only on a loopback
      host (`localhost`, `127.0.0.1`, `[::1]`). `*`, `null`, a path, a query or any other scheme is refused
      `400 invalid_origin`; another workbench's scheme (a VS Code webview's) joins the list in this spec first.
 2. **Frame.** The workbench frames `url`, whose origin is the live app's canonical origin, never one that redirects (the workbench checks every message against it): `<live origin>/embed/workbench?d=<documentId>#ticket=<ticket>`. The
    document id is no secret; the ticket travels in the fragment, which no server, log or `Referer` sees, and the page
-   removes it from its address on load.
+   removes it from its address on load. A workspace ticket's url is
+   `<live origin>/embed/workbench/explorer[/folder/<folderId>]#ticket=<ticket>`.
 3. **Redeem.** The page sends `POST /api/workbench/sessions { ticket }`. The api consumes the ticket and answers
-   `{ session, documentId, tabId, origin, role, expiresAt, person }` (`person`: the owner's display identity). A
-   `documentId` other than the address's `d` is refused and the session revoked. The session is an opaque `lvw_`
+   `{ session, scope, documentId, folderId, tabId, origin, role, expiresAt, person }` (`person`: the owner's display
+   identity; `documentId` null in the workspace scope, `folderId` null unless one was asked). A `documentId` other
+   than the address's `d`, or a scope other than the address's page, is refused and the session revoked. The session is an opaque `lvw_`
    credential valid for `WORKBENCH_SESSION_TTL_MS`, held in the page's memory only, never in storage.
 4. **Bind to the workbench.** The page posts `livediagram:hello` to its parent with `targetOrigin` set to the
    ticket's origin, so a parent of any other origin never receives it, and mounts the editor only after the parent
@@ -51,6 +74,11 @@ A token mints tickets only for a workbench it is **paired** with: a pairing is o
 by the token's owner in their own signed-in browser. A token that leaks (into CI, a log, another machine) therefore
 opens no session anywhere its owner has not approved.
 
+A pairing also records its **scope**: `document`, or `workspace`, which also covers the document scope. Every
+pairing approved before scopes existed is a `document` pairing. A workspace mint on a document pairing is unpaired
+for that scope: it answers `428 pairing_required` with a new request, so reaching the whole workspace is always a
+second, explicit approval, never an existing pairing widened in silence.
+
 1. **Unpaired.** `POST /api/workbench/tickets` for an origin the token is not paired with answers
    `428 pairing_required { pairingUrl, expiresAt }`. The pairing request behind it is single use and valid for
    `WORKBENCH_PAIRING_TTL_MS`; a second unpaired mint for the same token and origin returns the same request while
@@ -61,12 +89,14 @@ opens no session anywhere its owner has not approved.
 3. **Approve.** `<live origin>/workbench/pair?code=<code>` is an ordinary editor page (never framed), for a signed-in
    person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
    open your documents with the token **livediagram CLI**?", with **Allow** and **Don't allow**. The workbench name
-   is the one the CLI sent, shown beside the origin, which is what is enforced.
+   is the one the CLI sent, shown beside the origin, which is what is enforced. A workspace request reads: "Allow
+   **Acme Editor** at `https://127.0.0.1:5175` to open **your whole workspace**, and to create, move, share and
+   trash documents and folders in it, with the token **livediagram CLI**?". `workbench pair` takes `--workspace`.
 4. **Paired.** Allow records the pairing; the waiting command exits 0 and the workbench mints again. Don't allow, or
    an expired request, ends the wait with exit 4 and records nothing.
 
 - A pairing lives as long as its token: revoking the token removes its pairings.
-- **Settings > API tokens** lists each token's paired workbenches (name, origin, when paired), each with
+- **Settings > API tokens** lists each token's paired workbenches (name, origin, scope, when paired), each with
   **Unpair**, which ends that pairing's open sessions as revoking does.
 - Pairing is per origin, so one workbench on a laptop and on a LAN address pairs separately.
 
@@ -89,6 +119,20 @@ opens no session anywhere its owner has not approved.
 - **Revocable.** Revoking the minting token ends its sessions; the page learns it on its next request or the room's
   close and turns read-only.
 
+The bullets above are the document scope. A **workspace** session is confined differently:
+
+- **Act as the person, in their workspace.** It reaches what the person reaches in the Explorer: their library and
+  folders, the documents shared with them, their teams' shared documents as a member, the Inbox, the Timeline,
+  Favourites, Recent, Search, the Trash, their image gallery, themes and shape libraries; and every document in
+  them, opened in the frame as the document scope opens one.
+- **Everything the Explorer does.** Create, rename, move, copy, favourite, share (links, roles, password, expiry),
+  publish, trash, restore, and create, rename, move and delete folders, at the person's own access to each.
+- **Never the account.** Refused `403 workbench_confined`, as in the document scope: the profile, preferences'
+  writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
+  billing), the account itself, and the AI assistant (the person's agent sits beside the frame).
+- **Never more than the token.** Each request is capped by the minting token's level and by the person's own access
+  now, as in the document scope: a view token gives a frame that browses and reads.
+
 ## What renders
 
 The editor of the document, minus the app's surroundings: no app header, Explorer or account menu. The canvas, the
@@ -96,6 +140,13 @@ tab bar, the palette, the toolbars and the panels stay, since a workbench embed 
 livediagram** button opens the document in a full tab. The colour scheme follows the workbench (`livediagram:theme`),
 else the system. Presence shows the person as themselves; their agent shows as their status line
 ([Agent presence](../024-agents/agent-presence.md)).
+
+A **workspace** frame renders the Explorer as it is at `/explorer`: its sidebar, its views and its empty states,
+without the app header, the account menu, Settings, or the Teams administration rows. Opening a document opens the
+editor in the same frame (`/embed/workbench/document/<id>`), with a **Back** control to where it was opened from;
+the browser's own back and forward walk the frame's history. **New document** creates the document in place and opens
+it in the frame, never `/new`. **Open in livediagram** opens the current view or document in a full tab. A frame
+started on a folder shows that folder; its empty state is the Explorer's own, with New document and the templates.
 
 ## Workbench messages
 
@@ -114,6 +165,19 @@ and accepted only from it. Unknown types are ignored, and logged once each.
 | `livediagram:reveal`    | workbench | `refs`: brings those elements into view and outlines them            |
 | `livediagram:theme`     | workbench | `colourScheme`: `light` or `dark`                                    |
 | `livediagram:ended`     | page      | `reason`: `expired`, `revoked`, `trashed`, `refused`                 |
+| `livediagram:place`     | page      | Workspace only: where the frame is, below                            |
+| `livediagram:open`      | workbench | Workspace only: `to`, below                                          |
+
+In a workspace frame, `ready` carries `scope: 'workspace'` and no document; `tab`, `selection` and `reveal` speak of
+the document open in the frame, and do nothing while none is. `trashed` ends nothing there: the frame returns to the
+Explorer. Two messages exist only in that scope:
+
+- **`livediagram:place`** is sent on every move: `{ view, folderId, folderName, documentCount, documentId,
+documentName, tabId, tabName, role }`. `view` is the Explorer view's name (`home`, `folder`, `recent`, ...) or
+  `document`; `documentCount` is the documents directly in the folder shown (null on other views), so a workbench can
+  offer something of its own beside an empty folder. A document's fields are null outside `document`.
+- **`livediagram:open`** moves the frame: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`. A
+  place the person cannot reach shows the Explorer's own not-found, as a link would.
 
 A `livediagram:selection` is sent after the selection settles for `WORKBENCH_SELECTION_SETTLE_MS`, so a marquee drag
 is one message.
@@ -184,14 +248,21 @@ What a workbench does to fit this contract (its own documentation holds the deta
 - **One document, one level, renewable up to the token.** A session reaches one document at its level for
   `WORKBENCH_SESSION_TTL_MS`; renewal mints a new ticket with the token, so the ceiling is the token's own life, and
   revoking the token ends every session it opened.
+- **A workspace session is the Explorer's powers, intersected with the token's.** A route the minting token could
+  not call, the session cannot call either; the account routes stay closed to both. So the workspace scope widens
+  what one frame reaches, never what the token reaches, and it is only ever reached through its own approval
+  ([Pairing](#pairing)).
 - Sessions are stored hashed; the api logs their id prefix, never the secret.
 
 ## Observability and telemetry
 
+- Every api log below carries the scope.
 - Api logs: `[workbench] pairing-requested`, `[workbench] paired`, `[workbench] pairing-declined`,
   `[workbench] unpaired`, `[workbench] ticket-minted`, `[workbench] session-opened`, `[workbench] session-refused` (with the
   reason: `expired`, `used`, `unknown`), `[workbench] session-ended`, each with the document id and the token id.
 - Page logs: `[workbench] handshake-ok`, `[workbench] handshake-failed`, `[workbench] renewed`,
-  `[workbench] message-ignored` (the type).
-- Telemetry: `Session·Opened·Workbench` when a page mounts the editor; `Cli·Used·WorkbenchOpen` and
+  `[workbench] message-ignored` (the type), `[workbench] place` (the view, never a name) and `[workbench] open`
+  (the target's kind).
+- Telemetry: `Session·Opened·Workbench` when a page mounts the editor, `Session·Opened·WorkbenchWorkspace` when a
+  workspace frame mounts the Explorer; `Cli·Used·WorkbenchOpen` and
   `Cli·Used·WorkbenchPair` for the commands; `Token·Linked·Workbench` when a pairing is approved.
