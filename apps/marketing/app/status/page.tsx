@@ -115,9 +115,13 @@ export default function StatusPage() {
 
         <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
           {COMPONENTS.map((c) => (
-            <li key={c.name} className="flex items-center justify-between gap-4 px-5 py-4">
-              {/* min-w-0 + break-words: a long host in a description wraps instead of pushing the
-                  badge off a 320px phone. */}
+            <li
+              key={c.name}
+              className="flex flex-col items-start gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+            >
+              {/* On a phone the badge sits under the text, so the description keeps the card's full
+                  width instead of wrapping a host mid-word in a narrow column; min-w-0 + break-words
+                  still wrap a long host rather than pushing the badge off a 320px phone. */}
               <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{c.name}</p>
                 <p className="mt-0.5 break-words text-xs text-slate-500 dark:text-slate-400">

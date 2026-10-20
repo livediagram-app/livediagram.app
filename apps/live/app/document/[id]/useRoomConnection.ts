@@ -37,6 +37,7 @@ import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
+import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
 import { debugLog } from '@/lib/debug-log';
@@ -668,8 +669,15 @@ export function useRoomConnection(opts: {
     const handlers: RoomHandlers = {
       onPresence: (participants, agents) => roomPresence(participants, agents),
       // Elements in a former stored shape from a peer loaded before a deploy are migrated
-      // before anything applies them (docs/specs/006-document/stroke-points.md).
-      onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
+      // before anything applies them (docs/specs/006-document/stroke-points.md); an op that is not the
+      // shape its kind promises is dropped first (room-op-shape.ts).
+      onOp: (from, op) => {
+        if (!roomOpIsWellFormed(op)) {
+          debugLog('[room] malformed op dropped', { kind: (op as { kind?: unknown }).kind });
+          return;
+        }
+        roomOp(from, migrateRoomOp(op), presence);
+      },
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       // Called for this socket alone: being called is the addressing (we never learn our own presence id).
