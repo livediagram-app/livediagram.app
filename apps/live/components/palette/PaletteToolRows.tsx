@@ -19,6 +19,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
 import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import { PointerWords } from './PointerWords';
 
 export function PaletteToolRow({
   def,
@@ -98,7 +99,7 @@ export function PaletteToolRow({
           // Two lines at most: past that a "short description" is a paragraph,
           // and the hover card already carries the fuller version.
           <span className="line-clamp-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-            {def.blurb}
+            <PointerWords text={def.blurb} />
           </span>
         ) : null}
       </span>

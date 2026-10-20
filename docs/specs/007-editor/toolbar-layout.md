@@ -128,7 +128,8 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
   the glyph on a plate beside the name and its one-line blurb, two to a row (one, in a narrower flyout, for a
   category of three tiles or fewer, such as Media). A shortcut shows as a key cap beside the name.
 - **A footer** saying what the pointed-at tile does and its key, without the hover card's wait; before anything is
-  pointed at, "Click to add one, or drag it onto the canvas." ("Tap to add one, …" on a touch screen). It is **one
+  pointed at, "Click to add one, or drag it onto the canvas." ("Tap to add one, …" on a touch screen). A tile's blurb or description that names a click says it the touch screen's way there too ("Double-click to
+  look underneath" reads "Double-tap to look underneath"; `PointerWords`), each wording shown for its own pointer. It is **one
   fixed height** whatever it says, room for the name and two lines of description (`FLYOUT_FOOTER_HEIGHT`, 69 px),
   a longer description clamped to two lines: a footer that grew and shrank with each tile moved the flyout's edge
   under the pointer as it travelled.

@@ -12,6 +12,7 @@ import { tileDragStart } from './palette-tile-drag';
 import { useTileGlyph } from './PaletteIconButton';
 import { tileEnterAnimation } from './palette-tile-finish';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import { PointerWords } from './PointerWords';
 
 // The category flyout's tiles (CategoryFlyout, CategoryFlyoutSide): a picture tile for the grid categories, a card
 // with its blurb for the rest, and the footer that describes the pointed-at one. Each places, drags and tints as the
@@ -106,11 +107,13 @@ export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
               {tileDisplayName(def)}
             </span>
             <span className="line-clamp-2 text-[11.5px] leading-4 text-slate-500 dark:text-slate-400">
-              {def.variants?.length
-                ? 'Choose a preset to start from.'
-                : def.action.type === 'open'
-                  ? `Browse ${def.label}.`
-                  : def.description}
+              {def.variants?.length ? (
+                'Choose a preset to start from.'
+              ) : def.action.type === 'open' ? (
+                `Browse ${def.label}.`
+              ) : (
+                <PointerWords text={def.description} />
+              )}
             </span>
           </div>
           {def.shortcut ? (
@@ -251,7 +254,11 @@ function Card(item: ItemProps) {
           {def.shortcut && !disabled ? <Kbd small>{def.shortcut}</Kbd> : null}
         </span>
         <span className="line-clamp-2 text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
-          {def.variants?.length ? `${def.variants.length} presets` : (def.blurb ?? def.description)}
+          {def.variants?.length ? (
+            `${def.variants.length} presets`
+          ) : (
+            <PointerWords text={def.blurb ?? def.description} />
+          )}
         </span>
       </span>
       {side ? (
