@@ -231,7 +231,9 @@ export function PaneHeader({
                   <button
                     type="button"
                     onClick={c.onClick}
-                    className="rounded px-1.5 py-0.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                    // A 20px crumb: padded to a finger's 44px on a touch screen, upward and downward only, so the
+                    // crumbs beside it keep their own taps.
+                    className="relative touch-target-y rounded px-1.5 py-0.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                   >
                     {c.name}
                   </button>

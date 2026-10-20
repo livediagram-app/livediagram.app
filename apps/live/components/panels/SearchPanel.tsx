@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livediagram/ui';
+import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
   buildSearchResults,
@@ -310,9 +310,11 @@ export function SearchPanel({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="relative touch-target -mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <kbd className="text-[10px] font-medium">Esc</kbd>
+            {/* The key that closes it, on a keyboard's screen; a touch screen has no Esc, so it shows a plain ×. */}
+            <kbd className="text-[10px] font-medium pointer-coarse:hidden">Esc</kbd>
+            <CloseIcon size={14} aria-hidden className="hidden pointer-coarse:block" />
           </button>
         </div>
         {/* How many it found, said once the reader pauses on a query. */}

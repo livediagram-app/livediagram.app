@@ -110,7 +110,8 @@ A welcome offer card, then six steps in palette → canvas → tabs → theme or
 theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
 the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
-`apps/live/components/tour/tour-steps.ts`):
+`apps/live/components/tour/tour-steps.ts`). A step that names a hover, a click or a right-click carries its touch
+words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: a tap, a long-press:
 
 0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "A quick look
    at the editor? It takes about a minute.", then **No** / **Yes**. Yes and No are every tour's
@@ -123,19 +124,21 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
    with the bar ([Toolbar layout](toolbar-layout.md#the-category-bar)): "The palette's categories sit along the
    top: rest on one to see its elements, then click one to add it, or drag it onto the canvas." Plan's strip still
    opens its category dropdown here. A dedicated "Tools category" step existed briefly and was cut: the category
-   dropdown already tells that story.
+   dropdown already tells that story. On touch: "Tap a category to see what is in it. Tap to add, or drag onto the
+   canvas." (the flyout's own touch hint).
 4. **The Element Menu**: selects an element (adding a theme-coloured square at the viewport centre first if the
    tab is empty) and opens its right-click menu programmatically. A square it added is the tour's own: placed
    with no history and taken away, with its selection, when the tour ends however it ends (`useTourSquare`), so
-   a fresh document is left as it was and Undo never brings it back.
+   a fresh document is left as it was and Undo never brings it back. On touch it reads "Long-press anything to style
+   it, or add a note, link or comment."
 5. **Tabs**: opens the active tab's ⋯ menu and highlights it with the tab pill (an `alsoHighlight` union): each
    tab holds its own work in its own mode; + adds one; the menu renames, duplicates, locks, exports or sets it
    side by side. The menu closes as the step ends.
 6. **Theme & Canvas** (desktop only): opens Tab Style from the Style (painter's palette) dock button, which the step's copy names as **the Style button**
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) and highlights the open panel with the
    button, over the dialog layer. It closes as the step ends, however it ends, including when the step is left
-   while the panel is still opening. Mobile reaches the same dialog through the canvas menu, so the step is skipped
-   there.
+   while the panel is still opening. A phone's dock has the same button, but opens Tab Style as a modal sheet, and the
+   tour stands aside while a modal is open, so the step would show the sheet with no card: it is skipped there.
 7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Learn More** link to the help
    centre (new tab, no underline), and a **Start** button that completes the tour.
 

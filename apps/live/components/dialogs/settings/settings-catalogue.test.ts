@@ -267,6 +267,15 @@ describe('settings catalogue', () => {
     );
   });
 
+  // A phone has no hover and no middle button: the Mouse section's rows are inert there, as the Map's are.
+  it('makes the Mouse section desktop only', () => {
+    const rows = SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter(
+      (r) => 'section' in r && r.section === 'Mouse',
+    );
+    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover', 'middleMousePan']);
+    for (const row of rows) expect(row.desktopOnly).toMatch(/A mouse setting/);
+  });
+
   it('offers Button Labels in Appearance, on by default and desktop only', () => {
     const appearance = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
     const row = appearance.rows.find((r) => r.key === 'dockButtonNames');

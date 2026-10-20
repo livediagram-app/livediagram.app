@@ -400,6 +400,11 @@ function uiScalePartRow(
 const MINIMAP_DESKTOP_ONLY =
   'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
 
+// The Mouse section's rows answer a hover and a middle button, which a phone has neither of, so they are inert there
+// and share this note.
+const MOUSE_DESKTOP_ONLY =
+  'A mouse setting, so it has no effect on a phone. Your choice still applies on a larger screen.';
+
 // The panel switches (docs/specs/007-editor/user-preferences.md), each on
 // unless stored `false`. One row per Panels sub-category, first in its pane,
 // with that panel's other rows nested beneath it (`parent`), so they are
@@ -610,6 +615,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'quickAddOnHover',
         keywords: 'plus menu hover add shortcut',
         section: 'Mouse',
+        desktopOnly: MOUSE_DESKTOP_ONLY,
         label: 'Quick-Add on Hover',
         description:
           "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
@@ -623,6 +629,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'middleMousePan',
         keywords: 'scroll wheel drag pan navigate mouse',
         section: 'Mouse',
+        desktopOnly: MOUSE_DESKTOP_ONLY,
         label: 'Middle-Mouse Pan',
         description:
           'Hold the middle button and drag to pan, whatever tool is active. Off leaves the button to your browser.',

@@ -18,9 +18,10 @@ const CARD =
 const CARD_CURRENT =
   'rounded-xl bg-brand-50/70 ring-2 ring-brand-400/70 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:bg-brand-500/10 dark:ring-brand-400/50';
 
-// The quiet text action at a heading's end ("See all", "See Timeline").
+// The quiet text action at a heading's end ("See all", "See Timeline"): a line of small text, padded to a finger's
+// 44px on a touch screen.
 export const PANE_LINK =
-  'cursor-pointer rounded text-xs font-medium text-brand-700 transition hover:text-brand-800 hover:underline focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:text-brand-200';
+  'relative touch-target cursor-pointer rounded text-xs font-medium text-brand-700 transition hover:text-brand-800 hover:underline focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:text-brand-200';
 
 export function PaneSection({
   title,
