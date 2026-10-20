@@ -35,7 +35,7 @@ self-host that opts out). The editor never depends on the fonts loading.
   menu (and, for arrows, the right-click context menu's Text category).
   Sets `Element.font`. "Tab default" clears the override.
 - **Per tab** — the **Font** tab of the Tab Style dialog
-  ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md), opened from the paintbrush dock
+  ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md), opened from the Style dock
   button; it was a category of the tab / canvas context menu until the
   menu was slimmed to actions), holding:
   - **Font** — sets `Tab.font`: the default for **every** text element on
