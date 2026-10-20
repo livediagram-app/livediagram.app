@@ -57,6 +57,10 @@ type TechIconDef = {
 - `iconId` stays a plain string in the data model (as today), so adding an icon
   needs no migration. An id present in neither catalogue renders the existing
   placeholder.
+- **A key that is not text is refused on the way in.** Validation refuses an `iconId`, `stickerId` or
+  `flowchartId` that is not a string of at most 256 characters, and one that arrives anyway (stored before,
+  a peer's op, a file) is dropped as it enters (`dropMalformedIds`), so the element reads as one with a key
+  this build does not know: an icon its placeholder glyph.
 - **The heavy data loads async.** `tech-icons.ts` is the synchronous API
   surface only (types, `TECH_ICON_DND_MIME`, `TECH_PROVIDERS`, `isTechIconId`);
   the per-icon colour + glyph markup lives in

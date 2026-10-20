@@ -25,6 +25,7 @@ import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
+import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
 import { parseStrokePoints } from './stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
@@ -234,6 +235,12 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
   { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
   { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
+  // Catalogue keys (docs/specs/010-palette/technology-icons.md): looked up as text everywhere.
+  ...ELEMENT_KEY_FIELDS.map((field) => ({
+    field,
+    valid: isElementKey,
+    rule: `a string of at most ${ELEMENT_KEY_MAX} characters`,
+  })),
   // A Participant's adder key (docs/specs/013-workspace/share-roles.md), stamped by the server.
   {
     field: 'addedBy',
