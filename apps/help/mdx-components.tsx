@@ -115,7 +115,62 @@ function FeatureGrid({ children }: { children: ReactNode }) {
   return <div className="my-5 grid grid-cols-1 gap-3 md:grid-cols-2">{children}</div>;
 }
 
-export { Step, Tip, Note, Feature, FeatureGrid, Figure };
+/** An article's numbered section heading (`## Section`), its id the anchor the Contents links to. */
+function SectionHeading({ children }: { children?: ReactNode }) {
+  return (
+    <h2
+      id={headingId(children)}
+      className="mb-4 mt-10 flex items-center gap-3 text-xl font-bold text-slate-900 md:text-2xl dark:text-slate-100"
+    >
+      <span className="section-number flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300" />
+      {children}
+    </h2>
+  );
+}
+
+// A long token (an api path, a CLI line) may break anywhere: it has no spaces of its own, and on a phone it ran
+// to the screen's edge. A fenced block keeps its lines whole (its <pre> scrolls instead).
+function InlineCode({ children }: { children?: ReactNode }) {
+  return (
+    <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-brand-700 [overflow-wrap:anywhere] dark:bg-slate-800 dark:text-brand-300">
+      {children}
+    </code>
+  );
+}
+
+// Tables had no overrides at all, so a markdown table rendered as unpadded browser default: columns touching, no
+// rules, a key and its description reading as one run-on line. The shortcut references are mostly tables, which is
+// where it hurt. A table wider than a phone scrolls in its own box rather than running off the page, and its code
+// breaks only at spaces: breaking anywhere, as running text's does, split `POWER(base,` into `POWER(b` and `ase,`.
+function Table({ children }: { children?: ReactNode }) {
+  return (
+    // Focusable, as a code block is, so a keyboard reaches a table too wide for the column and scrolls it.
+    <div
+      tabIndex={0}
+      className="mb-5 overflow-x-auto rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand-400 [&_code]:[overflow-wrap:normal]"
+    >
+      <table className="w-full border-collapse text-left text-[15px]">{children}</table>
+    </div>
+  );
+}
+
+function Th({ children }: { children?: ReactNode }) {
+  return (
+    <th className="border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-800 dark:border-slate-800 dark:text-slate-100">
+      {children}
+    </th>
+  );
+}
+
+function Td({ children }: { children?: ReactNode }) {
+  return (
+    <td className="border-b border-slate-100 px-3 py-2 align-top leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
+      {children}
+    </td>
+  );
+}
+
+export { Step, Tip, Note, Feature, FeatureGrid, Figure, SectionHeading, InlineCode, Table, Th, Td };
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -124,17 +179,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </h1>
     ),
-    h2: ({ children }: { children?: ReactNode }) => {
-      return (
-        <h2
-          id={headingId(children)}
-          className="mb-4 mt-10 flex items-center gap-3 text-xl font-bold text-slate-900 md:text-2xl dark:text-slate-100"
-        >
-          <span className="section-number flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300" />
-          {children}
-        </h2>
-      );
-    },
+    h2: SectionHeading,
     h3: ({ children }: { children?: ReactNode }) => (
       <h3
         id={headingId(children)}
@@ -167,13 +212,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </ol>
     ),
     li: ({ children }) => <li className="text-[15px] leading-relaxed">{children}</li>,
-    // A long token (an api path, a CLI line) may break anywhere: it has no spaces of its own, and on a phone it ran
-    // to the screen's edge. A fenced block keeps its lines whole (its <pre> scrolls instead).
-    code: ({ children }) => (
-      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-brand-700 [overflow-wrap:anywhere] dark:bg-slate-800 dark:text-brand-300">
-        {children}
-      </code>
-    ),
+    code: InlineCode,
     // Focusable, so a keyboard reaches a code block too wide for the column and scrolls it (WCAG 2.1.1; axe
     // scrollable-region-focusable).
     pre: ({ children }) => (
@@ -186,25 +225,9 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </pre>
     ),
-    // Tables had no overrides at all, so a markdown table rendered as
-    // unpadded browser default: columns touching, no rules, a key and its
-    // description reading as one run-on line. The shortcut references are
-    // mostly tables, which is where it hurt.
-    table: ({ children }) => (
-      <div className="mb-5 overflow-x-auto">
-        <table className="w-full border-collapse text-left text-[15px]">{children}</table>
-      </div>
-    ),
-    th: ({ children }) => (
-      <th className="border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-800 dark:border-slate-800 dark:text-slate-100">
-        {children}
-      </th>
-    ),
-    td: ({ children }) => (
-      <td className="border-b border-slate-100 px-3 py-2 align-top leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
-        {children}
-      </td>
-    ),
+    table: Table,
+    th: Th,
+    td: Td,
     blockquote: ({ children }) => (
       <blockquote className="my-5 rounded-r-lg border-l-4 border-brand-500 bg-slate-50 py-3 pl-4 pr-4 italic text-slate-500 dark:bg-slate-950 dark:text-slate-400">
         {children}

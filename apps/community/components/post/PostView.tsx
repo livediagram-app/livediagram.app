@@ -46,9 +46,10 @@ export function PostView() {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* A 20px line of text: touch-target gives a finger the 44px it needs without moving anything. */}
       <Link
         href="/"
-        className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors duration-micro hover:text-brand-700 dark:text-slate-400 dark:hover:text-brand-300"
+        className="relative touch-target inline-flex w-fit items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors duration-micro hover:text-brand-700 dark:text-slate-400 dark:hover:text-brand-300"
       >
         <BackIcon size={15} aria-hidden />
         Back to Community
