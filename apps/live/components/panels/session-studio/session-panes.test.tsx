@@ -138,6 +138,25 @@ describe('session panes', () => {
     expect(screen.getByRole('button', { name: 'Add at least 2 answers' })).toBeTruthy();
   });
 
+  it('will not ask with the same answer twice, and asks with one of each', () => {
+    const p = props();
+    render(<Poll {...p} />);
+    fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: 'Lunch?' } });
+    fireEvent.click(screen.getByRole('radio', { name: /Choices/ }));
+    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: 'Pizza' } });
+    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: ' Pizza ' } });
+    const ask = screen.getByRole('button', { name: 'Make at least 2 answers different' });
+    expect((ask as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.keyDown(screen.getByLabelText('Answer 2'), { key: 'Enter' });
+    fireEvent.change(screen.getByLabelText('Answer 3'), { target: { value: 'Tacos' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ask everyone' }));
+    expect(p.onStartPoll).toHaveBeenCalledWith({
+      question: 'Lunch?',
+      style: 'choice',
+      options: ['Pizza', 'Tacos'],
+    });
+  });
+
   it('adds the next answer on Enter and asks with the trimmed list', () => {
     const p = props();
     render(<Poll {...p} />);

@@ -139,7 +139,8 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    previews the exact prompt, built from the same `pollStyleTokens` the real
    prompt reads, so a typo is caught before it lands on every screen. The
    button names what is missing while it can't ask ("Write a question to
-   ask", "Add at least 2 answers") instead of sitting greyed out. Edit-role
+   ask", "Add at least 2 answers", or "Make at least 2 answers different" when the same answer is typed twice,
+   since an answer is its token and a poll keeps one of each) instead of sitting greyed out. Edit-role
    only. A document that isn't shared or on a team does NOT block a poll: it
    runs locally, just for the host (rehearsing one, or asking a room you are
    presenting to), and the composer shows a note that only you will get it.

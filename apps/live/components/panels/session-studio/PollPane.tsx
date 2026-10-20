@@ -103,6 +103,9 @@ export function PollComposerBody({
   const optionRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const trimmed = options.map((o) => o.trim()).filter((o) => o.length > 0);
+  // An answer IS its token, so the poll keeps one of each (sanitisePoll): "Same" twice is one answer, and a poll
+  // asked with it fell under the two-answer floor and silently never started.
+  const distinct = [...new Set(trimmed.map((o) => o.slice(0, POLL_OPTION_MAX)))];
   // What a roster poll WOULD freeze if it started now. Shown rather than
   // described, because the ballot is about to be fixed for everyone and a
   // facilitator should see the names — and the truncation, if the room is
@@ -112,18 +115,20 @@ export function PollComposerBody({
     ? 'Write a question to ask'
     : style === 'choice' && trimmed.length < POLL_OPTIONS_MIN
       ? `Add at least ${POLL_OPTIONS_MIN} answers`
-      : // The room is the ballot, so there is nothing the facilitator can type
-        // to fix this one: it needs another person, not another answer.
-        pollStyleUsesRoster(style) && rosterOptions.length < POLL_OPTIONS_MIN
-        ? 'Need at least 2 people here to vote on'
-        : null;
+      : style === 'choice' && distinct.length < POLL_OPTIONS_MIN
+        ? `Make at least ${POLL_OPTIONS_MIN} answers different`
+        : // The room is the ballot, so there is nothing the facilitator can type
+          // to fix this one: it needs another person, not another answer.
+          pollStyleUsesRoster(style) && rosterOptions.length < POLL_OPTIONS_MIN
+          ? 'Need at least 2 people here to vote on'
+          : null;
 
   const start = () => {
     if (missing) return;
     // `options` is ignored for a roster poll — `startPoll` reads the room
     // itself, so what is asked matches the instant of the press rather than
     // whenever this pane last rendered.
-    onStartPoll({ question: question.trim(), style, options: trimmed });
+    onStartPoll({ question: question.trim(), style, options: distinct });
   };
 
   const addOption = (focus: boolean) => {
