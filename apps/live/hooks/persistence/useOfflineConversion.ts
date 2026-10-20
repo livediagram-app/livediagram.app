@@ -50,7 +50,7 @@ export function useOfflineConversion(
     const ok = await confirm({
       title: `Take “${liveDoc.name}” Offline?`,
       message: [
-        'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
+        'This removes it from the server and every other device. It will exist only in this browser, with no backup.',
         notice,
       ]
         .filter(Boolean)

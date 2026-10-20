@@ -342,8 +342,9 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
 Action: **"Take Offline"**. This is **destructive on the server** and gated by a
 confirmation:
 
-- **Confirmation** warns clearly: _"This removes it from your account and every
-  other device. It will exist only in this browser, with no backup."_ When the
+- **Confirmation** warns clearly: _"This removes it from the server and every
+  other device. It will exist only in this browser, with no backup."_ (The server, not "your account": a guest,
+  and everyone on a deployment without sign-in, has no account.) When the
   document has shared tabs, the shared-tab notice follows (see below).
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
