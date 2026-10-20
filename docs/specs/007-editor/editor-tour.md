@@ -106,8 +106,9 @@ flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 
-A welcome offer card, then six steps in palette → canvas → tabs → theme order, on a desktop and a phone alike
-(four on an **event-storming board**, which hides the strip's pickers, and so drops the two dropdown steps), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
+A welcome offer card, then six steps in palette → canvas → tabs → theme order (five on mobile, where the
+theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
+the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`). A step that names a hover, a click or a right-click carries its touch
 words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: a tap, a long-press:
@@ -133,11 +134,11 @@ words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: 
 5. **Tabs**: opens the active tab's ⋯ menu and highlights it with the tab pill (an `alsoHighlight` union): each
    tab holds its own work in its own mode; + adds one; the menu renames, duplicates, locks, exports or sets it
    side by side. The menu closes as the step ends.
-6. **Theme & Canvas**: opens Tab Style from the Style (painter's palette) dock button, which the step's copy names as **the Style button**
+6. **Theme & Canvas** (desktop only): opens Tab Style from the Style (painter's palette) dock button, which the step's copy names as **the Style button**
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) and highlights the open panel with the
    button, over the dialog layer. It closes as the step ends, however it ends, including when the step is left
-   while the panel is still opening. A phone's dock has the same button and opens Tab Style as a bottom sheet, so
-   the step runs there too.
+   while the panel is still opening. A phone's dock has the same button, but opens Tab Style as a modal sheet, and the
+   tour stands aside while a modal is open, so the step would show the sheet with no card: it is skipped there.
 7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Learn More** link to the help
    centre (new tab, no underline), and a **Start** button that completes the tour.
 

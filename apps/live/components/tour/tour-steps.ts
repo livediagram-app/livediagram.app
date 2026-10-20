@@ -144,6 +144,9 @@ export const TOUR_STEPS: TourStep[] = [
       tabStyleLeft = true;
       closeTabStyle();
     },
+    // Desktop only: a phone opens Tab Style as a modal sheet, and the tour stands aside while a modal is open, so the
+    // step would show the sheet with no card to go on from.
+    mobileSkip: true,
   },
   {
     id: 'outro',

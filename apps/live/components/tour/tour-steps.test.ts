@@ -41,9 +41,11 @@ describe('tourStepsFor', () => {
     expect(desktop.indexOf('context-menu')).toBe(desktop.indexOf('categories') + 1);
   });
 
-  // The phone's dock has the paintbrush too, and Tab Style opens there as a sheet.
-  it('keeps every step on a phone diagram', () => {
-    expect(ids({ mobile: true, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
+  // A phone opens Tab Style as a modal sheet, and the tour stands aside while a modal is open.
+  it('drops the Theme & Canvas step on a phone', () => {
+    const mobile = ids({ mobile: true, esBoard: false });
+    expect(mobile).not.toContain('theme-canvas');
+    expect(mobile).toContain('palette');
   });
 
   it('reads tap and long-press words on a touch screen, click and right-click words otherwise', () => {
@@ -68,12 +70,12 @@ describe('tourStepsFor', () => {
     expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
   });
 
-  it('counts six steps on a diagram, desktop or phone, and four on a phone board', () => {
+  it('counts six steps on a desktop diagram, five on a phone and three on a phone board', () => {
     const count = (opts: { mobile: boolean; esBoard: boolean }) =>
       tourStepsFor(opts).filter((s) => !s.card).length;
     expect(count({ mobile: false, esBoard: false })).toBe(6);
-    expect(count({ mobile: true, esBoard: false })).toBe(6);
-    expect(count({ mobile: true, esBoard: true })).toBe(4);
+    expect(count({ mobile: true, esBoard: false })).toBe(5);
+    expect(count({ mobile: true, esBoard: true })).toBe(3);
   });
 
   it('keeps the bookend cards on every surface', () => {
