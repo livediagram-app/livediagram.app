@@ -52,6 +52,18 @@ describe('sessionButtonPlan', () => {
     });
   });
 
+  it('reads a question that is not text as none, rather than failing the canvas', () => {
+    for (const question of [-1, null, {}, ['Why?']])
+      expect(
+        sessionButtonPlan({
+          tool: 'poll',
+          style: 'choice',
+          question: question as never,
+          options: ['A', 'B'],
+        }),
+      ).toMatchObject({ question: 'Quick question', options: ['A', 'B'] });
+  });
+
   it('clamps a duration instead of rejecting the element', () => {
     expect(sessionButtonPlan({ tool: 'timer', minutes: 0 })).toEqual({
       tool: 'timer',

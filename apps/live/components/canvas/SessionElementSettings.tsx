@@ -27,6 +27,7 @@ import {
   DEFAULT_TIMER_MINUTES,
   DEFAULT_VOTE_DOTS,
   isPollStyle,
+  sessionButtonPlan,
   type SessionButtonConfig,
   type TimerMode,
 } from '@livediagram/document';
@@ -56,7 +57,10 @@ export function SessionTimerSettings({
   // its configured length — so it is local, and only decides which face of the
   // body you are looking at.
   const [mode, setMode] = useState<TimerMode>('countdown');
-  const minutes = config.minutes ?? DEFAULT_TIMER_MINUTES;
+  // Clamped as the press clamps it (sessionButtonPlan), so a stored value out of range or not a number shows as
+  // the timer it would start.
+  const plan = sessionButtonPlan({ ...config, tool: 'timer' });
+  const minutes = plan?.tool === 'timer' ? plan.minutes : DEFAULT_TIMER_MINUTES;
 
   return (
     <div className={BODY_CLASS}>
@@ -87,12 +91,13 @@ function SessionVoteSettings({
   onClose?: () => void;
 }) {
   const { startVote, layers, activeLayerId } = useEditorContext();
+  const votePlan = sessionButtonPlan({ ...config, tool: 'vote' });
   return (
     <div className={BODY_CLASS}>
       <VoteSetupBody
         voteLayers={layers}
         activeLayerId={activeLayerId}
-        dots={config.dots ?? DEFAULT_VOTE_DOTS}
+        dots={votePlan?.tool === 'vote' ? votePlan.dots : DEFAULT_VOTE_DOTS}
         onDotsChange={(dots) => onChange({ ...config, dots })}
         onStartVote={(dots, setup) => {
           startVote(dots, setup);
@@ -118,11 +123,12 @@ function SessionPollSettings({
       <PollComposerBody
         hasAudience={documentShareable || !!documentTeamId}
         collaborators={pollCollaborators}
-        question={config.question ?? ''}
+        // Read as the press reads it (sessionButtonPlan): only text is a question or an answer.
+        question={typeof config.question === 'string' ? config.question : ''}
         onQuestionChange={(question) => onChange({ ...config, question })}
         style={isPollStyle(config.style) ? config.style : DEFAULT_SESSION_POLL_STYLE}
         onStyleChange={(style) => onChange({ ...config, style })}
-        options={config.options ?? []}
+        options={(config.options ?? []).filter((o): o is string => typeof o === 'string')}
         onOptionsChange={(options) => onChange({ ...config, options })}
         onStartPoll={(draft) => {
           livePoll.startPoll(draft);
