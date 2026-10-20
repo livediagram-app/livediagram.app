@@ -123,9 +123,20 @@ export function queryElementGrid(grid: ElementGrid, rect: Rect): Element[] {
   const found = new Set<string>(grid.oversize);
   if (finiteRect(rect)) {
     const { x0, x1, y0, y1 } = cellSpan(rect);
-    for (let cx = x0; cx <= x1; cx++)
-      for (let cy = y0; cy <= y1; cy++)
-        for (const id of grid.buckets.get(`${cx},${cy}`) ?? []) found.add(id);
+    // A query wider than the board's occupied cells (a long arrow's rect) walks those cells instead
+    // of its own, so its cost is bounded by the board, never by how far apart two points are.
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > grid.buckets.size) {
+      for (const [key, ids] of grid.buckets) {
+        const comma = key.indexOf(',');
+        const cx = Number(key.slice(0, comma));
+        const cy = Number(key.slice(comma + 1));
+        if (cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1) for (const id of ids) found.add(id);
+      }
+    } else {
+      for (let cx = x0; cx <= x1; cx++)
+        for (let cy = y0; cy <= y1; cy++)
+          for (const id of grid.buckets.get(`${cx},${cy}`) ?? []) found.add(id);
+    }
   } else if (!warnedBadRect) {
     warnedBadRect = true;
     console.debug('[element-grid] bad query rect', rect);
