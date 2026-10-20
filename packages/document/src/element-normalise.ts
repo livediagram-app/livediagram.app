@@ -8,6 +8,7 @@
 // to be is left for isValidTab to judge.
 
 import { anchorPrimarySide } from './anchors';
+import { asText } from './as-text';
 import { orthogonalBends } from './arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from './look-size';
 import { CODE_LANGUAGES } from './data-shapes';
@@ -43,13 +44,7 @@ const num = (v: unknown) => {
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : 0;
 };
-// Text as given, a number or a flag as written; anything else (an object, a list) is no text.
-const str = (v: unknown) =>
-  typeof v === 'string'
-    ? v
-    : typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint'
-      ? String(v)
-      : '';
+const str = asText;
 
 function normaliseTable(el: Raw): Raw {
   const cells = el.cells;
