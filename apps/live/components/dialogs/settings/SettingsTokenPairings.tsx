@@ -1,14 +1,20 @@
 'use client';
 
 // A token's paired workbenches (docs/specs/013-workspace/workbench-embeds.md "Pairing"; blueprint "Settings > API
-// tokens", WB35, WB36): under the card's lifetime bar, one row per workbench the token may open documents in,
+// tokens", WB35, WB36, WB67): under the card's lifetime bar, one row per workbench the token may open documents in,
 // each with Unpair, which asks first in the same popover Revoke uses. None renders nothing.
 import { useId, useState } from 'react';
-import type { WorkbenchPairing } from '@livediagram/api-schema';
+import type { WorkbenchPairing, WorkbenchScope } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { relativeTime } from './token-status';
 
 const UNNAMED = 'Unnamed workbench';
+
+// What each pairing may reach, in the row's words.
+const SCOPE_LABELS: Record<WorkbenchScope, string> = {
+  document: 'One document at a time',
+  workspace: 'Whole workspace',
+};
 
 export function SettingsTokenPairings({
   pairings,
@@ -47,6 +53,8 @@ export function SettingsTokenPairings({
                   <code className="font-mono break-all text-slate-600 dark:text-slate-300">
                     {pairing.origin}
                   </code>
+                  <span aria-hidden>·</span>
+                  <span>{SCOPE_LABELS[pairing.scope]}</span>
                   <span aria-hidden>·</span>
                   <span>Paired {relativeTime(pairing.pairedAt, now)}</span>
                 </p>
