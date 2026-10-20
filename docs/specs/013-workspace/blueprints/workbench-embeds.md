@@ -154,7 +154,10 @@ The workspace scope adds or changes, by file:
 | `apps/live/app/embed/workbench/WorkbenchPage.tsx`, `workbench-machine.ts`, `workbench-fragment.ts`, `useWorkbenchHandshake.ts`, `useWorkbenchRenewal.ts` | The address's scope; the scope check at redemption and renewal; the workspace frame once mounted                                                           |
 | `apps/live/app/embed/workbench/WorkspaceFrame.tsx` (new, + test)                                                                                         | The mounted workspace frame: the place from the address, the Explorer or the editor, Back, `place`, `open`                                                 |
 | `apps/live/app/embed/workbench/useWorkspaceNavigation.ts` (new, + test)                                                                                  | The interceptor, the link capture, New document in place, `livediagram:open`                                                                               |
-| `apps/live/app/embed/workbench/create-in-place.ts` (new, + test)                                                                                         | `createDocumentInPlace(ownerId, { folderId, teamId, template })`                                                                                           |
+| `apps/live/app/embed/workbench/create-in-place.ts` (new, + test)                                                                                         | `createDocumentInPlace(ownerId, { folderId, teamId, templateKind })`                                                                                       |
+| `apps/live/lib/new-document-content.ts` (new)                                                                                                            | `newDocumentContent`: a new document's tabs, card types and example cards, extracted from `/new` so the frame makes the same document                      |
+| `apps/live/hooks/persistence/useTeams.ts`, `apps/live/app/explorer/sidebar/sidebar-structure.ts`, `apps/live/components/panels/TeamPane.tsx`             | `invites: false`, `administration: false`: no invites read, no Invites or New Team rows, no team administration in the frame                               |
+| `apps/cli/src/dispatch/globals.ts`                                                                                                                       | `GLOBAL_FLAGS`: the flags every command takes, which the spec's command table may name (`folder ls [--json]`)                                              |
 | `apps/live/app/embed/workbench/useWorkspacePlaceMessages.ts` (new, + test)                                                                               | `ready` (workspace) once and `place` on every move                                                                                                         |
 | `apps/live/components/providers/workbench-session-context.ts`                                                                                            | `WorkbenchSession.scope`, `shareCode`, `frame` (the workspace frame's hooks for the editor)                                                                |
 | `apps/live/app/explorer/ExplorerShell.tsx`, `useExplorerState.ts`, `sidebar/*`                                                                           | `useExplorerSurface()`: the workbench surface's chrome and gates                                                                                           |
@@ -664,10 +667,10 @@ other phase is the document scope's.
 
 **Mounted** (`WorkspaceFrame`), under `WorkbenchAuthBridge` with the workspace session:
 
-1. `setAppNavigationInterceptor(frameNavigate)` (`useWorkspaceNavigation`) in a layout effect, before any child can navigate, and a capture
+1. `setAppNavigationInterceptor(navigate)` (`useWorkspaceNavigation`) in a layout effect, before any child can navigate, and a capture
    `click` listener on the frame root for same-origin `<a href>` without `target` or a modifier key; each passes
-   the app href to `frameNavigate`.
-2. `frameNavigate(href, { replace })`: `framePathOfAppHref(href)` maps `/explorer/...` and `/document/<id>[?s=][&tab=]`
+   the app href to `navigate`.
+2. `navigate(href, { replace })`: `framePathOfAppHref(href)` maps `/explorer/...` and `/document/<id>[?s=][&tab=]`
    to a frame path and calls `history.pushState` (or `replaceState`), which the App Router hears; `/new...` runs New
    document in place (below); any other app href (help, sign-in, Community, an external page) opens in a new tab
    with `noopener` (WB57). Logged `[workbench] open { kind }` only for `livediagram:open`.
@@ -696,7 +699,7 @@ Explorer's toast "Couldn’t create the document. Try again." and stays; logged 
 
 **Back** (`WorkbenchBackButton`, WB59): shown on a document place, at the tab bar's left end. The document entry's
 `history.state` carries `workbenchFrom` (the frame path it was pushed from); Back calls `history.back()` when the
-entry before is that path (`workbenchFrom` set by `frameNavigate`), else pushes Home. Browser back and forward walk
+entry before is that path (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk
 the same entries.
 
 **Open in livediagram**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an

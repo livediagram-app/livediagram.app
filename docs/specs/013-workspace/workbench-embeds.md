@@ -1,7 +1,6 @@
 # Workbench embeds (`/embed/workbench`)
 
-**Status: built** for the document scope: the api, the page, the pairing page and the CLI commands. **Specified** for
-the workspace scope.
+**Status: built** for both scopes: the api, the pages, the pairing page and the CLI commands.
 
 A **workbench** is a developer tool that shows a document live beside an agent: an agent workbench first, then VS Code
 and other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
