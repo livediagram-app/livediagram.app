@@ -82,6 +82,13 @@ export async function isItemEditor(ctx: RouteContext, caller: ItemCaller): Promi
   return caller.editor;
 }
 
+// The pause before a write's next attempt after a racing write took its key or rev: short and jittered, growing with
+// the attempt, so a burst of writes spreads out rather than colliding again on every round (docs/specs/026-plan/
+// items.md "Changing items").
+export const ITEM_RETRY_PAUSE_MS = 15;
+export const itemRetryPause = (attempt: number): Promise<void> =>
+  new Promise((r) => setTimeout(r, ITEM_RETRY_PAUSE_MS * attempt * Math.random()));
+
 export const itemBusy = () => {
   console.warn('[items] items.write.busy');
   return json(

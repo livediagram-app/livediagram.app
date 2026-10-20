@@ -8,7 +8,7 @@ import { ITEM_WRITE_RETRIES, type Item } from '@livediagram/items';
 import { readItems, updateItemsAtRev } from '../db';
 import { json } from '../responses';
 import type { RouteContext } from './context';
-import { forCaller, itemBusy, relay, type ItemCaller } from './item-route-kit';
+import { forCaller, itemBusy, itemRetryPause, relay, type ItemCaller } from './item-route-kit';
 
 // One attempt's next states by id, or a refusal. `missing`: how many wanted ids were not found on this read.
 type BuildItems<T> = (
@@ -61,6 +61,7 @@ export async function writeItemsWithRetry<T extends { id: string }>(
     pending = pending.filter((p) => !written.landed.has(p.id));
     if (pending.length === 0) break;
     console.info('[items] items.write.retry', { documentId, attempt, left: pending.length });
+    if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
   }
   if (pending.length) return withLanded(itemBusy(), caller, done, rev);
   return { done, rev };
