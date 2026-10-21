@@ -334,8 +334,8 @@ export function ToolbarPalette(props: Props) {
     : openers.opened && !openers.opened.group && openedTab?.tiles
       ? openedTab
       : null;
-  // On a phone only My shapes keeps More: the swipe reaches every other category's tiles or groups.
-  const showMore = swipe ? category?.id === 'my-shapes' : hasMore;
+  // On a phone no category keeps More: the swipe reaches every category's tiles or groups.
+  const showMore = !swipe && hasMore;
 
   // The category being switched AWAY from, while its tiles animate out
   // (ToolbarStripRail). Rebuilt from data rather than kept as stale nodes, and
@@ -596,7 +596,7 @@ export function ToolbarPalette(props: Props) {
                         />
                         {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
-                the category has more than the strip shows. On a phone only for My shapes (showMore). */}
+                the category has more than the strip shows. Never on a phone (showMore). */}
                         {showMore ? (
                           <>
                             <Divider />

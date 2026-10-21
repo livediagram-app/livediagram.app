@@ -164,25 +164,19 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // user originally placed them; naturalWidth/Height drive the
   // aspect-lock default + the "Reset to natural size" context-menu
   // action.
-  // A search pick carries a credit (docs/specs/009-elements/image-search.md); any
-  // other pick drops the old one so it never describes a picture that's gone.
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
-        const { credit: _old, ...rest } = el;
-        void _old;
         return {
-          ...rest,
+          ...el,
           imageId: image.id,
           naturalWidth: image.width,
           naturalHeight: image.height,
           alt: el.alt ?? image.originalName,
-          ...(image.credit ? { credit: image.credit } : {}),
         };
       }),
     );
-    if (image.credit) track('Element', 'Used', 'ImageSearch');
     setImagePickerOpenFor(null);
   };
 
@@ -195,10 +189,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
-        const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
+        const { naturalWidth: _w, naturalHeight: _h, ...rest } = el;
         void _w;
         void _h;
-        void _c;
         return { ...rest, imageId: null };
       }),
     );

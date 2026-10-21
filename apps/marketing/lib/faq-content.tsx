@@ -220,13 +220,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I add pictures?',
         a: (
           <>
-            Yes. Upload an image once and reuse it from your gallery, or search Openverse for an
-            openly licensed photo or illustration without leaving the editor. See{' '}
+            Yes. Upload an image once and reuse it from your gallery. See{' '}
             <a href="/help/palette/tools/images/">images</a>.
           </>
         ),
-        aText:
-          'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
+        aText: 'Yes. Upload an image once and reuse it from your gallery. See images.',
       },
       {
         q: 'Can I show data, like a chart?',

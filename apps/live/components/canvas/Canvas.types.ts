@@ -4,8 +4,6 @@ import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ShapeLibraryItem } from '@liveplanner/api-schema';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
@@ -325,9 +323,6 @@ export type CanvasProps = {
   onAddSticker: (stickerId: string) => void;
   // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
@@ -361,9 +356,6 @@ export type CanvasProps = {
   // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
-  // Absent where nothing can be placed.
-  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.

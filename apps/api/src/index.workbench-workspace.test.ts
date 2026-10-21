@@ -32,7 +32,6 @@ vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/community', () => stub('handleCommunity'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
 vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
-vi.mock('./routes/shape-libraries', () => stub('handleShapeLibraries'));
 vi.mock('./routes/documents', () => stub('handleDocuments'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
 vi.mock('./routes/forms', () => stub('handleForms'));
@@ -123,7 +122,6 @@ describe('a workspace session at the front door', () => {
     ['GET', 'images', 'handleImages'],
     ['POST', 'images', 'handleImages'],
     ['POST', 'custom-themes', 'handleCustomThemes'],
-    ['PUT', 'shape-libraries/lib1', 'handleShapeLibraries'],
     ['GET', 'teams', 'handleTeams'],
     ['GET', 'teams/team1/library', 'handleTeams'],
     ['DELETE', 'workbench/sessions/current', 'handleWorkbench'],

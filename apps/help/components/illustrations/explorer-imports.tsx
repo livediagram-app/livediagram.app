@@ -1,8 +1,8 @@
 // Explorer illustrations for the imports and the Library pages (docs/specs/018-help/help-app.md):
 // the page header's Import from group, the import checklists (draw.io, Microsoft Whiteboard), the
-// Shape libraries page, the Image gallery and the Themes page. Labels are lifted from the live
-// editor's own copy (ImportFromToolbar, ImportChecklist, ShapeLibrariesPane, GalleryPane,
-// ThemesPane) so the figures match what a reader sees. Composed from the shared primitives.
+// Image gallery and the Themes page. Labels are lifted from the live editor's own copy
+// (ImportFromToolbar, ImportChecklist, GalleryPane, ThemesPane) so the figures match what a reader
+// sees. Composed from the shared primitives.
 
 import { Scene, Label, Button, Dialog, TextBar } from './primitives';
 
@@ -245,89 +245,6 @@ export function WhiteboardImportList() {
       ]}
       importLabel="Import 3 boards"
     />
-  );
-}
-
-/** The Shape libraries page: one card per library with its shape count, the first shapes'
- *  thumbnails, and Rename, Delete and Show shapes. */
-export function ShapeLibraryCards() {
-  const libraries = [
-    {
-      name: 'Team icons',
-      count: '14 shapes',
-      kinds: ['rect', 'circle', 'diamond', 'rect', 'circle'],
-    },
-    { name: 'UML preset', count: '6 shapes', kinds: ['rect', 'rect', 'diamond'] },
-  ];
-  return (
-    <Scene w={420} h={220} bg="plain">
-      <Label x={24} y={22} size={14} weight={700} tone="strong">
-        Shape Libraries
-      </Label>
-      {libraries.map((lib, i) => {
-        const cy = 40 + i * 88;
-        return (
-          <g key={lib.name}>
-            <rect
-              x={20}
-              y={cy}
-              width={380}
-              height={78}
-              rx={10}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
-            />
-            <Label x={34} y={cy + 16} size={11} weight={700} tone="strong">
-              {lib.name}
-            </Label>
-            <Label x={386} y={cy + 16} size={10} tone="muted" anchor="end">
-              {lib.count}
-            </Label>
-            {lib.kinds.map((k, j) => {
-              const tx = 34 + j * 46;
-              return (
-                <g key={j}>
-                  <rect
-                    x={tx}
-                    y={cy + 26}
-                    width={40}
-                    height={22}
-                    rx={4}
-                    className="fill-white stroke-slate-200"
-                  />
-                  {k === 'circle' ? (
-                    <ellipse
-                      cx={tx + 20}
-                      cy={cy + 37}
-                      rx={8}
-                      ry={6}
-                      className="fill-brand-100 stroke-brand-400"
-                    />
-                  ) : k === 'diamond' ? (
-                    <path
-                      d={`M${tx + 20} ${cy + 30} l9 7 l-9 7 l-9 -7 Z`}
-                      className="fill-brand-100 stroke-brand-400"
-                    />
-                  ) : (
-                    <rect
-                      x={tx + 10}
-                      y={cy + 31}
-                      width={20}
-                      height={12}
-                      rx={2}
-                      className="fill-brand-100 stroke-brand-400"
-                    />
-                  )}
-                </g>
-              );
-            })}
-            <Button x={34} y={cy + 54} w={58} h={18} label="Rename" />
-            <Button x={98} y={cy + 54} w={52} h={18} label="Delete" />
-            <Button x={156} y={cy + 54} w={86} h={18} label="Show shapes" />
-          </g>
-        );
-      })}
-    </Scene>
   );
 }
 

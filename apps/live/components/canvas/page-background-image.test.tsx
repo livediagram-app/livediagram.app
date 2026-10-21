@@ -1,29 +1,29 @@
 // @vitest-environment jsdom
 
 // The Background section's Image category (docs/specs/007-editor/pages-mode.md "Image
-// backgrounds"): offered but on a logo page, the search asking for the page's shape, a hovered
-// result previewed, a pick one edit with a readable overlay, and the overlay, strength and position.
+// backgrounds"): offered but on a logo page, a pick one edit with a readable overlay, and the
+// overlay, strength and position.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Page, PageFill, PageImageFill } from '@liveplanner/document';
-import type { OpenverseImage } from '@/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
 
-const pane = vi.hoisted(() => ({
-  props: null as null | {
-    filters?: unknown;
-    columns?: number;
-    onPreview?: (r: OpenverseImage | null) => void;
-    onPicked: (image: PickedImage, result: OpenverseImage) => void;
-  },
+const gallery = vi.hoisted(() => ({
+  props: null as null | { onPicked: (image: PickedImage) => void },
 }));
-vi.mock('@/components/panels/ImageSearchPane', () => ({
-  ImageSearchPane: (props: typeof pane.props) => {
-    pane.props = props;
-    return <div data-testid="search-pane" />;
+vi.mock('./PageGalleryPicker', () => ({
+  PageGalleryPicker: (props: typeof gallery.props) => {
+    gallery.props = props;
+    return <div data-testid="gallery-picker" />;
   },
 }));
 vi.mock('@/lib/page-image-tone', () => ({ sampleImageTone: vi.fn(async () => '#203040') }));
+// A gallery pick reads its tone off the stored picture.
+vi.mock('@/lib/api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api-client')>()),
+  apiFetchImageBlobUrl: vi.fn(async () => 'blob:http://localhost/img-9'),
+  releaseImageBlobUrl: vi.fn(),
+}));
 vi.mock('@/hooks/persistence/useImageBlobUrl', () => ({
   useImageBlobUrl: () => ({ status: 'loading' }),
 }));
@@ -33,11 +33,10 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 import { BackgroundSection } from './page-background-section';
 import { PageImageAccessProvider } from './page-image-access';
 import { CanvasSurfaceProvider } from './CanvasSurfaceContext';
-import { pageImageFilters } from './page-background-image';
 
 afterEach(() => {
   cleanup();
-  pane.props = null;
+  gallery.props = null;
   track.mockClear();
 });
 
@@ -48,14 +47,6 @@ const picture: PageImageFill = {
   tone: '#203040',
   overlay: { kind: 'light', strength: 0.6 },
 };
-const result = {
-  id: 'r',
-  url: 'https://x.org/r.jpg',
-  thumbnail: 'https://api.openverse.org/r/thumb/',
-  width: 800,
-  height: 1200,
-} as OpenverseImage;
-
 function show(page: Partial<Page> & { fill?: PageFill }, surface: 'light' | 'dark' = 'light') {
   const { fill, ...rest } = page;
   const onBackground = vi.fn();
@@ -96,45 +87,18 @@ describe('the Image category', () => {
     expect(screen.queryByRole('radio', { name: 'Image' })).toBeNull();
   });
 
-  it('opens on a page with a picture, and asks the search for the page’s shape (never large: its thumbnails fail)', () => {
+  it('opens on a page with a picture, the pickers waiting behind Replace Image', () => {
     show({ fill: picture });
     expect(radio('Image').getAttribute('aria-checked')).toBe('true');
-    // The search waits behind Replace Image while the page has a picture.
-    expect(screen.queryByTestId('search-pane')).toBeNull();
+    expect(screen.queryByTestId('gallery-picker')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Replace Image' }));
-    expect(pane.props!.filters).toEqual({ aspectRatio: 'tall' });
-    expect(pane.props!.columns).toBe(3);
-    expect(pageImageFilters({ id: 'p', orientation: 'landscape' })).toEqual({
-      aspectRatio: 'wide',
-    });
-    expect(pageImageFilters({ id: 'p', orientation: 'portrait', size: 'square' }).aspectRatio).toBe(
-      'square',
-    );
+    expect(screen.getByTestId('gallery-picker')).toBeTruthy();
   });
 
-  it('previews a hovered result under the overlay a pick would get', () => {
-    const { onPreview } = show({});
-    fireEvent.click(radio('Image'));
-    act(() => pane.props!.onPreview!(result));
-    expect(onPreview).toHaveBeenLastCalledWith({
-      fill: {
-        kind: 'image',
-        imageId: 'preview',
-        preview: result.thumbnail,
-        overlay: { kind: 'light', strength: 0.6 },
-      },
-    });
-    act(() => pane.props!.onPreview!(null));
-    expect(onPreview).toHaveBeenLastCalledWith(null);
-  });
-
-  it('lands a pick as one edit with its tone, credit and a readable wash for the canvas', async () => {
+  it('lands a pick as one edit with its tone and a readable wash for the canvas', async () => {
     const { onBackground } = show({}, 'dark');
     fireEvent.click(radio('Image'));
-    const credit = { text: '"Sea" by Ada, CC BY 4.0', sourceUrl: 'https://x.org/sea' };
-    await act(async () =>
-      pane.props!.onPicked({ id: 'img-9', width: 800, height: 1200, credit }, result),
-    );
+    await act(async () => gallery.props!.onPicked({ id: 'img-9', width: 800, height: 1200 }));
     expect(onBackground).toHaveBeenCalledTimes(1);
     expect(onBackground).toHaveBeenCalledWith({
       fill: {
@@ -142,7 +106,6 @@ describe('the Image category', () => {
         imageId: 'img-9',
         tone: '#203040',
         overlay: { kind: 'dark', strength: 0.6 },
-        credit,
       },
     });
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageBackgroundImage');
@@ -185,10 +148,8 @@ describe('the Image category', () => {
     });
   });
 
-  it('shows a search pick’s credit, and Remove puts the paper back', () => {
-    const credit = { text: '"Sea" by Ada', sourceUrl: 'https://x.org/sea' };
-    const { onBackground } = show({ fill: { ...picture, credit } });
-    expect(screen.getByText('"Sea" by Ada')).toBeTruthy();
+  it('puts the paper back on Remove', () => {
+    const { onBackground } = show({ fill: picture });
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onBackground).toHaveBeenCalledWith({ fill: undefined });
   });

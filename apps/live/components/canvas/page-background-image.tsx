@@ -1,14 +1,13 @@
 'use client';
 
 // The Background section's Image category (docs/specs/007-editor/pages-mode.md "Image
-// backgrounds"): the page's picture with its credit, its Overlay, Strength and Position, then the
-// image search (asking for the page's shape), Choose From My Images and Upload an Image to pick or replace it. A
-// hovered result, overlay or position previews on the page; a pick, an upload or a press commits
-// one edit. Not offered on a logo page (page-background-section).
+// backgrounds"): the page's picture with its Overlay, Strength and Position, then Choose From My
+// Images and Upload an Image to pick or replace it. A hovered overlay or position previews on the
+// page; a pick, an upload or a press commits one edit. Not offered on a logo page
+// (page-background-section).
 import { useRef, useState, type ReactNode } from 'react';
 import {
   defaultPageImageOverlay,
-  pageDimensions,
   PAGE_IMAGE_OVERLAY_MAX,
   type Page,
   type PageFill,
@@ -18,14 +17,11 @@ import {
   type PageImagePosition,
 } from '@liveplanner/document';
 import { Button } from '@liveplanner/ui';
-import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 import { PageGalleryPicker } from './PageGalleryPicker';
-import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
-import type { OpenverseFilters } from '@/lib/image-search/openverse';
 import { pageImageCssUrl, pageImageOverlayCss } from '@/lib/page-image-paint';
 import { sampleImageTone } from '@/lib/page-image-tone';
 import { track } from '@/lib/telemetry';
@@ -58,14 +54,6 @@ const POSITION_TILES: readonly { id: PageImagePosition | 'center'; label: string
 
 // A sample picture under each overlay tile: a sky over hills, so the wash reads.
 const SAMPLE = 'linear-gradient(180deg, #7dd3fc 0%, #fde68a 55%, #4d7c0f 56%, #365314 100%)';
-
-/** The Openverse filters a page's picture is searched with: its shape. Not `size: 'large'`: Openverse cannot
- *  render thumbnails for most of those (its thumbnail service answers 424), so every result drew broken. */
-export function pageImageFilters(page: Page): OpenverseFilters {
-  const { width, height } = pageDimensions(page);
-  const aspectRatio = width === height ? 'square' : width > height ? 'wide' : 'tall';
-  return { aspectRatio };
-}
 
 function Heading({ children }: { children: ReactNode }) {
   return (
@@ -105,8 +93,8 @@ export function ImageBackgroundChoices({
     );
   }
 
-  // One edit: the picture with its tone, its credit (a search pick's), and the overlay in force.
-  // `toneFrom`: a picture already in hand to read the tone off (a search thumbnail, the uploaded file), else the
+  // One edit: the picture with its tone and the overlay in force.
+  // `toneFrom`: a picture already in hand to read the tone off (the uploaded file), else the
   // stored picture is read (a gallery pick).
   const land = async (picked: PickedImage, toneFrom: string | null) => {
     const tone =
@@ -117,7 +105,6 @@ export function ImageBackgroundChoices({
       ...(tone ? { tone } : {}),
       ...(overlay ? { overlay } : {}),
       ...(fill?.position ? { position: fill.position } : {}),
-      ...(picked.credit ? { credit: picked.credit } : {}),
     });
     track('Tab', 'Changed', 'PageBackgroundImage');
     setReplacing(false);
@@ -178,34 +165,10 @@ export function ImageBackgroundChoices({
   };
   const strength = Math.round((strengthDrag ?? overlay?.strength ?? 0) * 100);
 
-  // The search and Upload an Image: the category's own while the page has no picture, else
-  // behind Replace Image.
+  // Choose From My Images and Upload an Image: the category's own while the page has no picture,
+  // else behind Replace Image.
   const pickOrUpload = (
     <>
-      <ImageSearchPane
-        ownerId={access.ownerId}
-        documentId={access.documentId}
-        filters={pageImageFilters(page)}
-        columns={3}
-        autoFocus={false}
-        onPreview={(result) =>
-          onPreview(
-            result
-              ? {
-                  kind: 'image',
-                  imageId: fill?.imageId ?? 'preview',
-                  preview: result.thumbnail,
-                  ...(overlay ? { overlay } : {}),
-                  ...(fill?.position ? { position: fill.position } : {}),
-                }
-              : null,
-          )
-        }
-        onPicked={(picked, result) => {
-          onPreview(null);
-          void land(picked, result.thumbnail);
-        }}
-      />
       <PageGalleryPicker
         ownerId={access.ownerId}
         documentId={access.documentId}
@@ -250,11 +213,6 @@ export function ImageBackgroundChoices({
       {fill ? (
         <>
           <CurrentPicture fill={fill} onRemove={() => onPick(undefined)} />
-          {fill.credit ? (
-            <div className="-mx-3">
-              <ImageCreditRow credit={fill.credit} />
-            </div>
-          ) : null}
           <Heading>Overlay</Heading>
           <div role="radiogroup" aria-label="Overlay" className="grid grid-cols-5 gap-1">
             {OVERLAY_TILES.map(({ id, label }) => {

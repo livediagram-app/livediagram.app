@@ -19,7 +19,6 @@ export * from './favourites';
 export * from './tags';
 export * from './placement-defaults';
 export * from './custom-themes';
-export * from './shape-libraries';
 export * from './team-invites';
 export * from './teams';
 export * from './api-tokens';

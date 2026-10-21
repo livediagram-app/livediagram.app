@@ -1760,10 +1760,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "solid",
       "dashed",
-      "dotted",
-      "dash-dot",
-      "long-dash",
-      "dash-dot-dot"
+      "dotted"
     ],
     "type": "string"
   },
@@ -8039,25 +8036,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ImageCredit": {
-    "additionalProperties": false,
-    "properties": {
-      "licenseUrl": {
-        "type": "string"
-      },
-      "sourceUrl": {
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "text",
-      "sourceUrl"
-    ],
-    "type": "object"
-  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -8084,9 +8062,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
-      },
-      "credit": {
-        "$ref": "#/components/schemas/ImageCredit"
       },
       "fillColor": {
         "type": "string"
@@ -10760,9 +10735,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageImageFill": {
     "additionalProperties": false,
     "properties": {
-      "credit": {
-        "$ref": "#/components/schemas/ImageCredit"
-      },
       "imageId": {
         "type": "string"
       },
@@ -10775,9 +10747,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "position": {
         "$ref": "#/components/schemas/PageImagePosition"
-      },
-      "preview": {
-        "type": "string"
       },
       "tone": {
         "type": "string"
@@ -13961,82 +13930,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "plan-view",
       "plan-sheet"
     ],
-    "type": "string"
-  },
-  "ShapeLibrary": {
-    "additionalProperties": false,
-    "properties": {
-      "createdAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "items": {
-        "items": {
-          "$ref": "#/components/schemas/ShapeLibraryItem"
-        },
-        "type": "array"
-      },
-      "name": {
-        "type": "string"
-      },
-      "ownerId": {
-        "type": "string"
-      },
-      "source": {
-        "$ref": "#/components/schemas/ShapeLibrarySource"
-      },
-      "updatedAt": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "ownerId",
-      "name",
-      "source",
-      "items",
-      "createdAt",
-      "updatedAt"
-    ],
-    "type": "object"
-  },
-  "ShapeLibraryItem": {
-    "additionalProperties": false,
-    "description": "One reusable shape: its elements placed from its top-left corner at (0, 0).",
-    "properties": {
-      "elements": {
-        "items": {
-          "$ref": "#/components/schemas/Element"
-        },
-        "type": "array"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "title",
-      "width",
-      "height",
-      "elements"
-    ],
-    "type": "object"
-  },
-  "ShapeLibrarySource": {
-    "const": "drawio",
-    "description": "Where a library came from; one value today.",
     "type": "string"
   },
   "ShapeMarker": {

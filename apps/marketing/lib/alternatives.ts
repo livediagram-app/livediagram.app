@@ -539,7 +539,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Start without an account', us: 'Yes', them: 'Yes' },
       {
         label: 'Shape libraries',
-        us: 'Core shapes, device frames, technology icons + your own imported libraries',
+        us: 'Core shapes, device frames and technology icons',
         them: 'Vast (AWS, UML, network…)',
       },
       {

@@ -25,7 +25,6 @@ import {
   lucideLibrary,
   lucideMail,
   lucidePalette,
-  lucideShapes,
   lucideShare2,
   lucideStar,
   lucideTag,
@@ -169,8 +168,6 @@ export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
 // Painter's palette: the Themes section (docs/specs/011-theme/custom-themes.md).
 export const PaletteIcon = lucideGlyph(lucidePalette, 13);
-// Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
-export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 export const KeyIcon = lucideGlyph(lucideKey, 13);
 // A team: one drawing, shared with the landing page (@liveplanner/ui).
 export { TeamIcon } from '@liveplanner/ui';

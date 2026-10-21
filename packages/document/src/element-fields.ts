@@ -323,7 +323,6 @@ export const ELEMENT_FIELD_NAMES = {
     'naturalHeight',
     'objectFit',
     'heroCaption',
-    'credit',
     'alt',
     'label',
     'textSize',

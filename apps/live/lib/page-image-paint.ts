@@ -35,13 +35,12 @@ export function pageImageCssUrl(src: string): string | null {
   return CSS_SAFE.test(src) ? `url("${src}")` : null;
 }
 
-/** The source a page's picture paints from now: a hovered result's thumbnail, an offline document's
- *  inline bytes, or the gallery picture's fetched blob URL (`resolve`), once it has one. */
+/** The source a page's picture paints from now: an offline document's inline bytes, or the
+ *  gallery picture's fetched blob URL (`resolve`), once it has one. */
 export function pageImageSrc(
   fill: PageImageFill,
   resolve?: (imageId: string) => string | undefined,
 ): string | undefined {
-  if (fill.preview) return fill.preview;
   if (fill.imageId.startsWith('data:')) return fill.imageId;
   return resolve?.(fill.imageId);
 }

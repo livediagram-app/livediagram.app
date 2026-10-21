@@ -19,7 +19,6 @@ import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
-import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -169,12 +168,6 @@ export function ElementContentSections({
               />
             </div>
           )}
-          {target.credit ? (
-            <>
-              <ContextMenuDivider />
-              <ImageCreditRow credit={target.credit} />
-            </>
-          ) : null}
           {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
           <ContextMenuDivider />
           <MenuToggleRow

@@ -590,11 +590,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone asked everyone else in the room to jump to this element's spot on the canvas.",
   'Element|Used|ReactionPad':
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
-  'Element|Searched|Image':
-    "Someone searched for openly licensed pictures in the image picker's Search tab.",
   'Element|Used|ImagePlaceholder':
     "Someone pressed Select Image on an empty image's placeholder to open the image picker.",
-  'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
   'Email|Sent|DocumentJoined':

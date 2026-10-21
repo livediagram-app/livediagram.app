@@ -23,14 +23,13 @@ const page = (fill: unknown, kind?: string) => ({
 const read = (fill: unknown, kind?: string) => pagesOf({ pages: [page(fill, kind)] })[0]!;
 
 describe('image fills are read safely', () => {
-  it('keeps a gallery id with its tone, overlay, position and credit, and drops a preview', () => {
+  it('keeps a gallery id with its tone, overlay and position, and drops what it does not know', () => {
     const fill = {
       kind: 'image',
       imageId: ID,
       tone: '#336699',
       overlay: { kind: 'light', strength: 0.6 },
       position: 'top',
-      credit: { text: 'By someone, CC BY 4.0', sourceUrl: 'https://example.org/p' },
       preview: 'https://example.org/thumb.jpg',
     };
     expect(read(fill).background?.fill).toEqual({
@@ -39,7 +38,6 @@ describe('image fills are read safely', () => {
       tone: '#336699',
       overlay: { kind: 'light', strength: 0.6 },
       position: 'top',
-      credit: { text: 'By someone, CC BY 4.0', sourceUrl: 'https://example.org/p' },
     });
   });
 

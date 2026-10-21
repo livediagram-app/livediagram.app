@@ -21,7 +21,6 @@ import {
   PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
-  MyShapesTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   TechTabIcon,
@@ -184,15 +183,6 @@ export const PALETTE_CATEGORIES: {
     group: 0,
     description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
     icon: <ShapesTabIcon />,
-  },
-  {
-    // My shapes (docs/specs/013-workspace/shape-libraries.md): the owner's imported shape libraries,
-    // after Shapes in the Common band; offered only when there is a shape to place.
-    id: 'my-shapes',
-    label: 'My shapes',
-    group: 0,
-    description: 'Shapes from your imported libraries, ready to place.',
-    icon: <MyShapesTabIcon />,
   },
   {
     id: 'write',

@@ -15,7 +15,6 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'favourites' },
   { kind: 'tags' },
   { kind: 'themes' },
-  { kind: 'shape-libraries' },
   { kind: 'all' },
   { kind: 'search' },
   { kind: 'offline' },

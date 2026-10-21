@@ -105,7 +105,7 @@ export const DRAW_DOCK: readonly Tile[] = DRAW_TILES;
 export type BarCategory = { key: string; label: string; Icon: ComponentType };
 
 // Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out.
-// Library joins only while someone has a shape library, and Logo only on a logo page, so neither is here.
+// Logo joins only on a logo page, so it is not here.
 export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[])[]>> = {
   diagram: [
     [

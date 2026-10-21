@@ -23,7 +23,6 @@ import { isPenColourName } from './pen-colours';
 import { ADDER_KEY_LENGTH } from './adder';
 import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
-import { isImageCredit } from './image-credit';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
 import { parseStrokePoints } from './stroke-points';
@@ -340,8 +339,6 @@ const IMAGE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (c) => isRecord(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
     rule: `{ title, subtitle } of at most ${PAGE_HEADING_MAX} characters each`,
   },
-  // Image search credit (docs/specs/009-elements/image-search.md).
-  { field: 'credit', valid: isImageCredit, rule: 'an image credit' },
 ];
 
 function imageIssue(el: Record<string, unknown>): ElementValidationIssue | null {

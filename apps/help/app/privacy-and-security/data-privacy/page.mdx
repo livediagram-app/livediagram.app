@@ -27,7 +27,6 @@ The hosted version runs on Cloudflare, and a self-hoster runs the same stack on 
 
 - **The AI assistant** sends your prompt and the elements on the current tab to the AI provider the deployment uses (OpenAI on liveplanner.app) to get an answer. Reading sticky notes from a photo sends small crops of the notes, never the whole photo, to Google's Gemini; on a deployment without a reading model the notes are read in your browser and nothing is sent. Nothing is sent until you use them, and a deployment without an AI key has no AI assistant.
 - **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your documents in your own Drive, written straight from your browser.
-- **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no liveplanner server sees it.
 - **Emails** about your work go through the email provider. They name the document, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to the database.">

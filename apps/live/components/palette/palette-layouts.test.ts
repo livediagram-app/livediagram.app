@@ -43,7 +43,6 @@ describe('palette layouts', () => {
     expect(ids('diagram')).toEqual([
       'popular',
       'shapes',
-      'my-shapes',
       'write',
       'draw',
       'diagrams',
@@ -84,7 +83,6 @@ describe('palette layouts', () => {
     expect(ids('workshop')).toEqual([
       'popular',
       'shapes',
-      'my-shapes',
       'write',
       'draw',
       'layout',
@@ -195,7 +193,6 @@ describe('palette layouts', () => {
     expect(ids('pages')).toEqual([
       'popular',
       'shapes',
-      'my-shapes',
       'write',
       'concepts',
       'components',
@@ -369,15 +366,7 @@ describe('palette layouts', () => {
 
   it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Library, Media (logo-pages.md)', () => {
     const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
-    expect(logo.map((c) => c.id)).toEqual([
-      'popular',
-      'draw',
-      'shapes',
-      'write',
-      'icons',
-      'my-shapes',
-      'media',
-    ]);
+    expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons', 'media']);
     const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
     expect(tilesOf('draw')).toEqual([
       'logo:pen',
@@ -401,7 +390,6 @@ describe('palette layouts', () => {
       'write',
       'shapes',
       'media',
-      'my-shapes',
       'data',
       'concepts',
       'components',

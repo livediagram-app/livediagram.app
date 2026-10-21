@@ -13,7 +13,6 @@ import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
-import { uniqueLibraryName } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
@@ -108,8 +107,6 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): this owner's saved themes go too.
   await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
-  // shape_libraries (docs/specs/013-workspace/shape-libraries.md): this owner's libraries go too.
-  await env.DB.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
   // Workbench rows (docs/specs/013-workspace/workbench-embeds.md), before the tokens they were minted from.
   await env.DB.batch(
     [
@@ -402,42 +399,10 @@ export async function migrateOwnerId(
   // them, and a document opened under both identities keeps both histories.
   const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId);
   console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
-  await migrateShapeLibraries(env, fromOwnerId, toOwnerId);
   return {
     documents: changes('documents'),
     folders: changes('folders'),
     shared: changes('shared'),
     images: changes('images'),
   };
-}
-
-// shape_libraries (docs/specs/013-workspace/shape-libraries.md): the guest's libraries move onto the
-// account; one whose name the account already uses takes the next free " (n)" first, so the account
-// never holds two libraries of one name. The cap applies to creates, never to this move.
-async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: string) {
-  const names = async (owner: string) =>
-    (
-      await env.DB.prepare(
-        'SELECT id, name FROM shape_libraries WHERE owner_id = ? ORDER BY created_at',
-      )
-        .bind(owner)
-        .all<{ id: string; name: string }>()
-    ).results ?? [];
-  const guest = await names(fromOwnerId);
-  if (guest.length === 0) return;
-  const taken = (await names(toOwnerId)).map((r) => r.name);
-  let renamed = 0;
-  for (const row of guest) {
-    const name = uniqueLibraryName(row.name, taken);
-    taken.push(name);
-    if (name === row.name) continue;
-    renamed++;
-    await env.DB.prepare('UPDATE shape_libraries SET name = ? WHERE id = ?')
-      .bind(name, row.id)
-      .run();
-  }
-  await env.DB.prepare('UPDATE shape_libraries SET owner_id = ? WHERE owner_id = ?')
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  console.info('[shape-libraries] migrated', { moved: guest.length, renamed });
 }

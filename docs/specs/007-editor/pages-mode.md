@@ -514,30 +514,16 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
 ### Image backgrounds
 
 An infographic, slide or article page can be painted with a picture:
-`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, credit? }`. A logo page offers no
+`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position? }`. A logo page offers no
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
-- **The Image category**, while the page has no picture: a search field and its results (the image
-  picker's Search, [Image search](../009-elements/image-search.md), three tiles across), under
-  them **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
+- **The Image category**, while the page has no picture: **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
   opens beside the panel so the panel stays in view; one press picks and closes it; an offline
   document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
   the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
-  one edit), its **Credit** line when it came from a search (the image element's Credit row: the
-  text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
-  search, Choose From My Images and Upload again under **Replace Image**.
-- **The search suits a page.** It asks Openverse only for pictures of the page's shape
-  (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
-  `square` for a square page), so a result covers the page without a lopsided crop. It does not
-  ask for large ones (`size=large`): Openverse cannot render thumbnails for most of those, so every
-  result drew broken. Everything else is the picker's search: the licences, no mature
-  results, Load more, the loading, error and empty states, the footer credit.
-- **Hover previews**: hovering or focusing a result paints its Openverse thumbnail on the page
-  under the overlay a pick would get; leaving the results puts the page back. A press downloads
-  and stores the picture as the picker's pick does (into the gallery, or embedded in an
-  [Offline Mode](../006-document/offline-mode.md) document), with the same stages and failure
-  copy, then commits **one edit**: the fill with its credit and tone, and the overlay. An upload
-  commits the same way, with no credit.
+  one edit), then **Overlay**, **Strength** and **Position**, then Choose From My Images and
+  Upload again under **Replace Image**.
+- **One edit**: a pick or an upload commits the fill with its tone, and the overlay.
 - **Fit**: the picture **covers** the sheet, cropped and never stretched, centred across.
   **Position** (**Top**, **Centre**, **Bottom**) keeps that band of a taller picture when it is
   cropped; Centre is the default and is not stored.

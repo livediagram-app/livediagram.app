@@ -1,4 +1,3 @@
-import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
 import type { ShapeKind } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -64,9 +63,6 @@ export type PaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
   // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
   onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;

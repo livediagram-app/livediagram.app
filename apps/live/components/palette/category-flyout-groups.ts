@@ -18,7 +18,6 @@ export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
 const BAR_LABELS: Readonly<Record<string, string>> = {
   write: 'Write',
-  'my-shapes': 'Library',
 };
 
 export function barLabel(categoryId: string, label: string): string {
@@ -57,7 +56,6 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'The tiles a diagram is most often built from.',
   shapes: 'The basics, the flowchart vocabulary and more.',
-  'my-shapes': 'Shapes from your imported libraries.',
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',

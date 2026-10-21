@@ -16,8 +16,6 @@
 import dynamic from 'next/dynamic';
 import { PaletteLogoTab } from './PaletteLogoTab';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { PaletteMyShapesTab } from './PaletteMyShapesTab';
-import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
@@ -73,8 +71,6 @@ export function paletteCategoryTabs(
     // Board-level switches for the Event Storming category (docs/specs/021-event-storming/event-storming.md),
     // supplied only when the active tab IS one of those boards.
     esBoardControls?: EsBoardControls;
-    // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
-    insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
     StickerDeps &
     TechDeps,
@@ -84,7 +80,6 @@ export function paletteCategoryTabs(
     pendingDraw,
     tileActions,
     esBoardControls,
-    insertLibraryShape,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -109,8 +104,6 @@ export function paletteCategoryTabs(
   const bodyFor = (c: ResolvedPaletteCategory): React.ReactNode => {
     const tiles = c.tiles ?? [];
     switch (c.id) {
-      case 'my-shapes':
-        return <PaletteMyShapesTab onInsert={insertLibraryShape} />;
       case 'icons':
         return (
           <IconPickerTab

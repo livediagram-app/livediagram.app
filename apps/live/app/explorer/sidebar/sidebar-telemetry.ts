@@ -18,7 +18,6 @@ export type SidebarTelemetryRow =
   | 'Library'
   | 'ImageGallery'
   | 'Themes'
-  | 'ShapeLibraries'
   | 'Tags'
   | 'Tag'
   | 'Trash'

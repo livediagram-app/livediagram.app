@@ -76,10 +76,6 @@ const ThemesPane = dynamic(
   () => import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
   { ssr: false },
 );
-const ShapeLibrariesPane = dynamic(
-  () => import('@/components/panels/ShapeLibrariesPane').then((m) => m.ShapeLibrariesPane),
-  { ssr: false },
-);
 const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane), {
   ssr: false,
 });
@@ -394,8 +390,6 @@ export function ExplorerPane() {
         ) : null
       ) : selected.kind === 'themes' ? (
         <ThemesPane />
-      ) : selected.kind === 'shape-libraries' ? (
-        <ShapeLibrariesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
       ) : selected.kind === 'tags' ? (
