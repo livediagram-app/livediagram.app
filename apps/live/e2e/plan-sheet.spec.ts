@@ -41,7 +41,6 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
           id: tabId,
           name: 'Budget',
           kind: 'sheet',
-          opensIn: 'plan',
           elements: [
             {
               id: 'sheet',

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@liveplanner/document';
 import {
   TEMPLATE_ALSO_IN,
   TEMPLATE_CATEGORIES,
@@ -7,7 +6,7 @@ import {
   templateCategories,
   templateCategory,
 } from './template-categories';
-import { isBlankTemplate, templateEditorMode } from './template-modes';
+import { isBlankTemplate } from './template-modes';
 import { templateKeywords } from './template-keywords';
 import { templateMatchesQuery } from './template-search';
 import { TEMPLATES, type TemplateKind } from './templates';
@@ -90,22 +89,6 @@ describe('template categories', () => {
     expect(isInTemplateCategory('team-retro', 'planning')).toBe(true);
     expect(isInTemplateCategory('doodle-warmup', 'games')).toBe(true);
     expect(isInTemplateCategory('blank', 'flowcharts')).toBe(false);
-  });
-
-  it('leaves no category empty in every mode, and hides one only where a mode has none', () => {
-    for (const id of ids) {
-      const modes = EDITOR_MODES.filter((m) =>
-        TEMPLATES.some((t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === m),
-      );
-      expect(modes.length, id).toBeGreaterThan(0);
-    }
-    // Spreadsheets is a Plan shelf; under Diagram, Finance keeps its money diagrams.
-    const inMode = (id: (typeof ids)[number], mode: string) =>
-      TEMPLATES.filter(
-        (t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === mode,
-      ).map((t) => t.kind);
-    expect(inMode('spreadsheets', 'diagram')).toEqual([]);
-    expect(inMode('finance', 'diagram').sort()).toEqual(['funnel', 'sankey']);
   });
 });
 

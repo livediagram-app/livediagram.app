@@ -233,7 +233,7 @@ describe('copying and pasting a Sheet', () => {
         editingId: null,
         setEditingId: () => {},
         // A Sheet pastes only onto a tab in Plan (docs/specs/029-sheets/sheet.md "Only in Plan").
-        activeTab: { id: 't', name: 'Board', opensIn: 'plan', elements },
+        activeTab: { id: 't', name: 'Board', elements },
         commit: (m) => {
           elements = m(elements);
         },

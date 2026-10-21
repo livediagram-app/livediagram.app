@@ -142,7 +142,6 @@ const FORM_TAB = {
   name: 'Bug Report',
   rev: 2,
   kind: 'form',
-  opensIn: 'plan',
   elements: [],
   form: {
     v: 1,

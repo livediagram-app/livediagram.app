@@ -2,7 +2,7 @@
 // locked tab or an Event Storming board is refused; a tab in another mode is switched into
 // Pages by the same edit, as the editor's mode switch does.
 import type { PagesRefusal } from '@liveplanner/api-schema';
-import { opensInOf, tabKindOf, withEditorModeSwitched, type Tab } from '@liveplanner/document';
+import { tabKindOf, withContentOnAPage, type Tab } from '@liveplanner/document';
 
 // Fresh ids, injectable so tests are deterministic.
 export type PagesIds = { page?: () => string; flow?: () => string };
@@ -22,6 +22,7 @@ export function enterPages(tab: Tab): { tab: Tab; switched: boolean } | { refusa
         message: 'An Event Storming board has no pages. Add a tab (add_tab) to make pages on.',
       },
     };
-  if (opensInOf(tab) === 'pages') return { tab, switched: false };
-  return { tab: withEditorModeSwitched(tab, 'pages').tab, switched: true };
+  if ((tab as { opensIn?: string }).opensIn === 'pages') return { tab, switched: false };
+  const moded = { ...tab, opensIn: 'pages' } as Tab;
+  return { tab: withContentOnAPage(moded) ?? moded, switched: true };
 }

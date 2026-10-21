@@ -18,7 +18,6 @@ import {
   landWorkshopArrivals,
   normaliseElements,
   resolveGraphInput,
-  planOnlyAddedOutsidePlan,
   tabKindOf,
   type Element,
   type GraphInput,
@@ -36,7 +35,7 @@ import { readForm, type FormDefinition } from '@liveplanner/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
-import { invalidResult, planOnlyOutsidePlan, tabLocked } from './rejections';
+import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 import type { DashboardSpec } from '@liveplanner/templates';
@@ -71,7 +70,6 @@ function formTab(tabId: string, form: FormDefinition, themeId: string | undefine
     elements: [],
     defaultTextSize: 'sm',
     kind: 'form',
-    opensIn: 'plan',
     form,
     ...(themeId ? { theme: themeId } : {}),
   };
@@ -186,7 +184,7 @@ function nextTab(
 ): Tab {
   if (!tab) {
     const made = built.tab(options.tabId, options.name);
-    const kinded: Tab = options.kind ? { ...made, kind: options.kind, opensIn: 'plan' } : made;
+    const kinded: Tab = options.kind ? { ...made, kind: options.kind } : made;
     return options.finish ? { ...kinded, finish: options.finish } : kinded;
   }
   if (built.newOnly) {
@@ -235,8 +233,6 @@ export function applyReplace(
     );
   const next = nextTab(tab, built, options);
   if (!isValidTab(next)) return refuse(tabRejection(next));
-  const offPlan = planOnlyAddedOutsidePlan(tab?.elements ?? [], next);
-  if (offPlan.length) return refuse(planOnlyOutsidePlan(offPlan));
   log('[edit-ops] replace', { source, elements: next.elements.length });
   const before = tab?.elements ?? [];
   const elementOps = diffToElementOps(before, next.elements);

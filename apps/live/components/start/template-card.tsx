@@ -1,12 +1,14 @@
 'use client';
 
-// A template as a start's card (StartCard): its preview, light-canvas art on a re-lit tile, over its title and
-// description in full. One build for every start, its own groups, its search and another mode's matches
-// (StartOtherModes), so a template looks the same wherever it is found.
+// A template's picture (Start Planning's Inspiration, the Explorer's welcome): its preview, light-canvas art on a re-lit
+// tile, so a template looks the same wherever it is shown.
 import { TemplatePreview } from '@liveplanner/template-previews';
-import type { TemplateKind } from '@liveplanner/templates';
-import { templateOf } from './start-template-items';
-import type { StartPanelCard } from './StartCard';
+import { TEMPLATES, type TemplateDescriptor, type TemplateKind } from '@liveplanner/templates';
+
+const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
+
+/** The catalogue's entry for a template. */
+export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get(kind)!;
 
 export function TemplatePicture({ kind }: { kind: TemplateKind }) {
   return (
@@ -14,14 +16,4 @@ export function TemplatePicture({ kind }: { kind: TemplateKind }) {
       <TemplatePreview kind={kind} />
     </span>
   );
-}
-
-export function templateCard(kind: TemplateKind): StartPanelCard {
-  const t = templateOf(kind);
-  return {
-    id: t.kind,
-    name: t.title,
-    line: t.description,
-    picture: <TemplatePicture kind={kind} />,
-  };
 }

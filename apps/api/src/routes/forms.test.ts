@@ -44,7 +44,7 @@ const form = (extra: Partial<FormDefinition> = {}): FormDefinition => ({
 function writeForm(f: FormDefinition) {
   sql.sql
     .prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 'ftab'`)
-    .run(JSON.stringify({ kind: 'form', opensIn: 'plan', elements: [], form: f }));
+    .run(JSON.stringify({ kind: 'form', elements: [], form: f }));
 }
 
 async function owner<T = FormLinkResponse>(

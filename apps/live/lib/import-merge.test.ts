@@ -34,10 +34,10 @@ describe('mergeImportedTab', () => {
     // the tab read as a Form tab holding no form.
     const form = { v: 1, heading: 'Contact', sections: [{ id: 's1', title: '', questions: [] }] };
     const out = mergeImportedTab(tab(), {
-      ...tab({ kind: 'form', opensIn: 'plan' }),
+      ...tab({ kind: 'form' }),
       form,
     } as unknown as Tab);
-    expect(out).toMatchObject({ kind: 'form', opensIn: 'plan', form });
+    expect(out).toMatchObject({ kind: 'form', form });
     // Any other import leaves a receiving Form tab's form alone.
     expect(
       mergeImportedTab({ ...tab({ kind: 'form' }), form } as unknown as Tab, tab()).form,

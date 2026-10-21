@@ -60,7 +60,7 @@ export function PlanSheetView({
   const bridge = useSheetsBridgeContext();
   const plan = usePlan();
   const palette = planPalette(useCanvasSurface(), planOwnColours(element));
-  const interactive = !!plan?.planInput && !!bridge;
+  const interactive = !!plan && !!bridge;
   // Maximised for this person, or filling its tab for everyone (sheet.md "Fill Tab"); filling wins, as a board's.
   const { maximised, filled } = useBoardMaximised(element.id, interactive);
   // Outside the editor (no bridge): the frame and its title only.

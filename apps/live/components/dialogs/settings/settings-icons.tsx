@@ -9,7 +9,7 @@
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
-import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@liveplanner/ui';
+import { Glyph, lucideGlyph, MarkerIcon, PagesIcon } from '@liveplanner/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@liveplanner/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
@@ -208,8 +208,8 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
-const PagesSubGlyph = EDITOR_MODE_ICONS.pages;
+const DrawSubGlyph = MarkerIcon;
+const PagesSubGlyph = PagesIcon;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
   pages: () => <PagesSubGlyph size={16} />,

@@ -60,7 +60,7 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
   )!;
   // An article page's writing (an empty Title and paragraph) comes with it.
   const { articles } = chosen as Partial<Tab>;
-  return { opensIn: 'pages', pages: chosen.pages, ...(articles ? { articles } : {}) };
+  return { pages: chosen.pages, ...(articles ? { articles } : {}) };
 }
 
 /** A blank infographic's or blank slide deck's page on the tab theme's default background

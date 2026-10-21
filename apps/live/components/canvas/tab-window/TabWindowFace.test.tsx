@@ -147,7 +147,7 @@ describe('TabWindowFace', () => {
 
   it('shows a Plan tab, asking for its content like any other tab', () => {
     const plan = show(windowEl('board'), {
-      tabs: [tab('slides', 'Slides'), { ...tab('board', 'Board'), opensIn: 'plan' } as never],
+      tabs: [tab('slides', 'Slides'), { ...tab('board', 'Board') } as never],
     });
     expect(screen.queryByText("This tab isn't available.")).toBeNull();
     expect(plan.request).toHaveBeenCalled();

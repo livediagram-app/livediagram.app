@@ -1,7 +1,7 @@
 // Tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from"): what
 // the Explorer's Details view sums over a document, counted the same way by the api (every tab
 // write, the backfill) and by the browser (documents saved only in this browser).
-import { opensInOf, type EditorMode } from './editor-mode';
+import type { EditorMode } from './editor-mode';
 
 export type TabStats = {
   mode: EditorMode;
@@ -12,9 +12,6 @@ export type TabStats = {
 
 // The parts of a stored tab body the stats read.
 type TabStatsBody = {
-  kind?: string;
-  opensIn?: string;
-  layers?: unknown;
   elements?: unknown;
 };
 
@@ -41,7 +38,7 @@ export function tabStatsOf(body: TabStatsBody, data: string): TabStats {
     }
   }
   return {
-    mode: opensInOf(body as Parameters<typeof opensInOf>[0]),
+    mode: 'plan',
     elementCount: elements.length,
     commentCount,
     dataBytes: encoder.encode(data).length,

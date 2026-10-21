@@ -1047,12 +1047,3 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 html {
   view-transition-name: none;
 }
-
-/* The start's mode switch (docs/specs/007-editor/start-diagramming.md "Changing mode"): the browser's own
-   cross-fade, on the short token and the ease-out curve, so the panel turns in place. */
-::view-transition-group(.start-mode),
-::view-transition-old(.start-mode),
-::view-transition-new(.start-mode) {
-  animation-duration: var(--transition-duration-short);
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}

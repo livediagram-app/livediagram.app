@@ -84,7 +84,6 @@ test('two people renaming different columns of one board both keep their rename'
           name: 'Board',
           // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
           kind: 'board',
-          opensIn: 'plan',
           elements: [
             {
               id: 'board',
@@ -167,7 +166,6 @@ test('someone who joins after a card was opened sees it held', async ({
           name: 'Board',
           // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
           kind: 'board',
-          opensIn: 'plan',
           elements: [
             {
               id: 'board',

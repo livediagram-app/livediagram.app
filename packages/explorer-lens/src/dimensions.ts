@@ -69,13 +69,7 @@ export const DIMENSION_LABELS: Record<LensDimension, string> = {
 
 /** The label of every fixed value. A team's label is its name. */
 export const VALUE_LABELS = {
-  'opens-in': {
-    diagram: 'Diagram',
-    draw: 'Draw',
-    workshop: 'Workshop',
-    pages: 'Pages',
-    plan: 'Plan',
-  },
+  'opens-in': { plan: 'Plan' },
   kind: { 'event-storming': 'Event Storming' },
   template: { retrospective: 'Retrospective', kanban: 'Kanban' },
   'made-by': { ai: 'Made by AI' },

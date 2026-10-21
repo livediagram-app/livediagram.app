@@ -9,7 +9,6 @@ import {
   type DocumentResponse,
   type TabResponse,
 } from '@liveplanner/api-schema';
-import { tabTakesPlanOnly } from '@liveplanner/document';
 import {
   READY_MADE_CARD_TYPES,
   placeBoard,
@@ -70,13 +69,6 @@ export async function addBoard(
       types.push(t.type.id);
     }
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    // A board goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan").
-    if (!tabTakesPlanOnly(tab))
-      return {
-        ok: false,
-        code: 'tab_not_plan',
-        message: `"${tab.name}" is not a Plan tab, and a board goes only on a tab in Plan. Add a Board tab with add_tab and template "kanban" (or another board template).`,
-      };
     const placed = placeBoard(
       { ...input, ...(input.types ? { types } : {}) },
       tab.elements,

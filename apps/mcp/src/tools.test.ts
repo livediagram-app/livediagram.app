@@ -100,7 +100,6 @@ const FORM_TAB = {
   name: 'RSVP',
   rev: 1,
   kind: 'form',
-  opensIn: 'plan',
   elements: [],
   form: {
     v: 1,

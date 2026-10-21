@@ -148,7 +148,6 @@ export function buildDashboardTab(
   const tab = stampTabKind({
     ...buildTab(tabId, name, [...views.metrics, ...views.charts], 'preserve', themeId),
     kind: 'dashboard' as const,
-    opensIn: 'plan' as const,
     ...(dashboard ? { dashboard } : {}),
   });
   return { tab, dropped };

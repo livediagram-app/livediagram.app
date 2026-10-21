@@ -60,8 +60,6 @@ export type PlanContextValue = {
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).
   people: readonly ItemPerson[];
-  // Plan mode is on for this person: cards take the pointer.
-  planInput: boolean;
   // The board's structure: columns, card types, fields, settings, and retiring a card (Trash, Archive).
   canEdit: boolean;
   // Adding, editing and moving cards (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.

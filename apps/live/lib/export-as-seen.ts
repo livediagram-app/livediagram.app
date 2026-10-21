@@ -6,9 +6,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   canvasSurface,
   elementPageSurfaces,
-  hasPageLook,
   layOutPages,
-  opensInOf,
   pagesOf,
   withReadableLabelInks,
   type Appearance,
@@ -25,7 +23,7 @@ export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearan
   // Theme colours in the export's half (docs/specs/011-theme/light-and-dark.md), then the stock colours;
   // an element on a page with a fill of its own in the half that page's surface needs, as the canvas draws it.
   const themeMap = themeViewMap(tab.theme, appearance);
-  const surfaces = hasPageLook(opensInOf(tab))
+  const surfaces = Array.isArray(tab.pages)
     ? elementPageSurfaces(tab.elements, layOutPages(pagesOf(tab)))
     : null;
   const pageView: PageView | undefined = surfaces?.size

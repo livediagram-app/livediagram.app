@@ -57,7 +57,6 @@ describe('a stored whiteboard tab', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const out = migrateStoredTab(whiteboard() as unknown as Tab);
     expect(out.kind).toBe('diagram');
-    expect(out.opensIn).toBe('draw');
     expect(out.elements[0]).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
   });
 
@@ -65,7 +64,6 @@ describe('a stored whiteboard tab', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const out = migrateIncomingTab(whiteboard()) as Tab;
     expect(out.kind).toBe('diagram');
-    expect(out.opensIn).toBe('draw');
   });
 });
 

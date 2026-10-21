@@ -24,7 +24,7 @@ describe('which tabs a window may show', () => {
     { id: 'board', kind: 'board' },
     { id: 'sheet', kind: 'sheet' },
     { id: 'dash', kind: 'dashboard' },
-    { id: 'planned', opensIn: 'plan' },
+    { id: 'planned' },
     { id: 'drawing', opensIn: 'draw' },
   ];
 

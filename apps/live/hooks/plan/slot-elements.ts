@@ -71,7 +71,6 @@ export function newSlotTab(item: Extract<DashboardItem, { kind: 'board' | 'sheet
     elements: detailedBoards([el]),
     defaultTextSize: 'sm',
     kind: item.kind,
-    opensIn: 'plan',
   };
 }
 

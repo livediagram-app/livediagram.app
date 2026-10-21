@@ -19,8 +19,6 @@ const IdentityPrompt = dynamic(
 );
 
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
-import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
-import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
@@ -39,13 +37,11 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
-import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
-import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
@@ -65,23 +61,16 @@ import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { atLeastInset } from '@liveplanner/ui';
-import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
-import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { AvatarClusterButton } from './AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
-
-// Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
-// fetches it as the editor mounts).
-const WhiteboardDock = dynamic(loadWhiteboardDock, { ssr: false });
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -195,12 +184,6 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // (inset 16px = the `*-4` resting inset). Top corners stack downward,
 // bottom corners upward (flex-col-reverse) so the first panel always
 // sits flush to the corner and the rest flow away from it.
-// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
-// "On a phone"; on a desktop window too narrow for a centred strip to clear a
-// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
-// rather than at the 16px inset, or a panel docked there (the Collaborate
-// banner) renders underneath the strip where it can't be reached
-// (toolbarTopClearancePx, lib/canvas-chrome.ts).
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
@@ -272,13 +255,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    // Not in Pages mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/pages-mode.md). Not in Plan mode either: a board is worked by its
-    // columns and cards, not a stacking order (docs/specs/026-plan/plan-mode.md).
-    layers:
-      panelEnabled(settings, 'layersPanelEnabled') &&
-      !props.pagesMode &&
-      props.editorMode !== 'plan',
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -323,14 +299,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     penPoints,
     snapGuides,
     snapTargets,
-    whiteboard: props.editorMode === 'draw',
+    whiteboard: false,
   });
 
-  // Draw mode trades the palette, the strip and the theme controls for its
-  // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  const whiteboard = props.editorMode === 'draw';
   // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
-  const cardTypesButtonRef = useCardTypesOpener(!zenMode && props.editorMode === 'plan', {
+  const cardTypesButtonRef = useCardTypesOpener(!zenMode, {
     activeDockPanel,
     handleDockButtonClick,
   });
@@ -339,28 +312,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
     activeDockPanel,
     handleDockButtonClick,
   });
-  // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
-  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock. Never in Plan, whose boards, sheets
-  // and dashboards carry their own tools (docs/specs/026-plan/plan-mode.md "No palette").
-  const paletteShown =
-    props.editorMode !== 'plan' && ((!readOnly && !whiteboard) || !!props.participantPalette);
-  // The strip only renders with the chrome up.
-  const stripShown = paletteShown && !chromeHidden;
-  // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
-  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
-  // "Where the dock sits").
-  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
-  const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
-  // The Explorer menu button: top-left on desktop; on a phone, its own card at
-  // the left of the strip's row, the strip beside it (no room for a corner card
-  // above a strip that needs the whole top row). A read-only visitor has no
-  // strip, and nor does a whiteboard, so it keeps the corner there.
-  const menuInStrip = isMobile && paletteShown;
+  // No palette (docs/specs/026-plan/plan-mode.md "No palette"): a board, sheet or dashboard carries its own tools.
+  // The Explorer menu button keeps its corner, top-left.
   const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
-      inline={menuInStrip}
     />
   );
 
@@ -378,7 +335,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
-  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true, planVoting);
+  const stripTools = sessionStripTools(props.esBoard === true, planVoting);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
@@ -387,7 +344,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const {
     panelEls,
     explorerEl,
-    layersEl,
     collaborateEl,
     slidesPopoverEl,
     cardTypesPopoverEl,
@@ -395,13 +351,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     newCardPopoverEl,
     cardFinderPopoverEl,
     sessionPopoverEl,
-    tidyUpPopoverEl,
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
     contentsSide,
     avatarPopoverEl,
-    paletteTint,
   } = useCanvasChromePanels({
     props,
     stripTools,
@@ -411,42 +365,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
     panelsOn,
   });
 
-  // Measured against the real top-corner stacks (useStripCrowdsCorners). A
-  // stack only renders while it holds a panel, so which top corners are
-  // occupied is part of what re-measures. A phone's strip always spans the top.
-  const topCornersKey = (['top-left', 'top-right'] as const)
-    .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
-    .join('|');
-  // UI scale (docs/specs/007-editor/ui-scale.md): the strip, the panels and the
-  // bottom-right cluster are drawn at it, so the clearances around them follow.
-  const toolbarScale = useUiScale('toolbar');
+  // UI scale (docs/specs/007-editor/ui-scale.md): the panels and the bottom-right cluster are drawn at it, so the
+  // clearances around them follow.
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
   // Beside Pages mode's Contents sidebar when it is pinned right (useContentsChrome), never under it.
   const clusterX =
     clusterInset.x +
     (contentsDocked && contentsSide === 'right' ? CONTENTS_SIDEBAR_WIDTH * panelScale : 0);
-  // The dock's code loads on demand, so it is drawn a moment after the chrome: the top corners
-  // measure against it from the commit it is first drawn in (its onDrawn), never before, when there
-  // is nothing on the page to measure. Once drawn its code is in, so a later mount is immediate.
-  const [dockDrawn, setDockDrawn] = useState(false);
-  const markDockDrawn = useCallback(() => setDockDrawn(true), []);
-  // The bar across the top that the top corners give way to: the strip, or a dock at the top.
-  const topBar = isMobile
-    ? null
-    : stripShown
-      ? STRIP_SELECTOR
-      : dockOnTop && dockDrawn
-        ? WHITEBOARD_DOCK_SELECTOR
-        : null;
-  const topBarCrowds = useStripCrowdsCorners(
-    cornerRefs,
-    topBar,
-    topCornersKey,
-    `${toolbarScale}/${panelScale}`,
-  );
-  const stripSpansTop = stripShown && (isMobile || topBarCrowds);
-  const dockSpansTop = dockOnTop && topBarCrowds;
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -475,10 +401,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             style={{
               ...(corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
-                  (stripSpansTop || dockSpansTop) && corner.startsWith('top')
-                  ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : undefined),
+                : undefined),
               // Beside Pages mode's Contents sidebar, never under it.
               ...(contentsDocked && corner.endsWith(contentsSide)
                 ? { [contentsSide]: contentsSidebarClearancePx(panelScale) }
@@ -545,7 +468,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}
         stamp={stamp}
-        whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         mirrorPages={
           props.pagesMode ? mirroredLogoPages(props.pagesMode.pages, props.pagesMode.logo) : null
         }
@@ -556,63 +478,29 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} dockOnTop={dockOnTop} hasPlanBoard={hasPlanBoard} />
+      <TopCenterChrome {...props} hasPlanBoard={hasPlanBoard} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
-          (zen hides it, the welcome flow doesn't), and Layers opens as a popover over its cluster
-          button. */}
+          (zen hides it, the welcome flow doesn't). */}
       {!zenMode ? (
         <>
-          {menuInStrip ? null : explorerMenuButton}
+          {explorerMenuButton}
           {explorerEl}
-          {layersEl}
         </>
       ) : null}
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
-          against the canvas, so it renders outside the corner layer, as Layers does. */}
+          against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
       {zenMode ? null : slidesPopoverEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
-      {tidyUpPopoverEl}
       {contentsSidebarEl}
       {contentsPopoverEl}
       {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
-      {paletteShown ? (
-        <ToolbarPalette
-          key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
-          participant={readOnly}
-          // Hidden, not unmounted, while the chrome is away (zen, welcome),
-          // so the chosen category lasts the page load.
-          hidden={chromeHidden}
-          canvasTool={canvasTool}
-          onSetCanvasTool={props.onSetCanvasTool}
-          onExitAvatarMode={props.onExitAvatarMode}
-          onToggleZen={onToggleZen}
-          canvasEmpty={elements.length === 0}
-          {...pickPaletteAddHandlers(props)}
-          pendingDraw={pendingDraw}
-          esBoard={props.esBoard}
-          esBoardControls={props.esBoardControls}
-          themeTint={paletteTint}
-          leading={menuInStrip ? explorerMenuButton : undefined}
-          tabElements={elements}
-        />
-      ) : null}
-
-      {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
-          of the palette. */}
-      {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock
-          model={props.whiteboardDock}
-          ink={props.whiteboardInk ?? '#1c1917'}
-          onDrawn={markDockDrawn}
-        />
-      ) : null}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
           containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
@@ -721,7 +609,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
-                  canStart={stripCanStart(stripTools, !!readOnly)}
+                  canStart={stripCanStart(!!readOnly)}
                   offersTimer={stripTools.timer}
                   offersPoll={stripTools.poll}
                   open={
@@ -764,10 +652,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 }
               />
             ) : null}
-            {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan
-                mode, one strip where Layers would be, while the tab has something that shows cards ("The Plan
-                strip"). */}
-            {!zenMode && props.editorMode === 'plan' && tabShowsCards ? (
+            {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): one strip,
+                while the tab has something that shows cards ("The Plan strip"). */}
+            {!zenMode && tabShowsCards ? (
               <PlanCardsClusterStrip
                 finderOpen={activeDockPanel === 'plan-cards'}
                 onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
@@ -811,28 +698,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 pass no handler), one strip in every mode: see LayersThemeStrip. */}
             {!zenMode ? (
               <LayersThemeStrip
-                // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-                tidyUp={
-                  tidyUpOffered({
-                    actions: props.tidyUp,
-                    editorMode: props.editorMode,
-                    zenMode: !!zenMode,
-                  })
-                    ? {
-                        open: activeDockPanel === 'tidy-up',
-                        onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
-                      }
-                    : undefined
-                }
-                layers={
-                  !readOnly && panelsOn.layers
-                    ? {
-                        open: activeDockPanel === 'layers',
-                        onToggle: (button) => handleDockButtonClick('layers', button, true),
-                      }
-                    : undefined
-                }
-                onOpenTheme={onOpenCanvasTheme && !whiteboard ? onOpenCanvasTheme : undefined}
+                onOpenTheme={onOpenCanvasTheme}
               />
             ) : null}
             <ViewZoomControls

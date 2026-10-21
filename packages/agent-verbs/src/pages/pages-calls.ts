@@ -15,7 +15,6 @@ import {
   articlesOf,
   articleTitleOf,
   articleToMarkdown,
-  opensInOf,
   type Tab,
 } from '@liveplanner/document';
 import { apiRefusalOf } from '../plan/api-refusal';
@@ -73,7 +72,7 @@ export async function pagesTabOf(
       .slice(0, TAB_SEARCH_MAX);
     for (const [i, summary] of inOrder.entries()) {
       const { tab } = await api.json<TabResponse>(tabPath(documentId, summary.id));
-      if (opensInOf(tab) === 'pages') return { tabId: summary.id, tab };
+      if ((tab as { opensIn?: string }).opensIn === 'pages') return { tabId: summary.id, tab };
       if (i === 0 && tab.elements.length === 0) firstEmpty = { tabId: summary.id, tab };
     }
     // An empty first tab loses nothing by switching: a document just made for pages.

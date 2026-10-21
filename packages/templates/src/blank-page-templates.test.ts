@@ -3,7 +3,7 @@ import { pagesOf, offersPageKindChoice } from '@liveplanner/document';
 import { BLANK_PAGE_TEMPLATE_KINDS, blankPageTemplateOverrides } from './blank-page-templates';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
-import { isBlankTemplate, templateEditorMode } from './template-modes';
+import { isBlankTemplate } from './template-modes';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { untitledNameForTemplate } from './templates';
 
@@ -13,8 +13,6 @@ const KINDS = Object.keys(BLANK_PAGE_TEMPLATE_KINDS) as (keyof typeof BLANK_PAGE
 describe('blanks of a page kind', () => {
   it.each(KINDS)('%s opens in Pages on exactly one empty page of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
-    expect(o.opensIn).toBe('pages');
-    expect(templateEditorMode(kind)).toBe('pages');
     expect(buildTemplate(kind, 0, 0)).toEqual([]);
     const pages = pagesOf(o);
     expect(pages).toHaveLength(1);

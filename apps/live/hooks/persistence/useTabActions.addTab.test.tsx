@@ -61,7 +61,7 @@ describe('adding a tab', () => {
   it('is a general tab carrying the active tab look, never its kind', () => {
     const board = { ...first, kind: 'board', theme: 'slate' } as unknown as Tab;
     const { added } = add('plan', undefined, board);
-    expect(added).toMatchObject({ opensIn: 'plan', theme: 'slate' });
+    expect(added).toMatchObject({ theme: 'slate' });
     expect(added.kind).toBeUndefined();
   });
 

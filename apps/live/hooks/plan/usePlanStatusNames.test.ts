@@ -65,7 +65,7 @@ describe('document-wide statuses', () => {
       sprint.type === 'shape' && sprint.planBoard,
       backlog.type === 'shape' && backlog.planBoard,
     ]);
-    const { result } = renderHook(() => usePlanStatuses(tabs, 'b', true));
+    const { result } = renderHook(() => usePlanStatuses(tabs, 'b'));
     expect([...result.current.names]).toEqual([
       ['sprint', 'Sprint Todo'],
       ['doing', 'Doing'],
@@ -75,15 +75,13 @@ describe('document-wide statuses', () => {
   });
 
   it('gives a tab with no board the phases of the boards beside it', () => {
-    const { result } = renderHook(() => usePlanStatuses(tabs, 'c', true));
+    const { result } = renderHook(() => usePlanStatuses(tabs, 'c'));
     expect(result.current.phases.get('done')).toBe('done');
     expect(result.current.phases.get('backlog')).toBe('todo');
   });
 
-  it('reads nothing while Plan is not in play, and keeps the maps while nothing changes', () => {
-    const off = renderHook(() => usePlanStatuses(tabs, 'a', false));
-    expect(off.result.current.names.size).toBe(0);
-    const on = renderHook(({ t }) => usePlanStatuses(t, 'a', true), { initialProps: { t: tabs } });
+  it('keeps the maps while nothing changes', () => {
+    const on = renderHook(({ t }) => usePlanStatuses(t, 'a'), { initialProps: { t: tabs } });
     const first = on.result.current;
     // A new tab list with the same tabs (a render that changed no board).
     on.rerender({ t: [...tabs] });
@@ -114,14 +112,14 @@ describe('document-wide statuses', () => {
         ],
       },
     ];
-    const { result } = renderHook(() => usePlanStatuses(typedTabs, 't', true));
+    const { result } = renderHook(() => usePlanStatuses(typedTabs, 't'));
     const types = result.current.types;
     expect(types.get('todo')).toEqual(new Set(['bug', 'task']));
     expect(types.get('doing')).toBe('all');
     // An All Cards board names no status.
     expect([...types.keys()]).toEqual(['todo', 'doing']);
     // Once Bug is deleted from the catalogue, the board that named only Bug shows every type again.
-    const later = renderHook(() => usePlanStatuses(typedTabs, 't', true, ['task', 'note']));
+    const later = renderHook(() => usePlanStatuses(typedTabs, 't', ['task', 'note']));
     expect(later.result.current.types.get('todo')).toBe('all');
     expect(later.result.current.types.get('doing')).toBe('all');
   });
@@ -191,7 +189,7 @@ describe('statusBoardsOfSetups', () => {
         },
       ],
     };
-    const { result } = renderHook(() => usePlanStatuses([tab] as never, 't', true));
+    const { result } = renderHook(() => usePlanStatuses([tab] as never, 't'));
     expect(result.current.boards[0]!.colours?.get(first!.status)).toBe('#2563eb');
   });
 

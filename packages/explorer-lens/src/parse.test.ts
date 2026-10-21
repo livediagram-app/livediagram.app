@@ -20,14 +20,14 @@ describe('parseLens', () => {
 
   it('reads every dimension from its token', () => {
     const { lens, issues } = parseLens(
-      'opens-in:draw kind:event-storming template:retrospective made-by:ai edited:7d people:me space:team:T1',
+      'opens-in:plan kind:event-storming template:retrospective made-by:ai edited:7d people:me space:team:T1',
       aggregate,
     );
     expect(issues).toEqual([]);
     expect(lens).toEqual({
       text: [],
       filters: {
-        'opens-in': ['draw'],
+        'opens-in': ['plan'],
         kind: ['event-storming'],
         template: ['retrospective'],
         'made-by': ['ai'],
@@ -38,11 +38,11 @@ describe('parseLens', () => {
     });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Naming in the interface": a link from before a rename.
-  it("reads a mode's old name as today's mode", () => {
-    const { lens, issues } = parseLens('opens-in:facilitate,illustrate', aggregate);
+  // docs/specs/026-plan/plan-mode.md "Retired modes": a link from before Plan was the only mode.
+  it('reads a retired mode as Plan', () => {
+    const { lens, issues } = parseLens('opens-in:draw,facilitate', aggregate);
     expect(issues).toEqual([]);
-    expect(lens.filters['opens-in']).toEqual(['workshop', 'pages']);
+    expect(lens.filters['opens-in']).toEqual(['plan']);
   });
 
   it('keeps free words as text, in order, as typed', () => {

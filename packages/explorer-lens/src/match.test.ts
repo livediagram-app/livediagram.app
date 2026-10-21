@@ -23,7 +23,7 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   space: 'mine',
   people: 'me',
   madeByAi: false,
-  opensIn: 'diagram',
+  opensIn: 'plan',
   kind: null,
   template: null,
   ...overrides,
@@ -36,7 +36,7 @@ describe('documentSubject', () => {
     ownerId: 'me-id',
     teamId: null,
     source: null,
-    opensIn: 'draw',
+    opensIn: 'plan',
     tabKind: 'event-storming',
     templateFamily: 'retrospective',
   };
@@ -48,7 +48,7 @@ describe('documentSubject', () => {
       space: 'mine',
       people: 'me',
       madeByAi: false,
-      opensIn: 'draw',
+      opensIn: 'plan',
       kind: 'event-storming',
       template: 'retrospective',
     });
@@ -122,7 +122,7 @@ describe('matchesLens', () => {
   });
 
   it.each([
-    ['opens-in:draw', { opensIn: 'draw' }, { opensIn: 'diagram' }],
+    ['opens-in:plan', { opensIn: 'plan' }, { opensIn: null }],
     ['kind:event-storming', { kind: 'event-storming' }, { kind: null }],
     ['template:kanban', { template: 'kanban' }, { template: 'retrospective' }],
     ['made-by:ai', { madeByAi: true }, { madeByAi: false }],
@@ -146,7 +146,7 @@ describe('matchesLens', () => {
 
   it('matches no value of a dimension the row cannot answer', () => {
     const unknown = subject({ opensIn: null, kind: null, template: null, madeByAi: null });
-    expect(matchesLens(unknown, lensOf('opens-in:diagram,draw'), now)).toBe(false);
+    expect(matchesLens(unknown, lensOf('opens-in:plan'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('kind:event-storming'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('template:kanban'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('made-by:ai'), now)).toBe(false);
@@ -154,9 +154,9 @@ describe('matchesLens', () => {
   });
 
   it('combines dimensions with and', () => {
-    const lens = lensOf('opens-in:draw people:me');
-    expect(matchesLens(subject({ opensIn: 'draw' }), lens, now)).toBe(true);
-    expect(matchesLens(subject({ opensIn: 'draw', people: 'others' }), lens, now)).toBe(false);
+    const lens = lensOf('opens-in:plan people:me');
+    expect(matchesLens(subject({ opensIn: 'plan' }), lens, now)).toBe(true);
+    expect(matchesLens(subject({ opensIn: 'plan', people: 'others' }), lens, now)).toBe(false);
   });
 
   describe('edited', () => {

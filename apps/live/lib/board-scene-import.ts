@@ -300,7 +300,7 @@ export async function importDocuments(
 }
 
 /**
- * Make every scene its own new document with one tab that opens in Draw mode, named and dated as its board,
+ * Make every scene its own new document with one tab, named and dated as its board,
  * filed in `folderId`. A board that cannot land is listed with its reason; the rest still do.
  */
 export async function importBoardsAsDocuments(
@@ -332,11 +332,10 @@ export async function importBoardsAsDocuments(
             hugText: o.hugText,
             onProgress,
           });
-          const { opensIn, backgroundPattern } = landed.tabPatch;
+          const { backgroundPattern } = landed.tabPatch;
           const tab: Tab = {
             id: crypto.randomUUID(),
             name: UNTITLED_BOARD_NAME,
-            opensIn,
             backgroundPattern,
             elements: done.elements,
             templateChosen: true,

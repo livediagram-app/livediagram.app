@@ -22,8 +22,6 @@ import {
   setDashboardRowHeight,
   type DashboardLayout,
 } from './dashboard';
-import { editorModeSwitchable, opensInOf, setTabOpensIn } from './editor-mode';
-import { tabKindOf } from './tab-kind';
 
 // docs/specs/026-plan/plan-tabs.md "Dashboard tab".
 const ids = () => {
@@ -128,20 +126,6 @@ describe('a dashboard layout', () => {
     expect(read.rows[0]!.slots[0]!.content).toEqual({ type: 'tab', tabId: 't' });
     expect(read.rows[0]!.slots[1]!.content).toBeUndefined();
   });
-});
-
-// docs/specs/026-plan/plan-tabs.md "The kinds".
-describe('the Plan tab kinds', () => {
-  it.each(['board', 'sheet', 'dashboard', 'form'] as const)(
-    'a %s tab is always in Plan',
-    (kind) => {
-      const tab = { id: 't', kind, opensIn: 'draw' as const };
-      expect(tabKindOf(tab)).toBe(kind);
-      expect(opensInOf(tab)).toBe('plan');
-      expect(editorModeSwitchable(tab)).toBe(false);
-      expect(setTabOpensIn(tab, 'diagram')).toBe(tab);
-    },
-  );
 });
 
 describe('dashboard presets', () => {

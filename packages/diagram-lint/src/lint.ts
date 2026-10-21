@@ -3,7 +3,6 @@
 
 import type { LintCode, LintReport, LintSeverity } from '@liveplanner/api-schema';
 import {
-  opensInOf,
   conciseGraph,
   layoutGraph,
   type Element,
@@ -40,10 +39,10 @@ const PAGE_CHECKS = [
 const TAB_CHECKS = [...LINT_CHECKS, textOverprint];
 
 export function lintTab(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'kind'>> & { opensIn?: string },
   options: LintOptions = {},
 ): LintReport {
-  const checks = opensInOf(tab) === 'pages' ? PAGE_CHECKS : TAB_CHECKS;
+  const checks = tab.opensIn === 'pages' ? PAGE_CHECKS : TAB_CHECKS;
   const started = performance.now();
   const source = options.source ?? 'tab';
   const log = options.log ?? consoleLintLogger;

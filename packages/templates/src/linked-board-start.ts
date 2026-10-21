@@ -57,7 +57,6 @@ export function actionsBoardTab(
     elements: [element],
     defaultTextSize: 'sm',
     kind: 'board',
-    opensIn: 'plan',
     ...(from?.theme ? { theme: from.theme } : {}),
   };
 }

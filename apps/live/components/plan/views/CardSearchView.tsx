@@ -50,7 +50,7 @@ export function CardSearchView({
   const filters = settings.filters ?? NO_FILTERS;
   const types = plan?.types;
   const statusNames = plan?.statusNames ?? NO_STATUSES;
-  const canEdit = !!plan?.canEdit && !!plan?.planInput;
+  const canEdit = !!plan?.canEdit;
   const matching = useMemo(
     () => searchCards(items.values(), filters, types, statusNames),
     [items, filters, types, statusNames],

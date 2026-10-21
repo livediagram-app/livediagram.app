@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { EditorMode, Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/document';
 import type { ItemCreate } from '@liveplanner/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
@@ -16,14 +16,6 @@ import type { Participant } from '@/lib/identity';
 import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
-// The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
-// mode lives"): the Whiteboard draws, every other template is a diagram, Blank included, even on
-// a tab that opened in Draw. An event-storming board has no mode to give (it is always Diagram).
-// Undefined leaves the tab as is.
-export function templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined {
-  if (overrides.opensIn) return overrides.opensIn;
-  return overrides.kind ? undefined : 'diagram';
-}
 
 // Template and identity actions, lifted out of editor-page.tsx: choose a template from a start (mint the scaffold via
 // the lazily-imported builders, recolour to the tab's theme, apply canvas overrides), and answer the visitor name prompt
@@ -134,7 +126,6 @@ export function useTemplateFlow(opts: {
     const theme = getTheme(tabs.find((t) => t.id === activeId)?.theme);
     const elements = recolourElementsForTheme(rawElements, theme);
     const overrides = templateCanvasOverrides(kind);
-    const opensIn = templateOpensIn(overrides);
     // The template's later tabs: built at the origin (a fresh tab frames itself), recoloured as the
     // first, named by the template.
     // Every tab's id in order: a Plan template's tabs name each other (a Dashboard's slots, plan-tabs.md).
@@ -182,13 +173,11 @@ export function useTemplateFlow(opts: {
                 return name ? { name } : {};
               })()),
           ...overrides,
-          ...(opensIn ? { opensIn } : {}),
           ...first!.tab?.(ids),
         };
-        const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
         // A blank infographic's page starts on the theme's default background, as an added page.
         const themed = withBlankPageThemed(landed, kind, theme);
-        return { landed: themed, followers: templateFollowerTabs(themed, followers, withMode) };
+        return { landed: themed, followers: templateFollowerTabs(themed, followers, overrides) };
       }),
     );
     for (const f of followers) markTabLoaded(f.id);

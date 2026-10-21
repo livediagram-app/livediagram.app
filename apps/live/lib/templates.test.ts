@@ -428,7 +428,6 @@ describe('templateCanvasOverrides', () => {
   it('opens the Kanban board in Plan mode on the quiet dot grid (docs/specs/026-plan/plan-mode.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'grid',
-      opensIn: 'plan',
     });
   });
 });

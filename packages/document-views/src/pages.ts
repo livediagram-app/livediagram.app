@@ -15,7 +15,6 @@ import {
   elementIdsOnPage,
   pagesOf,
   layOutPages,
-  opensInOf,
   PAGE_SIZES,
   type Element,
   type PageKind,
@@ -79,7 +78,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   const tab = model.tab;
   const header = viewHeader('pages', model.facts);
   const door = options.door ?? 'cli';
-  if (opensInOf(tab) !== 'pages') {
+  if ((tab as { opensIn?: string }).opensIn !== 'pages') {
     const how =
       door === 'mcp'
         ? 'change_pages adds pages and switches it; write_article starts an article.'

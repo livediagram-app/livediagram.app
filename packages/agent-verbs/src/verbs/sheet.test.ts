@@ -30,7 +30,7 @@ function ctxWith(input = '', sheets = [costs()]) {
       ...library,
       ...tabsOfA,
       [`/documents/${DOC_A}/tabs/${ONE}`]: {
-        tab: { id: ONE, opensIn: 'plan', elements: [], rev: 2 },
+        tab: { id: ONE, elements: [], rev: 2 },
       },
       [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: { changeset: { id: 'cs', rev: 3 } },
     }),

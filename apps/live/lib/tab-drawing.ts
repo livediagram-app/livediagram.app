@@ -8,7 +8,6 @@ import {
   exportFontIds,
   formLook,
   laidOutPagesOf,
-  opensInOf,
   pagesWithWriting,
   prefixSvgIds,
   r2,
@@ -135,9 +134,7 @@ function keepEnds(
 export function tabDrawingFontIdsOf(tab: Tab): string[] {
   const ids = new Set(exportFontIds(tab.elements, tab.font, undefined, tab.finish));
   if (tabKindOf(tab) === 'form' && tab.font) ids.add(tab.font);
-  if (opensInOf(tab) === 'pages') {
-    for (const page of laidOutPagesOf(tab))
-      for (const id of pageWritingFonts(tab, page)) ids.add(id);
-  }
+  for (const page of laidOutPagesOf(tab))
+    for (const id of pageWritingFonts(tab, page)) ids.add(id);
   return [...ids];
 }

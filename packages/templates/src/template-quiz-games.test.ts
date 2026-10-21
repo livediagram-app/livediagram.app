@@ -9,7 +9,6 @@ import {
 } from '@liveplanner/document';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
-import { templateEditorMode } from './template-modes';
 import {
   BINGO_PROMPTS,
   ICEBREAKER_QUESTIONS,
@@ -32,8 +31,7 @@ const shapes = (els: Element[], shape: string): ShapeElement[] =>
   els.filter((e): e is ShapeElement => e.type === 'shape' && e.shape === shape);
 
 describe('quiz and game templates', () => {
-  it.each(GAMES)('%s opens in Workshop, files under Quizzes & Games and builds', (kind) => {
-    expect(templateEditorMode(kind)).toBe('workshop');
+  it.each(GAMES)('%s files under Quizzes & Games and builds', (kind) => {
     expect(templateCategory(kind)).toBe('games');
     expect(buildTemplate(kind, 0, 0).length).toBeGreaterThan(5);
   });

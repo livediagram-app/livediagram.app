@@ -5,7 +5,6 @@
 import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import { pageExportFrame } from './page-frame';
 import { tabWireframeFrameTheme } from './wireframe-page';
-import { opensInOf } from './editor-mode';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { renderElementsToSvg } from './svg-render';
 import type { Tab } from './index';
@@ -25,7 +24,7 @@ const PAGES_GRID_LABEL_PX = 32;
 // The pages a tab lays out, in their row; none for a tab that is not in Pages (pagesOf reads any other
 // tab as one page, which it only has once it is switched).
 export function laidOutPagesOf(tab: Tab): LaidOutPage[] {
-  if (opensInOf(tab) !== 'pages') return [];
+  if (!Array.isArray(tab.pages)) return [];
   return layOutPages(pagesOf(tab));
 }
 

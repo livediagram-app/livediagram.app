@@ -125,8 +125,8 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
   .map(({ id, label, description }) => ({ id, label, description }));
 
-// The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blanks").
-// Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.
+// The blanks: in no category, reached from Popular or by search (docs/specs/026-plan/plan-templates.md "The blanks").
+// Mirrors isBlankTemplate (BLANK_TEMPLATES); the categories test pins them together.
 type BlankKind =
   | 'blank'
   | 'whiteboard'

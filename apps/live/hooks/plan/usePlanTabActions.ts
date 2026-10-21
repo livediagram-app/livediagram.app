@@ -142,7 +142,6 @@ export function usePlanTabActions({
           return {
             ...t,
             kind,
-            opensIn: 'plan',
             dashboard: undefined,
             ...(name ? { name } : {}),
             // A board filling its tab draws its cards Detailed, whatever its preset's size on a canvas.
@@ -162,7 +161,6 @@ export function usePlanTabActions({
           // A tab still on its default name ("Tab 5") takes the Dashboard's; a name someone gave it stays.
           name: isDefaultTabName(t.name) ? 'Dashboard' : t.name,
           kind: 'dashboard',
-          opensIn: 'plan',
           dashboard: dashboardFromPreset(presetId, newId),
         })),
       );
@@ -190,7 +188,6 @@ export function usePlanTabActions({
             ...t,
             name: isDefaultTabName(t.name) ? name : t.name,
             kind: 'dashboard',
-            opensIn: 'plan',
             elements: [...t.elements, el],
             dashboard,
           };
@@ -232,7 +229,6 @@ export function usePlanTabActions({
           ...t,
           name: isDefaultTabName(t.name) ? s.name : t.name,
           kind: 'dashboard',
-          opensIn: 'plan',
           elements: [...t.elements, ...elements],
           dashboard,
         })),

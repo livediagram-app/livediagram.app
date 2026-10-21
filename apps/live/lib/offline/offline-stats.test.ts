@@ -24,7 +24,7 @@ const bytesOf = (t: Tab) => {
 describe('offlineDocumentStats', () => {
   it('sums elements, comments and bytes over the tabs, in the first tab mode', () => {
     const a = tab('a', { opensIn: 'draw' }, [2, 0]);
-    const b = tab('b', { opensIn: 'plan' }, [1]);
+    const b = tab('b', {}, [1]);
     expect(offlineDocumentStats({ id: 'd', savedAt: 1, tabs: [a, b] })).toEqual({
       mode: 'draw',
       elements: 3,

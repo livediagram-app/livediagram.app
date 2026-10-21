@@ -17,8 +17,8 @@ afterEach(() => {
 
 describe('startTypedTransition', () => {
   it('runs the change in a transition named by its type', () => {
-    const change = vi.fn(() => expect(react.addTransitionType).toHaveBeenCalledWith('start-mode'));
-    startTypedTransition('start-mode', change);
+    const change = vi.fn(() => expect(react.addTransitionType).toHaveBeenCalledWith('slide-in'));
+    startTypedTransition('slide-in', change);
     expect(react.startTransition).toHaveBeenCalledOnce();
     expect(change).toHaveBeenCalledOnce();
   });
@@ -26,7 +26,7 @@ describe('startTypedTransition', () => {
   it('runs the change plainly under reduced motion, so no View Transition starts', () => {
     document.documentElement.classList.add('reduce-motion');
     const change = vi.fn();
-    startTypedTransition('start-mode', change);
+    startTypedTransition('slide-in', change);
     expect(change).toHaveBeenCalledOnce();
     expect(react.startTransition).not.toHaveBeenCalled();
     expect(react.addTransitionType).not.toHaveBeenCalled();

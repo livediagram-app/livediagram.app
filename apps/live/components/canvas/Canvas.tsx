@@ -429,7 +429,7 @@ function CanvasView(props: CanvasProps) {
     onCanvasDoubleClick: (x, y, byFinger) =>
       routeBoardDoubleClick(
         {
-          whiteboard: props.editorMode === 'draw',
+          whiteboard: false,
           elements,
           layers: tabLayers,
           inertIds: props.layerInertIds,
@@ -668,7 +668,7 @@ function CanvasView(props: CanvasProps) {
                   elements={elements}
                 />
               ) : null}
-              <CanvasStillProvider still={props.editorMode === 'draw'}>
+              <CanvasStillProvider still={false}>
                 <CanvasArrivalProvider
                   tabId={props.activeTabId ?? ''}
                   loaded={props.activeTabLoaded ?? true}
@@ -948,7 +948,7 @@ function CanvasView(props: CanvasProps) {
               // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
               penPoints={
                 penPoints ??
-                (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
+                (penStroke ? penStroke.points.slice() : null)
               }
               polygonVertices={polygonVertices}
               polygonCursor={polygonCursor}

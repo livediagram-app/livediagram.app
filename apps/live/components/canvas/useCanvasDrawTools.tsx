@@ -66,7 +66,7 @@ export function useCanvasDrawTools({
       onCommitFreehand,
       stampAt,
       showStamp,
-      whiteboard: props.editorMode === 'draw',
+      whiteboard: false,
     });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the

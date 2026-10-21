@@ -9,8 +9,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { LeavePagesDialog } from '@/components/dialogs/LeavePagesDialog';
-import { LeavePagesConfirm } from '@/components/dialogs/LeavePagesConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -63,7 +61,6 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    leavePages,
     setSelectedId,
     setMultiSelectedIds,
   } = useEditorContext();
@@ -87,8 +84,6 @@ export function EditorTabDialogs() {
 
   return (
     <>
-      <LeavePagesDialog leave={leavePages} />
-      <LeavePagesConfirm leave={leavePages} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour

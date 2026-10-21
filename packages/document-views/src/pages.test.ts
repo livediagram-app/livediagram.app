@@ -65,7 +65,7 @@ describe('the pages view', () => {
     const out = pagesOf(pagesTab());
     const lines = out.text.split('\n');
     expect(lines[0]).toBe(
-      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
+      'tab tab-deck "Deck" · 1 element: 1 box · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,

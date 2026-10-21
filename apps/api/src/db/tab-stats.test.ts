@@ -114,7 +114,7 @@ describe('readDocumentStats', () => {
 
 describe('tabStatsOfData', () => {
   it('counts a stored body', () => {
-    const data = JSON.stringify({ opensIn: 'plan', elements: [{ id: 'a' }] });
+    const data = JSON.stringify({ elements: [{ id: 'a' }] });
     expect(tabStatsOfData(data)).toEqual({
       stats: { mode: 'plan', elementCount: 1, commentCount: 0, dataBytes: data.length },
       corrupt: false,

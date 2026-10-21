@@ -18,12 +18,10 @@ describe('templateFollowerTabs', () => {
       backgroundColor: '#000',
       backgroundPattern: 'lines',
       defaultTextSize: 'md',
-      opensIn: 'plan',
       locked: true,
     });
     const [follower] = templateFollowerTabs(landed, [{ id: 'b', name: 'Backlog', elements: [] }], {
       backgroundPattern: 'grid',
-      opensIn: 'plan',
     });
     expect(follower).toMatchObject({
       id: 'b',
@@ -32,7 +30,6 @@ describe('templateFollowerTabs', () => {
       backgroundColor: '#000',
       backgroundPattern: 'grid',
       defaultTextSize: 'md',
-      opensIn: 'plan',
       templateChosen: true,
     });
     // Only the look carries over, never the tab's own state.
@@ -50,18 +47,17 @@ describe('templateFollowerTabs', () => {
           id: 'b',
           name: 'Threat Register',
           elements: [],
-          fields: { kind: 'sheet', opensIn: 'plan' },
+          fields: { kind: 'sheet' },
           ownCanvas: { backgroundPattern: 'grid', backgroundOpacity: 1 },
         },
       ],
-      { backgroundPattern: 'graph', layers: [{ id: 'l', name: 'Model' }], opensIn: 'diagram' },
+      { backgroundPattern: 'graph', layers: [{ id: 'l', name: 'Model' }] },
     );
     expect(follower).toMatchObject({
       theme: 'ocean',
       backgroundPattern: 'grid',
       backgroundOpacity: 1,
       kind: 'sheet',
-      opensIn: 'plan',
     });
     expect(follower).not.toHaveProperty('layers');
   });

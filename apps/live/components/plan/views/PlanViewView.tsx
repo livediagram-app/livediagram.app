@@ -102,7 +102,7 @@ export function PlanViewView({
   const maximised = useMaximisedPlanId() === element.id;
   // A Visualisation tab's chart fills its tab, as a Board tab's board does (fill-tab.ts): no Maximise there.
   const filled = useFillsTab(element.id);
-  const interactive = !!plan?.planInput;
+  const interactive = !!plan;
   // In a Dashboard slot, the slot's settings (slot-menu.ts).
   const slot = useSlotSettings();
   useMaximisedPlanLifetime(element.id, maximised, interactive);

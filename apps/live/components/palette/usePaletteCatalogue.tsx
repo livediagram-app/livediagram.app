@@ -1,10 +1,5 @@
 import type { PaletteTileDef } from './palette-tile-defs';
-import { usePaletteKind } from '@/lib/palette-kind';
-import {
-  DEFAULT_EDITOR_MODE,
-  type EmbedProvider,
-  type EventStormingNoteKind,
-} from '@liveplanner/document';
+import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -18,7 +13,6 @@ import { restoresMaximised, withTileActionPreamble } from './palette-tile-action
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
   coveredPaletteCategories,
   dashboardPaletteCategories,
@@ -32,7 +26,6 @@ import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
@@ -108,8 +101,6 @@ export function usePaletteCatalogue({
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
-  // The viewer's editor mode picks the palette layout (palette-layouts).
-  const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
   // resize / rotate), revert to Select: the option has just left the picker,
@@ -242,25 +233,18 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
-  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
-  // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
+  // Plan's palette layout (palette-layouts): its categories, in order, with their tiles. My
+  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
+  // A board filling its tab: cards land only on a board (a maximised one keeps the palette).
   const boardFillingTab = useBoardFillingTab();
   // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
   const dashboardTab = usePlanTabKind() === 'dashboard';
   // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
   const planTabList = usePlanTabList();
-  // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
-  // (palette-layouts.ts).
-  const paletteKind = usePaletteKind();
-  const pages = editorMode === 'pages';
-  // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
-  const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
-    ? participantPaletteCategories(editorMode, !!esBoard)
+    ? participantPaletteCategories()
     : boardFillingTab
       ? coveredPaletteCategories()
       : dashboardTab
@@ -271,16 +255,7 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, {
-            esBoard: !!esBoard,
-            ...(pages ? { pagesKind: paletteKind } : {}),
-          })
-            .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-            .map((c) =>
-              c.id === 'draw' && markers.length
-                ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
-                : c,
-            );
+        : paletteCategoriesFor().filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -310,7 +285,6 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
-    planMode: editorMode === 'plan',
     currentTool: canvasTool,
   });
   const canvasToolOptions = participant
@@ -324,17 +298,8 @@ export function usePaletteCatalogue({
   return {
     tileActions,
     tabs,
-    editorMode,
     canvasToolOptions,
     onCanvasToolChange,
     iconCatalogsLoaded,
   };
-}
-
-// `tiles` with its last ending a group, so what is added after it (Logo's markers) is a group of its own.
-function withGroupEnd(tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
-  const last = tiles.at(-1);
-  return last && !last.dividerAfter
-    ? [...tiles.slice(0, -1), { ...last, dividerAfter: true }]
-    : [...tiles];
 }

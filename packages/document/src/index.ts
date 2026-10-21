@@ -16,7 +16,6 @@ import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
-import type { EditorMode } from './editor-mode';
 import type { Page, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
@@ -351,10 +350,6 @@ export type Tab = {
   dashboard?: DashboardLayout;
   // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @liveplanner/forms.
   form?: FormDefinition;
-  // The tab's editor mode, the same for everyone on it and the mode it opens in
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
-  // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
-  opensIn?: EditorMode;
   // Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).
@@ -505,7 +500,6 @@ export * from './page-ink-contrast';
 export * from './page-ink-ground';
 export * from './page-ink-rules';
 export * from './paginate';
-export * from './editor-mode-switch';
 export * from './article-flow';
 export * from './article-flow-ops';
 export * from './article-pages';
@@ -668,7 +662,6 @@ export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
 export * from './chart-source';
-export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';

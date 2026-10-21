@@ -7,7 +7,6 @@ import {
   WHITEBOARD_DEFAULT_PATTERN,
   type BackgroundPattern,
   type Element,
-  type EditorMode,
 } from '@liveplanner/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { createLandContext, LANDING_RULES, type LandContext } from './context';
@@ -37,9 +36,6 @@ export type LandOptions = {
   room?: number;
 };
 export type BoardSceneTabPatch = {
-  // A whiteboard profile's tab opens in Draw mode (docs/specs/007-editor/editor-modes.md
-  // "Existing whiteboards"); it stays a general tab.
-  opensIn?: EditorMode;
   name: string;
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -131,7 +127,6 @@ function tabPatchOf(scene: BoardScene, profile: BoardSceneProfile): BoardSceneTa
   if (profile === 'whiteboard') {
     const pattern = scene.background?.pattern;
     return {
-      opensIn: 'draw',
       name,
       backgroundPattern: pattern ? PATTERNS[pattern] : WHITEBOARD_DEFAULT_PATTERN,
     };
