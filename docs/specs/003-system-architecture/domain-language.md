@@ -1,5 +1,16 @@
 # Domain language
 
+## Project
+
+What a person makes in liveplanner is a **project**: a named set of Board, Sheet, Dashboard and Form tabs, its
+items, sharing and history. **Project** is the only word anyone reads for it, in the interface, help, marketing, email
+and the descriptions agents read (**New Project**, **My Projects**, **Share Project**); "document", "file" and "board"
+never name it. The product URL is `/project/<id>`.
+
+Underneath, the same thing is a **document**: the type (`Document`), the package (`@liveplanner/document`), the
+tables (`documents`, `document_tabs`), the API (`/api/documents`) and the room keep that name, so the code and the
+stored data stay as they are. A document is never shown to a person by that name.
+
 ## Mode, kind and template
 
 Three words describe how a document and its tabs differ. They answer different questions and are never
