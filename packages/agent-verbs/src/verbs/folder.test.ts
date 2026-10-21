@@ -82,6 +82,25 @@ describe('folder create', () => {
     expect(output.path).toBe('Minigames/Screens/Levels');
   });
 
+  it('makes it in the team of the folder --in names', async () => {
+    const { bodies, route } = recorder();
+    const api = fakeApi({
+      ...library,
+      '/teams': { teams: [{ id: 't1', name: 'Studio' }] },
+      '/teams/t1/library': {
+        documents: [],
+        folders: [{ id: 'f0000003-studio', name: 'Art', parentId: null, teamId: 't1', ownerId: 'u' }],
+      },
+      '/folders': async (request: Request) =>
+        request.method === 'GET' ? Response.json({ folders: [] }) : route(request),
+    });
+
+    const output = await folderCreate.run!(contextOf(api), { name: 'Sketches', in: 'Art' });
+
+    expect(bodies[0]).toMatchObject({ name: 'Sketches', parentId: 'f0000003-studio', teamId: 't1' });
+    expect(output.path).toBe('Art/Sketches');
+  });
+
   it('refuses a --in it cannot find', async () => {
     const api = fakeApi({ ...library, ...folders });
 

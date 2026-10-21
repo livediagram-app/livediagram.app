@@ -43,7 +43,9 @@ describe('workbench secrets', () => {
 });
 
 describe('resolveWorkbenchSession', () => {
-  async function arrange(over: { tokenRevoked?: boolean; tokenReadOnly?: boolean } = {}) {
+  async function arrange(
+    over: { tokenRevoked?: boolean; tokenReadOnly?: boolean; workspace?: boolean } = {},
+  ) {
     const db: SqliteD1 = sqliteD1();
     db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('doc1', 'user_1', 'Doc', 0, 1, 1)`);
@@ -60,10 +62,9 @@ describe('resolveWorkbenchSession', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       pairingId: 'pair1',
-      scope: 'document',
-      documentId: 'doc1',
-      folderId: null,
-      tabId: 't1',
+      ...(over.workspace
+        ? { scope: 'workspace' as const, documentId: null, folderId: 'fold1', tabId: null }
+        : { scope: 'document' as const, documentId: 'doc1', folderId: null, tabId: 't1' }),
       origin: 'https://w.example',
       role: 'edit',
       createdAt: NOW,
@@ -90,6 +91,17 @@ describe('resolveWorkbenchSession', () => {
         level: 'edit',
         expiresAt: NOW + 1000,
       },
+    });
+  });
+
+  it('resolves a workspace session to its folder, with no document', async () => {
+    const { db, secret } = await arrange({ workspace: true });
+
+    const resolved = await resolveWorkbenchSession(db.env, secret, NOW);
+
+    expect(resolved).toMatchObject({
+      ok: true,
+      workbench: { scope: 'workspace', documentId: null, folderId: 'fold1', tabId: null },
     });
   });
 
