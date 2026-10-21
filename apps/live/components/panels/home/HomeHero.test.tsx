@@ -99,7 +99,7 @@ describe('HomeHero', () => {
     renderHero();
     const heading = screen.getByRole('heading', { level: 1 });
     expect(heading.textContent).toMatch(
-      /^Good (morning|afternoon|evening)\. What are we picking up\?$/,
+      /^Good (morning|afternoon|evening), what are you planning today\?$/,
     );
     expect(screen.getByRole('region', { name: heading.textContent })).toBeTruthy();
   });

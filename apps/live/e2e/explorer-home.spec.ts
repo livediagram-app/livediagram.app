@@ -59,9 +59,9 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   await page.goto('/explorer');
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
   // The hero is Home's header: the greeting is the page's heading; the field and New Document sit in it.
-  const hero = page.getByRole('region', { name: /What are we picking up\?$/ });
+  const hero = page.getByRole('region', { name: /what are you planning today\?$/ });
   await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
-    /^Good (morning|afternoon|evening)\. What are we picking up\?$/,
+    /^Good (morning|afternoon|evening), what are you planning today\?$/,
   );
   await expect(hero.getByRole('combobox', { name: 'Filter documents' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Filter documents' })).toHaveCount(1);

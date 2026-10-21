@@ -7,13 +7,13 @@ export const HERO_SHEETS = 3;
 
 /** Morning runs from 5 to 11, afternoon from 12 to 17; the rest of the day is evening. */
 export function heroGreeting(hour: number): string {
-  if (hour >= 5 && hour < 12) return 'Good morning.';
-  if (hour >= 12 && hour < 18) return 'Good afternoon.';
-  return 'Good evening.';
+  if (hour >= 5 && hour < 12) return 'Good morning,';
+  if (hour >= 12 && hour < 18) return 'Good afternoon,';
+  return 'Good evening,';
 }
 
 export const HERO_COPY = {
-  question: 'What are we picking up?',
+  question: 'what are you planning today?',
   lead: 'Jump back into what you use most, or see what changed while you were away.',
   newDocument: 'New Document',
   // The page header's words for the same drawer button.

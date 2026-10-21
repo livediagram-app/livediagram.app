@@ -46,8 +46,8 @@ Top to bottom, left column:
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
   - A pill is drawn once its count is known: never "0 documents" while the lists load or after the list failed to, nor "Inbox is clear" for an
     Inbox that has not loaded or failed to.
-- **The greeting**, the page's `h1`: "Good morning.", "Good afternoon." or "Good evening." by the reader's local
-  hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "What are we picking up?". Large display type
+- **The greeting**, the page's `h1`: "Good morning,", "Good afternoon," or "Good evening," by the reader's local
+  hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "what are you planning today?". Large display type
   (about 56 px on a desktop, 36 px on a phone), extra bold, tight tracking. The tab's title stays **Home**.
 - **The lead**: "Jump back into what you use most, or see what changed while you were away."
 - **The search field**: the Explorer's lens field ([Explorer filters](explorer-filters.md#the-field)) drawn large

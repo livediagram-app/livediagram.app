@@ -7,13 +7,13 @@ import { HERO_SHEETS, heroGreeting, heroPills, heroSheets } from './hero-model';
 
 describe('heroGreeting', () => {
   it('says good morning from 5 to 11, good afternoon from 12 to 17, good evening otherwise', () => {
-    expect(heroGreeting(4)).toBe('Good evening.');
-    expect(heroGreeting(5)).toBe('Good morning.');
-    expect(heroGreeting(11)).toBe('Good morning.');
-    expect(heroGreeting(12)).toBe('Good afternoon.');
-    expect(heroGreeting(17)).toBe('Good afternoon.');
-    expect(heroGreeting(18)).toBe('Good evening.');
-    expect(heroGreeting(0)).toBe('Good evening.');
+    expect(heroGreeting(4)).toBe('Good evening,');
+    expect(heroGreeting(5)).toBe('Good morning,');
+    expect(heroGreeting(11)).toBe('Good morning,');
+    expect(heroGreeting(12)).toBe('Good afternoon,');
+    expect(heroGreeting(17)).toBe('Good afternoon,');
+    expect(heroGreeting(18)).toBe('Good evening,');
+    expect(heroGreeting(0)).toBe('Good evening,');
   });
 });
 
