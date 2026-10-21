@@ -19,9 +19,9 @@ describe('the formats a tab exports to', () => {
     expect(exportFormatsFor({ kind: 'form' })).toEqual(['file']);
   });
 
-  it('never offers a Plan tab Mermaid or Excalidraw', () => {
+  it('never offers a Plan tab a Logo Kit or GIF', () => {
     for (const kind of ['board', 'sheet', 'dashboard'] as const)
-      for (const f of ['mermaid', 'excalidraw', 'logo-kit', 'gif'] as const)
+      for (const f of ['logo-kit', 'gif'] as const)
         expect(exportFormatsFor({ kind })).not.toContain(f);
   });
 

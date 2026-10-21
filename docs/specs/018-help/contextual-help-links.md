@@ -102,11 +102,7 @@ Grouped by priority; each links the keyed article.
   `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
   a custom label it still reads "Help").
 - Export dialog header -> `exporting-diagrams` (isometric toggle -> `isometric-mode`)
-- Import dialog header -> `import-tabs`. The Markdown note (`markdown-import`)
-  rides on the **Markdown format's own paste step**, not the format picker:
-  under the grid it asked "Importing a Markdown outline?" of a reader who had
-  not picked a format yet. A format carries its own footnote (`note` on the
-  `FORMATS` entry), so any other format can grow one the same way.
+- Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
 - Share dialog - Community section label, and the Share to Community dialog header -> `community`
 

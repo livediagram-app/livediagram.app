@@ -1,7 +1,6 @@
 # Import image pipeline
 
-Every importer that brings a board in from another tool (Excalidraw today; draw.io, Miro and
-Microsoft Whiteboard next) meets the same problem: the source file carries image bytes, and a
+Every path that brings outside pictures in meets the same problem: the source carries image bytes, and a
 liveplanner image element carries an `imageId` that points into the owner's gallery
 ([Image element + per-owner gallery](../009-elements/images.md)). The import image pipeline is the
 one browser-side path that turns those bytes into a stored image, so every importer migrates
@@ -154,7 +153,7 @@ Each import that meets images returns a **report**, counted per image element on
 An image used on several elements counts once per element, each with its image's outcome, so
 the three numbers always add up to the image elements on the board.
 
-The report is carried inside the one import report every importer shares ([draw.io import](drawio-import.md) "The import report"), so an import that met images and changed other things on the way in shows both in one view. The Import dialog shows the report calmly in place of closing: a short summary with the counts,
+The Import dialog shows the report calmly in place of closing: a short summary with the counts,
 one plain sentence per failure that occurred, what to do about it, and a Done button. An import
 without images closes the dialog as before. Copy per failure:
 

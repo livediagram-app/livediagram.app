@@ -11,8 +11,7 @@ as the format goes).
 ## Formats
 
 A **bridge** is one format's two halves: a parser to a graph and a serialiser from a tab, with a capability table
-naming what the format can express. Bridges reuse the existing importers ([Mermaid](../020-import-export/mermaid.md),
-[draw.io](../020-import-export/drawio-import.md), [Excalidraw](../020-import-export/excalidraw-import-export.md)).
+naming what the format can express. Bridges reuse the existing parsers ([Mermaid](../020-import-export/mermaid.md)).
 
 | Format                                          | Files                                     | Directions                                                 |
 | ----------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |

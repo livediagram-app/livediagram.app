@@ -35,7 +35,7 @@ describe('dropping a CSV file on the canvas', () => {
   it('knows a CSV file and titles a sheet by its name', () => {
     expect(isSheetCsvFile({ name: 'Budget.CSV', type: '' })).toBe(true);
     expect(isSheetCsvFile({ name: 'export', type: 'text/csv' })).toBe(true);
-    expect(isSheetCsvFile({ name: 'scene.excalidraw', type: 'application/json' })).toBe(false);
+    expect(isSheetCsvFile({ name: 'scene.json', type: 'application/json' })).toBe(false);
     expect(csvFileTitle('Q3 budget.csv')).toBe('Q3 budget');
   });
 
@@ -54,7 +54,7 @@ describe('dropping a CSV file on the canvas', () => {
 
   it('hands other files, and any file outside Plan mode, to the canvas', () => {
     const other = setup();
-    other.drop(new File(['{}'], 'scene.excalidraw'), { x: 0, y: 0 });
+    other.drop(new File(['{}'], 'scene.json'), { x: 0, y: 0 });
     expect(other.dropOther).toHaveBeenCalled();
     const diagram = setup({ planMode: false });
     diagram.drop(new File(['a'], 'a.csv'), { x: 0, y: 0 });

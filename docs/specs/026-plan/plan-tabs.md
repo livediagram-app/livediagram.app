@@ -379,7 +379,7 @@ offered.
 - **Isometric view** and **Background pattern** are not offered for a Board, Sheet or Dashboard tab (they are not
   drawn on a canvas); Hidden layers neither.
 - **Markdown** of a Board tab is its board's outline (each column and its cards); **JSON** of a Dashboard tab is the
-  file its Import reads back. Mermaid and Excalidraw carry diagrams, so no Plan tab offers them.
+  file its Import reads back.
 - Telemetry: the formats' existing `Document · Exported · <Format>`; no new values.
 
 ## Form Metrics

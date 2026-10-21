@@ -99,7 +99,7 @@ export function EditingView({
           />
           <RankCard
             title="Export Formats"
-            subtitle="Which formats diagrams leave in: PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw"
+            subtitle="Which formats diagrams leave in: PNG, SVG, PDF, JSON, Markdown"
             category="Document"
             action="Exported"
             items={of('Document', 'Exported')}

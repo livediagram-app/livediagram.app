@@ -358,8 +358,8 @@ export type CanvasProps = {
   // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
   // Present only on an event-storming board with the model configured.
   onDropPhoto?: (file: File) => void;
-  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
-  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
+  // Any other file dropped on the canvas, at its canvas point (an image lands there). Absent where files are
+  // refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
   // Absent where nothing can be placed.

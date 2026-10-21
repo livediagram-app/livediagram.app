@@ -6,7 +6,7 @@
 // imports). Each start makes its document at once through /new. Loaded only for a first run (HomePane), so the
 // template previews never weigh on anyone else's Home.
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { BrandMark } from '@liveplanner/ui';
 import type { TemplateKind } from '@liveplanner/templates';
@@ -21,22 +21,18 @@ import {
   welcomeStartHref,
 } from '@/app/explorer/home/first-run-starts';
 import { HomeSection } from './HomeSection';
-import { CARD_SURFACE, FOCUS_RING, MUTED, PANEL_SURFACE } from './home-styles';
+import { CARD_SURFACE, FOCUS_RING, MUTED } from './home-styles';
 import { assignAppLocation } from '@/lib/app-location';
 
 export function HomeWelcome({
   offerSignIn,
-  importToolbar,
 }: {
   /** A guest on a deployment with sign-in: they may have been signed out. */
   offerSignIn: boolean;
-  /** The Explorer's Import From control, filing into My Documents; absent when no source is available. */
-  importToolbar?: ReactNode;
 }) {
   useEffect(() => {
     track('Home', 'Opened', 'Welcome');
   }, []);
-  const haveWork = offerSignIn || Boolean(importToolbar);
   return (
     <div className="flex flex-col gap-10" data-home-welcome="">
       <HomeSection id="start-blank" title={WELCOME_COPY.blanksTitle} busy={false}>
@@ -69,19 +65,10 @@ export function HomeWelcome({
         </ul>
       </HomeSection>
 
-      {haveWork ? (
+      {offerSignIn ? (
         <HomeSection id="have-work" title={WELCOME_COPY.haveWorkTitle} busy={false}>
           <div className="grid gap-4 sm:grid-cols-2">
-            {offerSignIn ? <SignInCard /> : null}
-            {importToolbar ? (
-              <div className={`flex flex-col gap-3 rounded-[20px] p-5 ${PANEL_SURFACE}`}>
-                <h3 className="text-base font-bold text-[#17153a] dark:text-slate-100">
-                  {WELCOME_COPY.importTitle}
-                </h3>
-                <p className={`text-sm leading-relaxed ${MUTED}`}>{WELCOME_COPY.importLine}</p>
-                <div className="mt-auto">{importToolbar}</div>
-              </div>
-            ) : null}
+            <SignInCard />
           </div>
         </HomeSection>
       ) : null}

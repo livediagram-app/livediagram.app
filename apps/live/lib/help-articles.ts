@@ -60,9 +60,6 @@ export const HELP_ARTICLES = {
   trash: 'account-and-data/trash',
   googleDrive: 'account-and-data/google-drive',
   importTabs: 'tabs/import-tabs',
-  markdownImport: 'tools/markdown-import',
-  microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
-  drawioImport: 'explorer/drawio-import',
   shapeLibraries: 'explorer/shape-libraries',
   tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
@@ -296,21 +293,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
   },
-  microsoftWhiteboardImport: {
-    title: 'Learn about Microsoft Whiteboard import',
-    description: 'What a board export is and how each board becomes a document.',
-  },
   shapeLibraries: {
     title: 'Learn about shape libraries',
     description: 'How libraries are made, placed from My shapes, and managed.',
-  },
-  drawioImport: {
-    title: 'Learn about draw.io import',
-    description: 'Which files it reads and how each diagram becomes a document.',
-  },
-  markdownImport: {
-    title: 'Learn about Markdown import',
-    description: 'How headings and lists become a themed tree diagram.',
   },
   linkingTabs: {
     title: 'Learn about linking tabs',

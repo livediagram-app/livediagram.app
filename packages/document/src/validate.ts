@@ -64,8 +64,7 @@ export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
 const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
-// Exported so an importer building a table (Markdown, docs/specs/020-import-export/markdown-import.md)
-// truncates to exactly what validation accepts.
+// Exported so a caller building a table truncates to exactly what validation accepts.
 export const MAX_TABLE_ROWS = 1_000;
 export const MAX_TABLE_COLS = 1_000;
 export const MAX_TABLE_CELLS = 50_000;

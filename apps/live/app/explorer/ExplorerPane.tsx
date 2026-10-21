@@ -18,7 +18,6 @@ import { TimelineControls } from '@liveplanner/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
-import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
 import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
@@ -220,19 +219,11 @@ export function ExplorerPane() {
   const showHistory = useCallback((id: string, name: string) => setHistoryFor({ id, name }), []);
   const homeDocumentMenus = useDocumentEntryFor({ onShowHistory: showHistory });
 
-  // Which of New document, New folder and Import from this section offers (pane-header-actions.ts).
+  // Which of New document and New folder this section offers (pane-header-actions.ts).
   const offers = paneHeaderActions(selected.kind);
   const newDocument = offers.newDocument
     ? () => assignAppLocation(selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new')
     : undefined;
-  // Imports sit beside New document: imported boards land where new documents do.
-  const imports = useExplorerImport({
-    ownerId,
-    folderId: selected.kind === 'folder' ? selected.id : null,
-    onDocumentsCreated: () => {
-      if (ownerId) void refreshPersonal(ownerId);
-    },
-  });
 
   // List, Card and Details take the SAME props (docs/specs/006-document/document-snapshots.md,
   // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component by the toggle. The
@@ -277,7 +268,6 @@ export function ExplorerPane() {
 
   return (
     <>
-      {imports.dialogs}
       {tagsPage.dialog}
       {/* Home's hero is its page header (docs/specs/013-workspace/explorer-home.md "The hero"); with the banner
           hidden, Home takes the ordinary one. */}
@@ -288,12 +278,11 @@ export function ExplorerPane() {
           onOpenNav={() => setMobileNavOpen(true)}
           helpArticle={sectionHelp}
           headerActions={
-            selected.kind === 'timeline' || offers.importFrom || tagsPage.headerActions ? (
+            selected.kind === 'timeline' || tagsPage.headerActions ? (
               <>
                 {selected.kind === 'timeline' ? (
                   <TimelineControls controls={timeline.controls} />
                 ) : null}
-                {offers.importFrom ? imports.toolbar : null}
                 {tagsPage.headerActions}
               </>
             ) : undefined
@@ -333,7 +322,6 @@ export function ExplorerPane() {
             onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
-            importToolbar={imports.toolbar}
             documentMenus={homeDocumentMenus}
           />
         ) : null

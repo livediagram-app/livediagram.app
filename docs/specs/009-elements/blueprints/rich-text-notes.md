@@ -217,7 +217,7 @@ response.
 - **Never persisted:** `noteOpenId`, the popover position, the link field's draft, `ActiveFormat`.
 - **Readers of the mirror:** the note indicator's has-a-note test (`buildIndicatorItems`), the menu's Add / Edit Note
   label, `hasReadableDetail` in presentation mode, JSON export, and the MCP and API payloads. Search
-  and the Excalidraw round-trip do not carry a note [QD1].
+  does not carry a note [QD1].
 - **Snapshot / restore:** history snapshots carry both fields; undo restores the pair together.
 - **Migration:** none. A note without `noteRich` renders as one plain run through `noteRuns`.
 

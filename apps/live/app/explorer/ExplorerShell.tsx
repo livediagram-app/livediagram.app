@@ -86,7 +86,7 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
         {/* The owner's shape libraries (docs/specs/013-workspace/shape-libraries.md): the Shape
-            libraries page and the draw.io import share them. */}
+            libraries page and the palette share them. */}
         <ShapeLibraryProvider ownerId={state.ownerId}>
           {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
               row's chips and every document menu's Tags read the one list. */}

@@ -324,9 +324,8 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
   return tab ? migrateStoredTab(tab) : null;
 }
 
-// `extra`: a document's own created and last-modified dates (an imported board,
-// docs/specs/015-api/api.md "Document dates"), absent now; the personal folder it is filed in.
-// Making a document here is a use of it, unless it came in a bulk import (`markUsed: false`): its
+// `extra`: a document's own created and last-modified dates (docs/specs/015-api/api.md "Document
+// dates"), absent now; the personal folder it is filed in. Making a document here is a use of it: its
 // record of uses starts with the day and the moment it was made, as a first open would
 // (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
 export async function offlineCreateDocument(
@@ -344,7 +343,6 @@ export async function offlineCreateDocument(
     createdAt?: number;
     savedAt?: number;
     folderId?: string | null;
-    markUsed?: boolean;
   } = {},
 ): Promise<LiveDoc> {
   const rec: OfflineDocumentRecord = {
@@ -356,7 +354,7 @@ export async function offlineCreateDocument(
     tabs: d.tabs ?? [],
     ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     ...(d.sheets?.length ? { sheets: d.sheets } : {}),
-    ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
+    opens: { days: [utcDay(now)], lastOpenedAt: now },
   };
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);

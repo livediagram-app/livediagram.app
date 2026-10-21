@@ -42,9 +42,9 @@ type PaletteDropDeps = {
   // every other tab — and this one without a key — keeps today's behaviour
   // exactly, which is that a dropped file does nothing here at all.
   onDropPhoto?: (file: File) => void;
-  // Any other file dropped on the canvas, with the canvas point it was released at: an Excalidraw
-  // file or export lands there as its scene (docs/specs/020-import-export/excalidraw-import-export.md
-  // "Paste"). Absent where the canvas takes no files.
+  // Any other file dropped on the canvas, with the canvas point it was released at: an image lands
+  // there as an image element (docs/specs/008-canvas/canvas-and-palette.md). Absent where the
+  // canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // A shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md), with the
   // canvas point it was released at. Absent where nothing can be placed.
@@ -83,7 +83,7 @@ export function usePaletteDrop({
     // A Plan card from the palette opens a gap in the board column under the pointer
     // (docs/specs/026-plan/plan-mode.md "The palette").
     planCardDragOver(e.clientX, e.clientY);
-    // A file (a photo on an event-storming board, an Excalidraw file) is accepted the same way a tile is,
+    // A file (a photo on an event-storming board, an image) is accepted the same way a tile is,
     // so the cursor says it will land rather than showing the no-drop sign.
     if ((onDropPhoto || onDropFile) && e.dataTransfer.types.includes('Files')) {
       e.preventDefault();

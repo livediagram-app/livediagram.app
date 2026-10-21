@@ -143,9 +143,8 @@ crossPlan?, newTabIn? }`; `crossPlan = canSwitch && tab.elements.length === 0`; 
 - **Templates, MCP, imports**: `templateCanvasOverrides(kind)` writes `opensIn:
 templateEditorMode(kind)` for every template not in Diagram (`template-modes.ts`; `'whiteboard'`
   → `{ opensIn: 'draw', backgroundPattern: 'graph' }`; the Pages ones also their `pages`),
-  used by the picker, `/new` and the MCP `buildTemplateTab`; the
-  board-scene `tabPatchOf` (whiteboard profile) and `importBoardsAsDocuments` write
-  `opensIn: 'draw'`; `mergeImportedTab` carries `opensIn` (imported wins).
+  used by the picker, `/new` and the MCP `buildTemplateTab`; `mergeImportedTab` carries `opensIn`
+  (imported wins).
 
 ### Gates
 
@@ -304,7 +303,6 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | A peer switches while I type in a label           | The editor stays open; the text commits as usual; a toast names the peer                     |
 | Previewing as a viewer                            | `canEdit` false: no switch, the tab's mode, read-only                                        |
 | Event-storming board, or outside an editor        | `StartModeSwitch` renders nothing; the pill icon shows Diagram                               |
-| A tab switched while a paste's images upload      | The paste is dropped (unchanged board-scene rule)                                            |
 | Stale client sends a `Whiteboard` telemetry event | Refused by the closed category list                                                          |
 
 ## Security and trust
@@ -395,7 +393,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | New tab opens in its maker's mode, on its start                            | `lib/new-tab-seed.test.ts`, `hooks/persistence/useTabActions.addTab.test.tsx`, e2e `editor-modes.spec.ts` "a new tab opens in the mode it was made from"                                                                                                                                                                                                                                                                                                   |
 | Entering / leaving Draw                                                    | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                |
 | Hugging on `sizing` in both modes                                          | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts`                                                                                                                                                                                                                                                                                                                          |
-| Template, MCP, imports open in Draw                                        | `apps/live/lib/templates.test.ts`, `packages/templates/src/template-tab.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts`                                                                                                                                                                                                                                                                                                               |
+| Template, MCP, imports open in Draw                                        | `apps/live/lib/templates.test.ts`, `packages/templates/src/template-tab.test.ts`, `lib/import-merge.test.ts`                                                                                                                                                                                                                                                                                                                                               |
 | Telemetry rename and history                                               | `apps/api/src/db/legacy-migration-0061.test.ts`, telemetry app suites                                                                                                                                                                                                                                                                                                                                                                                      |
 | Shift+D                                                                    | `hooks/editor/editor-mode-shortcut.test.ts`, e2e "Shift+D moves an empty tab to the next mode"                                                                                                                                                                                                                                                                                                                                                             |
 

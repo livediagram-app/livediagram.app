@@ -75,8 +75,8 @@ export const NOTE_FONT_PX: Record<TextSizePreset, number> = {
 /**
  * An extra-small run (docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs"): 10 px on every
  * label scale, one step below the smallest preset (14 px single-line, 12 px multi-line, 11 px in a
- * note). The operator's choice for imported text that reads smaller than any preset, such as a
- * draw.io subtitle at 8 px; it keeps the label's own colour, so its contrast is the label's.
+ * note). The operator's choice for text that reads smaller than any preset, such as a subtitle at
+ * 8 px; it keeps the label's own colour, so its contrast is the label's.
  * Safe range: 9 to 11, and always below every scale's `sm`.
  */
 export const RUN_XS_PX = 10;

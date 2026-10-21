@@ -44,7 +44,7 @@ identity is a starter image.
 
 `shape: 'mind-node'`: a shape kind, not a new element type, for the reason
 [The Page element](page-element.md) gives: a new `BoxedElement` member would mean teaching validation, both
-export renderers, Mermaid, Markdown, Excalidraw, the MCP tools and the API
+export renderers, Mermaid, Markdown, the MCP tools and the API
 schema about something that behaves like a shape in all of them.
 
 One new field:

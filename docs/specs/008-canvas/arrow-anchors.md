@@ -116,10 +116,8 @@ among themselves as if it were not there. Its far end still fans. Telemetry:
 `Element·Changed·ArrowExactStart`.
 
 **End at exact anchor** (`exactEnd: true`) is the same for the arrow's **end**. It has no switch:
-the draw.io import sets it, with `exactStart`, on every end it pins, since draw.io draws ends
-meeting at one point and running along one trunk ([draw.io import](../020-import-export/drawio-import.md)
-"Shared ends stay shared"). A user who re-pins that end clears it, so a hand-drawn connection fans
-as usual.
+it is set, with `exactStart`, where ends meet at one point and run along one trunk. A user who re-pins
+that end clears it, so a hand-drawn connection fans as usual.
 
 A dashed or dotted arrow with an exact end starts its pattern from its **end**, not its start (`arrowDashOffset`,
 in both renderers): arrows sharing an end (graph input's bus of services that each "publish" to one queue) run in

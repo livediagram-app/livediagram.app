@@ -157,7 +157,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 18,
+    articleCount: 16,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -213,8 +213,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 5,
+      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, and cleanup.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -519,7 +519,7 @@ export const articles: Article[] = [
     title: 'Exporting Diagrams',
     description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf image save picture screenshot json mermaid markdown excalidraw embed backup',
+      'export download png svg pdf image save picture screenshot json markdown csv embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1839,9 +1839,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import a liveplanner tab exported as JSON into the active tab, by pasting it or picking the file.',
     keywords:
-      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
+      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1849,9 +1849,8 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab or a selection as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF: copy the text formats or set image options.',
-    keywords:
-      'export download save png svg pdf gif animated json mermaid markdown excalidraw image picture',
+      'Export the active tab or a selection as JSON, Markdown, CSV, PNG, SVG, or PDF: copy the text formats or set image options.',
+    keywords: 'export download save png svg pdf gif animated json markdown csv image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1940,28 +1939,6 @@ export const articles: Article[] = [
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
-  },
-  {
-    slug: 'drawio-import',
-    title: 'Importing draw.io files',
-    description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own document with a tab per page.',
-    keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
-    slug: 'microsoft-whiteboard-import',
-    title: 'Importing Microsoft Whiteboard boards',
-    description:
-      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
-    keywords:
-      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
   },
   {
     slug: 'explorer-panel',
@@ -2147,14 +2124,6 @@ export const articles: Article[] = [
     description: 'Optional Ask and Clean helpers on the canvas.',
     keywords:
       'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
-    slug: 'markdown-import',
-    title: 'Markdown Import',
-    description: 'Turn a Markdown outline into a themed tree diagram.',
-    keywords: 'outline text to diagram tree convert bullet list paste',
     category: 'Tools',
     categorySlug: 'tools',
   },

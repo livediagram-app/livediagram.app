@@ -22,7 +22,7 @@ week stay two libraries.
 - **An item**: an id, a **title** (may be empty), a **width** and **height** (the size of its
   elements), and its **elements**:
   ordinary liveplanner elements positioned from the item's top-left corner at (0, 0), as the draw.io
-  mapping ([draw.io import](../020-import-export/drawio-import.md)) produced them, connections
+  mapping produced them, connections
   between them included. Pictures in an item (an image item, or an image inside a shape snippet) are
   stored through the [Import image pipeline](../020-import-export/import-image-pipeline.md) when the
   library is imported, into the owner's [Image gallery](../009-elements/images.md) like any imported
@@ -35,14 +35,14 @@ week stay two libraries.
 
 - **Import from draw.io** in the Explorer page header's **Import from** group takes library files
   (`<mxlibrary>`) alongside diagrams, in the same pick or folder; **each library file becomes its own
-  library** ([draw.io import](../020-import-export/drawio-import.md) "Shape Libraries").
+  library**.
 - **Name**: the file name without its extension; draw.io's default library name (`Untitled Library`,
   any case, with an optional copy number) or an empty name becomes "draw.io library". A name the owner
   already uses **keeps both**: the new library is suffixed " (2)", or the next free number.
 - **Items** keep the library's order. An item that cannot be read is left out and counted in the
   import report ("Library shapes that couldn't be read were left out"); a library none of whose items
   can be read is not made, and the report says why.
-- **The report.** The import's one shared report ([Board scene](../020-import-export/board-scene.md)
+- **The report.** The import's one shared report (Board scene
   "The report") lists the new libraries under the new documents, "2 new shape libraries:", each a
   link to the Explorer's Shape libraries page. A library the api refuses (the cap, the size budget)
   is listed with the files left out, with the api's reason. Libraries count toward the report's

@@ -161,7 +161,7 @@ When the picker is opened for an element that already has an attached image, a *
 
 ### Imported images
 
-Images inside an imported board (an Excalidraw scene's `files`, and the other importers') are
+Images an import brings in are
 resized in the browser and stored through the same `POST /api/images`, under the same caps, by the
 [Import image pipeline](../020-import-export/import-image-pipeline.md). Hitting the per-owner cap
 there leaves placeholders and a count, never a failed import.

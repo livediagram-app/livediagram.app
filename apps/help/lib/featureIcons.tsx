@@ -201,7 +201,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The same map as an indented list: a bold root line, then bullets stepping
   // in a level each. The stepped indent is what makes it an outline rather
-  // than the plain bullet list `checklists` or `markdown-import` would be.
+  // than the plain bullet list `checklists` would be.
   'edit-outline': (
     <Glyph>
       <path d="M3 5h11" />
@@ -663,12 +663,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z" />
       <path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z" />
-    </Glyph>
-  ),
-  'markdown-import': (
-    <Glyph>
-      <rect x="3" y="6" width="18" height="12" rx="2" />
-      <path d="M6 14V10l2 2 2-2v4M14 10v4M14 14l2-2M14 14l-2-2" />
     </Glyph>
   ),
   history: (
@@ -1811,21 +1805,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7z" />
       <circle cx="8" cy="8" r="1.5" />
-    </Glyph>
-  ),
-  // A diagram's box and decision, joined by a bent connector, arriving as a document.
-  'drawio-import': (
-    <Glyph>
-      <rect x="3" y="4" width="8" height="5" rx="1" />
-      <path d="M7 9v6h4" />
-      <path d="M16.5 11.5l3.5 3.5-3.5 3.5-3.5-3.5z" />
-    </Glyph>
-  ),
-  // A board's ink arriving in a tab.
-  'microsoft-whiteboard-import': (
-    <Glyph>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
     </Glyph>
   ),
   'export-tabs': (

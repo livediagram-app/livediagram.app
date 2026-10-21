@@ -30,7 +30,7 @@ import {
 
 export { ShapesArt } from './versatility-shapes';
 export { AiAssistArt, FontsArt, RotateArt, ZenModeArt } from './versatility-more';
-export { MarkdownImportArt, MermaidArt } from './diagram-text';
+export { MermaidArt } from './diagram-text';
 
 /* ──────────────── Shapes, notes, borders, arrows ──────────────── */
 

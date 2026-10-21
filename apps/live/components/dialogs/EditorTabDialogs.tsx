@@ -128,10 +128,6 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Pages mode and a Dashboard tab import a liveplanner tab only: the other formats are diagrams
-          // (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
-          // Export of a Dashboard").
-          formats={pagesMode || activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

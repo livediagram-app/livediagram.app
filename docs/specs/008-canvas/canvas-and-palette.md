@@ -1282,9 +1282,8 @@ type TextRun = {
 
 **Extra-small runs.** A run's `size` has one step below the element presets: `xs`, drawn at 10 px on every
 label scale (`RUN_XS_PX` in `packages/document/src/label-font.ts`), where `sm` is 14 px on a
-single-line label, 12 px on a multi-line one and 11 px in a note. It exists for imported text that
-reads smaller than any preset (a draw.io subtitle at 8 px, [draw.io import](../020-import-export/drawio-import.md));
-no control sets it today, and the element-level text size (Quick Style Panel, the Text category) stays
+single-line label, 12 px on a multi-line one and 11 px in a note. It exists for text that
+reads smaller than any preset (a subtitle at 8 px); no control sets it today, and the element-level text size (Quick Style Panel, the Text category) stays
 `sm` / `md` / `lg` / `scale`. An `xs` run keeps the label's own text colour, so it meets the same
 contrast as the rest of the label (4.5:1 against its fill, the normal-text bar, which applies at every
 size below large text). The canvas, the SVG export and the PNG and PDF exports drawn from it render it
