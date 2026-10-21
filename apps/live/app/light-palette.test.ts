@@ -12,8 +12,8 @@ import { parseSourceFiles } from '@liveplanner/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
-// rules): the fill is brand-700, hovering to brand-800. On the sky ramp white reads 2.8:1 on brand-500 and
-// 4.1:1 on brand-600, both under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
+// rules): the fill is brand-700, hovering to brand-800. On the violet ramp white reads 4.2:1 on brand-500,
+// under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
 // `bg-brand-500 text-white`. So this reads the source of every app and package, the way dark-palette.test.ts
 // does for the dark half.
 
@@ -56,9 +56,8 @@ describe('the light brand ramp under white text', () => {
     expect(whiteOn(brand['800']!)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('fails AA on brand-500 and brand-600, which is why neither carries white text', () => {
+  it('fails AA on brand-500, which is why the fill sits two steps deeper', () => {
     expect(whiteOn(brand['500']!)).toBeLessThan(4.5);
-    expect(whiteOn(brand['600']!)).toBeLessThan(4.5);
   });
 });
 
@@ -71,9 +70,8 @@ describe('light brand ink', () => {
     }
   });
 
-  it('fails AA in brand-500 and brand-600 on white, which is why neither is text', () => {
+  it('fails AA in brand-500 on white, which is why it is never text', () => {
     expect(ratio(brand['500']!, '#ffffff')).toBeLessThan(4.5);
-    expect(ratio(brand['600']!, '#ffffff')).toBeLessThan(4.5);
   });
 });
 

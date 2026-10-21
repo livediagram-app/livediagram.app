@@ -7,24 +7,25 @@ export type PrismStop = (typeof PRISM_STOPS)[number];
 export type PrismPalette = Record<PrismStop, string>;
 export type PrismScheme = 'light' | 'dark';
 
-// The brand palettes, as drawn in the Living Prism source artwork. `vivid` is
-// the anchor a theme accent replaces; every other stop is placed relative to it.
+// The brand palettes: liveplanner's violet, the product accent (each live product has its own; see
+// docs/specs/004-interface-design/brand-mark.md). `vivid` is the anchor a theme accent replaces; every other
+// stop is placed relative to it.
 export const PRISM_PALETTES: Record<PrismScheme, PrismPalette> = {
   light: {
-    light: '#38bdf8',
-    vivid: '#0284c7',
-    primary: '#2563eb',
-    deep: '#1d4ed8',
-    dark: '#1e1b4b',
-    highlight: '#e0f2fe',
+    light: '#a78bfa',
+    vivid: '#7c3aed',
+    primary: '#9333ea',
+    deep: '#7e22ce',
+    dark: '#3b0764',
+    highlight: '#ede9fe',
   },
   dark: {
-    light: '#38bdf8',
-    vivid: '#0ea5e9',
-    primary: '#3b82f6',
-    deep: '#1d4ed8',
+    light: '#a78bfa',
+    vivid: '#8b5cf6',
+    primary: '#a855f7',
+    deep: '#7e22ce',
     dark: '#0f172a',
-    highlight: '#bae6fd',
+    highlight: '#ddd6fe',
   },
 };
 
@@ -39,8 +40,8 @@ const PRISM_LIGHTNESS_PULL = 0.08;
 // Safe range 1..2.
 const PRISM_CHROMA_RATIO_MAX = 1.4;
 
-// How much of the brand ramp's hue travel (sky at `light` round to indigo at
-// `dark`, about 40 degrees) an accent keeps. The full travel suits blue, but
+// How much of the brand ramp's hue travel (violet at `light` round to purple at
+// `dark`) an accent keeps. The full travel suits the brand, but
 // turns a pink theme red at its dark end; 0.4 keeps each ramp in its own hue
 // family while still deepening. Safe range 0..1.
 const PRISM_HUE_SPREAD = 0.4;

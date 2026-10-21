@@ -22,7 +22,7 @@ type BrandProps = {
   className?: string;
   // Override colour for the "live" half of the wordmark and the logo mark.
   // Used by the editor header to tint the logo with the active tab's theme
-  // accent; when unset, the brand palette and brand-600 / sky-400 show.
+  // accent; when unset, the brand palette and brand-600 / violet-400 show.
   accentColor?: string;
   // Extra classes for the wordmark span ("live" + "planner"). The editor
   // passes `hidden sm:inline` here so the wordmark drops off the mobile
@@ -47,9 +47,9 @@ const markClasses: Record<BrandSize, string> = {
 };
 
 // The wordmark's one-off gleam: a highlight band clipped to the letters, white
-// over light-mode ink, sky-300 over dark mode's near-white (white would vanish).
+// over light-mode ink, violet-300 over dark mode's near-white (white would vanish).
 const SHIMMER_CLASS =
-  'pointer-events-none absolute inset-0 bg-clip-text text-transparent opacity-0 [--ldm-shine:rgba(255,255,255,0.9)] dark:[--ldm-shine:#7dd3fc]';
+  'pointer-events-none absolute inset-0 bg-clip-text text-transparent opacity-0 [--ldm-shine:rgba(255,255,255,0.9)] dark:[--ldm-shine:#c4b5fd]';
 const SHIMMER_STYLE: React.CSSProperties = {
   backgroundImage:
     'linear-gradient(105deg, transparent 38%, var(--ldm-shine) 50%, transparent 62%)',
@@ -111,7 +111,7 @@ export function Brand({
           contrast audits skip it by this mark. */}
       <span className={`relative ${wordmarkClassName}`.trim()} data-logotype="">
         <span
-          className={accentColor ? '' : 'text-brand-700 dark:text-sky-400'}
+          className={accentColor ? '' : 'text-brand-700 dark:text-violet-400'}
           style={
             accentColor
               ? { color: accentColor, transition: COLOUR_TRANSITION }

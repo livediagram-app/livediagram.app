@@ -1,31 +1,41 @@
 # Theme
 
-The liveplanner brand color is **light blue**. Everything below builds on that.
+The liveplanner brand color is **violet**. Everything below builds on that.
 
-## Primary palette — Sky blue
+## The product accent
 
-A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
+Every live product carries its own accent and shares everything else: the layout, the neutrals, the components and the
+Living Prism mark. livediagram is sky blue; **liveplanner is violet**. The accent lives in one ramp, the `brand-*` tokens
+in `packages/tailwind-config/theme.css`, and in the prism palette the mark and every icon are generated from
+(`PRISM_PALETTES` in `packages/ui/src/brand-prism.ts`, written out by `pnpm icons:brand`). The places that cannot
+read a CSS token (the email templates, the social card, the web manifest, the unthemed tab accent) name the same
+hexes, and a change of accent changes them together.
+
+## Primary palette — Violet
+
+A single brand hue with a full 50–950 ramp. Built on Tailwind's `violet` scale.
 
 | Token           | Hex           | Usage                                                      |
 | --------------- | ------------- | ---------------------------------------------------------- |
-| `brand-50`      | `#F0F9FF`     | App backgrounds, faint tints, hover surfaces               |
-| `brand-100`     | `#E0F2FE`     | Subtle fills, selected-row backgrounds                     |
-| `brand-200`     | `#BAE6FD`     | Accents, soft borders, collaborator cursor tints           |
-| `brand-300`     | `#7DD3FC`     | Decorative accents, secondary indicators                   |
-| `brand-400`     | `#38BDF8`     | Light brand surfaces, illustrations                        |
-| **`brand-500`** | **`#0EA5E9`** | **Primary brand color — accents, focus rings, decoration** |
-| `brand-600`     | `#0284C7`     | Decorative accents with no text, dark-mode fills           |
-| `brand-700`     | `#0369A1`     | **Solid fills under white text**, **all light brand ink**  |
-| `brand-800`     | `#075985`     | Hover on a solid fill, high-contrast emphasis              |
-| `brand-900`     | `#0C4A6E`     | Dark mode brand text                                       |
-| `brand-950`     | `#082F49`     | Dark mode surfaces                                         |
+| `brand-50`      | `#F5F3FF`     | App backgrounds, faint tints, hover surfaces               |
+| `brand-100`     | `#EDE9FE`     | Subtle fills, selected-row backgrounds                     |
+| `brand-200`     | `#DDD6FE`     | Accents, soft borders, collaborator cursor tints           |
+| `brand-300`     | `#C4B5FD`     | Decorative accents, secondary indicators                   |
+| `brand-400`     | `#A78BFA`     | Light brand surfaces, illustrations                        |
+| **`brand-500`** | **`#8B5CF6`** | **Primary brand color — accents, focus rings, decoration** |
+| `brand-600`     | `#7C3AED`     | Decorative accents with no text, dark-mode fills           |
+| `brand-700`     | `#6D28D9`     | **Solid fills under white text**, **all light brand ink**  |
+| `brand-800`     | `#5B21B6`     | Hover on a solid fill, high-contrast emphasis              |
+| `brand-900`     | `#4C1D95`     | Dark mode brand text                                       |
+| `brand-950`     | `#2E1065`     | Dark mode surfaces                                         |
 
-`brand-500` (`#0EA5E9`) is the canonical "liveplanner blue": the color of selection highlights, accents and focus rings. It
-carries no white text: white on it is 2.8:1, so a primary button sits two steps deeper, on `brand-700`. The logo draws on its own prism palette, sky into deep indigo ([Brand mark](./brand-mark.md)).
+`brand-500` (`#8B5CF6`) is the canonical "liveplanner violet": the color of selection highlights, accents and focus rings.
+It carries no white text: white on it is 4.2:1, so a primary button sits two steps deeper, on `brand-700` (7.1:1). The
+logo draws on its own prism palette, violet into deep purple ([Brand mark](./brand-mark.md)).
 
 ## Neutrals — Slate
 
-Slate complements sky cleanly (both are cool-toned). Use for text, borders, surfaces, and dividers.
+Slate complements violet cleanly (both are cool-toned). Use for text, borders, surfaces, and dividers.
 
 | Token       | Hex       | Usage                          |
 | ----------- | --------- | ------------------------------ |
@@ -116,24 +126,24 @@ exempt: they draw the editor's own chrome).
 
 ### Accent: the Steel ramp
 
-In dark mode the brand ramp is **Steel**, an accent drawn from the surface hue itself, so a filled button reads as
-part of the chrome rather than a sticker on it.
+In dark mode the brand ramp is **Steel**: the product accent muted to the saturation and lightness of the surfaces, so a
+filled button reads as part of the chrome rather than a sticker on it.
 
 | Token       | Dark value | Usage in dark mode                               |
 | ----------- | ---------- | ------------------------------------------------ |
-| `brand-50`  | `#eef3fa`  | Text on brand-tinted fills                       |
-| `brand-100` | `#dbe6f4`  | Hover text                                       |
-| `brand-200` | `#bcd0ea`  | Emphasised text                                  |
-| `brand-300` | `#9bb9de`  | Brand text, badges                               |
-| `brand-400` | `#8fb3e0`  | Brand text and links, the lightest accent        |
-| `brand-500` | `#5b86bf`  | Rings, tinted fills (`brand-500/10`), decoration |
-| `brand-600` | `#3a6599`  | **Solid fills under white text**                 |
-| `brand-700` | `#2f5484`  | Hover on a solid fill                            |
-| `brand-800` | `#26446b`  | Deep accents                                     |
-| `brand-900` | `#1d3553`  | Deep accents                                     |
-| `brand-950` | `#142538`  | Deepest accent surfaces                          |
+| `brand-50`  | `#f2eefa`  | Text on brand-tinted fills                       |
+| `brand-100` | `#e4dbf4`  | Hover text                                       |
+| `brand-200` | `#cdbcea`  | Emphasised text                                  |
+| `brand-300` | `#b49bde`  | Brand text, badges                               |
+| `brand-400` | `#ad8fe0`  | Brand text and links, the lightest accent        |
+| `brand-500` | `#805bbf`  | Rings, tinted fills (`brand-500/10`), decoration |
+| `brand-600` | `#5d3a99`  | **Solid fills under white text**                 |
+| `brand-700` | `#4e2f84`  | Hover on a solid fill                            |
+| `brand-800` | `#3f266b`  | Deep accents                                     |
+| `brand-900` | `#311d53`  | Deep accents                                     |
+| `brand-950` | `#211438`  | Deepest accent surfaces                          |
 
-The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark mode. Light mode uses
+The wordmark's "live" half is the one vivid note: **violet-400 `#a78bfa`** in dark mode. Light mode uses
 `brand-700`, and the logo mark switches between its own light and dark prism palettes ([Brand mark](./brand-mark.md)).
 
 ### Rules
@@ -172,7 +182,7 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
 ### Explorer: Midnight
 
 In dark mode the Explorer pages (`/explorer/*`) wear **Midnight**, the marketing site's night section, instead of
-Steel: a deep navy ground and the vivid sky accent, so the Explorer reads as the front of the product. The account and
+Steel: a deep navy ground and the vivid violet accent, so the Explorer reads as the front of the product. The account and
 connect pages wear it too ([Night Band](../014-identity/auth-and-guest-access.md#the-look-night-band)). The editor, its
 Explorer panel and every other page keep Steel.
 
@@ -195,17 +205,17 @@ Explorer panel and every other page keep Steel.
   | `slate-200` | `#dde4f3` | Emphasised text                                    |
   | `slate-100` | `#eef2fb` | Headings                                           |
 
-- **Accent.** The brand ramp is Tailwind's sky, as in light mode (`brand-50` `#f0f9ff` to `brand-950` `#082f49`),
-  except `brand-600` `#0369a1`, `brand-700` `#075985`, `brand-800` `#0c4a6e` and `brand-900` `#0b3a5a`, so the
-  Steel rules hold with their own numbers: a solid fill under white text is `brand-600` (5.9:1), it hovers to
-  `brand-700`; brand text is `brand-400` (8.9:1 on the page) or lighter; a selected segment on the `slate-950` track
-  is 3.3:1.
+- **Accent.** The brand ramp is Tailwind's violet exactly as in light mode (`brand-50` `#f5f3ff` to `brand-950`
+  `#2e1065`), and the Steel rules hold with its own numbers: a solid fill under white text is `brand-600` (5.7:1), it
+  hovers to `brand-700`; brand text is `brand-400` (7.0:1 on the page) or lighter; a selected segment on the `slate-950` track
+  is 3.4:1.
 - Every Steel rule above applies unchanged; only the values differ.
 
 ## Accessibility
 
 - All text/background pairings must meet **WCAG AA** contrast (4.5:1 for body, 3:1 for large text and UI controls).
-- `brand-500` and `brand-600` on white fail AA for small text (2.8:1, 4.1:1); light brand ink is `brand-700` or darker
+- `brand-500` on white fails AA for small text (4.2:1); light brand ink is `brand-700` or darker, as it was when the
+  accent was sky blue
   ([Usage rules](#usage-rules)).
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
@@ -238,17 +248,17 @@ The package's `theme.css` declares the brand ramp as CSS variables inside a `@th
 
 ```css
 @theme {
-  --color-brand-50: #f0f9ff;
-  --color-brand-100: #e0f2fe;
-  --color-brand-200: #bae6fd;
-  --color-brand-300: #7dd3fc;
-  --color-brand-400: #38bdf8;
-  --color-brand-500: #0ea5e9;
-  --color-brand-600: #0284c7;
-  --color-brand-700: #0369a1;
-  --color-brand-800: #075985;
-  --color-brand-900: #0c4a6e;
-  --color-brand-950: #082f49;
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+  --color-brand-950: #2e1065;
 }
 ```
 

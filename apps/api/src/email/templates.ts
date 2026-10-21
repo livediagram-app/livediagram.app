@@ -8,17 +8,17 @@ import { xmlEscape } from '@liveplanner/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
-const BRAND = '#0ea5e9';
+const BRAND = '#8b5cf6';
 // The wordmark's "live" accent: brand-600, as in the site header's light mode.
-const WORDMARK_ACCENT = '#0284c7';
+const WORDMARK_ACCENT = '#7c3aed';
 const INK = '#0f172a';
 const MUTED = '#475569';
-// The brand prism's light-to-deep sky run, for the band across the top of the
+// The brand prism's light-to-deep violet run, for the band across the top of the
 // card. Outlook ignores the gradient and paints BRAND underneath instead.
-const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
+const BAND_GRADIENT = 'linear-gradient(90deg,#a78bfa 0%,#8b5cf6 45%,#7e22ce 100%)';
 // The page behind the card: brand-50, so the frame reads liveplanner before a
 // word is read.
-const CANVAS = '#f0f9ff';
+const CANVAS = '#f5f3ff';
 
 // The logo mark beside the wordmark. A transparent PNG on the public site, not
 // inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.
@@ -108,7 +108,7 @@ type Section = {
   footer?: string;
 };
 
-// The mark + "live"/"diagram" wordmark, linked home. A table rather than flex so
+// The mark + "live"/"planner" wordmark, linked home. A table rather than flex so
 // the two sit on one baseline in Outlook too. The image's alt is empty because
 // the wordmark beside it already says the name when images are blocked.
 function lockup(base: string, fontSize: number, centred = false): string {

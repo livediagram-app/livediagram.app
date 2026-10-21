@@ -46,7 +46,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(135deg, #f0f9ff 0%, #ffffff 60%, #e0f2fe 100%)',
+        background: 'linear-gradient(135deg, #f5f3ff 0%, #ffffff 60%, #ede9fe 100%)',
         padding: '72px 96px',
         position: 'relative',
       }}
@@ -73,12 +73,12 @@ export function renderSocialCard(opts?: SocialCardOptions) {
         }}
       >
         {/* The brand lockup: the full Living Prism mark, then the wordmark with
-            "live" in the sky-600 accent the marketing Brand uses. */}
+            "live" in the violet-600 accent the marketing Brand uses. */}
         <div
           style={{
             fontSize: 44,
             fontWeight: 600,
-            color: '#0c4a6e',
+            color: '#2e1065',
             letterSpacing: '-0.02em',
             display: 'flex',
             alignItems: 'center',
@@ -87,8 +87,8 @@ export function renderSocialCard(opts?: SocialCardOptions) {
         >
           <img src={MARK_DATA_URI} width={64} height={64} alt="" />
           <div style={{ display: 'flex' }}>
-            <span style={{ color: '#0284c7' }}>live</span>
-            <span>diagram</span>
+            <span style={{ color: '#7c3aed' }}>live</span>
+            <span>planner</span>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
               style={{
                 fontSize: 30,
                 fontWeight: 600,
-                color: '#0284c7',
+                color: '#7c3aed',
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase',
               }}
@@ -125,7 +125,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
             ) : (
               <>
                 <span>Diagram together,&nbsp;</span>
-                <span style={{ color: '#0284c7' }}>live</span>
+                <span style={{ color: '#7c3aed' }}>live</span>
                 <span>.</span>
               </>
             )}
@@ -154,7 +154,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
         >
           <div
             style={{
-              background: '#0284c7',
+              background: '#7c3aed',
               color: 'white',
               borderRadius: 999,
               padding: '10px 22px',
