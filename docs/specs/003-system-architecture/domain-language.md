@@ -3,13 +3,9 @@
 ## Project
 
 What a person makes in liveplanner is a **project**: a named set of Board, Sheet, Dashboard and Form tabs, its
-items, sharing and history. **Project** is the only word anyone reads for it, in the interface, help, marketing, email
-and the descriptions agents read (**New Project**, **My Projects**, **Share Project**); "document", "file" and "board"
-never name it. The product URL is `/project/<id>`.
-
-Underneath, the same thing is a **document**: the type (`Document`), the package (`@liveplanner/document`), the
-tables (`documents`, `document_tabs`), the API (`/api/documents`) and the room keep that name, so the code and the
-stored data stay as they are. A document is never shown to a person by that name.
+items, sharing and history. **Project** is its one name, in the interface, help, marketing, email, the descriptions
+agents read, and the code: the type (`Project`), its package, tables, API routes (`/api/projects`), room and URL
+(`/project/<id>`). "Document", "file" and "board" never name it. (A page's DOM `document` is the browser's, not this.)
 
 ## Mode, kind and template
 
