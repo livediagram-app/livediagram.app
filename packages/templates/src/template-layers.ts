@@ -70,8 +70,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Map', 'Stream');
     case 'user-persona':
       return layered('Card', 'Details');
-    case 'meeting-agenda':
-      return layered('Board', 'Notes');
     case 'objectives-planner':
       return layered('Planner', 'Objectives');
     case 'prioritization-matrix':

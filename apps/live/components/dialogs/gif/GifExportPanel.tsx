@@ -19,7 +19,6 @@ import {
   GIF_SIZES,
   gifSizeLabel,
 } from '@/lib/gif-export/gif-timeline';
-import { SLIDE_SPEEDS, SLIDE_TRANSITIONS } from '@/lib/presentation-config';
 import { ExportPagePicker } from '../ExportPagePicker';
 import { useGifExport } from './useGifExport';
 
@@ -60,8 +59,6 @@ export default function GifExportPanel({
   const making = gif.phase.kind === 'making';
   const percent = gif.phase.kind === 'making' ? Math.round(gif.phase.progress * 100) : 0;
   const sizeIndex = GIF_SIZES.findIndex((s) => s.id === gif.size);
-  const transitionLabel = SLIDE_TRANSITIONS.find((t) => t.id === gif.transition)?.label ?? 'Slide';
-  const speedLabel = SLIDE_SPEEDS.find((s) => s.id === gif.speed)?.label ?? 'Normal';
 
   return (
     <div>
@@ -143,11 +140,7 @@ export default function GifExportPanel({
             </div>
           </div>
           {gif.loops ? (
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              Between pages:{' '}
-              {gif.transition === 'none' ? transitionLabel : `${transitionLabel}, ${speedLabel}`},
-              from the Slide Deck settings.
-            </p>
+            <p className="text-xs text-slate-600 dark:text-slate-300">Between pages: a slide.</p>
           ) : null}
         </div>
       </fieldset>

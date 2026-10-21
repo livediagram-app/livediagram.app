@@ -2,31 +2,21 @@
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
-import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
-import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import {
-  canvasSurface,
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_BUTTON_MODE,
-  PEN_INK,
-} from '@liveplanner/document';
+import { canvasSurface, DEFAULT_BACKGROUND_COLOR, PEN_INK } from '@liveplanner/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/document';
 import { commentPersisters } from '@/lib/comment-persistence';
-import { pollHostFor } from '@/hooks/collab/useLivePoll';
-import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
-import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
@@ -71,18 +61,10 @@ export function EditorCanvasHost() {
     activeTabLoadState,
     activeTabLocked,
     commitElements,
-    presentingElements,
-    presentingPageId,
-    slideDeck,
-    slideDeckPanelPosition,
-    setSlideDeckPanelPosition,
     layers,
     activeLayerId,
     layerInertIds,
     layerCounts,
-    laserPanelPosition,
-    spotlightPanelPosition,
-    setSpotlightPanelPosition,
     eraserPanelPosition,
     setEraserPanelPosition,
     eraserConfig,
@@ -92,15 +74,11 @@ export function EditorCanvasHost() {
     onSetFormatMode,
     formatPanelPosition,
     setFormatPanelPosition,
-    laserConfig,
-    onChangeLaserField,
-    setLaserPanelPosition,
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,
     voteResults,
     jumpToVoteResult,
-    livePoll,
     setActiveLayer,
     addLayer,
     renameLayer,
@@ -170,16 +148,7 @@ export function EditorCanvasHost() {
     beginShapePen,
     beginPolygon,
     beginPath,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    avatarShove,
-    fireReaction,
-    pressFocusButton,
-    reactionBursts,
-    clearReactionBurst,
     broadcastCursor,
-    broadcastLaser,
     canvasPointerRef,
     cancelConnect,
     cancelDrawShape,
@@ -249,12 +218,10 @@ export function EditorCanvasHost() {
     setShareDialogOpen,
     setSettingsOpen,
     loadAllTabs,
-    facilitator,
     isPinchingRef,
     isReadOnly,
     can,
     participating,
-    laserTrailRows,
     livePresence,
     lockedByOther,
     mapPosition,
@@ -274,7 +241,6 @@ export function EditorCanvasHost() {
     pauseTimer,
     pendingDraw,
     redo,
-    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     renameFolder,
@@ -294,11 +260,7 @@ export function EditorCanvasHost() {
     selfParticipant,
     sessionShareCode,
     setAiPanelPosition,
-    exitAvatarTool,
-    pressModeButton,
     pressSessionButton,
-    revealedIds,
-    toggleRevealForMe,
     setSessionConfigFor,
     setTimerDuration,
     addComment,
@@ -307,10 +269,6 @@ export function EditorCanvasHost() {
     unresolveThread,
     pickerFor,
     collabElements,
-    quiz,
-    qaBoard,
-    followMe,
-    keepPollResults,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
@@ -366,7 +324,6 @@ export function EditorCanvasHost() {
     drag,
     editorMode,
     pagesMode,
-    presentArticles,
     loadedTabIds,
     autoAlignTab,
     autoLayoutTab,
@@ -405,29 +362,8 @@ export function EditorCanvasHost() {
       ? drag.arrowId
       : null;
 
-  // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
-  // below fall away for everybody else, exactly as they do on a read-only
-  // surface; the responses beside them stay, because answering is the point.
-  const runBlocked = facilitator.sessionToolsBlocked;
-  // Who may end the poll: its starter or the facilitator (pollHostFor).
-  const pollHost = pollHostFor({
-    started: livePoll.isHost,
-    open: !!livePoll.poll,
-    sessionToolsBlocked: runBlocked,
-    facilitating: facilitator.isFacilitator,
-  });
   // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
   const sessionTools = useSessionTools();
-  // The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/live-app.md).
-  // Null when closed. Holders are captured at open time rather than re-read on
-  // render: if the holder lets go while the menu is up it closes on the next
-  // outside click anyway, and a list that emptied underneath would leave a
-  // menu with nothing in it.
-  const [lockedMenu, setLockedMenu] = useState<{
-    elementId: string;
-    at: { x: number; y: number };
-    holders: LockHolder[];
-  } | null>(null);
   // A stable reference for the list-shaped prop the Explorer takes, so the
   // (React.memo'd) panel doesn't re-render on every drag frame just because
   // the editor re-rendered. It recomputes only when its real input changes.
@@ -490,7 +426,7 @@ export function EditorCanvasHost() {
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
-  const shownElements = presentingElements ?? activeTab.elements;
+  const shownElements = activeTab.elements;
   // On a page with a fill of its own, an element is drawn for that page rather than the chrome
   // (stock-colour-projector.ts "PageView"); off Pages mode, or with no filled page, nothing to do.
   const pageView = usePageView(shownElements, pagesMode?.pages, activeTab.theme);
@@ -557,52 +493,16 @@ export function EditorCanvasHost() {
     ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
     : null;
 
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to
-  // docs/specs/012-collaboration/roll-call.md). One bag for all their faces; the write handlers drop out
+  // The collaboration elements (docs/specs/012-collaboration/temperature-check.md). One bag for their faces;
+  // the write handlers drop out
   // entirely for a view-role visitor. Held stable while nothing a face shows changes, so a render here
   // does not re-render every element (docs/specs/008-canvas/canvas-performance.md).
   const collab = useStableCollab({
     // The document-write key, not the owner id — see CollabApi.selfKey.
     selfKey: participantKey(selfParticipant),
-    // Ourselves first: livePresence is the REMOTE roster, and an estimate
-    // card that can't show your own avatar is showing the wrong room. Our row carries our own level, as a peer's
-    // does, so a Viewer's screen never waits on the Viewer.
-    participants: [selfInRoom(selfParticipant, can.level), ...livePresence],
-    tabTimer: activeTab.timer,
-    canArrange: !isReadOnly,
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
     respond: can.takePart ? collabElements.respond : undefined,
-    setResponsesRevealed:
-      isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
-    clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
-    chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
-    addIdea: can.takePart ? collabElements.addIdea : undefined,
-    revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
-    clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
-    scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
-    pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
-    resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
-    takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
-    // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
-    // gates them. Running it is the facilitator's, else any editor's.
-    selfOwnerId: selfParticipant.id,
-    selfName: selfParticipant.name,
-    addQaNote: can.takePart ? qaBoard.addQaNote : undefined,
-    voteQaNote: can.takePart ? qaBoard.voteQaNote : undefined,
-    discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
-    closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
-    reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
-    removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
-    clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
-    // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
-    // editing and running the round are the facilitator's, else any editor's.
-    answerQuiz: can.takePart ? quiz.answerQuiz : undefined,
-    startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
-    lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
-    revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
-    resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
-    saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
+    clearResponses: isReadOnly ? undefined : collabElements.clearResponses,
   });
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
@@ -615,7 +515,6 @@ export function EditorCanvasHost() {
         }
       : {}),
   });
-  const stableSlideDeck = useStableObject(slideDeck);
   const activeTheme = getTheme(activeTab.theme);
   // Tab windows (docs/specs/009-elements/tab-window.md): the tabs they show, fetched as they are shown.
   const selectTab = useSelectTab();
@@ -637,10 +536,7 @@ export function EditorCanvasHost() {
       {/* The tab's tag colours (docs/specs/009-elements/tag-colours.md), for the cards that render them. */}
       <TagColoursProvider tab={activeTab}>
         <TabWindowContext.Provider value={tabWindows}>
-          {/* Presenting shows the slide as the audience sees it: no indicators or lock badges on its elements
-          (docs/specs/008-canvas/element-indicators.md "Unchanged"). */}
-          <SuppressElementIndicators when={presentingElements != null}>
-            <Canvas
+          <Canvas
               tabName={activeTab.name}
               tabSummaries={tabSummaries}
               // Portals (docs/specs/009-elements/portal-element.md) can lead to another tab; see Canvas.enterPortal.
@@ -673,10 +569,6 @@ export function EditorCanvasHost() {
                 track('Canvas', 'Zoomed', 'Fit');
               }}
               setViewportOffset={setViewportOffset}
-              // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
-              // real canvas still draws them — a slide has to respond to clicks and
-              // carry live element state, and there is then exactly one thing that
-              // knows how an element looks.
               elements={canvasElements}
               tabLayers={activeTab.layers}
               tabKind={activeTab.kind}
@@ -684,9 +576,7 @@ export function EditorCanvasHost() {
               // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
               // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
               pagesMode={
-                startPanelOpen && editorMode.mode === 'pages'
-                  ? null
-                  : presentedPages(pagesMode, activeTab, presentingPageId, presentArticles)
+                startPanelOpen && editorMode.mode === 'pages' ? null : pagesMode
               }
               whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
               whiteboardInk={PEN_INK[surface]}
@@ -704,68 +594,22 @@ export function EditorCanvasHost() {
               snapGuideStore={snapGuideStore}
               remoteSelectionsByElement={remoteSelectionsByElement}
               remoteCursors={remoteCursorRows}
-              remoteAvatars={remoteAvatarRows}
-              onAvatarPresence={broadcastAvatar}
-              // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
-              // shoves it; their own client decides what to do with the request.
-              onAvatarPush={broadcastAvatarPush}
-              onAvatarSay={broadcastAvatarSay}
-              avatarShove={avatarShove}
-              onFireReaction={can.takePart ? fireReaction : undefined}
-              // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
-              // nothing, which makes it the same read-only act as following somebody,
-              // and the person who spots the thing worth looking at is often not the
-              // one with edit rights.
-              // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is the facilitator's while somebody holds the
-              // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
-              // stop and listen". Undefined renders the face inert, which is what a
-              // read-only surface already gets.
-              onPressFocusButton={isReadOnly || runBlocked ? undefined : pressFocusButton}
-              reactionBursts={reactionBursts}
-              onReactionBurstDone={clearReactionBurst}
-              laserTrails={laserTrailRows}
               onCanvasPointerMove={(x, y, target) => {
                 canvasPointerRef.current = pastePointer(x, y, target ?? null);
-                if (canvasTool === 'laser' && x !== null && y !== null) {
-                  // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
-                  broadcastLaser(x, y, laserConfig);
-                  // Laser mode hides the cursor indicator on peer screens —
-                  // the laser dot is the cursor. Clear any prior position.
-                  broadcastCursor(null);
-                  return;
-                }
                 broadcastCursor(x !== null && y !== null ? { x, y } : null);
               }}
               onSelectMarquee={selectMarquee}
               canvasTool={canvasTool}
               onSetCanvasTool={setCanvasTool}
-              onExitAvatarMode={exitAvatarTool}
-              // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
-              // the palette, so it goes through the same setter — telemetry, the
-              // selection clear, and the empty-canvas guard all included. Pressing it
-              // again, while already in that mode, hands you back your previous one.
-              // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
-              // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
-              onPressModeButton={(element) => {
-                const mode = element.mode ?? DEFAULT_BUTTON_MODE;
-                if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
-                pressModeButton(mode);
-              }}
-              // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
+              // Session button (docs/specs/012-collaboration/session-button.md) / Picker (docs/specs/012-collaboration/picker.md):
               // see useBehaviourElements — the press resolves what to do from the
               // element and calls the tool that already exists.
               onPressSessionButton={pressSessionButton}
-              sessionStartBlocked={isReadOnly || runBlocked}
-              sessionRunBy={isReadOnly ? null : sessionTools.facilitatedBy}
+              sessionStartBlocked={isReadOnly}
               timerState={
                 activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'
               }
-              revealedIds={revealedIds}
-              // A cover is the facilitator's to lift while one is running the session
-              // (docs/specs/012-collaboration/facilitator.md); with nobody facilitating it stays the private peek it has
-              // always been (docs/specs/009-elements/reveal-zone.md).
-              onToggleReveal={runBlocked ? undefined : toggleRevealForMe}
-              onSetSessionConfig={isReadOnly || runBlocked ? undefined : setSessionConfigFor}
+              onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
               // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
               // ELEMENT's rect, not the trigger's, so it lands exactly where a
               // right-click on the same element would — one menu, one position,
@@ -817,14 +661,6 @@ export function EditorCanvasHost() {
               }
               // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).
               onRollPicker={pickerFor}
-              // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
-              // so the pill doesn't have to look one up.
-              followingName={
-                followMe.followingId
-                  ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
-                  : null
-              }
-              onStopFollowing={followMe.stopFollowing}
               collab={collab}
               onEraseStart={isReadOnly ? undefined : beginErase}
               onDuplicateMultiSelected={duplicateMultiSelected}
@@ -932,30 +768,10 @@ export function EditorCanvasHost() {
               activeLayerId={activeLayerId}
               layerCounts={layerCounts}
               sessionTools={sessionTools}
-              pollPanel={
-                // Results are for the host and for anyone who has responded
-                // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
-                // Dismiss hides it without ending the poll for everyone.
-                livePoll.poll && !livePoll.dismissed && (pollHost || livePoll.myAnswer)
-                  ? {
-                      poll: livePoll.poll,
-                      answers: livePoll.answers,
-                      isHost: pollHost,
-                      onEnd: livePoll.endPoll,
-                      // docs/specs/012-collaboration/poll-result-capture.md: drops the tallies so far onto the canvas without
-                      // ending the poll. Read-only visitors never see it — they are
-                      // never the host.
-                      onKeepResults: isReadOnly ? undefined : keepPollResults,
-                      onDismiss: livePoll.dismissPoll,
-                    }
-                  : null
-              }
               userPreferences={userPreferences}
               onToggleRecentExclusion={toggleRecentExclusion}
               favouriteIds={favouriteIds}
               onToggleFavourite={toggleFavourite}
-              laserPanelPosition={laserPanelPosition}
-              spotlightPanelPosition={spotlightPanelPosition}
               eraserPanelPosition={eraserPanelPosition}
               eraserConfig={eraserConfig}
               onChangeEraserField={onChangeEraserField}
@@ -980,30 +796,11 @@ export function EditorCanvasHost() {
               formatPanelPosition={formatPanelPosition}
               onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
               onResetFormatPanel={() => setFormatPanelPosition(null)}
-              // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): the deck itself plus its panel's placement.
-              slideDeck={stableSlideDeck}
-              slideDeckPanelPosition={slideDeckPanelPosition}
-              onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
-              onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
               onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
               onResetEraserPanel={() => setEraserPanelPosition(null)}
-              onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
-              onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
-              laserConfig={laserConfig}
-              onChangeLaserField={onChangeLaserField}
-              onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
-              onResetLaserPanel={() => setLaserPanelPosition(null)}
               voteResults={voteResults}
               onJumpToVoteResult={jumpToVoteResult}
-              // A vote's starter is not its host while somebody else facilitates: every control would be refused.
-              isVoteHost={
-                !runBlocked &&
-                isVoteHost(
-                  activeTab.vote,
-                  participantKey(selfParticipant),
-                  facilitator.isFacilitator,
-                )
-              }
+              isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
               // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
               // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
               participantCount={
@@ -1139,19 +936,7 @@ export function EditorCanvasHost() {
                       // element, so it can't be selected, dragged, or edited — don't
                       // pop a dead context menu on it either. Same gate as
                       // selectElement.
-                      //
-                      // The one exception is whoever is running the session
-                      // (docs/specs/012-collaboration/facilitator.md): for them a locked element has exactly one
-                      // available action, freeing it, and that gets its own small menu
-                      // rather than the element's real one, whose every other row
-                      // would be dead. See LockedElementMenu.
-                      if (lockedByOther(id)) {
-                        const holders = remoteSelectionsByElement.get(id);
-                        if (facilitator.canReleaseSelectionLock && holders?.length) {
-                          setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
-                        }
-                        return;
-                      }
+                      if (lockedByOther(id)) return;
                       // Right-clicking the element that already owns the menu AT THE
                       // SAME ANCHOR is a no-op: return the SAME state object so React
                       // re-renders nothing. Re-opening would restart the entrance
@@ -1338,17 +1123,6 @@ export function EditorCanvasHost() {
                   : undefined
               }
             />
-            {lockedMenu ? (
-              <LockedElementMenu
-                at={lockedMenu.at}
-                holders={lockedMenu.holders}
-                onRelease={(presenceId) =>
-                  facilitator.releaseSelectionLock(presenceId, lockedMenu.elementId)
-                }
-                onClose={() => setLockedMenu(null)}
-              />
-            ) : null}
-          </SuppressElementIndicators>
         </TabWindowContext.Provider>
       </TagColoursProvider>
     </CanvasThemeProvider>

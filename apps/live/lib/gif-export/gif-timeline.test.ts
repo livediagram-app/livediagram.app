@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   GIF_FPS,
   gifFrameSize,
-  gifHoldDefault,
   gifSizeLabel,
   gifTimeline,
   gifTooLong,
@@ -103,12 +102,6 @@ describe('the GIF timeline', () => {
 });
 
 describe('the GIF options', () => {
-  it('starts the hold at the deck’s Auto-advance, within range, or three seconds', () => {
-    expect(gifHoldDefault(0)).toBe(3);
-    expect(gifHoldDefault(5)).toBe(5);
-    expect(gifHoldDefault(60)).toBe(20);
-  });
-
   it('sizes a frame by its longer side', () => {
     expect(gifFrameSize({ width: 1920, height: 1080 }, 'medium')).toEqual({
       width: 960,

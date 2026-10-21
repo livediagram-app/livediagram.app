@@ -17,18 +17,22 @@ import { openGifEncoder } from '@/lib/gif-export/gif-encoder';
 import { GifExportError, type GifExportErrorCode } from '@/lib/gif-export/gif-export-error';
 import {
   gifFrameSize,
-  gifHoldDefault,
+  GIF_HOLD_DEFAULT_S,
   gifTimeline,
   gifTooLong,
   type GifSize,
+  type SlideTransition,
 } from '@/lib/gif-export/gif-timeline';
 import { makeGif } from '@/lib/gif-export/make-gif';
 import { createFrameDrawer } from '@/lib/gif-export/page-frames';
 import { snapshotPage, type PageSnapshot } from '@/lib/gif-export/page-snapshot';
 import { collectCss } from '@/lib/gif-export/snapshot-css';
 import { createImageInliner } from '@/lib/gif-export/snapshot-media';
-import { loadPresentationConfig, SLIDE_SPEEDS } from '@/lib/presentation-config';
 import { track } from '@/lib/telemetry';
+
+// Pages give way to each other with a slide, at the editor's own pace.
+const GIF_TRANSITION: SlideTransition = 'slide';
+const GIF_TRANSITION_MS = 380;
 
 type GifPhase =
   | { kind: 'idle' }
@@ -56,9 +60,7 @@ export function useGifExport({
   baseName: string;
   onDone: () => void;
 }) {
-  // The deck's own transition and Auto-advance (device-local), read as the panel opens and never written.
-  const [config] = useState(loadPresentationConfig);
-  const [holdSeconds, setHoldSeconds] = useState(() => gifHoldDefault(config.autoAdvanceSeconds));
+  const [holdSeconds, setHoldSeconds] = useState(GIF_HOLD_DEFAULT_S);
   const [size, setSize] = useState<GifSize>('medium');
   const [scope, setScope] = useState<PageScope>('all');
   const [phase, setPhase] = useState<GifPhase>({ kind: 'idle' });
@@ -67,7 +69,6 @@ export function useGifExport({
 
   const chosen = useMemo(() => (scope === 'all' ? pages : [page]), [scope, pages, page]);
   const loops = scope === 'all' && pages.length > 1;
-  const transitionMs = SLIDE_SPEEDS.find((s) => s.id === config.speed)?.ms ?? 380;
   const { width, height } = gifFrameSize(page.rect, size);
   const tooLong = gifTooLong(chosen.length, holdSeconds);
 
@@ -114,8 +115,8 @@ export function useGifExport({
           const frames = gifTimeline({
             pageCount: chosen.length,
             holdSeconds,
-            transition: config.transition,
-            transitionMs,
+            transition: GIF_TRANSITION,
+            transitionMs: GIF_TRANSITION_MS,
             loops,
             stillPages: new Set(chosen.flatMap((p, i) => (stillness.current.get(p.id) ? [i] : []))),
           });
@@ -138,8 +139,6 @@ export function useGifExport({
     height,
     holdSeconds,
     loops,
-    transitionMs,
-    config.transition,
     captureOnce,
     phase.kind,
   ]);
@@ -159,15 +158,15 @@ export function useGifExport({
         {
           pageCount: chosen.length,
           holdSeconds,
-          transition: config.transition,
-          transitionMs,
+          transition: GIF_TRANSITION,
+          transitionMs: GIF_TRANSITION_MS,
           loops,
           signal: controller.signal,
           onProgress: (progress) => setPhase({ kind: 'making', progress }),
         },
         {
           snapshot: (i) => snapshotPage(chosen[i]!.id, { width, height, ...shared }),
-          drawer: createFrameDrawer(width, height, loops ? config.transition : 'none'),
+          drawer: createFrameDrawer(width, height, loops ? GIF_TRANSITION : 'none'),
           encoder,
         },
       );
@@ -192,8 +191,6 @@ export function useGifExport({
     captureOnce,
     chosen,
     holdSeconds,
-    config.transition,
-    transitionMs,
     loops,
     scope,
     baseName,
@@ -217,8 +214,7 @@ export function useGifExport({
     estimate,
     tooLong,
     loops,
-    transition: config.transition,
-    speed: config.speed,
+    transition: GIF_TRANSITION,
     make,
     cancel,
     clearError: () => setPhase({ kind: 'idle' }),

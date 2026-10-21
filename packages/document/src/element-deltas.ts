@@ -4,10 +4,10 @@
 // An element change otherwise leaves a browser as an `el` `update` op that
 // replaces the whole element on every receiver (docs/specs/012-collaboration/realtime-conflict-resolution.md). That is fine for an
 // author editing a shape, which the selection lock makes a one-writer affair,
-// and wrong for a done check the whole room presses in the same second: each
-// receiver took the other's copy, and one mark vanished. It is the dot-vote's
+// and wrong for a temperature check the whole room presses in the same second: each
+// receiver took the other's copy, and one answer vanished. It is the dot-vote's
 // bug (docs/specs/012-collaboration/session-tools.md) on element fields, fixed the same way. A delta names one
-// person's answer, one idea, one tick or one comment, so concurrent deltas
+// person's answer, one tick or one comment, so concurrent deltas
 // commute and every peer lands on the same element.
 //
 // Three pieces, all pure:
@@ -43,7 +43,6 @@ import {
   setResponse,
   type ParticipantResponse,
 } from './responses';
-import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, alignedIdeaCardIds, isIdeaCardId } from './collab-shapes';
 import { MENTIONS_MAX } from './comment-mentions';
 import { applyPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
 
@@ -63,9 +62,6 @@ export type ElementDelta =
       at: number;
       round?: string;
     }
-  // Drop one anonymous idea into the box (docs/specs/012-collaboration/idea-box.md). No author, still: `id`
-  // is the card's own random id, which lets its poster take it back after losing the race for the last card.
-  | { kind: 'idea'; text: string; round?: string; id?: string }
   // Tick or untick one checklist row (docs/specs/009-elements/checklist.md). Rows have no ids, so the row
   // is named by its index AND its text: a peer who reordered or retitled the
   // rows meanwhile gets the row with that text, or nothing.
@@ -131,23 +127,6 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       return {
         ...el,
         responses: setResponse(current, delta.participantId, delta.value, delta.at),
-      };
-    }
-    case 'idea': {
-      if (el.type !== 'shape' || !sameRound(el, delta.round)) return el;
-      if (typeof delta.text !== 'string') return el;
-      const text = delta.text.trim();
-      if (!text || text.length > IDEA_MAX_TEXT) return el;
-      const cards = el.ideaCards ?? [];
-      const id = isIdeaCardId(delta.id) ? delta.id : null;
-      // A card this box already holds (a replay of its delta) is a no-op.
-      if (id && el.ideaCardIds?.includes(id)) return el;
-      if (cards.length >= IDEA_MAX_CARDS) return el;
-      if (!id && !el.ideaCardIds) return { ...el, ideaCards: [...cards, text] };
-      return {
-        ...el,
-        ideaCards: [...cards, text],
-        ideaCardIds: [...alignedIdeaCardIds(el), id ?? ''],
       };
     }
     case 'check': {
@@ -226,42 +205,6 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
   }
 }
 
-// The box without the card of this id (both lists), or the same element when it holds no such card.
-export function withoutIdeaCard(el: Element, id: string): Element {
-  if (el.type !== 'shape' || !id || !el.ideaCardIds) return el;
-  const ids = alignedIdeaCardIds(el);
-  const at = ids.indexOf(id);
-  if (at === -1) return el;
-  return {
-    ...el,
-    ideaCards: (el.ideaCards ?? []).filter((_, i) => i !== at),
-    ideaCardIds: ids.filter((_, i) => i !== at),
-  };
-}
-
-// A peer's delta, applied by a browser that may have its own idea posts to this box still waiting for the
-// room's answer (docs/specs/012-collaboration/idea-box.md "Racing for the last card"). A peer's card that
-// reaches a FULL box while one of `pending` (this browser's own unanswered card ids, oldest first) is in it was
-// numbered by the room before that post: so the newest such card comes out and the peer's goes in, and the box
-// ends as every other copy has it. Anything else applies as `applyElementDelta` does, `yielded` null.
-export function yieldIdeaToPeer(
-  el: Element,
-  delta: ElementDelta,
-  pending: readonly string[],
-): { el: Element; yielded: string | null } {
-  const plain = { el: applyElementDelta(el, delta), yielded: null };
-  if (delta.kind !== 'idea' || el.type !== 'shape' || pending.length === 0) return plain;
-  if (!sameRound(el, delta.round) || typeof delta.text !== 'string') return plain;
-  const text = delta.text.trim();
-  if (!text || text.length > IDEA_MAX_TEXT) return plain;
-  if ((el.ideaCards ?? []).length < IDEA_MAX_CARDS) return plain;
-  if (isIdeaCardId(delta.id) && el.ideaCardIds?.includes(delta.id)) return plain;
-  const ids = el.ideaCardIds ?? [];
-  const yielded = [...pending].reverse().find((id) => ids.includes(id));
-  if (!yielded) return plain;
-  return { el: applyElementDelta(withoutIdeaCard(el, yielded), delta), yielded };
-}
-
 // Carry our `done` flags onto an incoming list of checklist rows, matched by
 // position and text the same way a `check` delta finds its row. Rows the peer
 // added, removed or retitled come from them; ticks come from us, because every
@@ -282,7 +225,7 @@ export function keepLocalTicks(local: ChecklistItem[], incoming: ChecklistItem[]
 // delta-carried fields: those reached us one delta at a time and ours is
 // already the merged copy, where theirs is a snapshot from their last save that
 // can be missing somebody's answer. A different round means the peer cleared
-// or reset, and then their (empty) answers and ideas are the new truth. A Plan
+// or reset, and then their (empty) answers are the new truth. A Plan
 // board's set-up is ours too (phase 6), except from a writer that sends no
 // deltas, an agent's changeset (`keepBoard: false`).
 export function mergeIncomingElement(
@@ -303,8 +246,6 @@ export function mergeIncomingElement(
     let patched = shape;
     if ((local.collabRound ?? undefined) === (shape.collabRound ?? undefined)) {
       patched = keepField(patched, 'responses', local.responses);
-      patched = keepField(patched, 'ideaCards', local.ideaCards);
-      patched = keepField(patched, 'ideaCardIds', local.ideaCardIds);
     }
     if (local.checklistItems && shape.checklistItems) {
       const items = keepLocalTicks(local.checklistItems, shape.checklistItems);
@@ -328,7 +269,7 @@ function withCellThreads(el: Element, cells: CellCommentThreads | undefined): El
   return (cells ? { ...rest, cellComments: cells } : rest) as Element;
 }
 
-function keepField<K extends 'responses' | 'ideaCards' | 'ideaCardIds'>(
+function keepField<K extends 'responses'>(
   el: ShapeElement,
   key: K,
   value: ShapeElement[K],
@@ -348,8 +289,6 @@ function withoutDeltaFields(el: Element): unknown {
   if (rest.type !== 'shape') return rest;
   const {
     responses: _r,
-    ideaCards: _i,
-    ideaCardIds: _ii,
     planBoard: _b,
     checklistItems,
     ...shape

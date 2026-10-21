@@ -22,7 +22,6 @@ import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@liveplanner/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
-import { handleQaBoardRoute } from './qa-board-routes';
 import { handleFormLinkRoutes } from './form-link-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
@@ -58,9 +57,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
-  const qa = await handleQaBoardRoute(ctx);
-  if (qa) return qa;
   // /api/documents/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
   const formLink = await handleFormLinkRoutes(ctx);
   if (formLink) return formLink;

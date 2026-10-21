@@ -258,11 +258,14 @@ export function buildSailboat(cx: number, cy: number): Element[] {
     ),
     moodCheck(x0, top, railW, tempH, 'How’s the voyage feeling?'),
     {
-      ...createShape('agenda', x0, agendaY),
+      ...createShape('checklist', x0, agendaY),
       width: railW,
       height: agendaH,
       label: 'The voyage',
-      agendaItems: VOYAGE.map((item) => ({ ...item })),
+      checklistItems: VOYAGE.map((item) => ({
+        text: `${item.label} · ${item.minutes} min`,
+        done: false,
+      })),
       ...CONTENT,
     },
     ...sessionButtons(x0, buttonsY, railW, { minutes: 8, dots: 3 }),

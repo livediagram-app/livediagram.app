@@ -18,17 +18,15 @@ Participant level is the middle: take part in the board, never reshape it.
 
 | Level           | Wire name     | May                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment, poll answer, Q&A note or upvote, vote, answer or reaction.                                                                                                                                                        |
-| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; answer live polls; add to and upvote on Q&A boards; react; speak in Avatar mode; take part in session tools; add, write and arrange stickies and text; place images and swap their pictures; grow mind maps; write on any element but a Behaviour, a table's cells included; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
-| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                                                                                                                                                                                                                     |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, appear in the presence stack, export. Writes nothing: no comment, vote or answer.                                                                                                                                                        |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; take part in session tools; add, write and arrange stickies and text; place images and swap their pictures; grow mind maps; write on any element but a Behaviour, a table's cells included; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
+| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration.                                                                                                                                                                                                                                                                                                     |
 
 - **The levels are a ladder**: every level holds everything below it.
-- **A Viewer only looks.** A comment, a poll answer, a Q&A note or upvote, a vote, a reaction and an Avatar-mode
-  [speech bubble](../008-canvas/avatar-mode.md#speech-bubbles) are all taking part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
+- **A Viewer only looks.** A comment, a vote and an answer are all taking part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
   editing the element it looks at.
-- **Running a session is facilitation, an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
-  editors and the [facilitator baton](../012-collaboration/facilitator.md). A Participant takes part and never
-  runs, and never holds the baton.
+- **Running a session is an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
+  editors. A Participant takes part and never runs.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
 
 ## What a Participant changes
@@ -37,7 +35,7 @@ A Participant changes the board's **content**, never its **shape**.
 
 | May                                                                                                                                                                                                         | Never                                                                                                                                                                                                                                                                                                            |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Take part in session tools: cast and withdraw dots, answer estimate cards, temperature checks, the Done check and quizzes, drop ideas in the idea box                                                       | Start, end, reveal, clear or configure a session tool; take the roll; spin a Picker; press Bring Focus; hold the baton                                                                                                                                                                                           |
+| Take part in session tools: cast and withdraw dots, answer temperature checks                                                       | Start, end, reveal, clear or configure a session tool; spin a Picker                                                                                                                                                                                           |
 | Add a sticky, a text element or an image; grow a mind map (a node as a branch of one already there, with the connector joining them)                                                                        | Add any other element: shapes, free connectors, frames, templates, kits; a mind node with no branch to grow from                                                                                                                                                                                                 |
 | Write on any element: change its text (a sticky's, a shape's label, a table's cells)                                                                                                                        | Change any other field of an element it did not add: size, style, rotation, layer, lock; write on a Behaviour (a poll's question, a timer's or mode button's caption); change an entity's fields, its keys or its relationships' cardinality (a data model's structure, [The entity](../009-elements/entity.md)) |
 | Move and resize any sticky or image; recolour any sticky; move any mind node, and turn a mind connector's faces, so a growing map re-lays itself; swap any image's picture                                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                                                                                                                                                                            |
@@ -55,10 +53,9 @@ A Participant changes the board's **content**, never its **shape**.
   them. Shapes, frames, connectors and someone else's text boxes (which often label the structure) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it,
   and a mind node grows to fit the label a Participant writes on it (taller only, in the same change).
-- **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
-  no timer controls on a timer element, and an inert face on a mode button set to the Eraser or Format Painter; a
+- **Nothing offers what a session cannot do.** A Participant or Viewer sees no timer controls on a timer element; a
   Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only). Empty states describe
-  instead of instructing: an agenda, roll call or done check with nothing in it says who fills it, a mood meter
+  instead of instructing: a mood meter
   asks only someone who may answer, a comment thread or card finder invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
   on one that has none (a Participant's offers **Add Comment** everywhere). A Participant
@@ -86,9 +83,8 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
   Storming board's coloured notes, else Sticky and Text (whatever the mode's Popular holds); then Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter, or Add
   child and Add sibling on its toolbar), not from a tile. Each tile works as an Editor's does: dragged onto the
   canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw; its key (N, T, 9, as the tiles show) arms it the same way, and no other add key runs (`PARTICIPANT_KEYS`).
-- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Eraser, Format
-  Painter and Slide Deck are an Editor's. Avatar is in the picker only while you are in it; a Participant enters it,
-  like anyone, from a Selection Mode button on the board.
+- **The selection modes it needs**: Select, Hand, Isometric and Zen. Eraser and Format Painter are an
+  Editor's.
 
 ## Ownership
 
@@ -127,12 +123,12 @@ and moves stay with the owner and joined team members. No level grants any of th
 ## Integrity
 
 - **Participation is its own class of room op**, between presence (anyone) and mutation (editors): a Participant's
-  socket may cast dots and send answer and idea deltas; every other mutation from it is dropped.
+  socket may cast dots and send answer deltas; every other mutation from it is dropped.
 - **Content goes through the server.** A Participant never saves a whole tab and never relays element changes over
   its socket: it sends them to the server, which applies the rule, stores the result, and relays what it accepted
   to everyone.
 - **A Participant's answers persist without an editor.** Each content write also folds the room's recorded answers
-  (dots, responses, ideas) into the stored tab, and the editor flushes one after an answer.
+  (dots, responses) into the stored tab, and the editor flushes one after an answer.
 - **The adder is stamped by the server**, never read from the request, from the caller's identity on the document.
   A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
@@ -147,7 +143,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 ## Moving to three levels
 
 - **Edit links stay Editor; view links stay Viewer, which now only looks.** A view link handed out before this
-  change loses commenting, poll answers and the Q&A board (decided 2026-10-10): an owner who wants an audience to
+  change loses commenting (decided 2026-10-10): an owner who wants an audience to
   chime in issues a Participant link.
 - **No old reader escalates.** Before the server can write a `participate` link, every reader of a stored level
   reads an unknown value as Viewer. An editor bundle from before this change reads a Participant link as Editor,

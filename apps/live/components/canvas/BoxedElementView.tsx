@@ -46,11 +46,6 @@ import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
-import { ReactionBurst } from '@/components/canvas/ReactionBurst';
-import { FenceView } from '@/components/canvas/collab/FenceView';
-import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
-import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
-import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -134,11 +129,8 @@ function BoxedElementViewImpl({
   chartPalette,
   onCancelEdit,
   onFollowLink,
-  onPressModeButton,
-  onPressFocusButton,
   onPressSessionButton,
   sessionStartBlocked,
-  sessionRunBy,
   timerState,
   tabTimer,
   timerControls,
@@ -148,16 +140,9 @@ function BoxedElementViewImpl({
   commentActions,
   actionSelfId,
   actionActions,
-  revealedForMe,
-  onToggleReveal,
   onRollPicker,
   collab,
-  chairSitters,
   onEnterPortal,
-  onFireReaction,
-  reactionBurst,
-  onReactionBurstDone,
-  activeMode,
   onOpenComments,
   onOpenAction,
   onOpenNote,
@@ -308,11 +293,6 @@ function BoxedElementViewImpl({
         : isLocked || !movable
           ? 'cursor-default'
           : 'cursor-move';
-  // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
-  // the box itself takes no presses, so the empty corners and the gaps between
-  // its answers behave as bare canvas. The face re-enables the disc, which is
-  // the one place that selects and drags it.
-  const bodyPassesThrough = element.type === 'shape' && element.shape === 'quiz';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -532,7 +512,7 @@ function BoxedElementViewImpl({
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
-      } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
+      } ${variant.className} ${cursor}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
@@ -662,39 +642,6 @@ function BoxedElementViewImpl({
               }
             />
           ) : null}
-          {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
-          drawn for its facing, plus whoever presence says is sitting in it. */}
-          {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
-            <FurnitureView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              fill={own.fill ?? defaultFillColor(element, surface)}
-              sitters={chairSitters?.(element.id) ?? []}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
-          back wall (the ordinary label, which sits there). */}
-          {element.type === 'shape' && element.shape === 'room' ? (
-            <RoomView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              floor={own.fill ?? defaultFillColor(element, surface)}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
-          {element.type === 'shape' && element.shape === 'fence' ? (
-            <FenceView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
-          {element.type === 'shape' && element.shape === 'avatar-pad' ? (
-            <AvatarPadView animClass={artAnimClass} />
-          ) : null}
           {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
           {element.type === 'shape' && element.shape === 'lane' ? (
             <LaneGutter
@@ -747,7 +694,6 @@ function BoxedElementViewImpl({
             readOnly={readOnly}
             writable={writable}
             fontFamily={fontFamily}
-            activeMode={activeMode}
             collab={collab}
             commentActions={commentActions}
             actionSelfId={actionSelfId}
@@ -759,15 +705,10 @@ function BoxedElementViewImpl({
             timerControls={timerControls}
             timerState={timerState}
             sessionStartBlocked={sessionStartBlocked}
-            sessionRunBy={sessionRunBy}
-            revealedForMe={revealedForMe}
             onCommitTable={onCommitTable}
             onEnterPortal={onEnterPortal}
-            onFireReaction={onFireReaction}
             onFollowLink={onFollowLink}
             onLinkCell={onLinkCell}
-            onPressModeButton={onPressModeButton}
-            onPressFocusButton={onPressFocusButton}
             onPressSessionButton={onPressSessionButton}
             onRollPicker={onRollPicker}
             onSetPageHeading={onSetPageHeading}
@@ -775,7 +716,6 @@ function BoxedElementViewImpl({
             onSetHeroCaptionLine={onSetHeroCaptionLine}
             onSetSessionConfig={onSetSessionConfig}
             onOpenElementSettings={onOpenElementSettings}
-            onToggleReveal={onToggleReveal}
             label={label}
             labelNode={labelNode}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).
@@ -820,19 +760,6 @@ function BoxedElementViewImpl({
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
-
-      {/* The burst (docs/specs/009-elements/reaction-pad.md), a sibling of the label stack rather than a
-          child of it: the particles leave the pad's box on purpose, and the
-          face above clips to its own rounded corners. */}
-      {reactionBurst ? (
-        <ReactionBurst
-          reaction={reactionBurst.reaction}
-          seed={reactionBurst.seed}
-          width={element.width}
-          height={element.height}
-          onDone={() => onReactionBurstDone?.(element.id)}
-        />
-      ) : null}
 
       {isLocked ? <LockBadge /> : null}
 

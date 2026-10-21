@@ -113,20 +113,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'state-machine': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
-  'lean-coffee': 'grid',
   brainstorm: 'grid',
   'workshop-board': 'grid',
-  'town-hall': 'grid',
-  'pub-quiz': 'grid',
-  'icebreaker-questions': 'grid',
   // Grid: an office's floor plan reads as one on gridded paper, the rooms carrying their own floors.
-  'virtual-office': 'grid',
-  'coworking-space': 'grid',
-  'team-pod': 'grid',
-  'all-hands-hall': 'grid',
-  'two-truths-and-a-lie': 'grid',
-  'would-you-rather': 'grid',
-  'people-bingo': 'grid',
   // Event storming is a sticky-note workshop like the story / affinity
   // maps, so it pins the dot grid rather than riding the other technical
   // templates' graph paper.
@@ -172,7 +161,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'value-proposition-canvas': 'grid',
   'working-backwards': 'blank',
   'user-persona': 'grid',
-  'meeting-agenda': 'grid',
   // An article's surround stays plain: the page is the paper.
   article: 'blank',
   // The other Pages templates: their pages are the paper.

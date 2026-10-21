@@ -31,7 +31,6 @@ import { PlanProvider } from '@/components/plan/PlanContext';
 import { FormBoardContext } from '@/components/forms/form-board-context';
 import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
-import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import {
@@ -51,9 +50,6 @@ import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
-import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
-import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
-import { focusPageAt } from '@/lib/focus-audience';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
@@ -118,13 +114,11 @@ export function EditorView() {
   useRegionCycle();
   const {
     pasteFromClipboard,
-    slideDeck,
     hasClipboard,
     boardSceneInsert,
     activeId,
     activeTab,
     addTab,
-    followMe,
     anyWelcomeOpen,
     embedMode,
     // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
@@ -132,9 +126,6 @@ export function EditorView() {
     appChrome,
     workbench,
     quickStyleDeps,
-    livePoll,
-    focusInvite,
-    livePresence,
     canvasTool,
     drag,
     esBoard,
@@ -307,20 +298,6 @@ export function EditorView() {
             renameNonce={renameDocumentNonce}
             // Minimal chrome moves the pill to an icon in the status bar.
             rolePill={minimalChrome ? undefined : <RolePill {...role} />}
-            // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
-            // while the deck has a slide to show, on a desktop, once the document is up. Every role.
-            present={
-              hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
-                ? {
-                    slideCount: slideDeck.runnable.length,
-                    starting: slideDeck.startingDeck,
-                    onPresent: () => {
-                      track('UI', 'Opened', 'HeaderPresent');
-                      void slideDeck.start();
-                    },
-                  }
-                : undefined
-            }
             brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
             onOpenAccount={() => openSettingsOn('account')}
             onOpenShare={() => {
@@ -379,9 +356,7 @@ export function EditorView() {
             tabs={tabs}
             activeId={activeId}
             // Clicking an avatar in a presence stack opens the Collaborators
-            // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
-            followingId={followMe.followingId}
-            followerCount={followMe.followerCount}
+            // modal (docs/specs/012-collaboration/collaborator-enhancements.md).
             onOpenCollaborators={openCollaborators}
             onMoveTabToFolder={moveTabToFolder}
             onRemoveTabFromFolder={removeTabFromFolder}
@@ -445,10 +420,9 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame, the welcome flow or a
-  // running presentation).
+  // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =
-    header && footer && slideDeck.presentingAt === null ? (
+    header && footer ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
     ) : null;
 
@@ -552,11 +526,6 @@ export function EditorView() {
                                         <PlanSheetsHost plan={ctx.plan} />
                                       ) : null}
                                     </AreaErrorBoundary>
-                                    {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
-          Nothing at all when no deck is running. */}
-                                    <AreaErrorBoundary area="Presentation">
-                                      <PresentationHost />
-                                    </AreaErrorBoundary>
                                     {embedMode ? (
                                       // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
                                       // switcher replace the full TabBar. Same selection clears as
@@ -578,7 +547,7 @@ export function EditorView() {
                                     ) : null}
                                     {footerInColumn}
                                     {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
-              a selection. Stands down in zen / embeds / presenting and while an
+              a selection. Stands down in zen / embeds and while an
               element menu is open, which is the complete home of every setting. */}
                                     <AreaErrorBoundary area="QuickStyle">
                                       <QuickStyleHost
@@ -606,43 +575,6 @@ export function EditorView() {
                                         <EditorSearchPanel />
                                       </AreaErrorBoundary>
                                     ) : null}
-                                    {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
-          including view-role; the results panel unlocks once you've
-          responded (or if you're the host). Both vanish with the poll —
-          nothing here is persisted. */}
-                                    <PollPromptSheet
-                                      // Keyed on the poll so a second poll starts with a clean free-text
-                                      // box rather than inheriting the first one's half-typed answer.
-                                      key={livePoll.poll?.id ?? 'no-poll'}
-                                      // Asked of whoever may answer (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
-                                      poll={
-                                        ctx.can.takePart && livePoll.poll && !livePoll.myAnswer
-                                          ? livePoll.poll
-                                          : null
-                                      }
-                                      onAnswer={livePoll.answerPoll}
-                                    />
-                                    {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
-          the same reason: it is a question addressed to you, not a status
-          line. Shown to view-role visitors too. */}
-                                    <FocusInviteDialog
-                                      from={
-                                        focusInvite.invite
-                                          ? (livePresence.find(
-                                              (p) => p.id === focusInvite.invite!.from,
-                                            )?.name ?? 'Someone')
-                                          : null
-                                      }
-                                      toPage={
-                                        !!focusInvite.invite &&
-                                        !!focusPageAt(
-                                          tabs.find((t) => t.id === focusInvite.invite!.tabId),
-                                          focusInvite.invite.at,
-                                        )
-                                      }
-                                      onAccept={focusInvite.acceptFocus}
-                                      onDismiss={focusInvite.dismissFocus}
-                                    />
                                     <AreaErrorBoundary area="Modals">
                                       <EditorModals />
                                     </AreaErrorBoundary>

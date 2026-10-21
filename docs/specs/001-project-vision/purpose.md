@@ -42,10 +42,7 @@ never arrives.
 - **Real-time multiplayer canvas** ([Live app](../007-editor/live-app.md),
   [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)): live cursors, selection
   awareness, per-element merge so concurrent edits don't clobber, and an ordered
-  room with reconnect catch-up. Plus the verbs a session needs: Follow Me
-  ([Follow-me viewport](../012-collaboration/follow-me-viewport.md)), Bring Focus
-  ([Bring Focus](../012-collaboration/bring-focus.md)), and a facilitator baton so one person runs
-  the room ([Facilitator](../012-collaboration/facilitator.md)).
+  room with reconnect catch-up.
 - **Diagrams** ([Canvas and palette](../008-canvas/canvas-and-palette.md)): shapes, arrows,
   connectors, text, tables, code blocks, checklists, images and embeds, plus
   web components that lay themselves out
@@ -55,17 +52,11 @@ never arrives.
 - **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-document/layers.md)),
   themes and templates.
 - **Running the session**: timers and dot votes
-  ([Session tools (timer + voting)](../012-collaboration/session-tools.md)), live polls ([Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)),
-  and the ask-the-room elements that followed: estimates
-  ([Estimate card](../012-collaboration/estimate-card.md)), temperature checks
-  ([Temperature check](../012-collaboration/temperature-check.md)), idea boxes
-  ([Idea box](../012-collaboration/idea-box.md)), agendas ([Agenda](../012-collaboration/agenda.md)), decision
-  records ([Decision record](../012-collaboration/decision-record.md)) and roll calls
-  ([Roll call](../012-collaboration/roll-call.md)). These are elements on the canvas, not a side
-  panel, which is why they keep arriving: the canvas already knew how to hold
-  them.
-- **Presenting the result** ([Presentation mode](../012-collaboration/presentation-mode.md)): full-screen
-  slide decks built from element sets that can span tabs.
+  ([Session tools (timer + voting)](../012-collaboration/session-tools.md)), cast on a board's cards, and the
+  ask-the-room elements: temperature checks ([Temperature check](../012-collaboration/temperature-check.md)),
+  pickers ([Picker](../012-collaboration/picker.md)) and decision records
+  ([Decision record](../012-collaboration/decision-record.md)). These are elements on the canvas, not a side
+  panel: the canvas already knew how to hold them.
 - **Getting work in and out**: import/export as JSON, Mermaid
   ([Mermaid import & export](../020-import-export/mermaid.md)), Markdown and Excalidraw
   ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)); draw.io import
@@ -103,11 +94,6 @@ This section exists because this document sat unrevised for four months while
 boundary nobody maintains is not a boundary. When one moves, it gets recorded
 here in the same change, with the spec that moved it.
 
-- **"Not a presentation or slide tool"**: reversed by
-  [Presentation mode](../012-collaboration/presentation-mode.md). Presentation mode is full-screen slide
-  decks with their own panel and presenting HUD. That is a presentation tool,
-  and the product is better for it, because the session that built the diagram
-  usually ends by showing it.
 - **"Not an offline-first desktop app"**: narrowed by
   [Offline Mode](../006-document/offline-mode.md). Still not a desktop app, and cloud is still the
   default, but a document can now be kept only in this browser's IndexedDB and

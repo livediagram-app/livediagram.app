@@ -17,7 +17,7 @@ import {
   to,
   VIEW,
 } from './features-parts';
-import { AMBER, EMERALD, Frame, PINK, SKY, VIOLET } from './shared';
+import { Frame, SKY, } from './shared';
 
 /** Images: a photo placed and selected on the canvas, and one dragged in from your gallery. */
 export function ImagesArt() {
@@ -145,9 +145,8 @@ export function ShortcutsArt() {
   );
 }
 
-/** The session tools: a timer draining on the canvas, dot votes landing, and the Done check. */
+/** The session tools: a timer draining on the canvas and dot votes landing. */
 export function SessionToolsArt() {
-  const people = [SKY, PINK, VIOLET, EMERALD, AMBER];
   return (
     <Frame canvas>
       <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
@@ -199,38 +198,6 @@ export function SessionToolsArt() {
         <VoteSticky x={174} fill="#fbcfe8" ink="#831843" label="Onboarding" votes={2} i={1} />
         <VoteSticky x={224} fill="#bbf7d0" ink="#14532d" label="Dark mode" votes={3} i={2} />
 
-        {/* The Done check: who has marked themselves finished. */}
-        <PanelShadow x={124} y={62} w={144} h={20} r={10} />
-        <rect className={PANEL} x="124" y="62" width="144" height="20" rx="10" strokeWidth="1" />
-        <circle cx="134" cy="72" r="5" fill={EMERALD} />
-        <path
-          d="M131.8 72 L133.5 73.7 L136.3 70.5"
-          fill="none"
-          stroke="#fff"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <text className={STRONG} x="143" y="74.2" fontSize="6.2" fontWeight="700">
-          Done?
-        </text>
-        {people.map((c, i) => (
-          <g key={c} transform={`translate(${184 + i * 15} 72)`}>
-            <circle r="5" fill={c} opacity={i === 4 ? 0.35 : 1} />
-            {i < 4 ? (
-              <g className="fa-pop" style={{ animationDelay: `${1.6 + i * 0.3}s` }}>
-                <circle cx="3.6" cy="3.4" r="2.6" fill={EMERALD} stroke="#fff" strokeWidth="0.8" />
-                <path
-                  d="M2.5 3.4 L3.3 4.2 L4.7 2.7"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="0.8"
-                  strokeLinecap="round"
-                />
-              </g>
-            ) : null}
-          </g>
-        ))}
       </svg>
     </Frame>
   );

@@ -3,7 +3,7 @@ import type { ElementDelta, Tab } from '@liveplanner/document';
 import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs } from '@/app/document/[id]/room-op-apply';
 
-// Send ONE answer / idea / checklist tick / comment change (docs/specs/012-collaboration/collab-race-hardening.md).
+// Send ONE answer / checklist tick / comment change (docs/specs/012-collaboration/collab-race-hardening.md).
 //
 // Applied to our own tab through the same `applyDeltaToTabs` every receiver
 // runs, and sent straight down the socket rather than left to the 600 ms

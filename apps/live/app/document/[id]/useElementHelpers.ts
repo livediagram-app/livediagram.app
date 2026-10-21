@@ -1,4 +1,3 @@
-import { isFloorShape } from '@liveplanner/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
@@ -149,14 +148,7 @@ export function useElementHelpers(opts: {
     // and immediately work with it matches every other editor; the
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
-    // A room or a rug is the floor (docs/specs/009-elements/office.md): it goes in behind everything, so the
-    // furniture already there, and any dropped on it later, stands on it.
-    const onFloor = el.type === 'shape' && isFloorShape(el.shape);
-    const after = insertion
-      ? insertElementAt(before, insertion, el)
-      : onFloor
-        ? [el, ...before]
-        : [...before, el];
+    const after = insertion ? insertElementAt(before, insertion, el) : [...before, el];
     // Insert between (docs/specs/021-event-storming/event-storming.md): the ripple runs against whatever the tab
     // holds NOW, not the snapshot the drag started with, so a peer's mid-drag
     // move isn't reverted by the drop that follows it. One commitTabs = one

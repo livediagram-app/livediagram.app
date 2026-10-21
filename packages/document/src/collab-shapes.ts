@@ -1,7 +1,6 @@
-// The collaboration element family: the estimate card (docs/specs/012-collaboration/estimate-card.md), the
-// temperature check (docs/specs/012-collaboration/temperature-check.md), the idea box (docs/specs/012-collaboration/idea-box.md), the agenda
-// (docs/specs/012-collaboration/agenda.md), the decision record (docs/specs/012-collaboration/decision-record.md), the roll call (docs/specs/012-collaboration/roll-call.md) and the
-// chair (docs/specs/009-elements/chair.md) — their kind predicates, closed enums, bounds and defaults.
+// The collaboration element family: the temperature check (docs/specs/012-collaboration/temperature-check.md) and
+// the decision record (docs/specs/012-collaboration/decision-record.md) — their kind predicates, closed enums,
+// bounds and defaults.
 //
 // A LEAF module (types only) for the same reason data-shapes.ts is one:
 // factories.ts reads these at module-init time, and importing them from
@@ -9,93 +8,7 @@
 // Everything here is re-exported from './index'.
 
 import type { ShapeKind } from './index';
-import { isQaBoardShape } from './qa-board';
-import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
-
-// --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
-
-// Which ladder of values the card offers. Every scale ends in '?', which is a
-// real answer ("I can't size this") and often the most useful one on the card.
-export type EstimateScale = 'fibonacci' | 'tshirt' | 'powers';
-export const ESTIMATE_SCALES: readonly EstimateScale[] = ['fibonacci', 'tshirt', 'powers'];
-export const DEFAULT_ESTIMATE_SCALE: EstimateScale = 'fibonacci';
-
-export const ESTIMATE_SCALE_VALUES: Record<EstimateScale, readonly string[]> = {
-  fibonacci: ['1', '2', '3', '5', '8', '13', '21', '?'],
-  tshirt: ['XS', 'S', 'M', 'L', 'XL', '?'],
-  powers: ['1', '2', '4', '8', '16', '?'],
-};
-
-export const ESTIMATE_SCALE_LABELS: Record<EstimateScale, string> = {
-  fibonacci: 'Fibonacci',
-  tshirt: 'T-shirt',
-  powers: 'Powers of two',
-};
-
-export function isEstimateScale(value: unknown): value is EstimateScale {
-  return (ESTIMATE_SCALES as readonly string[]).includes(value as string);
-}
-
-export function estimateValues(scale: EstimateScale | undefined): readonly string[] {
-  return ESTIMATE_SCALE_VALUES[scale ?? DEFAULT_ESTIMATE_SCALE];
-}
-
-function isEstimateShape(kind: ShapeKind): boolean {
-  return kind === 'estimate';
-}
-
-// Whether an estimate card is still waiting for its scale (docs/specs/012-collaboration/estimate-card.md
-// "Choosing a scale"): the palette places ONE Estimate card with no scale, and
-// the card asks on the canvas. A card with no scale that already holds answers
-// is an older card from before the choice existed, when no scale meant
-// Fibonacci, so it keeps meaning that rather than hiding its round behind the
-// chooser.
-export function estimateScalePending(el: {
-  shape?: string;
-  estimateScale?: EstimateScale;
-  responses?: readonly unknown[];
-}): boolean {
-  return (
-    el.shape === 'estimate' && el.estimateScale === undefined && (el.responses ?? []).length === 0
-  );
-}
-
-// Where a value sits on its scale, for sorting revealed cards low to high: the
-// scale's own order (so a t-shirt round reads XS .. XL), with anything off the
-// scale after it (docs/specs/012-collaboration/estimate-card.md "The two states").
-export function estimateRank(scale: EstimateScale | undefined, value: string): number {
-  const i = estimateValues(scale).indexOf(value);
-  return i === -1 ? Number.MAX_SAFE_INTEGER : i;
-}
-
-// The spread the card calls out once revealed: nobody, everyone agreeing, or
-// the lowest and highest answers by the scale's order ('?' is an answer but
-// not an end of the spread). `low` / `high` are the values to ring, absent
-// when unanimous. Shared by the canvas face and the export.
-type EstimateSpread =
-  | { kind: 'none' }
-  | { kind: 'unanimous'; value: string }
-  | { kind: 'range'; low: string; high: string };
-
-export function estimateSpread(
-  scale: EstimateScale | undefined,
-  values: readonly string[],
-): EstimateSpread {
-  if (values.length === 0) return { kind: 'none' };
-  const distinct = [...new Set(values)];
-  if (distinct.length === 1) return { kind: 'unanimous', value: distinct[0]! };
-  const sized = distinct.filter((v) => v !== '?');
-  if (sized.length <= 1) return { kind: 'unanimous', value: sized[0] ?? '?' };
-  const sorted = [...sized].sort((a, b) => estimateRank(scale, a) - estimateRank(scale, b));
-  return { kind: 'range', low: sorted[0]!, high: sorted[sorted.length - 1]! };
-}
-
-export function estimateSpreadLabel(spread: EstimateSpread): string {
-  if (spread.kind === 'none') return 'No answers';
-  if (spread.kind === 'unanimous') return `Unanimous · ${spread.value}`;
-  return `Spread ${spread.low} → ${spread.high}`;
-}
 
 // --- Temperature check (docs/specs/012-collaboration/temperature-check.md) -----------------------------------------
 
@@ -144,59 +57,6 @@ export const TEMPERATURE_FACE_MOUTHS: readonly string[] = [
 // Where an average sits on the cool-to-warm track, 0 (all 1s) to 1 (all 5s).
 export function temperaturePosition(average: number): number {
   return Math.min(1, Math.max(0, (average - 1) / 4));
-}
-
-// --- Idea box (docs/specs/012-collaboration/idea-box.md) ---------------------------------------------------
-
-// Submissions are STRINGS, with nowhere to put an author. That is the
-// anonymity guarantee expressed in the schema rather than in the UI.
-export const IDEA_MAX_CARDS = 300;
-export const IDEA_MAX_TEXT = 500;
-// Each card's random id (`ideaCardIds`, docs/specs/012-collaboration/blueprints/idea-box-race.md): a UUID is
-// 36 characters; the room's other ids are bounded at 64. Safe range 36..128.
-export const IDEA_CARD_ID_MAX = 64;
-
-// A box's card ids, aligned by position with its cards: cut to the cards' length and padded with '' (an
-// id-less card: one from before ids, a template's, a poll capture's or one the room's ledger restored).
-export function alignedIdeaCardIds(el: { ideaCards?: string[]; ideaCardIds?: string[] }): string[] {
-  const n = (el.ideaCards ?? []).length;
-  const ids = (el.ideaCardIds ?? []).slice(0, n);
-  while (ids.length < n) ids.push('');
-  return ids;
-}
-
-export function isIdeaCardId(v: unknown): v is string {
-  return typeof v === 'string' && v.length > 0 && v.length <= IDEA_CARD_ID_MAX;
-}
-
-function isIdeaBoxShape(kind: ShapeKind): boolean {
-  return kind === 'idea-box';
-}
-
-// --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
-
-export type AgendaItem = { label: string; minutes: number };
-
-export const AGENDA_MAX_ITEMS = 60;
-export const AGENDA_MAX_TEXT = 120;
-// One segment's bounds, in minutes. Clamped where read rather than rejected on
-// load, the same rule the session button's duration takes.
-export const AGENDA_MIN_MINUTES = 1;
-export const AGENDA_MAX_MINUTES = 240;
-export const AGENDA_DEFAULT_MINUTES = 5;
-
-export function clampAgendaMinutes(minutes: number | undefined): number {
-  if (!Number.isFinite(minutes)) return AGENDA_DEFAULT_MINUTES;
-  return Math.max(AGENDA_MIN_MINUTES, Math.min(AGENDA_MAX_MINUTES, Math.round(minutes as number)));
-}
-
-// The number in the header: what the plan costs if every segment runs to time.
-export function agendaTotalMinutes(items: AgendaItem[] | undefined): number {
-  return (items ?? []).reduce((sum, item) => sum + clampAgendaMinutes(item.minutes), 0);
-}
-
-function isAgendaShape(kind: ShapeKind): boolean {
-  return kind === 'agenda';
 }
 
 // --- Decision record (docs/specs/012-collaboration/decision-record.md) -------------------------------------------
@@ -253,58 +113,11 @@ function isDecisionShape(kind: ShapeKind): boolean {
   return kind === 'decision';
 }
 
-// --- Roll call (docs/specs/012-collaboration/roll-call.md) --------------------------------------------------
-
-// A FROZEN snapshot. `name` + `color` are copied at the moment the roll is
-// taken and never re-joined to the live participant, deliberately so: minutes are a statement
-// about a past moment, so someone since renamed or deleted must still appear
-// under the name they were in the room under.
-export type RollCallEntry = { name: string; color: string; at: number };
-
-export const ROLL_CALL_MAX = 500;
-export const ROLL_CALL_MAX_TEXT = 120;
-
-function isRollCallShape(kind: ShapeKind): boolean {
-  return kind === 'roll-call';
-}
-
-// --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
-
-// Which way the seat points. 'n' = the chair's back is at the top, so the
-// sitter faces down the canvas toward the reader.
-export type ChairFacing = 'n' | 'e' | 's' | 'w';
-export const CHAIR_FACINGS: readonly ChairFacing[] = ['n', 'e', 's', 'w'];
-export const DEFAULT_CHAIR_FACING: ChairFacing = 'n';
-
-export const CHAIR_FACING_LABELS: Record<ChairFacing, string> = {
-  n: 'Facing down',
-  e: 'Facing left',
-  s: 'Facing up',
-  w: 'Facing right',
-};
-
-export function isChairFacing(value: unknown): value is ChairFacing {
-  return (CHAIR_FACINGS as readonly string[]).includes(value as string);
-}
-
-// Which way somebody sitting in the chair looks, in the avatar's own facing
-// vocabulary (the same four words CHAIR_FACING_LABELS prints). The seat points
-// AWAY from the back, so a chair with its back at the top ('n') faces its
-// sitter down the canvas.
-export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
-
-export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
-  n: 'down',
-  e: 'left',
-  s: 'up',
-  w: 'right',
-};
-
 // --- The family ------------------------------------------------------------
 
 // Every collaboration kind that draws a PRESSABLE FACE in place of the plain
-// label — the same shape as the mode button / session button / reveal / picker
-// (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md), which each render a face while `!isEditing` and fall
+// label — the same shape as the session button and the picker
+// (docs/specs/012-collaboration/session-button.md, picker.md), which each render a face while `!isEditing` and fall
 // back to the ordinary label editor mid-edit. So the label is still typed,
 // formatted and exported like any other; it is just drawn by the face.
 //
@@ -312,63 +125,33 @@ export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
 // its whole layout for the same reason: its label is a SENTENCE, and a
 // free-flowing label sized to the box ran under the status chip and over the
 // drivers. Drawing the card itself is what makes the collision impossible.
-//
-// The chair is NOT here — it renders furniture under an ordinary label, the
-// way the record box (docs/specs/009-elements/entity.md) renders its rows under its title.
-// Done check (docs/specs/012-collaboration/done-check.md): a room-response card like the rest of this family,
-// so it takes the same panel chrome and the same viewer context.
-function isDoneCheckShape(kind: ShapeKind): boolean {
-  return kind === 'done-check';
-}
-
 export function isCollabPanelShape(kind: ShapeKind): boolean {
-  return (
-    isDoneCheckShape(kind) ||
-    isEstimateShape(kind) ||
-    isTemperatureShape(kind) ||
-    isIdeaBoxShape(kind) ||
-    isQaBoardShape(kind) ||
-    isAgendaShape(kind) ||
-    isRollCallShape(kind) ||
-    isDecisionShape(kind) ||
-    isQuizShape(kind)
-  );
+  return isTemperatureShape(kind) || isDecisionShape(kind);
 }
 
 // Kinds whose resting face draws its own layout and shows the label as a
-// plain title (the collab panels, the session tools, the chair, the comment
-// and action panels, the portal): the editor's ElementFaceRouter hands them
+// plain title (the collab panels, the session tools, the comment and action
+// panels, the portal): the editor's ElementFaceRouter hands them
 // the label string, never the aligned label node, so text alignment has
 // nothing to move on them. Kept here, beside the kind predicates, so the
 // router's list and the text-align gate below can't drift apart.
 export function hasOwnFace(kind: ShapeKind): boolean {
   return (
     isCollabPanelShape(kind) ||
-    kind === 'chair' ||
-    kind === 'desk' ||
-    kind === 'sofa' ||
-    kind === 'mode-button' ||
     kind === 'session-button' ||
-    kind === 'focus-button' ||
-    kind === 'reveal' ||
     kind === 'picker' ||
     kind === 'comment-pin' ||
     kind === 'action-card' ||
-    kind === 'reaction-pad' ||
-    kind === 'portal' ||
-    isQuizShape(kind)
+    kind === 'portal'
   );
 }
 
 // Whether double-click, Space or typing opens the inline label editor on this
-// kind. Not on a self-drawing kind (it has no label), and not on a quiz
-// (docs/specs/012-collaboration/quiz.md): its label is the question, which the
-// Edit Quiz dialog owns, and editing it inline would print the hidden question
-// over the closed disc for anybody who double-clicked the card.
+// kind. Not on a self-drawing kind (it has no label).
 export function opensInlineLabelEditor(kind: ShapeKind): boolean {
   // A sequence diagram's words are its rows, written in its dialog (docs/specs/009-elements/sequence-diagram.md); its
   // box keeps its border controls, so it is not self-drawing, but a click never opens a label editor on it.
-  return !isSelfDrawingShape(kind) && !isQuizShape(kind) && kind !== 'sequence';
+  return !isSelfDrawingShape(kind) && kind !== 'sequence';
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind

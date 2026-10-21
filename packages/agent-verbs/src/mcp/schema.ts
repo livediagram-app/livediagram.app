@@ -160,12 +160,11 @@ const STYLE_FIELDS =
   'other). A Mermaid erDiagram draws these ends itself. A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
-  '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
-  'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
+  '"stopwatch", or "vote" with "dots"}), drawn as what pressing it does ' +
+  'unless it has a label; "checklist" its "checklistItems" ' +
   '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
-  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
-  '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
-  'stickies beside them. ';
+  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "temperature" check ' +
+  'are the people\u2019s, never an edit\u2019s. ';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).

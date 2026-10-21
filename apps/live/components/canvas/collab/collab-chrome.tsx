@@ -30,8 +30,8 @@ import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 // left the agenda's ruling and crease floating in a band in the middle of a
 // tall element, with bare card above and below.
 //
-// A card whose content is a LIST that grows (the Q&A board, docs/specs/012-collaboration/qa-board.md) opts out
-// with `reflow`: there, resizing is how you make room for more notes, and
+// A card whose content is a LIST that grows (the Comment panel, docs/specs/012-collaboration/comment-pin.md) opts
+// out with `reflow`: there, resizing is how you make room for more rows, and
 // scaling would spend the new space on bigger type instead.
 function CollabScale({
   element,
@@ -111,12 +111,11 @@ export function CollabPanel({
   aside?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  // Extra class on the card body. Used by the Done check (docs/specs/012-collaboration/done-check.md) for its
-  // all-done flash, which is a class rather than an inline style so the
+  // Extra class on the card body: a class rather than an inline style so the
   // reduced-motion override in globals.css can reach it.
   className?: string;
-  // The card's own `…` menu, which LEADS the title (the Done check's, the Q&A
-  // board's, the Idea box's). A card that draws none gets the shared settings
+  // The card's own `…` menu, which LEADS the title (the Temperature check's).
+  // A card that draws none gets the shared settings
   // `…` there instead, from CollabSettingsSlot.
   headerExtra?: React.ReactNode;
   // The paper kit (docs/specs/012-collaboration/participant-responses.md): the textures that make this card a particular

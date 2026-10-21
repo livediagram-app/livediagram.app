@@ -16,7 +16,7 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the fourteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the thirteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorm',
       'Design',
@@ -26,7 +26,6 @@ describe('template categories', () => {
       'Org Charts',
       'Planning',
       'Presentations',
-      'Quizzes & Games',
       'Spreadsheets',
       'Strategy',
       'Technical',
@@ -63,7 +62,7 @@ describe('template categories', () => {
       finance: 6,
       spreadsheets: 5,
       forms: 6,
-      meetings: 17,
+      meetings: 10,
       mindmaps: 8,
       timelines: 7,
       flowcharts: 5,
@@ -72,7 +71,6 @@ describe('template categories', () => {
       design: 14,
       presentations: 17,
       technical: 10,
-      games: 5,
     });
   });
 
@@ -88,7 +86,7 @@ describe('template categories', () => {
     expect(isInTemplateCategory('invoice', 'spreadsheets')).toBe(true);
     expect(isInTemplateCategory('funnel', 'finance')).toBe(true);
     expect(isInTemplateCategory('team-retro', 'planning')).toBe(true);
-    expect(isInTemplateCategory('doodle-warmup', 'games')).toBe(true);
+    expect(isInTemplateCategory('doodle-warmup', 'meetings')).toBe(true);
     expect(isInTemplateCategory('blank', 'flowcharts')).toBe(false);
   });
 
@@ -124,7 +122,6 @@ describe('template search words', () => {
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
     expect(find('sprint')).toContain('project-planner');
     expect(find('standup')).toContain('project-planner');
-    expect(find('1:1')).toContain('meeting-agenda');
     expect(find('mortgage')).toEqual(['loan-calculator']);
     expect(find('invoice')).toContain('invoice');
     expect(find('crm')).toEqual(expect.arrayContaining(['contact-list', 'sales-pipeline']));
@@ -147,8 +144,6 @@ describe('template search words', () => {
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
     expect(find('to-do')).toContain('task-tracker');
     expect(find('todo')).toContain('task-tracker');
-    expect(find('1-on-1')).toContain('meeting-agenda');
-    expect(find('one-on-one')).toContain('meeting-agenda');
     // Run together, a hyphenated name is found too ("er diagram" from the kind er-diagram).
     expect(find('erdiagram')).toContain('er-diagram');
     // A query of punctuation alone is no query.

@@ -56,7 +56,6 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
         document: {
           id: m[1],
           name: doc.name,
-          presentation: null,
           tabs: doc.tabs.map((t, i) => ({
             id: t.id,
             name: t.name,
@@ -182,7 +181,6 @@ describe('a pull file read offline', () => {
     document: {
       id: 'aaaa0001-doc',
       name: 'Shop',
-      presentation: null,
       tabs: [flow, { id: 'other-01', name: 'Other', elements: [] }],
     },
     liveplannerSync: {

@@ -9,7 +9,6 @@ import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
 import type { CommentMention } from './comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
-import { reconcileRestoredElement } from './undo-live-reconcile';
 import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 
 // A single comment inside a thread. The author is the participant who
@@ -154,9 +153,8 @@ export function stampCommentAuthor(
 // The per-element fields that mutate OUTSIDE undo history and therefore
 // need re-grafting onto restored snapshots: comment threads (docs/specs/008-canvas/canvas-and-palette.md),
 // assigned actions (docs/specs/012-collaboration/assigned-actions.md: Cmd+Z must never silently unassign work), and
-// everything a collaborative press writes (docs/specs/012-collaboration/collab-race-hardening.md): answers, reveals, idea
-// cards, the roll, the agenda's current row and the picker's result. A
-// snapshot from before somebody answered would otherwise take their answer
+// everything a collaborative press writes (docs/specs/012-collaboration/collab-race-hardening.md): answers and the
+// picker's result. A snapshot from before somebody answered would otherwise take their answer
 // away from the whole room the moment anyone pressed undo.
 //
 // Also what an element fingerprint leaves out (docs/specs/024-agents/agent-changesets.md): people
@@ -168,24 +166,8 @@ export const LIVE_ELEMENT_FIELDS = [
   'action',
   'actions',
   'responses',
-  'responsesRevealed',
   'collabRound',
-  'ideaCards',
-  'ideaCardIds',
-  'ideasRevealed',
-  'rollCall',
-  'agendaCurrent',
-  'agendaTimerStartedAt',
   'pickerResult',
-  // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
-  // presses, not edits, so an undo must not un-start somebody's round.
-  'quizStartedAt',
-  'quizLockedAt',
-  'quizRevealed',
-  // The Q&A board's notes (docs/specs/012-collaboration/qa-board.md) are written by its endpoint, never by
-  // an undoable edit, so a snapshot's copy is only ever older.
-  'qaNotes',
-  'qaRev',
 ] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
@@ -194,21 +176,7 @@ type LiveFieldBag = {
   actions?: ElementAction[];
 } & Pick<
   ShapeElement,
-  | 'responses'
-  | 'responsesRevealed'
-  | 'collabRound'
-  | 'ideaCards'
-  | 'ideaCardIds'
-  | 'ideasRevealed'
-  | 'rollCall'
-  | 'agendaCurrent'
-  | 'agendaTimerStartedAt'
-  | 'pickerResult'
-  | 'quizStartedAt'
-  | 'quizLockedAt'
-  | 'quizRevealed'
-  | 'qaNotes'
-  | 'qaRev'
+  'responses' | 'collabRound' | 'pickerResult'
 >;
 
 function applyLiveField<K extends keyof LiveFieldBag>(
@@ -228,12 +196,9 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 export function graftLiveTabState(
   from: Tab[],
   onto: Tab[],
-  // `mintRound` makes the new round id a reset needs (a quiz whose edit is
-  // undone); a test passes a fixed one.
-  opts: { sessionFields?: boolean; mintRound?: () => string } = {},
+  opts: { sessionFields?: boolean } = {},
 ): Tab[] {
   const sessionFields = opts.sessionFields !== false;
-  const mintRound = opts.mintRound ?? (() => crypto.randomUUID());
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
@@ -273,14 +238,6 @@ export function graftLiveTabState(
         if (items !== next.checklistItems) {
           changed = true;
           next = { ...next, checklistItems: items };
-        }
-      }
-      // Presses that were about the authored fields follow them back.
-      if (next.type === 'shape' && liveEl?.type === 'shape') {
-        const reconciled = reconcileRestoredElement(next, liveEl, mintRound);
-        if (reconciled !== next) {
-          changed = true;
-          next = reconciled;
         }
       }
       return next;

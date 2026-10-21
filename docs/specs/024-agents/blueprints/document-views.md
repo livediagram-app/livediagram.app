@@ -85,7 +85,7 @@ edited without it); the change names the gap.
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
-| State attribute | `stateAttributeOf`                                                       | The one attribute saying where a live element stands (`votes=4 revealed`)      |
+| State attribute | `stateAttributeOf`                                                       | The one attribute saying where a live element stands (`votes=4`)               |
 | Attribute       | `ViewAttribute { key, value }`, `attributesOf`                           | One `key=value` or flag after the label                                        |
 | Edge            | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
 | Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
@@ -342,18 +342,10 @@ The table line prints its label first when it has one. Every text a summary prin
 
 | Kind                    | State attribute                                                                       |
 | ----------------------- | ------------------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
 | `temperature`           | `votes=<responses.length>`                                                            |
-| `done-check`            | `done=<responses.length>`                                                             |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
-| `qa-board`              | `questions=<qaNotes.length>`                                                          |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
+| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer) or `:<dots>` (vote)                      |
 | `decision`              | `status=<decisionStatus>` when set                                                    |
-| `roll-call`             | `present=<rollCall.length>`                                                           |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
 | `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
-| `reveal`                | `revealed` when `revealed`                                                            |
 | `stat-row`              | `stats=<stats.length>`                                                                |
 | `process`               | `steps=<processSteps.length>`                                                         |
 | `site-header`           | `links=<navLinks.length>`                                                             |
@@ -463,7 +455,7 @@ Left out, and named on `omitted:`: `id`, `type`, `shape` and `label` (in the fir
 person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, the mentions' `userId` and
 `memberId` on `commentThread.comments[].mentions[]`, `action.assignerId`,
 `action.assignee.userId`, `action.assignee.memberId`, `action.teamId`, the same on `actions[]`,
-`responses[].participantId`, `qaNotes[].voters`). A test walks every element type's fields so a new person-id
+`responses[].participantId`). A test walks every element type's fields so a new person-id
 field fails until it is listed; `omitted:` names only the ones the element holds. The edges list both directions with arrow refs, in array order. `code` prints as a
 JSON string.
 

@@ -1,5 +1,5 @@
-/* ── Pages, slides and presenting card art (components/feature-art/infographics.tsx,
-   present.tsx, page-kit.tsx). Every loop is 7s so the pieces of one card stay in step; each piece
+/* ── Pages and slides card art (components/feature-art/infographics.tsx,
+   page-kit.tsx). Every loop is 7s so the pieces of one card stay in step; each piece
    waits its own --e-d. Reduced motion settles every piece in place (below). ── */
 @keyframes fa-e-in {
   0% {
@@ -82,21 +82,6 @@
 .fa-e-move {
   animation: fa-e-move 7s cubic-bezier(0.45, 0, 0.25, 1) var(--e-d, 0s) infinite both;
 }
-@keyframes fa-e-ring {
-  0% {
-    opacity: 0.55;
-    transform: scale(0.7);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.9);
-  }
-}
-.fa-e-ring {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: fa-e-ring 2.4s ease-out var(--e-d, 0s) infinite both;
-}
 @keyframes fa-e-float {
   0%,
   100% {
@@ -151,10 +136,5 @@
     opacity: 1 !important;
     transform: none !important;
     stroke-dashoffset: 0 !important;
-  }
-  .fa-e-ring {
-    animation: none !important;
-    opacity: 0.35 !important;
-    transform: scale(1.25) !important;
   }
 }

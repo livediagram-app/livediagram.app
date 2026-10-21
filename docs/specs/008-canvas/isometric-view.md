@@ -1,6 +1,6 @@
 # Isometric view
 
-A **canvas tool**, in the picker beside Select / Hand / Laser, that renders the
+A **canvas tool**, in the picker beside Select / Hand, that renders the
 current tab as an **isometric scene with depth** — the flat canvas tilted
 onto an isometric plane, each shape extruded into a raised block. It's a way
 to _look_ at a canvas (architecture decks, system maps, screenshots), not a
@@ -63,11 +63,10 @@ Isometric is **navigation-only**, modelled on the Hand tool:
   isometric angle (`useIsometricCamera.reset`). It only mounts in isometric
   view and disappears on any other tool.
 - **No selecting, dragging, resizing, marquee, or editing** while it's
-  active — the content layer is non-interactive (like Spotlight, [Canvas and palette](canvas-and-palette.md)),
+  active — the content layer is non-interactive ([Canvas and palette](canvas-and-palette.md)),
   so there's no reverse hit-testing to get wrong. To edit, switch back to
   Select. **Escape** exits the view to the default editing tool — Select on
-  desktop, Hand (pan) on touch viewports where Select isn't the default
-  (mirrors how Spotlight reverts to Select).
+  desktop, Hand (pan) on touch viewports where Select isn't the default.
 - It is **purely a view state**: it changes nothing about the document, never
   persists to the server, and is **not synced** to other participants — each
   viewer tilts independently (same contract as Zen mode, [Zen mode](../007-editor/zen-mode.md)).
@@ -78,10 +77,9 @@ Available to everyone, including view-only visitors (looking is read-only).
 
 - **Tool dropdown** in the palette (its own isometric-cube icon).
   The picker is grouped with menu dividers: editing tools (Select / Hand /
-  Eraser / Format), then presenter tools (Laser / Spotlight / Avatar / Slide
-  Deck), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
-  Hand / Laser do.
-- **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` are the
+  Eraser / Format), then the view modes (Isometric, then Zen) at the end. Selecting it switches the
+  cursor mode the same way Select / Hand do.
+- **Keyboard:** `I` selects it (free letter; `V` / `H` are the
   other view tools, `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
   text-input / label-edit bailouts so typing `i` into a label never flips the
   mode. Listed under Tools in the shortcut catalogue (Settings' Keyboard
@@ -91,13 +89,12 @@ Available to everyone, including view-only visitors (looking is read-only).
 ## Telemetry
 
 Selecting the tool emits `Canvas / Used / Isometric` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) — the same
-shape as `Canvas / Used / Laser` and the other distinct-tool selections.
+shape as the other distinct-tool selections.
 Like Pan / Select, repeated re-selection isn't re-tracked.
 
 ## Implementation notes
 
-- `isometric` joins the `CanvasTool` union (`'pan' | 'select' | 'laser' |
-'spotlight' | 'eraser' | 'isometric'`). It's a mutually-exclusive cursor
+- `isometric` joins the `CanvasTool` union (`'pan' | 'select' | 'eraser' | 'format' | 'isometric'`). It's a mutually-exclusive cursor
   mode, so it belongs **inside** the tool group, unlike Zen mode which is an
   orthogonal visibility flag.
 - The projection math lives in its own helper (`apps/live/lib/isometric.ts`):
@@ -112,7 +109,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   drag-to-pan then moves the scene the way the cursor moves at any camera
   angle). The wrapper is made `pointer-events-none` so no element kind can be
   selected or dragged; pan still works because drag-to-pan is handled on
-  `<main>` (and `wantsPan` gains the `isometric` case, like `pan` / `laser`).
+  `<main>` (and `wantsPan` gains the `isometric` case, like `pan`).
   No change to the document data model — every element stays 2D
   (`x, y, width, height`) and the view is a pure projection on top.
 - The tilt **pivots around the content centre**, not the wrapper centre. The

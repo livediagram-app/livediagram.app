@@ -41,7 +41,7 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
   an empty Plan tab already offers Start Planning, which makes a board or Sheet, and the switch's description
   says the tour needs one.
-- **One tour at a time**: while the Diagram or Workshop tour is on screen the Plan tour waits. Each tour
+- **One tour at a time**: while the Diagram tour is on screen the Plan tour waits. Each tour
   belongs to its own mode, so the Plan tour never waits for the Diagram tour's offer to be answered.
 - The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the welcome card
   names the one it will show and offers **Yes** and **No**. With both on the tab (a Plan

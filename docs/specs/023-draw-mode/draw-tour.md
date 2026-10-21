@@ -1,9 +1,9 @@
 # Draw tour
 
 A short, optional guided tour of [Draw mode](draw-mode.md), offered the first time a person works in Draw. It is
-the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same welcome card, anchored step cards,
+the [Plan tour](../026-plan/plan-tour.md)'s sibling: the same welcome card, anchored step cards,
 glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the
-Workshop tour's rules hold.
+Plan tour's rules hold.
 
 ## Domain language
 
@@ -71,7 +71,7 @@ offered it, since the dock's drawing tools are not theirs to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Workshop tour's funnel, with its own tokens:
+The mode tours' funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `DrawTourOffer` when its welcome card shows; `UI` · `Closed` · `DrawTourOffer` on No.
 - **Start**: `UI` · `Started` · `DrawTour`.
@@ -82,5 +82,5 @@ The Workshop tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Draw tour seen alongside the Diagram, Plan and
-Workshop tours.
+[Power user mode](../007-editor/power-user-mode.md) marks the Draw tour seen alongside the Diagram and Plan
+tours.

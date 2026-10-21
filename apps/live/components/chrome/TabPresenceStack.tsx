@@ -34,18 +34,11 @@ export function TabPresenceStack({
   participants,
   selfId,
   selfRole,
-  followingId,
-  followerCount = 0,
   onOpenCollaborators,
 }: {
   participants: Participant[];
   selfId: string;
   selfRole: AccessLevel;
-  // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + hover card chip.
-  followingId?: string | null;
-  // How many follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): a count on our own
-  // avatar, so a presenter knows to narrate rather than mouse in silence.
-  followerCount?: number;
   // Opens the Collaborators modal with the clicked person highlighted (null
   // from the "+N" badge). Absent leaves the avatars as plain indicators.
   onOpenCollaborators?: (participantId: string | null) => void;
@@ -96,12 +89,8 @@ export function TabPresenceStack({
           style={{ zIndex: slots - i, transformOrigin: 'center' }}
         >
           {(() => {
-            const following = followingId === slot.p.id;
-            const followed = slot.p.id === selfId ? followerCount : 0;
-            const badges = participantBadges(slot.p, selfId, selfRole, followingId, {
-              followerCount: followed,
-            });
-            const face = (
+            const badges = participantBadges(slot.p, selfId, selfRole);
+            const avatar = (
               <ParticipantAvatar
                 participant={slot.p}
                 size={16}
@@ -109,21 +98,6 @@ export function TabPresenceStack({
                 badges={badges.length > 0 ? badges : undefined}
               />
             );
-            const avatar =
-              followed > 0 ? (
-                <span className="relative inline-flex">
-                  {face}
-                  <span
-                    role="img"
-                    aria-label={`${followed} following you`}
-                    className="pointer-events-none absolute -right-1 -top-1.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-700 px-0.5 text-[8px] font-semibold leading-none text-white dark:bg-brand-500"
-                  >
-                    <span className="text-optical-centre">{followed}</span>
-                  </span>
-                </span>
-              ) : (
-                face
-              );
             if (!onOpenCollaborators) return avatar;
             return (
               <button
@@ -131,9 +105,7 @@ export function TabPresenceStack({
                 onClick={() => onOpenCollaborators(slot.p.id)}
                 aria-haspopup="dialog"
                 aria-label={`Collaborators, showing ${slot.p.name}`}
-                className={`inline-flex cursor-pointer rounded-full transition ${
-                  following ? 'ring-2 ring-brand-400 ring-offset-1 dark:ring-offset-slate-900' : ''
-                }`}
+                className="inline-flex cursor-pointer rounded-full transition"
               >
                 {avatar}
               </button>

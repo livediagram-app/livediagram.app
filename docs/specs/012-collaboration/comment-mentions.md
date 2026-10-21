@@ -67,8 +67,7 @@ documents they can already open (the library scoping, [Inbox](../013-workspace/i
 
 ## Reading a mention
 
-In every thread rendering (the Comment panel's bubbles, the popover, the
-presentation popover) an `@handle` that matches one of the comment's mentions
+In every thread rendering (the Comment panel's bubbles, the popover) an `@handle` that matches one of the comment's mentions
 is drawn as a **chip**: semibold, in the accent, on a soft accent tint. An
 `@word` that matches no mention is plain text. The export draws the text as
 written.

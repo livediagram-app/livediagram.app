@@ -60,8 +60,6 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     // `share_link_expiring` warning (docs/specs/013-workspace/timeline.md §4.5); the retraction itself is
     // covered in expiry-retraction.test.ts.
     retractTimelineWarning: vi.fn(),
-    // Slide deck write (docs/specs/012-collaboration/presentation-mode.md).
-    setDocumentPresentation: vi.fn(),
     reorderTabs: vi.fn(),
     // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md).
     copyDocument: vi.fn(),
@@ -251,23 +249,6 @@ describe('a body that is not a JSON object', () => {
 });
 
 describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md). The deck rides the metadata PUT but has its own
-  // write, so an ordinary rename can never rewrite it.
-  it('leaves the stored deck alone when the field is absent', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-    canEditDocument.mockResolvedValue(true);
-    await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { name: 'Renamed' } }));
-    expect(db.setDocumentPresentation).not.toHaveBeenCalled();
-  });
-
-  it('writes the deck when one is sent', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-    canEditDocument.mockResolvedValue(true);
-    const deck = JSON.stringify({ decks: [{ slides: [] }] });
-    await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { presentation: deck } }));
-    expect(db.setDocumentPresentation).toHaveBeenCalledWith({}, 'd1', deck);
-  });
-
   it('blanks ownerId in the response for an edit-role share visitor (docs/specs/014-identity/auth-and-guest-access.md)', async () => {
     // gateEdit admits an edit-role share code, so the PUT reply reaches the
     // same audience the GET redacts for.
@@ -293,24 +274,6 @@ describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
     );
     const { document: liveDoc } = (await res.json()) as { document: DocumentDTO };
     expect(liveDoc.ownerId).toBe('owner-1');
-  });
-
-  it('clears the deck on an explicit null', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-    canEditDocument.mockResolvedValue(true);
-    await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { presentation: null } }));
-    expect(db.setDocumentPresentation).toHaveBeenCalledWith({}, 'd1', null);
-  });
-
-  it('400s a deck past the size cap, without writing', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-    canEditDocument.mockResolvedValue(true);
-    const huge = 'x'.repeat(256 * 1024 + 1);
-    const res = await handleDocuments(
-      makeCtx('PUT', '/api/documents/d1', { body: { presentation: huge } }),
-    );
-    expect(res.status).toBe(400);
-    expect(db.setDocumentPresentation).not.toHaveBeenCalled();
   });
 
   it('404s an unknown id instead of create-on-first-write (ghost-row guard)', async () => {
@@ -656,19 +619,13 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
 });
 
 describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document/offline-mode.md)', () => {
-  // The offline record is deleted once the create succeeds, so the deck and
-  // folder have to arrive with it.
+  // The offline record is deleted once the create succeeds, so the folder
+  // has to arrive with it.
   const create = (body: Record<string, unknown>) =>
     handleDocuments(
       makeCtx('POST', '/api/documents', { body: { id: 'd1', name: 'Doc', ...body } }),
     );
   const stored = () => db.upsertDocumentMeta.mock.calls[0]![1] as Record<string, unknown>;
-
-  it('stores the deck it was sent', async () => {
-    db.getDocument.mockResolvedValue(null);
-    await create({ presentation: '{"decks":[]}' });
-    expect(stored().presentation).toBe('{"decks":[]}');
-  });
 
   it("keeps a folder that is the caller's own personal folder", async () => {
     db.getDocument.mockResolvedValue(null);
@@ -735,7 +692,6 @@ describe('a tab-scoped visitor', () => {
   const scopedDocument = () =>
     ({
       ...fakeDocument('owner-1'),
-      presentation: '{"slides":[]}',
       tabs: [
         { id: 't1', documentId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
         { id: 't2', documentId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
@@ -749,11 +705,10 @@ describe('a tab-scoped visitor', () => {
     resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
   });
 
-  it('gets the document with every other tab locked and no deck', async () => {
+  it('gets the document with every other tab locked', async () => {
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1', visitor));
     const body = (await res.json()) as { document: DocumentDTO };
     expect(body.document.tabs.map((t) => t.name)).toEqual(['', 'Roadmap']);
-    expect(body.document.presentation).toBeNull();
   });
 
   it("gets its tab's image as the thumbnail, never the first tab's", async () => {

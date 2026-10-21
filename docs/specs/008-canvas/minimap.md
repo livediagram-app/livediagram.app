@@ -59,8 +59,7 @@ lets you jump the viewport anywhere with a tap or drag.
   map's own background is the tab's resolved paper colour
   (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
   view darkens rather than greys on dark paper. A kind whose look depends on
-  the paper keeps that dependency in ONE shared value both renderers read
-  (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
+  the paper keeps that dependency in ONE shared value both renderers read, and a drift test
   (`svg-render-surface.test.ts`) fails if any kind without a stored fill
   paints a light base on dark paper. The Layers panel's previews follow the
   same rule.

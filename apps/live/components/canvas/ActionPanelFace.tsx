@@ -16,7 +16,7 @@ import {
   EmptyRows,
   LOUD_ACCENT,
   stopPointer,
-} from '@/components/canvas/collab/qa/qa-parts';
+} from '@/components/canvas/collab/collab-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 

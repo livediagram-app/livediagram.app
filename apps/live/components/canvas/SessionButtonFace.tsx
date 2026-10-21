@@ -2,11 +2,9 @@ import type { ReactNode } from 'react';
 // The pressable face of a Session button (docs/specs/012-collaboration/session-button.md): the tool's glyph over
 // what pressing it will do.
 //
-// Deliberately the Selection Mode button's twin — same tile, same chip, same
-// press-not-on-drag rule — because they are the same object with a different
-// payload: one hands YOU a mode, this one starts a tool for THE ROOM. The one
-// place they differ is that difference: the hover card says "everyone", and a
-// read-only visitor sees an inert face instead of a control that would do
+// A toolbar button's tile — an icon chip over a label, pressed only when not
+// dragged — that starts a tool for THE ROOM: the hover card says "everyone", and
+// a read-only visitor sees an inert face instead of a control that would do
 // nothing (starting a timer or a vote is edit-role, docs/specs/012-collaboration/session-tools.md).
 
 import {
@@ -18,14 +16,13 @@ import {
 } from '@liveplanner/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
-import { PollIcon, StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
+import { StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 
 const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   // The palette tile's glyph, so a placed button looks like the tile it came from.
   timer: <TimerIcon />,
   stopwatch: <StopwatchIcon />,
   vote: <VoteIcon />,
-  poll: <PollIcon />,
 };
 
 // What the face says when the author hasn't written their own label (@liveplanner/document, shared with the
@@ -36,7 +33,6 @@ const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',
   stopwatch: 'Counts up from zero for everyone, until you stop it.',
   vote: 'Starts a dot vote on this tab for everyone.',
-  poll: 'Opens this poll on everyone’s screen; answers are anonymous.',
 };
 
 const ICON_BOX = 'flex items-center justify-center [&>svg]:h-[22px] [&>svg]:w-[22px]';
@@ -48,7 +44,6 @@ export function SessionButtonFace({
   // False on a read-only surface (a view-role visitor, an embed): the face
   // renders inert and says why rather than looking live.
   canStart,
-  runBy = null,
   timerState = 'none',
   onPress,
   onSetConfig,
@@ -58,13 +53,10 @@ export function SessionButtonFace({
   label: string;
   textColor: string;
   canStart: boolean;
-  // Somebody else runs the session (docs/specs/012-collaboration/facilitator.md): the inert face names them, since
-  // the person reading it may well have edit access.
-  runBy?: string | null;
   timerState?: TimerState;
   onPress?: () => void;
   // Per-element settings from the button's own `…` menu (docs/specs/012-collaboration/session-button.md): the
-  // vote's dots, the poll's question and answers. Absent on a read-only
+  // timer's length, the vote's dots. Absent on a read-only
   // surface, where the trigger is not rendered.
   onSetConfig?: (next: SessionButtonConfig) => void;
   /** The way out of the quick settings to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
@@ -74,7 +66,6 @@ export function SessionButtonFace({
   const derived = sessionButtonText(plan, timerState);
   const text = label.trim();
   const press = usePressWithoutDrag(onPress);
-  const tool = plan?.tool ?? 'poll';
 
   const chipClass = `${ICON_BOX} h-9 w-9 shrink-0 rounded-full bg-black/[0.055] ring-1 ring-inset ring-black/[0.07] dark:bg-white/10 dark:ring-white/15`;
   // The face: the icon chip, then the label. The chip is passed in because
@@ -110,13 +101,12 @@ export function SessionButtonFace({
   );
   const inner = face(
     <span className={chipClass} style={{ color: textColor }} aria-hidden>
-      {TOOL_ICON[tool]}
+      {TOOL_ICON[plan.tool]}
     </span>,
   );
 
   // Shared by every state so a read-only render looks identical, minus the
-  // interaction. Untinted, like the Selection Mode button: the element's own
-  // fill is the button.
+  // interaction. Untinted: the element's own fill is the button.
   const layout =
     'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]';
 
@@ -126,31 +116,13 @@ export function SessionButtonFace({
   // for. What each one said is either already on the button's own face (it
   // states the tool and the setting) or in the element menu; the accessible
   // names below still carry it.
-  if (!plan) {
-    return (
-      <div
-        role="button"
-        aria-disabled
-        // Only a Choices poll can land here: every other answer style is
-        // startable the moment it has a question (see sessionButtonPlan).
-        aria-label="Poll not set up. Open Session to write at least two choices, or switch its answers to Yes / No."
-        className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
-      >
-        {inner}
-      </div>
-    );
-  }
   if (!onPress || !canStart) {
     const name = text || `${derived.kicker} ${derived.action}`;
     return (
       <div
         aria-disabled
         aria-label={`${name}. ${
-          canStart
-            ? TOOL_BLURB[plan.tool]
-            : runBy
-              ? `${runBy} is facilitating this session; ask them to start it.`
-              : 'Only people with edit access can start this.'
+          canStart ? TOOL_BLURB[plan.tool] : 'Only people with edit access can start this.'
         }`}
         className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
@@ -196,7 +168,7 @@ export function SessionButtonFace({
             style={{ color: textColor }}
             className={`${chipClass} pointer-events-auto cursor-pointer transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.1] sm:hover:ring-2 sm:hover:ring-black/15 dark:sm:hover:bg-white/20 dark:sm:hover:ring-white/25`}
           >
-            {TOOL_ICON[tool]}
+            {TOOL_ICON[plan.tool]}
           </button>,
         )}
       </span>

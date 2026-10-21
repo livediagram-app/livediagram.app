@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape, createText } from './factories';
 import { wrapLabel } from './svg-render-primitives';
-import { SELECTION_MODES } from './selection-mode';
-import { MODE_GLYPHS } from '@liveplanner/icons/mode-glyphs';
 import type { ShapeElement, Tab } from './index';
 
 // The Behaviour faces export the way the canvas draws them
@@ -29,61 +27,19 @@ describe('Behaviour face export', () => {
     );
   });
 
-  it('draws a vote, poll or stopwatch Session button as its tool and what pressing it does', () => {
+  it('draws a vote or stopwatch Session button as its tool and what pressing it does', () => {
     const vote = svgOf(shape('session-button', { session: { tool: 'vote', dots: 3 }, label: '' }));
     expect(vote).toContain('>START VOTE<');
     expect(vote).toContain('>3 dots each<');
     expect(vote.match(/<circle[^<>]*r="3"/g)).toHaveLength(3);
-    const poll = svgOf(
-      shape('session-button', {
-        session: { tool: 'poll', question: 'Ship it?', options: ['Yes', 'No'] },
-        label: '',
-      }),
-    );
-    expect(poll).toContain('>Ship it?<');
-    // The kicker names the shape of its answers.
-    expect(poll).toContain('>ASK · 2 OPTIONS<');
-    const yesNo = svgOf(
-      shape('session-button', {
-        session: { tool: 'poll', style: 'yesNo', question: 'Ship it?' },
-        label: '',
-      }),
-    );
-    expect(yesNo).toContain('>ASK · YES / NO<');
-    expect(poll).toContain('rx="1"');
     const watch = svgOf(shape('session-button', { session: { tool: 'stopwatch' }, label: 'Lap' }));
     expect(watch).toContain('>Lap<');
     expect(watch).toContain('r="10"');
   });
 
-  it('names an unlabelled Mode button by its destination', () => {
-    const svg = svgOf(shape('mode-button', { mode: 'laser', label: '' }));
-    expect(svg).toContain('>SWITCH TO<');
-    expect(svg).toContain('>Laser<');
-  });
-
   it('draws a portal as its lit ring when paired, and dim when not', () => {
     expect(svgOf(shape('portal', { portalTarget: 'x' }))).toContain('stop-opacity="0.95"');
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
-  });
-
-  it("draws a Reaction pad's emoji from its art when the caller has it, else as text", () => {
-    const pad = shape('reaction-pad', { reaction: 'applause', label: 'Applause' });
-    expect(svgOf(pad)).toMatch(/dominant-baseline="central"[^>]*>👏</);
-    const art = { viewBox: '0 0 36 36', markup: '<path d="M1 1"/>' };
-    const drawn = renderElementsToSvg(
-      { id: 't', name: 'T', elements: [pad] },
-      {
-        resolveEmojiArt: (g) => (g === '👏' ? art : undefined),
-      },
-    );
-    expect(drawn).toContain('viewBox="0 0 36 36"><path d="M1 1"/></svg>');
-    expect(drawn).not.toContain('>👏<');
-  });
-
-  it('draws a Reaction pad whose stored reaction this build does not know as the default one', () => {
-    const pad = shape('reaction-pad', { reaction: 'stardust' as never, label: 'Pad' });
-    expect(svgOf(pad)).toMatch(/>🎉</);
   });
 
   it('draws an arrow whose stored head shape this build does not know with the default head', () => {
@@ -109,40 +65,11 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('<polygon');
   });
 
-  it('puts a Reaction pad label in its chip', () => {
-    const svg = svgOf(shape('reaction-pad', { label: 'Applause' }));
-    expect(svg).toMatch(/fill-opacity="0.07"\/><text[^>]*font-size="10.5"[^>]*>Applause</);
-  });
-
-  it('covers a Reveal with the gesture chip, on the wrapper radius', () => {
-    const svg = svgOf(shape('reveal', { label: 'Answer' }));
-    expect(svg).toContain('>Double-click to reveal<');
-    expect(svg).toMatch(/rx="4" fill="#/);
-  });
-
-  it('prints a chair label under the seat', () => {
-    expect(svgOf(shape('chair', { label: 'Scribe' }))).toContain('>Scribe<');
-  });
-
   it('shades a Picker at both lips and offers Again once something landed', () => {
     const svg = svgOf(shape('picker', { label: 'Who?', pickerResult: 'Sam' }));
     expect(svg).toContain('linearGradient id="reel-el-picker"');
     expect(svg).toContain('>Sam<');
     expect(svg).toContain('>Again<');
-  });
-
-  it('writes a roll call with the stack, the chips and the Take Again bar', () => {
-    const at = Date.now();
-    const svg = svgOf(
-      shape('roll-call', {
-        rollCall: [
-          { name: 'Priya Kaur', color: '#db2777', at },
-          { name: 'Sam Lee', color: '#16a34a', at },
-        ],
-      }),
-    );
-    for (const s of ['>2<', '>PRESENT<', '>Priya Kaur<', '>Sam Lee<', '>Take Again<'])
-      expect(svg).toContain(s);
   });
 
   it('starts a page label under the masthead, and turns back its corner', () => {
@@ -164,16 +91,6 @@ describe('wrapLabel', () => {
 
   it('keeps an over-long word whole for an icon caption', () => {
     expect(wrapLabel('smartwatch', 50, (s) => s.length * 7)).toEqual(['smartwatch']);
-  });
-});
-
-describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', () => {
-  it('draws the mode’s own glyph from the shared data, not a placeholder ring', () => {
-    for (const mode of SELECTION_MODES) expect(MODE_GLYPHS[mode], mode).toBeDefined();
-    const el = { ...createShape('mode-button', 0, 0), mode: 'eraser' as const };
-    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
-    const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
-    expect(svg).toContain(eraser.d);
   });
 });
 

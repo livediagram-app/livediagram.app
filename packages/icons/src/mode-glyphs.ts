@@ -1,15 +1,8 @@
-// The selection-mode glyphs (docs/specs/009-elements/mode-button.md), as data: the ONE drawing of each mode that
-// the editor's palette and Mode button (through <Prims>) and the export (through
-// iconPrimsMarkup) all render, so an exported Mode button shows the same glyph
-// as the canvas. Keyed by the mode ids in @liveplanner/document's SELECTION_MODES
-// (a test there checks every mode has one), plus the Highlighter, a former mode whose
-// glyph its Draw tile kept; `units` is the glyph's viewBox.
+// The selection-mode glyphs (docs/specs/008-canvas/canvas-and-palette.md), as data: the ONE drawing of each
+// mode that the editor's palette renders (through <Prims>), plus the Highlighter, a former mode whose glyph its
+// Draw tile kept; `units` is the glyph's viewBox.
 
-import {
-  lucideFootprints,
-  lucidePaintRoller,
-  lucideSquareDashedMousePointer,
-} from './lucide.generated';
+import { lucidePaintRoller, lucideSquareDashedMousePointer } from './lucide.generated';
 import type { StyledPrim } from './types';
 
 export type ModeGlyph = { units: 16 | 24; prims: readonly StyledPrim[] };
@@ -29,30 +22,6 @@ export const MODE_GLYPHS: Record<string, ModeGlyph> = {
       },
     ],
   },
-  // A beam from the bottom-left to a glowing dot, three sparks round it.
-  laser: {
-    units: 16,
-    prims: [
-      { t: 'path', d: 'M2.5 13.5l8-8' },
-      { t: 'circle', cx: 11.5, cy: 4.5, r: 1.4, fill: true },
-      { t: 'path', d: 'M10 3.2l.7-1', sw: 1.2 },
-      { t: 'path', d: 'M12.8 3l1-.4', sw: 1.2 },
-      { t: 'path', d: 'M12.8 6l1 .4', sw: 1.2 },
-    ],
-  },
-  // A ring with a dot and four rays.
-  spotlight: {
-    units: 16,
-    prims: [
-      { t: 'circle', cx: 8, cy: 8, r: 3.2 },
-      { t: 'circle', cx: 8, cy: 8, r: 1, fill: true },
-      { t: 'path', d: 'M8 1.5v2' },
-      { t: 'path', d: 'M8 12.5v2' },
-      { t: 'path', d: 'M1.5 8h2' },
-      { t: 'path', d: 'M12.5 8h2' },
-    ],
-  },
-  avatar: { units: 24, prims: lucideFootprints },
   // A tilted block eraser sitting on the canvas line.
   eraser: {
     units: 16,

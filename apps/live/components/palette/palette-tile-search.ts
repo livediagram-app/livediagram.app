@@ -60,9 +60,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return shapeSig(
         a.kind,
         a.session ??
-          a.reaction ??
-          a.mode ??
-          a.estimateScale ??
           a.variant ??
           (a.kind === 'plan-view' ? a.plan : undefined),
       );
@@ -103,7 +100,7 @@ export function elementSignature(el: Element): string {
     case 'shape':
       return shapeSig(
         el.shape,
-        el.session?.tool ?? el.reaction ?? el.mode ?? el.estimateScale ?? el.planView?.view,
+        el.session?.tool ?? el.planView?.view,
       );
     case 'sticky':
       return `sticky:${el.esKind ?? ''}`;

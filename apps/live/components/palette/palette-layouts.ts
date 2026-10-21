@@ -394,7 +394,6 @@ const WORKSHOP: PaletteLayout = {
         'open:collab-ask',
         'open:collab-tools',
         'open:collab-record',
-        'open:collab-react',
       ],
     },
     { id: 'shapes' },
@@ -420,8 +419,6 @@ const WORKSHOP: PaletteLayout = {
     { id: 'collab-ask' },
     { id: 'collab-tools' },
     { id: 'collab-record' },
-    { id: 'collab-react' },
-    { id: 'collab-mode' },
     { id: 'collab-navigate' },
     // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
     // which a session does not stop to draw.

@@ -41,8 +41,6 @@ type DocumentRow = {
   team_id: string | null;
   // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'ai' / 'mcp' = generated.
   source: string | null;
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
-  presentation: string | null;
   // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
   item_types: string | null;
   item_types_rev?: number;
@@ -96,7 +94,6 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentDTO['source']) ?? null,
-    presentation: row.presentation ?? null,
     itemTypes: readItemTypeCatalogue(row.item_types ?? null),
     itemTypesRev: row.item_types_rev ?? 0,
     savedAt: row.saved_at,
@@ -115,10 +112,9 @@ const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
 // `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}`;
-// The list projection deliberately omits `presentation`: listing 100 documents
-// has no use for 100 decks, and a deck is the one metadata field whose size
-// grows with the document.
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+// The list projection deliberately omits `item_types`: listing 100 documents
+// has no use for 100 catalogues.
 export const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
@@ -269,9 +265,7 @@ export async function upsertDocumentMeta(
   // `source` (provenance, docs/specs/013-workspace/folders.md) is written on INSERT but deliberately
   // absent from the DO UPDATE SET, so it's set once at create time and
   // never rewritten by a later metadata upsert (rename / autosave / move).
-  // `presentation` likewise: a create carries the deck an Offline Mode sync
-  // built (docs/specs/006-document/offline-mode.md); after that only
-  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy
+  // `item_types` likewise: a create carries the catalogue a copy
   // or a sync brings (docs/specs/026-plan/item-types.md); after that only
   // setDocumentItemTypes writes it.
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
@@ -280,8 +274,8 @@ export async function upsertDocumentMeta(
   // `opens_in`, `tab_kind` and `template_family` are the recorded creation intent, written here once
   // and never by the DO UPDATE, so nothing after the create re-derives or rewrites them.
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -295,7 +289,6 @@ export async function upsertDocumentMeta(
       d.folderId,
       d.teamId ?? null,
       d.source ?? null,
-      d.presentation ?? null,
       d.itemTypes ? JSON.stringify(d.itemTypes) : null,
       d.savedAt,
       d.createdAt,
@@ -306,23 +299,8 @@ export async function upsertDocumentMeta(
     .run();
 }
 
-// Slide deck write (docs/specs/012-collaboration/presentation-mode.md). Its OWN statement rather than a field on
-// upsertDocumentMeta, for the same reason folder / team placement has one: the
-// meta upsert runs on every rename and autosave, and a deck must never be
-// rewritten by a caller that was not thinking about the deck. Passing null
-// clears it, which is what the client sends when the last slide is deleted.
-export async function setDocumentPresentation(
-  env: Env,
-  id: string,
-  presentation: string | null,
-): Promise<void> {
-  await env.DB.prepare(`UPDATE documents SET presentation = ?, saved_at = ? WHERE id = ?`)
-    .bind(presentation, Date.now(), id)
-    .run();
-}
-
 // Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
-// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
+// folder / team placement has one, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
 // default types. Raises the catalogue's revision; with `expectedRev` it lands only while the stored
 // revision is that one. Returns the new revision, or null when the stored one had moved on.
 export async function setDocumentItemTypes(

@@ -129,11 +129,9 @@ const join = (r: DocumentRoom, ws: Socket, tabScope: string | null, code: string
   r.acceptSession(
     ws as unknown as WebSocket,
     'view',
-    false,
     tabScope,
     code,
     false,
-    null,
     null,
     null,
     null,

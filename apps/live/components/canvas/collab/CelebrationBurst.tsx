@@ -1,10 +1,7 @@
-// A one-off burst of confetti from the centre of whatever holds it: the Done
-// check's ring completing (docs/specs/012-collaboration/done-check.md) and an Action panel's action
-// being marked complete (docs/specs/012-collaboration/action-panel.md). The host decides WHEN (only for a
-// change seen on screen, never for a card that loaded already complete); this
-// is only the look, so both celebrations are the same celebration. The
-// `.done-burst` keyframes live in app/qa-board.css and collapse under reduced
-// motion with everything else there.
+// A one-off burst of confetti from the centre of whatever holds it: an Action panel's action being marked
+// complete (docs/specs/012-collaboration/action-panel.md). The host decides WHEN (only for a change seen on
+// screen, never for a card that loaded already complete); this is only the look. The `.collab-burst` keyframes
+// live in app/collab-cards.css and collapse under reduced motion with everything else there.
 
 import type { CSSProperties } from 'react';
 
@@ -29,7 +26,7 @@ export function CelebrationBurst() {
       {PARTICLES.map(([deg, color], i) => (
         <span
           key={i}
-          className="done-burst absolute h-1.5 w-1.5 rounded-full"
+          className="collab-burst absolute h-1.5 w-1.5 rounded-full"
           style={
             {
               backgroundColor: color,

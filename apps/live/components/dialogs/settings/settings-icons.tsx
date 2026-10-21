@@ -12,7 +12,6 @@ import type { ReactNode } from 'react';
 import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@liveplanner/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@liveplanner/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 // The categories that carry a tile: every top-level one. A sub-category
 // (one per panel under Panels, one per mode under Editor, Notifications and
@@ -33,7 +32,6 @@ export type SettingsIconId =
 export type SettingsSubcategoryId =
   | 'draw'
   | 'pages'
-  | 'presenting'
   | 'layers'
   | 'map'
   | 'collaborate'
@@ -213,7 +211,6 @@ const PagesSubGlyph = EDITOR_MODE_ICONS.pages;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
   pages: () => <PagesSubGlyph size={16} />,
-  presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,

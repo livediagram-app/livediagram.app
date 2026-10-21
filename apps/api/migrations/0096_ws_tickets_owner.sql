@@ -1,4 +1,4 @@
--- Room tickets carry the owner bit (docs/specs/012-collaboration/facilitator.md "Who may take it";
+-- Room tickets carry the owner bit (the facilitator baton's "Who may take it";
 -- docs/specs/015-api/api.md "Realtime model"). Every editor now joins its room through a ticket, so the
 -- `X-Verified-Owner` bit the facilitator baton needs ("the owner can always take it back") has to ride the
 -- ticket: before this, only a bare `?o=` upgrade could set it, and a signed-in owner (who always rode a ticket)

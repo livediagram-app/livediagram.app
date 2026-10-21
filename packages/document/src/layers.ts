@@ -3,7 +3,6 @@
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
 import { eventStormingKindOf } from './event-storming';
-import { isFloorShape } from './office';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -65,21 +64,17 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 }
 
 // The paint tier of an element within its band, back to front:
-// - frames, and an office's rooms and rugs, are backdrops that paint below their band-mates
+// - frames are backdrops that paint below their band-mates
 //   (docs/specs/008-canvas/canvas-and-palette.md), the larger first;
 // - event-storming actors sit in front of every other note, and hotspots in
 //   front of actors (docs/specs/021-event-storming/event-storming.md Phase 4).
 // Array order decides within a tier.
 function paintTier(el: Element): number {
-  // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"), and so are an office's
-  // floors (docs/specs/009-elements/office.md): a room and a rug lie under the furniture however they were added (drawn
-  // to size, pasted, by an agent), and the larger paints first, so a rug lies on its room's floor.
+  // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"): they lie under their
+  // band-mates however they were added (drawn to size, pasted, by an agent), and the larger paints first.
   if (
     el.type === 'shape' &&
-    (el.shape === 'frame' ||
-      el.shape === 'boundary' ||
-      el.shape === 'stack' ||
-      isFloorShape(el.shape))
+    (el.shape === 'frame' || el.shape === 'boundary' || el.shape === 'stack')
   )
     return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a

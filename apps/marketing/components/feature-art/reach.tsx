@@ -1,10 +1,8 @@
 // Feature illustrations for getting around and getting it out: the search panel that doubles as a
-// command palette, following a teammate's view, and a document shown live somewhere else (an embed
+// command palette, and a document shown live somewhere else (an embed
 // or a live image in a README). Panels use the editor's floating chrome; diagrams the Default ink.
 
-import type { CSSProperties } from 'react';
 
-import { TEAMMATE, YOU } from '@/components/art-tokens';
 import {
   ARROW,
   Caret,
@@ -18,16 +16,16 @@ import {
   TEXT_MUTED,
   TEXT_STRONG,
 } from './canvas-marks';
-import { Cursor, Frame, MONO } from './shared';
+import { Frame, MONO } from './shared';
 
 // The search panel: "lay" typed after ⌘K, a matching tab and element above, then the Actions group
-// with Auto Layout and the Laser Pointer tool, the first action highlighted to run on Enter.
+// with Auto Layout and the Eraser tool, the first action highlighted to run on Enter.
 export function SearchPaletteArt() {
   const rows = [
     { group: 'Tabs', label: 'Layout ideas', hint: 'Tab' },
     { group: 'Actions', label: 'Auto Layout', hint: '↵', active: true },
     { group: '', label: 'Auto-align to Grid', hint: '' },
-    { group: '', label: 'Laser Pointer', hint: 'Tool' },
+    { group: '', label: 'Eraser Tool', hint: 'Tool' },
   ];
   return (
     <Frame canvas>
@@ -98,71 +96,6 @@ export function SearchPaletteArt() {
             </g>
           );
         })}
-      </Scene>
-    </Frame>
-  );
-}
-
-// Follow along: your view (the frame) gliding to where a teammate is looking, their cursor on the
-// shape they mean, and the Following pill at the top of your canvas.
-export function FollowAlongArt() {
-  return (
-    <Frame canvas>
-      <Scene>
-        <rect className={INK} x="22" y="30" width="46" height="24" rx="3" strokeWidth="1" />
-        <text className={INK_TEXT} x="45" y="44.6" fontSize="6.2" textAnchor="middle">
-          Sign up
-        </text>
-        <line className={ARROW} x1="68" x2="98" y1="42" y2="42" strokeWidth="1" />
-        <path className="fill-(--art-arrow)" d="M102 42 l-4.6 -2.7 v5.4z" />
-        <rect className={INK} x="102" y="30" width="46" height="24" rx="3" strokeWidth="1" />
-        <text className={INK_TEXT} x="125" y="44.6" fontSize="6.2" textAnchor="middle">
-          Verify
-        </text>
-        <line className={ARROW} x1="148" x2="196" y1="42" y2="58" strokeWidth="1" />
-        <path className="fill-(--art-arrow)" d="M200 59.4 l-5.3 -0.4 l1.7 -5.1z" />
-        <rect className={INK} x="200" y="50" width="56" height="26" rx="3" strokeWidth="1" />
-        <text className={INK_TEXT} x="228" y="65.4" fontSize="6.2" textAnchor="middle">
-          Retry email
-        </text>
-        {/* Your view, following theirs across the canvas. */}
-        <g className="fa-d-move" style={{ '--fx': '-150px', '--fy': '-14px' } as CSSProperties}>
-          <rect
-            x="184"
-            y="36"
-            width="96"
-            height="52"
-            rx="4"
-            fill="none"
-            stroke={YOU}
-            strokeWidth="1.2"
-            strokeDasharray="4 2.5"
-          />
-          <g transform="translate(244 66)">
-            <Cursor color={TEAMMATE} name="Maya" />
-          </g>
-        </g>
-        {/* The Following pill. */}
-        <g className={SHADOW}>
-          <rect className={PANEL} x="96" y="6" width="108" height="15" rx="7.5" strokeWidth="0.8" />
-        </g>
-        <circle cx="106" cy="13.5" r="4" fill={TEAMMATE} />
-        <text x="106" y="15.4" fontSize="4.6" fontWeight="700" fill="#fff" textAnchor="middle">
-          M
-        </text>
-        <text className={TEXT_STRONG} x="113" y="15.6" fontSize="6">
-          Following Maya
-        </text>
-        <text
-          className="fill-brand-700 dark:fill-brand-300"
-          x="196"
-          y="15.6"
-          fontSize="6"
-          fontWeight="700"
-          textAnchor="end"
-        >
-          Stop
-        </text>
       </Scene>
     </Frame>
   );

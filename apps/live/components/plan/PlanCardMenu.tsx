@@ -1,7 +1,7 @@
 'use client';
 
 // A board card's right-click menu (docs/specs/026-plan/plan-board.md "Working on a board"): Open,
-// Duplicate, Add to Slides, Move to another column, Flag (or Remove Flag),
+// Duplicate, Move to another column, Flag (or Remove Flag),
 // Archive (or Restore), and Trash. Someone who
 // may only view gets Open alone; a Participant gets Open, Duplicate, Move to and Flag, as the item panel's menu gives it. Built on the shared ContextMenu, so it opens at the click, re-clamps to
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
@@ -9,7 +9,6 @@ import type { SyntheticEvent } from 'react';
 import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@liveplanner/ui';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { ContextMenu } from '@/components/palette/ContextMenu';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { isArchived, isFlagged, itemTitle, type PlanBoardSetup } from '@liveplanner/items';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { duplicateItem } from './duplicate-item';
@@ -32,7 +31,6 @@ export function PlanCardMenu({
   onDuplicate,
   onMove,
   onTrash,
-  onAddSlide,
   onEditType,
   archived = false,
   onArchive,
@@ -46,7 +44,7 @@ export function PlanCardMenu({
   title: string;
   // Works on the card: an Editor or a Participant (docs/specs/013-workspace/share-roles.md).
   canEdit: boolean;
-  // Add to Slides, Edit Card Type, Archive and Trash: an Editor's alone. Absent: as canEdit.
+  // Edit Card Type, Archive and Trash: an Editor's alone. Absent: as canEdit.
   canRetire?: boolean;
   // The board's other columns, to move the card to.
   columns: readonly { status: string; name: string; color?: string }[];
@@ -55,8 +53,6 @@ export function PlanCardMenu({
   onMove: (status: string) => void;
   // Moves the card to the Trash (docs/specs/026-plan/items.md "Trash"), where it can be restored.
   onTrash: () => void;
-  // The card as a slide of the deck; absent where there is no deck.
-  onAddSlide?: () => void;
   // Opens the card's type in the type editor (docs/specs/026-plan/plan-board.md "Card menu").
   onEditType?: () => void;
   // Archive (or, for an archived card, Restore): kept, but off every board but an Archive board.
@@ -94,14 +90,6 @@ export function PlanCardMenu({
               icon={<DuplicateIcon />}
               onClick={act(onDuplicate)}
             />
-            {canRetire && onAddSlide ? (
-              <MenuActionRow
-                plain
-                label="Add to Slides"
-                icon={<SlideDeckIcon />}
-                onClick={act(onAddSlide)}
-              />
-            ) : null}
             {canRetire && onEditType ? (
               <MenuActionRow
                 plain
@@ -191,14 +179,6 @@ export function PlanCardMenuHost({
         .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
       onEditType={() => plan.editType({ id: item.type })}
-      {...(plan.addItemSlide
-        ? {
-            onAddSlide: () => {
-              plan.addItemSlide?.(item.id);
-              plan.announce('Card added to the slides');
-            },
-          }
-        : {})}
       onDuplicate={() => duplicateItem(plan, item)}
       onMove={(to) => {
         plan.moveItem(item.id, { status: to, before: null });

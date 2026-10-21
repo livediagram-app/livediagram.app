@@ -51,7 +51,7 @@ with a browser could fill these in; nothing below depends on them.
 1. **Running is a hat, not a rank.** Lucid makes it a self-assigned role gated on edit and share; Parabol lets any
    member take it; Miro lets the owner narrow who may start tools, while everyone may use them. Nobody models the
    facilitator as a fourth access level. liveplanner's baton
-   ([Facilitator](../../specs/012-collaboration/facilitator.md)) is already this pattern.
+   (Facilitator) is already this pattern.
 2. **Two families answer "who takes part" differently.** Canvas tools tie it to the document role, and when they
    want an audience they **widen the role temporarily** (FigJam's open session). Audience tools detach it from the
    document altogether: a code gets you into the activity, not the board (Mentimeter, Slido, Kahoot, Miro Engage).
@@ -74,7 +74,7 @@ write, and they disagree in effect though each is coherent on its own:
 
 - **Presence-class ops** relay from any role (`PRESENCE_OP_KINDS`, `packages/api-schema/src/room-messages.ts`).
   `poll-answer` was placed there on purpose, because "audiences are usually on view links"
-  ([Live poll](../../specs/012-collaboration/live-poll.md#roles)).
+  (Live poll).
 - **Mutation-class ops** relay only from `edit` (`apps/api/src/document-room.ts:663`). A dot (`vote`) and every
   `el-delta` (estimate, temperature, Done check, quiz pick, idea) are mutations, so a viewer cannot cast them
   ([Session tools](../../specs/012-collaboration/session-tools.md#roles),
@@ -139,12 +139,12 @@ Applied to every tool:
 Three cases worth stating, because they test the rule:
 
 - **A Q&A note is participation, not a comment.** It answers the board's question, is bounded by the board, is
-  run by the facilitator, and can be anonymous ([Q&A board](../../specs/012-collaboration/qa-board.md)). A comment
+  run by the facilitator, and can be anonymous (Q&A board). A comment
   is none of those.
 - **A checklist tick is editing.** It is one shared value anybody can flip, not one person's answer; it already
   rides an edit-only delta and the share-roles blueprint keeps it there.
 - **The reaction pad and Bring Focus are viewing.** They persist nothing. Bring Focus becomes facilitation only
-  while a baton is held ([Facilitator](../../specs/012-collaboration/facilitator.md#two-elements-this-changes)).
+  while a baton is held (Facilitator).
 
 ## 4. Abuse cases, measured against today's code
 
@@ -163,7 +163,7 @@ holds today and what a Participant level would expose.
    view link can therefore cast a thousand answers today. The same claimed-key weakness applies to dots and
    responses once participants may send them.
 3. **Identity rotation on the Q&A board.** The Q&A voter id is a hash of the caller's owner id
-   ([Q&A board](../../specs/012-collaboration/qa-board.md)). A guest can obtain a fresh id from `POST /api/guest-id`, so
+   (Q&A board). A guest can obtain a fresh id from `POST /api/guest-id`, so
    upvotes are one per browser identity, not one per person, and the per-owner write limiter keys on that same id
    ([API app, Rate limiting](../../specs/015-api/api.md#rate-limiting)). That is the honest limit every per-browser
    product has (pattern 5 above); it is worth bounding, not pretending away.
@@ -174,8 +174,8 @@ holds today and what a Participant level would expose.
    compared with Kahoot or Slido, is **removing one participant** without revoking everybody's link. A true Viewer
    level (looks only) shrinks the blast radius of a leaked look-only link to nothing writable.
 5. **Anonymity is against the room, not the wire.** Polls say "not shown against names", never "anonymous", because
-   the relay carries the sender's presence id ([Live poll](../../specs/012-collaboration/live-poll.md#anonymity--what-is-and-isnt-guaranteed));
-   the idea box's `el` op carries `from` ([Idea box](../../specs/012-collaboration/idea-box.md#the-limit-stated-plainly)).
+   the relay carries the sender's presence id (Live poll);
+   the idea box's `el` op carries `from` (Idea box).
    Slido, by contrast, states its anonymous mode is "truly anonymous"
    ([Participant privacy](https://community.slido.com/setting-up-a-slido-event-82/participant-privacy-set-anonymous-or-named-questions-and-poll-votes-by-default-1609)).
    Nothing about levels changes this; it should not be promised more strongly when participation widens.
@@ -187,7 +187,7 @@ holds today and what a Participant level would expose.
 ### Two constraints that shape the design
 
 - **The room does not know who anybody is**, deliberately
-  ([Facilitator](../../specs/012-collaboration/facilitator.md#the-constraint-that-shapes-this)). "One answer per
+  (Facilitator). "One answer per
   person" can only ever mean one per browser key. The cheapest real guard is to **pin the collab key to the socket**
   at `hello` and refuse any `vote`, `response` delta or `poll-answer` whose key differs. One socket then speaks for
   one key, so stuffing needs one admitted socket per ballot, each through a share code, a ticket and the rate caps.

@@ -18,15 +18,13 @@ describe('isRoomOpRef', () => {
 
 // The room's participation class (docs/specs/013-workspace/share-roles.md "Integrity").
 describe('isParticipationOp', () => {
-  it('admits a dot, a response and an idea', () => {
+  it('admits a dot and a response', () => {
     expect(
       isParticipationOp({ kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta: 1 }),
     ).toBe(true);
-    for (const kind of ['response', 'idea']) {
-      expect(
-        isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind } }),
-      ).toBe(true);
-    }
+    expect(
+      isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind: 'response' } }),
+    ).toBe(true);
   });
 
   it('refuses every other mutation and anything malformed', () => {

@@ -134,7 +134,7 @@ describe('set', () => {
       code: 'invalid_value',
       operation: 1,
       details: ['commentThread=[]: people change it, not edit operations'],
-      hint: "comments go through the comment commands; responses and ideas are people's",
+      hint: "comments go through the comment commands; responses are people's",
     });
   });
 

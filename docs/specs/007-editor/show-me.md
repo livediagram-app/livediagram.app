@@ -1,8 +1,8 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-demand cousin of the mode tours (the [Diagram tour](editor-tour.md), the
-[Plan tour](../026-plan/plan-tour.md) and the [Workshop tour](../012-collaboration/workshop-tour.md)), which
+the **Show Me** button. It is the on-demand cousin of the mode tours (the [Diagram tour](editor-tour.md) and the
+[Plan tour](../026-plan/plan-tour.md)), which
 offer themselves once; Show Me never offers itself. It exists for surfaces where people make something real in
 several steps whose ideas are not visible at a glance, and where a tour that offered itself would come at the
 wrong moment. An [element tour](element-tours.md) sits between the two: it offers itself, but quietly, from a small
@@ -14,7 +14,7 @@ toolbar beside a selected element.
 | ------------------- | ------------------------------------------------------------------------------------------ |
 | **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                 |
 | **Show Me surface** | A surface that carries a Show Me button (the list below)                                   |
-| **mode tour**       | One of the tours that offer themselves once, in a mode (Diagram, Plan, Workshop); not this |
+| **mode tour**       | One of the tours that offer themselves once, in a mode (Diagram, Plan); not this |
 
 ## Where it lives
 

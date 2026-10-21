@@ -7,7 +7,7 @@ shows the spread and the average as the answers land.
 
 ## Why
 
-"How does everyone feel about this?" is the cheapest facilitation move there
+"How does everyone feel about this?" is the cheapest move in a session there
 is, and on a shared canvas it currently has no home. The rating element
 ([Rating](../009-elements/rating.md)) looks like the answer and is not: it is **one** score that **one**
 person sets, and the next person to touch it overwrites the first. A dot-vote
@@ -26,21 +26,15 @@ A **shape kind**, `temperature`, on the response primitive
 
 ## It is deliberately never hidden
 
-The opposite choice from the estimate card ([Estimate card](estimate-card.md)),
-which hides answers until a reveal. Both choices are right for their instrument:
-
-- An **estimate** is a commitment, and seeing someone else's first ruins it.
-- A **temperature check** is a reading of the room, and watching the bars move
-  as people answer IS the information. It shows a facilitator when the room has
-  finished answering, and it shows a dissenter that they are not alone before
-  they have to say so out loud.
-
-So there is no `responsesRevealed` on this kind, and no control to add one.
+A **temperature check** is a reading of the room, and watching the bars move as people answer IS
+the information. It shows whoever runs the session when the room has finished answering, and it
+shows a dissenter that they are not alone before they have to say so out loud. So there is no
+hiding answers until a reveal, and no control to add one.
 
 ## The face
 
 Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit
-is being retired; the [Q&A board](qa-board.md) and [Idea box](idea-box.md) set the look): a flat card, no printed
+is being retired for a flat, accent-lit look): a flat card, no printed
 instrument, and motion that says something happened. It replaced a row of numbered chips over a
 graduated gauge plate.
 
@@ -61,10 +55,8 @@ graduated gauge plate.
   last, so a reading of 4 sits directly under the 4, and a 1 or a 5 rests on the track's end
   inside the card. Under it, the average to one decimal, large, with the respondent count.
 - **A new reading.** Once anyone has answered, the card's own `…` offers **Reset Answers** (beside
-  the way into the element's settings), which clears every answer into a new round, the same
-  `clearResponses` the Done check's Reset Everyone and the estimate's New round use. Like them it
-  runs the room, so it is the facilitator's ([Facilitator](facilitator.md)), and absent for a
-  view-role visitor. With nothing to reset the card shows the shared settings `…` instead.
+  the way into the element's settings), which clears every answer into a new round, through
+  `clearResponses`. It is absent for a view-role visitor. With nothing to reset the card shows the shared settings `…` instead.
 - **Empty** says "No readings yet" and "Tap the face that fits" over a quiet track with no marker,
   rather than drawing an average of zero, which would read as a very unhappy room.
 
@@ -75,4 +67,4 @@ live in `@liveplanner/document` (`TEMPERATURE_COLORS`, `TEMPERATURE_MOODS`), so 
 same card: the five faces over their numbers (`TEMPERATURE_FACE_MOUTHS`, shared with the canvas), the bars, the gradient track and the average. Everything else
 is `tint()` of the element's own colours, so the card holds on any theme and in either appearance,
 and every motion collapses under reduced motion. Its durations are canvas motion, so they live in
-`qa-board.css` beside the Q&A board's ([Motion](../004-interface-design/motion.md)), not in component classes.
+a stylesheet with the other card motion ([Motion](../004-interface-design/motion.md)), not in component classes.

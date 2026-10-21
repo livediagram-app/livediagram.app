@@ -136,13 +136,9 @@ type TabBarProps = {
   // when the participant id matches `selfId`.
   selfId: string;
   selfRole: AccessLevel;
-  // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
-  // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
+  // The Collaborators modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md).
   // Optional: a surface with no room behind it leaves the avatars as plain
   // presence indicators.
-  followingId?: string | null;
-  // How many people follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), on our own avatar.
-  followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
 };
 
@@ -171,8 +167,6 @@ export function TabBar({
   participantsByTab,
   selfId,
   selfRole,
-  followingId,
-  followerCount,
   onOpenCollaborators,
   onOpenSettings,
   onOpenSearch,
@@ -225,7 +219,7 @@ export function TabBar({
     locked: tab.locked === true,
     // A Plan tab's cards are its document's items: it is not added to another document
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-    planTab: hasPlanContent(tab.elements, null),
+    planTab: hasPlanContent(tab.elements),
     dataRows: tabDataRows(tab),
     selfId,
     otherDocuments,
@@ -292,8 +286,6 @@ export function TabBar({
     participantsByTab,
     selfId,
     selfRole,
-    followingId,
-    followerCount,
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
@@ -379,8 +371,6 @@ export function TabBar({
                 participantsByTab={participantsByTab}
                 selfId={selfId}
                 selfRole={selfRole}
-                followingId={followingId}
-                followerCount={followerCount}
                 onOpenCollaborators={onOpenCollaborators}
               />
             ),

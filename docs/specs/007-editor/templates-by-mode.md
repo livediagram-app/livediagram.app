@@ -197,7 +197,7 @@ one device, each named for its screen and laid out from a wireframe layout:
 
 ## Workshop templates
 
-Session formats open in Workshop ([Workshop mode](../012-collaboration/workshop-mode.md#templates)),
+Session formats open in Workshop,
 so the Collaborate kit and the Session strip are there when the session starts. Their content is
 unchanged; only the mode they open in moved from Diagram.
 
@@ -221,18 +221,11 @@ unchanged; only the mode they open in moved from Diagram.
   template**: a note per voice is the room's work. SWOT, Empathy Map and User Journey moved from Diagram for it; a
   Diagram template may still carry a sticky or two as an annotation (Family Tree, Flywheel, Sequence Diagram) and
   stays a diagram. Event Storming is its own kind of tab and keeps its own mode.
-- The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
-  (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
-  round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
-- The **Quizzes & Games** group, after Spaces: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions**
-  (`icebreaker-questions`), **Two Truths and a Lie** (`two-truths-and-a-lie`), **Would You Rather**
-  (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Quizzes, icebreakers and games to warm up
-  the room." ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
 
 ## Testing
 
 - Every template's mode equals the mode its overrides open it in (`templates.test.ts`).
-- Every template carrying a session tool (timer, vote, poll) opens in Workshop (`templates.test.ts`).
+- Every template carrying a session tool (timer, vote) opens in Workshop (`templates.test.ts`).
 - Every Popular list starts with its mode's blank and holds only that mode's templates (`popular.test.ts`).
 - Every category holds a template in at least one mode (`template-categories.test.ts`).
 - A card found from another mode's start shows "Opens in <Mode>" (`StartPanel.test.tsx`).

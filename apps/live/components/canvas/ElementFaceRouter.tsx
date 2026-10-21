@@ -5,16 +5,13 @@ import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveplanner/document';
 import {
-  DEFAULT_BUTTON_MODE,
   PADDING_PX,
-  reactionOf,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
   carriesSharedSettingsMenu,
   elementKindLabel,
   isCollabPanelShape,
-  ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
   isChipShape,
@@ -37,14 +34,9 @@ import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
-import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
-import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
-import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
-import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
-import { RevealFace } from '@/components/canvas/RevealFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
 import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
@@ -63,7 +55,7 @@ import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
+// Tables and collaboration panels are on few boards, so their faces load on demand; their code is fetched
 // as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
 const TableView = dynamic(loadTableView, { ssr: false });
 const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
@@ -72,8 +64,7 @@ const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
 //
 // One exclusive chain, ordered from the most specific face to the plain
 // label at the end. Nearly every branch is an element kind that draws its own
-// interactive face — a mode button, a session timer, a reveal cover, a picker,
-// a collaboration panel — and each one falls through to the ordinary label
+// interactive face — a session timer, a picker, a collaboration panel — and each one falls through to the ordinary label
 // editor while `isEditing`, so the title on a face is retyped exactly like the
 // label on a square.
 //
@@ -90,7 +81,6 @@ type ElementFaceRouterProps = Pick<
   | 'readOnly'
   | 'writable'
   | 'fontFamily'
-  | 'activeMode'
   | 'collab'
   | 'commentActions'
   | 'commentSelfId'
@@ -102,15 +92,10 @@ type ElementFaceRouterProps = Pick<
   | 'timerControls'
   | 'timerState'
   | 'sessionStartBlocked'
-  | 'sessionRunBy'
-  | 'revealedForMe'
   | 'onCommitTable'
   | 'onEnterPortal'
-  | 'onFireReaction'
   | 'onFollowLink'
   | 'onLinkCell'
-  | 'onPressModeButton'
-  | 'onPressFocusButton'
   | 'onPressSessionButton'
   | 'onRollPicker'
   | 'onSetPageHeading'
@@ -118,7 +103,6 @@ type ElementFaceRouterProps = Pick<
   | 'onSetHeroCaptionLine'
   | 'onSetSessionConfig'
   | 'onOpenElementSettings'
-  | 'onToggleReveal'
 > & {
   // Derived once by the host and shared with the branches here, rather than
   // recomputed per branch: several of them render the same label node.
@@ -150,7 +134,6 @@ export function ElementFaceRouter({
   readOnly,
   writable = true,
   fontFamily,
-  activeMode,
   collab,
   commentActions,
   commentSelfId,
@@ -162,15 +145,10 @@ export function ElementFaceRouter({
   timerControls,
   timerState,
   sessionStartBlocked,
-  sessionRunBy,
-  revealedForMe,
   onCommitTable,
   onEnterPortal,
-  onFireReaction,
   onFollowLink,
   onLinkCell,
-  onPressModeButton,
-  onPressFocusButton,
   onPressSessionButton,
   onRollPicker,
   onSetPageHeading,
@@ -178,7 +156,6 @@ export function ElementFaceRouter({
   onSetHeroCaptionLine,
   onSetSessionConfig,
   onOpenElementSettings,
-  onToggleReveal,
   label,
   labelNode,
   contentInset,
@@ -224,25 +201,7 @@ export function ElementFaceRouter({
   return (
     <>
       {settingsMenu}
-      {/* Mode button (docs/specs/009-elements/mode-button.md): a pressable face instead of a plain label —
-          the mode's glyph plus the author's call to action. Mid-edit it falls
-          through to the normal label editor below, so the text is retyped like
-          any other shape's. */}
-      {element.type === 'shape' && element.shape === 'mode-button' && !isEditing ? (
-        <ModeButtonFace
-          mode={element.mode ?? DEFAULT_BUTTON_MODE}
-          label={label}
-          activeMode={activeMode}
-          textColor={textColor}
-          // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
-          onPress={
-            onPressModeButton &&
-            (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))
-              ? () => onPressModeButton(element)
-              : undefined
-          }
-        />
-      ) : element.type === 'shape' &&
+      {element.type === 'shape' &&
         element.shape === 'session-button' &&
         element.session?.tool === 'timer' &&
         !isEditing &&
@@ -256,7 +215,6 @@ export function ElementFaceRouter({
           timer={tabTimer ?? null}
           durationMs={(element.session.minutes ?? 5) * 60_000}
           readOnly={!timerControls.pause}
-          runBy={sessionRunBy ?? null}
           borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           onStart={
             onPressSessionButton && !sessionStartBlocked
@@ -284,13 +242,12 @@ export function ElementFaceRouter({
           }
         />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
-        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote / poll for the room. */
+        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote or a stopwatch for the room. */
         <SessionButtonFace
           config={element.session}
           label={label}
           textColor={textColor}
           canStart={!!onPressSessionButton && !sessionStartBlocked}
-          runBy={sessionRunBy ?? null}
           timerState={timerState}
           onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
           onSetConfig={
@@ -301,26 +258,6 @@ export function ElementFaceRouter({
           onOpenSettings={
             onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
           }
-        />
-      ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
-        /* Bring Focus (docs/specs/012-collaboration/bring-focus.md): asks everyone else in the room to come and
-           look at this, on your tab. */
-        <FocusButtonFace
-          label={label}
-          textColor={textColor}
-          onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
-        />
-      ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
-        /* Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover, off for me / off for everyone. */
-        <RevealFace
-          label={label}
-          textColor={textColor}
-          strokeColor={
-            remoteBorderColor ?? ownColours(element).stroke ?? defaultStrokeColor(element, surface)
-          }
-          revealedForAll={element.revealed === true}
-          revealedForMe={!!revealedForMe}
-          onToggleForMe={onToggleReveal ? () => onToggleReveal(element.id) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'picker' && !isEditing ? (
         /* Picker (docs/specs/012-collaboration/picker.md): rolls a person or an option. */
@@ -334,9 +271,8 @@ export function ElementFaceRouter({
           onRoll={onRollPicker && !readOnly ? () => onRollPicker(element).roll() : undefined}
         />
       ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
-        /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,
-           a temperature check, an idea box, an agenda, or a roll call. Like
-           every other face above, mid-edit it falls through to the ordinary
+        /* The collaboration panels (docs/specs/012-collaboration/temperature-check.md, decision-record.md): a
+           temperature check or a decision record. Like every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
         <CollabSettingsSlot.Provider value={settingsButton}>
           <CollabFaceRouter
@@ -378,17 +314,6 @@ export function ElementFaceRouter({
           onComplete={actionActions?.complete}
           onReopen={actionActions?.reopen}
           onOpenBoard={actionActions?.openBoard}
-        />
-      ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
-        /* Reaction pad (docs/specs/009-elements/reaction-pad.md): a pressable glyph. The burst it throws is
-           rendered OUTSIDE this label stack, below, so it can overflow the
-           element's box — a burst confined to the pad is a burst nobody
-           notices. */
-        <ReactionPadFace
-          label={label}
-          reaction={reactionOf(element.reaction)}
-          textColor={textColor}
-          onFire={onFireReaction ? () => onFireReaction(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (docs/specs/009-elements/portal-element.md): the drawn portal + its label, pressable when paired. */

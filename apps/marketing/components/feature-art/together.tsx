@@ -1,4 +1,4 @@
-// Feature illustrations: working together and presenting to the room
+// Feature illustrations: working together
 // (docs/specs/019-marketing/marketing-site.md "Feature category pages"), the Collaborate
 // category's cards. Plain SVG on the card's 300 by 96 stage (Scene in ./canvas-parts), on the
 // shared 6s timeline (app/feature-art/canvas.css, the canvas and collaboration block); every piece settles to its
@@ -20,7 +20,6 @@ import {
   ON_CANVAS,
   Panel,
   Pill,
-  PixelWalker,
   Pointer,
   RULE,
   SAM,
@@ -382,141 +381,6 @@ export function AssignedActionsArt() {
           {CHECK_PATHS}
         </Glyph>
         <Pill x={151} y={67} w={28} label="Done" tone="green" />
-      </g>
-    </Scene>
-  );
-}
-
-/* ───────────────────────── Presenting to the room ───────────────────────── */
-
-/** Spotlight: the canvas dims under a shroud, and a soft circle of light tours the steps. */
-export function SpotlightArt() {
-  return (
-    <Scene>
-      <Flow steps={TALK} />
-      <defs>
-        <radialGradient id="fa-a-spot-light">
-          <stop offset="0.62" stopColor="#000" />
-          <stop offset="1" stopColor="#fff" />
-        </radialGradient>
-        <mask
-          id="fa-a-spot-mask"
-          maskUnits="userSpaceOnUse"
-          x="-300"
-          y="-20"
-          width="900"
-          height="136"
-        >
-          <rect x="-300" y="-20" width="900" height="136" fill="#fff" />
-          <circle className="fa-a-tour" cx="39" cy="48" r="30" fill="url(#fa-a-spot-light)" />
-        </mask>
-      </defs>
-      <rect
-        className="fill-slate-900/40 dark:fill-black/65"
-        x="-300"
-        y="-20"
-        width="900"
-        height="136"
-        mask="url(#fa-a-spot-mask)"
-      />
-      <g className="fa-a-tour">
-        <Pointer x={48} y={56} color={YOU} />
-      </g>
-    </Scene>
-  );
-}
-
-/** The laser pointer: a glowing trail that follows the presenter and fades behind them. */
-export function LaserArt() {
-  const path = 'M18 54 C 54 66, 96 44, 150 46 S 236 60, 286 50';
-  const streak = (dash: string): CSSProperties =>
-    ({ '--dash': dash, '--len': '275px' }) as CSSProperties;
-  return (
-    <Scene>
-      <Box x={20} y={16} w={56} h={24} label="Client" />
-      <Connector d="M76 28 C 104 28, 100 72, 122 72" head="M118 69 l4 3 l-4 3" />
-      <Box x={124} y={60} w={52} h={24} label="API" />
-      <Connector d="M176 72 C 200 72, 196 28, 222 28" head="M218 25 l4 3 l-4 3" />
-      <Box x={224} y={16} w={56} h={24} label="Store" />
-      <path
-        className="fa-a-streak stroke-rose-500/45 blur-[1.5px]"
-        style={streak('90px')}
-        d={path}
-        fill="none"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-      <path
-        className="fa-a-streak stroke-rose-500"
-        style={streak('90px')}
-        d={path}
-        fill="none"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        className="fa-a-streak stroke-rose-100"
-        style={streak('5px')}
-        d={path}
-        fill="none"
-        strokeWidth="3.4"
-        strokeLinecap="round"
-      />
-    </Scene>
-  );
-}
-
-/** Avatar mode: your character walks to the step you are talking about, and the room celebrates. */
-export function AvatarModeArt() {
-  const confetti: [number, number, string][] = [
-    [-16, -6, '#f43f5e'],
-    [-8, -14, '#f59e0b'],
-    [2, -17, '#10b981'],
-    [11, -12, '#8b5cf6'],
-    [18, -4, '#0ea5e9'],
-    [-22, 2, '#ec4899'],
-    [24, 4, '#f59e0b'],
-  ];
-  return (
-    <Scene>
-      <Flow
-        y={14}
-        steps={[
-          [26, 56, 'Plan'],
-          [122, 56, 'Build'],
-          [218, 56, 'Launch'],
-        ]}
-      />
-      <rect
-        className="fa-a-late fill-none stroke-sky-500"
-        style={at(0)}
-        x="213"
-        y="9"
-        width="66"
-        height="34"
-        rx="9"
-        strokeWidth="2"
-        strokeOpacity="0.7"
-      />
-      <g className="fa-a-late" style={at(0)}>
-        {confetti.map(([dx, dy, c], i) => (
-          <rect
-            key={i}
-            x={246 + dx}
-            y={8 + dy}
-            width="3"
-            height="3"
-            rx="0.6"
-            fill={c}
-            transform={`rotate(${i * 37} ${247.5 + dx} ${9.5 + dy})`}
-          />
-        ))}
-      </g>
-      {/* Jordan, waving their flag by the plan. */}
-      <PixelWalker x={54} y={86} shirt={JORDAN} flag />
-      {/* You, walking over to the launch. */}
-      <g className="fa-a-move" style={from(-96, 0, 0)}>
-        <PixelWalker x={246} y={86} shirt={YOU} />
       </g>
     </Scene>
   );

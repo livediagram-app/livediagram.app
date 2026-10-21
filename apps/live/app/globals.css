@@ -2,7 +2,7 @@
 @import '@liveplanner/tailwind-config';
 @import '@liveplanner/template-previews/preview-art-tile.css';
 @import '@liveplanner/template-previews/preview-motion.css';
-@import './qa-board.css';
+@import './collab-cards.css';
 @import './forms.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';

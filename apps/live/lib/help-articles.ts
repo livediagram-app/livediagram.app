@@ -42,12 +42,8 @@ export const HELP_ARTICLES = {
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  avatarMode: 'selection-modes/avatar-mode',
-  laser: 'selection-modes/laser',
-  spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  slideDeck: 'selection-modes/slide-deck',
   // AI
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
@@ -80,11 +76,9 @@ export const HELP_ARTICLES = {
   planDashboards: 'canvas/plan-mode/dashboards',
   planForms: 'canvas/plan-mode/forms',
   planTour: 'canvas/plan-mode/plan-tour',
-  workshopTour: 'canvas/workshop-mode/workshop-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
-  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   pagesTour: 'canvas/pages-mode/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -97,7 +91,6 @@ export const HELP_ARTICLES = {
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
@@ -184,16 +177,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Plan Tour',
     description: 'What the tour shows you and how replaying works.',
   },
-  workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   drawTour: {
     title: 'Learn about the Draw Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  avatarTour: {
-    title: 'Learn about the Avatar Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   pagesTour: {
@@ -236,18 +221,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
   },
-  avatarMode: {
-    title: 'Learn about Avatar mode',
-    description: 'Tips for walking the canvas as an avatar and leading a session.',
-  },
-  laser: {
-    title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the document.',
-  },
-  spotlight: {
-    title: 'Learn about the Spotlight',
-    description: 'Tips for dimming everything but the part you are talking about.',
-  },
   eraser: {
     title: 'Learn about the Eraser',
     description: 'Tips for rubbing out sketches and elements without selecting them first.',
@@ -255,10 +228,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  slideDeck: {
-    title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your document.',
   },
   aiTools: {
     title: 'Learn about the AI tools',
@@ -373,10 +342,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionPolls: {
-    title: 'Learn about polls',
-    description: 'Tips for asking the room a question and sharing the results.',
   },
   sessionVoting: {
     title: 'Learn about voting',

@@ -19,7 +19,7 @@ const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format
 export const metadata = pageMetadata({
   title: 'How liveplanner compares · alternatives',
   description:
-    'Honest, side-by-side comparisons of liveplanner with Miro, FigJam, Lucidchart, draw.io, Google Slides and more, including where each is the better pick.',
+    'Honest, side-by-side comparisons of liveplanner with Miro, FigJam, Lucidchart, draw.io and more, including where each is the better pick.',
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });

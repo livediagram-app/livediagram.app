@@ -59,8 +59,8 @@ only job is to hold actions, so:
 
 ## The card
 
-The card is built from the same parts as the modern Collaborate cards (the Q&A
-board, the Idea box, the Decision record; [Idea box](idea-box.md) "The look"):
+The card is built from the same parts as the modern Collaborate cards (the
+Comment panel, the Decision record; [Participant responses](participant-responses.md) "Each one looks like what it is"):
 the tab theme's **accent** (the element's own stroke, `CollabAccentScope`),
 and the shared `CollabPanel` frame, which reflows with the element. It carries
 **no `…`**: it has no settings of its own, every act is on the card, and
@@ -77,7 +77,7 @@ right-click opens the ordinary element menu.
   Done** chip once every action is done. Below it, **one row per action**, in
   the order added:
   - a **round check** on the left: pressing it completes the action (it fills
-    green with a pop, and the card throws the Done check's confetti when that
+    green with a pop, and the card throws confetti when that
     was the last open one), pressing it again reopens it;
   - the action's **name** (up to two lines, struck through and muted once
     done) and under it the **assignee**: their initials in a small accent disc
@@ -97,7 +97,7 @@ right-click opens the ordinary element menu.
 - **Delete** lives in the dialog: editing a card's action shows a two-step
   **Delete Action** in its footer, the popover's rule ([Assigned actions](assigned-actions.md) §3). Deleting the
   card deletes all its actions with it.
-- **Read-only** surfaces (a view-role visitor, the embed, a presentation) show
+- **Read-only** surfaces (a view-role visitor, the embed) show
   the card readable but with no buttons, like the popover ([Assigned actions](assigned-actions.md) §7). An
   empty card there says **No Action Yet** with no invitation line.
 - **Export** draws the same card (`svg-render-panel-faces.ts`): the header, then

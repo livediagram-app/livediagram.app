@@ -341,7 +341,6 @@ export function KeyboardEssentials() {
   const keys: { label: string; caption: string }[] = [
     { label: 'V', caption: 'Select' },
     { label: 'H', caption: 'Hand' },
-    { label: 'K', caption: 'Laser' },
     { label: 'E', caption: 'Eraser' },
     { label: 'Z', caption: 'Zen' },
   ];

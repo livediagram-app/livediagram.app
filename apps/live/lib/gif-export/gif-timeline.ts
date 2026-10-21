@@ -2,13 +2,15 @@
 // each frame shows, at what moment of that page's clock, how far through a transition it is, and how long it stays.
 // Pure: the capture and the encoder follow it frame by frame.
 import { cubicBezier } from '@/lib/page-motion-frame';
-import type { SlideTransition } from '@/lib/presentation-config';
+
+// How one page gives way to the next.
+export type SlideTransition = 'slide' | 'fade' | 'none';
 
 export const GIF_FPS = 15;
 export const GIF_HOLD_MIN_S = 1;
 export const GIF_HOLD_MAX_S = 20;
 export const GIF_HOLD_STEP_S = 0.5;
-const GIF_HOLD_DEFAULT_S = 3;
+export const GIF_HOLD_DEFAULT_S = 3;
 // The longest GIF, every page's hold added up.
 const GIF_MAX_TOTAL_S = 180;
 // Past this the panel suggests a smaller GIF.
@@ -105,11 +107,6 @@ const gifTotalSeconds = (pageCount: number, holdSeconds: number): number => page
 export const gifTooLong = (pageCount: number, holdSeconds: number): boolean =>
   gifTotalSeconds(pageCount, holdSeconds) > GIF_MAX_TOTAL_S;
 
-/** Where the hold starts: the deck's Auto-advance when it is on, within the slider's range; else three seconds. */
-export function gifHoldDefault(autoAdvanceSeconds: number): number {
-  if (!(autoAdvanceSeconds > 0)) return GIF_HOLD_DEFAULT_S;
-  return Math.min(GIF_HOLD_MAX_S, Math.max(GIF_HOLD_MIN_S, autoAdvanceSeconds));
-}
 
 /** A frame's pixel size: the page's longer side at the size's length, the other in proportion. */
 export function gifFrameSize(

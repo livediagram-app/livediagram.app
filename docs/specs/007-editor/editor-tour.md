@@ -3,8 +3,7 @@
 A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
 spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. Until
 October 2026 it was the **welcome tour**, offered whatever mode a tab was in; it is now about diagramming alone,
-and the other modes have tours of their own (the [Plan tour](../026-plan/plan-tour.md) and the
-[Workshop tour](../012-collaboration/workshop-tour.md)). It superseded the guided-tour **sample diagram**
+and the other modes have tours of their own (the [Plan tour](../026-plan/plan-tour.md)). It superseded the guided-tour **sample diagram**
 ([Guided tour sample ("Take the guided tour"), RETIRED](guided-tour-sample.md)), which taught through
 annotation markers on the canvas; the sample's template, builder, and /new card were removed once this tour
 proved the better introduction.
@@ -70,7 +69,7 @@ proved the better introduction.
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
-  [Workshop tour](../012-collaboration/workshop-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
+  [Draw tour](../023-draw-mode/draw-tour.md) and
   the [Pages tour](pages-tour.md) are this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
@@ -193,7 +192,7 @@ of their steps ask the person to try things.
 
 - **One engine, three tours.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
   Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared with the
-  [Plan tour](../026-plan/plan-tour.md) and the [Workshop tour](../012-collaboration/workshop-tour.md);
+  [Plan tour](../026-plan/plan-tour.md);
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
   too. The bookend cards' words (`TourCardCopy`) and the welcome art are props, defaulting to this tour's.
@@ -246,7 +245,7 @@ of their steps ask the person to try things.
   in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
   banner stacks, as the sign-in banner does: the words, then the buttons at the right.
 - **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
-- This holds for the Diagram, Plan, Workshop, Draw and Pages tours and the card type editor's Show Me,
+- This holds for the Diagram, Plan, Draw and Pages tours and the card type editor's Show Me,
   which all draw through `TourStage` and `TourPopover`.
 
 ## Share roles

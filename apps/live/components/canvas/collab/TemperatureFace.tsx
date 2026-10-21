@@ -38,7 +38,7 @@ export function TemperatureFace({
   textColor: string;
   selfKey: string;
   onRespond?: (value: string) => void;
-  // Clear everyone's answer for the next reading, as the Done check resets.
+  // Clear everyone's answer for the next reading.
   // Absent for anyone who may not run the room.
   onClear?: () => void;
   /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */

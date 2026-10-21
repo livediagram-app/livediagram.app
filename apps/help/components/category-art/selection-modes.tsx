@@ -33,29 +33,6 @@ const MODES: { name: string; glyph: ReactNode }[] = [
     ),
   },
   {
-    name: 'Laser',
-    glyph: (
-      <g>
-        <circle r={2.6} className="fill-rose-500" />
-        <path
-          d="M0 -7 v2.5 M0 4.5 v2.5 M-7 0 h2.5 M4.5 0 h2.5"
-          className="stroke-rose-400"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-        />
-      </g>
-    ),
-  },
-  {
-    name: 'Spotlight',
-    glyph: (
-      <g>
-        <circle r={6.5} className={ICON} strokeWidth={1.5} />
-        <circle r={2.8} className="fill-amber-400" />
-      </g>
-    ),
-  },
-  {
     name: 'Isometric',
     glyph: (
       <path
@@ -68,12 +45,11 @@ const MODES: { name: string; glyph: ReactNode }[] = [
   },
 ];
 
-// Selection Modes: the mode picker open with Select chosen, a marquee sweeping up two shapes, and the
-// laser's fading trail across the canvas below.
+// Selection Modes: the mode picker open with Select chosen, and a marquee sweeping up two shapes.
 export function SelectionModesArt() {
   return (
     <Stage>
-      <Card x={22} y={22} w={122} h={178} r={12}>
+      <Card x={22} y={22} w={122} h={122} r={12}>
         {MODES.map((m, i) => {
           const y = 31 + i * 27;
           const on = i === 0;
@@ -137,24 +113,6 @@ export function SelectionModesArt() {
         className="fill-brand-500 stroke-white"
         strokeWidth={1.2}
       />
-
-      {/* The laser's trail, fading from its tail to the bright dot. */}
-      <path
-        d="M188 186 C226 150 262 204 300 168 S352 160 360 170"
-        className="fill-none stroke-rose-300"
-        strokeWidth={5}
-        strokeLinecap="round"
-        opacity={0.35}
-      />
-      <path
-        d="M232 178 C262 200 280 182 300 168 S352 160 360 170"
-        className="fill-none stroke-rose-400"
-        strokeWidth={3.5}
-        strokeLinecap="round"
-        opacity={0.7}
-      />
-      <circle cx={360} cy={170} r={9} className="fill-rose-400" opacity={0.3} />
-      <circle cx={360} cy={170} r={4.5} className="fill-rose-500" />
     </Stage>
   );
 }

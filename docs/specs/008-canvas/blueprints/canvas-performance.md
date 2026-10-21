@@ -111,7 +111,6 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
     `useStableHandlers` (presence kept; `COLLAB_HANDLERS` is checked against `CollabApi` at compile
     time), `participants` held while what a face reads of them (`id`, `key`, `name`, `color`,
     `status`, `role`, `picture`; not `lastActiveAt`) is unchanged, the rest by value.
-  - `chairSitters`: a `useCallback` over the sitters map in `Canvas`.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
@@ -167,8 +166,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   and end, a diagram stroke landing) restyles no element view. It does not cover:
   - a whiteboard pen or a path in its edit mode, whose cursor passes through the plane on purpose (above), so a
     zoom (the pen's cursor follows its width on screen) or a path hover still restyles the board;
-  - the eraser and the spotlight, whose own rules match every `[data-element-id]`, so switching to or from them
-    restyles each element once;
+  - the eraser, whose own rules match every `[data-element-id]`, so switching to or from it restyles each
+    element once;
   - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `CanvasPages`, `LogoCanvasOverlays`),
     which sit outside the plane and inherit the world's cursor (pages rely on it: no cursor of their own), so a
     pan restyles isometric depth blocks and an article's text.
@@ -226,9 +225,6 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
   the board in its first task and the Map's picture is built in a background render after it.
-- `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
-  `lib/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
-  element view a new `chairSitters` and rendered all of them again.
 
 ### Opening animates nothing across the board
 

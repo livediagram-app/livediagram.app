@@ -8,32 +8,23 @@ import {
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { EditorMode, QaNote, Tab } from '@liveplanner/document';
+import type { EditorMode, Tab } from '@liveplanner/document';
 import {
   parseArticleCaret,
   type AgentPresence,
-  type AvatarPresence,
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
   type SheetPresenceOp,
   type SheetsRoomOp,
-  type FacilitatorReason,
-  type LivePoll,
 } from '@liveplanner/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
-import { parseLaserConfig } from '@/lib/laser-config';
-import {
-  createPresenceCoalescer,
-  type CursorPos,
-  type LaserTrail,
-  type PresenceCoalescer,
-} from './presence-coalescer';
+import { createPresenceCoalescer, type CursorPos, type PresenceCoalescer } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
+import { applyRoomOpToTabs } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
@@ -48,19 +39,17 @@ import {
   receivePeerDragPreview,
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
-import { receivePeerSay, resetSpeechBubbles } from '@/lib/avatar-speech-store';
 import {
   receiveArticleCaret,
   resetArticlePeers,
   syncArticlePeople,
 } from '@/lib/article/article-carets-store';
-import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal documents"). Lifted out of editor-page.tsx verbatim — the
 // presence reconciliation (unique-colour, idle seeding, leaver cleanup)
 // and the onOp application (tab / document-meta / select / cursor /
-// laser / tab-focus / log / share-revoked) are unchanged. All the state
+// tab-focus / log / share-revoked) are unchanged. All the state
 // it drives lives in the page and is passed in; the deps array stays
 // [hydrated, documentId, documentServerStored] (a name/colour change must not
 // reconnect), so the exhaustive-deps disable rides along.
@@ -102,9 +91,6 @@ export function useRoomConnection(opts: {
   // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
   // never brings back what the peer changed.
   applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
-  // This browser's own idea posts the room has not answered (useIdeaPosts), so a peer's card that reaches a
-  // full box takes the newest one's place (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
-  pendingIdeaIds?: PendingIdeaIds;
   // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
   // for a tab still waiting on its first fetch is left to that fetch.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
@@ -114,57 +100,14 @@ export function useRoomConnection(opts: {
   setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
-  setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): peers' walking characters, latest snapshot each.
-  setRemoteAvatars: Dispatch<
-    SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
-  >;
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking, latest sample each.
-  // Only read while somebody is being followed; kept for everyone because the
-  // op is unsolicited (see the RoomOp comment).
-  setRemoteViewports: Dispatch<SetStateAction<Map<string, RemoteViewport>>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
-  // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
-  // (useCallback with no changing deps) so they don't reopen the socket —
-  // the effect's dep list stays [hydrated, documentId, documentServerStored].
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable, like the
-  // poll handlers below, so it can't reopen the socket.
-  receiveAvatarPush: (dx: number, dy: number) => void;
-  // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
-  // written, so there is nothing here to persist, order, or undo.
-  receiveReaction: (elementId: string, reaction: string) => void;
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): somebody is asking the room to come and look.
-  // The op also carries the presser's zoom, which is not used: taking it keeps your own.
-  receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): the room's answer, and the token we
-  // present on every hello so a refresh keeps it.
-  receiveFacilitator: (msg: {
-    holder: string | null;
-    by?: string;
-    reason: FacilitatorReason;
-    token?: string;
-  }) => void;
-  readFacilitatorToken: () => string | null;
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): who follows us, from the room,
-  // and who we follow, said again on every new socket.
-  setFollowerIds: Dispatch<SetStateAction<readonly string[]>>;
-  readFollowing: () => string | null;
-  // The facilitator freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
-  // socket is sent this, so there is nothing to check it against.
-  receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
-  receivePoll: (poll: LivePoll) => void;
-  receivePollAnswer: (from: string, pollId: string, value: string | null, key?: string) => void;
-  receivePollEnd: (pollId: string) => void;
-  // A Q&A board's authoritative state after a server write (docs/specs/012-collaboration/qa-board.md).
-  // Stable, like the poll handlers, so it can't reopen the socket.
-  receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the
   // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
   receiveDocumentTrashed: () => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
-  // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
+  // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the others, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
   // A peer switched a tab's editor mode (docs/specs/007-editor/editor-modes.md "Where the mode
@@ -212,7 +155,6 @@ export function useRoomConnection(opts: {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
-    pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -220,23 +162,8 @@ export function useRoomConnection(opts: {
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
-    setRemoteLaserTrails,
-    setRemoteAvatars,
-    setRemoteViewports,
     setDocumentName,
     setSelfParticipant,
-    receiveAvatarPush,
-    receiveReaction,
-    receiveFocusHere,
-    receiveFacilitator,
-    receiveSelectionReleased,
-    readFacilitatorToken,
-    setFollowerIds,
-    readFollowing,
-    receivePoll,
-    receivePollAnswer,
-    receivePollEnd,
-    receiveQa,
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
@@ -279,10 +206,6 @@ export function useRoomConnection(opts: {
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
   // Each peer's presence name, to say who switched a tab's mode.
   const nameByPresenceRef = useRef<Map<string, string>>(new Map());
-  // The facilitator token is read on demand by the room, always as it is now.
-  const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
-  const roomReadFollowing = useEffectEvent(() => readFollowing());
-  const roomFollowers = useEffectEvent((ids: string[]) => setFollowerIds(ids));
 
   // Whether this connection has had its first presence list: reset by every (re)open below.
   const joinedRef = useRef(false);
@@ -309,7 +232,7 @@ export function useRoomConnection(opts: {
           id: p.id,
           // The peer's document-write id (docs/specs/012-collaboration/participant-responses.md), claimed in their
           // hello and relayed unchanged — it is what joins their saved
-          // answer on a done check / estimate card back to their avatar.
+          // answer on a temperature check back to them.
           // `p.id` cannot: the room mints that per socket (docs/specs/015-api/public-api-and-tokens.md §6),
           // so it matches nothing that was ever written down.
           ...(p.key ? { key: p.key } : {}),
@@ -388,9 +311,6 @@ export function useRoomConnection(opts: {
       syncRemoteBesideTabs(participants, selfId);
       setRemoteSelections((prev) => pruneMapToPresent(prev, present));
       setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-      // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
-      // so a closed tab can't leave someone standing on the canvas forever.
-      setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
       // Same for the lastSeen idle tracker (a plain ref, not state):
       // drop departed peers so it can't grow unbounded over a
       // long-lived room with people joining / leaving via share links.
@@ -448,7 +368,7 @@ export function useRoomConnection(opts: {
         applyRemoteOp((prev) =>
           op.kind === 'document-meta'
             ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op, pendingIdeaIds),
+            : applyRoomOpToTabs(prev, op),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         const switched = peerModeSwitchOf(op);
@@ -480,57 +400,9 @@ export function useRoomConnection(opts: {
         // "Collaboration"), checked field by field; drawn by that article's writing, never written.
         const caret = parseArticleCaret(op);
         if (caret) receiveArticleCaret(from, caret);
-      } else if (op.kind === 'laser') {
-        // Same coalescing as cursors; points accumulate in the buffer
-        // and land in one Map commit per frame.
-        presence.laser(from, {
-          tabId: op.tabId,
-          point: { x: op.x, y: op.y, t: performance.now() },
-          // The sender's pen (docs/specs/008-canvas/laser-panel.md), parsed field by field so a token
-          // from a newer client costs that field and not the trail.
-          config: op.look ? parseLaserConfig(op.look) : undefined,
-        });
       } else if (op.kind === 'drag-preview') {
         // A collaborator mid-drag (docs/specs/008-canvas/drag-preview.md): drawn, never written.
         receivePeerDragPreview(from, op, (id) => roleByPresenceRef.current.get(id));
-      } else if (op.kind === 'avatar') {
-        // Latest-wins per peer (no accumulation, unlike laser points): the
-        // character has one position at a time.
-        presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
-      } else if (op.kind === 'viewport') {
-        // Latest-wins per peer, like the avatar: a camera has one position.
-        // Applied straight through rather than batched with the presence
-        // flush — a follower's view should track the presenter's hand, and a
-        // 10 Hz stream needs no coalescing.
-        setRemoteViewports((prev) => {
-          const next = new Map(prev);
-          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
-          return next;
-        });
-      } else if (op.kind === 'avatar-push') {
-        // A shove is ADDRESSED: the room delivers it to the named session and
-        // nobody else, so anything that arrives here was aimed at us. We
-        // can't check that ourselves — peers are identified by server-minted
-        // presence ids precisely so nobody learns anyone's real owner id
-        // (docs/specs/015-api/public-api-and-tokens.md §6), and that includes not recognising our own. Nothing is
-        // written to the document either way: our client decides what to do
-        // with the request, and does nothing if we've left the mode.
-        receiveAvatarPush(op.dx, op.dy);
-      } else if (op.kind === 'avatar-say') {
-        // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
-        // drawn by the speech layer, never written.
-        receivePeerSay(from, op);
-      } else if (op.kind === 'reaction') {
-        // No tab check here, unlike the laser: a burst is keyed to the
-        // ELEMENT, and only the active tab's elements are rendered, so a
-        // burst for a pad on another tab has nothing to draw itself on and
-        // expires quietly.
-        receiveReaction(op.elementId, op.reaction);
-      } else if (op.kind === 'focus-here') {
-        // No tab check: the invitation names its own tab and taking it is
-        // what switches you, so one sent from another tab is exactly the
-        // case this element exists for.
-        receiveFocusHere(from, op.tabId, op.at);
       } else if (op.kind === 'tab-focus') {
         setRemoteTabFocus((prev) => {
           const next = new Map(prev);
@@ -539,23 +411,6 @@ export function useRoomConnection(opts: {
         });
         // Their other pane, side by side (docs/specs/007-editor/split-view.md "Presence").
         setRemoteBesideTab(from, op.besideTabId);
-      } else if (op.kind === 'poll-start') {
-        // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
-        // hook's memory and never touches tabs or autosave, so there is
-        // nothing here to persist or undo.
-        receivePoll(op.poll);
-      } else if (op.kind === 'poll-answer') {
-        // `from` keys the answer so a peer changing their mind replaces
-        // it. It is never rendered — results carry no identity.
-        receivePollAnswer(from, op.pollId, op.value, op.key);
-      } else if (op.kind === 'poll-end') {
-        receivePollEnd(op.pollId);
-      } else if (op.kind === 'qa') {
-        // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
-        // sends it through /broadcast after the write is already in D1, and
-        // the room refuses it from a client socket, so the sender check is
-        // defence in depth like share-revoked's below.
-        if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
       } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
         // The owner revoked or rescoped a share link (share-link-ops.ts).
         // A session hydrated with that exact code leaves the editor on a
@@ -592,15 +447,6 @@ export function useRoomConnection(opts: {
         if (from === 'system') receiveDocumentTrashed();
       }
     },
-  );
-
-  const roomFacilitator = useEffectEvent(
-    (msg: Parameters<NonNullable<RoomHandlers['onFacilitator']>>[0]) => receiveFacilitator(msg),
-  );
-
-  const roomSelectionReleased = useEffectEvent(
-    (msg: Parameters<NonNullable<RoomHandlers['onSelectionReleased']>>[0]) =>
-      receiveSelectionReleased(msg),
   );
 
   const roomDocumentTrashed = useEffectEvent(() => receiveDocumentTrashed());
@@ -656,14 +502,10 @@ export function useRoomConnection(opts: {
       return;
     }
     joinedRef.current = false;
-    // Batched cursor / laser / avatar presence, committed one Map update
-    // per animation frame instead of one per packet — see the coalescer.
-    // Created per effect run, so a reconnect starts with empty buffers.
-    const presence = createPresenceCoalescer({
-      setRemoteCursors,
-      setRemoteLaserTrails,
-      setRemoteAvatars,
-    });
+    // Batched cursor presence, committed one Map update per animation frame
+    // instead of one per packet — see the coalescer. Created per effect run,
+    // so a reconnect starts with empty buffers.
+    const presence = createPresenceCoalescer({ setRemoteCursors });
 
     const handlers: RoomHandlers = {
       onPresence: (participants, agents) => roomPresence(participants, agents),
@@ -677,10 +519,6 @@ export function useRoomConnection(opts: {
         }
         roomOp(from, migrateRoomOp(op), presence);
       },
-      onFacilitator: (msg) => roomFacilitator(msg),
-      onSelectionReleased: (msg) => roomSelectionReleased(msg),
-      // Called for this socket alone: being called is the addressing (we never learn our own presence id).
-      onFollowers: (ids) => roomFollowers(ids),
       onDocumentTrashed: () => roomDocumentTrashed(),
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
       onAccessChanged: () => roomAccessChanged(),
@@ -713,16 +551,12 @@ export function useRoomConnection(opts: {
           firstMint = false;
           return minted?.ticket ?? null;
         },
-        readFollowing: roomReadFollowing,
       },
-      roomReadFacilitatorToken,
     );
     roomRef.current = openedRoom;
     return () => {
       presence.cancel();
       resetArticlePeers();
-      // Nobody's words outlive the room they were said in.
-      resetSpeechBubbles();
       openedRoom.close();
       roomRef.current = null;
     };
@@ -737,7 +571,5 @@ export function useRoomConnection(opts: {
     setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
-    setRemoteLaserTrails,
-    setRemoteAvatars,
   ]);
 }

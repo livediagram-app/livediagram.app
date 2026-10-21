@@ -214,18 +214,12 @@ export type UserPreferences = {
   // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
   planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
-  workshopTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
+  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `planTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
-  avatarTourSeen?: boolean;
   // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
@@ -287,10 +281,6 @@ export type UserPreferences = {
   // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
   // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
   contentsPlacement?: 'sidebar' | 'button';
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
-  // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
-  // Missing === what this browser kept before they followed the account, else the defaults.
-  presentation?: Record<string, unknown>;
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

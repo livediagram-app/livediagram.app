@@ -37,7 +37,6 @@ describe('usePlanSlice', () => {
         select: () => {},
         announce: () => {},
         publishPresence: () => {},
-        addItemSlide: () => {},
       }),
     );
     const first = result.current.context;

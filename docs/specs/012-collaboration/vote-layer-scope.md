@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-When starting a dot-vote ([Session tools (timer + voting)](session-tools.md)), the facilitator can pick which **layer**
+When starting a dot-vote ([Session tools (timer + voting)](session-tools.md)), the host can pick which **layer**
 ([Layers](../006-document/layers.md)) is votable. Only elements on that layer take dots; everything else
 stays on the canvas but recedes, and the votable set is ringed.
 
@@ -19,7 +19,7 @@ pre-scoping behaviour and what a single-layer tab always gets.
 
 **It cannot change while the vote runs** — to vote on a different layer you end
 the vote and start another. Same rule as the privacy switches ([Session tools (timer + voting)](session-tools.md)): a
-setting the facilitator can flip mid-vote isn't a guarantee anyone can rely on,
+setting the host can flip mid-vote isn't a guarantee anyone can rely on,
 and here it would also silently invalidate dots already cast on what was
 votable a moment ago.
 
@@ -32,7 +32,7 @@ lifecycle — chosen before the vote, baked in at start, immutable after.
 The **Vote** set-up (the [Session strip](session-tools.md#the-session-strip)'s Vote popover, and a vote element's menu), above the privacy switches, as a row of pills: **All layers** then each layer by name.
 
 - **Pre-selected to the layer the editor is on**, which is almost always the
-  one the facilitator has just been building.
+  one the host has just been building.
 - **"All layers"** is an explicit option. Without it a multi-layer tab couldn't
   run an ordinary whole-tab vote, which would be a capability regression.
 - **Hidden entirely on a single-layer tab.** Scoping to the only layer is the

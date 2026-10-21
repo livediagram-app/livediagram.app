@@ -24,7 +24,7 @@ and one category's tiles:
   tab's mode is chosen on its start while it is empty ([The mode switch](editor-modes.md#the-mode-switch)).
   On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Eraser / Format / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then, in Diagram, Workshop and Pages, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
@@ -65,7 +65,7 @@ under the pointer as a category is switched.
   you build with what you build it in. Workshop offers the same **Layout**: a board is laid out in frames and
   lanes as a diagram is. Pages has **no Build**: its three page tiles moved beside their neighbours, the Stack
   into Components and the Timeline and Table into Data.
-- **Session** (Workshop): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
+- **Session** (Workshop): the Collaborate categories Tools, Record and Navigate gathered
   into one category, browsed as Icons is (the two-pane browse, below), searchable across all of them. **Ask** keeps
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
@@ -311,7 +311,6 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
-- **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
@@ -353,10 +352,10 @@ button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels. Every
-other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corner
+other panel (AI, the minimap and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
-A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
+A popover opening up from a bottom-row button (Layers, the Vote) grows no higher than 8 px under a
 toolbar across the canvas's top whose span meets its column, the strip or Draw's dock (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
 header hidden.
@@ -432,7 +431,7 @@ their bottom-row buttons. What changes to fit the width:
 ## Layout details
 
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
-  (follow-me pill, timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
+  (timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
   mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
@@ -523,7 +522,7 @@ their bottom-row buttons. What changes to fit the width:
   (`useStripCrowdsCorners`, re-checked as panels dock and the window
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
-  a docked panel (the Laser panel, say) sat under the strip's right end and
+  a docked panel (the Eraser panel, say) sat under the strip's right end and
   could not be reached. A whiteboard's dock at the top gets the same
   treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
   its corners starting 76px down.

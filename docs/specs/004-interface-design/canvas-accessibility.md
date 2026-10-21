@@ -51,11 +51,10 @@ delete, undo, label edit via Space) that already work on a selection.
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
-  buttons (timer, vote, poll), checklists, temperature checks, agendas, Q&A boards, quizzes, reaction pads, pickers,
-  reveals, decision records and mode buttons, an embed, a link card, and an image still waiting for its picture. An
-  img's children are presentational, so as pictures their Start, tick and Ask buttons and the Q&A note field could
+  buttons (timer, vote), checklists, temperature checks, pickers, decision records, an embed, a link card, and an image still waiting for its picture. An
+  img's children are presentational, so as pictures their Start, tick and answer buttons could
   not be reached with a screen reader.
-- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`, `Poll`), never the generic
+- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`), never the generic
   "Session button".
 
 ## Live announcements

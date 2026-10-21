@@ -44,8 +44,8 @@ The element is a **card on the canvas**, not a marker.
 
 ### The look
 
-Built from the same parts as the modern Collaborate cards (the Q&A board, the
-Idea box; [Idea box](idea-box.md) "The look"): the tab theme's **accent**
+Built from the same parts as the modern Collaborate cards (the Temperature check, the
+Decision record; [Participant responses](participant-responses.md) "Each one looks like what it is"): the tab theme's **accent**
 (`CollabAccentScope`), the shared `CollabPanel` frame and the shared composer.
 It carries **no `…`**: it has no settings of its own, every act is on the card,
 and right-click opens the ordinary element menu.
@@ -59,7 +59,7 @@ and right-click opens the ordinary element menu.
   time. Your own comments sit on the right in an accent-tinted bubble;
   everyone else's sit on the left in a neutral one. Consecutive comments by
   the same author group under one name. A comment that arrives while the card
-  is on screen settles in (the Q&A board's enter motion), and the thread keeps
+  is on screen settles in (the cards' shared enter motion), and the thread keeps
   the newest in view. Your own comments carry a small delete on hover.
 - **Empty**: a speech-bubble glyph in a soft accent disc, **Start the
   Conversation**, and "Replies stay on the canvas for everyone to read."
@@ -86,7 +86,7 @@ is what an arrow already says on this canvas. Not a bespoke link: a second
 kind of connection would be a second thing to lay out, export and explain.
 It also means the pair behaves like anything else — move the element and the
 arrow follows; delete the arrow and the panel is a note that floated free.
-The panel is added from the palette only: Workshop's **Record** category, or Diagram's **Write**. The
+The panel is added from the palette only: Diagram's **Write** category. The
 element menu's Collaborate section once offered a `Comment Panel` tile that
 dropped the panel and the arrow in one go; it was removed, since a second
 way in from every element's menu was one more tile to read past on the way

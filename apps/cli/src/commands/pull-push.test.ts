@@ -52,7 +52,6 @@ function host(
         document: {
           id: DOC,
           name: 'Shop: Checkout',
-          presentation: null,
           tabs: [...tabs].map(([id, t], i) => ({
             id,
             name: t.name,

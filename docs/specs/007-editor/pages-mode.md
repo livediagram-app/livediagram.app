@@ -1611,7 +1611,7 @@ separate pages. It is explicit: never run on entering the mode.
   are not slide pages (an infographic, article or logo page): a page picker (each page by its
   label) and **Add as slide**, in place of "Select elements to make a slide". Such a page slide
   takes its place in the page order too once it is in the deck.
-- A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
+- A **page slide** (`Slide.pageId`) is the page,
   resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
   follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`, the
   label read from the slide's own tab (so a slide on another tab names its page too), or

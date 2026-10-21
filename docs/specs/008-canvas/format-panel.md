@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The fifth mode panel, after [Avatar](avatar-mode.md), [Laser](laser-panel.md), [Spotlight](spotlight-panel.md), and [Eraser](eraser-panel.md).
+While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The second mode panel, after [Eraser](eraser-panel.md).
 
 ## Why
 

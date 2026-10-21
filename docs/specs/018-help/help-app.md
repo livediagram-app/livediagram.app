@@ -58,7 +58,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 The feature categories group the feature guides by area:
 
 - **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
-- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
+- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
@@ -66,8 +66,6 @@ The feature categories group the feature guides by area:
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
-
-There is **no Presentation Mode guide**: [Presentation mode](../012-collaboration/presentation-mode.md) is a draft and the feature is not built, so the article was unpublished rather than ship documentation for a non-existent feature.
 
 **Troubleshooting tools.** One Troubleshooting article is a working tool, not only text: _Repair This Browser_ renders `BrowserRepairTool` (`apps/help/components/`), the shared `BrowserRepairPanel` from `@liveplanner/ui` plus the browser checks, so a person whose editor will not start can still clear its stuck settings from the help centre, which shares the editor's origin ([Load recovery](../007-editor/load-recovery.md)).
 
@@ -140,8 +138,8 @@ then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
 that fills and fades, because it is the only one whose subject IS a fill and a
 fade; every stroke-only version of it meant something else. The Collaborate
 batch cost two: a tick drawn inside a circle rendered as a prohibition sign,
-which is the opposite of "decided", and a roll call drawn as circles beside
-lines read as a bulleted list until the circles became heads and shoulders.
+which is the opposite of "decided", and people drawn as circles beside lines
+read as a bulleted list until the circles became heads and shoulders.
 
 The pattern in every redraw so far is worth stating, since it is not what you
 would guess: none was wrong on its own terms. Each had either landed on a glyph
@@ -249,7 +247,7 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
@@ -274,8 +272,6 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/canvas/illustrate/`                             | `/help/canvas/pages-mode/`                              |
 | `/help/canvas/illustrate/<article>/`                   | `/help/canvas/pages-mode/<article>/`                    |
 | `/help/canvas/illustrate/illustrate-tour/`             | `/help/canvas/pages-mode/pages-tour/`                   |
-| `/help/canvas/facilitate-mode/`                        | `/help/canvas/workshop-mode/`                           |
-| `/help/canvas/facilitate-mode/facilitate-tour/`        | `/help/canvas/workshop-mode/workshop-tour/`             |
 
 "Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
 <!-- /legacy-names -->

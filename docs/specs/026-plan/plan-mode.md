@@ -239,7 +239,7 @@ with a Board**.
   vote on the cards, so a retro needs nothing
   beyond the board and the tab's Vote.
 - **No participant cursors on a Plan tab but a Dashboard**: a Board tab, a Sheet tab, or any other tab worked on in
-  Plan mode shows no one else's cursor (or laser): the board or Sheet covers the canvas a cursor would point at, and
+  Plan mode shows no one else's cursor: the board or Sheet covers the canvas a cursor would point at, and
   presence there is the avatars and each card's editing ring. A Dashboard (a Visualisation tab included) shows them,
   as a diagram does (`planHidesCursors`).
 

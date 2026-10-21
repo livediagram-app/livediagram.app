@@ -14,7 +14,6 @@ const relay = (presence: boolean, participantAnswers = false) => ({
   participantAnswers,
 });
 const DROP = { kind: 'drop' };
-const say = { kind: 'avatar-say', tabId: 't', id: 'a', text: 'hi', x: 0, y: 0 };
 
 describe('gateClientOp', () => {
   it('never relays a system op from a client, whatever the role', () => {
@@ -27,18 +26,6 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('view'))).toEqual(DROP);
     // An unknown role reads as the lowest level.
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('admin'))).toEqual(DROP);
-  });
-
-  it('keeps a viewer from taking part: answers, reactions, speech and focus', () => {
-    for (const op of [{ kind: 'poll-answer' }, { kind: 'reaction' }, say, { kind: 'focus-here' }])
-      expect(gateClientOp(op, as('view'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'reaction' }, as('participate'))).toEqual(relay(true));
-    expect(gateClientOp(say, as('participate'))).toEqual(relay(true));
-    expect(gateClientOp({ kind: 'focus-here' }, as('participate'))).toEqual(DROP);
-  });
-
-  it('drops a malformed speech bubble from anyone', () => {
-    expect(gateClientOp({ ...say, text: '' }, as('edit'))).toEqual(DROP);
   });
 
   it("routes a participant's element op through the content rule, and relays its own answers", () => {

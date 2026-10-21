@@ -130,54 +130,21 @@ export const SHAPE_KINDS = new Set<string>([
   'stat-row',
   'process',
   'site-header',
-  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
-  // into a selection mode.
-  'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
   'tab-window',
-  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
+  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / stopwatch / vote for the room.
   'session-button',
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-  'reveal',
   // Picker (docs/specs/012-collaboration/picker.md): rolls a random person or option.
   'picker',
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md).
-  'reaction-pad',
   // Comment pin (docs/specs/012-collaboration/comment-pin.md).
   'comment-pin',
   // Action panel (docs/specs/012-collaboration/action-panel.md).
   'action-card',
-  // Done check (docs/specs/012-collaboration/done-check.md).
-  'done-check',
-  // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
-  'chair',
-  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
-  'fence',
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start.
-  'avatar-pad',
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
-  'desk',
-  'sofa',
-  // The virtual office (docs/specs/009-elements/office.md).
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
-  // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
-  'estimate',
+  // The collaboration family (docs/specs/012-collaboration/temperature-check.md, decision-record.md).
   'temperature',
-  'idea-box',
-  'qa-board',
-  'agenda',
   'decision',
-  'roll-call',
-  // Quiz (docs/specs/012-collaboration/quiz.md).
-  'quiz',
   'stadium',
   'actor',
   'final-state',
@@ -205,7 +172,6 @@ export const SHAPE_KINDS = new Set<string>([
   'checklist',
   'legend',
   'sankey',
-  'focus-button',
   'icon',
   'sticker',
   // Plan board and Plan card (docs/specs/026-plan/plan-board.md).

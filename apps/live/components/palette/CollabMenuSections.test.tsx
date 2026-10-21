@@ -1,78 +1,19 @@
 // @vitest-environment jsdom
 
-// The agenda (docs/specs/012-collaboration/agenda.md) and decision record
-// (docs/specs/012-collaboration/decision-record.md) row editors: drafts committed on blur that follow
-// the element's rows when they change.
+// The decision record (docs/specs/012-collaboration/decision-record.md) row editor: drafts committed on blur
+// that follow the element's rows when they change.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { AgendaItem, ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/document';
 import type { ComponentProps } from 'react';
-import { AgendaMenuSection, DecisionMenuSection } from './CollabMenuSections';
+import { DecisionMenuSection } from './CollabMenuSections';
 
 const shape = (over: Partial<ShapeElement>): ShapeElement =>
   ({ id: 's1', type: 'rectangle', ...over }) as ShapeElement;
 const sectionProps = () => ({ open: true, onToggle: vi.fn() });
 
 afterEach(() => cleanup());
-
-describe('AgendaMenuSection', () => {
-  const agenda = (items?: AgendaItem[]) => (
-    <AgendaMenuSection
-      target={shape({ agendaItems: items })}
-      sectionProps={sectionProps}
-      onSetItems={vi.fn()}
-    />
-  );
-  const name = (i: number) => screen.getByLabelText<HTMLInputElement>(`Segment ${i} name`);
-
-  // Same loop as the decision drivers below: a fresh `?? []` per render, set by an effect.
-  it('settles for an element without segments', () => {
-    const { rerender } = render(agenda());
-    rerender(agenda());
-    expect(screen.queryByLabelText('Segment 1 name')).toBeNull();
-  });
-
-  it('keeps a typed draft through a re-render with the same segments', () => {
-    const items = [{ label: 'Intro', minutes: 5 }];
-    const { rerender } = render(agenda(items));
-    fireEvent.change(name(1), { target: { value: 'Welcome' } });
-    rerender(agenda(items));
-    expect(name(1).value).toBe('Welcome');
-  });
-
-  it('carries the current segment with its row on move and remove', () => {
-    const onSetItems = vi.fn<ComponentProps<typeof AgendaMenuSection>['onSetItems']>();
-    render(
-      <AgendaMenuSection
-        target={shape({
-          agendaItems: [
-            { label: 'A', minutes: 5 },
-            { label: 'B', minutes: 5 },
-            { label: 'C', minutes: 5 },
-          ],
-        })}
-        sectionProps={sectionProps}
-        onSetItems={onSetItems}
-      />,
-    );
-    fireEvent.click(screen.getByLabelText('Move segment 3 up'));
-    const [moved, moveCurrent] = onSetItems.mock.calls[0]!;
-    expect(moved.map((r) => r.label)).toEqual(['A', 'C', 'B']);
-    expect([0, 1, 2].map((i) => moveCurrent?.(i))).toEqual([0, 2, 1]);
-    fireEvent.click(screen.getByLabelText('Remove segment 2'));
-    const [left, removeCurrent] = onSetItems.mock.calls[1]!;
-    expect(left.map((r) => r.label)).toEqual(['A', 'C']);
-    expect([0, 1, 2].map((i) => removeCurrent?.(i))).toEqual([0, undefined, 1]);
-  });
-
-  it('follows the element when its segments change', () => {
-    const { rerender } = render(agenda([{ label: 'Intro', minutes: 5 }]));
-    fireEvent.change(name(1), { target: { value: 'Welcome' } });
-    rerender(agenda([{ label: 'Kick-off', minutes: 5 }]));
-    expect(name(1).value).toBe('Kick-off');
-  });
-});
 
 describe('DecisionMenuSection', () => {
   const decision = (drivers?: string[]) => (

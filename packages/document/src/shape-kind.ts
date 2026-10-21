@@ -69,29 +69,17 @@ export type ShapeKind =
   | 'process'
   // Header: a website header bar, logo + brand (the label) + `navLinks`.
   | 'site-header'
-  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
-  // into a selection mode — Avatar by default. Which mode lives in the
-  // element's `mode` field.
-  | 'mode-button'
-  // Portal (docs/specs/009-elements/portal-element.md): a portal. Clicking one — or walking an Avatar-mode
-  // character into it — takes you to the portal it is paired with, in
-  // `portalTarget`.
+  // Portal (docs/specs/009-elements/portal-element.md): a portal. Clicking one takes you to the portal it is
+  // paired with, in `portalTarget`.
   | 'portal'
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn live inside it, fitted;
   // which tab lives in `windowTabId`.
   | 'tab-window'
   // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
-  // — a timer, a dot vote, or a live poll. Which one lives in `session`.
+  // — a timer, a stopwatch or a dot vote. Which one lives in `session`.
   | 'session-button'
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover over part of the canvas. Click it to
-  // uncover it for yourself; `revealed` uncovers it for everyone.
-  | 'reveal'
   // Picker (docs/specs/012-collaboration/picker.md): press it to choose a person or an option at random.
   | 'picker'
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): press it, or walk an Avatar-mode character onto
-  // it, and a burst of reaction plays over the pad. Which reaction lives in
-  // the element's `reaction` field.
-  | 'reaction-pad'
   // Comment pin (docs/specs/012-collaboration/comment-pin.md): a standalone marker whose whole job is to carry a
   // comment thread. Every element can already hold one; this one exists ONLY
   // to hold one, so a remark can be pinned to a spot on the canvas rather than
@@ -101,61 +89,15 @@ export type ShapeKind =
   // actions. A card whose whole job is to carry ONE `action` (docs/specs/012-collaboration/assigned-actions.md) and
   // show it on the canvas, so a follow-up can live where the room can read it.
   | 'action-card'
-  // Done check (docs/specs/012-collaboration/done-check.md): everyone marks themselves finished, and the card
-  // shows who has and who has not. Live: the not-yet list is read from who is
-  // actually in the room, so it shrinks as people leave rather than accusing
-  // somebody who went home.
-  | 'done-check'
-  // Chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in when it
-  // walks into one. Which way the seat points lives in `chairFacing`.
-  | 'chair'
-  // Fence (docs/specs/009-elements/fence.md): one straight run of posts and rails an Avatar-mode
-  // character cannot walk through. The run lies along the longer side; no fields of its own.
-  | 'fence'
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start. A pixel teleport platform
-  // drawn in the sprite's palette; no fields of its own.
-  | 'avatar-pad'
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair, with
-  // the chair's `chairFacing`. A desk seats one at a computer; a sofa seats two side by side.
-  | 'desk'
-  | 'sofa'
-  // The virtual office (docs/specs/009-elements/office.md): a room (walls, a doorway, `roomDoor`), a meeting table
-  // with six seats, scenery that blocks (plant, bookshelf), machines that give a character a drink (water
-  // cooler, coffee machine), and a rug on the floor.
-  | 'room'
-  | 'meeting-table'
-  | 'plant'
-  | 'bookshelf'
-  | 'water-cooler'
-  | 'coffee-machine'
-  | 'rug'
   // The collaboration family — elements that record what the ROOM thinks
   // rather than what one author drew.
   //
-  // Estimate card (docs/specs/012-collaboration/estimate-card.md): planning poker. Everyone picks privately from
-  // `estimateScale`, and `responsesRevealed` shows every answer at once.
-  | 'estimate'
-  // Temperature check (docs/specs/012-collaboration/temperature-check.md): a fist-of-five gauge. Same `responses`
-  // primitive, deliberately never hidden.
+  // Temperature check (docs/specs/012-collaboration/temperature-check.md): a fist-of-five gauge on the
+  // `responses` primitive, deliberately never hidden.
   | 'temperature'
-  // Idea box (docs/specs/012-collaboration/idea-box.md): anonymous submissions in `ideaCards`, held until
-  // `ideasRevealed`. There is nowhere to put an author, on purpose.
-  | 'idea-box'
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): a self-sorting list of upvotable notes in
-  // `qaNotes`, owned by the server so view links can add and vote.
-  | 'qa-board'
-  // Agenda (docs/specs/012-collaboration/agenda.md): ordered `agendaItems` with minutes; pressing one starts
-  // the tab timer and sets `agendaCurrent`.
-  | 'agenda'
   // Decision record (docs/specs/012-collaboration/decision-record.md): the statement (the label) plus a status chip,
   // a date and the drivers.
   | 'decision'
-  // Roll call (docs/specs/012-collaboration/roll-call.md): a frozen snapshot of who was in the room, in
-  // `rollCall`.
-  | 'roll-call'
-  // Quiz (docs/specs/012-collaboration/quiz.md): one multiple-choice question the facilitator opens for
-  // the room, locks on a timer and reveals, naming who answered correctly.
-  | 'quiz'
   | 'stadium'
   | 'actor'
   // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the
@@ -209,9 +151,6 @@ export type ShapeKind =
   // Sankey diagram (docs/specs/009-elements/sankey.md): flows between named nodes, each band as wide as
   // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
   | 'sankey'
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
-  // a jump to it, on your tab.
-  | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

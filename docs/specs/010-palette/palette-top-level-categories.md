@@ -49,7 +49,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)     |
 | **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                            |
 | **Dynamic**     | Data (Pages, Workshop)                                                                                                                                                                        |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                      |
+| **Collaborate** | Ask, Tools, Record, Navigate                                                                                                                                                                  |
 | **Screen**      | Components and Elements, first, in Pages' Wireframe kind ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette))                                                           |
 
 ## Why flatten
@@ -59,8 +59,8 @@ navigation before you saw a tile: open Tools, then open the category. That is
 the right cost for "which of the twenty tools is the polygon one" and the wrong
 cost for a set you go to deliberately.
 
-It hurt Behaviour most. Selection Mode buttons, Portals, Session buttons,
-Reveal zones and Pickers ([Selection Mode button](../009-elements/mode-button.md) to [Picker](../012-collaboration/picker.md)) are the palette's newest
+It hurt Behaviour most. Portals, Session buttons and Pickers
+([Portal element](../009-elements/portal-element.md) to [Picker](../012-collaboration/picker.md)) are the palette's newest
 elements and the ones a user is least likely to know exist. Burying them two
 levels down is where a new feature goes to hide.
 
@@ -160,13 +160,12 @@ which two groups they are. A rename that broke seven live links to say
 
 ## Collaborate: one category, fully grouped
 
-**Collaborate is Workshop's, as six categories.** Since [Workshop mode](../012-collaboration/workshop-mode.md#the-palette),
-only Workshop's layout offers the Collaborate elements, and it offers each group below as its
-own category in a **Collaborate** band of its own (`collab-ask`, `collab-tools`, `collab-record`, `collab-react`,
-`collab-mode`, `collab-navigate`), so the parent category and its group browser are gone. Diagram
-keeps only the Comment panel and the Action card, in its Write category. Search still finds every
-Collaborate tile from any mode. What follows is how the groups came to be; they are unchanged as
-categories.
+**Collaborate is four categories.** A mode's layout that offers the Collaborate elements offers
+each group below as its own category in a **Collaborate** band of its own (`collab-ask`,
+`collab-tools`, `collab-record`, `collab-navigate`), so the parent category and its group browser
+are gone. Diagram keeps only the Comment panel and the Action card, in its Write category. Search
+still finds every Collaborate tile from any mode. What follows is how the groups came to be; they
+are unchanged as categories.
 
 **Renamed from Behaviours to Collaborate.** The category is what you open to run a
 session with the room, and "Collaborate" names that job where "Behaviours" named the
@@ -176,49 +175,43 @@ the help article keeps its `/help/palette/behaviour/` URL, for the same reason a
 merge below. Its groups are unchanged; none of them is called Collaborate, so the name
 is not repeated one level down.
 
-**Collaborate was merged into Behaviour**, and the survivor is named
-**Behaviours** (32 tiles in 6 groups). The two were split on a real
-distinction — Behaviour is "pressing this does something to your session",
-Collaborate is "the canvas is collecting an answer from everybody" — and it
-turned out to be a line to memorise rather than one to navigate by. You reach
-for both while running a session, and nothing told a user hunting for the Done
-check why it sat apart from the estimate card. [The Done check](../012-collaboration/done-check.md)
-saw this coming: it filed the Done check under Behaviour, noted it was
-arguably a Collaborate element by this spec's own rule, and said so.
+**Collaborate was merged into Behaviour**, and the survivor was named
+**Behaviours**. The two were split on a real distinction — Behaviour is
+"pressing this does something to your session", Collaborate is "the canvas is
+collecting an answer from everybody" — and it turned out to be a line to
+memorise rather than one to navigate by: you reach for both while running a
+session.
 
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group              | Holds                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                            |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
-| **Reactions**      | the five pads                                                                                                                     |
-| **Selection Mode** | one button per mode (8)                                                                                                           |
-| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
+| Group        | Holds                                   |
+| ------------ | --------------------------------------- |
+| **Ask**      | Temperature, Dot vote                   |
+| **Tools**    | Picker, Timer, Stopwatch                |
+| **Record**   | Comment panel, Action card, Decision record |
+| **Navigate** | Portal, Link card                       |
 
-**There is no Session group.** It held the Timer, the Dot vote and the Poll —
-a group named after the machinery that runs them rather than the job they do.
-A poll and a dot vote ARE asking the room, so they belong with the estimate
-card and the temperature check, which is where somebody wanting to put a
-question to everybody actually looks; a timer is facilitation, so it belongs
-with the Reveal, the Done check and the Picker. With all three rehoused the
-group had nothing left in it, and an empty group is not a group.
+**There is no Session group.** It held the Timer and the Dot vote — a group
+named after the machinery that runs them rather than the job they do. A dot
+vote IS asking the room, so it belongs with the temperature check, which is
+where somebody wanting to put a question to everybody actually looks; a timer
+runs the session, so it belongs with the Picker. With both rehoused the group
+had nothing left in it, and an empty group is not a group.
 
 They remain one shape kind with a `session` config ([Session button](../012-collaboration/session-button.md)) —
 this is a palette grouping, not a model change.
 
 The **Comment panel** is in **Record**. It sat loose above the groups at
-first, on the reasoning that it is the one you reach for outside a facilitated
-session and a group of one would be a click in front of the category's
-most-used tile. But a comment thread is a thing you leave behind on the canvas
-for somebody to find later, which is exactly what the agenda, the decision
-record and the roll call are — and one row floating above six category tiles
-read as an oversight rather than as a shortcut. Every tile is in a group now.
+first, on the reasoning that it is the one you reach for outside a session
+and a group of one would be a click in front of the category's most-used
+tile. But a comment thread is a thing you leave behind on the canvas for
+somebody to find later, which is exactly what the decision record is — and
+one row floating above the category tiles read as an oversight rather than as
+a shortcut. Every tile is in a group now.
 
-Order is **room-first**: the three groups a facilitator opens mid-session come
-before the three you set up once and forget.
+Order is **room-first**: the groups opened mid-session (Ask, Tools) come
+before the ones you set up once and forget.
 
 Data-side, the merge is a `section` change: the Collaborate tiles moved to
 `section: 'tools'` with `toolGroup: 'behaviour'`, so `tilesForCategory` and the
@@ -226,19 +219,17 @@ tab body needed no special case and the `'collaborate'` section is gone.
 
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category ([The Build palette category](build-category.md)),
-and it is why Portal sits with Chair and the Link card (all three take you
-somewhere — another tab, a seat, the page itself) rather than with Reveal
-(which the facilitator drives). The Link card came here from Components, which
+and it is why Portal sits with the Link card (both take you somewhere —
+another tab, the page itself). The Link card came here from Components, which
 groups by what a thing looks like: a ready-made composite you recolour and
 retitle. A link card is neither composite nor decoration, so it read as filler
 in that category and as an obvious member of this one.
 
-Three kinds were split into a tile per variant at the same time, on the
-[More than YouTube](../009-elements/embed-providers.md) pattern: selection modes, session tools, reactions, and estimate
-scales. In every case the variant IS the decision — you know which mode, which
-tool, which scale before you reach for the palette — so placing a default and
-then reconfiguring it was two steps for something already settled. They remain
-one shape kind each with a mode field; the choice rides the draw intent.
+Session tools were split into a tile per variant at the same time, on the
+[More than YouTube](../009-elements/embed-providers.md) pattern. The variant IS the decision — you know which
+tool before you reach for the palette — so placing a default and
+then reconfiguring it was two steps for something already settled. It remains
+one shape kind with a `session` field; the choice rides the draw intent.
 
 ## The Structure band
 
@@ -258,4 +249,4 @@ misplaced entry appears under the wrong one.
 A collapsible group shows its tile count as a badge beside the title, not
 folded into the blurb. "5 ways to celebrate on the board" made the reader
 parse a sentence to learn a quantity, and left the blurb unable to simply say
-what the group is for ("React on the canvas").
+what the group is for.

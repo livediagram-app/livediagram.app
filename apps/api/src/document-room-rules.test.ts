@@ -184,10 +184,9 @@ describe('admitFrame', () => {
 describe('answersAsSelf', () => {
   const vote = (voter: unknown) => ({ kind: 'vote', voter });
   const delta = (d: Record<string, unknown>) => ({ kind: 'el-delta', delta: d });
-  it('admits its own dot and response, and any idea', () => {
+  it('admits its own dot and response', () => {
     expect(answersAsSelf(vote('k'), 'k')).toBe(true);
     expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(true);
-    expect(answersAsSelf(delta({ kind: 'idea', text: 'x' }), undefined)).toBe(true);
   });
   it("refuses another's key, no key, and anything else", () => {
     expect(answersAsSelf(vote('other'), 'k')).toBe(false);

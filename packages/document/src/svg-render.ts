@@ -109,7 +109,6 @@ export {
   type ExportIconArt,
   type ExportShape,
   type ExportStickerArt,
-  type ResolveEmojiArt,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolvePlanArt,
@@ -126,7 +125,6 @@ import {
   exportFontIds,
   finishOf,
   type BoxedExportOptions,
-  type ResolveEmojiArt,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolvePlanArt,
@@ -389,7 +387,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
-      resolveEmojiArt: opts.resolveEmojiArt,
       tagColours: opts.tagColours,
       finish,
     });
@@ -614,7 +611,6 @@ export function renderElementsToSvg(
     resolveImageHref?: ResolveImageHref;
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
-    resolveEmojiArt?: ResolveEmojiArt;
     // The document's items, so Plan boards and cards draw their cards (docs/specs/026-plan/plan-board.md).
     items?: ReadonlyMap<string, Item>;
     // The document's item types (docs/specs/026-plan/item-types.md).
@@ -694,7 +690,6 @@ export function renderElementsToSvg(
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,
             resolveStickerArt: opts.resolveStickerArt,
-            resolveEmojiArt: opts.resolveEmojiArt,
             tabFont: tab.font,
             tabFinish: tab.finish,
             sketchBackdrop: backdrops.has(el.id),

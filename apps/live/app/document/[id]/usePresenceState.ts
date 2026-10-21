@@ -1,19 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AgentPresence, AvatarPresence } from '@liveplanner/api-schema';
+import type { AgentPresence } from '@liveplanner/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
 import { RELATIVE_TICK_MS } from '@/lib/relative-time';
 
 // What presence statuses render from: each peer's last-seen instant and the clock they are read at.
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
-import type { LaserPoint } from '@/lib/laser-buffer';
-import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime presence state for the document room: who's connected, each
-// peer's last-seen timestamp, and their tab focus / selection / cursor /
-// laser trail / walking character (docs/specs/008-canvas/avatar-mode.md). useRoomConnection writes these through the returned
-// setters; useEditorState reads them (via lib/presence-rows) to build the
-// avatar / cursor / laser / selection rows the editor renders.
+// peer's last-seen timestamp, and their tab focus / selection / cursor.
+// useRoomConnection writes these through the returned setters;
+// useEditorState reads them (via lib/presence-rows) to build the
+// avatar / cursor / selection rows the editor renders.
 export function usePresenceState() {
   // Live presence: the participants connected to this document's
   // Durable Object room right now. Includes ourselves once our `hello`
@@ -91,28 +89,6 @@ export function usePresenceState() {
   const [remoteCursors, setRemoteCursors] = useState<
     Map<string, { tabId: string; x: number; y: number } | null>
   >(new Map());
-  // Per-participant laser-pointer trails, keyed by participant id.
-  // Each entry is a buffer of recent points; the LaserOverlay filters
-  // them by age and renders the fading line. Trail buffers are
-  // bounded both by time (LIFETIME_MS in the overlay) and by a hard
-  // cap of 60 points in the receive handler so a flood can't grow the
-  // buffer without bound. Scoped per tab in the op itself.
-  const [remoteLaserTrails, setRemoteLaserTrails] = useState<
-    Map<string, { tabId: string; points: LaserPoint[] }>
-  >(new Map());
-  // Per-participant Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), keyed by participant
-  // id: the latest presence snapshot each peer published, or absent once they
-  // leave the mode (an `avatar: null` op deletes the entry). Scoped per tab in
-  // the op itself, like cursors.
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
-  // collected for everyone and read only while somebody is being followed.
-  const [remoteViewports, setRemoteViewports] = useState<Map<string, RemoteViewport>>(new Map());
-  const [remoteAvatars, setRemoteAvatars] = useState<
-    Map<string, { tabId: string; avatar: AvatarPresence }>
-  >(new Map());
-  // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
-  // room tells this socket alone.
-  const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
 
   return {
     livePresence,
@@ -128,13 +104,5 @@ export function usePresenceState() {
     setRemoteSelections,
     remoteCursors,
     setRemoteCursors,
-    remoteLaserTrails,
-    setRemoteLaserTrails,
-    remoteAvatars,
-    remoteViewports,
-    setRemoteViewports,
-    setRemoteAvatars,
-    followerIds,
-    setFollowerIds,
   };
 }

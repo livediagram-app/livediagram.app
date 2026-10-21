@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @liveplanner/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 147;
+export const TEMPLATE_COUNT = 135;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -160,7 +160,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -183,7 +183,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers and dot votes to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -347,10 +347,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in without an account; every response lands as a card on a board or a row in a Sheet, so the answers turn straight into work. See forms.',
       },
       {
-        q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Pages adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
-      },
-      {
         q: 'Can I undo a mistake?',
         a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits and Cmd-Shift-Z to bring one back; the buttons also sit in the bottom-right corner. Undo is personal, so it rewinds your own changes, not a teammate’s; if you both changed the same element, it puts that element back as you had it.',
       },
@@ -383,32 +379,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of documents. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
       },
       {
-        q: 'Can I follow what someone else is looking at?',
-        a: (
-          <>
-            Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a
-            teammate: your view goes wherever theirs goes, until you move away yourself. See{' '}
-            <a href="/help/canvas/follow-along/">following along</a>.
-          </>
-        ),
-        aText:
-          'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
-      },
-      {
-        q: 'Can we walk around a board together?',
-        a: (
-          <>
-            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
-            character around the canvas, with speech bubbles, a status and reactions. The Virtual
-            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
-            coffee machine to meet at. See{' '}
-            <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
-      },
-      {
         q: 'Can I stop a finished tab being changed?',
         a: (
           <>
@@ -438,15 +408,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Very. Switch a tab to Workshop, the mode for running a session, or start from a
-            retrospective, Lean Coffee or town hall Q&amp;A template, which opens there. Whoever
-            holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate
-            cards run planning poker, a temperature check shows how the room feels, a quiz asks what
-            it knows, and an idea box collects anonymous ideas. See{' '}
-            <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
+            retrospective template, which opens there. Run a shared timer and dot votes, and a
+            temperature check shows how the room feels. See{' '}
+            <a href="/help/collaboration/session-tools/">session tools</a>.
           </>
         ),
         aText:
-          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
+          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective template, which opens there. Run a shared timer and dot votes, and a temperature check shows how the room feels. See session tools.',
       },
     ],
   },

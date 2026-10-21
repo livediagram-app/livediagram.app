@@ -178,15 +178,6 @@ function rail(out: Element[], x: number, top: number): void {
     );
   });
 
-  // Who is still drawing: the done check sits at the foot of the rail.
-  const doneY = top + SHEET_H - 220;
-  out.push({
-    ...createShape('done-check', x, doneY),
-    width: RAIL_W,
-    height: 220,
-    label: 'Finished sketching?',
-    ...content,
-  });
 }
 
 // One panel of the folded sheet: its outline, the number chip on its corner

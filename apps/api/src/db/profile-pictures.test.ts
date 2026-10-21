@@ -64,29 +64,10 @@ describe('room ticket account bit', () => {
       shareCode: null,
       workbenchPairing: null,
       adderKey: null,
-      owner: false,
     };
     const account = await createWsTicket(env, 'd1', { ...base, account: true, personTag: null });
     const guest = await createWsTicket(env, 'd1', { ...base, account: false, personTag: null });
     expect((await consumeWsTicket(env, account, 'd1'))?.account).toBe(true);
     expect((await consumeWsTicket(env, guest, 'd1'))?.account).toBe(false);
-  });
-
-  // Migration 0096 against a real schema (docs/specs/012-collaboration/facilitator.md).
-  it('carries the owner bit through the real table', async () => {
-    const { env } = sqliteD1();
-    const base = {
-      role: 'edit' as const,
-      tabScope: null,
-      shareCode: null,
-      workbenchPairing: null,
-      adderKey: null,
-      account: false,
-      personTag: null,
-    };
-    const owner = await createWsTicket(env, 'd1', { ...base, owner: true });
-    const visitor = await createWsTicket(env, 'd1', { ...base, owner: false });
-    expect((await consumeWsTicket(env, owner, 'd1'))?.owner).toBe(true);
-    expect((await consumeWsTicket(env, visitor, 'd1'))?.owner).toBe(false);
   });
 });

@@ -1,8 +1,6 @@
 import { defaultFillColor, defaultTextColor } from './colors';
-import { isLegacyModeButtonSkin } from './selection-mode';
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_BUTTON_MODE,
   createLinkCard,
   activeCommentCount,
   createAnnotation,
@@ -430,10 +428,9 @@ describe('comment helpers', () => {
 const _typecheck: Element = createShape('square', 0, 0);
 void _typecheck;
 
-describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', () => {
-  it('arrives looking like a real button, not a themed box', () => {
-    const button = createShape('mode-button', 10, 20);
-    expect(button.shape).toBe('mode-button');
+describe('createShape (Behaviour elements)', () => {
+  it('makes a session button look like a real button, not a themed box', () => {
+    const button = createShape('session-button', 10, 20);
     // It has to read as pressable before anyone styles it: a button skin (the
     // kind's default per surface, not a stored colour, so it follows dark
     // mode), a lift off the surface, and rounded corners.
@@ -442,49 +439,9 @@ describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', ()
     expect(button.shadow).toBeTruthy();
     expect(button.borderRadius).toBe('lg');
     expect(button.textBold).toBe(true);
-    // Avatar is the default because walkthroughs are what the element is for.
-    expect(button.mode).toBe(DEFAULT_BUTTON_MODE);
-    expect(button.mode).toBe('avatar');
-  });
-
-  it('carries no label, so the face can say "Switch to <Mode>" instead', () => {
-    // A hardcoded label would go stale the moment the button is re-pointed at
-    // a different mode.
-    expect(createShape('mode-button', 0, 0).label).toBeUndefined();
-  });
-
-  it('is a square-ish tile, big enough to hit with a thumb', () => {
-    const button = createShape('mode-button', 0, 0);
+    // A square-ish tile, big enough to hit with a thumb.
     expect(button.height).toBeGreaterThanOrEqual(72);
-    expect(button.width).toBeGreaterThanOrEqual(72);
-    // Roughly square — an icon over a label, not a wide pill.
     expect(Math.abs(button.width - button.height)).toBeLessThan(40);
-  });
-
-  it('treats the pre-redesign button skin as unset, not as a colour choice', () => {
-    const fresh = createShape('mode-button', 0, 0);
-    // Today's button stores no colour (its skin is the kind's per-surface
-    // default, behaviour-skin.ts), so it is never mistaken for the legacy one.
-    expect(fresh.fillColor).toBeUndefined();
-    expect(isLegacyModeButtonSkin(fresh)).toBe(false);
-    // A button saved before the redesign wore white-on-brand-blue.
-    expect(
-      isLegacyModeButtonSkin({
-        shape: 'mode-button',
-        fillColor: '#0ea5e9',
-        strokeColor: '#0284c7',
-        textColor: '#ffffff',
-      }),
-    ).toBe(true);
-    // A deliberate blue on a modern button (dark text) is a real choice.
-    expect(
-      isLegacyModeButtonSkin({
-        shape: 'mode-button',
-        fillColor: '#0ea5e9',
-        strokeColor: '#0284c7',
-        textColor: '#0f172a',
-      }),
-    ).toBe(false);
   });
 
   it('makes a portal portal-shaped and unpaired (docs/specs/009-elements/portal-element.md)', () => {

@@ -10,13 +10,12 @@ describe('usePlanNeeded', () => {
   const square = createShape('square', 0, 0) as Element;
 
   it('needs items only with a Plan element or a card slide', () => {
-    expect(hasPlanContent([square], null)).toBe(false);
-    expect(hasPlanContent([square, board], null)).toBe(true);
-    expect(hasPlanContent([], '{"decks":[{"slides":[{"itemId":"x"}]}]}')).toBe(true);
+    expect(hasPlanContent([square])).toBe(false);
+    expect(hasPlanContent([square, board])).toBe(true);
   });
 
   it('stays needed once it has been', () => {
-    const { result, rerender } = renderHook(({ els }) => usePlanNeeded(els, null), {
+    const { result, rerender } = renderHook(({ els }) => usePlanNeeded(els), {
       initialProps: { els: [square] },
     });
     expect(result.current).toBe(false);
@@ -29,7 +28,7 @@ describe('usePlanNeeded', () => {
 
 describe('usePlanNeeded on a Plan tab', () => {
   it('fetches for a tab that opens in Plan, board or not', () => {
-    const { result } = renderHook(() => usePlanNeeded([], null, true));
+    const { result } = renderHook(() => usePlanNeeded([], true));
     expect(result.current).toBe(true);
   });
 });

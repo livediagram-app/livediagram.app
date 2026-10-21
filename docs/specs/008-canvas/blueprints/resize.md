@@ -65,7 +65,7 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   `UnionResizeHandles` all carry `data-canvas-handle`, so every handle reaches its resize with Shift.
 
 - Grips layer: `CanvasElementsLayer` draws it last in the transformed world, after every element,
-  the remote cursors and the laser, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
+  the remote cursors, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
   `inset: 0` (canvas coordinates). Inside it, in paint order: the canvas's own grips (next-note
   buttons, quick-connect pluses, union border, union handles), an `<svg>` whose `<g>` hosts SVG
   grips, then a `<div>` host for HTML grips. Every pressable thing in the layer re-enables pointer

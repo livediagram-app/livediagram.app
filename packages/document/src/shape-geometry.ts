@@ -1,12 +1,11 @@
 // The one geometry table for the shapes that are DRAWN rather than boxed.
 //
 // Two renderers paint these: the editor's React overlays (ShapeSvgOverlay,
-// BrowserChrome, FurnitureView in apps/live) and the headless string emitters
+// BrowserChrome in apps/live) and the headless string emitters
 // (svg-render-shapes / svg-render-faces here, used by exports, thumbnails,
 // the api's live image and the MCP render). They used to carry their own
 // copies of every path, kept "in sync" by a comment, and the copies drifted
-// (a frame that took its fill on the canvas exported empty; a chair lost its
-// facing and its seat in an export). Both now read the data below, so a
+// (a frame that took its fill on the canvas exported empty). Both now read the data below, so a
 // silhouette changes in one place. Pure data + pure functions: no React, no
 // DOM, safe in a worker.
 //
@@ -17,7 +16,6 @@
 //   - detail:  thin solid chrome (bezels, keys, creases), no fill
 //   - limb:    an unfilled round-capped line (the actor's body)
 //   - head:    a limb that takes the element's fill (the actor's head)
-import { colorWash } from './color-wash';
 import type { ShapeKind } from './shape-kind';
 
 export type ShapePartRole = 'main' | 'outline' | 'detail' | 'limb' | 'head';
@@ -295,11 +293,4 @@ export function browserChromeLayout(): { dotX: number[]; navX: number; pillX: nu
   const dotX = [0, 1, 2].map((i) => c.padXPx + i * (c.dotPx + c.dotGapPx));
   const navX = c.padXPx + 3 * c.dotPx + 2 * c.dotGapPx + c.groupGapPx;
   return { dotX, navX, pillX: navX + c.nav.widthPx + c.groupGapPx };
-}
-
-/** A chair's seat colour: its own fill, or with none (the default is
- *  `transparent`) a wash of its stroke, so it follows the tab theme rather
- *  than staying a fixed light grey on a dark canvas. */
-export function chairSeatFill(fillColor: string | undefined, stroke: string): string {
-  return fillColor && fillColor !== 'transparent' ? fillColor : colorWash(stroke, 0.32);
 }

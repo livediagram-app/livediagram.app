@@ -5,8 +5,7 @@ Status: **implemented** (phases 1 to 5).
 A room of people pressing the same cards at once must not lose, duplicate or
 retract anybody's action. The dot-vote was fixed for this first ([Session tools (timer + voting)](session-tools.md),
 "Casting a dot"). A review of every element used during collaboration found
-the same failure in the done check, estimate, temperature, idea box,
-checklist and comment threads, plus a handful of transport bugs underneath
+the same failure in the temperature check, the checklist and comment threads, plus a handful of transport bugs underneath
 all of them. This spec records what the review found and the order it is
 being fixed in.
 
@@ -46,13 +45,10 @@ Six shared causes. Most element bugs are one of these showing through.
 ## Phase 1 (shipped): stop the client losing its own and its peers' work
 
 - **Collaborative presses do not push undo** (causes 2). Casting or
-  withdrawing a response, revealing, clearing, adding an idea, taking the
-  roll, pressing an agenda row and the picker's roll all go through the
-  non-history `tickTabs`, as the vote does. Scatter still commits: it
-  creates stickies, which is authoring.
+  withdrawing a response, clearing and the picker's roll all go through the
+  non-history `tickTabs`, as the vote does.
 - **Undo re-grafts every live collaborative field** (cause 2). The fields a
-  press writes (`responses`, `responsesRevealed`, `ideaCards`,
-  `ideasRevealed`, `rollCall`, `agendaCurrent`, `pickerResult`) join
+  press writes (`responses`, `pickerResult`) join
   `commentThread` and `action` in `LIVE_ELEMENT_FIELDS`, so restoring a
   snapshot keeps their present values.
 - **The save baseline follows remote ops** (causes 3 and 4). Every applied
@@ -79,13 +75,7 @@ applied by the sender and every receiver through the same pure
 `applyElementDelta` (`packages/document/src/element-deltas.ts`):
 
 - `response`: one participant's answer set, or withdrawn with `null`, keyed
-  by `participantKey` (done check, estimate, temperature).
-- `idea`: one anonymous card appended, with the random `id` its poster
-  minted for it (`ideaCardIds`). No author, still ([Idea box](idea-box.md)). The box
-  refuses a card past `IDEA_MAX_CARDS`, at the press and on apply, so a
-  full box can no longer fail the tab's validation on save; a card whose id
-  the box already holds is a replay, and a no-op. Two posts racing for the
-  last card settle in the room's order ([Idea box](idea-box.md) "Racing for the last card").
+  by `participantKey` (the temperature check).
 - `check`: one checklist row ticked or unticked. Rows have no ids, so the
   row is named by index AND text; a peer who moved or retitled rows gets the
   row with that text, or nothing. A tick is no longer undoable.
@@ -103,7 +93,7 @@ Two rules keep the whole-element path from undoing it:
 
 - **Receivers keep their own copy of these fields.** An `el` add/update or
   an element inside a whole `tab` op is merged over the local element
-  (`mergeIncomingElement`): everything else is taken, but answers, ideas,
+  (`mergeIncomingElement`): everything else is taken, but answers,
   checklist ticks and the comment thread stay ours, because every change to
   them reached us as a delta. The sender's copy is a snapshot from their
   last save and can be missing somebody.
@@ -111,17 +101,14 @@ Two rules keep the whole-element path from undoing it:
   only change is in those fields (`elementChangeIsDeltaOnly`).
 
 **A round per card.** `ShapeElement.collabRound` is a random id minted by
-Clear (estimate, done check) and by emptying an idea box. Answer and idea
-deltas carry it; one naming another round is dropped, so a press from before
+Clear (Reset Answers). Answer deltas carry it; one naming another round is dropped, so a press from before
 a clear can't land in the next round or re-open it. A whole-element update
-with a DIFFERENT round replaces the answers and ideas (that is how a clear
+with a DIFFERENT round replaces the answers (that is how a clear
 reaches everyone). Undo re-grafts `collabRound` and the checklist ticks with
 the other live fields.
 
 Decisions against the plan above: checklist rows are matched by index and
-text rather than given ids (no schema change). Idea cards first went without
-ids too, and gained them (`ideaCardIds`, beside the plain string list) when a
-poster's card had to be taken back after losing the race for the last card.
+text rather than given ids (no schema change).
 
 Still open until phase 4: a view-role comment goes through its REST
 endpoint, not a delta (the room drops view-role mutations), so editors still
@@ -141,16 +128,15 @@ the DO only stores it):
 
 - answers: each participant's LATEST cast or withdraw in the element's
   current round;
-- ideas: the cards posted this round, in order;
 - checklist ticks: each row's latest state, by index and text;
 - dots: the round's votes map, rebuilt from its deltas (a round always
   starts empty, so the deltas are the whole map).
 
-A delta for a new round replaces that element's answers and ideas (ticks
+A delta for a new round replaces that element's answers (ticks
 carry over, since rows have no round) and retires the round it replaced; a
 `vote` op for a new vote round does the same to the dots. The entry keeps the
 last `RETIRED_ROUNDS_MAX` (16) retired rounds, and an op naming one is late
-and dropped: before, a late answer, idea, dot or even a withdraw from the
+and dropped: before, a late answer, dot or even a withdraw from the
 previous round flipped the entry back to it and lost the current round's
 answers or dots. One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
@@ -165,9 +151,7 @@ only the entries sequenced after that cursor (`fetchRoomLedger` + `applyRoomLedg
 A save with no cursor (the unload beacon, an API token, the MCP server), or a
 cursor from another epoch, isn't merged. Each ledger entry is re-applied through `applyElementDelta`, so
 the merge is exactly what a peer receiving those deltas would do: answers
-are re-set or withdrawn, ticks re-set, votes replaced for the same round,
-and ideas the snapshot is missing appended (per text, as many copies as
-the ledger holds, since cards have no ids). A ledger for another round
+are re-set or withdrawn, ticks re-set, and votes replaced for the same round. A ledger for another round
 than the incoming element's is ignored: the save carries a clear the
 ledger hasn't seen a delta for yet.
 
@@ -202,21 +186,10 @@ and the next save from anybody repairs it.
   comment carries no `authorId` (the author's owner id, which a tab GET
   redacts for everyone else); the author's own browser keeps it when it swaps
   its local comment id for the server's.
-- **The idea box refuses a card past `IDEA_MAX_CARDS`** at the press
-  (shipped with phase 2).
 - **A session button can't start a vote over a running one.** Pressing a
   vote button mid-vote used to start a fresh vote, which reset every dot on
   the canvas. It is now a no-op; ending the vote stays with the vote's own
   controls.
-- **The live poll survives a socket.** The room keeps the running poll and
-  every answer (`live-poll` in its storage) and replays them to each session
-  on hello, so a late joiner, a refresh and a reconnecting host all catch up.
-  Answers are keyed by the answerer's collab key (`poll-answer.key`), so a
-  re-answer after a reconnect replaces the first instead of counting twice. A
-  poll records its starter's key (`LivePoll.hostKey`), so the host can still
-  end it after a refresh. Two polls started at once converge: the room and
-  every client keep the newer start (`pollSupersedes`, then id), so the
-  starter of the loser switches rather than answering the other poll alone.
 - **Votes are keyed by the collab key.** Dots, the budget and the host
   (`startedBy`) use `participantKey`, not the owner id, which is a guest's
   credential and which every dot op broadcast to the whole room.
@@ -244,7 +217,7 @@ and the next save from anybody repairs it.
   lets the author's own save (the only copy carrying their id) claim it. A
   comment that already has an author id is never re-claimed.
 - **Ops sent while the socket is down are held, not dropped.** The room
-  client keeps an outbox of document ops and poll answers (bounded at 500)
+  client keeps an outbox of document ops (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
 

@@ -115,8 +115,8 @@ semantic colour:
   element’s label editor, focused — the drag already said WHERE and WHAT,
   and the only thing left is the words, so making the author double-click
   their own fresh note is a step that answers nothing. Applies to every
-  palette drop, gated by `takesTypedLabel`: a sticker, session button,
-  reaction pad, mode button or estimate renders its face from a SETTING,
+  palette drop, gated by `takesTypedLabel`: a sticker or session button
+  renders its face from a SETTING,
   so a caret there would offer to edit something that isn’t text.
 - **The pen has one width.** Auto-fit is capped at **25px**
   (`FIT_MAX_PX`, floor 10px). On a real wall everyone writes at roughly one
@@ -245,7 +245,7 @@ The notes behave like the physical kit:
   the shape before the blurb does.
 - **One size for life.** On an event-storming board every sticky drops
   `fixedSize: true` (element-level flag; `isFixedSizeElement` unifies it
-  with the [Selection Mode button](../009-elements/mode-button.md) fixed-size shape kinds): no resize handles, union
+  with the fixed-size shape kinds, `FIXED_SIZE_SHAPES`): no resize handles, union
   scaling moves it without scaling it, the menu's Size category stays
   away, drag-to-size gestures and tap-size-inheritance both stand down.
 - **Hand-placed tilt.** Every sticky dropped on an ES board gets a

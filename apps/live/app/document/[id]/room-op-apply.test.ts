@@ -26,34 +26,6 @@ const vote = (over: Partial<TabVote> = {}): TabVote => ({
 });
 
 describe('applyRoomOpToTabs', () => {
-  // docs/specs/012-collaboration/idea-box.md "Racing for the last card": only with an own pending post.
-  it("lets this browser's pending idea go for a peer's card at a full box, and only then", () => {
-    const full = el('box', {
-      shape: 'idea-box',
-      ideaCards: [...Array(299).fill('x'), 'mine'],
-      ideaCardIds: [...Array(299).fill(''), 'm1'],
-    });
-    const tabs = [tab({ elements: [full] })];
-    const op: RoomOp = {
-      kind: 'el-delta',
-      tabId: 't1',
-      elementId: 'box',
-      delta: { kind: 'idea', text: 'peer', id: 'p1' },
-    };
-    expect(applyRoomOpToTabs(tabs, op)).toBe(tabs);
-    expect(applyRoomOpToTabs(tabs, op, () => [])).toBe(tabs);
-    const asked: string[] = [];
-    const next = applyRoomOpToTabs(tabs, op, (tabId, elementId) => {
-      asked.push(`${tabId}/${elementId}`);
-      return ['m1'];
-    });
-    expect(asked).toEqual(['t1/box']);
-    const box = next[0]!.elements[0] as ShapeElement;
-    expect(box.ideaCards!.at(-1)).toBe('peer');
-    expect(box.ideaCards).not.toContain('mine');
-    expect(box.ideaCardIds!.at(-1)).toBe('p1');
-  });
-
   it('applies an element update by id and leaves the other element alone', () => {
     const tabs = [tab()];
     const next = applyRoomOpToTabs(tabs, {
@@ -175,16 +147,16 @@ describe('applyRoomOpToTabs', () => {
   });
 });
 
-// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same
-// instant, then each of their autosaves runs. Everybody must end up with
-// both marks.
-describe('two people pressing one done check', () => {
-  const check = (): ShapeElement => ({ ...el('card'), shape: 'done-check' }) as ShapeElement;
+// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people answer the same temperature check in
+// the same instant, then each of their autosaves runs. Everybody must end up with
+// both answers.
+describe('two people answering one temperature check', () => {
+  const check = (): ShapeElement => ({ ...el('card'), shape: 'temperature' }) as ShapeElement;
   const start = (): Tab[] => [tab({ elements: [check()] })];
 
   const press = (tabs: Tab[], who: string) => {
     const card = tabs[0]!.elements[0] as ShapeElement;
-    const delta = responseDeltaFor(card, who, 'done', 1);
+    const delta = responseDeltaFor(card, who, '4', 1);
     const op: RoomOp = { kind: 'el-delta', tabId: 't1', elementId: 'card', delta };
     return { tabs: [{ ...tabs[0]!, elements: [applyElementDelta(card, delta)] }], op };
   };

@@ -12,7 +12,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 | `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
 | `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
 | `apps/api/src/db/tabs.ts`, `apps/api/src/db/documents.ts`     | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
-| `apps/api/src/participant-write.ts`, `qa-board-write.ts`      | Hand `swapTabData` the next body's stats                                                |
+| `apps/api/src/participant-write.ts`                           | Hand `swapTabData` the next body's stats                                                |
 | `packages/api-schema/src/index.ts`                            | `DocumentStats`, `DocumentSummary.stats`                                                |
 | `packages/ui/src/hint/*`, `packages/ui/src/useRowPreview.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `useRowPreview`      |
 | `apps/live/app/explorer/useExplorerViewMode.ts`               | `ExplorerViewMode` gains `'details'`                                                    |

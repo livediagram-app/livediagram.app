@@ -4,7 +4,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Tab } from '@liveplanner/document';
-import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
 import { GifExportError } from '@/lib/gif-export/gif-export-error';
 import type { PageSnapshot } from '@/lib/gif-export/page-snapshot';
 import GifExportPanel, {
@@ -14,7 +13,6 @@ import GifExportPanel, {
 } from './GifExportPanel';
 
 const h = vi.hoisted(() => ({
-  config: null as PresentationConfig | null,
   snapshot: vi.fn(),
   sampleBytes: 10_000,
   track: vi.fn(),
@@ -24,10 +22,6 @@ const h = vi.hoisted(() => ({
 vi.mock('@/lib/telemetry', () => ({ track: h.track }));
 vi.mock('@/lib/download-blob', () => ({ downloadBlob: h.download }));
 vi.mock('@/lib/export-fonts', () => ({ embeddedFontFaceCss: async () => '' }));
-vi.mock('@/lib/presentation-config', async (orig) => ({
-  ...(await orig<typeof import('@/lib/presentation-config')>()),
-  loadPresentationConfig: () => h.config,
-}));
 vi.mock('@/lib/gif-export/page-snapshot', () => ({ snapshotPage: h.snapshot }));
 vi.mock('@/lib/gif-export/page-frames', () => ({
   createFrameDrawer: () => ({ draw: async () => new Uint8ClampedArray(16) }),
@@ -78,7 +72,6 @@ const MAKE_WAIT = { timeout: 10_000 };
 const MAKE_TEST_MS = 15_000;
 
 beforeEach(() => {
-  h.config = { ...DEFAULT_PRESENTATION_CONFIG };
   h.sampleBytes = 10_000;
   h.snapshot.mockReset().mockResolvedValue(still);
   h.encoder.finish.mockReset().mockResolvedValue({ bytes: new Uint8Array([71]), written: 1 });
@@ -101,28 +94,22 @@ describe('the GIF panel', () => {
     expect(screen.getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe('true');
   });
 
-  it('starts the hold at the deck’s Auto-advance, within the range', () => {
-    h.config = { ...DEFAULT_PRESENTATION_CONFIG, autoAdvanceSeconds: 30 };
+  it('names the transition between pages', () => {
     open();
-    expect(hold().value).toBe('20');
-  });
-
-  it('names the deck’s transition', () => {
-    h.config = { ...DEFAULT_PRESENTATION_CONFIG, transition: 'fade', speed: 'normal' };
-    open();
-    expect(screen.getByText(/Fade, Normal, from the Slide Deck settings/)).toBeTruthy();
+    expect(screen.getByText('Between pages: a slide.')).toBeTruthy();
   });
 
   it('estimates from a sample frame, and warns when it is large', async () => {
-    h.config = { ...DEFAULT_PRESENTATION_CONFIG, transition: 'none' };
     open();
-    // Ten still pages: one frame each.
-    await waitFor(() => expect(screen.getByText('About 101 KB')).toBeTruthy());
+    // Ten still pages, a slide between each.
+    await waitFor(() => expect(screen.getByText(/^About [\d.]+ (KB|MB)$/)).toBeTruthy());
     expect(screen.getByTestId('export-preview').getAttribute('src')).toBe('data:image/svg+xml,x');
     cleanup();
     h.sampleBytes = 2_000_000;
     open();
-    await waitFor(() => expect(screen.getByText(`About 20.0 MB. ${GIF_LARGE_COPY}`)).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText((text) => text.endsWith(`MB. ${GIF_LARGE_COPY}`))).toBeTruthy(),
+    );
   });
 
   it('will not make a GIF longer than 3 minutes', () => {

@@ -35,7 +35,6 @@ const SHAPE_CONTENT = [
   'lineSeries',
   'legendItems',
   'conceptRows',
-  'agendaItems',
   'sankeyFlows',
   'sankeyNodes',
   'sankeyUnit',

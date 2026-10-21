@@ -18,8 +18,6 @@ import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@liveplanner/items';
 
-export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
-
 // ---------------------------------------------------------------------
 // Documents
 // ---------------------------------------------------------------------
@@ -50,12 +48,6 @@ export type LiveDoc = {
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DocumentSource). Set on create, never rewritten by meta updates.
   source: DocumentSource | null;
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
-  // the document has no deck (every document until somebody builds one).
-  // Deliberately absent from DocumentSummary: the Explorer lists documents and
-  // has no use for their decks, and a deck is the one metadata field that can
-  // grow with the document.
-  presentation: string | null;
   // The document's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
   // (or absent, from an older client or record) for the built-in ones. Written only by
   // PUT /documents/:id/item-types.
@@ -611,7 +603,6 @@ export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
 export * from './read-notes';
-export * from './poll';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
@@ -650,7 +641,6 @@ export * from './placement-defaults';
 export * from './home';
 export * from './drag-preview';
 export * from './article-caret';
-export * from './avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).

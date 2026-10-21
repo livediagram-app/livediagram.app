@@ -85,27 +85,8 @@ export type TemplateKind =
   // Affinity map: research notes grouped under insight headers and
   // themes, with dot-vote tallies and an unsorted pile still to place.
   | 'affinity-map'
-  // Lean Coffee (docs/specs/012-collaboration/qa-board.md): an agenda-less meeting run on a Q&A board, with
-  // its four-step loop drawn out, timebox timers, a keep-going poll and takeaways.
-  | 'lean-coffee'
   | 'brainstorm'
   | 'workshop-board'
-  // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
-  // run-of-show agenda, a facilitator kit and a follow-ups checklist.
-  | 'town-hall'
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
-  // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
-  | 'pub-quiz'
-  | 'icebreaker-questions'
-  // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  | 'virtual-office'
-  // Its siblings, the spaces to walk round together (docs/specs/012-collaboration/virtual-office-template.md "Spaces").
-  | 'coworking-space'
-  | 'team-pod'
-  | 'all-hands-hall'
-  | 'two-truths-and-a-lie'
-  | 'would-you-rather'
-  | 'people-bingo'
   // The classic nine-block Business Model Canvas, coloured by area,
   // numbered in fill order and seeded with worked sticky notes.
   | 'business-model-canvas'
@@ -184,9 +165,6 @@ export type TemplateKind =
   | 'risk-matrix'
   // A research-backed user persona laid out as a profile sheet.
   | 'user-persona'
-  // A meeting that runs itself: purpose, attendees, a live agenda element,
-  // and the parking lot, decisions and actions it produces.
-  | 'meeting-agenda'
   // Personal objectives, written with a sentence formula and a SMART check,
   // balanced across life areas, with key results and a check-in rhythm.
   | 'objectives-planner'
@@ -774,13 +752,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'lean-coffee',
-    title: 'Lean Coffee',
-    description:
-      'The four-step loop drawn out, a topics board, and the timers and poll that run it.',
-    extra: true,
-  },
-  {
     kind: 'brainstorm',
     title: 'Brainstorm Board',
     description:
@@ -792,75 +763,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Workshop Board',
     description:
       'The kickoff wall for a longer session: a check-in and icebreaker, goals, a timed agenda and ground rules.',
-    extra: true,
-  },
-  {
-    kind: 'town-hall',
-    title: 'Town Hall Q&A',
-    description: 'An upvoted audience Q&A beside the panel, a run of show and a facilitator kit.',
-    extra: true,
-  },
-  {
-    kind: 'pub-quiz',
-    title: 'Pub Quiz',
-    description:
-      'Three rounds of timed quiz questions, a team scoreboard, a quizmaster kit and a tie-breaker under a cover.',
-    extra: true,
-  },
-  {
-    kind: 'icebreaker-questions',
-    title: 'Icebreaker Questions',
-    description:
-      'Spin a question and a person, two minutes each on the clock, then everyone says hello on the wall.',
-    extra: true,
-  },
-  {
-    kind: 'virtual-office',
-    title: 'Virtual Office',
-    description:
-      'Rooms to walk round in Avatar mode: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
-    extra: true,
-  },
-  {
-    kind: 'coworking-space',
-    title: 'Coworking Space',
-    description:
-      'An open floor to walk round in Avatar mode: hot desks, two phone booths, a coffee bar and a lounge.',
-    extra: true,
-  },
-  {
-    kind: 'team-pod',
-    title: 'Team Pod',
-    description:
-      'A small team’s corner in Avatar mode: four desks together, a table for the stand-up and a team board.',
-    extra: true,
-  },
-  {
-    kind: 'all-hands-hall',
-    title: 'All-Hands Hall',
-    description:
-      'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
-    extra: true,
-  },
-  {
-    kind: 'two-truths-and-a-lie',
-    title: 'Two Truths and a Lie',
-    description:
-      'Each player writes three statements, one of them false, and the room votes on the lie in a live poll.',
-    extra: true,
-  },
-  {
-    kind: 'would-you-rather',
-    title: 'Would You Rather',
-    description:
-      'Six light dilemmas, each with a ready-made poll, so the room picks a side and argues its case.',
-    extra: true,
-  },
-  {
-    kind: 'people-bingo',
-    title: 'Find Someone Who Bingo',
-    description:
-      'A 4 by 4 bingo card of things to find in a teammate, a ten-minute timer and a Bingo! button.',
     extra: true,
   },
   {
@@ -1072,13 +974,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'User Persona',
     description:
       'A research-backed persona: profile and quote, goals, frustrations, behaviours, personality and how we help.',
-    extra: true,
-  },
-  {
-    kind: 'meeting-agenda',
-    title: 'Meeting Agenda',
-    description:
-      'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
     extra: true,
   },
   {

@@ -12,9 +12,6 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   icon: 'Icon',
   'progress-bar': 'Progress Bar',
   'progress-ring': 'Progress Ring',
-  // Named for what it does, not its internal kind — titleCase would say
-  // 'Mode Button' (docs/specs/009-elements/mode-button.md).
-  'mode-button': 'Selection Mode',
   // Both would title-case to a bare noun that says the wrong thing on its own
   // ('Decision', 'Temperature'), so they carry the full name (docs/specs/012-collaboration/temperature-check.md,
   // docs/specs/012-collaboration/decision-record.md).

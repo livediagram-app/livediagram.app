@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's corner panels (AI, Minimap, Poll, Vote and the tool panels) each
+The editor's corner panels (AI, Minimap and the tool panels) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -25,8 +25,8 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** AI, Minimap, Poll, Vote, and the tool panels (Avatar, Laser,
-  Spotlight, Eraser, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
+- **Participating panels:** AI, Minimap, and the tool panels (Eraser, Format), every corner panel
+  built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
@@ -56,7 +56,7 @@ When the user has never arranged panels, the corners match today's defaults:
 | `bottom-left`  | Minimap                                                       |
 | `bottom-right` | AI, tool panels, above the bottom cluster (zoom controls pin) |
 
-The AI panel and the tool panels (Laser, Spotlight, Eraser, Format, Slide Deck) open bottom-right, stacked
+The AI panel and the tool panels (Eraser, Format) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
@@ -94,8 +94,8 @@ editor (element drag, palette-to-canvas drag).
 A drag only **starts** once the pointer has travelled past a shared tolerance
 (`isDragTravel` in `lib/press-gestures.ts`), so a click on a panel header that jitters by a
 pixel stays a click. That tolerance is one definition for every draggable chrome control —
-panel headers, slide-deck rows, palette tiles, the quick-connect plus, the isometric
-orbit button, avatars — because six of them had their own and the copies had drifted: one
+panel headers, palette tiles, the quick-connect plus, the isometric
+orbit button — because several of them had their own and the copies had drifted: one
 said 5px where the rest said 4, and one measured each axis separately, which is a square
 rather than a circle and let a diagonal slip of (4, 4) — 5.66px of real travel — still
 count as a click. The shared thing is the **predicate**, not just the number, since
@@ -122,16 +122,13 @@ Shape:
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel, a popover over its
-// cluster button that takes no corner. The Poll and Vote panels are not corner panels either: they
-// open over the Session strip's buttons (docs/specs/012-collaboration/session-tools.md), and a stored
-// layout naming them is read like any unknown id, and so is the Avatar panel, a popover over its own button
-// (docs/specs/008-canvas/avatar-mode.md). Four panels are NOT always available — they exist only while
+// cluster button that takes no corner. The Vote panel is not a corner panel either: it
+// opens over the Session strip's button (docs/specs/012-collaboration/session-tools.md), and a stored
+// layout naming it is read like any unknown id. Two panels are NOT always available — they exist only while
 // their mode is running, so they join and leave their
-// corner stack rather than sitting in it: 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
-// (docs/specs/008-canvas/spotlight-panel.md, the light's look), 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush),
+// corner stack rather than sitting in it: 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush)
 // and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId =
-  'collaborate' | 'ai' | 'minimap' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'slide-deck';
+type PanelId = 'collaborate' | 'ai' | 'minimap' | 'eraser' | 'format';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

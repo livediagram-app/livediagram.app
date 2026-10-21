@@ -24,15 +24,13 @@ describe('behaviour shapes', () => {
   });
 
   it('gives the shared menu to a kind with settings behind it', () => {
-    expect(carriesSharedSettingsMenu('mode-button')).toBe(true);
-    expect(carriesSharedSettingsMenu('reveal')).toBe(false);
+    expect(carriesSharedSettingsMenu('picker')).toBe(true);
+    expect(carriesSharedSettingsMenu('comment-pin')).toBe(false);
   });
 
-  it('gives Bring Focus no menu at all', () => {
-    // Nothing on it is set from a menu of its own: its colours and label are
-    // reached by right-clicking the element, like every other shape.
-    expect(carriesSharedSettingsMenu('focus-button')).toBe(false);
-    expect(drawsOwnElementMenu('focus-button')).toBe(false);
+  it('gives the session button its own menu', () => {
+    expect(drawsOwnElementMenu('session-button')).toBe(true);
+    expect(carriesSharedSettingsMenu('session-button')).toBe(false);
   });
 
   it('gives nothing to a shape outside the family', () => {

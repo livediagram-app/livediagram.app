@@ -13,20 +13,15 @@ import {
 import type { BorderRadius } from './border-style';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
-import { MODE_BUTTON_SKIN } from './selection-mode';
+import { CONTROL_SKIN } from './behaviour-config';
 import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
-import { FENCE_WOOD } from './fence';
-import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
-import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
   switch (element.type) {
     case 'shape':
-      // A room's name sits in its back wall's face (docs/specs/009-elements/office.md "Room"): the roomier
-      // padding clears the wall's top.
-      return element.shape === 'room' ? 'md' : 'sm';
+      return 'sm';
     case 'text':
       return 'none';
     case 'sticky':
@@ -201,25 +196,12 @@ export const DARK_INK = {
   annotationFill: '#1c2533',
 } as const;
 
-// The Behaviour elements that look like controls or furniture store no
-// colour (behaviour-skin.ts); these are their unstyled looks per surface. The
-// buttons (mode, session: the timer, vote and poll; picker) wear a real UI
-// button's skin, a light card on light paper and a raised slate one on dark,
-// never the shape default, so they read as pressable before anyone styles
-// them. The reveal cover and the chair paint themselves; only their outline
-// and label ink follow the paper.
-// The Reveal cover's opaque base, from the PAPER under it rather than the
-// app's appearance, so a dark theme in light mode still gets a dark cover
-// (docs/specs/009-elements/reveal-zone.md "The look"). Shared by the canvas
-// face and the headless renderer (exports, the minimap), so the two cannot
-// drift: the renderer once hard-coded the light base and drew a white cover
-// on a dark canvas's map.
-export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
-  light: '#f1f5f9',
-  dark: '#172131',
-};
+// The Behaviour elements that look like controls store no colour
+// (behaviour-skin.ts); these are their unstyled looks per surface. The
+// buttons (session: the timer and vote; picker) wear a real UI button's skin,
+// a light card on light paper and a raised slate one on dark, never the shape
+// default, so they read as pressable before anyone styles them.
 const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
-const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
 function behaviourSkin(
   element: BoxedElement,
@@ -227,41 +209,8 @@ function behaviourSkin(
 ): { fill: string; stroke: string; text: string } | null {
   if (element.type !== 'shape') return null;
   const kind = element.shape;
-  if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
-    return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
-  }
-  // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
-  if (kind === 'avatar-pad') {
-    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
-  }
-  if (kind === 'fence') {
-    return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
-  }
-  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
-  // deep on dark. Their outlines are the furniture's.
-  if (kind === 'room' || kind === 'rug') {
-    const fill =
-      kind === 'room'
-        ? surface === 'dark'
-          ? '#292524'
-          : ROOM_FLOOR
-        : surface === 'dark'
-          ? '#713f12'
-          : RUG_FILL;
-    return surface === 'dark'
-      ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
-      : { fill, ...OUTLINE_SKIN_LIGHT };
-  }
-  if (kind === 'reveal' || isSeatingShape(kind) || isOfficeShape(kind)) {
-    if (surface === 'dark') {
-      return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
-    }
-    // The reveal cover's stroke is its ACCENT (docs/specs/009-elements/reveal-zone.md "The look"), so on
-    // light paper it takes the shape accent, not the chair's grey outline.
-    return kind === 'reveal'
-      ? { fill: 'transparent', stroke: '#0ea5e9', text: OUTLINE_SKIN_LIGHT.text }
-      : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
+  if (kind === 'session-button' || kind === 'picker') {
+    return surface === 'dark' ? CONTROL_SKIN_DARK : CONTROL_SKIN;
   }
   return null;
 }
@@ -541,8 +490,8 @@ export function supportsBorder(
 // Shape kinds that DRAW THEIR OWN BODY, so the wrapper carries no border or
 // background and every border control is dead for them. One list, exported,
 // because the renderer and the menu were each keeping their own and drifted:
-// the menu still offered Border on a code block, a checklist, a portal and a
-// reveal long after the renderer stopped painting one.
+// the menu still offered Border on a code block, a checklist and a portal
+// long after the renderer stopped painting one.
 //
 // The actor, icons and stickers are here for a different reason — a stick
 // figure, a glyph and a die-cut plate have no enclosing outline to stroke —
@@ -590,31 +539,10 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'legend',
   // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
   'sankey',
-  // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
+  // Behaviour elements (docs/specs/009-elements/portal-element.md): the ring IS the element.
   'portal',
   // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
   'tab-window',
-  'reveal',
-  // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
-  // which is what the canvas does too (isSvgRenderedShape excludes it).
-  'chair',
-  // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
-  'fence',
-  'desk',
-  'sofa',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is its pixels.
-  'avatar-pad',
-  // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
-  // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
-  // them would frame a circle in a square.
-  'quiz',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
@@ -644,8 +572,7 @@ export function supportsBorderControls(element: Element): boolean {
 // nowhere to put one, so an icon dropped on them stands alone.
 //
 // Nor do the Behaviour and Collaborate elements that draw their own face
-// (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
-// cover, the chair...): their face never renders an inline icon, so one folded
+// (hasOwnFace: the collaboration cards, the buttons, the picker...): their face never renders an inline icon, so one folded
 // in would be invisible. Dropped on them, it stands alone too.
 // Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
 // a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab

@@ -6,7 +6,7 @@ import { settleChips } from './attachment';
 import { dropLegacyDocks } from './legacy-docks';
 import { stampLegacyEsKinds } from './legacy-es-kinds';
 import { migrateLegacyGroups } from './legacy-groups';
-import { migrateLegacyModeButtons } from './legacy-mode-buttons';
+import { migrateLegacySessionButtons } from './legacy-session-buttons';
 import { migrateLegacyStrokePoints } from './legacy-stroke-points';
 import { migrateLegacyTextSizing } from './legacy-text-sizing';
 import { dropUnturnableRotation } from './unturnable-rotation';
@@ -31,7 +31,7 @@ export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
   return dropUnsafeColours(
     dropUnturnableRotation(
       stampLegacyEsKinds(
-        migrateLegacyModeButtons(
+        migrateLegacySessionButtons(
           migrateLegacyTextSizing(
             migrateLegacyStrokePoints(
               dropLegacyDocks(

@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is active, an **Eraser** panel is present: how it erases, how big it is, and what it is allowed to remove. The fourth mode panel, after [Avatar](avatar-mode.md), [Laser](laser-panel.md), and [Spotlight](spotlight-panel.md).
+While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is active, an **Eraser** panel is present: how it erases, how big it is, and what it is allowed to remove. The first mode panel; the [Format](format-panel.md) panel is the other.
 
 ## Why
 

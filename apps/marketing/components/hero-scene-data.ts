@@ -4,7 +4,7 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all ten. hero-scenes.tsx pairs each with its board for the hero stage.
+// scene's board, never all nine. hero-scenes.tsx pairs each with its board for the hero stage.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
@@ -19,8 +19,7 @@ export type HeroSceneKey =
   | 'article'
   | 'plan'
   | 'sheet'
-  | 'form'
-  | 'townhall';
+  | 'form';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -186,22 +185,6 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
       { name: 'Responses', color: '#10b981' },
     ],
     shared: true,
-    portraitViewBox: PORTRAIT,
-  },
-  {
-    key: 'townhall',
-    word: 'Workshop',
-    short: 'Town hall',
-    build: '/new?mode=workshop&q=town%20hall',
-    title: 'Q3 all-hands',
-    label: 'Town hall: questions in, votes up, answered live with the whole room',
-    mode: 'workshop',
-    tabs: [
-      { name: 'Q&A', color: '#ef4444', active: true },
-      { name: 'Agenda', color: '#0ea5e9' },
-    ],
-    shared: true,
-    landscapeViewBox: '-28 -60 668 400',
     portraitViewBox: PORTRAIT,
   },
 ];

@@ -15,12 +15,8 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'retrospective',
     'brainstorm',
     'workshop-board',
-    'meeting-agenda',
-    'town-hall',
-    'lean-coffee',
     'affinity-map',
     'crazy-eights',
-    'virtual-office',
   ],
   diagrams: [
     'flowchart',
@@ -54,15 +50,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'resume',
     'recipe-card',
     'live-card',
-  ],
-  slides: [
-    'slide-deck',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
-    'social-carousel',
-    'blank-slide-deck',
   ],
   documents: ['article', 'working-backwards', 'year-in-review', 'blank-article'],
   plan: [

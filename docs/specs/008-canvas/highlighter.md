@@ -4,7 +4,7 @@ A wide, semi-transparent freehand marker, picked from the palette's **Draw** cat
 
 ## History
 
-It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel and a Mode Button that handed it out). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour, the Mode Button and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick style panel](quick-style-panel.md), the way a whiteboard marker's do.
+It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick style panel](quick-style-panel.md), the way a whiteboard marker's do.
 
 ## Model
 
@@ -56,9 +56,7 @@ The current colour and width are **session-local editor state**, not a persisted
 
 ## Not a selection mode
 
-`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`packages/document/src/selection-mode.ts`), so there is no Highlighter Mode Button.
-
-A Mode Button saved while it was one still carries `mode: 'highlighter'`. The stored-element migration (`migrateLegacyModeButtons`, run by `migrateStoredElements` at every entry point) **drops the field**, so the button loads and reads as the default mode ([Selection Mode button](../009-elements/mode-button.md)) rather than failing validation and taking its tab with it.
+`'highlighter'` is not on the editor's `CanvasTool` union and not in the tool dropdown.
 
 ## Popular
 

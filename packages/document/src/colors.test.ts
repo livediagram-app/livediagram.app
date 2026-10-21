@@ -67,7 +67,6 @@ describe('hexToRgb / rgbToHex', () => {
   });
 
   it('shade mixes toward black and leaves unparseable input alone', () => {
-    // The avatar sprite's shaded side is this 22% shade.
     expect(shade('#0ea5e9', 0.22)).toBe('#0b81b6');
     expect(shade('red', 0.5)).toBe('red');
   });

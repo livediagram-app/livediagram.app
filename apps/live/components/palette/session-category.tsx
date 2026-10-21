@@ -11,9 +11,9 @@ import { flyoutTagline } from './category-flyout-groups';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { BarCategory } from './CategoryBar';
 
-// Session, on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): five of Workshop's
-// Collaborate categories (Tools, Record, React, Selection Mode, Navigate) as one bar category, browsed the way Icons
-// is: a grid of the groups, one opened with a breadcrumb back, and a search across all of them. Five buttons for one
+// Session, on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): three of Workshop's
+// Collaborate categories (Tools, Record, Navigate) as one bar category, browsed the way Icons
+// is: a grid of the groups, one opened with a breadcrumb back, and a search across all of them. Three buttons for one
 // job crowded the bar; the groups stay what they were, one level down. Ask keeps its own place on the bar: putting a
 // question to the room is the session's main act, not one of its tools. Session reopens on the group it was left on
 // (BrowseMemory, keyed "Session").
@@ -24,8 +24,6 @@ export const SESSION_CATEGORY_ID = 'session';
 export const SESSION_GROUP_IDS: readonly string[] = [
   'collab-tools',
   'collab-record',
-  'collab-react',
-  'collab-mode',
   'collab-navigate',
 ];
 
@@ -44,7 +42,7 @@ export function withSessionCategory(
       out.push({
         id: SESSION_CATEGORY_ID,
         label: 'Session',
-        description: 'Run the room: time, record, react, switch modes and move around.',
+        description: 'Run the room: time, record and move around.',
         icon: <BehaviourTabIcon />,
         group: c.group,
         tiles: null,

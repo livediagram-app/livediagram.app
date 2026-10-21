@@ -621,12 +621,9 @@ export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';
-// Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
-export * from './selection-mode';
+// The Behaviour elements' stored configuration (docs/specs/012-collaboration/session-button.md).
+export * from './behaviour-config';
 export * from './behaviour-skin';
-// How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
-// stored config below and by @liveplanner/api-schema's wire `LivePoll`.
-export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
 export * from './plan-board-rows';
@@ -670,28 +667,15 @@ export * from './chart-values';
 export * from './chart-source';
 export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
-// (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
+// (docs/specs/012-collaboration/temperature-check.md, decision-record.md). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
-export * from './agenda-current';
-// Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
-export * from './quiz';
 export * from './shape-geometry';
-// Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
-export * from './fence';
-// The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
-export * from './avatar-palette';
-export * from './avatar-pad';
-// Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
-export * from './seating';
-export * from './office';
 export * from './actor-figure';
 export * from './color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
-// The Q&A board (docs/specs/012-collaboration/qa-board.md)
-export * from './qa-board';
 export * from './web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
@@ -862,7 +846,7 @@ export * from './adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
-// (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
+// (docs/specs/012-collaboration/collab-race-hardening.md): answers, checklist ticks, comments.
 export * from './element-deltas';
 export * from './plan-board-patch';
 
@@ -893,11 +877,6 @@ export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from '
 // mcp worker as well as the browser.
 export * from './fonts';
 
-// Slide decks (docs/specs/012-collaboration/presentation-mode.md): the Slide / Deck types plus the pure resolution
-// helpers a presentation is built from. Kept here rather than in apps/live
-// because the api and the MCP worker can answer the same questions.
-export * from './slide-deck';
-export * from './slide-deck-pages';
 export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
@@ -914,7 +893,6 @@ export { planBoardFitHeight } from './svg-render-plan';
 export * from './svg-render-pages';
 export * from './article-draw-ops';
 export * from './article-layout-estimate';
-export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';

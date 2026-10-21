@@ -5,7 +5,7 @@ import {
   type EmbedProvider,
   type EventStormingNoteKind,
 } from '@liveplanner/document';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
@@ -47,7 +47,6 @@ type Deps = Pick<
   PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
@@ -64,7 +63,6 @@ type Deps = Pick<
 export function usePaletteCatalogue({
   canvasTool,
   onSetCanvasTool,
-  onExitAvatarMode,
   onToggleZen,
   canvasEmpty,
   onAddShape,
@@ -111,19 +109,12 @@ export function usePaletteCatalogue({
   // The viewer's editor mode picks the palette layout (palette-layouts).
   const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
-  // If the viewport shrinks into mobile while Spotlight is active (desktop ->
-  // resize / rotate), revert to Select: the option has just left the picker,
-  // so leaving the tool on spotlight would strand it (the trigger would
-  // mislabel as Select while the canvas stayed shrouded).
-  useEffect(() => {
-    if (isMobile && canvasTool === 'spotlight') onSetCanvasTool('select');
-  }, [isMobile, canvasTool, onSetCanvasTool]);
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
-  // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
+  // session tool (docs/specs/012-collaboration/session-button.md). It has to be forwarded
   // rather than dropped — this adapter silently swallowing it is what made
-  // every session tile place a timer and every reaction tile place confetti.
+  // every session tile place a timer.
   const armed = (fn: () => void) => () => {
     fn();
     onTileUsed?.();
@@ -203,7 +194,6 @@ export function usePaletteCatalogue({
       hasImage: !!onAddImage,
     },
     (action, args) => {
-      if (canvasTool === 'avatar') onExitAvatarMode?.();
       // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
       // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
       if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();

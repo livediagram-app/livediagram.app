@@ -15,7 +15,6 @@ export type InternalRoom = {
   closeSessionsForAccessChange: (close: AccessCloseMatch) => void;
   purge: () => Promise<void>;
   handleAgentPresence: (request: Request, url: URL) => Promise<Response>;
-  handleQaWrite: (request: Request) => Promise<Response>;
   sequenceMutation: (from: string, op: unknown) => number;
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string) => Promise<unknown>;
@@ -52,7 +51,7 @@ export async function answerInternal(
     const op = body?.op;
     if (!op) return new Response('missing op', { status: 400 });
     // `ordered` asks for a seq + a catch-up log slot: a system op that
-    // changes the document (a Q&A board write, docs/specs/012-collaboration/qa-board.md) must replay to a
+    // changes the document (an item write, docs/specs/026-plan/items.md) must replay to a
     // peer whose socket blipped, the same as a peer's own mutation would.
     if (body.ordered === true) room.broadcastOrderedSystemOp(op);
     else room.broadcastSystemOp(op);
@@ -78,9 +77,6 @@ export async function answerInternal(
   }
   if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
     return room.handleAgentPresence(request, url);
-  }
-  if (request.method === 'POST' && url.pathname === '/qa') {
-    return room.handleQaWrite(request);
   }
   // Internal: a document change the WORKER made (docs/specs/012-collaboration/collab-race-hardening.md), relayed into the
   // ordered stream like a peer's mutation: sequenced, logged for catch-up,

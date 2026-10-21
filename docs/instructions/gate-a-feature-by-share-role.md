@@ -24,7 +24,7 @@ something it cannot.
    changes the board carries `mutates: true` in `CANVAS_TOOLS` (`apps/live/lib/editor-commands.ts`), which keeps it
    out of read-only command lists and the Participant's selection modes.
 6. **Check the copy.** Every empty state, hint, hover card and toast the feature shows: would a Participant or Viewer
-   be told to do something it cannot? Give them a description instead (see the agenda, roll call and comment empty
+   be told to do something it cannot? Give them a description instead (see the temperature check and comment empty
    states for the pattern).
 7. **Lock it with tests.** At least: the server refuses the forbidden write for a Participant and a Viewer; the
    editor capability (or gate) is false for a Viewer and right for a Participant. The role tests that must keep
