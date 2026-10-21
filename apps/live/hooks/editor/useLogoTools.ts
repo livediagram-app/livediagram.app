@@ -20,7 +20,6 @@ import {
   type Tab,
 } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
-import { preloadCombineEngine } from '@/lib/combine/combine';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import {
   logoGuidePartToken,
@@ -31,7 +30,6 @@ import {
   type LogoGuideStrength,
 } from '@/lib/logo-guide-prefs';
 import type { UserPreferences } from '@/lib/user-preferences';
-import type { GuideSnap } from '@/lib/logo-guide-snapping';
 import {
   logoPageGuidesKey,
   readLogoPageGuides,
@@ -60,9 +58,6 @@ export type LogoToolsView = {
   // Whether the selection has an element on a logo page to reflect, and doing it.
   canMirrorCopy: () => boolean;
   mirrorCopy: () => void;
-  // Snaps a canvas point to the shown guides (a Pen click), null while they are hidden; composed
-  // in by useLogoEditor.
-  snapPoint?: GuideSnap | null;
 };
 
 /** The twins Mirror Copy adds for the selected elements on logo pages: fresh copies (no comments,
@@ -189,8 +184,6 @@ export function useLogoTools({
   const setMirror = useCallback(
     (pageId: string, on: boolean) => {
       track('UI', 'Toggled', on ? 'LogoMirrorOn' : 'LogoMirrorOff');
-      // Mirror merges a drawing with its twins in the draw's own commit: the engine must be ready.
-      if (on) preloadCombineEngine();
       const settings = mirrorSettings(pageId);
       setMirrorPages((current) => {
         const next = new Map(current);
@@ -206,7 +199,6 @@ export function useLogoTools({
       const type = mirrorSettingType(patch);
       if (type) track('UI', 'Changed', type);
       const settings = { ...mirrorSettings(pageId), ...patch };
-      if (settings.merge) preloadCombineEngine();
       setPageMirror((current) => new Map(current).set(pageId, settings));
       setLastMirror(settings);
       // A change while on applies at once; choosing an axis also turns mirror on.

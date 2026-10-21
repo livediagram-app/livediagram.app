@@ -3,14 +3,14 @@
 // The canvas tool a mode starts with (docs/specs/007-editor/editor-modes.md "The tool a mode starts
 // with"): Select in every mode, Hand in Plan (a board's cards take the pointer themselves), and Hand
 // on a phone, where a drag should move the canvas. Picked whenever the mode changes, the first
-// mode included; any tool can be picked after. Plan also leaves Eraser and Format out
-// (docs/specs/026-plan/plan-mode.md): either falls back to Hand if it is ever the tool there.
+// mode included; any tool can be picked after. Plan also leaves Format out
+// (docs/specs/026-plan/plan-mode.md): it falls back to Hand if it is ever the tool there.
 import { useEffect, useRef } from 'react';
 import type { EditorMode } from '@liveplanner/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@/lib/responsive';
 
-export const PLAN_LEFT_OUT_TOOLS: ReadonlySet<string> = new Set(['eraser', 'format']);
+export const PLAN_LEFT_OUT_TOOLS: ReadonlySet<string> = new Set(['format']);
 
 export function modeDefaultTool(mode: EditorMode, mobile: boolean): CanvasTool {
   return mobile || mode === 'plan' ? 'pan' : 'select';

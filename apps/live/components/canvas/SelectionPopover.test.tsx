@@ -155,26 +155,6 @@ describe('SelectionPopover mind-node growth', () => {
   });
 });
 
-describe('Edit Points (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
-  afterEach(cleanup);
-
-  it('offers Edit Points for a path and opens its edit mode', () => {
-    setTouch(false);
-    const onEditPoints = vi.fn();
-    render(
-      <SelectionPopover
-        bounds={BOUNDS}
-        canvasOffset={{ x: 0, y: 0 }}
-        zoom={1}
-        title="Selected Path"
-        onEditPoints={onEditPoints}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: /^Edit Points/ }));
-    expect(onEditPoints).toHaveBeenCalled();
-  });
-});
-
 // docs/specs/004-interface-design/touch-targets.md: its 32px buttons sit 4px apart, so each reaches a
 // 44px-tall tap area on a touch screen, never a sideways one.
 describe('SelectionPopover tap areas', () => {

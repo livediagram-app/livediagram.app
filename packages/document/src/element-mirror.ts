@@ -1,8 +1,7 @@
 // Mirroring across a logo page's vertical centre line (docs/specs/007-editor/logo-pages.md
-// "Mirror"): an element's twin, reflected. A path's points and a stroke's points are reflected; a
+// "Mirror"): an element's twin, reflected. A stroke's points are reflected; a
 // shape takes the reflected box; text, an image and anything else move to the reflected place
 // unflipped. Every one turns the other way (its rotation negated). Pure: the caller gives the twin its own id.
-import type { PathNode, PathPoint } from './element-types';
 import type { BoxedElement } from './index';
 import { decodeStrokePoints } from './stroke-points-cache';
 import { encodeStrokePoints } from './stroke-points';
@@ -13,14 +12,6 @@ import type { LaidOutPage } from './page';
 // sits on it: mirroring it would only stack a copy on itself.
 export const MIRROR_AXIS_TOLERANCE = 0.01;
 
-const flipPoint = (p: PathPoint): PathPoint => ({ ...p, nx: 1 - p.nx });
-const flipNode = (n: PathNode): PathNode => ({
-  ...flipPoint(n),
-  mode: n.mode,
-  ...(n.handleIn ? { handleIn: flipPoint(n.handleIn) } : {}),
-  ...(n.handleOut ? { handleOut: flipPoint(n.handleOut) } : {}),
-});
-
 /** The element reflected across the vertical line x = axisX (same id). */
 export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
   // A reflection turns the other way: any rotation is negated, whatever the element.
@@ -30,13 +21,6 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
     x: 2 * axisX - el.x - el.width,
     ...(rotation ? { rotation: -rotation } : {}),
   };
-  if (moved.type === 'path') {
-    return {
-      ...moved,
-      nodes: moved.nodes.map(flipNode),
-      ...(moved.subpaths ? { subpaths: moved.subpaths.map((c) => c.map(flipNode)) } : {}),
-    };
-  }
   if (moved.type === 'freehand') {
     const pts = decodeStrokePoints(moved.packedPoints);
     const points = Array.from({ length: pts.count }, (_, i) => ({
@@ -53,7 +37,7 @@ type MirrorUse = 'drawing' | 'copy';
 
 /**
  * The twin an element gets on the logo page under its centre, or null: off every logo page, on
- * the axis already, or (when drawing) not a stroke, path or shape. Mirror Copy also takes text and
+ * the axis already, or (when drawing) not a stroke or shape. Mirror Copy also takes text and
  * images. Arrows never mirror.
  */
 /** The centre line a box drawn here reflects across: its logo page's, unless the box sits on the
@@ -75,7 +59,7 @@ export function twinFor(
   pages: readonly LaidOutPage[],
   use: MirrorUse,
 ): BoxedElement | null {
-  const drawn = el.type === 'freehand' || el.type === 'path' || el.type === 'shape';
+  const drawn = el.type === 'freehand' || el.type === 'shape';
   if (!drawn && !(use === 'copy' && (el.type === 'text' || el.type === 'image'))) return null;
   const axisX = mirrorAxisFor(pages, el);
   if (axisX === null) return null;

@@ -44,7 +44,6 @@ import type {
   StickyElement,
   ImageElement,
   FreehandElement,
-  PathElement,
   AnnotationElement,
   LinkCardElement,
   VideoElement,
@@ -66,10 +65,6 @@ export type {
   StickyElement,
   ImageElement,
   FreehandElement,
-  PathElement,
-  PathHandleMode,
-  PathNode,
-  PathPoint,
   AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
@@ -319,7 +314,6 @@ export type BoxedElement =
   | StickyElement
   | ImageElement
   | FreehandElement
-  | PathElement
   | TableElement
   | AnnotationElement
   | LinkCardElement
@@ -532,7 +526,6 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'sticky' ||
     element.type === 'image' ||
     element.type === 'freehand' ||
-    element.type === 'path' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
@@ -715,7 +708,7 @@ export * from './event-storming-lane-landing';
 export * from './event-storming-next';
 export * from './event-storming-photo';
 export * from './whiteboard';
-export * from './whiteboard-stroke';
+export * from './segment-geometry';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
@@ -730,9 +723,6 @@ export * from './pen-colours';
 export * from './standard-colours';
 export * from './custom-colours';
 export * from './stock-colours';
-export * from './snap-colours';
-export * from './path-geometry';
-export * from './path-element';
 export * from './component-factories';
 export * from './table';
 
@@ -879,12 +869,6 @@ export * from './tab-folders';
 // Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer / TabVote types used by the
 // Tab fields above, plus the pure timer + vote helpers.
 export * from './session';
-
-// Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
-// subsection's recognise mode). Re-exported so callers import
-// from the package root the same way they do every other helper
-// here.
-export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in

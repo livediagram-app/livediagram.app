@@ -21,7 +21,6 @@ import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { PLAN_TOUR_TRACKS, planTrackSeen, requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
-import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
@@ -183,9 +182,6 @@ export function SettingsDialog({
   // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as the Plan tour's.
   const workshopTourSeen = settings.workshopTourSeen === true;
   const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as the Plan tour's.
-  const drawTourSeen = settings.drawTourSeen === true;
-  const drawTourSeenAtOpen = useRef(drawTourSeen);
   // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as the Plan tour's.
   const formTourSeen = settings.formTourSeen === true;
   const formTourSeenAtOpen = useRef(formTourSeen);
@@ -203,7 +199,6 @@ export function SettingsDialog({
     }
     if (planOwed.some((t) => !planOwedAtOpen.current.includes(t))) requestPlanTourRelaunch();
     if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
-    if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
     if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     if (pagesOwed.some((k) => !pagesOwedAtOpen.current.includes(k))) requestPagesTourRelaunch();

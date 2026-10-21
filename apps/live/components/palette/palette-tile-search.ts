@@ -72,16 +72,9 @@ export function tileSignature(tile: PaletteTileDef): string | null {
     }
     case 'sticky':
       return `sticky:${a.esKind ?? ''}`;
-    case 'freehand':
-      return 'freehand:';
-    case 'highlighter':
-      return 'freehand:highlighter';
-    // A marker's stroke is a freehand element like the pencil's: where both are offered, the
-    // pencil, first in layout order, stands for it.
-    case 'marker':
-      return 'freehand:';
+    // The polygon tool's outline is a freehand element.
     case 'polygon':
-      return 'path';
+      return 'freehand:';
     case 'arrow':
       return a.ends === 'none' ? 'arrow:none' : 'arrow:';
     case 'video':
@@ -212,14 +205,10 @@ export function elementTileSections({
   mode,
   hasImage,
   planCardTiles,
-  drawTiles = [],
 }: {
   mode: EditorMode;
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
-  // Draw mode's markers (palette-marker-tiles): Draw has no palette layout, and the strip that
-  // searches is never shown in Draw, so they are always another mode's.
-  drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
   const here = modeElementTiles(mode, planCardTiles).filter(visible);
@@ -235,7 +224,7 @@ export function elementTileSections({
     if (owner) unavailable.push(boundToMode(t, owner));
     else elsewhere.push(t);
   }
-  return { here, elsewhere: [...elsewhere, ...drawTiles], unavailable };
+  return { here, elsewhere, unavailable };
 }
 
 /** What the Search lists: the query's matches, best first, or before anything is typed, the
@@ -251,7 +240,6 @@ export function searchElementTiles({
   mode: EditorMode;
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
-  drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const { here, elsewhere, unavailable } = elementTileSections(sections);
   if (!query.trim()) {

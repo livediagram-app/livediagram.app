@@ -1,21 +1,17 @@
 // Ink and unheaded lines on the whiteboard profile (docs/specs/020-import-export/board-scene.md
-// "Kinds"): ink becomes a marker stroke, a two-point line a line, a longer one a path.
+// "Kinds"): ink becomes a marker stroke, a two-point line a line.
 import {
   MAX_FREEHAND_POINTS,
-  MAX_PATH_NODES,
   packFreehandPoints,
-  pathGeometry,
   penColourHex,
   type ArrowElement,
   type FreehandElement,
-  type PathAnchor,
-  type PathElement,
 } from '@liveplanner/document';
-import { colourAlpha, lineColourFields, resolveFill } from './colour';
+import { colourAlpha, lineColourFields } from './colour';
 import { commonFields, endsMeet, limitPoints, turnPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';
 import type { SceneInk, ScenePoint, ScenePolyline, SceneStroke } from './scene';
-import { arrowWidthPx, borderStrokeOf, markerWidthPx } from './width';
+import { arrowWidthPx, markerWidthPx } from './width';
 
 // A pen's width as the validator takes it (1 to 100 px, validate.ts FREEHAND_FIELD_CHECKS): a scaled-up
 // highlighter (an MS Whiteboard group at scale 5) would otherwise land at 150 and make the tab unsaveable.
@@ -25,9 +21,6 @@ const clampPenWidth = (px: number) => Math.min(PEN_WIDTH_MAX_PX, Math.max(PEN_WI
 
 // Ends within this many px coincide (the Excalidraw importer's closure test).
 export const CLOSED_END_EPSILON_PX = 1;
-// How far a curved line's handles reach: a sixth of the chord between a node's neighbours
-// (Catmull-Rom as cubic Béziers).
-const CURVE_HANDLE_RATIO = 1 / 6;
 
 /** The element opacity a stroke asks for: its own times its colour's alpha. */
 export function strokeOpacity(stroke: SceneStroke, colour = stroke.colour): number {
@@ -109,47 +102,5 @@ export function landLine(item: ScenePolyline, id: string, ctx: LandContext): Arr
     ...dashOf(item.stroke),
     ...lineColourFields(ctx.colour(item.stroke.colour)),
     ...common,
-  };
-}
-
-// Catmull-Rom handles for node i of `pts` (closed wraps; an open end uses itself as neighbour).
-function curveAnchors(pts: readonly ScenePoint[], closed: boolean): PathAnchor[] {
-  const n = pts.length;
-  return pts.map((p, i) => {
-    const prev = pts[closed ? (i - 1 + n) % n : Math.max(0, i - 1)]!;
-    const next = pts[closed ? (i + 1) % n : Math.min(n - 1, i + 1)]!;
-    const tx = (next.x - prev.x) * CURVE_HANDLE_RATIO;
-    const ty = (next.y - prev.y) * CURVE_HANDLE_RATIO;
-    const end = !closed && (i === 0 || i === n - 1);
-    const anchor: PathAnchor = { x: p.x, y: p.y, mode: end ? 'corner' : 'mirrored' };
-    if (closed || i > 0) anchor.handleIn = { x: p.x - tx, y: p.y - ty };
-    if (closed || i < n - 1) anchor.handleOut = { x: p.x + tx, y: p.y + ty };
-    return anchor;
-  });
-}
-
-/** A line through three or more points: a path, corners kept or (curved) smooth, closed with its fill. */
-export function landPath(item: ScenePolyline, id: string, ctx: LandContext): PathElement {
-  const closed = item.closed === true;
-  let pts: ScenePoint[] = limitPoints(item.points, MAX_PATH_NODES);
-  if (pts.length < item.points.length) ctx.degrade(LANDING_RULES.longStroke);
-  // The repeated end goes only while three corners stay: a closed [A, B, A] would be a two-node closed
-  // path, which the validator refuses.
-  if (closed && pts.length > 3 && endsMeet(pts, CLOSED_END_EPSILON_PX)) pts = pts.slice(0, -1);
-  const anchors: PathAnchor[] = item.curved
-    ? curveAnchors(pts, closed)
-    : pts.map((p) => ({ x: p.x, y: p.y, mode: 'corner' }));
-  const fill = closed ? resolveFill(item.fill) : undefined;
-  const stroke = borderStrokeOf(item.stroke.widthPx);
-  return {
-    id,
-    type: 'path',
-    ...pathGeometry(anchors, closed),
-    closed,
-    ...(stroke !== 'medium' ? { strokeWidth: stroke } : {}),
-    ...dashOf(item.stroke),
-    ...lineColourFields(ctx.colour(item.stroke.colour)),
-    ...(fill ? { fillColor: fill } : {}),
-    ...commonFields(item, ctx, strokeOpacity(item.stroke)),
   };
 }

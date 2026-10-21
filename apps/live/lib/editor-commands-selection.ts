@@ -62,23 +62,6 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
-  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): shapes on a logo page into one path.
-  if (ctx.canCombine) {
-    for (const [op, name, words] of [
-      ['unite', 'Unite Shapes', 'union merge join add'],
-      ['subtract', 'Subtract Shapes', 'minus cut punch remove difference'],
-      ['intersect', 'Intersect Shapes', 'overlap common intersection'],
-      ['exclude', 'Exclude Shapes', 'xor difference cut overlap'],
-    ] as const) {
-      out.push({
-        id: `combine-${op}`,
-        name,
-        keywords: `combine boolean logo shape path ${words}`,
-        run: () => h.combine(op),
-      });
-    }
-  }
-
   // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror").
   if (ctx.canMirrorCopy) {
     out.push({

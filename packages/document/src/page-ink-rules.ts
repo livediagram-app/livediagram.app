@@ -96,8 +96,6 @@ export function inkKindOf(el: Element): InkKind {
     case 'freehand':
       if (el.pen === 'highlighter') return 'keep';
       return el.closed ? 'box' : 'ink';
-    case 'path':
-      return el.closed ? 'box' : 'ink';
     case 'shape':
       // A stat row's cards are its fill, its figures its stroke and its captions its text, on them.
       if (BOX_KINDS.has(el.shape) || el.shape === 'stat-row') return 'box';

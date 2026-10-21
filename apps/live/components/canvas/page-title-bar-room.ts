@@ -38,7 +38,7 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.edit ? COG_ROOM + pageLockRoom(b.locked, named) : 0) +
     (b.deck ? pageDeckRoom(named) : 0) +
     (b.notes ? pageNotesRoom(named) : 0) +
-    (b.logo ? logoTitleBarRoom(true, named) : 0) +
+    (b.logo ? logoTitleBarRoom(named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.article ? pageArticleRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.tidy ? pageTidyUpRoom() : 0) +

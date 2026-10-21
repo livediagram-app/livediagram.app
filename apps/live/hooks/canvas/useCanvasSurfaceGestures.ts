@@ -5,8 +5,6 @@ import {
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
-import { createEraseFrameReader } from '@/lib/erase-frame';
-import { useLatest } from '@/hooks/ui/useLatest';
 import { peerPushTarget } from '@/lib/avatar-walk';
 import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -16,9 +14,6 @@ import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
-import { isHeldPenIntent } from '@/lib/draw-mode';
-import { markPenSeen, penSeen } from '@/lib/pen-seen';
-import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
 
@@ -26,14 +21,13 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
 // The bottom-right cluster (Undo / Redo, Layers, Theme & Canvas, Zoom) is chrome, never canvas.
 // Its buttons stop the press only in the bubble phase, after the capture intercept: without this,
-// a held Draw mode marker inked a dot under Undo and the click then undid that dot instead of the
-// stroke the person meant (and an armed eraser, shape or spotlight acted under the button too).
+// an armed shape or spotlight acted under the button too.
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
 // How presses on the bare canvas surface route between the tools
 // (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/isometric-view.md), lifted out of Canvas's JSX: the capture-phase
-// intercepts (spotlight grow / shrink, eraser, middle-mouse pan,
+// intercepts (spotlight grow / shrink, middle-mouse pan,
 // draw-to-size), the background context menu, and the outer <main> +
 // inner wrapper pointerdowns that arm the long-press menu, the
 // isometric orbit, and the pan-vs-marquee choice. Canvas mounts the
@@ -44,7 +38,6 @@ export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
   pendingDraw,
-  whiteboard = false,
   viewportOffset,
   viewportZoom,
   mainRef,
@@ -59,7 +52,6 @@ export function useCanvasSurfaceGestures({
   isoCamera,
   beginPendingDrawGesture,
   interceptPress,
-  onEraseStart,
   onCanvasContextMenu,
   onDeselect,
   onCanvasDoubleClick,
@@ -68,8 +60,6 @@ export function useCanvasSurfaceGestures({
   // Settings › Controls: middle-button drag pans the canvas (default on).
   middleMousePan: boolean;
   pendingDraw: CanvasProps['pendingDraw'];
-  // The active tab is a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input").
-  whiteboard?: boolean;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
@@ -84,13 +74,12 @@ export function useCanvasSurfaceGestures({
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   isoCamera: ReturnType<typeof useIsometricCamera>;
-  // Starts the queued draw-to-size / freehand gesture; true when it
+  // Starts the queued draw-to-size gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
-  // A mode that owns every primary press on the canvas while it is open (a path's edit mode,
-  // docs/specs/023-draw-mode/path-tool.md "Editing"); true when it claimed the press.
+  // A tool that owns a primary press on the canvas (the Format tool on a page's paper); true when
+  // it claimed the press.
   interceptPress?: (e: ReactPointerEvent) => boolean;
-  onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
   onDeselect: () => void;
   // `byFinger`: the double press was a finger's (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
@@ -99,9 +88,6 @@ export function useCanvasSurfaceGestures({
   // What pressed last, for the double-click that follows: a dblclick event says nothing of the pointer, and a
   // finger's double-tap zooms where a mouse's double-click drops text.
   const lastPointerType = useRef<string | null>(null);
-  // The live view, for an erase sweep's frame reader (lib/erase-frame): read per sample, after
-  // any pan or zoom since the press.
-  const viewRef = useLatest({ offset: viewportOffset, zoom: viewportZoom });
   // Which peer's character a click landed on, plus where to stand and which way
   // to shove. The decision itself is pure (see peerPushTarget); this only feeds
   // it the peers as the presence packets describe them.
@@ -201,32 +187,8 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
-    // Whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a pen has been
-    // used, a single finger pans instead of inking, so a resting palm never
-    // draws. The pen itself, and a mouse, always ink.
-    if (whiteboard && e.button === 0) {
-      if (e.pointerType === 'pen') markPenSeen();
-      const inking = canvasTool === 'eraser' || isHeldPenIntent(pendingDraw);
-      const route = whiteboardPointerRoute({
-        pointerType: e.pointerType,
-        penSeen: penSeen(),
-        inking,
-      });
-      if (route === 'pan') {
-        e.preventDefault();
-        e.stopPropagation();
-        setPan({
-          startClientX: e.clientX,
-          startClientY: e.clientY,
-          startOffsetX: viewportOffset.x,
-          startOffsetY: viewportOffset.y,
-          movedRef: { current: false },
-        });
-        return;
-      }
-    }
-    // A path's edit mode keeps the rest of the canvas inert: its presses are all its own. Held
-    // Space still pans, and the other buttons keep their meaning.
+    // A tool that owns the press takes it. Held Space still pans, and the other buttons keep their
+    // meaning.
     if (e.button === 0 && !spaceHeldRef.current && interceptPress?.(e)) {
       focusCanvas();
       e.preventDefault();
@@ -292,53 +254,6 @@ export function useCanvasSurfaceGestures({
         else walk();
       } else if (e.button === 2) avatar.toggleLookAt(point);
       return;
-    }
-    // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a primary-button press deletes whatever
-    // it lands on and starts a drag-to-erase gesture. Handled in the
-    // capture phase so it wins over an element's own select/drag and
-    // the background marquee/pan; useCanvasEraser tracks the rest of
-    // the gesture via window listeners.
-    if (e.button === 0 && canvasTool === 'eraser') {
-      focusCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-      onEraseStart?.(
-        e.clientX,
-        e.clientY,
-        createEraseFrameReader(
-          () => viewRef.current,
-          () => wrapperRef.current?.getBoundingClientRect(),
-        ),
-      );
-      return;
-    }
-    // Whiteboard, Select in hand (docs/specs/023-draw-mode/draw-mode.md "Selecting"): Shift + press always
-    // drags a selection box that adds to the selection, even when it starts on an element, and a
-    // Shift-click on an element toggles it. A handle keeps its own Shift behaviour.
-    if (
-      whiteboard &&
-      e.button === 0 &&
-      e.shiftKey &&
-      canvasTool === 'select' &&
-      !pendingDraw &&
-      !spaceHeldRef.current
-    ) {
-      const target = e.target as HTMLElement;
-      const onCanvas = target === e.currentTarget || !!wrapperRef.current?.contains(target);
-      if (onCanvas && !target.closest('[data-canvas-handle]')) {
-        focusCanvas();
-        e.preventDefault();
-        e.stopPropagation();
-        setMarquee({
-          startX: e.clientX,
-          startY: e.clientY,
-          currentX: e.clientX,
-          currentY: e.clientY,
-          additive: true,
-          clickTarget: target.closest('[data-element-id]')?.getAttribute('data-element-id') ?? null,
-        });
-        return;
-      }
     }
     // Middle-mouse drag pans from anywhere on the canvas — empty
     // space OR over elements — regardless of the active tool. The

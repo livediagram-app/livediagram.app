@@ -10,7 +10,6 @@ export const POWER_USER_PRESET = {
   tourSeen: { tourSeen: true },
   planTourSeen: { planTourSeen: true },
   workshopTourSeen: { workshopTourSeen: true },
-  drawTourSeen: { drawTourSeen: true },
   formTourSeen: { formTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
   pagesTourSeen: { pagesTourSeen: true },

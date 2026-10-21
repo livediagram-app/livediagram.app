@@ -2,8 +2,8 @@
 
 // The editor's wiring for logo pages (docs/specs/007-editor/logo-pages.md), in one place so the
 // editor's state hook composes it with a single call: the draw commit that adds mirror twins, each
-// person's logo tools, the open previews' picture, Combine, the pages' view with `logo` in it, and
-// the snap boxes with a logo page's keylines.
+// person's logo tools, the open previews' picture, the pages' view with `logo` in it, and the snap
+// boxes with a logo page's keylines.
 import { useCallback, useMemo, useRef } from 'react';
 import {
   pageSnapBoxes,
@@ -13,15 +13,11 @@ import {
   type Tab,
   type MirrorSettings,
 } from '@liveplanner/document';
-import { useTidyUpStrokes } from '@/hooks/canvas/useTidyUpStrokes';
-import { useCombineShapes } from '@/hooks/canvas/useCombineShapes';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { useLogoTools } from '@/hooks/editor/useLogoTools';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
-import type { useToast } from '@/hooks/ui/useToast';
 import {
   logoGuideSnapper,
-  logoTidyGuides,
   snapNewStrokes,
   type GuideSnap,
 } from '@/lib/logo-guide-snapping';
@@ -41,7 +37,6 @@ export function useLogoEditor<V extends PagesModeView>({
   prefs,
   setPrefs,
   selfId,
-  toast,
   readOnly,
   getZoom,
 }: {
@@ -56,7 +51,6 @@ export function useLogoEditor<V extends PagesModeView>({
   prefs: UserPreferences;
   setPrefs: (next: UserPreferences) => void;
   selfId: string;
-  toast: ReturnType<typeof useToast>;
   readOnly: boolean;
   // The canvas zoom now, for the snap reach in screen px.
   getZoom: () => number;
@@ -101,7 +95,7 @@ export function useLogoEditor<V extends PagesModeView>({
     () => pages?.filter((p) => p.kind === 'logo' && tools.guidesOn(p.id)) ?? null,
     [pages, tools],
   );
-  // The guides a Pen click and a stroke's ends snap to: the shown ones, on the pages showing them.
+  // The guides a stroke's ends snap to: the shown ones, on the pages showing them.
   const snapPoint = useMemo(
     () =>
       logoGuideSnapper(guidedPages, {
@@ -112,29 +106,9 @@ export function useLogoEditor<V extends PagesModeView>({
   );
   useAssignRef(snapRef, snapPoint);
   const view = useMemo(
-    () => (pagesModeView ? { ...pagesModeView, logo: { ...tools, snapPoint } } : pagesModeView),
-    [pagesModeView, tools, snapPoint],
+    () => (pagesModeView ? { ...pagesModeView, logo: tools } : pagesModeView),
+    [pagesModeView, tools],
   );
-
-  const { canCombine, combineSelected } = useCombineShapes({
-    activeTab,
-    pages,
-    currentSelectionIds,
-    commit,
-    setSelectedId,
-    setMultiSelectedIds,
-    toast,
-    readOnly,
-  });
-
-  const { canTidyUp, tidyUpSelected } = useTidyUpStrokes({
-    activeTab,
-    currentSelectionIds,
-    commit,
-    readOnly,
-    // Corners and straight runs near a shown guide line up with it.
-    guides: () => logoTidyGuides(guidedPages, tools.guideParts, getZoom()),
-  });
 
   // Every page's edges, centre and margin, and a logo page's keylines while its guides show.
   const snapBoxes = pages
@@ -145,9 +119,5 @@ export function useLogoEditor<V extends PagesModeView>({
     drawCommit,
     view,
     snapBoxes,
-    canCombine,
-    combineSelected,
-    canTidyUp,
-    tidyUpSelected,
   };
 }

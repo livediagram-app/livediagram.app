@@ -14,7 +14,6 @@ import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { isOnScreen } from './tour-dom';
 import { useTourEngine, type TourEngine } from './useTourEngine';
-import { clearCombineDemo } from './logo-combine-demo';
 
 /** The page's panel, opened on a tab or closed, through the request CanvasPages follows. */
 export const PAGE_PANEL: Pick<PageTourApi, 'openPanel' | 'closePanel'> = {
@@ -57,8 +56,6 @@ export function usePageTour(editable: (pageId: string) => boolean): {
     apiRef,
     onStepView: () => {},
     onFinish: (outcome) => {
-      // What a step placed to show something (the Logo track's Combine shapes) goes however Show Me ended.
-      clearCombineDemo();
       trackEnded(frozen.kind, outcome === 'completed');
     },
   });

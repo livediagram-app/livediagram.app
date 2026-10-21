@@ -1,8 +1,7 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { headlineCase } from '@liveplanner/api-schema';
-import { badgePresetFace, type PenColour } from '@liveplanner/document';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import { badgePresetFace } from '@liveplanner/document';
 import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@liveplanner/document';
 
@@ -30,10 +29,8 @@ import {
   RugIcon,
   SofaIcon,
   DecisionIcon,
-  EraserIcon,
   EstimateIcon,
   FormatPainterIcon,
-  HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -41,7 +38,6 @@ import {
   QaBoardIcon,
   PickerIcon,
   SelectIcon,
-  ShapePenIcon,
   SpotlightIcon,
   SessionPollIcon,
   SessionVoteIcon,
@@ -173,17 +169,10 @@ type PaletteTileAction =
   | { type: 'text' }
   // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
   | { type: 'open'; category: string; group?: string }
-  | { type: 'freehand' }
-  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
-  // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
-  // are separate action types, so each tile maps to its own arm-handler and pressed state.
-  | { type: 'highlighter' }
-  | { type: 'shape-pen' }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
+  // The click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md).
   | { type: 'polygon' }
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
-  | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@liveplanner/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
@@ -201,21 +190,7 @@ type PaletteTileAction =
   // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
   // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
-  | { type: 'tech-icon'; iconId: string }
-  // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
-  // never on the canvas.
-  // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
-  // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
-  // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
-  // the person's own, read when the Search opens.
-  | {
-      type: 'marker';
-      penId: WhiteboardPenId;
-      colour: PenColour | null;
-      width: number;
-      // Picked up for one stroke (a logo page's palette), as the pencil is.
-      once?: true;
-    };
+  | { type: 'tech-icon'; iconId: string };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
@@ -602,70 +577,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
-  // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
-  // the same tool Draw mode's dock holds, in a logo page's Draw only.
-  {
-    id: 'logo:pen',
-    blurb: 'Click for corners, drag for curves',
-    section: 'logo',
-    caption: 'Pen',
-    label: 'Pen',
-    description:
-      'Draw a precise path: click to place corners, drag to pull out curves, and close it on its first point.',
-    action: { type: 'path' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:pencil',
-    blurb: 'Sketch a stroke, left as drawn',
-    section: 'tools',
-    toolGroup: 'draw',
-    caption: 'Freehand',
-    label: 'Freehand Pencil',
-    description:
-      'Sketch a freehand stroke, kept exactly as you drew it. Drag to draw; release near the start to close the shape.',
-    shortcut: 'P',
-    action: { type: 'freehand' },
-    icon: (
-      <Glyph size={18} units={18}>
-        {/* Diagonal pencil. Body angled bottom-left to top-right, with a
-            separated tip + eraser segment so the silhouette reads as
-            "pencil" even at the 18 px palette size. Pairs with the cursor
-            glyph (also a diagonal nib) so the tool's two visual surfaces
-            stay in sync. */}
-        <path d="M2 16 L6 12" />
-        <path d="M5 13 L12 6 L14 8 L7 15 Z" />
-        <path d="M12 6 L15 3 L17 5 L14 8" />
-        <path d="M2 16 L5 13" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:shape-pen',
-    blurb: 'A rough shape snaps to the real one',
-    section: 'tools',
-    toolGroup: 'draw',
-    caption: 'Shape Pen',
-    label: 'Shape Pen',
-    description:
-      'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
-    shortcut: '6',
-    action: { type: 'shape-pen' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
-  },
-  // The marker (docs/specs/008-canvas/highlighter.md): the third pen, one stroke per pick like the
-  // other two. No shortcut: only the common flowchart vocabulary gets letters.
-  {
-    id: 'tools:highlighter',
-    blurb: 'A wide translucent marker stroke',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Highlighter',
-    description: 'A wide translucent yellow marker. Drag to call attention to a region.',
-    dividerAfter: true,
-    action: { type: 'highlighter' },
-    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
-  },
   {
     id: 'tools:polygon',
     blurb: 'Straight edges, point by point',
@@ -849,23 +760,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
     icon: <SpotlightIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-eraser',
-    tileGroup: 'mode',
-    blurb: 'Rub things out by dragging',
-    caption: 'Eraser',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Eraser Mode Button',
-    description:
-      'A button that switches whoever presses it into Eraser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'eraser' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <EraserIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-format',

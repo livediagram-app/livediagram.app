@@ -24,8 +24,6 @@ export function usePanelLayout() {
   const [laserPanelPosition, setLaserPanelPosition] = useState<Pos | null>(null);
   // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the same.
   const [spotlightPanelPosition, setSpotlightPanelPosition] = useState<Pos | null>(null);
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the same.
-  const [eraserPanelPosition, setEraserPanelPosition] = useState<Pos | null>(null);
   const [slideDeckPanelPosition, setSlideDeckPanelPosition] = useState<Pos | null>(null);
   // Format Panel (docs/specs/008-canvas/format-panel.md): the same.
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
@@ -49,8 +47,6 @@ export function usePanelLayout() {
     setLaserPanelPosition,
     spotlightPanelPosition,
     setSpotlightPanelPosition,
-    eraserPanelPosition,
-    setEraserPanelPosition,
     slideDeckPanelPosition,
     setSlideDeckPanelPosition,
     formatPanelPosition,

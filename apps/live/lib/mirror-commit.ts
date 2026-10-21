@@ -1,12 +1,10 @@
 // Mirror While Drawing (docs/specs/007-editor/logo-pages.md "Mirror"): a commit that, while
 // mirror is on, gives each element it newly adds its twins under its logo page's symmetry
-// (vertical, horizontal, both or radial) and, with Merge on, merges them all into one element
-// (mirror-merge), in the same commit (one undo). Wraps the commit the draw tools add through, so
-// every way of drawing (a stroke, a recognised shape, a path, a dragged or placed shape) mirrors
+// (vertical, horizontal, both or radial), in the same commit (one undo). Wraps the commit the draw
+// tools add through, so every way of drawing (a stroke, a dragged or placed shape) mirrors
 // alike; edits to existing elements add nothing and pass through untouched.
 import {
   isBoxed,
-  mirroredPageAt,
   symmetryTwins,
   type Element,
   type LaidOutPage,
@@ -15,7 +13,6 @@ import {
   withMirrorSettings,
 } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
-import { mergeWithTwins } from './mirror-merge';
 
 type Commit = (map: (els: Element[]) => Element[]) => void;
 
@@ -28,8 +25,7 @@ export function withTwinsAdded(
 ): Element[] {
   if (next === prev) return next;
   const before = new Set(prev.map((el) => el.id));
-  // Each new element merged with its twins into one (mergeWithTwins) while its page merges; where
-  // it does not or cannot, the twins are added beside it.
+  // Each new element's twins are added beside it.
   let changed = false;
   const twins: Element[] = [];
   const out = next.map((el) => {
@@ -37,9 +33,6 @@ export function withTwinsAdded(
     const made = symmetryTwins(el, pages);
     if (made.length === 0) return el;
     changed = true;
-    const page = mirroredPageAt(pages, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
-    const merged = page?.mirror.merge ? mergeWithTwins(el, made) : null;
-    if (merged) return merged;
     for (const twin of made) twins.push({ ...twin, id: crypto.randomUUID() });
     return el;
   });

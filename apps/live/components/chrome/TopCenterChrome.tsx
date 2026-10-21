@@ -1,5 +1,5 @@
 import { lucidePencilLine } from '@liveplanner/icons/lucide';
-import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
+import { drawBannerMessage } from '@/lib/draw-mode';
 import { FormatPainterIcon, lucideGlyph } from '@liveplanner/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -28,9 +28,6 @@ type TopCenterChromeProps = Pick<
   | 'formatSourceId'
   | 'pagesMode'
 > & {
-  // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
-  // the stack starts beneath it.
-  dockOnTop?: boolean;
   // The tab has a Plan board: an armed Plan card's hint says to pick a column, not to add a board first.
   hasPlanBoard?: boolean;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
@@ -50,27 +47,22 @@ export function TopCenterChrome({
   canvasTool,
   formatSourceId,
   pagesMode,
-  dockOnTop = false,
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
   // The palette strip, when it is on screen: the mode banners hang from it as its tray
   // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
-  const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
+  const drawBanner = !!pendingDraw;
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
   // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):
   // either way the stack starts beneath it, or the timer and banners sit on the palette.
   const stripShown = !readOnly || participantPalette;
-  const tray = stripShown && !dockOnTop ? strip : null;
+  const tray = stripShown ? strip : null;
   // A board, view or Sheet covering the canvas: the draw hint moves to the bottom.
   const covered = useCanvasCovered();
   return (
-    <TopCenterStack
-      below={
-        dockOnTop ? 'dock' : stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined
-      }
-    >
+    <TopCenterStack below={stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}>
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
       <OfflineBanner readOnly={readOnly === true} />

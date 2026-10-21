@@ -33,6 +33,7 @@ import {
   chartTypeOf,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
+  buttonModeOf,
   DEFAULT_BUTTON_MODE,
   SELECTION_MODES,
   type ChecklistItem,
@@ -42,7 +43,6 @@ import {
 } from '@liveplanner/document';
 import {
   AvatarModeIcon,
-  EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
   LaserIcon,
@@ -183,7 +183,6 @@ const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> 
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
   avatar: <AvatarModeIcon />,
-  eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
 };
@@ -616,7 +615,7 @@ export function ElementDataSections({
                     key={mode}
                     icon={MODE_TILE_ICON[mode]}
                     label={MODE_LABEL[mode]}
-                    active={(shapeTarget?.mode ?? DEFAULT_BUTTON_MODE) === mode}
+                    active={(shapeTarget ? buttonModeOf(shapeTarget) : DEFAULT_BUTTON_MODE) === mode}
                     onClick={() => props.onSetButtonMode(mode)}
                   />
                 ))}

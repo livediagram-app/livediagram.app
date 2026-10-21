@@ -40,13 +40,11 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // top row of chrome; from `sm:` up it centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
 // gaps between pills stay click-through; each pill re-enables pointer
 // events for itself.
-const STACK_TOP: Record<'toolbar' | 'tray' | 'dock' | 'none', string> = {
+const STACK_TOP: Record<'toolbar' | 'tray' | 'none', string> = {
   toolbar: 'top-[4.25rem]',
   // A message hangs from the strip as its tray (docs/specs/007-editor/toolbar-layout.md): the stack starts
   // under the tray (the strip's 58 px, the tray's 34 px, then the stack's 8 px gap).
   tray: 'top-[6.25rem]',
-  // The Draw dock is the strip's height now (docs/specs/023-draw-mode/draw-mode.md), so the same.
-  dock: 'top-[4.25rem]',
   none: 'top-[4.75rem] sm:top-3',
 };
 
@@ -56,10 +54,8 @@ export function TopCenterStack({
 }: {
   children: ReactNode;
   // A bar across the top of the canvas owns top-3, so the stack starts under it instead of on top
-  // of it: the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md, 46 px), or a
-  // whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits",
-  // 54 px).
-  below?: 'toolbar' | 'tray' | 'dock';
+  // of it: the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md, 46 px).
+  below?: 'toolbar' | 'tray';
 }) {
   return (
     // On mobile this stack starts BELOW the top row of chrome rather than

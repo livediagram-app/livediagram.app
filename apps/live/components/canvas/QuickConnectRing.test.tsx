@@ -21,7 +21,6 @@ function ring(open: boolean, extra: Partial<Parameters<typeof QuickConnectRing>[
       onOpen={vi.fn()}
       onSpawn={vi.fn()}
       onArrowPointerDown={vi.fn()}
-      onPencil={vi.fn()}
       {...extra}
     />
   );

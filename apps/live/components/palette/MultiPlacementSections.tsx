@@ -1,4 +1,3 @@
-import { CombineOpGlyph, CombineTiles } from '@/components/canvas/CombineMenu';
 import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import {
   rotationOf,
@@ -64,21 +63,6 @@ export function MultiPlacementSections({
   const turnable = boxedSel.filter(supportsRotation);
   return (
     <>
-      {/* Combine (docs/specs/007-editor/logo-pages.md "Combine"): shapes on a logo page into one. */}
-      {props.onCombine ? (
-        <MenuAccordionSection
-          title="Combine"
-          icon={<CombineOpGlyph op="unite" size={16} />}
-          {...sectionProps('m-combine')}
-        >
-          <CombineTiles
-            onCombine={(op) => {
-              onClose();
-              props.onCombine!(op);
-            }}
-          />
-        </MenuAccordionSection>
-      ) : null}
       {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
       {props.onMirrorCopy ? (
         <MenuActionRow

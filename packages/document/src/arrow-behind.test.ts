@@ -8,7 +8,7 @@ import {
 import { buildElementGrid, queryElementGrid } from './element-grid';
 import { createShape } from './shape-factory';
 import { createArrow } from './factories';
-import type { ArrowElement, Element, PathElement, ShapeElement } from './index';
+import type { ArrowElement, Element, ShapeElement } from './index';
 import { encodeStrokePoints } from './stroke-points';
 
 const M = ROUTE_BEHIND_MARGIN;
@@ -183,39 +183,6 @@ describe('routeBehindHoles', () => {
     expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
   });
 
-  describe('a path', () => {
-    const path = (over: Partial<PathElement> = {}): PathElement => ({
-      id: 'p1',
-      type: 'path',
-      x: 200,
-      y: 0,
-      width: 100,
-      height: 100,
-      nodes: [
-        { nx: 0, ny: 0, mode: 'corner' },
-        { nx: 0.5, ny: 1, mode: 'corner' },
-        { nx: 1, ny: 0, mode: 'corner' },
-      ],
-      closed: false,
-      ...over,
-    });
-
-    it('ignores an open path: a curve paints no fill to hide behind', () => {
-      expect(routeBehindHoles(arrow(), from, to, [path({ fillColor: '#ffffff' })])).toEqual([]);
-    });
-
-    it('ignores a closed path with no fill', () => {
-      const outline = path({ closed: true, fillColor: 'transparent' });
-      expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
-    });
-
-    it('cuts around a closed, filled path', () => {
-      const holes = routeBehindHoles(arrow(), from, to, [
-        path({ closed: true, fillColor: '#ffffff' }),
-      ]);
-      expect(holes).toHaveLength(1);
-    });
-  });
 });
 
 // docs/specs/008-canvas/canvas-performance.md: an arrow asks the element grid for its neighbours.

@@ -7,14 +7,11 @@
 // canvas layer, screen px for the screen-space previews (toScreen).
 import type { ReactNode } from 'react';
 import {
-  mirroredPageAt,
-  symmetryMaps,
   symmetryMapsFor,
   type MirroredPage,
   type SymmetryMap,
   type Rect,
 } from '@liveplanner/document';
-import { PathDraftLayer, type PathDraftView } from './path/PathDraftLayer';
 
 /** The box around some points. */
 export function pointsBox(points: readonly { x: number; y: number }[]): Rect | null {
@@ -39,16 +36,6 @@ export function draftMirrorMaps(
   box: Rect | null,
 ): SymmetryMap[] {
   return pages && box ? symmetryMapsFor(pages, box) : [];
-}
-
-/** The maps of the mirrored page under `at`, wherever on it `at` is (a stroke that starts on an
- *  axis still grows its twins as it leaves it); empty off one. */
-export function pageMirrorMaps(
-  pages: readonly MirroredPage[],
-  at: { x: number; y: number } | undefined,
-): SymmetryMap[] {
-  const page = at ? mirroredPageAt(pages, at) : null;
-  return page ? symmetryMaps(page.rect, page.mirror) : [];
 }
 
 /** A canvas-px map as the same map in screen px, the canvas drawn at `origin` and `zoom`. */
@@ -87,34 +74,3 @@ export function SymmetryCopies({
   ));
 }
 
-/** A draft in the canvas layer, repeated while it is on a mirrored page: placed by its `box`, or,
- *  for a stroke that redraws itself as it grows (a marker's), by the page under its start `at`. */
-export function MirroredDraft({
-  pages,
-  box,
-  at,
-  children,
-}: {
-  pages: readonly MirroredPage[];
-  box?: Rect | null;
-  at?: { x: number; y: number };
-  children: ReactNode;
-}) {
-  const maps = at ? pageMirrorMaps(pages, at) : draftMirrorMaps(pages, box ?? null);
-  return maps.length === 0 ? null : <SymmetryCopies maps={maps}>{children}</SymmetryCopies>;
-}
-
-/** A path being drawn, repeated: the line alone, no markers. Nothing off a mirrored page. */
-export function MirroredPathDraft({
-  view,
-  pages,
-}: {
-  view: PathDraftView;
-  pages: readonly MirroredPage[];
-}) {
-  return (
-    <MirroredDraft pages={pages} box={view.element}>
-      <PathDraftLayer {...view} anchors={[]} active={null} allHandles={false} ring={null} />
-    </MirroredDraft>
-  );
-}

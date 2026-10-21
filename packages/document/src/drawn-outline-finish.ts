@@ -1,8 +1,7 @@
-// Outlines drawn on purpose in their finish (docs/specs/008-canvas/finish.md "Polygons and paths"): a Polygon-tool
-// outline (docs/specs/008-canvas/polygon-tool.md), placed point by point, and a Path-tool curve
-// (docs/specs/023-draw-mode/path-tool.md), placed node by node, are drawings like a shape's outline, not a hand's
-// stroke, so they follow their finish as a shape does. Pen strokes, the highlighter and smoothed pencil strokes are
-// already hand-drawn and stay as drawn.
+// Outlines drawn on purpose in their finish (docs/specs/008-canvas/finish.md "Polygons"): a Polygon-tool
+// outline (docs/specs/008-canvas/polygon-tool.md), placed point by point, is a drawing like a shape's outline, not a
+// hand's stroke, so it follows its finish as a shape does. Pen strokes and smoothed pencil strokes are already
+// hand-drawn and stay as drawn.
 import {
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
@@ -12,14 +11,12 @@ import {
 } from './border-style';
 import { MARKER_LINE_PX, finishBorderStroke, finishCornerFallbackPx, type Finish } from './finish';
 import { freehandCanvasPoints } from './freehand-points';
-import type { FreehandElement, ImageElement, PathElement } from './index';
-import { isCompoundPath, pathElementD } from './path-element';
+import type { FreehandElement, ImageElement } from './index';
 import { markerColouring, markerStrokes } from './marker';
 import type { MarkerDrawing } from './marker-element';
 import { isPenStroke } from './pen-stroke';
 import {
   outlineOfEllipse,
-  outlineOfPath,
   outlineOfPolygon,
   outlineOfRect,
   sketchAreaPath,
@@ -107,54 +104,6 @@ export function handDrawnPolygonPaint(
 type HandDrawnOutline =
   | { drawing: SketchDrawing; strokePx: number; dash: string | null }
   | { drawing: MarkerDrawing; strokePx: number; dash: string | null };
-
-/** A Path-tool curve drawn by hand, in its own px box, or null when its finish draws it as it is. Its fill is the
- *  path itself (`solid`, drawn even-odd, so a combined shape's holes still show), its line drawn by hand, its shading
- *  over the fill; a combined shape is not shaded (shading across a hole would fill it). */
-export function handDrawnPathPaint(
-  el: PathElement,
-  finish: Finish,
-  fill: string,
-): HandDrawnOutline | null {
-  if ((finish !== 'sketch' && finish !== 'marker') || el.nodes.length < 2) return null;
-  const outline = outlineOfPath(pathElementD(el, { x: 0, y: 0 }));
-  if (outline.segments.length === 0) return null;
-  const seed = sketchSeed(el.id);
-  const strokePx = polygonStrokePx({ strokeWidth: el.strokeWidth }, finish);
-  const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? null;
-  const d = pathElementD(el, { x: 0, y: 0 });
-  const filled = el.closed && fill !== 'transparent' && fill !== 'none';
-  const area = filled && !isCompoundPath(el) ? outline.area : null;
-  const solid = filled ? d : '';
-  if (finish === 'marker') {
-    const colouring = area ? markerColouring(area, seed) : null;
-    return {
-      drawing: {
-        pen: 'marker',
-        ink: markerStrokes(outline, seed),
-        details: '',
-        solid,
-        solidEvenOdd: true,
-        streaks: colouring?.streaks ?? ['', ''],
-        nibPx: colouring?.nibPx ?? 0,
-      },
-      strokePx,
-      dash,
-    };
-  }
-  return {
-    drawing: {
-      pen: 'pencil',
-      strokes: sketchStrokes(outline, seed),
-      details: '',
-      hatch: area ? sketchHatching(area, seed, strokePx) : '',
-      solid,
-      solidEvenOdd: true,
-    },
-    strokePx,
-    dash,
-  };
-}
 
 /** An image's corner in its finish: its own, else the image default, square under Professional. */
 export function imageCornerPx(

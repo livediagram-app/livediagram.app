@@ -3,9 +3,7 @@ import {
   catmullRomToBezierPath,
   freehandCanvasPoints,
   isPenStroke,
-  pathElementD,
   type FreehandElement,
-  type PathElement,
 } from '@liveplanner/document';
 import { bodySetClass } from '@/lib/animation-classes';
 
@@ -23,7 +21,7 @@ import { bodySetClass } from '@/lib/animation-classes';
 // Nothing animates at rest: masks reveal the whole line, overlays are invisible and the keyframes
 // carry any dash or filter, so reduced motion, export and a finished play-once show the plain line.
 
-type Drawing = FreehandElement | PathElement;
+type Drawing = FreehandElement;
 
 type DrawingAnimationParts = {
   // Spread onto the drawing's main <path> (class, mask, filter, style variables).
@@ -36,9 +34,8 @@ type DrawingAnimationParts = {
 
 const NONE: DrawingAnimationParts = { mainProps: {}, defs: null, overlay: null };
 
-// The box-space (px) centre line of a freehand stroke, and of a path.
+// The box-space (px) centre line of a freehand stroke.
 function centreLinePx(el: Drawing): string {
-  if (el.type === 'path') return pathElementD(el, { x: 0, y: 0 });
   const pts = freehandCanvasPoints({ ...el, x: 0, y: 0 });
   if (pts.length < 2) return '';
   return el.straightEdges

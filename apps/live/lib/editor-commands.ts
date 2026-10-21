@@ -8,7 +8,6 @@
 // context menu / toolbar / header calls), so behaviour + telemetry can't
 // drift between entry points.
 
-import type { CombineOp } from './combine/combine';
 import {
   AUTO_LAYOUT_CHOICES,
   AUTO_LAYOUT_STYLE_IDS,
@@ -44,9 +43,6 @@ export type CommandContext = {
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
-  // True when the selection is combinable shapes on one logo page
-  // (docs/specs/007-editor/logo-pages.md "Combine"). Gates the four Combine commands.
-  canCombine?: boolean;
   // True when the selection has an element on a logo page to reflect (Mirror Copy).
   canMirrorCopy?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
@@ -81,14 +77,11 @@ export type CommandContext = {
   // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
-  // search does not offer it either.
-  whiteboard?: boolean;
-  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
+  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Format out of the tool dropdown, so search
   // does too.
   planMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
-  // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
+  // offers none of them: no selection verbs, no layout cleanup, no Format.
   tabLocked?: boolean;
   // Are timeline lanes on right now (docs/specs/021-event-storming/event-storming.md Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
@@ -106,7 +99,6 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
-  combine: (op: CombineOp) => void;
   mirrorCopy: () => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
@@ -163,14 +155,6 @@ export const CANVAS_TOOLS: {
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
   {
-    id: 'eraser',
-    name: 'Eraser Tool',
-    keywords: 'eraser erase rub out delete remove e',
-    needsContent: true,
-    mutates: true,
-    editsElements: true,
-  },
-  {
     id: 'format',
     name: 'Format Painter',
     keywords: 'format painter copy style paste style match appearance brush',
@@ -215,9 +199,8 @@ export const CANVAS_TOOLS: {
 
 // The tool switches, minus whichever tool is already in force. Grouped with
 // the view-safe commands because most of them only change how you LOOK at the
-// canvas; the two that change it (eraser, format painter) opt in via
-// `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
+// canvas; the one that changes it (the format painter) opts in via
+// `mutates` and drops out for a read-only visitor.
 
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
@@ -226,8 +209,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
-      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
+      !(t.editsElements && (ctx.tabLocked || ctx.planMode)),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,

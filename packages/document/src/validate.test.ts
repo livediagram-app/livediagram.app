@@ -5,8 +5,6 @@ import {
   isValidElement,
   isValidTab,
   MAX_ELEMENTS_PER_TAB,
-  MAX_PATH_NODES,
-  PATH_COORD_MAX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
@@ -126,17 +124,7 @@ describe('isValidElement', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 9, y: 9 },
     };
-    const path = {
-      id: 'p',
-      type: 'path',
-      closed: false,
-      nodes: [
-        { nx: 0, ny: 0, mode: 'corner' },
-        { nx: 1, ny: 1, mode: 'corner' },
-      ],
-      ...box,
-    };
-    for (const el of [pen, shape, line, path]) {
+    for (const el of [pen, shape, line]) {
       expect(isValidElement({ ...el, penColour: 'blue' })).toBe(true);
       expect(isValidElement({ ...el, penColour: 'blue-3' })).toBe(false);
       expect(isValidElement({ ...el, penColour: '#1d7afc' })).toBe(false);
@@ -272,66 +260,6 @@ describe('image credit (docs/specs/009-elements/image-search.md)', () => {
   it('rejects a credit that is not an object', () => {
     expect(isValidElement(image('by admiller'))).toBe(false);
     expect(isValidElement(image(null))).toBe(false);
-  });
-});
-
-describe('path validation (docs/specs/023-draw-mode/path-tool.md)', () => {
-  const node = (nx: number, ny: number) => ({ nx, ny, mode: 'corner' });
-  const path = (extra: Record<string, unknown> = {}) => ({
-    id: 'p',
-    type: 'path',
-    closed: false,
-    nodes: [node(0, 0), node(1, 1)],
-    ...box,
-    ...extra,
-  });
-
-  it('accepts an open path, a closed one, and handles in every mode', () => {
-    expect(isValidElement(path())).toBe(true);
-    expect(
-      isValidElement(path({ closed: true, nodes: [node(0, 0), node(1, 0), node(0, 1)] })),
-    ).toBe(true);
-    const smooth = {
-      nx: 0.5,
-      ny: 0.5,
-      mode: 'mirrored',
-      handleIn: { nx: -0.2, ny: 0.5 },
-      handleOut: { nx: 1.2, ny: 0.5 },
-    };
-    expect(
-      isValidElement(path({ nodes: [node(0, 0), smooth, { ...smooth, mode: 'aligned' }] })),
-    ).toBe(true);
-    expect(
-      isValidElement(path({ strokeWidth: 'thick', strokeStyle: 'dashed', strokeSwatch: 2 })),
-    ).toBe(true);
-  });
-
-  it('rejects too few nodes, and a closed pair with no handle', () => {
-    expect(isValidElement(path({ nodes: [node(0, 0)] }))).toBe(false);
-    expect(isValidElement(path({ closed: true }))).toBe(false);
-    const bent = { ...node(0, 0), handleOut: { nx: 0.5, ny: -1 } };
-    expect(isValidElement(path({ closed: true, nodes: [bent, node(1, 1)] }))).toBe(true);
-  });
-
-  it('rejects malformed nodes, modes, handles and flags', () => {
-    expect(isValidElement(path({ closed: 'no' }))).toBe(false);
-    expect(isValidElement(path({ nodes: 'nope' }))).toBe(false);
-    expect(isValidElement(path({ nodes: [node(0, 0), { nx: 1, ny: 1, mode: 'smooth' }] }))).toBe(
-      false,
-    );
-    expect(isValidElement(path({ nodes: [node(0, 0), { nx: 1, mode: 'corner' }] }))).toBe(false);
-    expect(
-      isValidElement(path({ nodes: [node(0, 0), { ...node(1, 1), handleIn: { nx: 1 } }] })),
-    ).toBe(false);
-    expect(isValidElement(path({ nodes: [node(0, 0), { ...node(1, 1), handleOut: 3 }] }))).toBe(
-      false,
-    );
-    expect(isValidElement(path({ nodes: [node(0, 0), node(PATH_COORD_MAX * 2, 0)] }))).toBe(false);
-  });
-
-  it('rejects more than MAX_PATH_NODES nodes', () => {
-    const nodes = Array.from({ length: MAX_PATH_NODES + 1 }, () => node(0, 0));
-    expect(isValidElement(path({ nodes }))).toBe(false);
   });
 });
 

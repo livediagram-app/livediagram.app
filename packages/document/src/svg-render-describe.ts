@@ -459,9 +459,9 @@ export function selfLabelled(el: BoxedElement): boolean {
 }
 
 // Whether an export prints the element's label as the ordinary centred, wrapped label: not a table,
-// stroke, path, code block, legend or checklist (each draws its own), nor a self-labelled shape.
+// stroke, code block, legend or checklist (each draws its own), nor a self-labelled shape.
 export function drawsStandardLabel(el: BoxedElement): boolean {
-  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
+  if (el.type === 'table' || el.type === 'freehand') return false;
   if (
     el.type === 'shape' &&
     (el.shape === 'code-block' ||

@@ -42,7 +42,6 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'avatar' && canvasTool !== 'avatar') preAvatarToolRef.current = canvasTool;
     if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
-    if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     // `AvatarMode`, not `Avatar` — the palette's Avatar photo tile already owns
     // the `Avatar` token on Element·Added (docs/specs/008-canvas/avatar-mode.md).
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');

@@ -15,13 +15,12 @@ const LaserPanel = dynamic(() => loadToolPanels().then((m) => m.LaserPanel), { s
 const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPanel), {
   ssr: false,
 });
-const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), { ssr: false });
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
 const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
   ssr: false,
 });
 
-// The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// The five tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md,
 // docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
@@ -30,7 +29,7 @@ const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPan
 // because the tool itself is. Grouping them keeps that shared contract in
 // one place, and keeps the chrome host to the panels that are always
 // candidates to be on screen. Every one of them takes the identical
-// wiring bundle below, so a seventh tool panel is a copy of its neighbour.
+// wiring bundle below, so a sixth tool panel is a copy of its neighbour.
 export function useCanvasToolPanels({
   props,
   chromeHidden,
@@ -50,7 +49,6 @@ export function useCanvasToolPanels({
   avatarEl: ReactNode;
   laserEl: ReactNode;
   spotlightEl: ReactNode;
-  eraserEl: ReactNode;
   formatEl: ReactNode;
   slideDeckEl: ReactNode;
 } {
@@ -78,11 +76,6 @@ export function useCanvasToolPanels({
     spotlightPanelPosition,
     onMoveSpotlightPanel,
     onResetSpotlightPanel,
-    eraserConfig,
-    onChangeEraserField,
-    eraserPanelPosition,
-    onMoveEraserPanel,
-    onResetEraserPanel,
     formatConfig,
     onToggleFormatGroup,
     onSetFormatMode,
@@ -98,18 +91,12 @@ export function useCanvasToolPanels({
     activeTabId,
     readOnly,
   } = props;
-  // Draw mode keeps its eraser settings in the dock's flyouts
-  // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  const whiteboard = props.editorMode === 'draw';
 
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
     onResetLaserPanel?.(),
   );
   const spotlightWiring = panelWiringFor('spotlight', spotlightPanelPosition ?? null, () =>
     onResetSpotlightPanel?.(),
-  );
-  const eraserWiring = panelWiringFor('eraser', eraserPanelPosition ?? null, () =>
-    onResetEraserPanel?.(),
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
@@ -186,24 +173,10 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, mounted only while the
-  // Eraser tool is active.
-  const eraserEl =
-    !chromeHidden && !whiteboard && canvasTool === 'eraser' && eraserConfig ? (
-      <EraserPanel
-        config={eraserConfig}
-        onChange={(field, value) => onChangeEraserField?.(field, value)}
-        position={eraserWiring.position}
-        onMoveTo={(x, y) => onMoveEraserPanel?.(x, y)}
-        onReset={eraserWiring.onReset}
-        dock={eraserWiring.dock}
-      />
-    ) : null;
-
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, mounted only while the
   // Format tool is active.
   const formatEl =
-    !chromeHidden && !whiteboard && canvasTool === 'format' && formatConfig ? (
+    !chromeHidden && canvasTool === 'format' && formatConfig ? (
       <FormatPanel
         config={formatConfig}
         onToggleGroup={(group) => onToggleFormatGroup?.(group)}
@@ -245,5 +218,5 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
+  return { avatarEl, laserEl, spotlightEl, formatEl, slideDeckEl };
 }

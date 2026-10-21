@@ -252,7 +252,7 @@ export function useCanvasChromePanels({
     onResetCommentsPanel,
   );
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
-  // The six tool-config panels (avatar / laser / spotlight / eraser / format /
+  // The five tool-config panels (avatar / laser / spotlight / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
   // The Slides popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab
@@ -315,7 +315,7 @@ export function useCanvasChromePanels({
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [avatarOpen, closeDockPanel]);
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  const { avatarEl, laserEl, spotlightEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
@@ -562,7 +562,6 @@ export function useCanvasChromePanels({
     minimap: minimapEl,
     laser: laserEl,
     spotlight: spotlightEl,
-    eraser: eraserEl,
     // Over its cluster button (Pages mode) it renders beside the corner layer, like Collaborate.
     'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,

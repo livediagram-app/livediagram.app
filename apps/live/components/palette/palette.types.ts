@@ -12,7 +12,6 @@ export type CanvasTool =
   | 'spotlight'
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
   | 'avatar'
-  | 'eraser'
   | 'format'
   | 'isometric'
   // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
@@ -37,7 +36,7 @@ export type PaletteProps = {
   // dock (the only chrome left in zen).
   onToggleZen?: () => void;
   // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
+  // need existing content (Format / Laser / Spotlight / Isometric).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one
   // (docs/specs/012-collaboration/session-button.md session tools, docs/specs/009-elements/reaction-pad.md reactions), so a tile per choice places
@@ -106,25 +105,10 @@ export type PaletteProps = {
   // arrowEnds afterwards via the Pointer accordion.
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
   onAddArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
-  // Pencil tool: enters one-shot freehand draw mode. Unlike the
-  // other add-element callbacks, this never drops at the viewport
-  // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil
-  // (freehand) subsection.
-  onBeginFreehand: () => void;
-  // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
-  // variant. Same one-shot arm semantics as onBeginFreehand.
-  onBeginHighlighter: () => void;
-  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
-  // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
-  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
-  onBeginShapePen: () => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
-  onBeginPath: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

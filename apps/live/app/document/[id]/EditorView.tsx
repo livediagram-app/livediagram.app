@@ -598,7 +598,6 @@ export function EditorView() {
                                           ) ||
                                           (contextMenu !== null && contextMenu.mode !== 'canvas')
                                         }
-                                        powerUser={isPowerUserMode(userPreferences)}
                                       />
                                     </AreaErrorBoundary>
                                     {ctx.searchOpen ? (

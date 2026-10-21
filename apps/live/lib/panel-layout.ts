@@ -30,8 +30,6 @@ export type PanelId =
   | 'laser'
   // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, on the same terms.
   | 'spotlight'
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, on the same terms.
-  | 'eraser'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
   | 'format'
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built and started.
@@ -50,7 +48,6 @@ export const PANEL_IDS: readonly PanelId[] = [
   'minimap',
   'laser',
   'spotlight',
-  'eraser',
   'format',
   'slide-deck',
 ];
@@ -81,7 +78,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // leaves its corner stack.
   laser: 'bottom-right',
   spotlight: 'bottom-right',
-  eraser: 'bottom-right',
   format: 'bottom-right',
   'slide-deck': 'bottom-right',
 };

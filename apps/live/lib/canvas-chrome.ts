@@ -64,9 +64,6 @@ export function canvasCursorClass(input: {
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): every click is "walk over there", so the pointer
   // cursor is the honest affordance. Space still pans, so defer to grab.
   if (canvasTool === 'avatar' && !spaceHeld) return 'cursor-pointer';
-  // Eraser shows a custom eraser glyph (see .cursor-eraser in globals.css),
-  // unless Space is held for a temporary pan.
-  if (canvasTool === 'eraser' && !spaceHeld) return 'cursor-eraser';
   // Isometric view (docs/specs/008-canvas/isometric-view.md) is navigation-only: it pans like Hand, so it
   // shares the grab cursor (grabbing while dragging is handled by the `pan`
   // branch above).

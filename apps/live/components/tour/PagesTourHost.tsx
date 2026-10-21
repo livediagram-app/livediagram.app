@@ -21,8 +21,6 @@ import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { helpArticleHref } from '@/lib/help-articles';
-import { useLogoCombineDemo } from './useLogoCombineDemo';
-import { clearCombineDemo } from './logo-combine-demo';
 
 // The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
@@ -49,8 +47,6 @@ const EYEBROW: Record<PageKind, string> = {
 // on screen of a kind whose track they have not seen, no other tour on screen and the settle delay passed, or the
 // Settings row asks for a rerun. The tour page's kind picks the track; its steps load at the offer.
 export function PagesTourHost() {
-  // The Logo track's Combine demonstration acts on this editor (logo-combine-demo.ts).
-  useLogoCombineDemo();
   const ctx = useEditorContext();
   const [subject, setSubject] = useState<TourPage>({ pageId: '', kind: 'infographic' });
   const apiRef = useLatest<PageTourApi>({ pageId: subject.pageId, ...PAGE_PANEL });
@@ -117,8 +113,6 @@ export function PagesTourHost() {
   if (armed && !anyUnseen) setArmed(false);
 
   const endTour = (outcome: TourOutcome) => {
-    // What a step placed to show something (the Logo track's Combine shapes) goes however the tour ended.
-    clearCombineDemo();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     const next = rebaseUserPreferences(
       ctx.userPreferences,

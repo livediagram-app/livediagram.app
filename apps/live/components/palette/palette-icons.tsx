@@ -19,7 +19,6 @@ import {
   lucideFileDown,
   lucideFileUp,
   lucideLightbulb,
-  lucidePenTool,
   lucideScanEye,
   lucideSpade,
   lucideThermometer,
@@ -76,30 +75,6 @@ export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="pan" size={size} />;
 }
 
-// The Shape Pen (docs/specs/008-canvas/two-pens.md): its palette tile and the whiteboard dock's Path
-// tool (docs/specs/023-draw-mode/path-tool.md "Where it lives") wear this one icon, each at its size.
-export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucidePenTool} />
-    </Glyph>
-  );
-}
-
-// Edit points (docs/specs/023-draw-mode/path-tool.md "Editing"): a curve through a corner node
-// (square, selected) and another, with one handle. On the selection toolbar and on the dock's
-// Select while a path is in its edit mode.
-export function EditPointsIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <path d="M4.5 19.5 C4.5 9 19.5 15 19.5 4.5" />
-      <path d="M4.5 19.5 V10" strokeWidth={1} />
-      <circle cx="4.5" cy="10" r="1.3" fill="currentColor" stroke="none" />
-      <rect x="2.7" y="17.7" width="3.6" height="3.6" fill="currentColor" />
-      <rect x="17.7" y="2.7" width="3.6" height="3.6" />
-    </Glyph>
-  );
-}
 
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;
@@ -116,17 +91,6 @@ export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="isometric" size={size} />;
 }
 
-// Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
-// baseline. The diagonal band reads as the eraser's two-tone body.
-// The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.
-// A chisel-tip marker over the band it lays down: the band is what separates it
-// from the pencil at 13px, where the two nibs are the same three strokes.
-// Monochrome, tinted like the Shape Pen's glyph beside it. The drawing is the
-// one it wore as a selection mode, kept in MODE_GLYPHS.
-export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="highlighter" size={size} />;
-}
-
 // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
 // deck IS. Deliberately not a "play" triangle — the tool opens the workbench
 // where you build slides, and only the Start button inside it presents.
@@ -137,10 +101,6 @@ export function SlideDeckIcon() {
       <path d="M4.5 2.5h8a1.2 1.2 0 0 1 1.2 1.2v6.3" />
     </Glyph>
   );
-}
-
-export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="eraser" size={size} />;
 }
 
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the

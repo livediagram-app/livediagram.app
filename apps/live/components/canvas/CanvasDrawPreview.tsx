@@ -1,25 +1,17 @@
 import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import {
-  BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
-  isSelfDrawingShape,
-  type MirroredPage,
-} from '@liveplanner/document';
+import { isSelfDrawingShape, type MirroredPage } from '@liveplanner/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
-import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
+import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
-import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
-import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 import { draftMirrorMaps, pointsBox, SymmetryCopies, toScreen } from './MirrorReflection';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
-  penPoints: { x: number; y: number }[] | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
   pendingDraw: PendingDraw | null;
@@ -30,94 +22,35 @@ type CanvasDrawPreviewProps = {
   // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
   // origin follows (useCanvasViewKey), so the chrome around this takes no view.
   mainSize: { width: number; height: number };
-  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
-  // previews in. Absent elsewhere.
-  whiteboardInk?: string;
   // The pages while Mirror While Drawing is on (docs/specs/007-editor/logo-pages.md
   // "Mirror"): a drawing on a logo page previews its twin too. Absent otherwise.
   mirrorPages?: readonly MirroredPage[] | null;
 };
 
-// Live previews shown while a draw gesture is in flight: the freehand pen
-// polyline and the draw-to-size box (a dashed rect, or a ShapeSvgOverlay
+// Live previews shown while a draw gesture is in flight: the polygon's
+// placed points and the draw-to-size box (a dashed rect, or a ShapeSvgOverlay
 // preview for SVG-rendered shapes). Pure SVG/markup; split out of CanvasChrome.
 export function CanvasDrawPreview({
   drawDrag,
-  penPoints,
   polygonVertices,
   polygonCursor,
   pendingDraw,
   stamp,
   wrapperRef,
   mainSize,
-  whiteboardInk,
   mirrorPages,
 }: CanvasDrawPreviewProps) {
   const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
-  // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
-  // "Shapes"): in the board's ink, solid, unfilled.
-  const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
-  // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
-  const showsPen =
-    !isWhiteboardPenIntent(pendingDraw) &&
-    !!penPoints &&
-    pendingDraw?.type === 'freehand' &&
-    penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
   // A line or an arrow previews as the element it lands, in the canvas layer
-  // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
+  // (DrawnArrowPreview), not here.
   const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
-  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
-  // The drawings in progress (pencil, polygon, draw-to-size box), given once more reflected while
+  const origin = useCanvasClientOrigin(wrapperRef, showsPolygon || showsBox, viewKey);
+  // The drawings in progress (polygon, draw-to-size box), given once more reflected while
   // Mirror While Drawing is on over a logo page (docs/specs/007-editor/logo-pages.md "Mirror").
   const drafts = (
     <>
-      {/* Pen-gesture live preview for the diagram pencil and the highlighter. While the user
-            is drawing freehand, paint the in-progress polyline so they can see what they're
-            sketching. Sits on the same z-[var(--z-chrome)] overlay layer as the draw-to-size box
-            preview. Switches to the committed FreehandSvg after release (the next render tick
-            once the new element lands in `elements`). */}
-      {showsPen && penPoints && pendingDraw?.type === 'freehand'
-        ? (() => {
-            const rect = origin;
-            if (!rect) return null;
-            // Build an SVG polyline string from the sampled canvas-
-            // coord points, converted to client coords via the
-            // wrapper rect + zoom so the overlay aligns with the
-            // canvas content.
-            const d = penPoints
-              .map((p, i) => {
-                const x = rect.left + p.x * viewportZoom;
-                const y = rect.top + p.y * viewportZoom;
-                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-              })
-              .join(' ');
-            // The highlighter variant previews with the committed
-            // marker recipe (wide translucent, in the arm's colour and width,
-            // docs/specs/008-canvas/highlighter.md) so what you see while dragging is what lands.
-            const marker = pendingDraw.variant === 'highlighter' ? pendingDraw : null;
-            const isHighlighter = marker !== null;
-            return (
-              <svg
-                aria-hidden
-                className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
-              >
-                <path
-                  d={d}
-                  fill="none"
-                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'rgb(14, 165, 233)'}
-                  strokeWidth={marker ? (marker.width ?? HIGHLIGHTER_WIDTH) : 2}
-                  strokeOpacity={isHighlighter ? 0.45 : undefined}
-                  style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            );
-          })()
-        : null}
-
       {/* Polygon-tool preview (docs/specs/008-canvas/polygon-tool.md): the placed segments, a rubber-band
             segment to the live cursor, a dot per vertex, and a snap ring on
             the START vertex once the cursor is within closing range. */}
@@ -227,17 +160,7 @@ export function CanvasDrawPreview({
                   height: heightPx,
                 }}
               >
-                {pendingDraw.type === 'shape' && pendingDraw.board ? (
-                  <PenShapePreview
-                    kind={pendingDraw.kind}
-                    colour={inkOf(null)}
-                    widthPx={BORDER_STROKE_PX[DEFAULT_BORDER_STROKE]}
-                    usesSvg={usesSvg}
-                    radius={radius}
-                    zoom={viewportZoom}
-                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
-                  />
-                ) : usesSvg && pendingDraw.type === 'shape' ? (
+                {usesSvg && pendingDraw.type === 'shape' ? (
                   <ShapeSvgOverlay
                     shape={pendingDraw.kind}
                     fill="rgba(14, 165, 233, 0.10)"
@@ -259,9 +182,7 @@ export function CanvasDrawPreview({
     </>
   );
   const mirrorMaps =
-    pendingDraw?.type === 'shape' ||
-    pendingDraw?.type === 'freehand' ||
-    pendingDraw?.type === 'polygon'
+    pendingDraw?.type === 'shape' || pendingDraw?.type === 'polygon'
       ? draftMirrorMaps(
           mirrorPages,
           showsBox && drawDrag && pendingDraw
@@ -272,11 +193,9 @@ export function CanvasDrawPreview({
                 drawDrag.currentX,
                 drawDrag.currentY,
               )
-            : showsPen && penPoints
-              ? pointsBox(penPoints)
-              : showsPolygon
-                ? pointsBox(polygonVertices)
-                : null,
+            : showsPolygon
+              ? pointsBox(polygonVertices)
+              : null,
         )
       : [];
   return (
