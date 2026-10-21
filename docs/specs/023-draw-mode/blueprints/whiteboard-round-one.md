@@ -684,7 +684,7 @@ outline is rebuilt per update, as Excalidraw does.
 ### Still canvas
 
 - `CanvasStillProvider` (`apps/live/components/canvas/CanvasStillContext.tsx`), provided by `Canvas` with
-  `still = editorMode === 'draw'`; `useBoxedElementAnimation` drops `animate-element-pop-in` when
+  `still = editorMode === 'draw'`; `useElementPopIn` drops `animate-element-pop-in` when
   still. Author-set looping animations are untouched.
 - On entering a whiteboard with `format` held, the hook sets `select`, and arms the
   pen when the tab has no elements; `buildEditorCommands` with `whiteboard: true` drops `tool:format`.

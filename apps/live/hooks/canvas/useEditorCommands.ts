@@ -94,7 +94,6 @@ export function useEditorCommands(open: boolean): {
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
-    clearAnimationsSelected,
     commitElements,
     setArrowFlowSelected,
     setMarkerSelected,
@@ -151,12 +150,7 @@ export function useEditorCommands(open: boolean): {
   const combinable = isMulti && canCombine();
   const mirrorable = selectionCount > 0 && !!pagesMode?.logo?.canMirrorCopy();
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
-  const hasAnimation = single
-    ? single.type === 'arrow'
-      ? !!single.flow
-      : isBoxed(single) &&
-        (!!single.animation || !!(single as { textAnimation?: string }).textAnimation)
-    : false;
+  const hasAnimation = single?.type === 'arrow' && !!single.flow;
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
@@ -235,8 +229,7 @@ export function useEditorCommands(open: boolean): {
     rotate: setRotationSelected,
     combine: (op) => void combineSelected(op),
     mirrorCopy: () => pagesMode?.logo?.mirrorCopy(),
-    clearAnimation: () =>
-      single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
+    clearAnimation: () => setArrowFlowSelected(null),
     setMarker: setMarkerSelected,
     // The step menu's own write (ChipMenuSection), one history step over the tab, with its telemetry.
     renumberSteps: () => {

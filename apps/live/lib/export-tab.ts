@@ -122,19 +122,17 @@ export type ImageExportOpts = {
   // in, so their words export in their own faces; without it a window draws its frame named for its tab.
   resolveTabWindow?: ResolveTabWindow;
   tabWindowFontIds?: readonly string[];
-  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each element's
-  // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
-  // Only a tab window passes it (an inline SVG on the page); every file export is a still.
+  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each arrow's
+  // flow, as the canvas draws it, so the page's own motion stylesheets play it. Only a tab window passes it (an
+  // inline SVG on the page); every file export is a still.
   motion?: SvgMotion;
   // A page's writing as estimated without a browser (svg-render-pages.ts pagesWithWriting), drawn where the editor has
   // not laid that article out (no handle): a tab window onto a Pages tab passes it. SVG only.
   estimatedWriting?: (page: LaidOutPage) => string | undefined;
 };
 
-// How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
-// line for an arrow's flow. Undefined for one that holds still.
+// How an element moves in a live inline SVG: the moving line for an arrow's flow. Undefined for one that holds still.
 export type SvgMotion = {
-  boxed: (el: BoxedElement) => { className: string; style: string } | undefined;
   arrowLine: (el: ArrowElement) => ArrowLineMotion | undefined;
 };
 
@@ -608,13 +606,6 @@ function pageMotionSvg(page: LaidOutPage | undefined): string {
   return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${href}"/>`;
 }
 
-// A boxed element's markup in the group its animation class rides (tab-window-motion.ts), or as it is.
-function withMotion(el: BoxedElement, motion: SvgMotion | undefined, svg: string): string {
-  const m = motion?.boxed(el);
-  if (!m) return svg;
-  return `<g class="lvd-svg-motion ${xmlEscape(m.className)}" style="${xmlEscape(m.style)}">${svg}</g>`;
-}
-
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
@@ -732,25 +723,21 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         inner.push(
           svgZoneClipped(
             el.id,
-            withMotion(
-              el,
-              opts.motion,
-              svgBoxed(el, {
-                resolveImageHref,
-                resolveIconArt: resolveIconArtLoaded,
-                resolveStickerArt: resolveStickerArtLoaded,
-                tabFont: tab.font,
-                tabFinish: tab.finish,
-                sketchBackdrop: backdrops.has(el.id),
-                surface,
-                ...chartInk,
-                items: opts.items,
-                itemTypes: opts.itemTypes,
-                sheets: opts.sheets,
-                resolvePlanArt: opts.resolvePlanArt,
-                resolveTabWindow: opts.resolveTabWindow,
-              }),
-            ),
+            svgBoxed(el, {
+              resolveImageHref,
+              resolveIconArt: resolveIconArtLoaded,
+              resolveStickerArt: resolveStickerArtLoaded,
+              tabFont: tab.font,
+              tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
+              surface,
+              ...chartInk,
+              items: opts.items,
+              itemTypes: opts.itemTypes,
+              sheets: opts.sheets,
+              resolvePlanArt: opts.resolvePlanArt,
+              resolveTabWindow: opts.resolveTabWindow,
+            }),
             clips,
           ),
         );

@@ -16,9 +16,9 @@ const run = (p: AvatarPadPart, i: number) => (
   <rect key={i} x={p.x} y={p.y} width={p.width} height={1} fill={p.fill} />
 );
 
-export const AvatarPadView = memo(function AvatarPadView({ animClass }: { animClass?: string }) {
+export const AvatarPadView = memo(function AvatarPadView() {
   return (
-    <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
+    <div className="pointer-events-none absolute inset-0">
       <svg
         viewBox={`0 0 ${AVATAR_PAD_GRID.width} ${AVATAR_PAD_GRID.height}`}
         preserveAspectRatio="xMidYMid meet"

@@ -19,7 +19,6 @@ export const BADGE_NEW_LABEL = 'New';
 export const BADGE_LABEL_MAX = 24;
 export const STEP_LABEL_MAX = 3;
 export const STEP_SIZE_PX = 28;
-export const STEP_SEQUENCE_BEAT_S = 0.4;
 
 export function isChipShape(kind: string): kind is ChipShape {
   return kind === 'badge' || kind === 'step';
@@ -123,11 +122,6 @@ export function nextStepNumber(elements: readonly Element[]): string {
   return String(max + 1);
 }
 
-/** A step's position in its sequence (its whole-number label), for Play in Order; null when it has none. */
-export function stepOrdinal(el: ShapeElement): number | null {
-  return el.shape === 'step' ? wholeNumber(el.label) : null;
-}
-
 /**
  * Every step on the tab numbered 1, 2, 3 … in reading order: rows top to bottom (a row is the steps whose centres
  * sit within half a step's height of the row's first), then left to right in each row.
@@ -166,14 +160,4 @@ export function withChipLook<T extends Element>(el: T, look: ChipLook | null): T
   if (look) next.chipLook = look;
   else delete next.chipLook;
   return next;
-}
-
-/** Play in Order on (or off) for every step on the tab: order is a property of the set. */
-export function withStepSequence(elements: Element[], on: boolean): Element[] {
-  return elements.map((el) => {
-    if (el.type !== 'shape' || el.shape !== 'step' || !!el.stepSequence === on) return el;
-    if (on) return { ...el, stepSequence: true };
-    const { stepSequence: _off, ...rest } = el;
-    return rest;
-  });
 }

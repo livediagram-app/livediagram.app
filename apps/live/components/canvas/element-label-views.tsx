@@ -5,8 +5,6 @@
 // call) stays in element-labels.tsx and picks between them.
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { renderUnits } from './animated-words';
-import type { TextAnimView } from './useTextAnimation';
 import {
   type BoxedElement,
   type TextAlignX,
@@ -36,67 +34,18 @@ function svgPreserve(alignX: TextAlignX, alignY: TextAlignY): string {
 
 // --- Auto-scaling single-line label (SVG fit-to-bounds) --------------------
 
-// Where `preserveAspectRatio="… meet"` puts the measured box inside the svg: its scale and the
-// offset of its top-left corner from the label's own (padding included). Measured when the box or
-// the svg's size changes; only while a Text animation needs it.
-function useSvgFit(
-  svg: React.RefObject<SVGSVGElement | null>,
-  bbox: { w: number; h: number } | null,
-  alignX: TextAlignX,
-  alignY: TextAlignY,
-  padding: number,
-  active: boolean,
-): { scale: number; x: number; y: number } | null {
-  const [fit, setFit] = useState<{ scale: number; x: number; y: number } | null>(null);
-  useLayoutEffect(() => {
-    const node = svg.current;
-    if (!active || !node || !bbox) return;
-    const measure = () => {
-      const w = node.clientWidth;
-      const h = node.clientHeight;
-      if (!w || !h) return;
-      const scale = Math.min(w / bbox.w, h / bbox.h);
-      const fx = alignX === 'left' ? 0 : alignX === 'right' ? 1 : 0.5;
-      const fy = alignY === 'top' ? 0 : alignY === 'bottom' ? 1 : 0.5;
-      setFit({
-        scale,
-        x: padding + (w - bbox.w * scale) * fx,
-        y: padding + (h - bbox.h * scale) * fy,
-      });
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [svg, bbox, alignX, alignY, padding, active]);
-  return active ? fit : null;
-}
-
 export function ScalingLabel({
   text,
   alignX,
   alignY,
   padding,
   style,
-  animClass,
-  textAnim,
 }: {
   text: string;
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
   style?: LabelTextStyle;
-  // Text animation (docs/specs/028-animation/element-animations.md). SVG <text> letters cannot move
-  // on their own, so an animated label keeps the <text> only to measure the fit (painted
-  // transparent) and draws its words as HTML over it, placed and scaled exactly as the view box
-  // fits the <text> (useSvgFit). Plain HTML rather than a foreignObject, which WebKit renders
-  // without the SVG's scaling once its content is positioned or composited.
-  textAnim?: TextAnimView;
-  // Text-native animation class (docs/specs/008-canvas/canvas-and-palette.md). Only the drop-shadow variants
-  // (glow / pulse / trace) reach here — see renderLabel — since drop-shadow
-  // follows the SVG glyph alpha; the background-clip gradient can't paint SVG
-  // <text> fill, so it's withheld for the auto-fit (`scale`) renderer.
-  animClass?: string;
 }) {
   const textRef = useRef<SVGTextElement>(null);
   const [bbox, setBBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -110,18 +59,14 @@ export function ScalingLabel({
   }, [text, style?.letterSpacing, style?.weight, style?.uppercase, style?.lowercase]);
 
   const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
-  const svgRef = useRef<SVGSVGElement>(null);
-  const fit = useSvgFit(svgRef, bbox, alignX, alignY, padding, !!textAnim);
 
   return (
     <div className="pointer-events-none absolute inset-0 flex" style={{ padding }}>
       <svg
-        ref={svgRef}
         width="100%"
         height="100%"
         viewBox={viewBox}
         preserveAspectRatio={svgPreserve(alignX, alignY)}
-        className={textAnim ? undefined : animClass}
         overflow="visible"
       >
         <text
@@ -150,8 +95,7 @@ export function ScalingLabel({
                   : undefined
           }
           fontSize="20"
-          fill={textAnim ? 'transparent' : 'currentColor'}
-          aria-hidden={textAnim ? true : undefined}
+          fill="currentColor"
         >
           {text.split('\n').map((line, i) => (
             // One tspan per line so multi-line labels (Enter inserts a
@@ -163,37 +107,6 @@ export function ScalingLabel({
           ))}
         </text>
       </svg>
-      {textAnim && bbox && fit ? (
-        <div
-          key={textAnim.className}
-          className={`absolute left-0 top-0 origin-top-left ${textAnim.className}`}
-          aria-label={textAnim.ariaLabel}
-          style={{
-            ...textAnim.style,
-            translate: `${fit.x}px ${fit.y}px`,
-            scale: String(fit.scale),
-            width: bbox.w,
-            fontSize: 20,
-            lineHeight: 1.2,
-            whiteSpace: 'pre',
-            fontFamily: style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif',
-            fontWeight: style?.weight ?? (style?.bold ? 700 : 500),
-            fontStyle: style?.italic ? 'italic' : undefined,
-            letterSpacing: style?.letterSpacing ? `${style.letterSpacing}em` : undefined,
-            textTransform: style?.uppercase
-              ? 'uppercase'
-              : style?.lowercase
-                ? 'lowercase'
-                : undefined,
-            textDecoration:
-              [style?.underline && 'underline', style?.strikethrough && 'line-through']
-                .filter(Boolean)
-                .join(' ') || undefined,
-          }}
-        >
-          {renderUnits(text, textAnim.plan, { next: 0 })}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -207,8 +120,6 @@ export function FixedSizeLabel({
   alignY,
   padding,
   style,
-  animClass,
-  textAnim,
 }: {
   text: string;
   // The label's font px: its size preset's, times a text box's Shift-resize scale.
@@ -218,10 +129,6 @@ export function FixedSizeLabel({
   // A number of px on every side, or a CSS padding (a whiteboard text box's 2px 4px).
   padding: LabelPadding;
   style?: LabelTextStyle;
-  // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
-  animClass?: string;
-  // Text animation (docs/specs/028-animation/element-animations.md): the words split into units.
-  textAnim?: TextAnimView;
 }) {
   if (!text) return null;
   return (
@@ -234,20 +141,13 @@ export function FixedSizeLabel({
       }}
     >
       <div
-        // Keyed by the animation, so picking another restarts it: reveals share a keyframe name, and a
-        // finished play-once would otherwise stay finished.
-        key={textAnim?.className}
-        className={`w-full whitespace-pre-wrap break-words ${textAnim?.className ?? animClass ?? ''}`}
+        className="w-full whitespace-pre-wrap break-words"
         style={{
           textAlign: TEXT_ALIGN[alignX],
           ...labelTextStyleCss(style ?? {}),
-          ...textAnim?.style,
         }}
-        // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
-        role={textAnim?.ariaLabel ? 'img' : undefined}
-        aria-label={textAnim?.ariaLabel}
       >
-        {textAnim ? renderUnits(text, textAnim.plan, { next: 0 }) : text}
+        {text}
       </div>
     </div>
   );
@@ -279,12 +179,9 @@ export function MultilineLabel({
   className = '',
   style,
   fitPx,
-  textAnim,
 }: MultilineLabelProps & {
   padding: number;
   style?: LabelTextStyle;
-  // Text animation (docs/specs/028-animation/element-animations.md): the note's words split into units.
-  textAnim?: TextAnimView;
 }) {
   const fontSize = `${fitPx ?? labelFontPx(textSize, true)}px`;
   const outerStyle = {
@@ -310,17 +207,8 @@ export function MultilineLabel({
       style={outerStyle}
       className={`pointer-events-none absolute inset-0 flex overflow-hidden ${className}`}
     >
-      <div
-        // Keyed by the animation, so picking another restarts it: reveals share a keyframe name, and a
-        // finished play-once would otherwise stay finished.
-        key={textAnim?.className}
-        className={`w-full whitespace-pre-wrap ${textAnim?.className ?? ''}`}
-        style={{ ...innerStyle, ...textAnim?.style }}
-        // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
-        role={textAnim?.ariaLabel ? 'img' : undefined}
-        aria-label={textAnim?.ariaLabel}
-      >
-        {textAnim ? renderUnits(text, textAnim.plan, { next: 0 }) : text}
+      <div className="w-full whitespace-pre-wrap" style={innerStyle}>
+        {text}
       </div>
     </div>
   );
@@ -347,8 +235,6 @@ export function RichLabel({
   uppercase,
   wordmark,
   className = '',
-  animClass,
-  textAnim,
 }: {
   runs: TextRun[];
   element: BoxedElement;
@@ -366,13 +252,7 @@ export function RichLabel({
   // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.
   wordmark?: LabelTextStyle;
   className?: string;
-  // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
-  animClass?: string;
-  // Text animation (docs/specs/028-animation/element-animations.md): each run splits in turn, the
-  // unit index running through the whole label.
-  textAnim?: TextAnimView;
 }) {
-  const counter = { next: 0 };
   const basePx = labelBasePx(multiline, textSize) * textScale;
   const runSizePx = labelRunPx(multiline, textScale);
   return (
@@ -383,15 +263,8 @@ export function RichLabel({
       style={{ fontSize: `${basePx}px`, alignItems: ALIGN_ITEMS[alignY], padding }}
     >
       <div
-        // Keyed by the animation, so picking another restarts it: reveals share a keyframe name, and a
-        // finished play-once would otherwise stay finished.
-        key={textAnim?.className}
-        className={`w-full whitespace-pre-wrap break-words ${textAnim?.className ?? animClass ?? ''}`}
-        // Animated, the text is drawn in pieces: read it as one labelled picture, never letter by letter.
-        role={textAnim?.ariaLabel ? 'img' : undefined}
-        aria-label={textAnim?.ariaLabel}
+        className="w-full whitespace-pre-wrap break-words"
         style={{
-          ...textAnim?.style,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
           ...(wordmark ? wordmarkTextCss(wordmark) : {}),
@@ -405,7 +278,7 @@ export function RichLabel({
       >
         {runs.map((run, i) => (
           <span key={i} style={effectiveRunStyle(run, element, runSizePx)}>
-            {textAnim ? renderUnits(run.text, textAnim.plan, counter, `${i}:`) : run.text}
+            {run.text}
           </span>
         ))}
       </div>

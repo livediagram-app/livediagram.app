@@ -50,12 +50,6 @@ or an API reader that knows nothing of attachment draws the note and its leader 
 A **Pointer Note** section (Tools flyout), closed until opened: **Detach** while the tip is attached. Colours, Border
 (width, pattern) and the Text controls work as on any shape; the leader takes the border colour.
 
-## Animation
-
-A pointer note takes the **Shape** set for its box and the **Text** set for its words; the leader is part of the face,
-so a motion such as Bounce carries it. With **Pulse**, the tip pulses too: a ring expands from the dot, drawing the eye
-to the spot the note is about. CSS only; reduced motion and every export show the rest frame.
-
 ## Palette
 
 | Mode     | Where                                     |

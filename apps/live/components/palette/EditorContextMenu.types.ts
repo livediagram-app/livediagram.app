@@ -31,7 +31,6 @@ import type {
   LegendItem,
   MindFlow,
   MindSpacing,
-  AnimationSetId,
   IconAnimation,
   IconPosition,
   IconSize,
@@ -311,15 +310,10 @@ export type EditorContextMenuProps = {
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
   onResetArrowStyle: () => void;
-  // Animated elements: one category per animation set (docs/specs/028-animation/element-animations.md),
-  // a flow animation on arrows, and a glyph animation on icons. `null` clears it. The onSet* commit;
-  // the onPreview* play it live on hover (desktop) and onAnimationPreviewEnd reverts when the
-  // pointer leaves the tile (the shared useStylePreview flow). A set's handlers write only its
-  // members of the selection.
-  onSetSetAnimation: (set: AnimationSetId, value: string | null) => void;
-  onPreviewSetAnimation: (set: AnimationSetId, value: string | null) => void;
-  onSetSetAnimationSpeed: (set: AnimationSetId, value: AnimationSpeed) => void;
-  onSetSetAnimationRepeat: (set: AnimationSetId, value: boolean) => void;
+  // Animated elements (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): a flow animation on
+  // arrows, and a glyph animation on icons. `null` clears it. The onSet* commit; the onPreview* play it live on
+  // hover (desktop) and onAnimationPreviewEnd reverts when the pointer leaves the tile (the shared useStylePreview
+  // flow).
   onSetArrowFlow: (value: ArrowFlow | null) => void;
   onSetIconAnimation: (value: IconAnimation | null) => void;
   onSetIconAnimationSpeed: (value: AnimationSpeed) => void;

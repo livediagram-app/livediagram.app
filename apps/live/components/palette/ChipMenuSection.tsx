@@ -6,14 +6,13 @@ import {
   detachChip,
   renumberSteps,
   withChipLook,
-  withStepSequence,
   type ChipLook,
   type ShapeElement,
 } from '@liveplanner/document';
 import { Glyph } from '@liveplanner/ui';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
+import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
@@ -46,18 +45,15 @@ function LookIcon({ look }: { look: ChipLook }) {
 }
 
 // A badge's or step number's own section (docs/specs/009-elements/badge.md "The menu",
-// docs/specs/009-elements/step-number.md): its look, Detach while it is attached, and on a step Renumber Steps and
-// Play in Order, which reach every step on the tab.
+// docs/specs/009-elements/step-number.md): its look, Detach while it is attached, and on a step Renumber Steps,
+// which reaches every step on the tab.
 export function ChipMenuSection({
   target,
   ops,
-  stepsInOrder,
   sectionProps,
 }: {
   target: ShapeElement;
   ops: ElementStyleOps;
-  // Whether the tab's steps play in order now (any of them does).
-  stepsInOrder: boolean;
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
 }) {
   const isStep = target.shape === 'step';
@@ -84,16 +80,6 @@ export function ChipMenuSection({
           ))}
         </BorderGrid>
       </div>
-      {isStep ? (
-        <MenuToggleRow
-          label="Play in Order"
-          description="Steps animate one after another, by number"
-          checked={stepsInOrder}
-          onToggle={() =>
-            ops.commitTab((els) => withStepSequence(els, !stepsInOrder), 'StepSequence')
-          }
-        />
-      ) : null}
       <div className="flex flex-col gap-1 px-2 pb-1.5 pt-1">
         {target.attachedTo ? (
           <MenuActionButton

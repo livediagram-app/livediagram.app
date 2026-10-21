@@ -66,14 +66,12 @@ export function FurnitureView({
   stroke,
   fill,
   sitters,
-  animClass,
 }: {
   element: ShapeElement;
   stroke: string;
   // The element's fill: a rug's colour (seating and the rest take their seat wash from it).
   fill?: string;
   sitters: ChairSitter[];
-  animClass?: string;
 }) {
   const kind = element.shape;
   if (!isFurnitureViewShape(kind)) return null;
@@ -93,7 +91,7 @@ export function FurnitureView({
       <ellipse key="ring" {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
     ) : null;
   return (
-    <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
+    <div className="pointer-events-none absolute inset-0">
       <svg
         viewBox={frame.viewBox}
         className="absolute inset-0 h-full w-full overflow-visible"

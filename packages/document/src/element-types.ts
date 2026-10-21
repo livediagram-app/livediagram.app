@@ -59,8 +59,6 @@ import type {
   LegendItem,
   Reaction,
   CodeLanguage,
-  ElementAnimation,
-  TextAnimation,
   ElementId,
   ElementLink,
   IconAnimation,
@@ -114,13 +112,11 @@ export type ShapeElement = {
   // keep rendering as one. See `isLegacyEmojiIconId`.
   stickerId?: string;
   // Looping animation for an `icon` shape's glyph (docs/specs/008-canvas/canvas-and-palette.md "Animated icons").
-  // Independent of the boxed-element `animation` field above: icons get their
-  // own motion set (the icon context menu swaps in IconAnimationTiles), since
-  // a spinning gear / beating heart wants glyph-level motion, not the
-  // wrapper ring / glow a shape uses. Undefined = static. Applied as a
+  // Icons get their own motion set (IconAnimationTiles), since a spinning gear /
+  // beating heart wants glyph-level motion. Undefined = static. Applied as a
   // `lvd-icon-*` CSS class on the glyph by IconGlyph / IconPrims.
   iconAnimation?: IconAnimation;
-  // Loop speed for `iconAnimation`, mirroring the boxed-element `animationSpeed`
+  // Loop speed for `iconAnimation`
   // (a duration multiplier fed to the `lvd-icon-*` keyframes via
   // `--lvd-icon-anim-speed`). Undefined = the shared default ('slow').
   iconAnimationSpeed?: AnimationSpeed;
@@ -148,7 +144,7 @@ export type ShapeElement = {
   progress?: number;
   progressAnim?: ProgressAnim;
   // Loop speed for `progressAnim` (slow / normal / fast), same multiplier as
-  // boxed-element animations. Undefined = normal.
+  // the other animations. Undefined = normal.
   progressAnimSpeed?: AnimationSpeed;
   // Whether the animation repeats. `fill` defaults to playing ONCE and holding
   // the filled state (so a dropped progress bar fills in and stays done, not a
@@ -469,11 +465,10 @@ export type ShapeElement = {
   cardHeader?: boolean;
   tags?: string[];
   // Badge and Step number (docs/specs/009-elements/badge.md): the look (absent = the kind's default), the host it is
-  // attached to and the point it sits on (both or neither), and a step's Play in Order (stored only when true).
+  // attached to and the point it sits on (both or neither).
   chipLook?: ChipLook;
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
-  stepSequence?: boolean;
   // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
   pointerTip?: { x: number; y: number };
   // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
@@ -537,20 +532,6 @@ export type ShapeElement = {
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
-  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
-  // and stay revealed): stored only when true.
-  textAnimation?: TextAnimation;
-  textAnimationSpeed?: AnimationSpeed;
-  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -642,20 +623,6 @@ export type TextElement = {
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
-  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
-  // and stay revealed): stored only when true.
-  textAnimation?: TextAnimation;
-  textAnimationSpeed?: AnimationSpeed;
-  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -808,20 +775,6 @@ export type TableElement = {
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
-  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
-  // and stay revealed): stored only when true.
-  textAnimation?: TextAnimation;
-  textAnimationSpeed?: AnimationSpeed;
-  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -911,20 +864,6 @@ export type StickyElement = {
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
-  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
-  // and stay revealed): stored only when true.
-  textAnimation?: TextAnimation;
-  textAnimationSpeed?: AnimationSpeed;
-  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1029,14 +968,6 @@ export type ImageElement = {
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1135,14 +1066,6 @@ export type FreehandElement = {
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1221,10 +1144,6 @@ export type PathElement = {
   opacity?: number;
   // Clockwise rotation in degrees about the element's centre. Absent or 0 means unrotated.
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements").
-  animation?: ElementAnimation;
-  animationSpeed?: AnimationSpeed;
-  animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md).
@@ -1297,14 +1216,6 @@ export type AnnotationElement = {
   // so they stay undefined in practice; declared for parity the same way
   // ImageElement / TableElement declare their always-undefined text fields.
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
   aspectLocked?: boolean;
   padding?: Padding;
   textSize?: TextSize;
@@ -1374,14 +1285,6 @@ export type LinkCardElement = {
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1462,14 +1365,6 @@ export type VideoElement = {
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like

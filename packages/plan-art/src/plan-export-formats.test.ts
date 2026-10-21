@@ -21,7 +21,7 @@ describe('the formats a tab exports to', () => {
 
   it('never offers a Plan tab Mermaid or Excalidraw', () => {
     for (const kind of ['board', 'sheet', 'dashboard'] as const)
-      for (const f of ['mermaid', 'excalidraw', 'logo-kit', 'gif'] as const)
+      for (const f of ['mermaid', 'excalidraw', 'logo-kit'] as const)
         expect(exportFormatsFor({ kind })).not.toContain(f);
   });
 

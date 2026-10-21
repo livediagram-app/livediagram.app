@@ -1,6 +1,5 @@
-// Live miniatures for the animation sets that predate the per-kind sets: arrow flow, icon glyph
-// motion, and the progress, rating and chart animations (docs/specs/028-animation/element-animations.md
-// "The menu"). Each renders the canvas's own renderer (or its own classes) at tile size, so a tile
+// Live miniatures for the animation sets: arrow flow, icon glyph motion, and the progress, rating and
+// chart animations (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Each renders the canvas's own renderer (or its own classes) at tile size, so a tile
 // shows exactly what picking it does; AnimationPreviewTile freezes it and plays it on hover.
 
 import { useRef, type CSSProperties } from 'react';

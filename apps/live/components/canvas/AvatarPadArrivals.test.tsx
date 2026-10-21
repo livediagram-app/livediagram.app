@@ -29,10 +29,6 @@ describe('AvatarPadView', () => {
     const lights = AVATAR_PAD_PARTS.filter((p) => p.role === 'ring' || p.role === 'lamp');
     expect(svg.querySelectorAll('.avatar-pad-shimmer rect')).toHaveLength(lights.length);
   });
-  it('wears an element animation on its drawing', () => {
-    const { container } = render(<AvatarPadView animClass="lvd-anim-text-glow" />);
-    expect(container.firstElementChild?.className).toContain('lvd-anim-text-glow');
-  });
 });
 
 describe('AvatarPadArrivals', () => {

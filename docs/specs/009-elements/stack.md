@@ -44,8 +44,7 @@ stepper), **Gap** and **Padding** as sliders, and **Align** as three tiles.
 ## Animation
 
 When a stack reflows, each child glides from where it was to its new slot over 160 ms (CSS, on the canvas only; reduced
-motion jumps straight there). A child being dragged does not glide. The stack itself takes the **Shape** set limited to
-the motions that do not move it, like a boundary's.
+motion jumps straight there). A child being dragged does not glide.
 
 ## Palette
 

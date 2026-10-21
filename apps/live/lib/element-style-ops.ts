@@ -15,6 +15,6 @@ export type ElementStyleOps = {
   commit: (map: (el: Element) => Element, telemetryType: string) => void;
   burst: (field: string, map: (el: Element) => Element) => void;
   // A whole-tab write, one history step: for a control that changes elements beyond the selection (Renumber
-  // Steps, Play in Order across every step).
+  // Steps).
   commitTab: (map: (elements: Element[]) => Element[], telemetryType: string) => void;
 };

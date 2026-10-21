@@ -6,27 +6,26 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                      | Role                                                                     |
-| --------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/collab-shapes.ts`                  | `ChairFacing`, labels, guard, `CHAIR_SITTER_FACING`                      |
-| `packages/document/src/shape-geometry.ts`                 | `chairSeatFill`                                                          |
-| `packages/document/src/shape-factory.ts`                  | 76x84, `chairFacing: DEFAULT_CHAIR_FACING`, `aspectLocked`, label bottom |
-| `packages/document/src/colors.ts`                         | `behaviourSkin`: transparent box, outline and label ink per paper        |
-| `packages/document/src/behaviour-skin.ts`                 | `ownColours`: the stamped `#94a3b8` / `#0f172a` pair reads as unset      |
-| `packages/document/src/validate.ts`                       | Rejects an unknown `chairFacing`                                         |
-| `packages/document/src/behaviour-shapes.ts`               | `carriesSharedSettingsMenu('chair') === false`                           |
-| `packages/document/src/svg-render-faces.ts`               | The export chair                                                         |
-| `packages/document/src/svg-render.ts`                     | Keeps the generic label for `chair` (bottom-aligned under the seat)      |
-| `packages/api-schema/src/room-messages.ts`                | `AvatarPresence.seatedOn`                                                |
-| `apps/live/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | `tools:chair` in the **Navigate** accordion (`tileGroup: 'move'`)        |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`                 | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
-| `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up                                                   |
-| `apps/live/components/canvas/AvatarWalker.tsx`            | Seated pose and the **Stand** press                                      |
-| `apps/live/components/palette/CollabMenuSections.tsx`     | `ChairMenuSection` (facing tiles)                                        |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`           | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
+| File                                                  | Role                                                                     |
+| ----------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/document/src/collab-shapes.ts`              | `ChairFacing`, labels, guard, `CHAIR_SITTER_FACING`                      |
+| `packages/document/src/shape-geometry.ts`             | `chairSeatFill`                                                          |
+| `packages/document/src/shape-factory.ts`              | 76x84, `chairFacing: DEFAULT_CHAIR_FACING`, `aspectLocked`, label bottom |
+| `packages/document/src/colors.ts`                     | `behaviourSkin`: transparent box, outline and label ink per paper        |
+| `packages/document/src/behaviour-skin.ts`             | `ownColours`: the stamped `#94a3b8` / `#0f172a` pair reads as unset      |
+| `packages/document/src/validate.ts`                   | Rejects an unknown `chairFacing`                                         |
+| `packages/document/src/behaviour-shapes.ts`           | `carriesSharedSettingsMenu('chair') === false`                           |
+| `packages/document/src/svg-render-faces.ts`           | The export chair                                                         |
+| `packages/document/src/svg-render.ts`                 | Keeps the generic label for `chair` (bottom-aligned under the seat)      |
+| `packages/api-schema/src/room-messages.ts`            | `AvatarPresence.seatedOn`                                                |
+| `apps/live/components/canvas/BoxedElementView.tsx`    | Mounts `FurnitureView`; the ordinary label under it                      |
+| `apps/live/components/palette/palette-tile-defs.tsx`  | `tools:chair` in the **Navigate** accordion (`tileGroup: 'move'`)        |
+| `apps/live/components/canvas/useCanvasAvatar.tsx`     | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
+| `apps/live/hooks/canvas/useAvatarWalk.ts`             | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
+| `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`  | Double-click stands up                                                   |
+| `apps/live/components/canvas/AvatarWalker.tsx`        | Seated pose and the **Stand** press                                      |
+| `apps/live/components/palette/CollabMenuSections.tsx` | `ChairMenuSection` (facing tiles)                                        |
+| `apps/live/hooks/canvas/useDataShapeSetters.ts`       | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
 
 Desk and sofa (spec "Desk and sofa") add:
 
@@ -188,8 +187,6 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
 - **Menu:** accordion **Chair**, four tiles with arrows `↓ ← ↑ →` labelled Down, Left, Up, Right,
   hint "Which way somebody sitting here faces. Walk an Avatar-mode character into the chair to sit
   down."
-- **Animations:** glow, pulse, trace and gradient ride the drawing (`lvd-anim-text-*`, and
-  `lvd-anim-sticker-gradient` for gradient); motion animations move the element.
 - **Seated pose:** `AvatarWalker` with `seated`; the **Stand** pill (10 px, slate) under your own
   character only.
 
@@ -198,7 +195,6 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
 - `FurnitureView` SVG: `role="img"`, `aria-label` "Empty chair" or "Chair, <names> sitting".
 - **Stand** is a native `<button>` with visible text.
 - Standing up has keyboard (arrows), pointer (double-click) and touch (Stand) paths.
-- Silhouette animations respect the global reduced-motion rules of the animation system.
 
 ## Web experience
 

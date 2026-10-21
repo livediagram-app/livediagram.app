@@ -200,8 +200,7 @@ element is still.
 - Menu (Tools flyout): **Rows** for every kind but chevrons (label + note per row where drawn, ↑ ↓ ×, Add Layer /
   Tier / Step), **Pyramid**
   variant tiles (Pyramid, Inverted, Funnel). **Animation** is the Animation row's Concept section
-  (`ElementAnimationTiles.tsx` `ConceptAnimTiles`: None, Build, Pulse, Flow on a Cycle; Speed; Repeat); a concept
-  graphic takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
+  (`ElementAnimationTiles.tsx` `ConceptAnimTiles`: None, Build, Pulse, Flow on a Cycle; Speed; Repeat).
 - Ring: Add Layer / Add Tier / Add Step / Add Satellite / Add Ring / Add Stage / Add Milestone.
 - Palette **Concepts** category (Structure band, rows with blurbs): Layer Stack, Pyramid, Funnel, Cycle, Hub, Onion,
   Chevrons, Timeline (the Timeline's tile keeps its old id, `tools:timeline`, so a pinned layout keeps it).

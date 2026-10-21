@@ -760,7 +760,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
   'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
-    values: ['RenumberSteps', 'StepSequence'],
+    values: ['RenumberSteps'],
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],

@@ -81,8 +81,6 @@ and follows a theme switch rather than baking a grey. Every label renderer and e
 0.65 opacity; Markdown output drops it, as it drops colour. There is no separate toolbar control for it: Title and
 Caption is how a label gets one, and clearing formatting removes it.
 
-Animation is unchanged: the Text set animates both tiers as the label's words.
-
 ## Verified
 
 `block-type.test.ts` covers `blockTypeOf` / `blockTypeApplies` /

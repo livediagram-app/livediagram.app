@@ -25,7 +25,6 @@ export function PointerNoteOverlay({
   const rest = pointerTipOf(element);
   const tip = dragTip ?? rest;
   const leader = pointerLeader({ ...element, pointerTip: tip });
-  const pulsing = element.animation === 'pulse';
 
   const commit = (t: { x: number; y: number }) =>
     onSetTip?.(element.id, { x: element.x + t.x, y: element.y + t.y });
@@ -94,17 +93,6 @@ export function PointerNoteOverlay({
           stroke={stroke}
           strokeWidth={1.5}
           strokeLinecap="round"
-        />
-      ) : null}
-      {pulsing ? (
-        <circle
-          className="lvd-pointer-tip-pulse"
-          cx={tip.x}
-          cy={tip.y}
-          r={3.5}
-          fill="none"
-          stroke={stroke}
-          style={{ transformOrigin: `${tip.x}px ${tip.y}px` }}
         />
       ) : null}
       <circle cx={tip.x} cy={tip.y} r={3.5} fill={stroke} data-pointer-tip="" />

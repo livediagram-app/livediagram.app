@@ -181,10 +181,8 @@ export function EditorContextMenuHost() {
     burstSelectedStyle,
     commitElements,
     resetArrowStyleSelected,
-    commitSetAnimation,
     commitArrowFlow,
     commitIconAnimation,
-    previewSetAnimation,
     previewArrowFlow,
     previewIconAnimation,
     setIconAnimationSpeedSelected,
@@ -192,9 +190,7 @@ export function EditorContextMenuHost() {
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
     setProgressAnimRepeatSelected,
-    setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
-    setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     resetColorsSelected,
@@ -507,10 +503,8 @@ export function EditorContextMenuHost() {
       onApplyChartPalette={commitChartPalette}
       onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
-      onSetSetAnimation={commitSetAnimation}
       onSetArrowFlow={commitArrowFlow}
       onSetIconAnimation={commitIconAnimation}
-      onPreviewSetAnimation={previewSetAnimation}
       onPreviewArrowFlow={previewArrowFlow}
       onPreviewIconAnimation={previewIconAnimation}
       onAnimationPreviewEnd={clearStylePreview}
@@ -519,9 +513,7 @@ export function EditorContextMenuHost() {
       onSetProgressAnim={setProgressAnimSelected}
       onSetProgressAnimSpeed={setProgressAnimSpeedSelected}
       onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
-      onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
       onSetFlowSpeed={setFlowSpeedSelected}
-      onSetSetAnimationRepeat={setSetAnimationRepeatSelected}
       onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
       onSetFlowRepeat={setFlowRepeatSelected}
       onResetColors={resetColorsSelected}

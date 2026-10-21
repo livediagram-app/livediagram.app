@@ -1,5 +1,5 @@
 // The animation vocabulary (docs/specs/008-canvas/canvas-and-palette.md): which looping animations exist for
-// boxed elements, icon glyphs and progress fills, how fast they run, and
+// icon glyphs and progress fills, how fast they run, and
 // whether a given one loops. Lifted out of index.ts, which had grown to
 // 871 lines by accreting every vocabulary in the model side by side.
 //
@@ -11,15 +11,10 @@
 // Arrow flow (ArrowFlow / ARROW_FLOWS) is deliberately NOT here: it is the
 // arrows' own vocabulary and stays beside them.
 
-// The body animation sets and the Text set live in './animation-sets'
-// (docs/specs/028-animation/element-animations.md); re-exported here so every import path keeps working.
-export * from './animation-sets';
-
 // Animation / flow speed (docs/specs/008-canvas/canvas-and-palette.md). A multiplier on each animation's tuned
 // base duration (so every animation keeps its own feel; speed just scales it):
 // 'slowest' quadruples the duration, 'slow' doubles it, 'fast' halves it.
-// Shared by boxed-element animations (`animationSpeed`), arrow flow
-// (`flowSpeed`), icon animations, and the data-shape anims. 'slow' is the
+// Shared by arrow flow (`flowSpeed`), icon animations, and the data-shape anims. 'slow' is the
 // default when unset (animations should whisper, not shout); renderers read
 // DEFAULT_ANIMATION_SPEED so the fallback can't drift per surface. The
 // renderer feeds the factor to CSS via a custom property the keyframe
@@ -111,6 +106,11 @@ export const PROGRESS_ANIMS: readonly ProgressAnim[] = ['fill', 'pulse', 'stripe
 // Progress animations that loop by default: 'fill' fills in once and holds;
 // 'pulse' / 'stripes' cycle forever (see animLoops).
 export const PROGRESS_LOOPING_ANIMS: readonly ProgressAnim[] = ['pulse', 'stripes'];
+
+// An animation tile's label: the stored value, capitalised.
+export function animationLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 // Whether an element's animation should loop. The explicit per-element `repeat`
 // override wins; otherwise it loops only if it's one of `loopingAnims` (the

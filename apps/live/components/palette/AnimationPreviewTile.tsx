@@ -3,7 +3,7 @@ import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { useFrozenAnimations } from '@/components/palette/useFrozenAnimations';
 
-// One animation option in a menu (docs/specs/028-animation/element-animations.md "The menu"): a
+// One animation option in a menu (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): a
 // live miniature of the real thing above its name. The miniature is frozen on `frame` and plays
 // while the tile is hovered; a desktop mouse also previews the animation on the canvas, as before.
 export function AnimationPreviewTile({

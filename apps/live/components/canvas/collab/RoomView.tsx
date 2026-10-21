@@ -18,17 +18,15 @@ export function RoomView({
   element,
   stroke,
   floor,
-  animClass,
 }: {
   element: ShapeElement;
   stroke: string;
   floor: string;
-  animClass?: string;
 }) {
   const { width, height } = element;
   const parts = roomParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR);
   return (
-    <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
+    <div className="pointer-events-none absolute inset-0">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
