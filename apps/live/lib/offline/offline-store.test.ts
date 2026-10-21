@@ -105,13 +105,6 @@ describe('offline store ops (in-memory backend)', () => {
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
   });
 
-  it('starts no record for a making that is no use (a bulk import)', async () => {
-    const backend = memBackend();
-    __setOfflineBackend(backend);
-    await offlineCreateDocument({ id: 'd1', name: 'Doc' }, 100, { markUsed: false });
-    expect((await backend.get('d1'))?.opens).toBeUndefined();
-  });
-
   it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     __setOfflineBackend(memBackend());

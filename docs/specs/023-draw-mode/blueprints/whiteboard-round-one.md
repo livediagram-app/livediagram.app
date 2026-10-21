@@ -950,8 +950,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Observability
 
-- Telemetry per the spec's table (`Whiteboard` category); `Created` / `Import` is reserved for the
-  Microsoft Whiteboard import and not yet emitted. The dashboard charts the four pairs in a
+- Telemetry per the spec's table (`Whiteboard` category). The dashboard charts the four pairs in a
   Whiteboards stack headed by Whiteboards Created.
 - Parse fallbacks log once: `console.warn('[whiteboard] prefs reset: <reason>')`.
 - Discarded pinch strokes: `console.debug('[whiteboard] stroke discarded: pinch')`; cancelled ones:

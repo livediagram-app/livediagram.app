@@ -179,10 +179,6 @@ export async function apiCreateDocument(
     createdAt?: number;
     savedAt?: number;
     presentation?: string | null;
-    // Whether making it is a use, so it joins Explorer Home's Jump Back In at once
-    // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
-    // server's own default, a making that counts.
-    markUsed?: boolean;
     // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync.
     items?: ItemCreate[];
     // Sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), whole.
@@ -212,7 +208,6 @@ export async function apiCreateDocument(
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
-      ...(d.markUsed === false ? { markUsed: false } : {}),
       ...(d.items && d.items.length ? { items: d.items } : {}),
       // The sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"): typed since Sheets
       // shipped but never sent, so a sync came up short of its sheets and kept the local copy, and a duplicate or

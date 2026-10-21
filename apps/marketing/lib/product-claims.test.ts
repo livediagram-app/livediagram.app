@@ -17,8 +17,9 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'an editor link embeds an editable canvas (docs/specs/013-workspace/embeds.md)',
   },
   {
-    pattern: /markdown[^.]*on a new tab/i,
-    why: 'Markdown import replaces the current tab (docs/specs/020-import-export/markdown-import.md)',
+    pattern:
+      /imports? (?:a |an |your )?(?:markdown|mermaid|excalidraw|draw\.io|\.drawio|drawio|microsoft whiteboard)|(?:markdown|excalidraw|draw\.io|drawio|whiteboard) import|\.excalidraw in|paste an excalidraw/i,
+    why: 'the editor imports a liveplanner JSON export only (help: tabs/import-tabs)',
   },
   {
     pattern: /no Figma integration/i,
@@ -33,8 +34,9 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'Pages tabs export PDF, PNG, SVG and JSON only',
   },
   {
-    pattern: /any tab (?:out )?as[^.]*(?:markdown|excalidraw)/i,
-    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
+    pattern:
+      /any tab (?:out )?as[^.]*(?:markdown|excalidraw)|\.excalidraw (?:file|scene)? ?out|(?:as|to) an? \.?excalidraw (?:file|scene)/i,
+    why: 'the editor exports PNG, SVG, PDF, JSON, Markdown and CSV; Pages tabs PDF, PNG, SVG and JSON only',
   },
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,
@@ -42,7 +44,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /builds onto the current tab/i,
-    why: 'Markdown import replaces the current tab, it does not add to it',
+    why: 'Import replaces the current tab, it does not add to it',
   },
   {
     pattern: /live state of every part of the service/i,

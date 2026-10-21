@@ -1019,17 +1019,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
-  'Tab|Imported|Drawio':
-    'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
-  'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
-  'Element|Imported|Excalidraw':
-    'Someone pasted or dropped a drawing copied from Excalidraw onto the canvas.',
-  'Tab|Imported|ExcalidrawPng':
-    'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
-  'Tab|Imported|ExcalidrawSvg':
-    'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
-  'Tab|Imported|MicrosoftWhiteboard':
-    'Someone imported a Microsoft Whiteboard board as a new whiteboard tab (once per board).',
   'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
@@ -2468,7 +2457,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted': 'An element was removed from the canvas.',
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
-  'Element|Imported': 'Someone pasted or dropped a drawing from another tool onto the canvas.',
   'Element|Grouped': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked':
     'Someone linked an element to something: another element, a web address, a document or a tab.',

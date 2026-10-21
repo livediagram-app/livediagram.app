@@ -106,7 +106,7 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
   middle); empty only when the side carries nothing.
 - `nearestOfferedAnchor(el, a)` (`geometry.ts`): `a` when offered, else the offered anchor whose
   position is nearest `anchorPosition(el, a)`, first in table order on a tie (D16).
-- Consumers: `snapToAnchor`, `computeSnapTargets` and the Excalidraw import iterate
+- Consumers: `snapToAnchor` and `computeSnapTargets` iterate
   `offeredAnchors(el)`; the run's step 4.3 asks `offeredOnSide`; `beginAnchorDrag` (quick-connect)
   pins `nearestOfferedAnchor`.
 

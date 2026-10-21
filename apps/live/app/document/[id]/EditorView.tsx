@@ -55,7 +55,6 @@ import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/Lands
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
-import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
@@ -126,7 +125,6 @@ export function EditorView() {
     pasteFromClipboard,
     slideDeck,
     hasClipboard,
-    boardSceneInsert,
     activeId,
     activeTab,
     addTab,
@@ -706,11 +704,6 @@ export function EditorView() {
                                         standOnChrome
                                       />
                                     ) : null}
-                                    {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
-                                    <BoardSceneNotice
-                                      notice={boardSceneInsert.notice}
-                                      onClose={boardSceneInsert.dismissNotice}
-                                    />
                                     <EditorStartPanels />
 
                                     {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does

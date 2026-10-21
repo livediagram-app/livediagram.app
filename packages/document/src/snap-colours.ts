@@ -19,8 +19,8 @@ type SnapColourField = {
 const STROKE = { hex: 'strokeColor', named: 'penColour', clear: ['strokeSwatch'] } as const;
 const TEXT = { hex: 'textColor', named: 'penTextColour', clear: [] } as const;
 
-// Text on a fill that does not adapt keeps its exact colour, readable on it (the board scene's
-// rule, docs/specs/020-import-export/board-scene.md "Colours"): so a filled shape's label is no row.
+// Text on a fill that does not adapt keeps its exact colour, readable on it: so a filled shape's
+// label is no row.
 const unfilled = (el: Element) => {
   const fill = (el as { fillColor?: string }).fillColor;
   return fill === undefined || fill === 'transparent';

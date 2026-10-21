@@ -11,7 +11,6 @@ import { LogoKitPanel } from './LogoKitPanel';
 import {
   isLayerVisible,
   tabLayers,
-  mermaidFromTab,
   type LaidOutPage,
   type Tab,
   tabToJsonText,
@@ -34,7 +33,6 @@ import {
   type PageScope,
 } from '@/lib/export-pages';
 import { ExportPagePicker } from './ExportPagePicker';
-import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -46,10 +44,8 @@ import type { ExportFormatKey } from '@liveplanner/plan-art';
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
-  mermaid: 'Mermaid',
   markdown: 'Markdown',
   csv: 'CSV',
-  excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
@@ -126,12 +122,12 @@ const NO_DOCUMENT_TABS: readonly Tab[] = [];
 // "Export"), while the tab has one.
 export type Format = ExportFormatKey;
 
-// The four text formats each open a view/edit/copy panel; the three image
+// The three text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown' | 'csv' | 'excalidraw';
+type TextFormat = 'file' | 'markdown' | 'csv';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'csv' || f === 'excalidraw';
+  f === 'file' || f === 'markdown' || f === 'csv';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -139,12 +135,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'file',
     title: 'JSON',
     description: 'A liveplanner file. Copy it or save a .json to import back with full fidelity.',
-  },
-  {
-    kind: 'mermaid',
-    title: 'Mermaid',
-    description:
-      'This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd.',
   },
   {
     kind: 'markdown',
@@ -156,12 +146,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'CSV',
     description:
       'The cards or cells as comma-separated values, for a spreadsheet. Copy it or save a .csv.',
-  },
-  {
-    kind: 'excalidraw',
-    title: 'Excalidraw',
-    description:
-      'An .excalidraw scene to open at excalidraw.com. Rich shapes simplify to labelled boxes.',
   },
   {
     kind: 'png',
@@ -205,14 +189,6 @@ const TEXT_PANELS: Record<
     mime: 'application/json',
     getText: tabToJsonText,
   },
-  mermaid: {
-    blurb:
-      "This tab as a Mermaid flowchart. Edit it here to copy a variant; your edits don't change the tab.",
-    downloadLabel: 'Download .mmd',
-    ext: 'mmd',
-    mime: 'text/plain',
-    getText: (tab) => mermaidFromTab(tab),
-  },
   markdown: {
     blurb:
       "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
@@ -229,18 +205,10 @@ const TEXT_PANELS: Record<
     mime: 'text/csv',
     getText: (tab) => tabCsvText(tab),
   },
-  excalidraw: {
-    blurb:
-      'This tab as an Excalidraw scene: shapes Excalidraw lacks become labelled boxes. Edit it here to copy a variant.',
-    downloadLabel: 'Download .excalidraw',
-    ext: 'excalidraw',
-    mime: 'application/json',
-    getText: tabToExcalidrawText,
-  },
 };
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
-// Mermaid / Markdown) open an editable view/copy panel; image formats
+// Markdown / CSV) open an editable view/copy panel; image formats
 // (PNG / SVG / PDF) open an options-and-download panel with the isometric +
 // background-pattern toggles. The main grid stays clean — no format-specific
 // options bleed onto it.

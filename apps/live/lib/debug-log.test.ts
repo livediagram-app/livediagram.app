@@ -8,7 +8,7 @@ afterEach(() => vi.unstubAllEnvs());
 describe('debugScopeOf', () => {
   it('reads the bracketed fingerprint, or the word before a colon', () => {
     expect(debugScopeOf('[drive-mirror] pass-end')).toBe('drive-mirror');
-    expect(debugScopeOf('[board-scene] landed')).toBe('board-scene');
+    expect(debugScopeOf('[import] dropped unsavable elements')).toBe('import');
     expect(debugScopeOf('drive: start-token moved=1')).toBe('drive');
     expect(debugScopeOf('no scope here')).toBe('');
   });
@@ -32,9 +32,7 @@ describe('debugLogEnabled', () => {
 
   it('follows the flag in production: everything, or the scopes it names', () => {
     expect(debugLogEnabled('drive-mirror', 'production', flag('*'))).toBe(true);
-    expect(debugLogEnabled('drive-mirror', 'production', flag('board-scene, drive-mirror'))).toBe(
-      true,
-    );
+    expect(debugLogEnabled('drive-mirror', 'production', flag('import, drive-mirror'))).toBe(true);
     expect(debugLogEnabled('photo-model', 'production', flag('board-scene,drive-mirror'))).toBe(
       false,
     );

@@ -1,21 +1,19 @@
-// Feature illustration: bringing boards in from other tools (the Diagrams category's AI & your
-// tools group). Three sources, draw.io, Excalidraw and Microsoft Whiteboard, each landing as
-// an editable document in the Explorer. Motion reuses the canvas card timeline (fa-a-* in
+// Feature illustration: spreadsheet data coming in (the Sheets entry). Three sources, a CSV, a
+// TSV and a paste from Excel, each landing as an editable Sheet. Motion reuses the canvas card timeline (fa-a-* in
 // app/feature-art/canvas.css), which settles to the finished frame under reduced motion.
 import { Connector, MUTED, Panel, Scene, TEXT, at } from './canvas-parts';
 
 const SOURCES = [
-  { name: 'flow.drawio', doc: 'flow', tint: 'fill-orange-500' },
-  { name: 'sketch.excalidraw', doc: 'sketch', tint: 'fill-violet-500' },
-  // A Whiteboard board arrives as an exported folder, so it reads as the board's name.
-  { name: 'Retro board', doc: 'Retro board', tint: 'fill-sky-500' },
+  { name: 'budget.csv', doc: 'Budget', tint: 'fill-emerald-500' },
+  { name: 'pipeline.tsv', doc: 'Pipeline', tint: 'fill-sky-500' },
+  { name: 'Pasted from Excel', doc: 'Grade book', tint: 'fill-orange-500' },
 ];
 
 const ROW_H = 22;
 const Y0 = 13;
 
-/** Files from other tools on the left, arriving as documents on the right. */
-export function BoardImportArt() {
+/** Spreadsheet data on the left, arriving as Sheets on the right. */
+export function SheetImportArt() {
   return (
     <Scene>
       {SOURCES.map((s, i) => {
@@ -31,7 +29,7 @@ export function BoardImportArt() {
             <g className="fa-a-in" style={at(0.2 + i * 0.25)}>
               <Connector d={`M118 ${y + 8} H 170`} head={`M166 ${y + 5} l4 3 l-4 3`} />
             </g>
-            {/* The document it becomes: a mini board with editable shapes. */}
+            {/* The Sheet it becomes. */}
             <g className="fa-a-pop" style={at(0.4 + i * 0.25)}>
               <Panel x={176} y={y} w={104} h={16} />
               <rect

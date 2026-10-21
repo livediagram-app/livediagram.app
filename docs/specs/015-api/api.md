@@ -227,10 +227,8 @@ A document's dates are its `createdAt` (shown as created) and `savedAt` (last
 modified, the lists' order), both milliseconds since the epoch, as everywhere
 on the wire. A create stamps both with the server's now, unless the body
 carries its own: an Offline Mode sync carries the local record's `createdAt`
-([Offline Mode](../006-document/offline-mode.md)), and an imported board
-carries the board's own created and last-modified dates
-([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)), so
-it sits in the Explorer where its age puts it.
+([Offline Mode](../006-document/offline-mode.md)), so it sits in the Explorer
+where its age puts it.
 
 - Each given date must be a whole number of milliseconds no earlier than
   `DOCUMENT_DATE_MIN` (1 January 2000, before any document a person could
@@ -252,11 +250,10 @@ Making a document is a use of it for whoever makes it: a use day and their lates
 [Explorer Home](../013-workspace/explorer-home.md#making-a-document)'s Jump Back In reads. The create body's
 `markUsed` decides it.
 
-- Absent or `true`: the making counts, at the server's now. A create that carries dates of its own (an imported
-  board) still counts on the day it is made.
+- Absent or `true`: the making counts, at the server's now. A create that carries dates of its own still counts
+  on the day it is made.
 - `false`: the document is made and filed as ever, and its creation is in the Timeline as ever, but it is no use:
-  it joins Jump Back In at its first open or edit. The editor sends it for every document of an import that makes
-  more than one in one go; any client that makes many documents at once should too.
+  it joins Jump Back In at its first open or edit. Any client that makes many documents at once should send it.
 - Anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed"; nothing is created.
 - A re-commit of an id the caller already owns, and an Offline Mode sync (`X-Document-Conversion: sync`), are
   not makings of a document, so neither is a use, whatever `markUsed` says.

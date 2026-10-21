@@ -561,8 +561,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
   picture in the gallery).
 - **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
-  (beside the background's own `PageBackground`); a search counts as the picker's
-  `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
+  (beside the background's own `PageBackground`).
 
 ### Copying a background
 
@@ -1457,8 +1456,7 @@ is while the rest of the tab is worked on.
 In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 
 - **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab
-  itself, a backup that imports back). The diagram-tool formats (Mermaid, Markdown, Excalidraw) are not offered: a page is not
-  a diagram.
+  itself, a backup that imports back). Markdown is not offered: a page is not an outline.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
   the first.
@@ -1486,9 +1484,8 @@ In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 
 ## Import
 
-In Pages mode the Import dialog offers **JSON** only (a liveplanner tab, which may carry
-pages), and opens straight at it, with no list of formats to go back to. Mermaid, Markdown, Excalidraw and draw.io
-are diagram formats and are not offered.
+In Pages mode the Import dialog takes a liveplanner tab's **JSON**, which may carry pages, as it does in every
+mode.
 
 ## Telemetry
 

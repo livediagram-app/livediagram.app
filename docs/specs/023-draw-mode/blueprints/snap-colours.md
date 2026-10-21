@@ -68,8 +68,7 @@ no theme; the colours are stock colours), "default colour" for Ink in code (it i
 | `arrow` (its label)                                        | `textColor`   | `penTextColour` | none           |
 
 A filled shape's label and a sticky note's text are not rows: text on a fill that does not adapt
-keeps its exact colour (the board scene's own rule, docs/specs/020-import-export/board-scene.md
-"Colours"). A kind gaining a named colour adds one row; nothing else changes.
+keeps its exact colour. A kind gaining a named colour adds one row; nothing else changes.
 
 ### Editor (`useSnapColours`)
 

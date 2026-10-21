@@ -5,7 +5,7 @@ import {
   type Tab,
 } from '@liveplanner/document';
 
-// How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/markdown-import.md).
+// How an imported tab lands on top of the tab receiving it.
 //
 // Pulled out of useTabImport so the merge RULE is testable on its own: what
 // the import brings, what the receiving tab keeps, and — the part that was

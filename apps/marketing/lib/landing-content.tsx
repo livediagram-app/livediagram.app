@@ -12,7 +12,7 @@ import {
   AssignedActionsArt,
   AvatarModeArt,
   BoardCsvArt,
-  BoardImportArt,
+  SheetImportArt,
   BoardWidgetsArt,
   BorderStyleArt,
   BringFocusArt,
@@ -68,7 +68,6 @@ import {
   LockArt,
   LogoPageArt,
   MarginCommentsArt,
-  MarkdownImportArt,
   MarkersArt,
   MarqueeArt,
   McpArt,
@@ -390,7 +389,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'A shape for everything',
         description:
-          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next. Import a draw.io library and its shapes join the palette as a shape library of your own, under My shapes.',
+          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
       },
       {
         art: <ArrowsArt />,
@@ -754,27 +753,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <MermaidArt />,
-        href: '/help/tabs/import-tabs/',
+        href: '/help/developers/cli/',
         group: 'AI & your tools',
         title: 'Works with Mermaid',
         description:
-          'Paste or open a Mermaid flowchart and liveplanner lays it out on the canvas, keeping every connection, not just the outline. Export a diagram tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
-      },
-      {
-        art: <MarkdownImportArt />,
-        href: '/help/tools/markdown-import/',
-        group: 'AI & your tools',
-        title: 'Import a Markdown outline',
-        description:
-          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it replaces the current tab’s contents, and one undo puts them back.',
-      },
-      {
-        art: <BoardImportArt />,
-        href: '/help/explorer/drawio-import/',
-        group: 'AI & your tools',
-        title: 'Bring your boards from other tools',
-        description:
-          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a document you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page.',
+          'Hand a Mermaid flowchart to liveplanner through the API, the CLI or an AI assistant and it lays it out on the canvas, keeping every connection, not just the outline. The CLI exports a tab back out as Mermaid. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
         art: <ExportArt />,
@@ -782,7 +765,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Export as PNG, SVG, or PDF',
         description:
-          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown or Excalidraw. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
+          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
       },
       {
         art: <ApiArt />,
@@ -1269,7 +1252,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'A Budget Planner, an Invoice, a Sales Pipeline, a Grade Book, a Loan Calculator and more, many with charts already in, or a blank spreadsheet to type into.',
       },
       {
-        art: <BoardImportArt />,
+        art: <SheetImportArt />,
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Paste from Sheets and Excel, CSV in and out',
         description:

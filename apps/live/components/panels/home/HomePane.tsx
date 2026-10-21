@@ -5,7 +5,7 @@
 // in, then What Happened, each its own section opened by a display heading, generous space between
 // them. The hero above it is the shell's (HomeHero).
 
-import { lazy, Suspense, useEffect, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { track } from '@/lib/telemetry';
 import { ARRIVED_ON_HOME } from '@/app/explorer/entry-path';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
@@ -29,7 +29,6 @@ export function HomePane({
   onSeeTimeline,
   recentHref,
   onSeeMore,
-  importToolbar,
   documentMenus,
 }: {
   ownerId: string;
@@ -39,8 +38,6 @@ export function HomePane({
   onSeeTimeline: () => void;
   recentHref: string;
   onSeeMore: () => void;
-  /** The Explorer's Import From control, for the first run's Bring It With You. */
-  importToolbar?: ReactNode;
   /** Each Jump Back In document's Explorer ⋯ menu (explorer-home.md "Jump Back In"). */
   documentMenus?: DocumentEntryFor;
 }) {
@@ -71,7 +68,7 @@ export function HomePane({
   if (firstRun) {
     return (
       <Suspense fallback={<GridSkeleton />}>
-        <HomeWelcome offerSignIn={offerSignIn} importToolbar={importToolbar} />
+        <HomeWelcome offerSignIn={offerSignIn} />
       </Suspense>
     );
   }

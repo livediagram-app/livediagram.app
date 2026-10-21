@@ -110,7 +110,7 @@ The overlay is **pointer-only** — it cannot block `window` keydown or
 `document` paste, so the spinner alone is not the edit lock. The actual
 guard is that the active tab's load state feeds the editor's single
 `editsBlocked` gate (alongside locked-tab and view-only), so EVERY
-commit-based mutator — shape shortcuts, paste, AI apply, Markdown import,
+commit-based mutator — shape shortcuts, paste, AI apply, import,
 clear-canvas, drag — is refused until the tab is `ready`. The overlay and
 the edit lock derive from the same `deriveTabLoadState`, so they can't
 disagree.

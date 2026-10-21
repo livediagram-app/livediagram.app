@@ -32,7 +32,6 @@ Scope, by file:
 | `apps/live/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
 | `apps/live/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
-| `apps/live/lib/excalidraw-scene.ts`, `excalidraw-export.ts` | No group mapping                                                                 |
 
 ## Domain and naming
 
@@ -287,7 +286,6 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/live/lib/offline/offline-store.test.ts`                    |
 | JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/live/lib/import-merge.test.ts`                             |
 | Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                 |
-| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `apps/live/lib/excalidraw-import.test.ts`                        |
 | ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
 | Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |

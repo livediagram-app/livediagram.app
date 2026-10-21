@@ -122,7 +122,6 @@ import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import { useCommentPicturesLoader } from '@/lib/comment-pictures';
-import { useBoardSceneInsert } from '@/hooks/canvas/useBoardSceneInsert';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -2589,8 +2588,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    importSceneIntoActiveTab,
-    importScenesAsNewDocuments,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
@@ -2605,7 +2602,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEditStructure: !isStructureReadOnly,
     documentList,
     ownerId: selfParticipant.id,
-    documentId,
     createTab,
     commit,
     commitTabs,
@@ -3724,8 +3720,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onPastePhoto: readPhotoFile,
     canvasPointerRef,
     getViewportCanvasRect,
-    // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
-    insertBoardScene: (scene, at) => void boardSceneInsert.insertScene(scene, at),
   });
   // A CSV file dropped in Plan mode places a Sheet from it (docs/specs/029-sheets/sheet.md "Placing a sheet").
   const dropFileOnCanvas = useSheetCsvDrop({
@@ -3734,20 +3728,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addBoxedAt,
     dropOther: dropBoardFile,
     toast: (message) => toast.error(message),
-  });
-  // Board scenes pasted or dropped from another tool (docs/specs/020-import-export/board-scene.md
-  // "In the editor"): one commit at the pointer, selected, with its notice.
-  const boardSceneInsert = useBoardSceneInsert({
-    activeTab,
-    drawMode,
-    editsBlocked: structureBlocked,
-    commit,
-    setSelectedId,
-    setMultiSelectedIds,
-    canvasPointerRef,
-    getViewportCenter,
-    ownerId: selfParticipant.id,
-    documentId,
   });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
@@ -3962,7 +3942,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pasteFromClipboard,
     dropBoardFile: dropFileOnCanvas,
     hasClipboard,
-    boardSceneInsert,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
     // tab bar, panels and palette all gone, so a projector shows the document
@@ -4180,8 +4159,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     imagePickerOpenFor,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    importSceneIntoActiveTab,
-    importScenesAsNewDocuments,
     isPinchingRef,
     isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.

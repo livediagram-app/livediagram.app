@@ -805,9 +805,7 @@ export function ExportMenu() {
   const dy = 12;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
     ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
@@ -830,20 +828,13 @@ export function ExportMenu() {
   );
 }
 
-/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the
- *  format cards. */
+/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the box
+ *  the JSON export is pasted into. */
 export function ImportWarning() {
   const W = 420;
   const H = 210;
   const dx = 20;
   const dy = 10;
-  const cards: [string, string][] = [
-    ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
-    ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
-    ['draw.io', 'drawio'],
-  ];
   return (
     <Scene w={W} h={H}>
       <Dialog x={dx} y={dy} w={380} h={190} title="Import to Tab" sceneW={W} sceneH={H}>
@@ -880,16 +871,19 @@ export function ImportWarning() {
         <Label x={dx + 44} y={dy + 76} size={10} className="fill-slate-700">
           with the imported content. Undo brings it back.
         </Label>
-        {cards.map(([title, badge], i) => (
-          <FormatCard
-            key={title}
-            x={dx + 16 + (i % 3) * 118}
-            y={dy + 100 + Math.floor(i / 3) * 40}
-            w={112}
-            title={title}
-            badge={badge}
-          />
-        ))}
+        {/* The box the export is pasted into */}
+        <rect
+          x={dx + 16}
+          y={dy + 100}
+          width={348}
+          height={74}
+          rx={7}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <Label x={dx + 28} y={dy + 118} size={10} className="fill-slate-400">
+          {'{ "kind": "liveplanner.tab", … }'}
+        </Label>
       </Dialog>
     </Scene>
   );

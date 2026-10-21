@@ -34,7 +34,7 @@ export const baseConfig = defineConfig({
       // deliberately do NOT exclude index.ts: in this repo a package's
       // index.ts is its implementation (e.g. @liveplanner/document), not a
       // barrel of re-exports, so excluding it would hide all of its source.
-      // Code files only: these folders also hold fixtures (`.drawio`, goldens, model weights) that are not
+      // Code files only: these folders also hold fixtures (goldens, model weights) that are not
       // source, and parsing them as code fails. Workspace includes are added to this list, not replacing it.
       include: ['{src,lib}/**/*.{ts,tsx}'],
       exclude: ['**/*.{test,spec}.*', '**/*.d.ts'],

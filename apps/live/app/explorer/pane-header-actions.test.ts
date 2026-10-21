@@ -12,14 +12,17 @@ describe('paneHeaderActions', () => {
     }
   });
 
-  it('pairs Import from with New Document everywhere else, except Home', () => {
-    expect(paneHeaderActions('home')).toEqual({
-      newDocument: true,
-      newFolder: false,
-      importFrom: false,
-    });
-    for (const kind of ['recent', 'all', 'folder', 'favourites', 'search', 'timeline'] as const) {
-      expect(paneHeaderActions(kind).importFrom, kind).toBe(true);
+  it('offers New Document everywhere a new document lands, Home included', () => {
+    for (const kind of [
+      'home',
+      'recent',
+      'all',
+      'folder',
+      'favourites',
+      'search',
+      'timeline',
+    ] as const) {
+      expect(paneHeaderActions(kind).newDocument, kind).toBe(true);
     }
     for (const kind of [
       'inbox',
@@ -31,11 +34,7 @@ describe('paneHeaderActions', () => {
       'invites',
       'offline',
     ] as const) {
-      expect(paneHeaderActions(kind), kind).toEqual({
-        newDocument: false,
-        newFolder: false,
-        importFrom: false,
-      });
+      expect(paneHeaderActions(kind), kind).toEqual({ newDocument: false, newFolder: false });
     }
   });
 });

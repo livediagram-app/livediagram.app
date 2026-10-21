@@ -28,7 +28,6 @@
   "dependencies": {
     "@clerk/react": "^6.17.8",
     "@huggingface/transformers": "^3.8.1",
-    "@jsquash/webp": "1.5.0",
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/document": "workspace:*",
     "@liveplanner/document-views": "workspace:*",
