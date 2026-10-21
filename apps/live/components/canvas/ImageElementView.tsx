@@ -13,7 +13,6 @@ import {
   placeholderThemeInk,
 } from '@/components/canvas/image-placeholder-look';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
-import { bodySetClass } from '@/lib/animation-classes';
 import { Glyph } from '@liveplanner/ui';
 
 // Renders the bitmap (or upload placeholder) for an ImageElement.
@@ -158,13 +157,7 @@ function ImageElementViewImpl({
     // any transparent areas and inverts the apparent contrast of
     // anti-aliased edges. Image element content is independent of
     // editor theme by convention (matches GitHub / Notion).
-    //
-    // A Media animation (docs/specs/028-animation/element-animations.md) sits on this frame, so the
-    // picture moves inside its crop and never past it.
-    <div
-      className={`h-full w-full overflow-hidden rounded bg-white ${bodySetClass(element, 'media') ?? ''}`}
-      style={radiusStyle}
-    >
+    <div className="h-full w-full overflow-hidden rounded bg-white" style={radiusStyle}>
       <img
         src={state.src}
         alt={element.alt ?? ''}

@@ -70,9 +70,7 @@ import { indicatorBacking } from '@/components/canvas/indicator-items';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
-import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
-import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
-import { AnimationLayer } from '@/components/canvas/AnimationLayer';
+import { useElementPopIn } from '@/components/canvas/useElementPopIn';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
@@ -376,11 +374,8 @@ function BoxedElementViewImpl({
   // so they skip it. Shares the icon+label flex layout below.
   const marker: ShapeMarker | undefined =
     element.type === 'shape' && !isSelfDrawingShape(element.shape) ? element.marker : undefined;
-  // Which surface each looping animation rides (wrapper box vs text
-  // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
-  // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
-  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle, layer, layerAnim } =
-    useBoxedElementAnimation(element, textColor);
+  // The one-shot pop-in entry class (docs/specs/008-canvas/canvas-and-palette.md) — see useElementPopIn.
+  const popInClass = useElementPopIn();
 
   // An icon element's caption is confined to its own band — the complement
   // of the glyph band (docs/specs/010-palette/technology-icons.md, iconCaptionBand) — so the text can never
@@ -415,9 +410,6 @@ function BoxedElementViewImpl({
     cornerPx,
   );
 
-  // The Text animation on the label's words (docs/specs/028-animation/element-animations.md).
-  const textAnim = useLabelTextAnimation(element, label, textColor, isEditing);
-
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -439,9 +431,7 @@ function BoxedElementViewImpl({
     // a full-box editor there contributes no flex width, so the marker
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
-    labelAnimClass,
     textHug.label,
-    textAnim,
     mindFit.onLiveText,
   );
 
@@ -529,9 +519,7 @@ function BoxedElementViewImpl({
       // `group` so the vote stepper inside can fade up on element hover
       // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
       className={`group group/el absolute origin-center touch-none select-none ${
-        // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
-        // class (both drive the `animation` property, so they can't co-exist).
-        wrapperAnimClass
+        popInClass
       } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
@@ -553,7 +541,6 @@ function BoxedElementViewImpl({
         opacity:
           (element.opacity ?? 1) * (layerOpacity ?? 1) * (voteDimmed ? VOTE_DIMMED_OPACITY : 1),
         ...variant.style,
-        ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
         // The handles' frame in the grips layer turns by the same angle.
         //
@@ -609,7 +596,6 @@ function BoxedElementViewImpl({
           <ShapeContentRouter
             element={element}
             isEditing={isEditing}
-            artAnimClass={artAnimClass}
             accent={accent}
             textColor={textColor}
             remoteBorderColor={remoteBorderColor}
@@ -619,7 +605,6 @@ function BoxedElementViewImpl({
             onToggleChecklistItem={onToggleChecklistItem}
             chartPalette={chartPalette}
             fontFamily={fontFamily}
-            svgAnim={svgAnim}
           />
           {/* CSS-rendered shapes (square / circle / stadium / browser) paint
           their border via the wrapper's CSS `border`, which can't draw the
@@ -670,7 +655,6 @@ function BoxedElementViewImpl({
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
               fill={own.fill ?? defaultFillColor(element, surface)}
               sitters={chairSitters?.(element.id) ?? []}
-              animClass={artAnimClass}
             />
           ) : null}
           {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
@@ -680,7 +664,6 @@ function BoxedElementViewImpl({
               element={element}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
               floor={own.fill ?? defaultFillColor(element, surface)}
-              animClass={artAnimClass}
             />
           ) : null}
           {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
@@ -688,13 +671,10 @@ function BoxedElementViewImpl({
             <FenceView
               element={element}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              animClass={artAnimClass}
             />
           ) : null}
           {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
-          {element.type === 'shape' && element.shape === 'avatar-pad' ? (
-            <AvatarPadView animClass={artAnimClass} />
-          ) : null}
+          {element.type === 'shape' && element.shape === 'avatar-pad' ? <AvatarPadView /> : null}
           {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
           {element.type === 'shape' && element.shape === 'lane' ? (
             <LaneGutter
@@ -799,20 +779,6 @@ function BoxedElementViewImpl({
         <ShapeHitOutline
           element={element}
           borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
-        />
-      ) : null}
-
-      {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
-      {layer && layerAnim ? (
-        <AnimationLayer
-          animation={layerAnim}
-          width={element.width}
-          height={element.height}
-          radius={
-            shapeKind === 'circle' || shapeKind === 'stadium'
-              ? Math.min(element.width, element.height) / 2
-              : cornerPx
-          }
         />
       ) : null}
 

@@ -223,12 +223,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
   'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
-  'Element|Changed|Animation':
-    'Someone gave a selected element a looping animation, or turned it off.',
-  'Element|Changed|AnimationRepeat':
-    "Someone turned a selected element's animation loop on or off, so it either repeats or plays once and holds.",
-  'Element|Changed|AnimationSpeed':
-    "Someone changed how fast a selected element's animation plays.",
   'Element|Changed|ArrowEnds': 'Someone changed which ends of a selected arrow carry an arrowhead.',
   'Element|Changed|ArrowFlow':
     'Someone gave a selected arrow a flowing animation, such as marching dashes or a travelling dot, or turned it off.',
@@ -303,8 +297,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set or cleared a layer stack's, pyramid's or cycle's animation (Build, Pulse or Flow), or its speed or repeat.",
   'Element|Changed|RenumberSteps':
     'Someone renumbered every step number on a tab in reading order.',
-  'Element|Changed|StepSequence':
-    "Someone turned on or off playing the step numbers' animations one after another.",
   'Element|Changed|BorderRadius': "Someone changed a selected element's corner rounding.",
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':
@@ -350,16 +342,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Icon': 'Someone placed or repositioned an inline icon on a selected element.',
   'Element|Changed|IconAnimation':
     'Someone gave a selected icon shape a looping animation, or turned it off.',
-  'Element|Changed|TextAnimation':
-    'Someone gave the words of a selected element a text animation, such as typewriter, or turned it off.',
-  'Element|Changed|StickyAnimation':
-    'Someone gave a selected sticky note an animation, such as flutter, or turned it off.',
-  'Element|Changed|DrawingAnimation':
-    'Someone gave a selected drawing or path an animation, such as draw, or turned it off.',
-  'Element|Changed|MediaAnimation':
-    'Someone gave a selected image or video an animation, such as Ken Burns, or turned it off.',
-  'Element|Changed|TableAnimation':
-    'Someone gave a selected table an animation, such as rows cascading in, or turned it off.',
   'Element|Changed|IconSize': "Someone changed a selected Technology icon's tile size.",
   'Element|Changed|Idea-box':
     'Someone added an idea to an Idea Box element, revealed its cards, or cleared it for the next round.',

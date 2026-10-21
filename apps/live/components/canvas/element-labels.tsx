@@ -27,7 +27,6 @@ import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
-import type { TextAnimView } from './useTextAnimation';
 import { wordmarkTextStyle } from './label-style';
 import { WordmarkArcLabel } from './WordmarkArcLabel';
 
@@ -53,18 +52,10 @@ export function renderLabel(
   // place beside the text while typing; the inline-icon layout owns
   // positioning + padding.
   inlineIcon = false,
-  // Text-native animation class (docs/specs/008-canvas/canvas-and-palette.md): applied to the label content node
-  // so glow / pulse / trace / gradient ride the glyphs rather than the
-  // element's invisible bounding box. Set only for text elements (see
-  // isTextNativeAnim in BoxedElementView); undefined otherwise.
-  labelAnimClass?: string,
   // A whiteboard text box hugging its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
   // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
   // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
   hug?: TextHugLabel,
-  // The label's Text animation (docs/specs/028-animation/element-animations.md "Text"), undefined
-  // when it has none or is being edited; useTextAnimation builds it.
-  textAnim?: TextAnimView,
   // Told the editor's live content on every change, for a label that sizes its box without the
   // rest of `hug`: a mind node growing to fit its lines (useMindLabelFit).
   onLiveText?: (editor: HTMLElement) => void,
@@ -190,7 +181,6 @@ export function renderLabel(
         multiline={isSticky}
         uppercase={caps}
         wordmark={wordmark}
-        animClass={labelAnimClass}
       />
     );
   }
@@ -206,7 +196,6 @@ export function renderLabel(
         alignY={alignY}
         padding={padding}
         style={textStyle}
-        textAnim={textAnim}
       />
     );
   }
@@ -220,11 +209,6 @@ export function renderLabel(
         alignY={alignY}
         padding={padding}
         style={textStyle}
-        // The gradient relies on background-clip:text, which can't paint an SVG
-        // <text> fill — withhold it here so the glyphs don't vanish; glow /
-        // pulse / trace ride the SVG drop-shadow fine.
-        animClass={labelAnimClass === 'lvd-anim-text-gradient' ? undefined : labelAnimClass}
-        textAnim={textAnim}
       />
     );
   }
@@ -237,8 +221,6 @@ export function renderLabel(
       alignY={alignY}
       padding={textPadding}
       style={textStyle}
-      animClass={labelAnimClass}
-      textAnim={textAnim}
     />
   );
 }

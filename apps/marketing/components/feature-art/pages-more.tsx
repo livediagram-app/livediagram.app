@@ -1,5 +1,5 @@
 // Feature illustrations for Pages mode's pages beyond layouts (docs/specs/007-editor/pages-mode.md):
-// pages played as an animated GIF, a live window onto another tab, a page tidied in one press, the
+// a live window onto another tab, a page tidied in one press, the
 // Contents sidebar, and a talk kept to time while presenting.
 
 import { YOU } from '@/components/art-tokens';
@@ -16,7 +16,7 @@ import {
   TEXT_STRONG,
 } from './canvas-marks';
 import { Pill } from './mode-parts';
-import { AMBER, EMERALD, Frame, SKY, VIOLET } from './shared';
+import { AMBER, Frame, SKY, VIOLET } from './shared';
 
 /** A page as the canvas shows it: a white sheet with a soft shadow. */
 function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
@@ -24,59 +24,6 @@ function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
     <g className={SHADOW}>
       <rect className="fill-white dark:fill-slate-800" x={x} y={y} width={w} height={h} rx="1.5" />
     </g>
-  );
-}
-
-// Animated GIF: three square social pages fanned out and one image playing them in turn, the
-// export's options (all pages, three seconds a page, medium) under it.
-export function PagesGifArt() {
-  const pages = [
-    { fill: SKY, title: '3 tips' },
-    { fill: VIOLET, title: 'Tip 1' },
-    { fill: EMERALD, title: 'Tip 2' },
-  ];
-  return (
-    <Frame canvas>
-      <Scene>
-        {pages.map((p, i) => (
-          <g key={p.title} transform={`translate(${12 + i * 42} ${22 + (i % 2) * 6})`}>
-            <Sheet x={0} y={0} w={40} h={40} />
-            <rect x="3" y="3" width="34" height="34" rx="1" fill={p.fill} fillOpacity="0.85" />
-            <text x="20" y="23" fontSize="7" fontWeight="800" fill="#fff" textAnchor="middle">
-              {p.title}
-            </text>
-          </g>
-        ))}
-        <path className={ARROW} d="M142 48 H158" strokeWidth="1.1" />
-        <path className="fill-(--art-arrow)" d="M162 48 l-5 -3 v6z" />
-        {/* The GIF, cycling through the pages. */}
-        <g transform="translate(170 14)">
-          <Sheet x={0} y={0} w={60} h={60} />
-          {pages.map((p, i) => (
-            <g key={p.title} className="fa-hl" style={{ animationDelay: `${i * 2}s` }}>
-              <rect x="4" y="4" width="52" height="52" rx="1" fill={p.fill} fillOpacity="0.85" />
-              <text x="30" y="33" fontSize="8.4" fontWeight="800" fill="#fff" textAnchor="middle">
-                {p.title}
-              </text>
-            </g>
-          ))}
-          <rect
-            x="40"
-            y="-4"
-            width="22"
-            height="9"
-            rx="2"
-            className="fill-slate-900 dark:fill-slate-950"
-          />
-          <text x="51" y="2.4" fontSize="5.4" fontWeight="800" fill="#fff" textAnchor="middle">
-            GIF
-          </text>
-        </g>
-        <text className={TEXT_MUTED} x="170" y="86" fontSize="5">
-          All pages · 3 s each · Medium
-        </text>
-      </Scene>
-    </Frame>
   );
 }
 

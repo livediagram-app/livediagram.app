@@ -68,11 +68,6 @@ an API reader that knows nothing of attachment still draws it in the right place
 
 A badge takes no connectors: no anchors, no quick-connect ring, not an arrow end. It is a mark on a node, not a node.
 
-## Animation
-
-A badge takes the **Shape** set for its body, along its pill silhouette ([Element animations](../028-animation/element-animations.md)).
-Pulse and Heartbeat suit "New" and alerts. Its text is too small to animate on its own, so it takes no Text set.
-
 ## Palette
 
 | Mode     | Where                                   |

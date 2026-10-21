@@ -567,7 +567,6 @@ export function elementSupportsText(element: Element): boolean {
 
 // --- Re-exported resource modules -----------------------------------------
 export * from './animation';
-export * from './animation-membership';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
 export * from './flowchart';

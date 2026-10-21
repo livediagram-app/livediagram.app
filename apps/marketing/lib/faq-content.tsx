@@ -242,13 +242,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I animate things?',
         a: (
           <>
-            Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a
-            label can type itself in, and a drawing can draw itself. Hover a choice to preview it on
-            your selection first. See <a href="/help/canvas/animations/">animations</a>.
+            Yes. Right-click an element and pick an animation that suits it: an arrow can flow, an
+            icon can spin, and a chart can grow in. Hover a choice to preview it on your selection
+            first. See <a href="/help/canvas/animations/">animations</a>.
           </>
         ),
         aText:
-          'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
+          'Yes. Right-click an element and pick an animation that suits it: an arrow can flow, an icon can spin, and a chart can grow in. Hover a choice to preview it on your selection first. See animations.',
       },
       {
         q: 'Can I use the same tab in two documents?',
@@ -568,7 +568,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',

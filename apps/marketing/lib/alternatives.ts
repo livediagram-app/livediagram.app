@@ -198,7 +198,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out, plus an animated GIF of a Pages tab; CSV both ways for Sheets',
+        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out; CSV both ways for Sheets',
         them: 'Broad import + export options',
       },
       {
@@ -450,7 +450,6 @@ export const ALTERNATIVES: Alternative[] = [
       'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
       'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as documents of their own.',
       'Presentations free for everyone: build a deck from elements on any tab, or design slides from 61 layouts in Pages, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
-      'Animate a drawing so it draws itself on, or export a Pages tab as an animated GIF.',
       'Built-in charts, an icon library, comments and assigned actions, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
       'Mermaid in and out: import flowchart, state and ER text, export flowcharts back to it.',
@@ -481,7 +480,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Presentations, free',
         paragraphs: [
           'Presenting is one of the things Excalidraw+ adds on its paid plan. In liveplanner it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does, or switch a tab to Pages and design 16:9 or 4:3 slides from 61 ready-made layouts, with a Tab Window that shows another tab live on a slide.',
-          'Present full screen with presenter notes, a time budget per slide, Slide or Fade transitions, auto-advance and loop, a laser pointer and a spotlight. Animate an element so a drawing draws itself on or a title types itself in, and export a Pages tab as PDF, PNG, SVG or an animated GIF.',
+          'Present full screen with presenter notes, a time budget per slide, Slide or Fade transitions, auto-advance and loop, a laser pointer and a spotlight, and export a Pages tab as PDF, PNG or SVG.',
         ],
       },
       {
@@ -659,7 +658,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Export',
-        us: 'PDF, PNG, SVG and an animated GIF of the deck',
+        us: 'PDF, PNG and SVG of the deck',
         them: 'PowerPoint, PDF and images',
       },
       {
@@ -681,9 +680,7 @@ export const ALTERNATIVES: Alternative[] = [
       'One document for the whole story: the write-up as pages, the diagram, the plan and the spreadsheet beside the deck that presents them.',
       'Present with presenter notes, a time budget per slide, Slide or Fade transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
-      'Animate any element: a title that types itself in, words that cascade, a drawing that draws itself, or a reveal that plays once and stays, over an animated page background if you like.',
       'Put another tab on a slide, live: a Tab Window shows the diagram or board as it is now, so the slide follows every change.',
-      'Export the deck as an animated GIF, transitions and motion included, for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
       'Free, MIT-licensed and self-hostable.',
@@ -712,7 +709,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Slides is free with a Google account. liveplanner needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel, or the whole deck as an animated GIF.',
+          'Slides is free with a Google account. liveplanner needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel.',
         ],
       },
     ],
@@ -723,7 +720,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import or export PowerPoint files?',
-        a: 'No. liveplanner does not read or write .pptx. You can export each page as a PNG or SVG, every page as one PDF, or the deck as an animated GIF, and drop those into another deck.',
+        a: 'No. liveplanner does not read or write .pptx. You can export each page as a PNG or SVG, or every page as one PDF, and drop those into another deck.',
       },
       {
         q: 'Do my audience or co-editors need an account?',
@@ -768,7 +765,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out, plus an animated GIF of a Pages tab',
+        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
         them: 'Its own files; image and PDF export',
       },
       {

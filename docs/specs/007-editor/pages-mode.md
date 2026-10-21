@@ -1456,8 +1456,7 @@ is while the rest of the tab is worked on.
 
 In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 
-- **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
-  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), plus **JSON** (the tab
+- **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab
   itself, a backup that imports back). The diagram-tool formats (Mermaid, Markdown, Excalidraw) are not offered: a page is not
   a diagram.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
@@ -1500,8 +1499,8 @@ are diagram formats and are not offered.
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
 `PageKindLogo` (the first page's own choice);
-`Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
-`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
+`Document · Exported · PagesPNG / PagesSVG / PagesPDF` (one page) and
+`PagesPNGPages / PagesSVGPages / PagesPDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page

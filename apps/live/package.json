@@ -49,7 +49,6 @@
     "@tensorflow/tfjs-backend-webgpu": "4.22.0",
     "@tensorflow/tfjs-core": "4.22.0",
     "@tensorflow/tfjs-layers": "4.22.0",
-    "gifenc": "1.0.3",
     "next": "^16.4.1",
     "polygon-clipping": "0.15.7",
     "prosemirror-commands": "^1.7.2",

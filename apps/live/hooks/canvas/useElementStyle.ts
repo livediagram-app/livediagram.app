@@ -24,7 +24,6 @@ import {
   bringElementsToFrontLayer,
   isBoxed,
   sendElementsToBackLayer,
-  type AnimationSetId,
   type AnimationSpeed,
   type IconAnimation,
   type IconSize,
@@ -34,11 +33,6 @@ import {
   type Tab,
 } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
-import {
-  withSetAnimationRepeat,
-  withSetAnimationSpeed,
-  withoutAnimations,
-} from '@/lib/animation-set-writes';
 import { useArrowStyleSetters } from './useArrowStyleSetters';
 import { useDataShapeSetters } from './useDataShapeSetters';
 import { useShapeStyleSetters } from './useShapeStyleSetters';
@@ -235,16 +229,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableZebraSelected = () => toggleTableFlag('zebra', 'TableZebra');
   const setTableHeaderColumnSelected = () => toggleTableFlag('headerColumn', 'TableHeaderColumn');
 
-  // Clear animation (docs/specs/028-animation/element-animations.md "Shared behaviour"): the body and
-  // the Text animation together. Picking one goes through the per-set setters below.
-  const clearAnimationsSelected = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => els.map((el) => (ids.has(el.id) ? withoutAnimations(el) : el)));
-    track('Element', 'Changed', 'Animation');
-  };
-  // Per-icon glyph animation (docs/specs/008-canvas/canvas-and-palette.md), gated to icon shapes — its own set
-  // instead of the boxed-element animation. The animation + its loop speed
+  // Per-icon glyph animation (docs/specs/008-canvas/canvas-and-palette.md), gated to icon shapes. The animation +
+  // its loop speed
   // differ only in the patched field, so they share one body.
   const setIconFieldSelected = (patch: Partial<ShapeElement>) => {
     const ids = currentSelectionIds();
@@ -259,29 +245,14 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // `null` clears the animation.
   const setIconAnimationSelected = (value: IconAnimation | null) =>
     setIconFieldSelected({ iconAnimation: value ?? undefined });
-  // Loop speed (slow / normal / fast), mirroring setAnimationSpeedSelected.
+  // Loop speed (slow / normal / fast).
   const setIconAnimationSpeedSelected = (value: AnimationSpeed) =>
     setIconFieldSelected({ iconAnimationSpeed: value });
-  // Speed and Repeat for one animation set's category: only that set's members change.
-  const setSetAnimationSpeedSelected = (set: AnimationSetId, value: AnimationSpeed) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => els.map((el) => (ids.has(el.id) ? withSetAnimationSpeed(el, set, value) : el)));
-    track('Element', 'Changed', 'AnimationSpeed');
-  };
   const setFlowSpeedSelected = (value: AnimationSpeed) =>
     setArrowFieldSelected({ flowSpeed: value }, 'FlowSpeed');
   // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops the animation, false
   // plays it once and holds. Stored as `undefined` when true so the common
   // case adds no field to the element.
-  const setSetAnimationRepeatSelected = (set: AnimationSetId, value: boolean) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) ? withSetAnimationRepeat(el, set, value) : el)),
-    );
-    track('Element', 'Changed', 'AnimationRepeat');
-  };
   const setIconAnimationRepeatSelected = (value: boolean) =>
     setIconFieldSelected({ iconAnimationRepeat: value ? undefined : false });
   const setFlowRepeatSelected = (value: boolean) =>
@@ -304,12 +275,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setTableHeaderRowSelected,
     setTableHeaderColumnSelected,
     setTableZebraSelected,
-    clearAnimationsSelected,
     setIconAnimationSelected,
     setIconAnimationSpeedSelected,
-    setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
-    setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
   };

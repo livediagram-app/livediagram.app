@@ -181,12 +181,9 @@ The words for the public gallery of published documents ([Community](../025-comm
 
 ## Animation
 
-- An **animation set** is the catalogue of animations one family of elements takes: Shape, Sticky, Drawing,
-  Media, Table, and Text for words ([Element animations](../028-animation/element-animations.md)). Icons, charts
-  and arrows keep sets of their own.
-- An element's **body set** animates the element; the **Text set** animates its words. A set is never a kind or a
-  mode.
-- A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
+- An **animation set** is the catalogue of animations one family of elements takes: Icon, Chart, Progress,
+  Rating, Concept, Sequence and Arrow ([Animated elements](../008-canvas/canvas-and-palette.md#animated-elements)). A set is never a kind or a mode.
+- A **reveal** brings an element in; a **loop** repeats around the rest frame.
 
 ## This Browser
 

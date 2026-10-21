@@ -169,33 +169,6 @@ export function FormatIcon({ kind }: { kind: Format }) {
           <path d="M2 18l8-8 6 6 4-4 10 8" stroke="rgb(59 130 246)" strokeWidth="1.5" fill="none" />
         </svg>
       );
-    case 'gif':
-      // A picture with frames behind it: an image that moves.
-      return (
-        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
-          <rect
-            x="5"
-            y="1"
-            width="26"
-            height="16"
-            rx="2"
-            fill="rgb(237 233 254)"
-            stroke="rgb(196 181 253)"
-            strokeWidth="1"
-          />
-          <rect
-            x="1"
-            y="5"
-            width="26"
-            height="16"
-            rx="2"
-            fill="rgb(219 234 254)"
-            stroke="rgb(147 197 253)"
-            strokeWidth="1.25"
-          />
-          <path d="M11 9.5v7l6-3.5z" fill="rgb(59 130 246)" />
-        </svg>
-      );
     case 'svg':
       return (
         <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>

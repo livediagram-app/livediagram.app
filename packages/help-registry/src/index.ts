@@ -1756,9 +1756,9 @@ export const articles: Article[] = [
   {
     slug: 'exporting-pages',
     title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
+    description: 'Every page or one page as a PDF or images, and pages as slides.',
     keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
     category: 'Canvas',
     categorySlug: 'canvas/pages-mode',
     parentSlug: 'pages-mode',
@@ -1850,8 +1850,7 @@ export const articles: Article[] = [
     title: 'Exporting a Tab',
     description:
       'Export the active tab or a selection as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF: copy the text formats or set image options.',
-    keywords:
-      'export download save png svg pdf gif animated json mermaid markdown excalidraw image picture',
+    keywords: 'export download save png svg pdf json mermaid markdown excalidraw image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -2256,9 +2255,9 @@ export const articles: Article[] = [
   {
     slug: 'animations',
     title: 'Animating Elements',
-    description: 'Animate shapes, text, notes, drawings, media, tables, arrows, and icons.',
+    description: 'Send flow along arrows and animate icons, charts, progress bars and ratings.',
     keywords:
-      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
+      'animate animation motion pulse loop effects moving flow spin icon chart progress rating',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',

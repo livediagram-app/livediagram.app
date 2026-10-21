@@ -458,7 +458,7 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
   fill are entered. `PageClip` wraps the element views in `PageSurfacesProvider`, whose
   value keeps its identity while the entries do (keyed on `id:surface` pairs).
 - `useElementSurface(id)`: the page's surface, else the canvas's; used by `BoxedElementView`,
-  `TableView`, `useBoxedElementAnimation`, `ArrowView`, `ElementFaceRouter` (the faces' own fills and accents).
+  `TableView`, `ArrowView`, `ElementFaceRouter` (the faces' own fills and accents).
 - Re-inking (`pageInkFor`, spec "Re-inking"; `pagesInkFor` for several pages, which lays out the
   pages, indexes the elements and sorts them onto their pages once, then inks each page in `inks`
   order with one memory, pruned once at the end): the page's elements in paint

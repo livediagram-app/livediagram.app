@@ -92,17 +92,14 @@ export function isTidyable(el: Element): boolean {
   );
 }
 
-// The fields a tidied element keeps that a path also has: its conversation, note, link, action,
-// animation and lock on its proportions.
+// The fields a tidied element keeps that a path also has: its conversation, note, link, action and
+// lock on its proportions.
 const KEPT_FIELDS = [
   'commentThread',
   'note',
   'noteRich',
   'link',
   'action',
-  'animation',
-  'animationSpeed',
-  'animationRepeat',
   'aspectLocked',
 ] as const satisfies readonly (keyof PathElement)[];
 

@@ -296,7 +296,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'chipLook', valid: isChipLook, rule: oneOfRule(CHIP_LOOKS_RULE) },
   { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
-  flag('stepSequence'),
   {
     field: 'pointerTip',
     // Read at call time: pointer-note.ts sits on an import cycle with attachment.ts, so it may not be loaded yet

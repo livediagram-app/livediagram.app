@@ -37,8 +37,6 @@ function editing(el: ShapeElement = venue) {
         undefined,
         false,
         undefined,
-        undefined,
-        undefined,
         onLiveText,
       )}
     </MindGrowProvider>,

@@ -436,14 +436,11 @@ export function ElementDataSections({
               sectionProps={sectionProps}
             />
           ) : null}
-          {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
+          {/* A badge's or step number's look, Detach, Renumber (docs/specs/009-elements/badge.md). */}
           {shapeTarget && isChip ? (
             <ChipMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
-              stepsInOrder={props.elements.some(
-                (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
-              )}
               sectionProps={sectionProps}
             />
           ) : null}
@@ -714,9 +711,8 @@ export function ElementDataSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
-      {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
-            element takes, such as Shape Animation and Text Animation for a labelled shape. None while it covers
-            the canvas (maximised, or Fill Tab): it does not animate there. */}
+      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): the element's own animation category (an icon's, a chart's, an
+            arrow's). None while it covers the canvas (maximised, or Fill Tab): it does not animate there. */}
       {covering ? null : (
         <AnimationSections
           elements={[target]}

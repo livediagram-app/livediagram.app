@@ -8,14 +8,7 @@ import {
   type ShapePart,
   type ShapePartRole,
 } from '@liveplanner/document';
-import { useRef, type CSSProperties, type SVGAttributes } from 'react';
-import { useTraceDashes } from './useTraceDashes';
-import {
-  isEdgeRole,
-  useShapeSvgAnimation,
-  type ShapeSvgAnimation,
-  type ShapeSvgEffectLayer,
-} from './useShapeSvgAnimation';
+import type { CSSProperties, SVGAttributes } from 'react';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
 // canvas-rendered element) and Canvas (the in-progress draw
@@ -125,7 +118,6 @@ export function ShapeSvgOverlay({
   strokeWidth = 2,
   strokeDasharray,
   aspect = 1.6,
-  animation,
   figure,
 }: {
   shape: ShapeKind;
@@ -141,18 +133,10 @@ export function ShapeSvgOverlay({
   // screen pixels on all four sides (see laptopGeometry in the table).
   // Defaults to a typical landscape ratio for callers that don't pass it.
   aspect?: number;
-  // The Shape set's Pulse, Glow, Trace and Gradient (docs/specs/028-animation/element-animations.md),
-  // which must follow the true SVG geometry rather than the wrapper's rectangle: drawn here as
-  // copies of the outline (useShapeSvgAnimation). Other motions are shape-agnostic and stay on the
-  // wrapper. Undefined for the draw preview and unanimated elements.
-  animation?: ShapeSvgAnimation;
   // An actor's figure rect in element px (actor-figure.ts in @liveplanner/document), clear of its
   // name; absent fills the box.
   figure?: { x: number; y: number; width: number; height: number };
 }) {
-  // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
-  // useShapeSvgAnimation.
-  const { effectiveFill, gradientDefs, effect } = useShapeSvgAnimation(animation, fill);
   // The geometry lives in the shared table (@liveplanner/document
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
@@ -165,7 +149,7 @@ export function ShapeSvgOverlay({
   const dash = strokeDasharray;
   const paint: Record<ShapePartRole, SVGAttributes<SVGElement>> = {
     main: {
-      fill: effectiveFill,
+      fill,
       stroke,
       strokeWidth,
       strokeDasharray: dash,
@@ -173,7 +157,7 @@ export function ShapeSvgOverlay({
       strokeLinejoin: 'round',
     },
     outline: {
-      fill: effectiveFill,
+      fill,
       stroke,
       strokeWidth,
       strokeDasharray: dash,
@@ -197,7 +181,7 @@ export function ShapeSvgOverlay({
     },
     head: {},
   };
-  paint.head = { ...paint.limb, fill: effectiveFill };
+  paint.head = { ...paint.limb, fill };
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
@@ -212,16 +196,9 @@ export function ShapeSvgOverlay({
       }
       aria-hidden
     >
-      {gradientDefs}
-      {effect?.behind ? (
-        <EffectCopy parts={geometry?.parts} effect={effect} geometryKey={`${shape}:${aspect}`} />
-      ) : null}
       {geometry?.parts.map((part, i) => (
         <ShapePartSvg key={i} part={part} paint={paint[part.role]} />
       ))}
-      {effect && !effect.behind ? (
-        <EffectCopy parts={geometry?.parts} effect={effect} geometryKey={`${shape}:${aspect}`} />
-      ) : null}
     </svg>
   );
 }
@@ -235,37 +212,6 @@ function strokeInsideBox(strokeWidth: number): CSSProperties {
     width: `calc(100% - ${strokeWidth}px)`,
     height: `calc(100% - ${strokeWidth}px)`,
   };
-}
-
-// A copy of the silhouette's edge parts for an animation effect (useShapeSvgAnimation), scaled from
-// the view box's centre so a Pulse ring grows evenly.
-function EffectCopy({
-  parts,
-  effect,
-  geometryKey,
-}: {
-  parts: readonly ShapePart[] | undefined;
-  effect: ShapeSvgEffectLayer;
-  // What the outline is (kind and aspect): Trace re-measures its dashes when it changes.
-  geometryKey: string;
-}) {
-  const edges = (parts ?? []).filter((p) => isEdgeRole(p.role));
-  const ref = useRef<SVGGElement>(null);
-  useTraceDashes(ref, effect.className === 'lvd-svg-trace', geometryKey);
-  return (
-    <g
-      ref={ref}
-      className={effect.className}
-      style={{ transformBox: 'view-box', transformOrigin: '50% 50%' }}
-    >
-      {edges.map((part, i) => (
-        <ShapePartSvg key={i} part={part} paint={effect.paint} />
-      ))}
-      {effect.extra
-        ? edges.map((part, i) => <ShapePartSvg key={`x${i}`} part={part} paint={effect.extra!} />)
-        : null}
-    </g>
-  );
 }
 
 // One table part as its SVG element.

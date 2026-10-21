@@ -45,13 +45,6 @@ size of the next element added while it is selected.
 
 Arrows connect to a boundary like any shape ("Internet → VPC"); its anchors sit on its outline.
 
-## Animation
-
-A boundary takes the **Shape** set, limited to the motions that do not move the element: **Blink**, **Glow**,
-**Trace**, **Gradient**, **Shimmer** and **Highlight**. A container that floats or bounces while its contents stay
-still looks broken, so the moving motions are not offered. Trace suits it best: a light runs the dashed edge. Its
-title takes the **Text** set.
-
 ## Palette
 
 | Mode     | Where                                     |

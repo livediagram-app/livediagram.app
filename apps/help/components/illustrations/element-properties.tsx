@@ -79,34 +79,14 @@ export function Rotation() {
   );
 }
 
-/** A shape radiating pulse rings beside a flowing dashed arrow, illustrating
- *  boxed-element animation and arrow flow. */
+/** Two shapes joined by a flowing dashed arrow, illustrating arrow flow. */
 export function ElementAnimation() {
-  const cx = 130;
-  const cy = 120;
   return (
     <Scene w={400} h={240}>
-      {/* Pulse rings, following the oval's own outline */}
-      <ellipse
-        cx={cx}
-        cy={cy}
-        rx={54}
-        ry={40}
-        className="fill-none stroke-brand-200"
-        strokeWidth={2}
-      />
-      <ellipse
-        cx={cx}
-        cy={cy}
-        rx={68}
-        ry={54}
-        className="fill-none stroke-brand-100"
-        strokeWidth={2}
-      />
-      <Shape x={cx - 40} y={cy - 28} w={80} h={56} kind="circle" accent label="Pulse" />
-      {/* Flowing arrow */}
-      <Arrow from={[222, 120]} to={[330, 120]} kind="straight" tone="accent" dashed width={3} />
-      <Label x={276} y={150} anchor="middle" size={11} tone="muted">
+      <Shape x={40} y={92} w={96} h={56} label="Order" />
+      <Arrow from={[136, 120]} to={[264, 120]} kind="straight" tone="accent" dashed width={3} />
+      <Shape x={264} y={92} w={96} h={56} accent label="Ship" />
+      <Label x={200} y={150} anchor="middle" size={11} tone="muted">
         Arrow flow
       </Label>
     </Scene>

@@ -11,7 +11,7 @@ They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-r
   - **Fill** grows the fill from 0 up to the set value (bar: a `scaleX` reveal; ring: a `stroke-dashoffset` draw keyed off `--lvd-progress`). By default it plays **once and holds** the filled state (`animation-fill-mode: forwards`) rather than looping — a dropped progress element animates in and stays done.
   - **Pulse** breathes the fill's opacity.
   - **Stripes** runs a barber-pole / marching pattern over the fill (bar: an animated `repeating-linear-gradient`; ring: a marching dashed arc masked to the progress sweep).
-- `progressAnimSpeed?: AnimationSpeed` — the shared `slowest | slow | normal | fast` set ([Canvas and palette](../008-canvas/canvas-and-palette.md)), the same duration multiplier (`ANIMATION_SPEED_FACTOR`) the boxed-element animations use, fed to the `lvd-prog-*` keyframes as `--lvd-prog-speed`. Undefined = slow (`DEFAULT_ANIMATION_SPEED`).
+- `progressAnimSpeed?: AnimationSpeed` — the shared `slowest | slow | normal | fast` set ([Canvas and palette](../008-canvas/canvas-and-palette.md)), the same duration multiplier (`ANIMATION_SPEED_FACTOR`) every element's own animation uses, fed to the `lvd-prog-*` keyframes as `--lvd-prog-speed`. Undefined = slow (`DEFAULT_ANIMATION_SPEED`).
 - `progressAnimRepeat?: boolean` — whether the animation loops. Undefined defaults per kind: **fill plays once**, **pulse / stripes loop** (they are continuous by nature). Exposed inline to the keyframes as `--lvd-prog-iter` (`1` or `infinite`).
 
 `createShape` (in `packages/document/src/shape-factory.ts`, re-exported from `factories.ts`) seeds both at `progress: 50` **and `progressAnim: 'fill'`**, so a freshly dropped bar / ring fills in on arrival; the ring is `aspectLocked` on create so it stays circular. Default sizes: bar 220×44 (a wide pill), ring 130×130.
@@ -37,7 +37,7 @@ A **Progress** section inside the menu's **Tools** flyout (only for progress sha
 - a **Percentage** slider (0–100, mirrors the Opacity row).
 
 The fill's animation is the **Progress** section of the menu's **Animation** row
-([Element animations](../028-animation/element-animations.md#the-menu)):
+([Animated elements](../008-canvas/canvas-and-palette.md#animated-elements)):
 
 - **Fill animation** tiles: None / Fill / Pulse / Stripes (live miniatures of a progress bar, `ProgressAnimPreview`); once an animation is picked, a **Speed** row (Slowest / Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
 

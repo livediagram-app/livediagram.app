@@ -2,29 +2,18 @@
 
 import { render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { BoxedElement } from '@liveplanner/document';
 import { createElement, type ReactNode } from 'react';
-import { useBoxedElementAnimation } from './useBoxedElementAnimation';
+import { useElementPopIn } from './useElementPopIn';
 import { CanvasStillProvider } from './CanvasStillContext';
 import { CanvasArrivalProvider } from './CanvasArrivalContext';
 
 // Canvas motion is out of the chrome budget (docs/specs/004-interface-design/motion.md):
 // a newly added element keeps its own 360ms spring (app/canvas-motion.test.ts)
 // even though the chrome pop-in runs at the 150ms micro token.
-const square = {
-  id: 'a',
-  type: 'shape',
-  shape: 'square',
-  x: 0,
-  y: 0,
-  width: 100,
-  height: 60,
-} as unknown as BoxedElement;
-
 describe('canvas element entry', () => {
   it('pops a new element in with the canvas token, not the chrome one', () => {
-    const { result } = renderHook(() => useBoxedElementAnimation(square, '#000'));
-    expect(result.current.wrapperAnimClass).toBe('animate-element-pop-in');
+    const { result } = renderHook(() => useElementPopIn());
+    expect(result.current).toBe('animate-element-pop-in');
   });
 });
 
@@ -32,16 +21,15 @@ describe('a still canvas (a whiteboard, docs/specs/023-draw-mode/draw-mode.md)',
   it('lets a new element appear as drawn, with no entry animation', () => {
     const wrapper = ({ children }: { children: ReactNode }) =>
       createElement(CanvasStillProvider, { still: true, children });
-    const { result } = renderHook(() => useBoxedElementAnimation(square, '#000'), { wrapper });
-    expect(result.current.wrapperAnimClass).toBe('');
+    const { result } = renderHook(() => useElementPopIn(), { wrapper });
+    expect(result.current).toBe('');
   });
 });
 
 // Opening animates nothing across the board (docs/specs/008-canvas/canvas-and-palette.md "Motion and
 // animations"): the elements a tab opens with arrive with it; only one added later pops in.
-function Probe({ element, seen }: { element: BoxedElement; seen: Map<string, string> }) {
-  const { wrapperAnimClass } = useBoxedElementAnimation(element, '#000');
-  seen.set(element.id, wrapperAnimClass);
+function Probe({ id, seen }: { id: string; seen: Map<string, string> }) {
+  seen.set(id, useElementPopIn());
   return null;
 }
 
@@ -58,9 +46,7 @@ function Board({
   loaded?: boolean;
   seen: Map<string, string>;
 }) {
-  const probes = ids.map((id) =>
-    createElement(Probe, { key: id, element: { ...square, id }, seen }),
-  );
+  const probes = ids.map((id) => createElement(Probe, { key: id, id, seen }));
   return createElement(CanvasStillProvider, {
     still,
     children: createElement(CanvasArrivalProvider, { tabId, loaded, children: probes }),

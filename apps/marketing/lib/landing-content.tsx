@@ -3,7 +3,6 @@ import {
   AiAssistArt,
   AlignmentGuidesArt,
   AnimatedIconsArt,
-  AnimatedShapesArt,
   ApiArt,
   ArrowsArt,
   ArticleFlowArt,
@@ -76,7 +75,6 @@ import {
   MermaidArt,
   MindMapArt,
   NotesArt,
-  PagesGifArt,
   PalmRejectionArt,
   PathToolArt,
   PencilArt,
@@ -707,14 +705,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Copy a tab's full contents into another document you own, as a ready-made starting point you can take further.",
       },
       {
-        art: <AnimatedShapesArt />,
-        href: '/help/canvas/animations/',
-        group: 'Bring it to life',
-        title: 'Animate any shape',
-        description:
-          'Give a shape a looping animation to draw the eye or signal status: pulse an attention ring, glow a soft halo, blink a status light, trace the outline, breathe, shimmer, or a heartbeat for gentle emphasis. Pick one of four speeds, choose whether it repeats or plays once, and the format painter copies the motion to the next shape.',
-      },
-      {
         art: <FlowingArrowsArt />,
         href: '/help/canvas/animations/',
         group: 'Bring it to life',
@@ -951,13 +941,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
-      },
-      {
-        art: <PagesGifArt />,
-        href: '/help/canvas/pages-mode/exporting-pages/',
-        title: 'Pages as an animated GIF',
-        description:
-          'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
       },
     ],
   },
