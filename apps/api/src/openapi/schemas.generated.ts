@@ -17278,6 +17278,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pairedAt": {
         "type": "number"
       },
+      "scope": {
+        "$ref": "#/components/schemas/WorkbenchScope"
+      },
       "tokenId": {
         "type": "string"
       }
@@ -17287,6 +17290,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "tokenId",
       "origin",
       "name",
+      "scope",
       "pairedAt"
     ],
     "type": "object"
@@ -17299,6 +17303,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "origin": {
         "type": "string"
+      },
+      "scope": {
+        "$ref": "#/components/schemas/WorkbenchScope"
       }
     },
     "required": [
@@ -17371,6 +17378,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "origin": {
         "type": "string"
       },
+      "scope": {
+        "$ref": "#/components/schemas/WorkbenchScope"
+      },
       "status": {
         "$ref": "#/components/schemas/PairingRequestStatus"
       },
@@ -17385,6 +17395,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "origin",
       "name",
       "tokenName",
+      "scope",
       "expiresAt",
       "status"
     ],
@@ -17461,6 +17472,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "WorkbenchRole": {
     "$ref": "#/components/schemas/AccessLevel"
   },
+  "WorkbenchScope": {
+    "enum": [
+      "document",
+      "workspace"
+    ],
+    "type": "string"
+  },
   "WorkbenchSessionRequest": {
     "additionalProperties": false,
     "properties": {
@@ -17474,62 +17492,151 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "WorkbenchSessionResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "documentId": {
-        "type": "string"
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "folderId": {
+            "type": "null"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "person": {
+            "$ref": "#/components/schemas/WorkbenchPerson"
+          },
+          "role": {
+            "$ref": "#/components/schemas/WorkbenchRole"
+          },
+          "scope": {
+            "const": "document",
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "tabId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "documentId",
+          "expiresAt",
+          "folderId",
+          "origin",
+          "person",
+          "role",
+          "scope",
+          "session",
+          "tabId"
+        ],
+        "type": "object"
       },
-      "expiresAt": {
-        "type": "number"
-      },
-      "origin": {
-        "type": "string"
-      },
-      "person": {
-        "$ref": "#/components/schemas/WorkbenchPerson"
-      },
-      "role": {
-        "$ref": "#/components/schemas/WorkbenchRole"
-      },
-      "session": {
-        "type": "string"
-      },
-      "tabId": {
-        "type": [
-          "string",
-          "null"
-        ]
+      {
+        "additionalProperties": false,
+        "properties": {
+          "documentId": {
+            "type": "null"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "folderId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "origin": {
+            "type": "string"
+          },
+          "person": {
+            "$ref": "#/components/schemas/WorkbenchPerson"
+          },
+          "role": {
+            "$ref": "#/components/schemas/WorkbenchRole"
+          },
+          "scope": {
+            "const": "workspace",
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "tabId": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "documentId",
+          "expiresAt",
+          "folderId",
+          "origin",
+          "person",
+          "role",
+          "scope",
+          "session",
+          "tabId"
+        ],
+        "type": "object"
       }
-    },
-    "required": [
-      "session",
-      "documentId",
-      "tabId",
-      "origin",
-      "role",
-      "expiresAt",
-      "person"
-    ],
-    "type": "object"
+    ]
   },
   "WorkbenchTicketRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "documentId": {
-        "type": "string"
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "scope": {
+            "const": "document",
+            "type": "string"
+          },
+          "tabId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "documentId",
+          "origin"
+        ],
+        "type": "object"
       },
-      "origin": {
-        "type": "string"
-      },
-      "tabId": {
-        "type": "string"
+      {
+        "additionalProperties": false,
+        "properties": {
+          "folderId": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "scope": {
+            "const": "workspace",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "origin"
+        ],
+        "type": "object"
       }
-    },
-    "required": [
-      "documentId",
-      "origin"
-    ],
-    "type": "object"
+    ]
   },
   "WorkbenchTicketResponse": {
     "additionalProperties": false,
@@ -17554,6 +17661,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "url",
       "documentId",
       "tabId",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "WorkbenchWorkspaceTicketResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "expiresAt": {
+        "type": "number"
+      },
+      "folderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "scope": {
+        "const": "workspace",
+        "type": "string"
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "scope",
+      "folderId",
       "expiresAt"
     ],
     "type": "object"

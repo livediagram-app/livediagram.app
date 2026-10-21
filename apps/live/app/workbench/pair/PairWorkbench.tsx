@@ -234,13 +234,26 @@ function PendingRequest({
   return (
     <OauthShell>
       <Heading state={pendingState(step)}>Allow this workbench?</Heading>
+      {/* The spec's two questions (docs/specs/013-workspace/workbench-embeds.md "Pairing", step 3): the whole
+          workspace is asked for in its own words, never as one more document. */}
       <p className={BODY}>
         Allow {request.name ? <strong className={STRONG}>{request.name}</strong> : 'a workbench'} at{' '}
-        <code className={MONO}>{request.origin}</code> to open your documents with {token}?
+        <code className={MONO}>{request.origin}</code> to open{' '}
+        {request.scope === 'workspace' ? (
+          <>
+            <strong className={STRONG}>your whole workspace</strong>, and to create, move, share and
+            trash documents and folders in it,
+          </>
+        ) : (
+          'your documents'
+        )}{' '}
+        with {token}?
       </p>
       <p className={BODY}>
-        It opens one document at a time, as you, inside that tool. You can unpair it any time in
-        Settings, under API Tokens.
+        {request.scope === 'workspace'
+          ? 'It works in your Explorer and your documents, as you, inside that tool.'
+          : 'It opens one document at a time, as you, inside that tool.'}{' '}
+        You can unpair it any time in Settings, under API Tokens.
       </p>
       {failed ? (
         <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">

@@ -18,6 +18,13 @@ export {
 } from './define';
 export { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
 export {
+  folderChoices,
+  folderLines,
+  matchFolders,
+  resolveFolderRef,
+  type FolderChoice,
+} from './folders';
+export {
   AddressError,
   parseDocumentUrl,
   resolveDocument,

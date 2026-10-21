@@ -5,11 +5,14 @@
 import { posix } from 'node:path';
 import {
   documentRows,
+  folderChoices,
+  folderLines,
+  matchFolders,
   parseDocumentUrl,
   readLibraries,
-  REF_MIN_PREFIX,
   resolveDocument,
   shortestUniquePrefixes,
+  type FolderChoice,
   type FoundDocument,
   type ListedDocument,
   type StatusRow,
@@ -24,13 +27,7 @@ import { EXIT } from '../output/exit-codes';
 import { LINK_FILE_NAME } from '../link/constants';
 import { readCoverage } from '../link/coverage';
 import { linksBelow, nearestLink } from '../link/find-links';
-import {
-  folderChoices,
-  folderNeededError,
-  noFoldersError,
-  pickFolder,
-  type FolderChoice,
-} from '../link/folder-picker';
+import { folderNeededError, noFoldersError, pickFolder } from '../link/folder-picker';
 import { gitRemote } from '../link/git';
 import { linkFileText, sameHost, type LinkFile, type MirrorLevel } from '../link/link-file';
 import { linkStateDir } from '../link/local-state';
@@ -82,26 +79,19 @@ const syncContext = (io: CliIo, ctx: VerbContext): VerbContext => ({
   log: debugLog(io, 'sync'),
 });
 
-// A folder by its full id, an id prefix, or its name ignoring case (RL26).
+// A folder by its full id, an id prefix, or its name ignoring case (RL26), as every command names one.
 function resolveFolder(choices: readonly FolderChoice[], ref: string): FolderChoice {
-  const lower = ref.toLowerCase();
-  const matches = choices.filter(
-    (c) =>
-      c.id === ref ||
-      (ref.length >= REF_MIN_PREFIX && c.id.startsWith(ref)) ||
-      c.path.split('/').at(-1)!.toLowerCase() === lower,
-  );
+  const matches = matchFolders(choices, ref);
   if (matches.length === 1) return matches[0]!;
   const refs = shortestUniquePrefixes(choices.map((c) => c.id));
-  const listed = (list: readonly FolderChoice[]) =>
-    list.map((c) => `${refs.get(c.id)}  ${JSON.stringify(c.path)}  ${c.library}`);
   if (matches.length === 0) {
+    const lower = ref.toLowerCase();
     const nearest = choices.filter((c) => c.path.toLowerCase().includes(lower)).slice(0, 5);
     throw new CliError({
       exit: EXIT.notFound,
       code: 'not_found',
       message: `no folder matches "${ref}"${nearest.length ? '; the nearest:' : ''}`,
-      lines: listed(nearest),
+      lines: folderLines(choices, nearest),
       hint: 'livediagram link init, in a terminal, to pick one',
     });
   }
@@ -109,7 +99,7 @@ function resolveFolder(choices: readonly FolderChoice[], ref: string): FolderCho
     exit: EXIT.notFound,
     code: 'ambiguous',
     message: `"${ref}" matches ${matches.length} folders`,
-    lines: listed(matches),
+    lines: folderLines(choices, matches),
     hint: `livediagram link init --folder ${refs.get(matches[0]!.id)}`,
   });
 }

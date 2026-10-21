@@ -8,6 +8,7 @@ import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import type { Folder } from '@livediagram/api-schema';
+import { assignAppLocation } from '@/lib/app-location';
 
 // The bar above the team library (docs/specs/013-workspace/team-shared-documents.md): where you are, and the two things
 // you can do from anywhere in it — switch card / list view, and add something.
@@ -120,7 +121,7 @@ export function TeamLibraryHeader({
                   label="New Document"
                   onClick={() => {
                     setCreateOpen(false);
-                    window.location.assign(
+                    assignAppLocation(
                       `/new?team=${encodeURIComponent(teamId)}${
                         currentFolderId ? `&folder=${encodeURIComponent(currentFolderId)}` : ''
                       }`,

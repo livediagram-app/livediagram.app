@@ -80,7 +80,7 @@ export default defineConfig({
         /armed\//,
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
-        /workbench-embed\.spec\.ts/,
+        /workbench-(embed|workspace)\.spec\.ts/,
       ],
     },
     // The optical audit of the help centre, telemetry dashboard, Community and marketing site: the one suite
@@ -115,7 +115,7 @@ export default defineConfig({
           {
             name: 'workbench',
             use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
-            testMatch: /workbench-embed\.spec\.ts/,
+            testMatch: /workbench-(embed|workspace)\.spec\.ts/,
           },
         ]
       : []),

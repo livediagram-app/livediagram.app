@@ -2,7 +2,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useReducer } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WorkbenchSessionResponse } from '@livediagram/api-schema';
+import type { WorkbenchDocumentSessionResponse } from '@livediagram/api-schema';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { workbenchTransition, type WorkbenchPhase } from './workbench-machine';
@@ -15,8 +15,11 @@ const harness = vi.hoisted(() => ({
   initial: { phase: 'reading' } as unknown,
   port: null as unknown,
   dispatch: null as unknown,
-  loading: null as null | (() => unknown),
+  // Each dynamic chunk's loading screen, by what it loads: the editor, or the workspace frame.
+  loadings: {} as Record<'editor' | 'frame', () => unknown>,
+  pathname: '/embed/workbench',
 }));
+vi.mock('next/navigation', () => ({ usePathname: () => harness.pathname }));
 vi.mock('./useWorkbenchHandshake', () => ({
   useWorkbenchHandshake: () => {
     const [phase, dispatch] = useReducer(workbenchTransition, harness.initial as WorkbenchPhase);
@@ -26,8 +29,21 @@ vi.mock('./useWorkbenchHandshake', () => ({
 }));
 vi.mock('./useWorkbenchRenewal', () => ({ useWorkbenchRenewal: () => {} }));
 vi.mock('next/dynamic', () => ({
-  default: (_load: unknown, options: { loading: () => unknown }) => {
-    harness.loading = options.loading;
+  default: (_load: unknown, options: { loading?: () => unknown } = {}) => {
+    if (!options.loading) return () => null;
+    // The frame's loading screen speaks of the workspace; the editor's does not.
+    const loading = options.loading() as { props?: { scope?: string } };
+    const frame = loading.props?.scope === 'workspace';
+    harness.loadings[frame ? 'frame' : 'editor'] = options.loading;
+    if (frame)
+      return function FakeFrame() {
+        const session = useWorkbenchSession();
+        return (
+          <p>
+            workspace frame as {session?.person.name} in {session?.scope}
+          </p>
+        );
+      };
     return function FakeEditor({ surface }: { surface: string }) {
       const session = useWorkbenchSession();
       return (
@@ -46,9 +62,11 @@ const { WorkbenchPage } = await import('./WorkbenchPage');
 const { default: Page, metadata } = await import('./page');
 const core = await import('@/lib/api/core');
 
-const SESSION: WorkbenchSessionResponse = {
+const SESSION: WorkbenchDocumentSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
+  scope: 'document',
   documentId: 'doc-1',
+  folderId: null,
   tabId: null,
   origin: 'https://127.0.0.1:5175',
   role: 'edit',
@@ -67,6 +85,7 @@ function fakePort(): WorkbenchPort {
 
 beforeEach(() => {
   harness.port = null;
+  harness.pathname = '/embed/workbench';
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
@@ -126,7 +145,7 @@ describe('WorkbenchPage', () => {
   });
 
   it('shows the opening copy while the editor chunk loads', () => {
-    render(<>{harness.loading!() as never}</>);
+    render(<>{harness.loadings.editor() as never}</>);
     expect(screen.getByRole('status').textContent).toBe('Opening your diagram…');
   });
 
@@ -196,5 +215,51 @@ describe('WorkbenchPage', () => {
 
     expect(screen.getByRole('status').textContent).toBe('Opening your diagram…');
     vi.unstubAllGlobals();
+  });
+});
+
+describe('WorkbenchPage, workspace scope', () => {
+  const WORKSPACE = {
+    ...SESSION,
+    scope: 'workspace' as const,
+    documentId: null,
+    folderId: null,
+    tabId: null,
+  };
+
+  it('speaks of the workspace while it opens, and when it refuses', () => {
+    harness.pathname = '/embed/workbench/explorer';
+    harness.initial = { phase: 'reading' };
+    const { unmount } = render(<WorkbenchPage />);
+    expect(screen.getByRole('status').textContent).toBe('Opening your workspace…');
+    unmount();
+
+    harness.initial = { phase: 'refused', cause: 'no-ticket' };
+    render(<WorkbenchPage />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'Open your workspace from your workbench',
+    );
+    expect(screen.getByRole('status').textContent).toContain(
+      'This link works once, for a minute. Open it again from your workbench.',
+    );
+  });
+
+  it('mounts the workspace frame, signed in as the person, confined to the workspace', () => {
+    harness.pathname = '/embed/workbench/explorer/folder/f1';
+    harness.initial = { phase: 'mounted', session: WORKSPACE, name: 'Acme Editor' };
+    harness.port = fakePort();
+    render(<WorkbenchPage />);
+
+    expect(screen.getByText('workspace frame as Webber in workspace')).toBeTruthy();
+    expect(core.getWorkbenchConfinement()).toEqual({
+      scope: 'workspace',
+      documentId: null,
+      ownerId: 'user_1',
+    });
+  });
+
+  it('shows the workspace opening copy while the frame chunk loads', () => {
+    render(<>{harness.loadings.frame() as never}</>);
+    expect(screen.getByRole('status').textContent).toBe('Opening your workspace…');
   });
 });

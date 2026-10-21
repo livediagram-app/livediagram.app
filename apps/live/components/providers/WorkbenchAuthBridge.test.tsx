@@ -45,6 +45,9 @@ const RENEWED = `lvw_${'b'.repeat(43)}`;
 
 function sessionOf(secret = SECRET): WorkbenchSession {
   return {
+    scope: 'document',
+    shareCode: null,
+    frame: null,
     secret,
     documentId: 'doc-1',
     tabId: null,
@@ -134,7 +137,11 @@ describe('WorkbenchAuthBridge', () => {
     );
 
     expect(await headers!).toEqual({ Authorization: `Bearer ${SECRET}` });
-    expect(core.getWorkbenchConfinement()).toEqual({ documentId: 'doc-1', ownerId: 'user_1' });
+    expect(core.getWorkbenchConfinement()).toEqual({
+      scope: 'document',
+      documentId: 'doc-1',
+      ownerId: 'user_1',
+    });
     core.setTokenProvider(null);
     core.setWorkbenchConfinement(null);
   });

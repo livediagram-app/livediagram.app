@@ -666,7 +666,7 @@ export const articles: Article[] = [
     description:
       'Draw in a document inside a developer tool beside your agent, and talk about what you select.',
     keywords:
-      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool',
+      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace',
     category: 'Developers',
     categorySlug: 'developers',
   },

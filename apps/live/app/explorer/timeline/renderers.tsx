@@ -28,6 +28,7 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EVENT_ICONS } from './icons';
 import { requestOpenSettings } from '@/lib/open-settings';
 import { explorerPathFor } from '../routes';
+import { assignAppLocation } from '@/lib/app-location';
 
 function str(snapshot: Record<string, unknown>, key: string): string | null {
   const value = snapshot[key];
@@ -83,7 +84,7 @@ const documentRenderer: TimelineRenderer = (event, ctx) => {
   // lost its id) must not point the reader at nothing. The card dims
   // itself when there's no handler.
   const open = documentId
-    ? () => window.location.assign(`/document/${encodeURIComponent(documentId)}`)
+    ? () => assignAppLocation(`/document/${encodeURIComponent(documentId)}`)
     : undefined;
   // `description: null` clears the stored line: the reason line already
   // says what happened and the title already names the document, so
@@ -160,7 +161,7 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
   const team = str(event.snapshot, 'teamName') ?? 'A team';
   const member = str(event.snapshot, 'memberName');
   const open = teamId
-    ? () => window.location.assign(explorerPathFor({ kind: 'team', id: teamId }))
+    ? () => assignAppLocation(explorerPathFor({ kind: 'team', id: teamId }))
     : undefined;
   const base = { icon: icon(event), subject: team, onClick: open, description: null };
   const who = isMine(event, ctx) ? 'You' : (member ?? 'Someone');
@@ -172,7 +173,7 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
         meta: 'Open Invites to accept or decline',
         // A pending invite grants no access to the team page (docs/specs/013-workspace/teams.md),
         // so this points where the reader can actually act.
-        onClick: () => window.location.assign('/explorer/invites'),
+        onClick: () => assignAppLocation('/explorer/invites'),
       };
     case 'team_invite_accepted':
     case 'team_invite_declined':
@@ -216,7 +217,7 @@ const accountRenderer: TimelineRenderer = (event) => {
       return {
         ...base,
         subject: theme,
-        onClick: () => window.location.assign('/explorer/themes'),
+        onClick: () => assignAppLocation('/explorer/themes'),
       };
     case 'theme_deleted':
       return { ...base, subject: theme };
@@ -228,7 +229,7 @@ const accountRenderer: TimelineRenderer = (event) => {
         ...base,
         subject: folder,
         onClick: folderId
-          ? () => window.location.assign(explorerPathFor({ kind: 'folder', id: folderId }))
+          ? () => assignAppLocation(explorerPathFor({ kind: 'folder', id: folderId }))
           : undefined,
       };
     }
@@ -239,7 +240,7 @@ const accountRenderer: TimelineRenderer = (event) => {
       return {
         ...base,
         subject: count === 1 ? '1 image' : `${count} images`,
-        onClick: () => window.location.assign('/explorer/images'),
+        onClick: () => assignAppLocation('/explorer/images'),
       };
     }
     default:

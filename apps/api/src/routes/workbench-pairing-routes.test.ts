@@ -104,6 +104,7 @@ describe('workbench pairing routes', () => {
           tokenId: 'tok1',
           origin: ORIGIN,
           name: 'Acme Editor',
+          scope: 'document',
           pairedAt: NOW,
         },
       });
@@ -162,6 +163,7 @@ describe('workbench pairing routes', () => {
           origin: ORIGIN,
           name: 'Acme Editor',
           tokenName: 'livediagram CLI',
+          scope: 'document',
           expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
           status: 'pending',
         },
@@ -184,6 +186,7 @@ describe('workbench pairing routes', () => {
           tokenId: 'tok1',
           origin: ORIGIN,
           name: 'Acme Editor',
+          scope: 'document',
           pairedAt: NOW,
         },
       });
@@ -195,6 +198,7 @@ describe('workbench pairing routes', () => {
       expect(console.log).toHaveBeenCalledWith('[workbench] paired', {
         tokenId: 'tok1',
         pairingId: expect.any(String),
+        scope: 'document',
       });
     });
 
@@ -214,7 +218,10 @@ describe('workbench pairing routes', () => {
       expect(late.status).toBe(410);
       expect(await late.json()).toEqual({ error: 'pairing_expired' });
       expect(rows(db, 'SELECT * FROM workbench_pairings')).toEqual([]);
-      expect(console.log).toHaveBeenCalledWith('[workbench] pairing-declined', { tokenId: 'tok1' });
+      expect(console.log).toHaveBeenCalledWith('[workbench] pairing-declined', {
+        tokenId: 'tok1',
+        scope: 'document',
+      });
     });
 
     it('refuses a token approving its own request, and another account', async () => {
@@ -259,7 +266,14 @@ describe('workbench pairing routes', () => {
 
       expect(await res.json()).toEqual({
         pairings: [
-          { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
+          {
+            id: 'pair1',
+            tokenId: 'tok1',
+            origin: ORIGIN,
+            name: 'Acme Editor',
+            scope: 'document',
+            pairedAt: NOW,
+          },
         ],
       });
       expect(token.status).toBe(401);
@@ -301,5 +315,77 @@ describe('workbench pairing routes', () => {
     const db = await workbenchDb();
 
     expect((await call(db, method, path, OWNER)).status).toBe(405);
+  });
+});
+
+describe('workbench pairing routes, workspace scope', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  const askWorkspace = async (db: SqliteD1) => {
+    const res = await call(db, 'POST', 'pairing-requests', TOKEN, {
+      origin: ORIGIN,
+      scope: 'workspace',
+    });
+    return { status: res.status, body: await res.json<Record<string, unknown>>() };
+  };
+
+  it('asks anew when the origin is paired for the document scope only', async () => {
+    const db = await workbenchDb();
+    pairToken(db);
+
+    const asked = await askWorkspace(db);
+
+    expect(asked.body).toMatchObject({ status: 'pending', code: expect.any(String) });
+    expect(rows(db, 'SELECT scope FROM workbench_pairing_requests')).toEqual([
+      { scope: 'workspace' },
+    ]);
+  });
+
+  it('answers paired once the origin is paired for the workspace', async () => {
+    const db = await workbenchDb();
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+
+    const asked = await askWorkspace(db);
+
+    expect(asked.body).toMatchObject({ status: 'paired', pairing: { scope: 'workspace' } });
+  });
+
+  it('refuses an unknown scope', async () => {
+    const db = await workbenchDb();
+
+    const res = await call(db, 'POST', 'pairing-requests', TOKEN, {
+      origin: ORIGIN,
+      scope: 'galaxy',
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalid_value', message: 'invalid scope' });
+  });
+
+  it('shows the page the workspace question and widens the pairing on Allow', async () => {
+    const db = await workbenchDb();
+    pairToken(db);
+    const { body } = await askWorkspace(db);
+    const code = body.code as string;
+
+    const view = await call(db, 'GET', `pairing-requests/${code}`, OWNER);
+    const approved = await call(db, 'POST', `pairing-requests/${code}/approve`, OWNER);
+
+    expect(await view.json()).toMatchObject({ request: { scope: 'workspace' } });
+    expect(await approved.json()).toMatchObject({ pairing: { id: 'pair1', scope: 'workspace' } });
+    expect(console.log).toHaveBeenCalledWith('[workbench] paired', {
+      tokenId: 'tok1',
+      pairingId: 'pair1',
+      scope: 'workspace',
+    });
   });
 });

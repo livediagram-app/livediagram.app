@@ -40,7 +40,16 @@ import { useCommunityState } from '@/lib/community-state-store';
 import { useCommunityEnabled } from '@livediagram/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
-import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
+import {
+  WorkbenchBackButton,
+  WorkbenchOpenLink,
+  WorkbenchReconnectLine,
+} from '@/components/chrome/WorkbenchChrome';
+import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
+
+// The document in a full tab, by its link when the frame opened it by one.
+const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
+  appHrefOfPlace({ kind: 'document', documentId, tabId: null, shareCode });
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
@@ -358,6 +367,8 @@ export function EditorView() {
       </LandscapeBarFold>
     );
 
+  // A workspace frame's hooks: its Back, in the tab bar.
+  const workbenchFrame = workbench?.frame ?? null;
   // The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
   // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
   const footer =
@@ -366,9 +377,25 @@ export function EditorView() {
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
             powerUser={isPowerUserMode(userPreferences)}
+            workbenchBack={
+              workbenchFrame
+                ? (labelled) => (
+                    <WorkbenchBackButton
+                      onBack={workbenchFrame.back}
+                      backTitle={workbenchFrame.backTitle}
+                      labelled={labelled}
+                    />
+                  )
+                : undefined
+            }
             workbenchLink={
               workbench && documentId
-                ? (labelled) => <WorkbenchOpenLink documentId={documentId} labelled={labelled} />
+                ? (labelled) => (
+                    <WorkbenchOpenLink
+                      href={workbenchDocumentHref(documentId, workbench.shareCode)}
+                      labelled={labelled}
+                    />
+                  )
                 : undefined
             }
             roleIcon={

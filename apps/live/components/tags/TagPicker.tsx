@@ -14,6 +14,7 @@ import { explorerPathFor } from '@/app/explorer/routes';
 import { useDocumentTags, type TagPickerTarget } from './DocumentTagsProvider';
 import { TagColourButton } from './TagColourButton';
 import { TagDot } from './TagChip';
+import { assignAppLocation } from '@/lib/app-location';
 
 const TAG_PICKER_WIDTH = 288;
 
@@ -71,7 +72,7 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
   const manage = () => {
     onClose();
     if (explorer) explorer.go({ kind: 'tags' });
-    else window.location.assign(explorerPathFor({ kind: 'tags' }));
+    else assignAppLocation(explorerPathFor({ kind: 'tags' }));
   };
 
   return (

@@ -32,6 +32,7 @@ import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-de
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
+import { assignAppLocation } from '@/lib/app-location';
 
 // A personal folder as a delete needs it: its name and where it sits.
 export type FolderNode = { id: string; name: string; parentId: string | null };
@@ -101,7 +102,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     const url = shareCode
       ? `${window.location.origin}/document/${id}?s=${encodeURIComponent(shareCode)}`
       : `${window.location.origin}/document/${id}`;
-    window.location.assign(url);
+    assignAppLocation(url);
   };
 
   // Rename a document from its list row. Optimistic; empty input is a
@@ -179,7 +180,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         .catch(() => {});
       // Straight to the landing section: `/explorer` is only an index that redirects, one more page
       // between the delete and the Explorer for something to flash on.
-      window.location.assign(`${window.location.origin}${EXPLORER_LANDING_PATH}`);
+      assignAppLocation(`${window.location.origin}${EXPLORER_LANDING_PATH}`);
       return;
     }
     await beforeRemove?.();

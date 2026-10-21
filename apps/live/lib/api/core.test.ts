@@ -376,7 +376,7 @@ describe('apiFetch under a workbench session', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    setWorkbenchConfinement({ documentId: 'doc-1', ownerId: 'user_1' });
+    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-1', ownerId: 'user_1' });
 
     await expect(
       apiFetch(`${API_BASE}/folders`, {

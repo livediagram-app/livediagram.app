@@ -8,9 +8,10 @@ import {
   isWorkbenchSessionFormat,
   readErrorCode,
   workbenchRouteVerdict,
+  type WorkbenchConfinementSession,
 } from '@livediagram/api-schema';
 
-type WorkbenchConfinement = { documentId: string; ownerId: string };
+type WorkbenchConfinement = WorkbenchConfinementSession;
 
 export class WorkbenchConfinedError extends Error {
   readonly route: string;

@@ -160,3 +160,32 @@ export function ticketOf(url: string): string {
 export function received(page: Page): Promise<{ type: string; [k: string]: unknown }[]> {
   return page.evaluate(() => (window as unknown as { received: never[] }).received);
 }
+
+// `livediagram workbench open --workspace [--folder <f>]`: a workspace ticket, on Home or a folder.
+export function mintWorkspaceTicket(
+  request: APIRequestContext,
+  seeded: Seeded,
+  origin: string,
+  folderId?: string,
+): Promise<{
+  status: number;
+  body: { url?: string; pairingUrl?: string; folderId?: string | null };
+}> {
+  return apiJson(request, 'POST', '/workbench/tickets', seeded.token, {
+    scope: 'workspace',
+    ...(folderId ? { folderId } : {}),
+    origin,
+  });
+}
+
+// A folder of the person's, at the top of My Documents, as `livediagram folder create` makes it.
+export async function createFolder(
+  request: APIRequestContext,
+  person: Person,
+  name: string,
+): Promise<string> {
+  const id = `wb-folder-${randomUUID()}`;
+  const made = await apiJson(request, 'POST', '/folders', person.jwt, { id, name, parentId: null });
+  if (made.status >= 300) throw new Error(`creating the folder failed: ${made.status}`);
+  return id;
+}

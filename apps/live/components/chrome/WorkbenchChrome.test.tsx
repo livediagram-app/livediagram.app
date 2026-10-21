@@ -1,14 +1,16 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { WorkbenchOpenLink, WorkbenchReconnectLine } from './WorkbenchChrome';
+import { fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
+import { WorkbenchBackButton, WorkbenchOpenLink, WorkbenchReconnectLine } from './WorkbenchChrome';
 
 // The workbench's chrome (docs/specs/013-workspace/blueprints/workbench-embeds.md "Presentation and UX",
 // "Accessibility"): Open in livediagram in the tab bar, and the Reconnect line once the session ended.
 
 describe('WorkbenchOpenLink', () => {
   it('links to the document in a new tab, named as such', () => {
-    render(<WorkbenchOpenLink documentId="doc 1" labelled />);
+    render(<WorkbenchOpenLink href="/document/doc%201" labelled />);
 
     const link = screen.getByRole('link', { name: 'Open in livediagram (opens in a new tab)' });
     expect(link.getAttribute('href')).toBe('/document/doc%201');
@@ -19,10 +21,24 @@ describe('WorkbenchOpenLink', () => {
   });
 
   it('is an icon alone where the bar has no room for words', () => {
-    render(<WorkbenchOpenLink documentId="d" labelled={false} />);
+    render(<WorkbenchOpenLink href="/document/d" labelled={false} />);
 
     const link = screen.getByRole('link', { name: 'Open in livediagram (opens in a new tab)' });
     expect(link.textContent).toBe('');
+  });
+});
+
+describe('WorkbenchBackButton', () => {
+  it('goes back, named by where it goes, a native button with the bar’s target size', () => {
+    const onBack = vi.fn();
+    render(<WorkbenchBackButton onBack={onBack} backTitle="Minigames" labelled />);
+
+    const back = screen.getByRole('button', { name: 'Back to Minigames' });
+    fireEvent.click(back);
+
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(back.textContent).toBe('Back');
+    expect(back.className).toContain('min-w-7');
   });
 });
 

@@ -13,6 +13,11 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 (`resolveApiToken` returns `readOnly`). A workbench level is `'view' | 'edit'` today, read from `read_only`, stored
 and sent as `role` with the share-roles `CHECK` so the participate level slots in with no migration (WB1).
 
+**Two scopes.** Every ticket, session and pairing carries a `WorkbenchScope`, `document` or `workspace`
+([Two scopes](../workbench-embeds.md#two-scopes)). Everything below is the document scope unless it says otherwise;
+[The workspace scope](#the-workspace-scope) holds the workspace scope's own behaviour, and each later section adds
+its workspace rows beside the document scope's.
+
 It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cli.md),
 [Share roles](share-roles.md), [Agent changesets](../../024-agents/blueprints/agent-changesets.md)):
 
@@ -22,7 +27,11 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `workbenchRouteVerdict(method, segments, session)`                   | The confinement allow-list, shared by the api choke point and the editor |
 | `parseWorkbenchOrigin(input)`                                        | The one origin rule, shared by the api, the CLI and the page             |
 | `WORKBENCH_SESSION_PREFIX` `lvw_`, `isWorkbenchSessionFormat`        | The third bearer kind                                                    |
-| `endWorkbenchAccess(env, scope, reason)`                             | Unpair and token revocation: rows gone, rooms closed                     |
+| `endWorkbenchAccess(env, target, reason)`                            | Unpair and token revocation: rows gone, rooms closed                     |
+| `WorkbenchScope = 'document' \| 'workspace'`, `WORKBENCH_SCOPES`     | The scope of a ticket, session and pairing                               |
+| `pairingCoversScope(pairingScope, asked)`                            | Whether a pairing lets a mint of that scope through                      |
+| `workspaceFramePath(place)`, `workspacePlaceOf(pathname, search)`    | The workspace frame's addresses, both ways                               |
+| `assignAppLocation(href)`, `setAppNavigationInterceptor(fn)`         | The app's one way to leave a page, which a workspace frame takes over    |
 | `WORKBENCH_ENDED_CLOSE` 4006                                         | The room's close code for a session whose pairing or token ended         |
 | `selectionReference(input)`                                          | The selection reference text, in `@livediagram/document-views`           |
 | `EditorSurface = 'app' \| 'embed' \| 'workbench'`                    | The editor's surface, replacing the `embed` boolean                      |
@@ -123,6 +132,47 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `docs/operations/self-hosting.md`, `docs/development/local-development.md`, `README.md`                                                                                      | `APP_BASE_URL` builds workbench and pairing URLs; the rate-limiter binding; the e2e flag                                                                                                                                  |
 | `apps/help/app/**`, `packages/help-registry`                                                                                                                                 | The workbench help article, registered per `docs/instructions/register-a-help-article.md` (plan phase 8)                                                                                                                  |
 
+The workspace scope adds or changes, by file:
+
+| File                                                                                                                                                     | Role                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api/migrations/0099_workbench_workspace.sql`                                                                                                       | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable `document_id` on tickets and sessions (rebuilt); `workbench_session_rooms` |
+| `packages/api-schema/src/workbench.ts`                                                                                                                   | `WorkbenchScope`, `WORKBENCH_SCOPES`, `pairingCoversScope`; the scoped wire types; `workbenchRouteVerdict` by scope (`WORKSPACE_ROUTES`)                   |
+| `packages/api-schema/src/workbench-messages.ts`                                                                                                          | `livediagram:place`, `livediagram:open`; the workspace `ready`                                                                                             |
+| `apps/api/src/db/workbench.ts`                                                                                                                           | Scope and folder on every row; requests per scope; approval widens a pairing; `noteWorkbenchSessionRoom`                                                   |
+| `apps/api/src/auth/workbench-session.ts`, `workbench-confinement.ts`                                                                                     | `WorkbenchContext.scope`, `folderId`; ambient headers and the view-level share-link list by scope                                                          |
+| `apps/api/src/routes/workbench-ticket-route.ts`, `workbench-session-routes.ts`, `workbench-pairing-routes.ts`                                            | The scoped mint, redemption, requests and pairings                                                                                                         |
+| `apps/api/src/routes/workbench-access.ts`                                                                                                                | `ownerReachesFolder` beside `ownerDocumentAccess`                                                                                                          |
+| `apps/api/src/routes/document-room-routes.ts`                                                                                                            | A workspace session's room ticket records its document (`noteWorkbenchSessionRoom`)                                                                        |
+| `apps/api/src/routes/images.ts`                                                                                                                          | The document scope's image rule only; a workspace session reads as its person                                                                              |
+| `apps/api/src/workbench-end.ts`                                                                                                                          | Rooms of workspace sessions from `workbench_session_rooms`                                                                                                 |
+| `apps/live/lib/workbench/workspace-place.ts` (new, + test)                                                                                               | `WorkspacePlace`, `workspacePlaceOf`, `workspaceFramePath`, `framePathOfAppHref`, `appHrefOfPlace`, `placeView`                                            |
+| `apps/live/lib/workbench/workbench-frame-path.ts` (new, + test)                                                                                          | `WORKBENCH_FRAME_PAGE` `/embed/workbench/explorer`, `isWorkspaceFramePath`: the rewrite the live worker and the e2e stack share                            |
+| `apps/live/lib/app-location.ts` (new, + test)                                                                                                            | `assignAppLocation`, `setAppNavigationInterceptor`; every `window.location.assign` the Explorer makes goes through it                                      |
+| `apps/live/hooks/navigation/useAppNavigation.ts`                                                                                                         | `push` and `replace` ask the interceptor first                                                                                                             |
+| `apps/live/app/embed/workbench/explorer/page.tsx` (new)                                                                                                  | The static workspace frame page; renders `WorkbenchPage`                                                                                                   |
+| `apps/live/app/embed/workbench/WorkbenchPage.tsx`, `workbench-machine.ts`, `workbench-fragment.ts`, `useWorkbenchHandshake.ts`, `useWorkbenchRenewal.ts` | The address's scope; the scope check at redemption and renewal; the workspace frame once mounted                                                           |
+| `apps/live/app/embed/workbench/WorkspaceFrame.tsx` (new, + test)                                                                                         | The mounted workspace frame: the place from the address, the Explorer or the editor, Back, `place`, `open`                                                 |
+| `apps/live/app/embed/workbench/useWorkspaceNavigation.ts` (new, + test)                                                                                  | The interceptor, the link capture, New document in place, `livediagram:open`                                                                               |
+| `apps/live/app/embed/workbench/create-in-place.ts` (new, + test)                                                                                         | `createDocumentInPlace(ownerId, { folderId, teamId, templateKind })`                                                                                       |
+| `apps/live/lib/new-document-content.ts` (new)                                                                                                            | `newDocumentContent`: a new document's tabs, card types and example cards, extracted from `/new` so the frame makes the same document                      |
+| `apps/live/hooks/persistence/useTeams.ts`, `apps/live/app/explorer/sidebar/sidebar-structure.ts`, `apps/live/components/panels/TeamPane.tsx`             | `invites: false`, `administration: false`: no invites read, no Invites or New Team rows, no team administration in the frame                               |
+| `apps/cli/src/dispatch/globals.ts`                                                                                                                       | `GLOBAL_FLAGS`: the flags every command takes, which the spec's command table may name (`folder ls [--json]`)                                              |
+| `apps/live/app/embed/workbench/useWorkspacePlaceMessages.ts` (new, + test)                                                                               | `ready` (workspace) once and `place` on every move                                                                                                         |
+| `apps/live/components/providers/workbench-session-context.ts`                                                                                            | `WorkbenchSession.scope`, `shareCode`, `frame` (the workspace frame's hooks for the editor)                                                                |
+| `apps/live/app/explorer/ExplorerShell.tsx`, `useExplorerState.ts`, `sidebar/*`                                                                           | `useExplorerSurface()`: the workbench surface's chrome and gates                                                                                           |
+| `apps/live/app/explorer/explorer-surface.ts` (new, + test)                                                                                               | `ExplorerSurface = 'app' \| 'workbench'`, `explorerSurfaceFlags`                                                                                           |
+| `apps/live/app/document/[id]/workbench-bootstrap.ts`                                                                                                     | A workspace document: its share code, its level per the person's access                                                                                    |
+| `apps/live/app/document/[id]/useWorkbenchMessages.ts`, `useWorkbenchEnd.ts`                                                                              | The workspace frame: `place` in place of `ready`; `trashed` returns to the Explorer                                                                        |
+| `apps/live/components/chrome/WorkbenchChrome.tsx`                                                                                                        | `WorkbenchBackButton`; `WorkbenchOpenLink` takes an `href`                                                                                                 |
+| `apps/live/app/workbench/pair/PairWorkbench.tsx`                                                                                                         | The workspace request's copy                                                                                                                               |
+| `apps/live/components/dialogs/settings/SettingsTokenPairings.tsx`                                                                                        | Each pairing's scope                                                                                                                                       |
+| `apps/live/src/worker.ts`, `scripts/e2e-stack.mjs`                                                                                                       | `/embed/workbench/explorer/**` and `/embed/workbench/document/**` served by the frame page                                                                 |
+| `apps/live/e2e/workbench-workspace.spec.ts` (new), `workbench-support.ts`                                                                                | The workspace end to end                                                                                                                                   |
+| `packages/agent-verbs/src/verbs/workbench.ts`, `folder.ts` (new, + tests), `catalogue.ts`                                                                | `workbench.open --workspace [--folder]`, `workbench.pair --workspace`; `folder.ls`, `folder.create`; resource `folder`                                     |
+| `apps/cli/src/commands/workbench-pair.ts`, `apps/cli/package.json`, `apps/cli/src/config/version.ts`                                                     | The scope on the pairing request; the minor version                                                                                                        |
+| `apps/telemetry/app/catalogue/collaboration.ts`, `event-explanations.ts`, `cli-commands.ts`                                                              | `WorkbenchWorkspace`; `FolderLs`, `FolderCreate`                                                                                                           |
+
 ## Domain and naming
 
 | Term                | Identifier                                                            | Meaning                                                                    |
@@ -145,8 +195,14 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | Selection reference | `selectionReference()`, `SelectionReference { text, count }`          | The text a workbench attaches to the person's message                      |
 | Editor surface      | `EditorSurface` `'app' \| 'embed' \| 'workbench'`                     | Where the editor runs; `workbench` is a distinct surface                   |
 | Ended               | `WorkbenchEndReason` `expired`, `revoked`, `trashed`, `refused`       | Why a page stopped editing                                                 |
+| Scope               | `WorkbenchScope` `document`, `workspace`; `scope` on rows and wire    | What a ticket, session or pairing reaches: one document, or the workspace  |
+| Workspace frame     | `/embed/workbench/explorer[...]`, `WorkspaceFrame`                    | The Explorer inside a workbench, under a workspace session                 |
+| Place               | `WorkspacePlace`, `livediagram:place`                                 | Where a workspace frame is: an Explorer view, or a document                |
+| Frame address       | `workspaceFramePath(place)`                                           | A place's path inside the frame, walked by the frame's own history         |
+| Explorer surface    | `ExplorerSurface` `'app' \| 'workbench'`                              | Where the Explorer runs; `workbench` drops the app's surroundings          |
 
-Banned: "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing (a repository link
+Banned: "workspace" for a document-scope frame, and "scope" for anything but `WorkbenchScope` here (the end of
+access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing (a repository link
 is another thing); "token" for a workbench session or a ticket (`lvd_` is the token); "share", "embed code" or
 "share code" for a ticket; "iframe mode" for the surface; "authorise" for approve (the page's verbs are Allow and
 Don't allow).
@@ -313,11 +369,11 @@ Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `fol
 
 ### Ending access (`endWorkbenchAccess`)
 
-`scope` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired` or `revoked`.
+`target` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired` or `revoked`.
 
-1. Read the pairings in scope with every document any of their sessions names (`SELECT DISTINCT pairing_id,
+1. Read the target's pairings with every document any of their sessions names (`SELECT DISTINCT pairing_id,
 document_id FROM workbench_sessions WHERE pairing_id IN (...)`).
-2. One batch: `DELETE FROM workbench_pairings` in scope (sessions and tickets cascade); for a token, also
+2. One batch: `DELETE FROM workbench_pairings` of the target (sessions and tickets cascade); for a token, also
    `DELETE FROM workbench_pairing_requests WHERE token_id = ?`.
 3. Close: `closeWorkbenchSessions(env, documentId, pairingId)` per pair, `TEAM_ROOM_CLOSE_CONCURRENCY` at a time,
    best-effort (the D1 delete is the change).
@@ -497,6 +553,205 @@ selection reference: the header, the `selected` items as data, never instruction
 the person's own selection never holds the agent's writes. The skill's description names the `[livediagram]` line
 (within `SKILL_FRONTMATTER_MAX_TOKENS`) and its body sends an agent to `guide workbench` first.
 
+### The workspace scope
+
+#### Pairing per scope
+
+- `pairingCoversScope(pairing, asked)`: `workspace` covers both scopes, `document` covers `document` only.
+- A mint or `pair` whose pairing does not cover the asked scope is unpaired for it: Pairing step 1 with the asked
+  scope, `428 pairing_required` (or `pending` from `pair`). One live request per token, origin and scope (the partial
+  unique index gains `scope`), so a document request and a workspace request never share a code and the page never
+  shows one question while answering another.
+- Approving a request records the pairing at the request's scope. A `workspace` approval on an origin already paired
+  for `document` widens that pairing in place (`scope = 'workspace'`, same id, same name unless the request names
+  one); a `document` approval never narrows a `workspace` pairing (WB50). The pairing's open sessions keep their
+  own scope: widening opens nothing by itself.
+- `POST /api/workbench/pairing-requests { origin, name?, scope? }` answers `{ status: 'paired', pairing }` only when
+  the pairing covers `scope` (absent: `document`).
+
+#### The workspace mint
+
+`POST /api/workbench/tickets` reads `scope` first: absent or `document`, the document mint above, unchanged; any
+other value `400 invalid_value` (`invalid scope`). For `workspace`, in order after steps 1 and 2 of the mint:
+
+1. A `documentId` or a `tabId` in the body: `400 invalid_value` (`a workspace ticket names no document`). A
+   document mint without `documentId` is `400 invalid_value` too (`invalid documentId`), as the spec words it
+   (WB49). `folderId` absent, or a string of 1 to 64 characters, else `400 invalid_value` (`invalid folderId`).
+2. Origin as in step 3 of the mint.
+3. Pairing: `pairingCoversScope(pairing.scope, 'workspace')` false, `428 pairing_required` with a workspace request.
+4. `folderId`: `ownerReachesFolder(env, ownerId, folderId)`: a personal folder of the owner, or a team folder of a
+   team the owner is a joined member of; else `404 not_found` (WB52).
+5. Level: `edit`, lowered to `view` when the token is read-only. There is no document to cap it: each request is
+   capped by the routes, with the owner's identity, at the person's own access now.
+6. Insert the ticket (`scope 'workspace'`, `document_id` null, `folder_id`) and answer
+   `201 { url, scope: 'workspace', folderId, expiresAt }` (`folderId` null when none was asked), `url` =
+   `${appBaseUrl(env)}/embed/workbench/explorer${folderId ? '/folder/' + encodeURIComponent(folderId) : ''}#ticket=${ticket}`.
+   Log `[workbench] ticket-minted { scope, documentId: null, folderId, tokenId, role }`.
+
+#### Workspace redemption
+
+As Redemption, with step 4 skipped for a workspace ticket (no document to check; a folder gone since is the
+Explorer's own not-found). The session row copies `scope` and `folder_id`. The answer is the scoped
+`WorkbenchSessionResponse`: `{ scope: 'workspace', documentId: null, folderId, tabId: null, ... }`.
+
+#### The choke point by scope
+
+`ctx.workbench` gains `scope` and `folderId`; `documentId` is null in the workspace scope. `resolveOwner()`,
+`verifiedUserId`, `clerkUserId` (null) and `token` (null) are as in the document scope (I4), so a workspace session
+is a person's editor and every route re-gates it with the owner's identity at the owner's access now.
+
+1. **Ambient headers.** The document scope refuses `X-Share-Code`, `X-Owner-Id` and `X-Share-Password`. The
+   workspace scope refuses `X-Owner-Id` only: a document shared with the person is reached by its link, as the
+   Explorer opens it, so the link's code and password travel with the request (WB53).
+2. **The verdict.** `workbenchRouteVerdict(method, segments, session)` with `session.scope === 'workspace'` walks
+   `WORKSPACE_ROUTES`, below; no route is `other-document` (every document is the person's to try, the route
+   decides). Refused: `403 workbench_confined`, logged `[workbench] confined { scope, method, route, sessionPrefix }`.
+3. **Level.** As step 5 of the document scope. A `view` session is refused the share-link list
+   (`GET documents/:doc/share`) too, `403 workbench_read_only`, in both scopes: as for a read-only token, the list is
+   a credential, not content (WB54).
+4. **Rate limits.** As the document scope's: writes on `workbench:<sessionId>`.
+
+`WORKSPACE_ROUTES` (`:p` any one segment, `**` any rest, including none):
+
+| Method                 | Path under `/api`                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)         |
+| GET                    | `share/**` (the person opening a link shared with them)                                                                             |
+| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence`                                                  |
+| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
+| GET, POST, PUT, DELETE | `images/**`, `custom-themes/**`, `shape-libraries/**`                                                                               |
+| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |
+| DELETE                 | `workbench/sessions/current`                                                                                                        |
+
+Everything else is `confined`, among it (Never the account): `account`, `migrate`, `guest-id`, `tokens/**`,
+`workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`, `drive/**`,
+`teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
+(team administration), `community/**` and `documents/:p/community/**` (Community publishing needs a Clerk session,
+so the token cannot, WB51), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
+`events` and `unfurl` are called without credentials and never see `lvw_`.
+
+#### Route effects under a workspace session
+
+- `document-room-routes.ts` mint: as the document scope (`account` true, the owner's person tag, the role capped at
+  the session's level, `workbenchPairing`), and `noteWorkbenchSessionRoom(env, sessionId, documentId)` (`INSERT OR
+IGNORE`) so ending access finds the room (WB55).
+- `images.ts` `GET /api/images/:id`: the document scope's rule (no owner shortcut, `d` the session's document) holds
+  for the document scope only; a workspace session reads as its person (the owner shortcut, the gallery).
+- `endWorkbenchAccess`: step 1 reads the (pairing, document) pairs from `workbench_sessions.document_id` and from
+  `workbench_session_rooms` joined to the sessions, so a workspace session's rooms close with 4006 like a document
+  session's.
+
+#### The workspace frame (`/embed/workbench/explorer...`)
+
+**Addresses** (`apps/live/lib/workbench/workspace-place.ts`, WB56). `WorkspacePlace` is
+`{ kind: 'explorer'; node: SelectedNode }` or `{ kind: 'document'; documentId; tabId: string | null; shareCode:
+string | null }`. `workspaceFramePath(place)`:
+
+| Place           | Frame path                                                       |
+| --------------- | ---------------------------------------------------------------- |
+| `home`          | `/embed/workbench/explorer`                                      |
+| `folder` `<id>` | `/embed/workbench/explorer/folder/<id>`                          |
+| any other view  | `/embed/workbench` + the view's `explorerPathFor` path and query |
+| a document      | `/embed/workbench/document/<id>[?s=<code>][&tab=<tabId>]`        |
+
+`workspacePlaceOf(pathname, search)` is its inverse; an address it cannot read is `home`. One static page,
+`app/embed/workbench/explorer/page.tsx`, backs every frame path: the live worker (`isWorkspaceFramePath`) and the e2e
+stack serve `/embed/workbench/explorer/**` and `/embed/workbench/document/**` from it, and the App Router reads the
+real address. Every frame path is under `/embed`, so frameable.
+
+**Phases.** `takeTicketFromAddress` returns the address's scope: `/embed/workbench` is `document` (with `d`),
+`/embed/workbench/explorer...` is `workspace`. `redeeming` refuses `mismatch` (session revoked, `ended { reason:
+'refused' }` posted) when the session's scope differs from the address's, or, in the document scope, its document
+from `d`. Renewal swaps only a session of the same scope and origin (and document, in the document scope). Every
+other phase is the document scope's.
+
+**Mounted** (`WorkspaceFrame`), under `WorkbenchAuthBridge` with the workspace session:
+
+1. `setAppNavigationInterceptor(navigate)` (`useWorkspaceNavigation`) in a layout effect, before any child can navigate, and a capture
+   `click` listener on the frame root for same-origin `<a href>` without `target` or a modifier key; each passes
+   the app href to `navigate`.
+2. `navigate(href, { replace })`: `framePathOfAppHref(href)` maps `/explorer/...` and `/document/<id>[?s=][&tab=]`
+   to a frame path and calls `history.pushState` (or `replaceState`), which the App Router hears; `/new...` runs New
+   document in place (below); any other app href (help, sign-in, Community, an external page) opens in a new tab
+   with `noopener` (WB57). Logged `[workbench] open { kind }` only for `livediagram:open`.
+3. The place (`workspacePlaceOf(usePathname(), useSearchParams())`) renders:
+   - an Explorer view: `ExplorerShell` (its surface read from the session, `useExplorerSurface`) around `ExplorerPane`,
+     the pane keyed by the view's path and its `id` and `folder`, as each /explorer page remounts it; unmounted while
+     a document is open, so the editor's shortcuts and panels are the only ones listening, and read again on Back;
+   - a document: `EditorPage surface="workbench"` keyed by the document id and share code, under a nested
+     `WorkbenchSessionContext` whose `documentId`, `shareCode` and `tabId` are the place's, with `frame` set
+     (`back`, `backTitle`, `reportDocumentPlace`) and `end('trashed')` turned into the return to the Explorer. The
+     editor runs the workbench branch of every gate, as in the document scope; its status screens (deleted, load
+     error, not found) carry Back, and its not-found is a document's, never a page's.
+   - a folder the person reaches only as a team member (a team's folder) is the team's page at that folder:
+     the frame replaces its address with it once the lists are in.
+4. `track('Session', 'Opened', 'WorkbenchWorkspace')` once, when the Explorer first mounts; the editor's
+   `Session·Opened·Workbench` counts the document scope only.
+5. `ended`: the Explorer and the editor turn read-only as the document scope's editor does (the Reconnect line over
+   both, writes refused locally since the bearer is dead).
+
+**New document in place** (`createDocumentInPlace`, WB58): the `/new` href's `folder` or `team`, else the place's
+folder (a folder view) or team, else none (the person's default folder answers, as `/new` without a place does);
+`template=<kind>` builds that template's tabs as `/new` does (`buildTemplatedTabs`, `withTemplateSheets`), anything
+else (`blank`, `start`, `mode`, `q`, none) a blank document of the default mode; `apiCreateDocument` with the
+template's untitled name and `creationIntentOf`; then the document place, pushed. A refused create shows the
+Explorer's toast "Couldn’t create the document. Try again." and stays; logged `[workbench] create-failed { status }`.
+
+**Back** (`WorkbenchBackButton`, WB59): shown on a document place, at the tab bar's left end. The document entry's
+`history.state` carries `workbenchFrom` (the frame path it was pushed from); Back calls `history.back()` when the
+entry before is that path (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk
+the same entries.
+
+**Open in livediagram**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an
+Explorer view, the same control at the right end of the Explorer's bottom bar linking to `explorerPathFor(node)`.
+
+**`trashed`** in the workspace scope: the session the frame lends the editor turns `useWorkbenchEnd`'s
+`end('trashed')` into Back (the page never ends), with the toast "That document is in the Trash." (WB60).
+
+#### The Explorer in a workbench (`ExplorerSurface = 'workbench'`)
+
+`useExplorerSurface()` reads `useWorkbenchSession()?.scope === 'workspace'`. The Surface table, Explorer side:
+
+| Gate                                                                      | File                                    | In a workbench                                              |
+| ------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
+| App header (brand, product nav, `AuthControls`)                           | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
+| Home hero                                                                 | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
+| Bottom bar: Settings, Appearance                                          | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in livediagram at the right end  |
+| Settings dialog, `?settings=` links, `useOpenSettingsRequests`            | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
+| Search panel's settings rows                                              | `ExplorerShell.tsx`                     | `[]`                                                        |
+| Sign-in banner, `LocalMovePrompt`                                         | `ExplorerShell.tsx`                     | Not rendered                                                |
+| `useTokens`, `usePublishPicture`, `useDriveFollow`, `useAfterDriveChange` | `useExplorerState.ts`                   | `enabled: false`                                            |
+| Teams administration: New team, the Invites row and view, team settings   | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
+| Timeline token cards' Revoke, Drive cards                                 | `timeline/*`                            | Absent                                                      |
+| Every `window.location.assign`, `<a href>`, `router.push`/`replace`       | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
+
+#### The CLI, workspace scope
+
+- `workbench open --workspace [--folder <f>] --origin <origin> [--json]`: `<doc>` and `--workspace` exclude each
+  other, one is required (exit 2 "name a document, or --workspace"); `--tab` with `--workspace` exits 2. `--folder`
+  without `--workspace` exits 2. `<f>` resolves as `link init --folder` does (`resolveFolder` over `folderChoices`,
+  moved to `@livediagram/agent-verbs` so `link init`, `folder` and `workbench` share it): its full id, an id prefix
+  or its name ignoring case; none 3, several 3 with the candidates. `POST /api/workbench/tickets { scope:
+'workspace', folderId?, origin }`. 201: text `url`; `--json` `{ url, scope, folderId, expiresAt }`. 428: exit 4,
+  fix `livediagram workbench pair --origin <origin> --workspace`. 404: exit 3.
+- `workbench pair --origin <origin> [--name <name>] [--workspace]`: the request carries `scope: 'workspace'`; the
+  printed results add ` (whole workspace)` in text and `scope` in `--json`; the expired fix carries `--workspace`.
+
+#### Workspace messages
+
+- `ready` (workspace) once, when the Explorer first mounts: `{ scope: 'workspace', role }` (`role` the session's).
+- `place` (`useWorkspacePlaceMessages`) after every move and whenever a field of the current place changes, only
+  when it differs from the last sent (WB63): Explorer views from the Explorer's state (`view` = `placeView(node)`:
+  the `SelectedNode` kind, `folderId` and `folderName` for `folder`, `documentCount` =
+  `documentsByFolder.get(folderId)?.length ?? 0` for `folder`, the three null on every other view), once the
+  Explorer's lists are in; a document from the editor (`view: 'document'`, `documentId`, `documentName`, `tabId`,
+  `tabName`, `role` the editor's `sessionRole`, the folder fields null). Logged `[workbench] place { view }`.
+- The editor in a workspace frame sends `place` where the document scope sends `ready`, and `tab`, `selection` and
+  `reveal` as in the document scope; on an Explorer view they do nothing.
+- `open` (`livediagram:open`, accepted while mounted): `{ view: 'home' }` → Home, `{ folderId }` → that folder,
+  `{ documentId, tabId? }` → that document (from the current place). Pushed like any move; an unreachable id shows
+  the Explorer's or the editor's own not-found. Logged `[workbench] open { kind: 'home' | 'folder' | 'document' }`.
+
 ## Interfaces and contracts
 
 ### Routes
@@ -580,6 +835,36 @@ export type WorkbenchPairingRequestView = {
 };
 ```
 
+The workspace scope widens these types (the document scope's shapes stay, so today's callers read them unchanged):
+
+```ts
+export type WorkbenchScope = 'document' | 'workspace';
+export type WorkbenchTicketRequest =
+  | { scope?: 'document'; documentId: string; tabId?: string; origin: string }
+  | { scope: 'workspace'; folderId?: string; origin: string };
+export type WorkbenchWorkspaceTicketResponse = {
+  url: string;
+  scope: 'workspace';
+  folderId: string | null;
+  expiresAt: number;
+};
+// WorkbenchSessionResponse: the document scope's fields, discriminated by scope.
+export type WorkbenchSessionResponse = {
+  session: string;
+  origin: string;
+  role: WorkbenchRole;
+  expiresAt: number;
+  person: WorkbenchPerson;
+} & (
+  | { scope: 'document'; documentId: string; folderId: null; tabId: string | null }
+  | { scope: 'workspace'; documentId: null; folderId: string | null; tabId: null }
+);
+// WorkbenchPairing, WorkbenchPairingRequestView: + scope: WorkbenchScope.
+// WorkbenchPairingRequestCreate: + scope?: WorkbenchScope (absent: 'document').
+```
+
+`invalid_value` joins `WORKBENCH_ERROR_CODES`; its body is `{ error: 'invalid_value', message }`.
+
 `parseWorkbenchOrigin(input: string): { ok: true; origin: WorkbenchOrigin } | { ok: false }`: at most
 `WORKBENCH_ORIGIN_MAX_LENGTH` characters; parsed with `URL`; `protocol` `https:`, or `http:` with `hostname` one of
 `localhost`, `127.0.0.1`, `[::1]`; `username`, `password`, `search`, `hash` empty; `pathname` `/` and the input
@@ -627,6 +912,35 @@ type EndedMessage = {
   type: 'livediagram:ended';
   v: 1;
   reason: 'expired' | 'revoked' | 'trashed' | 'refused';
+};
+```
+
+The workspace scope's messages:
+
+```ts
+type WorkspaceReadyMessage = {
+  type: 'livediagram:ready';
+  v: 1;
+  scope: 'workspace';
+  role: WorkbenchRole;
+};
+type PlaceMessage = {
+  type: 'livediagram:place';
+  v: 1;
+  view: string; // a SelectedNode kind, or 'document'
+  folderId: string | null;
+  folderName: string | null;
+  documentCount: number | null;
+  documentId: string | null;
+  documentName: string | null;
+  tabId: string | null;
+  tabName: string | null;
+  role: WorkbenchRole;
+};
+type OpenMessage = {
+  type: 'livediagram:open';
+  v: 1;
+  to: { view: 'home' } | { folderId: string } | { documentId: string; tabId?: string }; // ids 1..64
 };
 ```
 
@@ -725,6 +1039,40 @@ CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
 ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
 ```
 
+Migration `apps/api/migrations/0099_workbench_workspace.sql` (WB64) adds the scope. Tickets and sessions are rebuilt,
+since SQLite cannot drop a `NOT NULL`; no table references either, so the rebuild drops and renames with no parked
+rows, and every row is copied as `document`:
+
+```sql
+ALTER TABLE workbench_pairing_requests ADD COLUMN scope TEXT NOT NULL DEFAULT 'document'
+  CHECK (scope IN ('document', 'workspace'));
+DROP INDEX workbench_pairing_requests_live;
+CREATE UNIQUE INDEX workbench_pairing_requests_live
+  ON workbench_pairing_requests (token_id, origin, scope) WHERE status = 'pending';
+
+ALTER TABLE workbench_pairings ADD COLUMN scope TEXT NOT NULL DEFAULT 'document'
+  CHECK (scope IN ('document', 'workspace'));
+
+-- workbench_tickets and workbench_sessions, each: CREATE TABLE <t>_new as before but
+--   document_id TEXT NULL REFERENCES documents(id) ON DELETE CASCADE,
+--   scope TEXT NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
+--   folder_id TEXT NULL,
+--   CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+--   CHECK (scope = 'workspace' OR folder_id IS NULL);
+-- INSERT ... SELECT the old columns; DROP the old table; RENAME; recreate its indexes.
+
+CREATE TABLE workbench_session_rooms (
+  session_id TEXT NOT NULL REFERENCES workbench_sessions(id) ON DELETE CASCADE,
+  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  PRIMARY KEY (session_id, document_id)
+);
+```
+
+- Every pairing approved before 0099 reads `document`, as the spec says. `folder_id` has no foreign key: a folder
+  deleted since is only a start place the Explorer reports as gone.
+- `workbench_session_rooms` is ephemeral with its session (cascade, and the sweep's session delete); it carries no
+  owner id, so account deletion reaches it through `workbench_sessions`.
+
 | Field                                    | Class      | Notes                                                                                                                                            |
 | ---------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `workbench_pairing_requests.code`        | handle     | 16 random bytes base64url, stored in the clear: it grants nothing without the owner's session and is served again while the request lives (WB29) |
@@ -797,6 +1145,25 @@ ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
 - **E33** Two frames of one pairing on one document: two sessions, two sockets, one person tag; presence shows the
   person once per socket as for two browser tabs.
 - **E34** The pair page opened in a frame: the live worker sends `X-Frame-Options: DENY`; nothing renders.
+- **E35** A workspace mint on a document pairing: `428 pairing_required` with a workspace request, its own code.
+- **E36** A document mint on a workspace pairing: paired; the ticket is a document ticket.
+- **E37** A document request and a workspace request pending together for one token and origin: two codes; approving
+  either records its scope; approving both leaves `workspace`.
+- **E38** `scope: 'workspace'` with a `documentId` or `tabId`, or `scope: 'document'` (or none) without a
+  `documentId`: `400 invalid_value`; an unknown `scope`: `400 invalid_value`.
+- **E39** A `folderId` that is not the owner's, a team folder of a team they left, or no folder: `404`, CLI exit 3.
+- **E40** A workspace session on `/embed/workbench?d=`, or a document session on `/embed/workbench/explorer`:
+  `refused('mismatch')`, the session revoked.
+- **E41** A workspace frame reloaded on a document or folder path: the fragment is gone, `refused('no-ticket')`.
+- **E42** A workspace session presenting `X-Owner-Id`: `403 workbench_confined`; `X-Share-Code`: allowed, the route
+  decides by the link.
+- **E43** The open document is trashed in the workspace frame: back to the Explorer, the session lives on.
+- **E44** The started folder is deleted before the frame loads: the Explorer's folder not-found, as a stale link.
+- **E45** A view workspace session tries New document: `403 workbench_read_only`, the Explorer's create-failed toast;
+  the Explorer offers no create while `role` is `view` (its own read-only state, `prefs`-free).
+- **E46** `livediagram:open` with an id the person cannot reach: the Explorer's or the editor's not-found; logged.
+- **E47** Unpair or revoke while a workspace frame has a document open: the room closes with 4006 (the session's
+  rooms are recorded), the frame ends `revoked`.
 
 ## Security and trust
 
@@ -821,6 +1188,14 @@ ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
   redemption on the anonymous write key per network; session writes on `workbench:<sessionId>`; status polls on
   the token read limiter.
 - **No secret in logs** (I7); `[workbench]` logs carry ids, prefixes, reasons and counts.
+- **The workspace scope is a second approval**: no document pairing ever answers a workspace mint (E35); widening is
+  only by Allow on a workspace request, whose page says so.
+- **Never more than the token** in the workspace scope: `clerkUserId` and `token` are null, so every Clerk-only route
+  (team administration, Community publishing, Drive, the account) refuses as it refuses the token, and
+  `WORKSPACE_ROUTES` refuses them first with `workbench_confined`; a view session is read-only at the choke point and
+  never lists share links (WB54).
+- **Share links in the workspace scope** are the person's own: a code reaches only what the code reaches for anyone,
+  and the guest header stays refused, so a session never acts as someone else.
 
 ## Performance and limits
 
@@ -836,6 +1211,9 @@ ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
   `VIEW_SLOW_MS`; run once per settled selection, never per pointer move.
 - Messages: a selection message is under 4 KiB (20 items of at most 60-character labels).
 - Pairing polls: one `GET` per 5 s per waiting CLI, at most 120 in the ten minutes.
+- Workspace: the verdict walks at most 12 patterns; the frame's Explorer reads what `/explorer` reads, once per
+  frame view and again on Back from a document; a room ticket adds one `INSERT OR IGNORE`; a `place` message is
+  under 1 KiB and sent only when it changes.
 
 ## Presentation and UX
 
@@ -874,10 +1252,34 @@ Built on `OauthShell`, like the device page; states and copy:
 | Expired                     | "This request has expired"          | "Run livediagram workbench pair again to ask anew." (command in monospace)                                                                                                                                                                                                                                                                                                                                                  |
 | Already answered            | "This request was already answered" | "Run livediagram workbench pair again if you need to ask anew."                                                                                                                                                                                                                                                                                                                                                             |
 
+### The workspace frame
+
+| Where                               | Copy                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `reading`, `redeeming`, `binding`   | "Opening your workspace…" (WB65)                                                                                                        |
+| `refused` (any)                     | Heading "Open your workspace from your workbench", body "This link works once, for a minute. Open it again from your workbench." (WB65) |
+| Back                                | The arrow-left glyph and "Back" (the glyph alone on a phone), accessible name "Back to <view title>"                                    |
+| Open in livediagram (Explorer view) | As the editor's; accessible name "Open in livediagram (opens in a new tab)"                                                             |
+| Create failed                       | Toast "Couldn’t create the document. Try again."                                                                                        |
+| Trashed                             | Toast "That document is in the Trash."                                                                                                  |
+
+The Explorer's own views, empty states and not-found keep their copy. The slim bar at the top holds the lens field
+only, `h-12`, the header's colours.
+
+### The pairing page, a workspace request
+
+| State   | Body                                                                                                                                                                                                                                      |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pending | "Allow **<name>** at `<origin>` to open **your whole workspace**, and to create, move, share and trash documents and folders in it, with the token **<token name>**?" (spec); with no name: "Allow a workbench at `<origin>` to open ..." |
+| Pending | Below: "It works in your Explorer and your documents, as you, inside that tool. You can unpair it any time in Settings, under API Tokens." (WB66)                                                                                         |
+
+Every other state is the document request's.
+
 ### Settings > API tokens
 
 Each `SettingsTokenCard` with pairings shows, under its lifetime bar, a "Paired workbenches" list (none: nothing,
-WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, "Paired <relative time>", and an
+WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its scope ("One document at a time" or
+"Whole workspace", WB67), "Paired <relative time>", and an
 **Unpair** text button. Unpair opens the same confirm popover as Revoke: "Unpair <name>? Its open diagrams stop
 editing until you allow it again." with **Unpair** and **Cancel** (WB36). After Unpair the row leaves the list.
 
@@ -892,6 +1294,9 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
   whose primary fill (`OAUTH_PRIMARY`: white on `brand-700` in light, about 5.9:1, and the solid brand control in
   dark) the device and consent pages share.
 - Settings rows: **Unpair** named "Unpair <name> at <origin>"; the confirm popover is the existing accessible one.
+- The workspace frame: the Explorer's own semantics and focus order; Back is a native button, at least 24 by 24 px,
+  first in the tab bar's focus order; a move inside the frame moves focus to the new view's heading (the Explorer's
+  pane heading, or the editor's canvas as on a load), and announces nothing more.
 - Reveal outlines honour reduced motion as changeset outlines do.
 - The contrast audit, `apps/live/e2e/clerk-stub/workbench-contrast.spec.ts` (every surface needs a signed-in person,
   which only the Clerk-enabled export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the pairing page
@@ -904,6 +1309,10 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
   wait on it. The editor replaces the status screen whole: no shift inside either (CLS).
 - INP: the selection message is built after the settle, off the input event; message handling is O(refs).
 - `/workbench/pair` is a small static page; its one request runs after auth settles; layout is the device page's.
+- The workspace frame's LCP is its status text, from the static HTML; the Explorer and the editor chunks start
+  loading on mount while redeem and binding run. A move inside the frame is a client render with no page load;
+  the frame's own status line stands while a chunk loads, and nothing above the pane shifts between views (CLS);
+  a move is one push and a render, off the input event (INP).
 
 ## Observability
 
@@ -930,6 +1339,10 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
 | `[workbench] request-confined { method, route }`, `[workbench] reveal-missed { count }`        | editor               |
 | `workbench open <minted <documentId>                                                           | pairing-required     | refused <status | share-link | invalid_origin>>` | CLI `debugLog` |
 | `workbench pair <pending                                                                       | paired               | approved        | declined   | expired           | gone           | slow-down <s> | network-retry <n> | browser <opened | not-opened | skipped> | refused <invalid_origin | invalid_name>>` | CLI `debugLog` |
+
+Every api fingerprint above carries `scope` (`document` or `workspace`), as the spec asks; the workspace frame adds
+`[workbench] place { view }`, `[workbench] open { kind }` and `[workbench] create-failed { status }` (page), and
+`track('Session', 'Opened', 'WorkbenchWorkspace')` once per workspace frame.
 
 `originHost` is the origin's host only (no scheme or port, WB37). The fingerprints beyond the spec's list name
 decision points it leaves unlogged (WB47). Telemetry: `track('Session', 'Opened',
@@ -989,6 +1402,29 @@ and the two CLI rows.
 | Telemetry catalogue rows and CLI command rows                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `apps/telemetry` catalogue suites, `metric-series.test`                                                                 |
 | End to end, dark, a fake workbench page on `http://127.0.0.1:<port>` framing the live app on `http://localhost:<port>`: unpaired mint 428; the pair page (signed in through the test bridge) Allow; mint; the frame binds, the editor mounts without header or Explorer; drawing saves; a selection arrives as one settled message with the reference; `reveal` outlines; `theme` switches; renewal swaps the session; Unpair turns the frame read-only with the Reconnect line; a page on another origin framing the same URL mounts nothing and shows the unbound copy | `apps/live/e2e/workbench-embed.spec.ts` (project `workbench`, `colorScheme: 'dark'`, `E2E_WORKBENCH=1`)                 |
 
+The workspace scope's tests:
+
+| Rule                                                                                                                                                                                                                                                                                                               | Test                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `pairingCoversScope`; `WORKSPACE_ROUTES`: every allowed class allowed, every confined class refused, ambient headers by scope                                                                                                                                                                                      | `packages/api-schema/src/workbench.test.ts` (table-driven)                                              |
+| `place`, `open`, workspace `ready`: shapes, bounds, invalid fields                                                                                                                                                                                                                                                 | `packages/api-schema/src/workbench-messages.test.ts`                                                    |
+| Migration 0099: old pairings read `document`; the CHECKs; the rebuilt indexes; the rooms table cascades                                                                                                                                                                                                            | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                       |
+| Requests per scope; approval widens, never narrows; `paired` only when covering                                                                                                                                                                                                                                    | `workbench-pairing-routes.test.ts`, `db/workbench.test.ts`                                              |
+| Workspace mint: 428 on a document pairing, 201 on a workspace one, document mint on a workspace pairing, `invalid_value` cases, folder reach (personal, team member, stranger 404), view token view                                                                                                                | `workbench-ticket-route.test.ts`                                                                        |
+| Workspace redemption: the scoped answer, no document check                                                                                                                                                                                                                                                         | `workbench-session-routes.test.ts`                                                                      |
+| Choke point, workspace: each allowed route class reaches its route, each account class 403 `workbench_confined`, `X-Owner-Id` refused, `X-Share-Code` passes, view writes and share-link list 403                                                                                                                  | `apps/api/src/auth/workbench-confinement.test.ts`, `apps/api/src/index.workbench-workspace.test.ts`     |
+| Room ticket under a workspace session records its room; ending access closes it                                                                                                                                                                                                                                    | `document-room-routes.test.ts`, `workbench-end.test.ts`                                                 |
+| Frame addresses both ways; app hrefs to frame paths                                                                                                                                                                                                                                                                | `apps/live/lib/workbench/workspace-place.test.ts`                                                       |
+| Interceptor: links, `assignAppLocation`, `useAppNavigation`, new-tab fallback                                                                                                                                                                                                                                      | `apps/live/lib/app-location.test.ts`, `useWorkspaceNavigation.test.ts`                                  |
+| New document in place: folder, team, template, blank, refused                                                                                                                                                                                                                                                      | `create-in-place.test.ts`                                                                               |
+| The address's scope; mismatch both ways; renewal scope check                                                                                                                                                                                                                                                       | `workbench-fragment.test.ts`, `workbench-machine.test.ts`, `useWorkbenchRenewal.test.ts`                |
+| The frame: Explorer on Home and on a folder, document with Back, trashed back to the Explorer, `place` on moves, `open`                                                                                                                                                                                            | `WorkspaceFrame.test.tsx`, `useWorkspacePlaceMessages.test.ts`                                          |
+| Explorer surface flags and gates                                                                                                                                                                                                                                                                                   | `apps/live/app/explorer/explorer-surface.test.tsx`                                                      |
+| Pairing page workspace copy; Settings scope                                                                                                                                                                                                                                                                        | `PairWorkbench.test.tsx`, `SettingsTokenPairings.test.tsx`                                              |
+| Worker serves the frame page for frame paths, frameable                                                                                                                                                                                                                                                            | `apps/live/src/worker.test.ts`                                                                          |
+| End to end, dark: a workspace mint 428 on a document pairing; Allow the workspace request; mint; the frame shows Explorer Home with no header or account; a folder mint shows the folder's empty state; New document opens the editor in the frame; `place` arrives for each; Back returns; `open` moves the frame | `apps/live/e2e/workbench-workspace.spec.ts` (project `workbench`)                                       |
+| CLI: `workbench open --workspace [--folder]`, `pair --workspace`, `folder ls [--json]`, `folder create [--in] --json`                                                                                                                                                                                              | `packages/agent-verbs/src/verbs/workbench.test.ts`, `folder.test.ts`, `apps/cli/src/commands/*.test.ts` |
+
 The fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) is served by `workbench-support.ts` from a Node `http`
 server on `127.0.0.1` at a free port; it frames the URL it is given, answers `hello` with `hello-ack { name: 'Fake
 Workbench' }`, answers `renew` with a ticket the test mints, and records every message into `window.received`.
@@ -1030,4 +1466,4 @@ reuses `OauthShell`, which stands on `AuthStage` (the Night Band frame).
 
 ## Defaults ledger
 
-WB1 to WB48 in [DEFAULTS.md](DEFAULTS.md).
+WB1 to WB67 in [DEFAULTS.md](DEFAULTS.md).

@@ -10,6 +10,7 @@ import { trackSidebar } from './sidebar-telemetry';
 import { SidebarRow } from './SidebarRow';
 import { TeamFolderSubtree, type TeamFolderNode } from './TeamFolderSubtree';
 import { teamFolderPath } from '../routes';
+import { assignAppLocation } from '@/lib/app-location';
 
 // One root-level row per team (docs/specs/013-workspace/teams.md), expanding to the
 // team's folder tree (docs/specs/013-workspace/team-shared-documents.md), built from the
@@ -51,8 +52,7 @@ function TeamRow({
   );
   // A team folder opens the team page AT that folder: a full load, since
   // the team page reads the &folder param at mount.
-  const openTeamFolder = (folderId: string) =>
-    window.location.assign(teamFolderPath(t.id, folderId));
+  const openTeamFolder = (folderId: string) => assignAppLocation(teamFolderPath(t.id, folderId));
   return (
     <SidebarRow
       icon={<TeamIcon />}

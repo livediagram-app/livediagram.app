@@ -15,6 +15,7 @@ import {
   welcomeSearchHref,
 } from '@/app/explorer/home/first-run';
 import { FOCUS_RING } from './home-styles';
+import { assignAppLocation } from '@/lib/app-location';
 
 export function WelcomeSearch() {
   const [words, setWords] = useState('');
@@ -25,7 +26,7 @@ export function WelcomeSearch() {
       onSubmit={(e) => {
         e.preventDefault();
         track('Home', 'Selected', 'Welcome.Search');
-        window.location.assign(welcomeSearchHref(words));
+        assignAppLocation(welcomeSearchHref(words));
       }}
     >
       <div className={`flex items-center ${HERO_FIELD_LOOK.box}`}>

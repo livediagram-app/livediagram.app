@@ -79,6 +79,25 @@ describe('live worker security headers', () => {
     }
   });
 
+  it('serves the workspace frame page for every place inside it, frameable', async () => {
+    const { env: e, seen } = env();
+    for (const path of [
+      '/embed/workbench/explorer',
+      '/embed/workbench/explorer/folder/f1',
+      '/embed/workbench/explorer/recent?q=x',
+      '/embed/workbench/document/doc-1?s=CODE2345',
+    ]) {
+      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      expect(res.headers.get('X-Frame-Options')).toBeNull();
+    }
+    expect(seen).toEqual([
+      '/embed/workbench/explorer',
+      '/embed/workbench/explorer',
+      '/embed/workbench/explorer',
+      '/embed/workbench/explorer',
+    ]);
+  });
+
   it('denies framing on the pairing page and the editor', async () => {
     const { env: e } = env();
     for (const path of [

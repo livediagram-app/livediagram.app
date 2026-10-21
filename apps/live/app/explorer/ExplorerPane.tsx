@@ -24,6 +24,7 @@ import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
 import { useTagsPage } from './tags/useTagsPage';
 import { homeBannerShown } from '@/lib/home-banner';
+import { assignAppLocation } from '@/lib/app-location';
 
 // The three layouts of a browse section, by the toggle.
 const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
@@ -222,8 +223,7 @@ export function ExplorerPane() {
   // Which of New document, New folder and Import from this section offers (pane-header-actions.ts).
   const offers = paneHeaderActions(selected.kind);
   const newDocument = offers.newDocument
-    ? () =>
-        window.location.assign(selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new')
+    ? () => assignAppLocation(selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new')
     : undefined;
   // Imports sit beside New document: imported boards land where new documents do.
   const imports = useExplorerImport({

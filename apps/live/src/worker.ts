@@ -107,10 +107,21 @@ export default {
         await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
       );
     }
+    // The workspace frame (docs/specs/013-workspace/workbench-embeds.md "Two scopes"): one static page backs every
+    // place inside it, rewritten rather than redirected so the frame keeps its address. Under /embed: frameable.
+    if (isWorkspaceFramePath(url.pathname)) {
+      const rewritten = new URL(request.url);
+      rewritten.pathname = WORKSPACE_FRAME_PAGE;
+      return withSecurityHeaders(
+        await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
+        { frameable: true },
+      );
+    }
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
+import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
 import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';
 import { isSharePagePath, sharePage, type Fetcher } from './share-page';

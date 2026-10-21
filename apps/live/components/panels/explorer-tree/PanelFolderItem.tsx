@@ -14,6 +14,7 @@ import { usePanelTree } from './PanelTreeContext';
 import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
 import { FolderLabel } from '@/app/explorer/sidebar/SidebarFolderSubtree';
 import { explorerPathFor, teamFolderPath } from '@/app/explorer/routes';
+import { assignAppLocation } from '@/lib/app-location';
 
 // A folder as the panel's tree needs it; `teamId` set on a team folder.
 export type PanelFolder = {
@@ -129,7 +130,7 @@ export function PanelFolderItem({
                 anchor={menu.triggerRef.current}
                 onClose={menu.close}
                 onShowInExplorer={() =>
-                  window.location.assign(
+                  assignAppLocation(
                     team
                       ? teamFolderPath(team.id, folder.id)
                       : explorerPathFor({ kind: 'folder', id: folder.id }),

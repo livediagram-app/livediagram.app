@@ -1,6 +1,6 @@
 # CLI
 
-**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`). Every command below signs in through the
+**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
@@ -30,6 +30,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | Command                                                                         | Does                                                                                                                                                                       |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `document ls [query]`                                                           | Documents in the personal library and joined teams, newest first                                                                                                           |
+| `folder ls [--json]` / `folder create <name> [--in <f>]`                        | The person's folders as paths with their ids; a new folder, at the top of My documents or inside another                                                                   |
 | `document view <doc>`                                                           | The overview view                                                                                                                                                          |
 | `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new document from a graph, Mermaid or template, compiled by the api                                                                                                      |
 | `document rename\|share\|rm\|restore <doc>`                                     | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                                  |
@@ -59,8 +60,8 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `link init [--folder <f>] [--doc <d>] [--level <l>]`                            | Writes `livediagram.toml`; with no folder or document, a picker of the folders                                                                                             |
 | `link status\|ls [--all]`                                                       | A [repository link](../027-repositories/repository-link.md)'s documents and states                                                                                         |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`                               | Mirrors the link's documents into the repository; `--watch` keeps doing it                                                                                                 |
-| `workbench open <doc> [--tab <t>] --origin <origin>`                            | A single-use link that opens the document live in a paired workbench                                                                                                       |
-| `workbench pair --origin <origin> [--name <name>]`                              | Pairs the token with a workbench, approved once in the browser                                                                                                             |
+| `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
+| `workbench pair --origin <origin> [--name <name>] [--workspace]`                | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                                 |
 | `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]`   | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api            |
 | `guide [topic]`                                                                 | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                                  |
 | `skill print\|install --to <dir>`                                               | The agent skill file                                                                                                                                                       |

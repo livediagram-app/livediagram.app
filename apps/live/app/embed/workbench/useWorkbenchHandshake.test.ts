@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { WORKBENCH_HANDSHAKE_MS, type WorkbenchSessionResponse } from '@livediagram/api-schema';
+import {
+  WORKBENCH_HANDSHAKE_MS,
+  type WorkbenchDocumentSessionResponse,
+} from '@livediagram/api-schema';
 import type { WorkbenchRedeemOutcome } from '@/lib/api/workbench';
 import type { WorkbenchEvent } from './workbench-machine';
 
@@ -22,9 +25,11 @@ const { runWorkbenchHandshake, useWorkbenchHandshake } = await import('./useWork
 
 const ORIGIN = 'https://127.0.0.1:5175';
 const TICKET = 'Ab3_-xYz0123456789abcd';
-const SESSION: WorkbenchSessionResponse = {
+const SESSION: WorkbenchDocumentSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
+  scope: 'document',
   documentId: 'doc-1',
+  folderId: null,
   tabId: null,
   origin: ORIGIN,
   role: 'edit',
@@ -76,7 +81,9 @@ describe('runWorkbenchHandshake', () => {
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 
-    expect(events).toEqual([{ type: 'read', ticket: null, documentId: 'doc-1' }]);
+    expect(events).toEqual([
+      { type: 'read', ticket: null, scope: 'document', documentId: 'doc-1' },
+    ]);
     expect(redeem).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[workbench] redeem-failed', {
       status: null,

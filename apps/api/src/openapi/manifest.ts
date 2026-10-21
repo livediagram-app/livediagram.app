@@ -2806,11 +2806,13 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      'Mint a single-use, one-minute ticket that opens a document in a paired developer tool. An origin the token is not paired with answers 428 with the pairing URL.',
+      "Mint a single-use, one-minute ticket that opens a document, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'WorkbenchTicketRequest',
-    responseSchema: 'WorkbenchTicketResponse',
+    responseSchema: {
+      anyOf: [ref('WorkbenchTicketResponse'), ref('WorkbenchWorkspaceTicketResponse')],
+    },
     statuses: [201, 400, 401, 403, 404, 410, 428, 429],
   },
   {
@@ -2819,7 +2821,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Redeem a ticket for a workbench session: the person's editor on that one document. The ticket is the credential.",
+      "Redeem a ticket for a workbench session: the person's editor on that one document, or in their workspace. The ticket is the credential.",
     auth: 'public',
     requestSchema: 'WorkbenchSessionRequest',
     responseSchema: 'WorkbenchSessionResponse',

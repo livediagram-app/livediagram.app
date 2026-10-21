@@ -45,6 +45,20 @@ livediagram workbench open "Home screen" --origin https://127.0.0.1:5175 --json
 
 It prints a link that works once, within a minute, and only inside the workbench at that address. Opened anywhere else, the page shows **This view opens only inside** the workbench's address and does nothing.
 
+## Open Your Whole Workspace
+
+A workbench can also keep your Explorer beside your code: Home, your folders, your teams' documents, the Inbox, Recent and the Trash, with every document opening in the same view and a **Back** to where you were. **New Document** makes the document right there. Your account stays out of it: no Settings, no API tokens, no team administration.
+
+The whole workspace is a second approval, even for a tool you already paired:
+
+```bash
+livediagram workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor" --workspace
+livediagram folder ls
+livediagram workbench open --workspace --folder Minigames --origin https://127.0.0.1:5175 --json
+```
+
+The page asks **Allow Acme Editor at `https://127.0.0.1:5175` to open your whole workspace, and to create, move, share and trash documents and folders in it, with the token livediagram CLI?** A token made read-only gives a workspace that browses and reads. `livediagram folder create <name> [--in <folder>]` makes a folder for a project and prints its id.
+
 ## Talk to Your Agent About a Selection
 
 Select elements, then type your message. The workbench adds a short block to it, naming the document, the tab and each selected element, for example:
@@ -59,6 +73,6 @@ With nothing selected, it names the whole tab. The block is plain text in your m
 
 ## Stop or Unpair
 
-A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens** under **Account**: each token lists its **Paired workbenches**, and **Unpair** turns their open diagrams read-only straight away. Revoking the token does the same for every tool it paired.
+A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens** under **Account**: each token lists its **Paired workbenches**, each with what it may open (**One document at a time** or **Whole workspace**), and **Unpair** turns their open diagrams read-only straight away. Revoking the token does the same for every tool it paired.
 
 </ArticleLayout>

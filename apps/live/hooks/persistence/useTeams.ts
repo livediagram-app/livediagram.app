@@ -37,8 +37,14 @@ type UseTeamsResult = {
   refresh: () => Promise<void>;
 };
 
-export function useTeams(ownerId: string | null, opts: { enabled: boolean }): UseTeamsResult {
+// `invites: false` reads the teams alone: a workspace frame reaches no team administration, invites included
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB62).
+export function useTeams(
+  ownerId: string | null,
+  opts: { enabled: boolean; invites?: boolean },
+): UseTeamsResult {
   const { enabled } = opts;
+  const withInvites = opts.invites ?? true;
   const [teams, setTeams] = useState<TeamListItem[]>([]);
   const [invites, setInvites] = useState<TeamInvite[]>([]);
   const [loading, setLoading] = useState(enabled);
@@ -49,7 +55,7 @@ export function useTeams(ownerId: string | null, opts: { enabled: boolean }): Us
     (owner: string) =>
       // The list call runs the server-side lazy claim; the invites
       // call repeats it, so the pair is order-independent.
-      Promise.all([apiListTeams(owner), apiListTeamInvites(owner)])
+      Promise.all([apiListTeams(owner), withInvites ? apiListTeamInvites(owner) : []])
         .then(
           ([teamList, inviteList]) => {
             setTeams(teamList);
@@ -61,7 +67,7 @@ export function useTeams(ownerId: string | null, opts: { enabled: boolean }): Us
           },
         )
         .finally(() => setLoading(false)),
-    [],
+    [withInvites],
   );
 
   const refresh = useCallback(async () => {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
+import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 
 // The editor's load in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor
 // in a workbench", I9): no guest migration or guest identity, no participant write, no Explorer lists,
@@ -42,11 +42,14 @@ const DOC = {
   tabs: [{ id: 't1' }, { id: 't2' }],
 };
 
-function workbenchOf(over: Partial<WorkbenchSession> = {}): WorkbenchSession {
+function workbenchOf(over: Partial<WorkbenchDocumentSession> = {}): WorkbenchDocumentSession {
   return {
+    scope: 'document',
     secret: `lvw_${'a'.repeat(43)}`,
     documentId: 'doc-1',
     tabId: null,
+    shareCode: null,
+    frame: null,
     origin: 'https://127.0.0.1:5175',
     level: 'edit',
     expiresAt: Date.now() + 60_000,
@@ -59,7 +62,7 @@ function workbenchOf(over: Partial<WorkbenchSession> = {}): WorkbenchSession {
   };
 }
 
-function run(workbench: WorkbenchSession) {
+function run(workbench: WorkbenchDocumentSession) {
   const set = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
@@ -196,5 +199,70 @@ describe('useIdentityBootstrap in a workbench', () => {
     const failed = run(workbenchOf());
     await vi.waitFor(() => expect(failed.set.setLoadError).toHaveBeenCalledWith(true));
     expect(failed.set.setDocumentTrashed).not.toHaveBeenCalled();
+  });
+});
+
+describe('useIdentityBootstrap in a workspace frame, a document shared with the person', () => {
+  const SHARED = { ...DOC, ownerId: 'user_2' };
+
+  it('opens it by its link, at the lower of the link’s role and the session’s level', async () => {
+    api.apiLoadShared.mockResolvedValue({
+      document: SHARED,
+      role: 'edit',
+      tabId: null,
+      community: null,
+    });
+    const { set } = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345', level: 'view' }));
+
+    await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
+
+    expect(api.apiLoadShared).toHaveBeenCalledWith('CODE2345', 'user_1');
+    expect(api.apiLoadDocument).not.toHaveBeenCalled();
+    expect(seed).toHaveBeenCalledWith('user_1', SHARED, 'CODE2345', null);
+    expect(set.setSessionShareCode).toHaveBeenCalledWith('CODE2345');
+    expect(set.setIsOwner).toHaveBeenCalledWith(false);
+    expect(set.setSessionRole).toHaveBeenCalledWith('view');
+  });
+
+  it('keeps a view link a view, and opens a scoped link on its tab', async () => {
+    api.apiLoadShared.mockResolvedValue({
+      document: SHARED,
+      role: 'view',
+      tabId: 't2',
+      community: null,
+    });
+    const { set } = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345', tabId: 't1' }));
+
+    await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
+
+    expect(set.setSessionRole).toHaveBeenCalledWith('view');
+    expect(set.setSessionTabScope).toHaveBeenCalledWith('t2');
+    expect(seed).toHaveBeenCalledWith('user_1', SHARED, 'CODE2345', 't2');
+  });
+
+  it('asks for a link’s password, and finds a dead link missing', async () => {
+    api.apiLoadShared.mockResolvedValue({ passwordRequired: true, invalid: false });
+    const asked = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345' }));
+    await vi.waitFor(() =>
+      expect(asked.set.setSharePasswordGate).toHaveBeenCalledWith({ invalid: false }),
+    );
+    expect(asked.set.setHydrated).not.toHaveBeenCalled();
+
+    api.apiLoadShared.mockResolvedValue(null);
+    const gone = run(workbenchOf({ scope: 'workspace', shareCode: 'GONE2345' }));
+    await vi.waitFor(() => expect(gone.set.setDocumentNotFound).toHaveBeenCalledWith(true));
+  });
+
+  it('finds a link that opens another document than the frame asked for missing', async () => {
+    api.apiLoadShared.mockResolvedValue({
+      document: { ...SHARED, id: 'doc-9' },
+      role: 'edit',
+      tabId: null,
+      community: null,
+    });
+    const { set } = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345' }));
+
+    await vi.waitFor(() => expect(set.setDocumentNotFound).toHaveBeenCalledWith(true));
+    expect(seed).not.toHaveBeenCalled();
   });
 });

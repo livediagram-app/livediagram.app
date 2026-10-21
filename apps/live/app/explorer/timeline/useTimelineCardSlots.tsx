@@ -25,6 +25,7 @@ import { folderMenuHandlers } from '../views';
 import { useExplorerDocumentsById } from '../useDocumentEntryFor';
 import { TimelineCardMenu } from './TimelineCardMenu';
 import type { TimelineEntityMenuFor } from './useTimelineEntityMenus';
+import { assignAppLocation } from '@/lib/app-location';
 
 function idOf(snapshot: Record<string, unknown>, key: string): string | null {
   const id = snapshot[key];
@@ -205,7 +206,7 @@ export function useTimelineCardSlots({
               // nothing to share (docs/specs/006-document/offline-mode.md).
               onShare: isOfflineIdSync(id)
                 ? undefined
-                : () => window.location.assign(`/document/${encodeURIComponent(id)}?share=1`),
+                : () => assignAppLocation(`/document/${encodeURIComponent(id)}?share=1`),
             }}
           />
         ),

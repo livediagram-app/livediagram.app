@@ -9,11 +9,13 @@ import {
   insertWorkbenchSession,
   insertWorkbenchTicket,
   listWorkbenchPairings,
+  noteWorkbenchSessionRoom,
   openPairingRequest,
   pairingRequestStatus,
   readPairingRequest,
   readWorkbenchSession,
   sweepWorkbench,
+  type WorkbenchReach,
   type WorkbenchSessionRow,
   type WorkbenchTicketRow,
 } from './workbench';
@@ -37,6 +39,7 @@ async function paired(db: SqliteD1): Promise<string> {
     ownerId: 'user_1',
     tokenId: 'tok1',
     origin: ORIGIN,
+    scope: 'document',
     name: 'Acme Editor',
     code: 'code_aaaaaaaaaaaaaaaaaa',
     now: NOW,
@@ -52,33 +55,43 @@ async function paired(db: SqliteD1): Promise<string> {
   return answered.pairing.id;
 }
 
-const ticket = (over: Partial<WorkbenchTicketRow> = {}): WorkbenchTicketRow => ({
+// The document scope by default; `reach` puts a ticket or a session in the workspace.
+type Over<Row> = Partial<Omit<Row, keyof WorkbenchReach>> & { reach?: WorkbenchReach };
+const DOCUMENT_REACH: WorkbenchReach = { scope: 'document', documentId: 'doc1', folderId: null };
+
+const ticket = ({
+  reach = DOCUMENT_REACH,
+  ...over
+}: Over<WorkbenchTicketRow> = {}): WorkbenchTicketRow => ({
   ticketHash: 'th1',
   ownerId: 'user_1',
   tokenId: 'tok1',
   pairingId: 'pair1',
-  documentId: 'doc1',
   tabId: null,
   origin: ORIGIN,
   role: 'edit',
   createdAt: NOW,
   expiresAt: NOW + 60_000,
   ...over,
+  ...reach,
 });
 
-const session = (over: Partial<WorkbenchSessionRow> = {}): WorkbenchSessionRow => ({
+const session = ({
+  reach = DOCUMENT_REACH,
+  ...over
+}: Over<WorkbenchSessionRow> = {}): WorkbenchSessionRow => ({
   id: 'sess-1',
   secretHash: 'sh1',
   ownerId: 'user_1',
   tokenId: 'tok1',
   pairingId: 'pair1',
-  documentId: 'doc1',
   tabId: 't1',
   origin: ORIGIN,
   role: 'edit',
   createdAt: NOW,
   expiresAt: NOW + 3_600_000,
   ...over,
+  ...reach,
 });
 
 const count = (db: SqliteD1, table: string) =>
@@ -87,7 +100,13 @@ const count = (db: SqliteD1, table: string) =>
 describe('pairing requests', () => {
   it('opens one live request per token and origin, reusing it while it lives', async () => {
     const db = arrange();
-    const input = { ownerId: 'user_1', tokenId: 'tok1', origin: ORIGIN, now: NOW };
+    const input = {
+      ownerId: 'user_1',
+      tokenId: 'tok1',
+      origin: ORIGIN,
+      scope: 'document' as const,
+      now: NOW,
+    };
 
     const first = await openPairingRequest(db.env, {
       ...input,
@@ -114,7 +133,13 @@ describe('pairing requests', () => {
 
   it('replaces a request that expired with a fresh code', async () => {
     const db = arrange();
-    const input = { ownerId: 'user_1', tokenId: 'tok1', origin: ORIGIN, name: null };
+    const input = {
+      ownerId: 'user_1',
+      tokenId: 'tok1',
+      origin: ORIGIN,
+      scope: 'document' as const,
+      name: null,
+    };
     await openPairingRequest(db.env, { ...input, code: 'code_aaaaaaaaaaaaaaaaaa', now: NOW });
 
     const later = NOW + WORKBENCH_PAIRING_TTL_MS;
@@ -135,6 +160,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
+      scope: 'document',
       name: 'Acme Editor',
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -146,6 +172,7 @@ describe('pairing requests', () => {
       origin: ORIGIN,
       name: 'Acme Editor',
       tokenName: 'livediagram CLI',
+      scope: 'document',
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
       status: 'pending',
     });
@@ -184,6 +211,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
+      scope: 'document',
       name: null,
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -197,7 +225,7 @@ describe('pairing requests', () => {
       now: NOW,
     });
 
-    expect(answered).toEqual({ outcome: 'declined', tokenId: 'tok1' });
+    expect(answered).toEqual({ outcome: 'declined', tokenId: 'tok1', asked: 'document' });
     expect(count(db, 'workbench_pairings')).toBe(0);
     expect(await pairingRequestStatus(db.env, 'code_aaaaaaaaaaaaaaaaaa', 'tok1', NOW)).toEqual({
       status: 'declined',
@@ -211,6 +239,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
+      scope: 'document',
       name: null,
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -271,6 +300,7 @@ describe('racing answers', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
+      scope: 'document',
       name: null,
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -333,6 +363,7 @@ describe('racing answers', () => {
         ownerId: 'user_2',
         tokenId: 'tok2',
         origin: ORIGIN,
+        scope: 'document',
         name: null,
         code: 'code_aaaaaaaaaaaaaaaaaa',
         now: NOW,
@@ -349,12 +380,20 @@ describe('pairings', () => {
                  VALUES ('pair0', 'user_1', 'tok1', 'https://old.example', NULL, ${NOW - 10})`);
 
     expect(await listWorkbenchPairings(db.env, 'user_1', NOW)).toEqual([
-      { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
+      {
+        id: 'pair1',
+        tokenId: 'tok1',
+        origin: ORIGIN,
+        name: 'Acme Editor',
+        scope: 'document',
+        pairedAt: NOW,
+      },
       {
         id: 'pair0',
         tokenId: 'tok1',
         origin: 'https://old.example',
         name: null,
+        scope: 'document',
         pairedAt: NOW - 10,
       },
     ]);
@@ -379,7 +418,9 @@ describe('tickets', () => {
         ownerId: 'user_1',
         tokenId: 'tok1',
         pairingId: 'pair1',
+        scope: 'document',
         documentId: 'doc1',
+        folderId: null,
         tabId: null,
         origin: ORIGIN,
         role: 'edit',
@@ -487,6 +528,7 @@ describe('sweepWorkbench', () => {
       ownerId: 'user_2',
       tokenId: 'tok2',
       origin: ORIGIN,
+      scope: 'document',
       name: null,
       code: 'code_cccccccccccccccccc',
       now: NOW - WORKBENCH_PAIRING_TTL_MS - 1,
@@ -501,5 +543,123 @@ describe('sweepWorkbench', () => {
     expect(count(db, 'workbench_tickets')).toBe(1);
     expect(count(db, 'workbench_sessions')).toBe(1);
     expect(count(db, 'workbench_pairings')).toBe(1);
+  });
+});
+
+describe('the workspace scope (migration 0099)', () => {
+  const WORKSPACE_REACH: WorkbenchReach = { scope: 'workspace', documentId: null, folderId: 'f1' };
+  const ask = (db: SqliteD1, scope: 'document' | 'workspace', code: string) =>
+    openPairingRequest(db.env, {
+      ownerId: 'user_1',
+      tokenId: 'tok1',
+      origin: ORIGIN,
+      scope,
+      name: null,
+      code,
+      now: NOW,
+    });
+  const approve = (db: SqliteD1, code: string, pairingId: string) =>
+    answerPairingRequest(db.env, {
+      code,
+      ownerId: 'user_1',
+      answer: 'approve',
+      pairingId,
+      now: NOW,
+    });
+
+  it('reads a pairing recorded without a scope as a document pairing', async () => {
+    const db = arrange();
+    db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
+                 VALUES ('old', 'user_1', 'tok1', '${ORIGIN}', NULL, 1)`);
+
+    expect((await findWorkbenchPairing(db.env, 'tok1', ORIGIN))?.scope).toBe('document');
+  });
+
+  it('keeps one live request per scope, each with its own code', async () => {
+    const db = arrange();
+
+    const document = await ask(db, 'document', 'code_aaaaaaaaaaaaaaaaaa');
+    const workspace = await ask(db, 'workspace', 'code_bbbbbbbbbbbbbbbbbb');
+    const again = await ask(db, 'workspace', 'code_cccccccccccccccccc');
+
+    expect(document.code).toBe('code_aaaaaaaaaaaaaaaaaa');
+    expect(workspace).toMatchObject({ code: 'code_bbbbbbbbbbbbbbbbbb', reused: false });
+    expect(again).toMatchObject({ code: 'code_bbbbbbbbbbbbbbbbbb', reused: true });
+    expect((await readPairingRequest(db.env, 'code_bbbbbbbbbbbbbbbbbb', NOW))?.scope).toBe(
+      'workspace',
+    );
+  });
+
+  it('widens a document pairing in place when a workspace request is approved', async () => {
+    const db = arrange();
+    await paired(db);
+    await ask(db, 'workspace', 'code_bbbbbbbbbbbbbbbbbb');
+
+    const answered = await approve(db, 'code_bbbbbbbbbbbbbbbbbb', 'pair2');
+
+    expect(answered).toMatchObject({
+      outcome: 'approved',
+      asked: 'workspace',
+      pairing: { id: 'pair1', scope: 'workspace', name: 'Acme Editor' },
+    });
+    expect(count(db, 'workbench_pairings')).toBe(1);
+  });
+
+  it('never narrows a workspace pairing with a document approval', async () => {
+    const db = arrange();
+    await ask(db, 'workspace', 'code_bbbbbbbbbbbbbbbbbb');
+    await approve(db, 'code_bbbbbbbbbbbbbbbbbb', 'pair1');
+    await ask(db, 'document', 'code_aaaaaaaaaaaaaaaaaa');
+
+    const answered = await approve(db, 'code_aaaaaaaaaaaaaaaaaa', 'pair2');
+
+    expect(answered).toMatchObject({
+      outcome: 'approved',
+      asked: 'document',
+      pairing: { id: 'pair1', scope: 'workspace' },
+    });
+  });
+
+  it('stores and consumes a workspace ticket, and reads a workspace session', async () => {
+    const db = arrange();
+    await paired(db);
+    await insertWorkbenchTicket(db.env, ticket({ reach: WORKSPACE_REACH }));
+    await insertWorkbenchSession(db.env, session({ reach: WORKSPACE_REACH }));
+
+    const consumed = await consumeWorkbenchTicket(db.env, 'th1', NOW);
+    const read = await readWorkbenchSession(db.env, 'sh1');
+
+    expect(consumed).toMatchObject({ ok: true, ticket: WORKSPACE_REACH });
+    expect(read).toMatchObject(WORKSPACE_REACH);
+  });
+
+  it('refuses a row whose document does not fit its scope', async () => {
+    const db = arrange();
+    await paired(db);
+    const insert = (scope: string, documentId: string | null, folderId: string | null) =>
+      db.sql.exec(`INSERT INTO workbench_sessions
+          (id, secret_hash, owner_id, token_id, pairing_id, scope, document_id, folder_id, origin, role, created_at,
+           expires_at)
+        VALUES ('s-${scope}-${documentId}-${folderId}', 'h-${scope}-${documentId}-${folderId}', 'user_1', 'tok1',
+          'pair1', '${scope}', ${documentId ? `'${documentId}'` : 'NULL'}, ${folderId ? `'${folderId}'` : 'NULL'},
+          '${ORIGIN}', 'edit', 1, 2)`);
+
+    expect(() => insert('workspace', 'doc1', null)).toThrow(/CHECK/);
+    expect(() => insert('document', null, null)).toThrow(/CHECK/);
+    expect(() => insert('document', 'doc1', 'f1')).toThrow(/CHECK/);
+    expect(() => insert('galaxy', null, null)).toThrow(/CHECK/);
+  });
+
+  it('records the rooms a workspace session joins, once each, gone with the session', async () => {
+    const db = arrange();
+    await paired(db);
+    await insertWorkbenchSession(db.env, session({ reach: WORKSPACE_REACH }));
+
+    await noteWorkbenchSessionRoom(db.env, 'sess-1', 'doc1');
+    await noteWorkbenchSessionRoom(db.env, 'sess-1', 'doc1');
+    expect(count(db, 'workbench_session_rooms')).toBe(1);
+
+    await deleteWorkbenchSession(db.env, 'sess-1');
+    expect(count(db, 'workbench_session_rooms')).toBe(0);
   });
 });

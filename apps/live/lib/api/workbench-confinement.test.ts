@@ -13,7 +13,7 @@ import {
 
 const SECRET = `lvw_${'s'.repeat(43)}`;
 const BEARER = { Authorization: `Bearer ${SECRET}` };
-const SESSION = { documentId: 'doc-1', ownerId: 'user_1' };
+const SESSION = { scope: 'document' as const, documentId: 'doc-1', ownerId: 'user_1' };
 
 let warn: ReturnType<typeof vi.spyOn>;
 

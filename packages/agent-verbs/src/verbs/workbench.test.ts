@@ -60,7 +60,7 @@ describe('workbench open', () => {
       tab: 'Details',
       origin: ORIGIN,
     });
-    expect(output.tabId).toBe('tab-two-0000');
+    expect(output).toMatchObject({ tabId: 'tab-two-0000' });
     expect(bodies[0]).toMatchObject({ documentId: DOC_A, tabId: 'tab-two-0000', origin: ORIGIN });
   });
 
@@ -209,11 +209,103 @@ describe('the workbench name', () => {
 
 describe('workbench pair', () => {
   it('prints the origin it paired, and the name when it has one', () => {
-    expect(workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: 'Acme Editor' })).toEqual([
-      `paired ${ORIGIN} as Acme Editor`,
-    ]);
-    expect(workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null })).toEqual([
-      `paired ${ORIGIN}`,
-    ]);
+    expect(
+      workbenchPair.text!({
+        status: 'paired',
+        origin: ORIGIN,
+        name: 'Acme Editor',
+        scope: 'document',
+      }),
+    ).toEqual([`paired ${ORIGIN} as Acme Editor`]);
+    expect(
+      workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'document' }),
+    ).toEqual([`paired ${ORIGIN}`]);
+    expect(
+      workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'workspace' }),
+    ).toEqual([`paired ${ORIGIN} (whole workspace)`]);
+  });
+});
+
+describe('workbench open --workspace', () => {
+  const folders = {
+    '/folders': {
+      folders: [
+        { id: 'f0000001-games', name: 'Minigames', parentId: null, teamId: null, ownerId: 'u' },
+      ],
+    },
+  };
+  const workspaceMinted = {
+    url: `https://livediagram.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`,
+    scope: 'workspace' as const,
+    folderId: null,
+    expiresAt: Date.UTC(2026, 9, 5, 8, 1),
+  };
+
+  it('mints a workspace ticket on Home and prints its link', async () => {
+    const { bodies, route } = mint(() => Response.json(workspaceMinted, { status: 201 }));
+    const api = fakeApi({ ...library, '/workbench/tickets': route });
+
+    const output = await workbenchOpen.run!(contextOf(api), { workspace: true, origin: ORIGIN });
+
+    expect(output).toEqual(workspaceMinted);
+    expect(bodies).toEqual([{ method: 'POST', scope: 'workspace', origin: ORIGIN }]);
+    expect(workbenchOpen.text!(output)).toEqual([workspaceMinted.url]);
+  });
+
+  it('starts on the folder --folder names, by its name', async () => {
+    const { bodies, route } = mint((body) =>
+      Response.json({ ...workspaceMinted, folderId: body.folderId }, { status: 201 }),
+    );
+    const api = fakeApi({ ...library, ...folders, '/workbench/tickets': route });
+
+    const output = await workbenchOpen.run!(contextOf(api), {
+      workspace: true,
+      folder: 'minigames',
+      origin: ORIGIN,
+    });
+
+    expect(output).toMatchObject({ folderId: 'f0000001-games' });
+    expect(bodies[0]).toMatchObject({ scope: 'workspace', folderId: 'f0000001-games' });
+  });
+
+  it('refuses a folder it cannot find, as not found', async () => {
+    const api = fakeApi({ ...library, ...folders });
+
+    const refusal = await refusalOf(
+      workbenchOpen.run!(contextOf(api), { workspace: true, folder: 'Nowhere', origin: ORIGIN }),
+    );
+
+    expect(refusal).toMatchObject({ status: 404, code: 'not_found' });
+  });
+
+  it('names the workspace pairing when the token is paired for documents only', async () => {
+    const { route } = mint(() =>
+      Response.json({ error: 'pairing_required', pairingUrl: 'u', expiresAt: 1 }, { status: 428 }),
+    );
+    const api = fakeApi({ ...library, '/workbench/tickets': route });
+
+    const refusal = await refusalOf(
+      workbenchOpen.run!(contextOf(api), { workspace: true, origin: ORIGIN }),
+    );
+
+    expect(refusal).toMatchObject({
+      status: 403,
+      code: 'pairing_required',
+      hint: `livediagram workbench pair --origin ${ORIGIN} --workspace`,
+    });
+  });
+
+  it.each([
+    ['neither a document nor --workspace', { origin: ORIGIN }],
+    ['both a document and --workspace', { doc: 'Shop', workspace: true, origin: ORIGIN }],
+    ['--tab with --workspace', { workspace: true, tab: 'Details', origin: ORIGIN }],
+    ['--folder without --workspace', { doc: 'Shop', folder: 'Minigames', origin: ORIGIN }],
+  ])('refuses %s as a usage error', async (_why, input) => {
+    const api = fakeApi({ ...library });
+
+    const err = await workbenchOpen.run!(contextOf(api), input).catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(AddressError);
+    expect((err as AddressError).failure.kind).toBe('usage');
   });
 });

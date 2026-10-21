@@ -9,6 +9,7 @@ import { useTreeNavigation } from './useTreeNavigation';
 import { OverviewGroup } from './OverviewGroup';
 import { SpacesGroup } from './SpacesGroup';
 import { MoreGroup } from './MoreGroup';
+import { explorerSurfaceFlags, useExplorerSurface } from '../explorer-surface';
 
 // The Explorer's navigation tree (docs/specs/013-workspace/explorer-structure.md), shared by
 // the desktop sidebar and the mobile drawer in ExplorerShell: three groups,
@@ -21,12 +22,14 @@ export function ExplorerSidebar() {
   const navRef = useRef<HTMLElement>(null);
   const keyboard = useTreeNavigation(navRef);
   const divider = sidebarDivider(isMinimalChrome(prefs));
+  const surface = explorerSurfaceFlags(useExplorerSurface());
   const groups = sidebarGroups({
     signedIn: teamsEnabled,
     signInAvailable: clerkEnabled,
     pendingInvites: invites.length,
     offlineDocuments: offlineDocuments.length,
     selected: selected.kind,
+    administration: surface.administration,
   });
   return (
     <nav ref={navRef} aria-label="Explorer" {...keyboard}>

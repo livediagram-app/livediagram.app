@@ -18,7 +18,9 @@ type Seen = { method: string; url: string; headers: Headers; body: unknown };
 
 const SESSION: WorkbenchSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
+  scope: 'document',
   documentId: 'doc-1',
+  folderId: null,
   tabId: null,
   origin: 'https://127.0.0.1:5175',
   role: 'edit',

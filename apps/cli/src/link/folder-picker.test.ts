@@ -3,7 +3,8 @@ import type { Libraries } from '@livediagram/agent-verbs';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { fakeIo } from '../testing/fake-io';
 import { PICKER_PAGE } from './constants';
-import { folderChoices, folderNeededError, noFoldersError, pickFolder } from './folder-picker';
+import { folderChoices } from '@livediagram/agent-verbs';
+import { folderNeededError, noFoldersError, pickFolder } from './folder-picker';
 
 // The folder picker (docs/specs/027-repositories/blueprints/repository-link.md "The folder picker"): choose, narrow,
 // out of range, cancel three ways, and the refusal where it is not a terminal.
@@ -44,18 +45,6 @@ async function failureOf(run: () => Promise<unknown>): Promise<CliFailure> {
   }
   throw new Error('expected a CliError');
 }
-
-describe('folderChoices', () => {
-  it('lists personal folders depth first by name, then each team’s, teams by name', () => {
-    expect(choices).toEqual([
-      { id: 'f-art', path: 'Art', library: 'personal' },
-      { id: 'f-games', path: 'Minigames', library: 'personal' },
-      { id: 'f-screens', path: 'Minigames/Screens', library: 'personal' },
-      { id: 'f-arch', path: 'Architecture', library: 'Platform' },
-      { id: 'f-z', path: 'Zone', library: 'Zed' },
-    ]);
-  });
-});
 
 describe('pickFolder', () => {
   const LIST = [
@@ -128,6 +117,7 @@ describe('pickFolder', () => {
       id: `f${i}`,
       path: `Folder ${String(i).padStart(2, '0')}`,
       library: 'personal',
+      teamId: null,
     }));
     const io = fakeIo({ lines: ['21'] });
     await failureOf(() => pickFolder(io, many, HOST, () => {})).catch(() => {});
@@ -157,6 +147,7 @@ describe('folderNeededError', () => {
       id: `f${i}`,
       path: `F${i}`,
       library: 'personal',
+      teamId: null,
     }));
     const { lines } = folderNeededError(many).failure;
     expect(lines).toHaveLength(PICKER_PAGE + 1);
@@ -174,23 +165,5 @@ describe('noFoldersError', () => {
       message: 'there are no folders in https://livediagram.app to link',
       hint: 'create a folder in livediagram, or link documents: livediagram link init --doc <doc>',
     });
-  });
-});
-
-describe('folderChoices of siblings with one name', () => {
-  it('keeps them both, in the order the library gave them', () => {
-    const twins: Libraries = {
-      personal: {
-        documents: [],
-        folders: [
-          folder('c', 'Alpha'),
-          folder('z', 'Zeta'),
-          folder('b', 'Same'),
-          folder('a', 'Same'),
-        ],
-      },
-      teams: [],
-    };
-    expect(folderChoices(twins).map((c) => c.id)).toEqual(['c', 'b', 'a', 'z']);
   });
 });

@@ -49,6 +49,24 @@ export function capWorkbenchRole(role: WorkbenchRole, ceiling?: WorkbenchRole): 
 }
 
 // ---------------------------------------------------------------------
+// Scopes (docs/specs/013-workspace/workbench-embeds.md "Two scopes")
+// ---------------------------------------------------------------------
+
+// What a ticket, session or pairing reaches: one document, or the person's whole workspace.
+export const WORKBENCH_SCOPES = ['document', 'workspace'] as const;
+export type WorkbenchScope = (typeof WORKBENCH_SCOPES)[number];
+
+export function isWorkbenchScope(value: unknown): value is WorkbenchScope {
+  return WORKBENCH_SCOPES.some((scope) => scope === value);
+}
+
+// A workspace pairing also covers the document scope; a document pairing never covers the workspace, so reaching
+// the whole workspace is always its own approval.
+export function pairingCoversScope(pairing: WorkbenchScope, asked: WorkbenchScope): boolean {
+  return pairing === 'workspace' || asked === 'document';
+}
+
+// ---------------------------------------------------------------------
 // The origin rule
 // ---------------------------------------------------------------------
 
@@ -94,17 +112,27 @@ export const WORKBENCH_ERROR_CODES = [
   'not_a_workbench_session',
   'pairing_answered',
   'pairing_expired',
+  'invalid_value',
 ] as const;
 
 // ---------------------------------------------------------------------
 // Wire types (blueprint "Wire types")
 // ---------------------------------------------------------------------
 
-export type WorkbenchTicketRequest = { documentId: string; tabId?: string; origin: string };
+// `scope` absent is `document`, so the callers from before scopes read unchanged.
+export type WorkbenchTicketRequest =
+  | { scope?: 'document'; documentId: string; tabId?: string; origin: string }
+  | { scope: 'workspace'; folderId?: string; origin: string };
 export type WorkbenchTicketResponse = {
   url: string;
   documentId: string;
   tabId: string | null;
+  expiresAt: number;
+};
+export type WorkbenchWorkspaceTicketResponse = {
+  url: string;
+  scope: 'workspace';
+  folderId: string | null;
   expiresAt: number;
 };
 export type WorkbenchPairingRequired = {
@@ -121,13 +149,22 @@ export type WorkbenchPerson = {
 };
 export type WorkbenchSessionResponse = {
   session: string;
-  documentId: string;
-  tabId: string | null;
   origin: string;
   role: WorkbenchRole;
   expiresAt: number;
   person: WorkbenchPerson;
-};
+} & (
+  | { scope: 'document'; documentId: string; folderId: null; tabId: string | null }
+  | { scope: 'workspace'; documentId: null; folderId: string | null; tabId: null }
+);
+export type WorkbenchDocumentSessionResponse = Extract<
+  WorkbenchSessionResponse,
+  { scope: 'document' }
+>;
+export type WorkbenchWorkspaceSessionResponse = Extract<
+  WorkbenchSessionResponse,
+  { scope: 'workspace' }
+>;
 export type InvalidTicketReason = 'expired' | 'used' | 'unknown';
 export type InvalidTicket = { error: 'invalid_ticket'; reason: InvalidTicketReason };
 export type WorkbenchPairing = {
@@ -135,10 +172,15 @@ export type WorkbenchPairing = {
   tokenId: string;
   origin: string;
   name: string | null;
+  scope: WorkbenchScope;
   pairedAt: number;
 };
 export type WorkbenchPairingsResponse = { pairings: WorkbenchPairing[] };
-export type WorkbenchPairingRequestCreate = { origin: string; name?: string };
+export type WorkbenchPairingRequestCreate = {
+  origin: string;
+  name?: string;
+  scope?: WorkbenchScope;
+};
 export type PairingRequestStatus = 'pending' | 'approved' | 'declined' | 'expired';
 export type WorkbenchPairingRequestCreated =
   | { status: 'paired'; pairing: WorkbenchPairing }
@@ -152,6 +194,7 @@ export type WorkbenchPairingRequestView = {
   origin: string;
   name: string | null;
   tokenName: string | null;
+  scope: WorkbenchScope;
   expiresAt: number;
   status: PairingRequestStatus;
 };
@@ -164,13 +207,26 @@ export function normaliseWorkbenchName(value: unknown): string | null {
 }
 
 // ---------------------------------------------------------------------
-// Confinement (blueprint "A request bearing lvw_")
+// Confinement (blueprint "A request bearing lvw_", "The choke point by scope")
 // ---------------------------------------------------------------------
 
 type WorkbenchRouteVerdict = 'allow' | 'confined' | 'other-document';
 
-// One allowed route shape: methods and a path under /api. `:doc` must be the session's document,
-// `:owner` the session's owner, `:p` any one segment (except the words in WORKBENCH_RESERVED_SEGMENTS).
+// What the verdict reads of a session: its scope, its document (the document scope's only) and its owner.
+export type WorkbenchConfinementSession =
+  | { scope: 'document'; documentId: string; ownerId: string }
+  | { scope: 'workspace'; documentId: null; ownerId: string };
+
+// Headers that would lend a session someone else's access. The document scope refuses all three; the workspace
+// scope lets a share link's code and password through, since a document shared with the person is reached by its
+// link (WB53), and still refuses the guest header, so a session never acts as someone else.
+export function workbenchAmbientHeaders(scope: WorkbenchScope): readonly string[] {
+  return scope === 'document' ? ['X-Share-Code', 'X-Owner-Id', 'X-Share-Password'] : ['X-Owner-Id'];
+}
+
+// One allowed route shape: methods and a path under /api. `:doc` must be the session's document, `:owner` the
+// session's owner, `:p` any one segment (except the words in WORKBENCH_RESERVED_SEGMENTS), and a trailing `**`
+// any rest of the path, none included.
 type RouteShape = { methods: readonly string[]; path: readonly string[] };
 
 const shape = (methods: string, path: string): RouteShape => ({
@@ -178,6 +234,9 @@ const shape = (methods: string, path: string): RouteShape => ({
   path: path.split('/'),
 });
 
+const ALL_METHODS = 'GET,POST,PUT,DELETE';
+
+// The document scope: what the editor of one document needs.
 const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),
@@ -222,17 +281,59 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('DELETE', 'workbench/sessions/current'),
 ];
 
+// The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
+// (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account, the AI
+// assistant), and never a route the minting token could not call (Community publishing, Drive: Clerk only, WB51).
+const WORKSPACE_ROUTES: readonly RouteShape[] = [
+  shape('GET', 'capabilities'),
+  shape('GET', 'openapi.json'),
+  shape('GET', 'templates/**'),
+  shape('GET', 'icons'),
+  shape('GET', 'schema/**'),
+  shape('GET', 'preferences'),
+  shape('GET', 'participants/:owner'),
+  shape('GET', 'share/**'),
+  ...[
+    'documents',
+    'folders',
+    'shared',
+    'favourites',
+    'tags',
+    'home',
+    'timeline',
+    'activity',
+    'trash',
+    'placement-defaults',
+    'images',
+    'custom-themes',
+    'shape-libraries',
+  ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
+  shape('GET', 'teams'),
+  shape('GET', 'teams/:p'),
+  shape('GET', 'teams/:p/library'),
+  shape('GET', 'teams/:p/members'),
+  shape('DELETE', 'workbench/sessions/current'),
+];
+
+// Inside an allowed workspace resource, the doors that stay closed: Community publishing and an agent's presence.
+const WORKSPACE_CLOSED: readonly RouteShape[] = [
+  shape(ALL_METHODS, 'documents/:p/community/**'),
+  shape(ALL_METHODS, 'documents/:p/tabs/:p/presence'),
+];
+
 // Words a `:p` never matches: sibling routes that share a prefix with an allowed shape but are confined
-// (`GET images/usage` beside `GET images/:id`).
-const WORKBENCH_RESERVED_SEGMENTS = new Set(['usage']);
+// (`GET images/usage` beside `GET images/:id`, `GET teams/invites` beside `GET teams/:id`).
+const WORKBENCH_RESERVED_SEGMENTS = new Set(['usage', 'invites', 'invite-link', 'invite-decline']);
 
 function matches(
   route: RouteShape,
   rest: readonly string[],
-  session: { documentId: string; ownerId: string },
-) {
-  if (route.path.length !== rest.length) return false;
-  return route.path.every((part, i) => {
+  session: WorkbenchConfinementSession,
+): boolean {
+  const wild = route.path.at(-1) === '**';
+  const fixed = wild ? route.path.slice(0, -1) : route.path;
+  if (wild ? rest.length < fixed.length : rest.length !== fixed.length) return false;
+  return fixed.every((part, i) => {
     const seg = rest[i]!;
     if (part === ':doc') return seg === session.documentId;
     if (part === ':owner') return seg === session.ownerId;
@@ -241,19 +342,30 @@ function matches(
   });
 }
 
-// `segments` as the api splits the path: `['api', 'documents', ...]`. A document route naming any other
-// document answers as if that document were absent, whatever follows, so nothing leaks its existence.
+const anyMatches = (
+  routes: readonly RouteShape[],
+  method: string,
+  rest: readonly string[],
+  session: WorkbenchConfinementSession,
+) => routes.some((route) => route.methods.includes(method) && matches(route, rest, session));
+
+// `segments` as the api splits the path: `['api', 'documents', ...]`. In the document scope, a document route naming
+// any other document answers as if that document were absent, whatever follows, so nothing leaks its existence. In
+// the workspace scope every document is the person's to try: the route decides, with the owner's identity.
 export function workbenchRouteVerdict(
   method: string,
   segments: readonly string[],
-  session: { documentId: string; ownerId: string },
+  session: WorkbenchConfinementSession,
 ): WorkbenchRouteVerdict {
   const rest = segments.slice(1);
+  if (session.scope === 'workspace') {
+    const allowed =
+      anyMatches(WORKSPACE_ROUTES, method, rest, session) &&
+      !anyMatches(WORKSPACE_CLOSED, method, rest, session);
+    return allowed ? 'allow' : 'confined';
+  }
   if (rest[0] === 'documents' && rest.length >= 2 && rest[1] !== session.documentId) {
     return 'other-document';
   }
-  const allowed = WORKBENCH_ROUTES.some(
-    (route) => route.methods.includes(method) && matches(route, rest, session),
-  );
-  return allowed ? 'allow' : 'confined';
+  return anyMatches(WORKBENCH_ROUTES, method, rest, session) ? 'allow' : 'confined';
 }

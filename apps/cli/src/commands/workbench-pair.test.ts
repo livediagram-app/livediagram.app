@@ -76,6 +76,19 @@ const pair = (io: FakeIo, ...more: string[]) =>
   run(['workbench', 'pair', '--origin', ORIGIN, ...more], io);
 
 describe('workbench pair', () => {
+  it('asks for the whole workspace with --workspace, and says so once paired', async () => {
+    const { io, sent } = host({ polls: ['approved'] });
+    expect(await pair(io, '--workspace')).toBe(0);
+    expect(sent).toEqual([{ origin: ORIGIN, scope: 'workspace' }]);
+    expect(io.out()).toBe(`${PAIRING_URL}\npaired ${ORIGIN} (whole workspace)\n`);
+  });
+
+  it('names --workspace in the way to ask again when a workspace request expires', async () => {
+    const { io } = host({ polls: ['expired'] });
+    expect(await pair(io, '--workspace')).toBe(4);
+    expect(io.err()).toContain(`livediagram workbench pair --origin ${ORIGIN} --workspace`);
+  });
+
   it('prints the link first, waits at the answered interval, and exits 0 once approved', async () => {
     const { io, sent, stdoutAtPoll } = host({ polls: ['pending', 'approved'] });
     expect(await pair(io, '--name', ' Acme Editor ')).toBe(0);
@@ -106,7 +119,14 @@ describe('workbench pair', () => {
     const { io } = host({
       created: {
         status: 'paired',
-        pairing: { id: 'p', tokenId: 't', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
+        pairing: {
+          id: 'p',
+          tokenId: 't',
+          origin: ORIGIN,
+          name: 'Acme Editor',
+          scope: 'document',
+          pairedAt: NOW,
+        },
       },
     });
     expect(await pair(io)).toBe(0);
@@ -119,7 +139,7 @@ describe('workbench pair', () => {
     expect(await pair(io, '--json')).toBe(0);
     expect(io.out().split('\n')).toEqual([
       JSON.stringify({ status: 'pending', pairingUrl: PAIRING_URL, expiresAt: EXPIRES }),
-      JSON.stringify({ status: 'paired', origin: ORIGIN, name: null }),
+      JSON.stringify({ status: 'paired', origin: ORIGIN, name: null, scope: 'document' }),
       '',
     ]);
   });
@@ -233,7 +253,14 @@ describe('workbench pair', () => {
     const already = host({
       created: {
         status: 'paired',
-        pairing: { id: 'p', tokenId: 't', origin: ORIGIN, name: null, pairedAt: NOW },
+        pairing: {
+          id: 'p',
+          tokenId: 't',
+          origin: ORIGIN,
+          name: null,
+          scope: 'document',
+          pairedAt: NOW,
+        },
       },
       env: { LIVEDIAGRAM_DEBUG: '1' },
     });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // A token card's paired workbenches (docs/specs/013-workspace/blueprints/workbench-embeds.md "Settings > API
-// tokens", WB35, WB36): nothing when none; a row each with name, origin, when paired and Unpair, which asks first.
+// tokens", WB35, WB36): nothing when none; a row each with name, origin, scope, when paired and Unpair, which asks first.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { WorkbenchPairing } from '@livediagram/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +13,7 @@ const ACME: WorkbenchPairing = {
   tokenId: 'tok1',
   origin: 'https://127.0.0.1:5175',
   name: 'Acme Editor',
+  scope: 'document',
   pairedAt: NOW - 2 * DAY,
 };
 const UNNAMED: WorkbenchPairing = {
@@ -20,6 +21,7 @@ const UNNAMED: WorkbenchPairing = {
   tokenId: 'tok1',
   origin: 'http://localhost:4000',
   name: null,
+  scope: 'document',
   pairedAt: NOW - 30_000,
 };
 
@@ -56,6 +58,20 @@ describe('SettingsTokenPairings', () => {
 
     expect(within(second).getByText('Unnamed workbench')).toBeTruthy();
     expect(within(second).getByText('Paired just now')).toBeTruthy();
+  });
+
+  it('names each pairing’s scope', () => {
+    render(
+      <SettingsTokenPairings
+        pairings={[ACME, { ...UNNAMED, scope: 'workspace' }]}
+        now={NOW}
+        onUnpair={vi.fn()}
+      />,
+    );
+    const { first, second } = rows(screen.getByRole('list', { name: 'Paired workbenches' }));
+
+    expect(within(first).getByText('One document at a time')).toBeTruthy();
+    expect(within(second).getByText('Whole workspace')).toBeTruthy();
   });
 
   it('names each Unpair by the workbench and its origin', () => {

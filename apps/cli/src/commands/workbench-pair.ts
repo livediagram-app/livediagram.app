@@ -9,6 +9,7 @@ import {
   DEVICE_SLOW_DOWN_S,
   type WorkbenchPairingRequestCreated,
   type WorkbenchPairingStatusResponse,
+  type WorkbenchScope,
 } from '@livediagram/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
@@ -19,8 +20,15 @@ import { isNetworkFailure } from '../output/failure-of';
 // A network failure is retried at the next interval; this many in a row end the wait.
 const PAIR_NETWORK_ATTEMPTS = 3;
 
-export type PairInput = { origin: string; name?: string };
-export type Paired = { status: 'paired'; origin: string; name: string | null };
+// `workspace` asks for the whole workspace: a second approval of its own (docs/specs/013-workspace/workbench-embeds.md
+// "Pairing").
+export type PairInput = { origin: string; name?: string; workspace?: boolean };
+export type Paired = {
+  status: 'paired';
+  origin: string;
+  name: string | null;
+  scope: WorkbenchScope;
+};
 
 type Pending = Extract<WorkbenchPairingRequestCreated, { status: 'pending' }>;
 
@@ -54,13 +62,14 @@ async function waitForAnswer(
   api: ApiClient,
   request: Pending,
   origin: string,
+  scope: WorkbenchScope,
   log: DebugLog,
 ): Promise<void> {
   const expired = () =>
     refused(
       'pairing_expired',
       'the pairing request expired before it was answered',
-      `livediagram workbench pair --origin ${origin}`,
+      `livediagram workbench pair --origin ${origin}${scope === 'workspace' ? ' --workspace' : ''}`,
     );
   let interval = request.interval;
   let slowDown = 0;
@@ -113,18 +122,23 @@ export async function pairWorkbench(
 ): Promise<Paired> {
   const origin = workbenchOriginOf(input.origin, 'pair', log);
   const name = workbenchNameOf(input.name, log);
+  const scope: WorkbenchScope = input.workspace ? 'workspace' : 'document';
   const created = await api.json<WorkbenchPairingRequestCreated>('/workbench/pairing-requests', {
     method: 'POST',
-    body: JSON.stringify({ origin, ...(name ? { name } : {}) }),
+    body: JSON.stringify({
+      origin,
+      ...(name ? { name } : {}),
+      ...(input.workspace ? { scope } : {}),
+    }),
   });
   if (created.status === 'paired') {
     log('workbench pair paired');
-    return { status: 'paired', origin, name: created.pairing.name };
+    return { status: 'paired', origin, name: created.pairing.name, scope };
   }
   log('workbench pair pending');
   await announce(io, created, json, log);
   io.stderr('Waiting for approval…\n');
-  await waitForAnswer(io, api, created, origin, log);
+  await waitForAnswer(io, api, created, origin, scope, log);
   // The pairing keeps the request's name, which is the one given here when one was (WB2).
-  return { status: 'paired', origin, name };
+  return { status: 'paired', origin, name, scope };
 }

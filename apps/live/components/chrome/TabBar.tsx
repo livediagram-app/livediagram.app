@@ -67,6 +67,8 @@ type TabBarProps = {
   // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
   // livediagram link at the bar's right end, and no Appearance control (the workbench sets the scheme).
   workbenchLink?: (labelled: boolean) => ReactNode;
+  // A workspace frame's Back (WB59), first in the bar.
+  workbenchBack?: (labelled: boolean) => ReactNode;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
@@ -180,6 +182,7 @@ export function TabBar({
   roleIcon,
   powerUser = false,
   workbenchLink,
+  workbenchBack,
 }: TabBarProps) {
   const minimalChrome = useMinimalChrome();
   // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
@@ -334,6 +337,7 @@ export function TabBar({
         }}
         className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
       >
+        {workbenchBack?.(labelled)}
         {roleIcon}
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (

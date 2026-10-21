@@ -1,12 +1,14 @@
 'use client';
 
 // The chrome of the editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md
-// "Presentation and UX", WB34): an **Open in livediagram** link at the tab bar's right end, beside
-// Search and Settings, where no docked panel can cover it, that opens the document in a full tab; and,
-// once the session has ended unrenewed or revoked, the line at the top centre that says how to edit
-// again.
+// "Presentation and UX", WB34, WB59): an **Open in livediagram** link at the tab bar's right end, beside
+// Search and Settings, where no docked panel can cover it, that opens the document (or, in a workspace frame's
+// Explorer, the view) in a full tab; a workspace frame's **Back** at the tab bar's left end, to where the
+// document was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
+// says how to edit again.
 import type { WorkbenchEndReason } from '@livediagram/api-schema';
-import { HoverCard } from '@livediagram/ui';
+import { lucideArrowLeft } from '@livediagram/icons/lucide';
+import { HoverCard, lucideGlyph } from '@livediagram/ui';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';
 
@@ -15,17 +17,22 @@ function reconnectLine(workbenchName: string): string {
 }
 
 // The tab bar's last control; labelled like its neighbours from `sm` up, an icon on a phone.
+const BackGlyph = lucideGlyph(lucideArrowLeft, 14);
+
+// `href`: the app's own address for what the frame shows (`/document/<id>`, or an Explorer view's).
 export function WorkbenchOpenLink({
-  documentId,
+  href,
   labelled,
+  description = 'Opens this document in a full tab.',
 }: {
-  documentId: string;
+  href: string;
   labelled: boolean;
+  description?: string;
 }) {
   return (
-    <HoverCard title="Open in livediagram" description="Opens this document in a full tab.">
+    <HoverCard title="Open in livediagram" description={description}>
       <a
-        href={`/document/${encodeURIComponent(documentId)}`}
+        href={href}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Open in livediagram (opens in a new tab)"
@@ -34,6 +41,31 @@ export function WorkbenchOpenLink({
         <OpenExternalIcon />
         <ChromeLabel show={labelled}>Open in livediagram</ChromeLabel>
       </a>
+    </HoverCard>
+  );
+}
+
+// The tab bar's first control in a workspace frame; labelled like its neighbours from `sm` up, an icon on a phone.
+export function WorkbenchBackButton({
+  onBack,
+  backTitle,
+  labelled,
+}: {
+  onBack: () => void;
+  backTitle: string;
+  labelled: boolean;
+}) {
+  return (
+    <HoverCard title="Back" description={`Back to ${backTitle}.`}>
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label={`Back to ${backTitle}`}
+        className={labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN}
+      >
+        <BackGlyph />
+        <ChromeLabel show={labelled}>Back</ChromeLabel>
+      </button>
     </HoverCard>
   );
 }

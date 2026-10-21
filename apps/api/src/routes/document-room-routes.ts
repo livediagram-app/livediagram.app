@@ -16,6 +16,7 @@ import { verifyOwnerId } from '../auth/owner-signature';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
 import { clientRateKey } from '../client-ip';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
+import { noteWorkbenchSessionRoom } from '../db/workbench';
 import { forbidden, json, notFound } from '../responses';
 import {
   COMMUNITY_CONTENT,
@@ -87,6 +88,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       // one, so this is the only place the room can learn that a session is the owner's.
       owner: await ownsDocument(ctx, liveDoc),
     });
+    // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
+    if (workbench?.scope === 'workspace')
+      await noteWorkbenchSessionRoom(env, workbench.sessionId, id);
     // The caller's own adder key comes back with its ticket, so its editor knows which stickies are its own
     // to delete (docs/specs/013-workspace/share-roles.md). It says nothing about anybody else.
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };

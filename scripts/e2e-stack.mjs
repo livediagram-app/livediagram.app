@@ -44,6 +44,10 @@ import {
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
 import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
+import {
+  isWorkspaceFramePath,
+  WORKSPACE_FRAME_PAGE,
+} from '../apps/live/lib/workbench/workbench-frame-path.ts';
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
@@ -406,6 +410,8 @@ function resolveStatic(pathname, out) {
   // So does every form link, /form/<code> (apps/live/lib/form-path.ts, as the live worker rewrites it): without this
   // the stack answered a published form's link with the 404 page, so no spec could open one.
   if (p === '/form' || p.startsWith('/form/')) p = '/form/placeholder';
+  // So does every place inside a workspace frame, as the live worker serves them (lib/workbench/workbench-frame-path.ts).
+  if (isWorkspaceFramePath(p)) p = WORKSPACE_FRAME_PAGE;
   if (p === '/') p = '/index';
   const candidates = [
     path.join(out, p), // exact file (assets)

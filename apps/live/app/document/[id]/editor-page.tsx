@@ -6,6 +6,11 @@ import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@/lib/idle-prefetch';
+import {
+  useWorkbenchSession,
+  type WorkspaceFrameHooks,
+} from '@/components/providers/workbench-session-context';
+import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { track } from '@/lib/telemetry';
 import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -47,11 +52,15 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   const state = useEditorState({ surface });
   const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
   // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): one emit per rendered embed iframe
-  // document, and one per workbench frame that mounts the editor. Fires once on mount.
+  // document, and one per document-scope workbench frame that mounts the editor (a workspace frame counts its own
+  // mount, WorkspaceFrame). Fires once on mount.
+  // A workspace frame's hooks (Back), or null.
+  const workspaceFrame = useWorkbenchSession()?.frame ?? null;
+  const inWorkspaceFrame = workspaceFrame !== null;
   useEffect(() => {
     if (surface === 'embed') track('Session', 'Opened', 'Embed');
-    if (surface === 'workbench') track('Session', 'Opened', 'Workbench');
-  }, [surface]);
+    if (surface === 'workbench' && !inWorkspaceFrame) track('Session', 'Opened', 'Workbench');
+  }, [surface, inWorkspaceFrame]);
   // Prefetch the async icon-catalogue chunk (~60 kB of glyph data kept out of
   // the first-load JS, see lib/icon-registry.ts) as soon as the editor
   // mounts, so it downloads in parallel with the document fetch / hydration.
@@ -157,7 +166,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell>{card}</EmbedShell>
+      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
       <StatusShell title="Document deleted" explorer={fullExplorer}>
         {card}
@@ -173,7 +182,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     // Embed and workbench frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return !appChrome ? (
-      <EmbedShell>{card}</EmbedShell>
+      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
       <StatusShell title="Couldn’t load document" explorer={fullExplorer}>
         {card}
@@ -182,15 +191,18 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   }
 
   if (documentNotFound) {
-    // An address that names no document is a missing page, not a missing document.
-    const page = !isEditorPath(window.location.pathname);
+    // An address that names no document is a missing page, not a missing document. A workbench's session always
+    // names a document, whatever its frame's address.
+    const page = !workbenchMode && !isEditorPath(window.location.pathname);
     // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
     return !appChrome ? (
-      <EmbedShell>
+      <EmbedShell frame={workspaceFrame}>
         <NotFound
           page={page}
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
+          // In a workspace frame the Explorer is a step back, inside the frame.
+          onOpenExplorer={workspaceFrame?.back}
         />
       </EmbedShell>
     ) : (
@@ -311,6 +323,22 @@ function StatusShell({
 
 // The bare embed status surface (docs/specs/013-workspace/embeds.md): no header, no Explorer — an
 // app header + Explorer inside someone else's iframe would be noise.
-function EmbedShell({ children }: { children: ReactNode }) {
-  return <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">{children}</main>;
+// A frame's bare status screen; a workspace frame's carries its Back (WB59), top left.
+function EmbedShell({
+  children,
+  frame = null,
+}: {
+  children: ReactNode;
+  frame?: WorkspaceFrameHooks | null;
+}) {
+  return (
+    <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">
+      {frame ? (
+        <div className="absolute top-3 left-3 z-[var(--z-chrome)]">
+          <WorkbenchBackButton onBack={frame.back} backTitle={frame.backTitle} labelled />
+        </div>
+      ) : null}
+      {children}
+    </main>
+  );
 }

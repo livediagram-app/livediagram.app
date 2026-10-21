@@ -34,6 +34,10 @@ import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
 import { useExplorerState } from './useExplorerState';
 import { teamFolderPath } from './routes';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
+import { explorerSurfaceFlags, useExplorerSurface } from './explorer-surface';
+import { explorerPathFor } from './routes';
+import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
+import { assignAppLocation } from '@/lib/app-location';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -67,6 +71,7 @@ const SIDEBAR_WIDTH = 256;
 // only the right pane (children) changes.
 export function ExplorerShell({ children }: { children: ReactNode }) {
   const state = useExplorerState();
+  const surface = explorerSurfaceFlags(useExplorerSurface());
   // Dark mode's Midnight palette, before the first paint (docs/specs/004-interface-design/color-scheme.md).
   useMidnightPalette();
   // Wait for Clerk to settle so a signed-in user never momentarily
@@ -92,7 +97,7 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
       </CustomThemeProvider>
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
-      <LocalMovePrompt />
+      {surface.guestPrompts ? <LocalMovePrompt /> : null}
     </ExplorerProvider>
   );
 }
@@ -137,6 +142,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
     lensResult,
     selected,
   } = useExplorer();
+  // In a workspace frame: no app header, account menu, Settings or Teams administration (explorer-surface.ts).
+  const surface = explorerSurfaceFlags(useExplorerSurface());
   // Navigating to another section clears a crashed pane's notice.
   const pathname = usePathname();
   // Home's hero folds away when the reader leaves Home and unfolds when they return; hidden by its close, Home
@@ -159,7 +166,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
   // floating card.
   const { dismissed: bannerDismissed, dismiss: dismissBanner } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const showSignInBanner = clerkEnabled && !clerkUserId && !bannerDismissed;
+  const showSignInBanner = surface.guestPrompts && clerkEnabled && !clerkUserId && !bannerDismissed;
   // Arrived here because a pass was revoked under an open document: say so (lib/access-notice.ts).
   useAccessEndedToast();
 
@@ -173,17 +180,36 @@ function ShellChrome({ children }: { children: ReactNode }) {
           squeezing the brand. */}
       {/* On a desktop the header is three columns, the field centred between the brand and the account on every
           page; each side grows to its content first, so a narrow desktop never overlaps them. */}
-      <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap lg:grid lg:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] dark:border-slate-700 dark:bg-slate-900/85">
-        <div className="flex h-14 items-center gap-3 lg:col-start-1">
-          <Brand href="/" size="md" />
-          <ProductNav current="explorer" showOnMobile />
-        </div>
-        {/* While Home shows its hero the field sits there instead (docs/specs/013-workspace/explorer-filters.md "The
-            field"). */}
-        {heroOnHome ? null : (
-          <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0 lg:col-start-2 lg:ml-0">
+      {surface.appHeader ? (
+        <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap lg:grid lg:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] dark:border-slate-700 dark:bg-slate-900/85">
+          <div className="flex h-14 items-center gap-3 lg:col-start-1">
+            <Brand href="/" size="md" />
+            <ProductNav current="explorer" showOnMobile />
+          </div>
+          {/* While Home shows its hero the field sits there instead (docs/specs/013-workspace/explorer-filters.md "The
+              field"). */}
+          {heroOnHome ? null : (
+            <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0 lg:col-start-2 lg:ml-0">
+              <LensField lens={lens} subjects={lensResult.subjects} />
+              {/* Counts what the lens left once typing settles; the team library counts its own. */}
+              <LensAnnouncer
+                input={lens.input}
+                shown={lensResult.shown}
+                total={lensResult.total}
+                muted={lens.view === null || selected.kind === 'team'}
+              />
+            </div>
+          )}
+          <div className="flex h-14 items-stretch lg:col-start-3 lg:justify-self-end">
+            <AuthControls onOpenAccount={() => openSettingsOn('account')} />
+          </div>
+        </header>
+      ) : heroOnHome ? null : (
+        // A workspace frame keeps the Explorer's field in a slim bar of its own (WB61): no brand, product nav or
+        // account.
+        <div className="sticky top-0 z-[var(--z-chrome)] flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+          <div className="w-full sm:mx-auto sm:max-w-md">
             <LensField lens={lens} subjects={lensResult.subjects} />
-            {/* Counts what the lens left once typing settles; the team library counts its own. */}
             <LensAnnouncer
               input={lens.input}
               shown={lensResult.shown}
@@ -191,11 +217,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
               muted={lens.view === null || selected.kind === 'team'}
             />
           </div>
-        )}
-        <div className="flex h-14 items-stretch lg:col-start-3 lg:justify-self-end">
-          <AuthControls onOpenAccount={() => openSettingsOn('account')} />
         </div>
-      </header>
+      )}
 
       {/* Home's front-page band (docs/specs/013-workspace/explorer-home.md "The hero"), above the sidebar. */}
       {hero.mounted ? (
@@ -267,9 +290,19 @@ function ShellChrome({ children }: { children: ReactNode }) {
       >
         <ChromeControls
           onOpenSearch={() => setSearchOpen(true)}
-          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenSettings={surface.settings ? () => setSettingsOpen(true) : undefined}
           powerUser={isPowerUserMode(prefs)}
+          github={surface.appLinks}
+          appearance={surface.appearance}
         />
+        {/* A workspace frame's Open in livediagram: this view in a full tab. */}
+        {surface.appHeader ? null : (
+          <WorkbenchOpenLink
+            href={explorerPathFor(selected)}
+            labelled
+            description="Opens this view in a full tab."
+          />
+        )}
       </div>
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
@@ -329,7 +362,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           })()
         : null}
       <TeamFormModal
-        open={teamModalOpen}
+        open={surface.administration && teamModalOpen}
         title="New Team"
         submitLabel="Create Team"
         onSubmit={(values) => {
@@ -345,11 +378,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
           {...searchPanelSources({ documents: liveDocs, folders, shared, teams, teamDocuments })}
           teamFolders={teamFolders}
           onSelectDocument={(id) => {
-            window.location.assign(`/document/${id}`);
+            assignAppLocation(`/document/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
             // Non-owners can only open the document on the visitor URL.
-            window.location.assign(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
+            assignAppLocation(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });
@@ -362,10 +395,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
             // folder deep-link param at mount (docs/specs/013-workspace/team-shared-documents.md).
-            window.location.assign(teamFolderPath(teamId, folderId));
+            assignAppLocation(teamFolderPath(teamId, folderId));
           }}
           helpItems={HELP_SEARCH_ITEMS}
-          settingItems={SETTINGS_SEARCH_ITEMS}
+          settingItems={surface.settings ? SETTINGS_SEARCH_ITEMS : []}
           onSelectSetting={(categoryId, rowKey) => {
             setSettingsFocus({ categoryId, rowKey });
             setSettingsOpen(true);
@@ -374,7 +407,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         />
       ) : null}
 
-      {settingsOpen ? (
+      {surface.settings && settingsOpen ? (
         <SettingsDialog
           settings={prefs}
           onChange={(next) => {

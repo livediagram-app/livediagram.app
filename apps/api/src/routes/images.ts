@@ -270,9 +270,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const meta = await getImage(env, imageId);
     if (!meta) return notFound();
     const callerOwner = resolveOwner();
-    // A workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner shortcut and
-    // reads through its own document only, so it cannot walk its owner's gallery by id.
-    const workbench = ctx.workbench ?? null;
+    // A document-scope workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner
+    // shortcut and reads through its own document only, so it cannot walk its owner's gallery by id. A workspace
+    // session reaches the gallery, as the Explorer does, so it reads as its person.
+    const workbench = ctx.workbench?.scope === 'document' ? ctx.workbench : null;
     let allowed = !workbench && callerOwner === meta.ownerId;
     if (!allowed) {
       const d = url.searchParams.get('d');

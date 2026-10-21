@@ -22,6 +22,7 @@ import {
 } from '@/app/explorer/home/first-run-starts';
 import { HomeSection } from './HomeSection';
 import { CARD_SURFACE, FOCUS_RING, MUTED, PANEL_SURFACE } from './home-styles';
+import { assignAppLocation } from '@/lib/app-location';
 
 export function HomeWelcome({
   offerSignIn,
@@ -55,7 +56,7 @@ export function HomeWelcome({
         link={{
           href: WELCOME_ALL_TEMPLATES_HREF,
           label: WELCOME_COPY.allTemplates,
-          onNavigate: () => window.location.assign(WELCOME_ALL_TEMPLATES_HREF),
+          onNavigate: () => assignAppLocation(WELCOME_ALL_TEMPLATES_HREF),
           onActivate: () => track('Home', 'Selected', 'Welcome.AllTemplates'),
         }}
       >

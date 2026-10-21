@@ -14,7 +14,7 @@ import {
 import { apiEndWorkbenchSession, apiRedeemWorkbenchTicket } from '@/lib/api/workbench';
 import { debugLog } from '@/lib/debug-log';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
-import type { WorkbenchEvent, WorkbenchPhase } from './workbench-machine';
+import { renewalFits, type WorkbenchEvent, type WorkbenchPhase } from './workbench-machine';
 
 async function renewWith(
   ticket: string,
@@ -32,7 +32,7 @@ async function renewWith(
   }
   const next = outcome.session;
   const bound = current();
-  if (!bound || next.documentId !== bound.documentId || next.origin !== bound.origin) {
+  if (!bound || !renewalFits(next, bound)) {
     console.warn('[workbench] renew-failed', { reason: 'mismatch' });
     void apiEndWorkbenchSession(next.session);
     return;

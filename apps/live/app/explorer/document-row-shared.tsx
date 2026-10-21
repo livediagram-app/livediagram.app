@@ -40,6 +40,7 @@ import { startDocumentDrag } from '@/components/panels/explorer-drag-mime';
 import type { DocumentEntryProps } from './explorer-view-props';
 import { VisibilityBadge } from './document-badges';
 import { teamFolderPath } from './routes';
+import { assignAppLocation } from '@/lib/app-location';
 
 // Shared documents open on the visitor URL (the owner-only path 404s for
 // a non-owner); everything else opens on the owned path.
@@ -171,7 +172,7 @@ export function DocumentActionsMenu({
           plain
           icon={<DocumentIcon />}
           label="Open"
-          onClick={() => window.location.assign(href)}
+          onClick={() => assignAppLocation(href)}
         />
         <MenuGroupSeparator />
         {onRemoveFromTimeline ? (
@@ -203,7 +204,7 @@ export function DocumentActionsMenu({
             plain
             icon={<DocumentIcon />}
             label="Open"
-            onClick={onOpen ? then(onOpen) : () => window.location.assign(href)}
+            onClick={onOpen ? then(onOpen) : () => assignAppLocation(href)}
           />
           {onShare ? (
             <MenuActionRow plain icon={<ShareIcon />} label="Share" onClick={then(onShare)} />
@@ -277,7 +278,7 @@ export function DocumentActionsMenu({
           icon={<TeamIcon />}
           label="Open Team"
           onClick={() => {
-            window.location.assign(teamFolderPath(liveDoc.team!.id, liveDoc.folderId ?? null));
+            assignAppLocation(teamFolderPath(liveDoc.team!.id, liveDoc.folderId ?? null));
           }}
         />
       ) : null}

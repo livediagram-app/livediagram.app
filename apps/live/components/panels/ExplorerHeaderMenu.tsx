@@ -15,6 +15,7 @@ import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { assignAppLocation } from '@/lib/app-location';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
@@ -61,7 +62,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            window.location.assign('/explorer');
+            assignAppLocation('/explorer');
           })}
         />,
       ],

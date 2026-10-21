@@ -98,6 +98,7 @@ export const ROOT_TYPES = [
   'ApiToken',
   'WorkbenchTicketRequest',
   'WorkbenchTicketResponse',
+  'WorkbenchWorkspaceTicketResponse',
   'WorkbenchSessionRequest',
   'WorkbenchSessionResponse',
   'WorkbenchPairingRequestCreate',

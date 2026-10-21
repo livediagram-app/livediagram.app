@@ -106,6 +106,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
     command: 'workbench pair',
     what: 'pairing a developer tool with their token',
   },
+  { type: 'FolderLs', command: 'folder ls', what: 'listing their folders as paths' },
+  { type: 'FolderCreate', command: 'folder create', what: 'making a folder' },
   { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
   { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },
