@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 // Loaded with the file, not inside the test: the verb catalogue is a large import.
-import { countedVerbs, SYNC_WATCH_TYPE } from '@liveplanner/agent-verbs';
+import { countedVerbs } from '@liveplanner/agent-verbs';
 import { pascalToken } from '@liveplanner/api-schema';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -104,7 +104,7 @@ describe('the MCP Tool Calls stack', () => {
 
 describe('the CLI Commands stack', () => {
   it('has one chart per verb the CLI counts', () => {
-    const counted = [...countedVerbs().map((v) => pascalToken(v.id)), SYNC_WATCH_TYPE];
+    const counted = countedVerbs().map((v) => pascalToken(v.id));
     expect(CLI_COMMAND_METRICS.map((m) => m.type).sort()).toEqual(counted.sort());
   });
 });

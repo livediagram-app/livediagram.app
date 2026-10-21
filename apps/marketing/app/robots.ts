@@ -43,21 +43,14 @@ export default function robots(): MetadataRoute.Robots {
         '/get-started',
         '/sso-callback',
         '/embed',
-        '/drive/',
         '/api/',
       ],
     },
-    // Three sitemaps share this origin: the marketing one (this app), the
+    // Two sitemaps share this origin: the marketing one (this app) and the
     // help centre's (apps/help, served at /help with its own
-    // app/sitemap.ts that mirrors lib/articles.ts), and the Community's
-    // (apps/community's worker lists every public post from the api,
-    // docs/specs/025-community/community.md "Search engines"). All are
-    // listed so crawlers find pages that otherwise hang off a sitemap
-    // nothing points at.
-    sitemap: [
-      `${SITE_URL}/sitemap.xml`,
-      `${SITE_URL}/help/sitemap.xml`,
-      `${SITE_URL}/community/sitemap.xml`,
-    ],
+    // app/sitemap.ts that mirrors lib/articles.ts). Both are listed so
+    // crawlers find pages that otherwise hang off a sitemap nothing points
+    // at.
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/help/sitemap.xml`],
   };
 }

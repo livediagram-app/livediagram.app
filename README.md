@@ -5,7 +5,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 **Live at [liveplanner.app](https://liveplanner.app).** MIT-licensed and self-hostable end-to-end.
 
 ```
-apps/        marketing site + editor + telemetry dashboard + help centre + community + api + mcp server + router + cli
+apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router + cli
 packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, page backgrounds (slides and form covers), Form tabs, items and the Plan board projection, Plan images, the Sheet engine, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, PNG rendering, sticky-note photo detection, telemetry client, the TypeScript source parser for static guards, the licences generator, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
@@ -26,14 +26,13 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 ## The 30-second tour
 
 - **Marketing** at `/` is the pitch and feature tour.
-- **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)). Signed-in users can mirror their Personal Space to their own Google Drive, kept in step both ways while a tab is open ([Google Drive mirror](docs/specs/022-drive-mirror/drive-mirror.md)).
+- **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)).
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
 - **Telemetry** at `/telemetry` is the public anonymous-events dashboard (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
-- **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
 - **MCP** at `mcp.liveplanner.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
-- **Router** stitches the six under one hostname.
-- **CLI** (`apps/cli`) is `liveplanner`, the command line agents and scripts read, lint and change documents with, published on npm as `@liveplanner/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+- **Router** stitches the five under one hostname.
+- **CLI** (`apps/cli`) is `liveplanner`, the command line agents and scripts read, lint and change documents with, published on npm as `@liveplanner/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 

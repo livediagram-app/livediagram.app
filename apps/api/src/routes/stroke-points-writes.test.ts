@@ -8,7 +8,7 @@ import { handleDocuments } from './documents';
 // Every tab the api receives runs the stored-tab migration before validation
 // (docs/specs/015-api/api.md "The persistence boundary", docs/specs/006-document/stroke-points.md
 // "Migration of stored strokes"): a stroke in the former `{ nx, ny }` shape, from a browser loaded
-// before a deploy, an API-token script or a Google Drive copy, is stored packed, never refused.
+// before a deploy or an API-token script, is stored packed, never refused.
 
 const legacyStroke = {
   id: 'f1',

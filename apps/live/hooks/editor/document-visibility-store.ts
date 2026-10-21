@@ -12,7 +12,6 @@ type DocumentVisibility = {
   shareable: boolean;
   team: boolean;
   offline: boolean;
-  community: boolean;
   // Opens Share: absent where the reader may not change who can see the document.
   onManage?: () => void;
 };
@@ -37,7 +36,6 @@ export function usePublishDocumentVisibility(
   shareable: boolean,
   team: boolean,
   offline: boolean,
-  community: boolean,
   onManage: (() => void) | undefined,
 ): void {
   const manage = useLatest(onManage);
@@ -47,9 +45,8 @@ export function usePublishDocumentVisibility(
       shareable,
       team,
       offline,
-      community,
       ...(canManage ? { onManage: () => manage.current?.() } : {}),
     });
-  }, [shareable, team, offline, community, canManage, manage]);
+  }, [shareable, team, offline, canManage, manage]);
   useLayoutEffect(() => () => setDocumentVisibility(null), []);
 }

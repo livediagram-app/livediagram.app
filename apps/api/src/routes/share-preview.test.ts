@@ -6,27 +6,19 @@ import type { Env } from '../types';
 
 vi.mock('../db', () => ({
   getShareLink: vi.fn(),
-  communityLinkAccess: vi.fn(),
   getDocumentThumbMeta: vi.fn(),
   getDocumentSharePassword: vi.fn(),
   shareCardKey: (id: string) => `og/${id}`,
-  communityShareCardKey: (id: string) => `og-community/${id}`,
 }));
 vi.mock('../document-image', () => ({ documentImageSvg: vi.fn() }));
 vi.mock('../share-card-png', () => ({ shareCardPng: vi.fn() }));
 
-import {
-  communityLinkAccess,
-  getDocumentSharePassword,
-  getDocumentThumbMeta,
-  getShareLink,
-} from '../db';
+import { getDocumentSharePassword, getDocumentThumbMeta, getShareLink } from '../db';
 import { documentImageSvg } from '../document-image';
 import { shareCardPng } from '../share-card-png';
 import { makeTestRouteContext } from './test-route-context';
 import {
   BRAND_CARD_REDIRECT_CACHE,
-  COMMUNITY_SHARE_CARD_CACHE,
   SHARE_CARD_CACHE,
   handleSharePreview,
   isSharePreviewPath,
@@ -42,7 +34,6 @@ const link = (over: Partial<Link> = {}) =>
     documentId: 'd1',
     role: 'view',
     tabId: null,
-    purpose: 'share',
     ...over,
   }) as Link;
 const doc = {
@@ -78,7 +69,6 @@ beforeEach(() => {
   vi.mocked(getShareLink).mockResolvedValue(link());
   vi.mocked(getDocumentThumbMeta).mockResolvedValue(doc);
   vi.mocked(getDocumentSharePassword).mockResolvedValue(null);
-  vi.mocked(communityLinkAccess).mockResolvedValue('public');
   vi.mocked(documentImageSvg).mockResolvedValue('<svg width="10" height="10"/>');
   vi.mocked(shareCardPng).mockResolvedValue(PNG);
 });
@@ -128,14 +118,6 @@ describe('GET /api/share/<code>/card', () => {
     expect(res.status).toBe(404);
     expect(await res.text()).not.toContain('Payments');
   });
-
-  it('names a public Community post, and nothing about one that is not public', async () => {
-    vi.mocked(getShareLink).mockResolvedValue(link({ purpose: 'community' }));
-    expect((await call('/share/CODE1234/card').result)!.status).toBe(200);
-    vi.mocked(communityLinkAccess).mockResolvedValue('hidden' as never);
-    expect((await call('/share/CODE1234/card').result)!.status).toBe(404);
-    expect(getDocumentThumbMeta).toHaveBeenCalledTimes(1);
-  });
 });
 
 describe('GET /api/share/<code>/image.png', () => {
@@ -151,7 +133,7 @@ describe('GET /api/share/<code>/image.png', () => {
     expect(documentImageSvg).toHaveBeenCalledWith(
       expect.anything(),
       doc,
-      { tabId: null, community: false },
+      null,
       expect.objectContaining({ defer: expect.any(Function) }),
     );
     await Promise.all(waits);
@@ -192,33 +174,12 @@ describe('GET /api/share/<code>/image.png', () => {
     const { result, waits } = call('/share/CODE1234/image.png', { images });
     expect((await result)!.status).toBe(200);
     await Promise.all(waits);
-    expect(documentImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      doc,
-      { tabId: 't2', community: false },
-      expect.anything(),
-    );
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, 't2', expect.anything());
     expect(images.get).not.toHaveBeenCalled();
     expect(images.put).not.toHaveBeenCalled();
   });
 
-  it('draws a Community link from the redacted snapshot, stored apart, with no stale window', async () => {
-    vi.mocked(getShareLink).mockResolvedValue(link({ purpose: 'community' }));
-    const images = bucket();
-    const { result, waits } = call('/share/CODE1234/image.png', { images });
-    const res = (await result)!;
-    expect(res.headers.get('Cache-Control')).toBe(COMMUNITY_SHARE_CARD_CACHE);
-    expect(documentImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      doc,
-      { tabId: null, community: true },
-      expect.anything(),
-    );
-    await Promise.all(waits);
-    expect(images.put).toHaveBeenCalledWith('og-community/d1', PNG, expect.anything());
-  });
-
-  it('is 404 wherever the card is: a dead code, a password, a hidden post', async () => {
+  it('is 404 wherever the card is: a dead code, a password', async () => {
     vi.mocked(getDocumentSharePassword).mockResolvedValue('hash');
     expect((await call('/share/CODE1234/image.png').result)!.status).toBe(404);
     vi.mocked(getShareLink).mockResolvedValue(null);

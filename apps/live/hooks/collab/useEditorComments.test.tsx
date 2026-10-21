@@ -116,33 +116,6 @@ describe('useEditorComments telemetry', () => {
   });
 });
 
-// docs/specs/025-community/community.md "Viewing a post's document": a Community visitor has no comments.
-describe('useEditorComments with comments off', () => {
-  it('opens no thread and adds nothing', async () => {
-    trackMock.mockReset();
-    applyElementDelta.mockReset();
-    const persist = vi.fn();
-    const { result } = renderHook(() =>
-      useEditorComments({
-        applyElementDelta,
-        selfParticipant: { id: 'me', name: 'Me', color: '#000' },
-        commentsOff: true,
-      }),
-    );
-    act(() => result.current.openComments('e1'));
-    expect(result.current.commentThreadOpenId).toBeNull();
-    let id = 'unset';
-    act(() => {
-      id = result.current.addComment('e1', 'Hello', persist);
-    });
-    await flush();
-    expect(id).toBe('');
-    expect(applyElementDelta).not.toHaveBeenCalled();
-    expect(persist).not.toHaveBeenCalled();
-    expect(trackMock).not.toHaveBeenCalled();
-  });
-});
-
 // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): every change names the cell, and opening
 // one is its own toggle beside the element's.
 describe('useEditorComments on a Sheet cell', () => {

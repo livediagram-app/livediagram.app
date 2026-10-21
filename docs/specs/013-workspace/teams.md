@@ -67,7 +67,7 @@ The invite email (and every reminder) carries a **Decline invite** link, so some
   - **Invalid** (unknown token, removed or replaced invite): "This invite link isn't valid".
 - **Idempotent.** Declining an already-declined invite answers `200 { status: 'declined' }` again and changes nothing; an expired one answers `200 { status: 'expired' }`; a joined one answers `409 already_joined`. Only the request that flips `invited` to `declined` (guarded in the write) tells anyone.
 - **What a decline does**: the row becomes `declined` and reminders stop. Its links keep working only to say it was declined. The team's admins get the same Timeline card and invite-response email (opt-out per admin) an in-app decline sends.
-- **Rate limits.** Both the read and the decline sit outside the owner-keyed write limiter and are limited per network (`TEAM_INVITE_RATE_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /56, keyed `invite-decline:<network>`), like the other unauthenticated doors (forms, Community). Absent binding: allowed (self-host). The 256-bit secret makes guessing hopeless either way; the limit bounds D1 reads.
+- **Rate limits.** Both the read and the decline sit outside the owner-keyed write limiter and are limited per network (`TEAM_INVITE_RATE_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /56, keyed `invite-decline:<network>`), like the other unauthenticated door (forms). Absent binding: allowed (self-host). The 256-bit secret makes guessing hopeless either way; the limit bounds D1 reads.
 
 ## Reminders and expiry
 

@@ -1,6 +1,5 @@
-// The whole-document envelope (docs/specs/022-drive-mirror/drive-mirror.md, "The file"):
-// the contents of a `.liveplanner` file in Google Drive, and what "Import a
-// copy" reads back. The sibling of the per-tab `liveplanner.tab` envelope in
+// The whole-document envelope: the contents of a `.liveplanner` file, as the
+// CLI's pull files write it and read it back. The sibling of the per-tab `liveplanner.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
 // document with every tab, each tab's per-document folder, and the slide deck.
 // Images stay references to liveplanner's image store; no bytes are embedded.

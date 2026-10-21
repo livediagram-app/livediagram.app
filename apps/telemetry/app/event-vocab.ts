@@ -51,9 +51,6 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Token: '#d946ef',
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
-  // Deep brown: apart from the greens (Action, Element, Cta), Email's teal and
-  // Activity's amber.
-  Drive: '#854d0e',
   Mcp: '#f43f5e',
   // Terminal ink: the command line, darker than the stone greys of Trash and Draw.
   Cli: '#1e293b',
@@ -64,8 +61,6 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Sheet: '#16a34a',
   // Violet, the Event RSVP starter's: apart from Plan's blue and Sheet's green.
   Form: '#7c3aed',
-  // Pink, the heart on a Community card.
-  Community: '#db2777',
   Email: '#0d9488',
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.

@@ -5,14 +5,12 @@
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
 import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-opens';
-import { COPY_COUNT_SQL } from './community-engagement';
 import { snapshotKeys } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
-import { disconnectDrive } from '../drive/disconnect';
 import { uniqueLibraryName } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 
@@ -129,10 +127,6 @@ export async function deleteAccount(
   // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
   // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
   await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
-  // at Google and drop the connection and every mirror row. The Drive files are
-  // the user's and stay.
-  await disconnectDrive(env, ownerId);
   // shared_with rows POINTING AT this owner's documents die with the
   // documents (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's documents are keyed on their owner_id and
@@ -152,27 +146,6 @@ export async function deleteAccount(
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
   // people's documents; those on their own went with the documents. Parts follow by cascade.
   await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
-  // community_copies (docs/specs/025-community/community.md): the copies this person took of other people's posts
-  // name them; the rows go and those posts' copy counts are recounted. Posts on their own documents went with them.
-  // The posts they copied, read first: their counts are recounted (capped per network) once the rows are gone.
-  const copied = await env.DB.prepare('SELECT post_id FROM community_copies WHERE copier_id = ?')
-    .bind(ownerId)
-    .all<{ post_id: string }>();
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(ownerId),
-    env.DB.prepare(
-      `UPDATE community_posts SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
-        WHERE id IN (SELECT value FROM json_each(?))`,
-    ).bind(JSON.stringify((copied.results ?? []).map((r) => r.post_id))),
-    // Their own posts went with their documents; this catches one whose document outlives them (moved
-    // to a team), so nothing stays published under a deleted account.
-    // Deleted through its community link, so the link goes too and the post's tags, likes, copies and reports
-    // follow by cascade.
-    env.DB.prepare(
-      `DELETE FROM share_links WHERE purpose = 'community'
-         AND code IN (SELECT share_code FROM community_posts WHERE author_id = ?)`,
-    ).bind(ownerId),
-  ]);
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
@@ -237,7 +210,7 @@ export async function migrateOwnerId(
   // One batch: one round trip, and all or nothing, where it was a round trip per statement and a failure
   // part-way left a half-moved account. No foreign key reads an owner column, so only each table's own order
   // matters, and the batch keeps it: the grant before the documents move (it joins the guest's documents),
-  // each INSERT OR IGNORE copy before its DELETE, and the copy counts recounted after the copies move.
+  // each INSERT OR IGNORE copy before its DELETE.
   const now = Date.now();
   const move = (sql: string, ...binds: unknown[]) => env.DB.prepare(sql).bind(...binds);
   const statements = {
@@ -319,26 +292,6 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
-    // community_copies (docs/specs/025-community/community.md "Likes"): a post counts each copier
-    // once, so the guest's copies become the account's. The primary key is (post_id, copier_id), so
-    // INSERT OR IGNORE then DELETE: where both identities copied one post it is one copier, and those
-    // posts' counts are recounted to match. (Likes are keyed by the browser's community key, never an
-    // owner id, and a post's author is always signed in, so neither needs moving.)
-    copies: move(
-      `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash)
-       SELECT post_id, ?, created_at, network_hash
-       FROM community_copies
-       WHERE copier_id = ?`,
-      toOwnerId,
-      fromOwnerId,
-    ),
-    copiesDrop: move('DELETE FROM community_copies WHERE copier_id = ?', fromOwnerId),
-    copyCounts: move(
-      `UPDATE community_posts
-       SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
-       WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)`,
-      toOwnerId,
-    ),
     // participants: the guest's name and colour. The id IS the owner id, so an
     // account that already has a row keeps it (a signed-in name comes from Clerk
     // anyway). The copy is stamped NOW, never with the source's created_at: a row

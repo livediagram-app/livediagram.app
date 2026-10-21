@@ -112,12 +112,4 @@ describe('SharePasswordSection', () => {
     expect(toggle.getAttribute('aria-checked')).toBe('true');
     expect(screen.getByText('Password Set')).toBeTruthy();
   });
-
-  it('locks setting a new password, but never removing one in force', () => {
-    renderSection({ lockedReason: 'Remove it from the Community to set a password.' });
-    expect(screen.getByText('Remove it from the Community to set a password.')).toBeTruthy();
-    cleanup();
-    renderSection({ sharePasswordSet: true, lockedReason: 'Locked.' });
-    expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy();
-  });
 });

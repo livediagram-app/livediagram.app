@@ -41,11 +41,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Opened',
   'Comment·Resolved',
   'Comment·Unresolved',
-  // Community (docs/specs/025-community/community.md "Telemetry"): publish, Edit Listing and Remove
-  // From Community in the Share dialog.
-  'Community·Changed',
-  'Community·Removed',
-  'Community·Shared',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
   // ('Opened'), and that visit created a document ('Created'). `type` is the
   // CTA's source from the closed CTA_SOURCES table.
@@ -68,13 +63,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Draw·Selected',
   'Draw·Toggled',
   'Document·Undone',
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
-  'Drive·Applied',
-  'Drive·Changed',
-  'Drive·Created',
-  'Drive·Linked',
-  'Drive·Opened',
-  'Drive·Unlinked',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
   'Editor·Changed',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.

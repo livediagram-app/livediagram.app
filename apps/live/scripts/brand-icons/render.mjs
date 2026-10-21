@@ -2,9 +2,9 @@
 // Prism module in @liveplanner/ui (docs/specs/004-interface-design/brand-mark.md):
 //   - apps/*/app/icon.svg: the compact mark, light/dark by prefers-color-scheme
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
-//   - marketing/media/icons/: transparent PNGs at Google Drive's sizes, and
+//   - marketing/media/icons/: transparent PNGs at the standard icon sizes, and
 //     white-tile PNGs (also copied to apps/marketing/public/ for the manifest)
-//   - apps/{help,community}/app/icon.png: the 256px tile, their favicon's PNG fallback
+//   - apps/help/app/icon.png: the 256px tile, its favicon's PNG fallback
 //   - apps/marketing/public/email/liveplanner-mark-64.png: the transparent 64px mark
 //     the api's emails show beside the wordmark (2x their 28px slot)
 // Run via `pnpm icons:brand` from the repo root. apps/marketing/lib/brand-icon.test.ts
@@ -42,7 +42,7 @@ const write = (path, text) => {
 };
 
 const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
-for (const app of ['marketing', 'live', 'help', 'telemetry', 'community']) {
+for (const app of ['marketing', 'live', 'help', 'telemetry']) {
   write(`apps/${app}/app/icon.svg`, `${favicon}\n`);
 }
 for (const scheme of ['light', 'dark']) {
@@ -83,14 +83,12 @@ for (const size of [256, 512, 1024]) {
 for (const size of [256, 512]) {
   await shoot(size, '#ffffff', `apps/marketing/public/liveplanner-icon-${size}.png`);
 }
-// The apps that serve their own icon under a basePath pair app/icon.svg with this PNG (Next emits both links).
-for (const app of ['help', 'community']) {
-  copyFileSync(
-    `${root}apps/marketing/public/liveplanner-icon-256.png`,
-    `${root}apps/${app}/app/icon.png`,
-  );
-  console.log(`brand-icons: apps/${app}/app/icon.png`);
-}
+// The help centre serves its own icon under a basePath, pairing app/icon.svg with this PNG (Next emits both links).
+copyFileSync(
+  `${root}apps/marketing/public/liveplanner-icon-256.png`,
+  `${root}apps/help/app/icon.png`,
+);
+console.log('brand-icons: apps/help/app/icon.png');
 // Emails load the mark from the public site (Gmail and Outlook drop SVG), so a
 // transparent copy is served at a path no other asset will ever claim.
 mkdirSync(`${root}apps/marketing/public/email`, { recursive: true });

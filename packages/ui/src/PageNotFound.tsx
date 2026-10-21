@@ -1,4 +1,4 @@
-// The not-found page of the static sites (marketing, help centre, Community; docs/specs/016-platform/router-app.md
+// The not-found page of the static sites (marketing, help centre; docs/specs/016-platform/router-app.md
 // "Not found"): an address that names no page gets the site's own chrome around one calm card with the ways on, not
 // a bare "404 | This page could not be found." with no way home. The editor keeps its own card (apps/live NotFound),
 // which offers the Explorer and a new document.
@@ -12,7 +12,7 @@ export function PageNotFound({
   helpHref = '/help/',
   helpLabel = 'Help Centre',
 }: {
-  // Where the main way back leads: the site's own home (the help centre's front page, the Community gallery).
+  // Where the main way back leads: the site's own home (the help centre's front page).
   homeHref?: string;
   homeLabel?: string;
   // The second way on: the help centre, or (on the help centre itself) its troubleshooting guides.

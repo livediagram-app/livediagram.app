@@ -58,7 +58,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
   placed in each batch **after** the `tabs` upsert (the foreign key needs the row):
   `tabWriteStatements`, `seedTabs` (per tab), `swapTabData` (with `nextStats`, guarded by
   `ifStoredData` so it lands only when the swap does), `copyDocument` (re-derived from the copied body
-  with `tabStatsOfData`, since a Community copy's redaction drops comments).
+  with `tabStatsOfData`).
 - `renameTab` writes no stats: a rename is not work in a mode.
 - `documentStatsSql(idSql)` is a scalar subquery over `document_tabs LEFT JOIN tab_stats`:
   `NULL` when the document has no linked tab or any linked tab lacks a row, else

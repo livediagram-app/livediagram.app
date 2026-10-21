@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 
-import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
 import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from './useChangesetSeen';
@@ -17,10 +16,6 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // The room-presence VALUES (cursors, selections, laser trails) live in
 // usePresenceState; this slice owns the gating + connection plumbing the
 // hydration/bootstrap, autosave and room hooks read and write.
-// A board opened from the Community (docs/specs/025-community/community.md): the post and its author,
-// and the board's own document id when the viewer is its author (the Community bar then offers to edit
-// it rather than copy it), else null.
-export type CommunitySession = CommunityShareInfo & { ownDocumentId: string | null };
 
 export function useEditorRealtime() {
   // Single open room connection for the current document. Re-opens
@@ -104,11 +99,6 @@ export function useEditorRealtime() {
   // up-to-date sessionShareCode rather than the value captured at
   // mount.
   const sessionShareCodeRef = useLatest(sessionShareCode);
-  // Set when the session came in on a Community post's link (docs/specs/025-community/community.md
-  // "Viewing a post's document"): the post and its author. Such a visitor never joins the room and
-  // sees the Community bar instead of the identity prompt. Null for every other session.
-  const [sessionCommunity, setSessionCommunity] = useState<CommunitySession | null>(null);
-
   // Owner, or a joined member of the document's team: see mayShareDocument.
   const canShareDocument = mayShareDocument({
     isOwner,
@@ -118,8 +108,6 @@ export function useEditorRealtime() {
 
   return {
     canShareDocument,
-    sessionCommunity,
-    setSessionCommunity,
     roomRef,
     documentServerStored,
     setDocumentServerStored,

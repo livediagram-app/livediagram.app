@@ -5,7 +5,7 @@ import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@liveplanner/ui';
 
 const STATUS_TITLE = 'Status · liveplanner';
 const STATUS_DESCRIPTION =
-  'Operational status of the liveplanner services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, Community, and database.';
+  'Operational status of the liveplanner services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
 
 export const metadata = pageMetadata({
   title: STATUS_TITLE,
@@ -49,11 +49,6 @@ const COMPONENTS: Component[] = [
       'The help centre at https://liveplanner.app/help. Static export served by a Cloudflare Worker.',
   },
   {
-    name: 'Community',
-    description:
-      'The public gallery of shared documents at https://liveplanner.app/community. Static export served by a Cloudflare Worker.',
-  },
-  {
     name: 'API',
     description:
       'The backend at https://liveplanner.app/api. A Cloudflare Worker that owns the D1 binding.',
@@ -66,7 +61,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Database',
     description:
-      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links, Community posts, telemetry events.',
+      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links, telemetry events.',
   },
   {
     name: 'Image storage',
@@ -76,7 +71,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Edge router',
     description:
-      'Cloudflare Worker that stitches marketing, live, telemetry, help, community and api under one hostname via service bindings.',
+      'Cloudflare Worker that stitches marketing, live, telemetry, help and api under one hostname via service bindings.',
   },
   {
     name: 'MCP server',

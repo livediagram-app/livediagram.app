@@ -51,7 +51,7 @@ export function liveplannerNextConfig({
 
 - It logs one line when it builds: `[next-config] turbopack=<bool> export=<bool> compiler=<bool>`, so a build log shows
   what ran.
-- **App configs**: `marketing`, `help`, `community`, `telemetry` spread `liveplannerNextConfig()`; `live` spreads
+- **App configs**: `marketing`, `help`, `telemetry` spread `liveplannerNextConfig()`; `live` spreads
   `liveplannerNextConfig({ exportInDev: false, reactCompiler: true })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
   `pageExtensions`, `transpilePackages` and (help) the MDX wrapper.
 - `experimental.reactBrowserBailout` (Next's client-rendering bailouts through `browser()`) is on by default in 16.4.1, so

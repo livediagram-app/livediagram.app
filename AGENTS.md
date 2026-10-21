@@ -198,7 +198,6 @@ apps/
   live/         # the diagram editor app (Next.js, clean routes)
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
-  community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -227,7 +226,6 @@ packages/
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
-  fake-google/  # in-memory Google Drive + OAuth, for tests only
   source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
   oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config

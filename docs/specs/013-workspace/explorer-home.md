@@ -325,7 +325,7 @@ An **open** is the editor loading a document for a person to look at.
   uses), at the day's first open. Every open, the first of the day or not, moves the person's **last open** of the
   document, which is what Recent reads.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
-  Offline, the Google Drive mirror, and any read through the public API or an AI tool.
+  Offline, and any read through the public API or an AI tool.
 - Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump Back In, never in What Happened, a document's
   History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
 - Offline Mode documents never reach the server, so the server records none of their opens. **This Browser counts

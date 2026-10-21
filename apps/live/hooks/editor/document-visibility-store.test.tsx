@@ -11,7 +11,7 @@ describe('the document visibility store', () => {
     const first = vi.fn();
     const second = vi.fn();
     const editor = renderHook(
-      ({ manage }) => usePublishDocumentVisibility(true, false, false, false, manage),
+      ({ manage }) => usePublishDocumentVisibility(true, false, false, manage),
       { initialProps: { manage: first as (() => void) | undefined } },
     );
     reader.rerender();

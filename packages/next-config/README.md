@@ -1,7 +1,7 @@
 # @liveplanner/next-config
 
 Shared [Next.js](https://nextjs.org) settings for the monorepo's Next apps (live, help, telemetry,
-community, marketing). See [`docs/specs/003-system-architecture/e2e-smoke.md`](../../docs/specs/003-system-architecture/e2e-smoke.md).
+marketing). See [`docs/specs/003-system-architecture/e2e-smoke.md`](../../docs/specs/003-system-architecture/e2e-smoke.md).
 
 ## Usage
 

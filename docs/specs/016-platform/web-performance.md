@@ -21,7 +21,7 @@ Measured 2026-10-11 (gzip level 9), before and after the changes that set these 
 | Editor: `/sign-in`, `/get-started`           | 1,546 KiB | 362 KiB   |
 | Editor: `/explorer/home` (and most sections) | 1,780 KiB | 570 KiB   |
 | Editor: `/new`                               | 1,877 KiB | 669 KiB   |
-| Editor: `/join`, `/drive/*`, `/oauth/*`      | ~1,500    | 316–354   |
+| Editor: `/join`, `/oauth/*`                  | ~1,500    | 316–354   |
 | Editor: `/document/<id>`                     | 1,493 KiB | 1,489 KiB |
 | Help: an article                             | 238 KiB   | 207 KiB   |
 | Telemetry: the dashboard                     | 287 KiB   | 280 KiB   |
@@ -46,10 +46,6 @@ Next renders the root not-found slot inside the layout, so its code is part of e
   `next/dynamic`, never a static import. A document URL already has the editor from
   `/document/placeholder`'s own import, so it pays nothing extra; the opening screen covers the one
   tick the import takes.
-- The Google Drive mirror's engine loads only in the one tab elected to run it
-  ([Drive mirror](../022-drive-mirror/drive-mirror.md)); every other tab, and every person without
-  Drive, never downloads it. The token source every signed-in tab needs lives apart from it
-  (`lib/drive/browser-tokens.ts`).
 - `apps/live/app/first-load-lazy.test.ts` fails if any of these become static imports again.
 
 ### A surface that is not on screen loads when it is
@@ -129,7 +125,7 @@ sidebar is, where a flex row let the article take the full width until the sideb
 
 ### The first images a visitor sees load first
 
-A gallery's first row (the Community gallery's first four cards) loads its images eagerly with
+A gallery's first row loads its images eagerly with
 `fetchpriority="high"`; every other card's image is lazy.
 
 ### Ask once
@@ -162,8 +158,6 @@ seen on the document).
   Inbox reads against the real migrations.
 - Cells named by key are matched as `(row_id, col_id)` pairs, so the primary key seeks each one
   (`apps/api/src/db/sheets-plans.test.ts`).
-- A public, identity-free read that every visitor makes (the Community's featured posts and facets)
-  is answered from the edge cache for its stated lifetime (`apps/api/src/edge-cache.ts`).
 - A check that needs only a document's owner and team reads that row, not the full document.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
 - The tab save reads its document in one query and fetches the room's ledger alongside its other

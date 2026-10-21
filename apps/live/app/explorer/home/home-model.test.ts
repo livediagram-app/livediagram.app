@@ -52,7 +52,6 @@ const local = (
     name: `Local ${id}`,
     shareable: false,
     shareCode: null,
-    communityListed: false,
     folderId: null,
     teamId: null,
     source: null,

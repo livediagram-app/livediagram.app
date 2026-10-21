@@ -237,15 +237,6 @@ describe('the editor-level providers', () => {
     expect(on.result.current?.canComment).toBe(false);
     on.result.current?.open('el1', 'row1:col1');
     expect(open).toHaveBeenCalledWith('el1', 'row1:col1');
-    cleanup();
-    const off = renderHook(() => useSheetComments(), {
-      wrapper: ({ children }) => (
-        <SheetCommentsProvider open={open} openId={null} openCell={null} canComment off>
-          {children}
-        </SheetCommentsProvider>
-      ),
-    });
-    expect(off.result.current).toBeNull();
   });
 
   it('names a cell only once its Sheet is drawn', () => {

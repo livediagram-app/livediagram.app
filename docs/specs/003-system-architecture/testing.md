@@ -344,11 +344,6 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
     index entry is unique, so a merge that keeps both sides of one fails a test; and the
     one-TypeScript guard (every workspace on the root's TypeScript 7, no alias to another).
-  - `apps/community`: component tests for the gallery (search words, the
-    controls, My Shares, Load More), the post page and the like button's
-    optimistic rollback, the switched-off gate and the lazy Clerk session; the
-    pure helpers (query state, the community key, telemetry); and the app's
-    optical-guard and motion-budget tests.
 
 - **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test

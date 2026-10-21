@@ -11,11 +11,11 @@ import { useTourEngine, type TourEngine } from './useTourEngine';
 
 // The tour, and `freeze`, which fixes its steps from the document as it is when Show Me is pressed: a collaborator
 // adding or removing a tab mid-tour must not shift the steps out from under the person.
-export function useShareTour(
-  multiTab: boolean,
-  showPasses: () => void,
-): { tour: TourEngine<ShareTourApi>; freeze: () => void } {
-  const apiRef = useLatest<ShareTourApi>({ showPasses });
+export function useShareTour(multiTab: boolean): {
+  tour: TourEngine<ShareTourApi>;
+  freeze: () => void;
+} {
+  const apiRef = useLatest<ShareTourApi>({});
   const [steps, setSteps] = useState(() => shareTourSteps(multiTab));
   const tour = useTourEngine<ShareTourApi>({
     steps,

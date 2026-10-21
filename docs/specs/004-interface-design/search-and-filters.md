@@ -1,8 +1,7 @@
 # Search and filters
 
 A search that can also be narrowed by filters is **one field**, never a box with a row of filters under it: the
-filters live in the search, as the Community gallery's search box reads (its category, tags and sort written into the
-query, [Community](../025-community/community.md)). The box always reads as the whole query.
+filters live in the search. The box always reads as the whole query.
 
 ## The field
 
@@ -23,4 +22,4 @@ query, [Community](../025-community/community.md)). The box always reads as the 
 ## Building it
 
 - `FilterSearchBox` (apps/live/components/primitives) draws the field; the caller owns what a chip and the add
-  control mean. The Community box predates it and writes its filters as text tokens; both read the same way.
+  control mean.

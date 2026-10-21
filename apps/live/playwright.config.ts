@@ -73,9 +73,8 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      // The Drive, signed-in and sites suites need their own builds and stacks; see below.
+      // The signed-in, sites and workbench suites need their own builds and stacks; see below.
       testIgnore: [
-        /drive-(mirror|shots)\.spec\.ts/,
         /clerk-stub\//,
         /armed\//,
         /perf\//,
@@ -83,7 +82,7 @@ export default defineConfig({
         /workbench-(embed|workspace)\.spec\.ts/,
       ],
     },
-    // The optical audit of the help centre, telemetry dashboard, Community and marketing site: the one suite
+    // The optical audit of the help centre, telemetry dashboard and marketing site: the one suite
     // that needs their builds, so CI gives it its own job and the shards build only live
     // (docs/specs/003-system-architecture/e2e-smoke.md "When it runs").
     {
@@ -91,25 +90,6 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: /optical-audit-sites\.spec\.ts/,
     },
-    // Opt-in (pnpm --filter @liveplanner/live test:e2e:drive): the Google Drive
-    // mirror against the fake Google, signed in through the test-only auth
-    // bridge (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing").
-    // Kept out of CI's default run: it needs a build with NEXT_PUBLIC_E2E_AUTH.
-    ...(process.env.E2E_DRIVE === '1'
-      ? [
-          {
-            name: 'drive',
-            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
-            testMatch: /drive-mirror\.spec\.ts/,
-          },
-          // Every Drive state as a screenshot, light and dark (drive-shots.spec.ts).
-          {
-            name: 'drive-shots',
-            use: { ...devices['Desktop Chrome'] },
-            testMatch: /drive-shots\.spec\.ts/,
-          },
-        ]
-      : []),
     ...(workbench
       ? [
           {

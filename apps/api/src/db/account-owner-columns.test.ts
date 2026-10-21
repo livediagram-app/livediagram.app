@@ -72,10 +72,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27): a guest with an edit link
   // writes and reverts changesets too.
   { table: 'agent_changesets', column: 'author_id', migrate: { kind: 'moves' } },
-  // Community (docs/specs/025-community/community.md): a guest copies a post as often as anyone; only a
-  // signed-in person publishes one.
-  { table: 'community_copies', column: 'copier_id', migrate: { kind: 'moves' } },
-  { table: 'community_posts', column: 'author_id', migrate: { kind: 'account-only' } },
   { table: 'api_tokens', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'email_lifecycle', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'auth_accounts', column: 'owner_id', migrate: { kind: 'account-only' } },
@@ -83,9 +79,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // only a joined team member sends them.
   { table: 'notify_email_claims', column: 'sender_id', migrate: { kind: 'account-only' } },
   { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
-  { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
   // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md): minted from a token, so account-only.
   { table: 'workbench_pairing_requests', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'workbench_pairings', column: 'owner_id', migrate: { kind: 'account-only' } },
@@ -130,31 +123,10 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string 
   });
 }
 
-// A Community post of `documentId` by `authorId`, with its community link; once per document.
-function communityPost(sql: DatabaseSync, documentId: string, authorId: string): string {
-  const id = `p-${documentId}`;
-  sql
-    .prepare(
-      "INSERT OR IGNORE INTO share_links (code, document_id, role, created_at, purpose) VALUES (?, ?, 'view', ?, 'community')",
-    )
-    .run(`c-${documentId}`, documentId, T0);
-  sql
-    .prepare(
-      `INSERT OR IGNORE INTO community_posts
-         (id, document_id, share_code, author_id, title, description, category, search_text, published_at, updated_at)
-       VALUES (?, ?, ?, ?, 'Post', 'A post.', 'other', 'post', ?, ?)`,
-    )
-    .run(id, documentId, `c-${documentId}`, authorId, T0, T0);
-  return id;
-}
-
 // One row in every guest-holdable owner-keyed column, keyed on `id`, starring
 // and visiting a document `peer` owns as well as its own.
 function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) {
   insert(sql, 'participants', { id, name: 'Otter', color: '#ff8800', created_at: T0 });
-  // A copy of the peer's Community post (the peer document's owner is its author).
-  const peerPost = communityPost(sql, peerDocument, OTHER);
-  insert(sql, 'community_copies', { post_id: peerPost, copier_id: id, created_at: T0 });
   liveDoc(sql, `d-${id}`, id);
   insert(sql, 'folders', {
     id: `f-${id}`,
@@ -270,8 +242,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
 // The account-only rows: an API token, the lifecycle-email and first-seen
 // rows, and a membership of a team `peer` has joined too.
 function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
-  // A Community post of their own document.
-  communityPost(sql, `d-${id}`, id);
   insert(sql, 'api_tokens', {
     id: `tok-${id}`,
     owner_id: id,
@@ -284,15 +254,6 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
   insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
   insert(sql, 'notify_email_claims', { claim_key: `claim-${id}`, sender_id: id, created_at: T0 });
-  insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
-  insert(sql, 'drive_items', {
-    owner_id: id,
-    item_kind: 'document',
-    ld_id: `d-`,
-    drive_file_id: `file-`,
-    name: 'x.liveplanner',
-    ld_name: 'x',
-  });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
     insert(sql, 'team_members', {
@@ -444,20 +405,6 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     for (const c of OWNER_COLUMNS.filter((c) => c.migrate.kind === 'stays')) {
       expect(count(sql, c, GUEST), label(c)).toBeGreaterThan(0);
     }
-  });
-
-  it('counts one copier when both identities copied the same Community post', async () => {
-    const { env, sql } = arrange();
-    // The account copied the post too, from another device.
-    insert(sql, 'community_copies', { post_id: 'p-d-other', copier_id: ACCOUNT, created_at: T0 });
-    sql.prepare("UPDATE community_posts SET copy_count = 2 WHERE id = 'p-d-other'").run();
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const copiers = sql.prepare('SELECT copier_id FROM community_copies').all();
-    expect(copiers.map((c) => c.copier_id)).toEqual([ACCOUNT]);
-    const post = sql.prepare("SELECT copy_count FROM community_posts WHERE id = 'p-d-other'").get();
-    expect(post?.copy_count).toBe(1);
   });
 
   it('keeps the account star when both identities starred the same document', async () => {

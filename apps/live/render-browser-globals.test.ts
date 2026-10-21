@@ -10,8 +10,6 @@ const repo = fileURLToPath(new URL('../../', import.meta.url));
 const OUTSIDE_RENDER: Record<string, string> = {
   'apps/live/components/primitives/MovablePanel.tsx':
     'clampFree, called from handlers and an effect',
-  'apps/live/components/drive/DriveMirrorProvider.tsx':
-    'connectOutcomeOnce, module state read once in an effect',
   'apps/live/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',
   'apps/live/components/canvas/ReactionBurst.tsx': 'inside the drawing effect',
@@ -30,7 +28,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
     'ENTRY_HASH, module state; the Explorer renders in the browser only',
   'apps/live/hooks/ui/usePanelDock.ts': 'inside an effect',
   'apps/live/hooks/canvas/useDocumentActions.ts': 'inside a handler',
-  'apps/live/hooks/canvas/useAutoCopyParam.ts': 'inside an effect',
   'apps/live/hooks/canvas/useClipboard.ts': 'inside a handler',
   'apps/live/hooks/persistence/useDocumentListActions.ts': 'inside handlers',
   'apps/live/hooks/collab/useFacilitator.ts': 'readToken and writeToken, called from callbacks',

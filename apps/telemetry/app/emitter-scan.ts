@@ -64,7 +64,7 @@ export type Emit = { category: Value; action: Value; type: Value; path: string }
 
 // The emit helpers: `track` (browsers), `siteTrack` (the public sites' shared
 // tracker, scanned under its own name where an app calls it directly rather
-// than re-exporting it as `track` the way help does: the Community app),
+// than re-exporting it as `track` the way help does),
 // `report` / `reportServerEvent` (api worker), `postTelemetry` (mcp worker).
 // The workers' helpers take the Env first.
 const EMITTERS = new Set(['track', 'siteTrack', 'report', 'reportServerEvent', 'postTelemetry']);

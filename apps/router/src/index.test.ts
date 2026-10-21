@@ -28,16 +28,14 @@ function makeEnv() {
   const api = mockFetcher();
   const telemetry = mockFetcher();
   const help = mockFetcher();
-  const community = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
     TELEMETRY: telemetry.fetcher,
     HELP: help.fetcher,
-    COMMUNITY: community.fetcher,
   };
-  return { env, marketing, live, api, telemetry, help, community };
+  return { env, marketing, live, api, telemetry, help };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -77,25 +75,11 @@ describe('production dispatch (service bindings)', () => {
     });
     expect(res.status).toBe(307);
     expect(res.headers.get('Location')).toBe('/help/explorer/folders/');
-    const post = await dispatch('/community/post?id=X', {
-      ...env,
-      COMMUNITY: redirecting('/post/?id=X'),
-    });
-    expect(post.headers.get('Location')).toBe('/community/post/?id=X');
     // An absolute one, or one already under the prefix, is left as it is.
     const abs = await dispatch('/help/x', { ...env, HELP: redirecting('https://elsewhere.test/') });
     expect(abs.headers.get('Location')).toBe('https://elsewhere.test/');
     const kept = await dispatch('/help/x', { ...env, HELP: redirecting('/help/y/') });
     expect(kept.headers.get('Location')).toBe('/help/y/');
-  });
-
-  it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
-    const { env, community, marketing } = makeEnv();
-    await dispatch('/community/post/?id=ABCDEFGH23', env);
-    expect(community.urls).toEqual(['https://liveplanner.app/post/?id=ABCDEFGH23']);
-    await dispatch('/community', env);
-    expect(community.urls[1]).toBe('https://liveplanner.app/');
-    expect(marketing.urls).toEqual([]);
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
@@ -306,9 +290,8 @@ describe('the caching rules', () => {
       LIVE: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
       TELEMETRY: answering('<html></html>', html),
-      COMMUNITY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry', '/community']) {
+    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {

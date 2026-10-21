@@ -18,7 +18,7 @@ A workbench embed has a **scope**, chosen when it is minted and fixed for the li
 | `workspace` | `/embed/workbench/explorer[/folder/<id>]` | Explorer Home, or the asked folder | the person's whole workspace, as the Explorer does |
 
 The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's diagrams one
-click away, and a project's folder (a [repository link](../027-repositories/repository-link.md)'s) beside its code.
+click away, and a project's folder beside its code.
 It never starts on `/new` or the landing page: a frame with no folder starts on Explorer Home
 ([Explorer Home](explorer-home.md)). Where this page says "the document" without a scope, it means the document
 scope's document, or the document open in a workspace frame.
@@ -126,9 +126,6 @@ The bullets above are the document scope. A **workspace** session is confined di
   them, opened in the frame as the document scope opens one.
 - **Everything the Explorer does.** Create, rename, move, copy, favourite, share (links, roles, password, expiry),
   trash, restore, and create, rename, move and delete folders, at the person's own access to each.
-- **Never Community.** Publishing a document to [Community](../025-community/community.md) makes it public, and only
-  the owner's own signed-in browser does that: a token cannot publish, so neither can a frame. **Open in liveplanner**
-  is one click away for it.
 - **Never the account.** Refused `403 workbench_confined`, as in the document scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
   billing), the account itself, and the AI assistant (the person's agent sits beside the frame).

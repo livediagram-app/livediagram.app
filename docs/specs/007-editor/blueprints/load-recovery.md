@@ -15,7 +15,7 @@ design decision.
 | The recovery card         | `LoadRecoveryCard` (`apps/live/components/chrome/`), inside `ApiErrorPage`             |
 | The recovery actions      | `BrowserRepairPanel` (`packages/ui/src/browser-repair/`)                               |
 | A repair                  | `repairBrowserStorage(win)` → `{ cleared }`                                            |
-| Kept / clearable          | `REPAIR_KEPT_KEYS`, `REPAIR_KEPT_PREFIXES`, `isRepairClearable(key)`                   |
+| Kept / clearable          | `REPAIR_KEPT_KEYS`, `isRepairClearable(key)`                                           |
 | The browser checks        | `runBrowserChecks(win)`, `formatBrowserChecks(checks)`, `probeIndexedDb`               |
 | The identity lines        | `readBrowserIdentity(win)`, `formatBrowserIdentity(id, account)`, `signedInFromCookie` |
 | The guest identity's keys | `GUEST_IDENTITY_KEYS` (`packages/ui/src/browser-repair/kept-keys.ts`)                  |
@@ -101,9 +101,8 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - Writes one sessionStorage key, `AUTO_RELOAD_KEY` (page → time map, entries older than the window
   dropped by `claimReloadIn`).
 - A repair removes keys; it never writes. Scope: keys starting `liveplanner:` or `liveplanner-`.
-  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`, `community-key`) and
-  `REPAIR_KEPT_PREFIXES` (`liveplanner:v2:drive-`, `liveplanner:drive-mirror`). IndexedDB and cookies
-  are never touched.
+  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`).
+  IndexedDB and cookies are never touched.
 - The browser probe opens and deletes its own database, `liveplanner-probe`.
 
 ## Errors and edge cases

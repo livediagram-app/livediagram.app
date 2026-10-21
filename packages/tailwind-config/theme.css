@@ -57,7 +57,7 @@
   --animate-empty-float: empty-float 3.6s ease-in-out infinite;
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 
-  /* The shared Dialog shell's entrances (@liveplanner/ui, used by the editor and the Community): the dim
+  /* The shared Dialog shell's entrances (@liveplanner/ui, used by the editor): the dim
    * behind fades in (fade-in, micro) while a centred panel settles into place, fading up from 97% scale and
    * 6px low (dialog-in); a phone sheet rises its full height from the bottom edge, so it reads as arriving
    * from off-screen. Dialogs are the long motion token (motion.md). fly-up-in is the bolder 16px lift the

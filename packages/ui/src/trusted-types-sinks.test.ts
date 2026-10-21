@@ -8,7 +8,7 @@ import { TRUSTED_TYPES_CSP } from './trusted-types';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
 const read = (path: string) => readFileSync(`${repo}${path}`, 'utf8');
-const APPS = ['live', 'marketing', 'help', 'community', 'telemetry'] as const;
+const APPS = ['live', 'marketing', 'help', 'telemetry'] as const;
 
 function sources(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {

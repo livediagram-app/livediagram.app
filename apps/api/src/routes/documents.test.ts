@@ -27,7 +27,6 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     getDocument: vi.fn(),
     // The save's own one-query read (db/tab-save-document.ts); answered from getDocument's mock below.
     getDocumentForSave: vi.fn(),
-    // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
     getShareLink: vi.fn(async () => null),
     // The thumbnail route's one-query gate + freshness read.
     getDocumentThumbMeta: vi.fn(),
@@ -747,7 +746,7 @@ describe('a tab-scoped visitor', () => {
   beforeEach(() => {
     db.getDocument.mockResolvedValue(scopedDocument());
     db.getDocumentThumbMeta.mockResolvedValue(scopedDocument());
-    resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2', community: false });
+    resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
   });
 
   it('gets the document with every other tab locked and no deck', async () => {
@@ -761,12 +760,7 @@ describe('a tab-scoped visitor', () => {
     getDocumentTabImageSvg.mockResolvedValue('<svg>t2</svg>');
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail', visitor));
     expect(await res.text()).toBe('<svg>t2</svg>');
-    expect(getDocumentTabImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      't2',
-      false,
-    );
+    expect(getDocumentTabImageSvg).toHaveBeenCalledWith(expect.anything(), expect.anything(), 't2');
     expect(getDocumentThumbnailSvg).not.toHaveBeenCalled();
   });
 
@@ -780,32 +774,6 @@ describe('a tab-scoped visitor', () => {
     canEditDocument.mockResolvedValue(true);
     await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t2', { ...visitor, body: {} }));
     expect(canEditDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
-  });
-
-  it('reads a Community visit without its conversation, from the grant alone', async () => {
-    resolveDocumentGrant.mockResolvedValue({
-      role: 'view',
-      tabScope: null,
-      shareCode: 'COMMUNITY1',
-      community: true,
-    });
-    db.getTab.mockResolvedValue({
-      id: 't2',
-      name: 'Roadmap',
-      elements: [
-        {
-          id: 'e1',
-          type: 'shape',
-          commentThread: { comments: [{ id: 'c1', text: 'secret', authorId: 'user_jane' }] },
-        },
-      ],
-    });
-    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
-    expect(res.status).toBe(200);
-    const text = await res.text();
-    expect(text).toContain('"e1"');
-    expect(text).not.toContain('secret');
-    expect(text).not.toContain('user_jane');
   });
 
   it('cannot delete the tab its link is scoped to', async () => {
@@ -842,7 +810,7 @@ describe('a tab-scoped visitor', () => {
     expect(res.status).toBe(201);
     expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
     // A visitor's copy carries no one else's comment author ids.
-    expect(db.copyDocument.mock.calls[0]?.at(7)).toBe('visitor-1');
+    expect(db.copyDocument.mock.calls[0]?.at(6)).toBe('visitor-1');
   });
 
   it('refuses a Shared-with-you copy without the share password', async () => {

@@ -29,7 +29,6 @@ vi.mock('./routes/account', () => stub('handleAccount'));
 vi.mock('./routes/ai', () => stub('handleAi'));
 vi.mock('./routes/ai-read-notes', () => stub('handleAiReadNotes'));
 vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
-vi.mock('./routes/community', () => stub('handleCommunity'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
 vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
 vi.mock('./routes/shape-libraries', () => stub('handleShapeLibraries'));
@@ -52,7 +51,6 @@ vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/shared', () => stub('handleShared'));
 vi.mock('./routes/telemetry', () => stub('handleTelemetry'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
-vi.mock('./routes/drive', () => stub('handleDrive'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
 vi.mock('./routes/oauth', () => stub('handleOauthExchange'));
 vi.mock('./routes/workbench', () => stub('handleWorkbench'));
@@ -157,14 +155,11 @@ describe('a workspace session at the front door', () => {
     ['POST', 'ai'],
     ['POST', 'ai/read-notes'],
     ['POST', 'oauth'],
-    ['GET', 'drive'],
     ['POST', 'teams'],
     ['GET', 'teams/invites'],
     ['POST', 'teams/team1/members'],
     ['DELETE', 'teams/team1/members/user_2'],
     ['GET', 'teams/team1/invite-link'],
-    ['GET', 'community'],
-    ['POST', 'documents/any-doc/community'],
     ['PUT', 'documents/any-doc/tabs/t1/presence'],
     ['GET', 'forms/abc'],
   ])('refuses %s %s as workbench_confined before any route runs', async (method, path) => {

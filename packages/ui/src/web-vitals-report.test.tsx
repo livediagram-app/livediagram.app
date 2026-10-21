@@ -33,7 +33,6 @@ describe('webVitalApp', () => {
     expect(webVitalApp('/document/abc-123')).toBe('Live');
     expect(webVitalApp('/help/canvas/the-canvas')).toBe('Help');
     expect(webVitalApp('/telemetry')).toBe('Dashboard');
-    expect(webVitalApp('/community')).toBe('Community');
   });
 });
 

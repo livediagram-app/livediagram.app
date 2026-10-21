@@ -10,10 +10,9 @@ Eight apps, all deployable to Cloudflare Workers (with Static Assets for the fiv
 - **live**: the diagram editor (clean routes, no `/live` prefix). Statically exported Next.js.
 - **telemetry**: public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the api worker's D1 events table. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
-- **community**: the public gallery of shared documents at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
 - **api**: Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
 - **mcp**: Cloudflare Worker at its own host, `mcp.liveplanner.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
-- **router**: Worker that stitches marketing, live, telemetry, help, community and api under one hostname.
+- **router**: Worker that stitches marketing, live, telemetry, help and api under one hostname.
 
 The editor is real:
 
@@ -79,23 +78,14 @@ The editor is real:
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
   tools are verbs of the same catalogue. Published on npm as `@liveplanner/cli`, with provenance.
-- **Repository links** ([Repository link](../027-repositories/repository-link.md)): `liveplanner.toml` binds a
-  directory to a folder or documents; `liveplanner sync` writes an `INDEX.md` agents find with a search, plus a
-  snapshot and a text outline per document at the `files` level, and `sync --watch` keeps them in step live.
 - **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
   person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
   frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
-- **Community** ([Community](../025-community/community.md)): a public gallery at `/community` of documents people
-  are proud of. Signed-in owners publish a document from the Share dialog with a title, description, category and tags;
-  anyone can search and filter it, open a document read-only (no room, no comments), like it and make their own copy in
-  one click. Posts stay live with the document, and moderation is self-serve: enough reports hide a post for
-  good, with nobody reviewing by hand.
 - **AI assistance** (optional): an in-editor panel with two modes: Ask answers questions about the active tab, Clean fixes label typos and normalises sizes, positions, and styles. Hidden entirely unless the api worker has a model key set; per-user opt-in via Settings. This is the in-editor panel only; driving documents from an outside assistant is the MCP server. See [AI Assistance](../007-editor/ai-assistance.md).
 - **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. No third-party analytics; no identifiers crossing the wire. Off by default for self-hosters (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
-- **Google Drive mirror** (optional, signed-in): My Documents mirrored to the user's own Google Drive as `.liveplanner` files in a matching folder tree, names, folders and the bin kept in step both ways while a tab is open, and "Open with" from Drive. Off until a Google OAuth client id is set. See [Google Drive mirror](../022-drive-mirror/drive-mirror.md).
 - **Never stale after a deploy**: pages are never served from a stale cache, a page still running an earlier build reloads once into the current one, and in-app navigation across a deploy loads in full instead of failing ([Stale builds](../016-platform/stale-builds.md)).
 - **A quiet console**: every decision point logs a fingerprinted trace line, shown in production only when the browser's debug flag asks for it; warnings and errors always show ([Console logging](../003-system-architecture/console-logging.md)).
 - **Transactional + lifecycle email** (optional): welcome on first sign-in, week-1 / week-2 onboarding tips off the daily cron, and transactional team-invite + account-deleted messages, sent via Resend. Off until a `RESEND_API_KEY` is set; guests never receive email (it is authenticated-only). See [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md).
@@ -115,7 +105,6 @@ The editor is real:
 ## Next
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
-- **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
 
 ## Later
@@ -128,8 +117,6 @@ These are the meaningful gaps between today and "full product":
 
 - **Plan mode, next steps**: custom item types with their own fields, a text `board` view for agents, item
   history, and connectors that fill items from GitHub Issues, Jira or Linear (deliberately not in the first cut).
-
-- **Google Drive push instead of polling (follow-up, not built).** The Drive mirror checks Google every 2 minutes while a tab is visible ([Google Drive mirror](../022-drive-mirror/drive-mirror.md), "Costs"). To research: Drive push (`changes.watch`) delivering to a Worker that marks the user's D1 row, with the browser asking our api every 2 minutes instead of Google. Renewing a watch needs the server to hold access tokens, which changes the mirror's "the server only brokers tokens" principle, so it gets its own spec and decision first.
 
 ## Hard rules carried forward
 

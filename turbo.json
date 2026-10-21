@@ -28,7 +28,6 @@
         "@liveplanner/live#build",
         "@liveplanner/help#build",
         "@liveplanner/telemetry#build",
-        "@liveplanner/community#build",
         "@liveplanner/api#build",
         "@liveplanner/mcp#build",
         "@liveplanner/router#build"

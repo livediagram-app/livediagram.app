@@ -800,7 +800,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the liveplanner command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your documents and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the liveplanner command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Keep the editor open beside your agent in a workbench.',
       },
     ],
   },

@@ -144,7 +144,7 @@ describe('useClerkApiBootstrap guest migration', () => {
 
 describe('useClerkApiBootstrap with several mounts', () => {
   // AuthControls, the Settings dialog's rows and the page itself each mount
-  // the hook; the Drive mirror's provider mounts it at the root. One of them
+  // the hook. One of them
   // unmounting must not take the Bearer away from the rest.
   it('keeps the provider while any mount remains', async () => {
     function Probe() {

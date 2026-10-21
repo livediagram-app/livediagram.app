@@ -9,9 +9,6 @@
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
-  // The Google Drive mirror's /drive/connected and /drive/open
-  // (docs/specs/022-drive-mirror/drive-mirror.md).
-  'drive',
   'embed',
   'explorer',
   // A form link's page, /form/<code> (docs/specs/030-forms/forms.md "Filling in a form").
@@ -27,7 +24,7 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
 ]);
 
 // Named after the apps (`apps/live` is the editor).
-export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard' | 'Community';
+export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard';
 
 const SEGMENT = /^[a-z0-9._-]{1,60}$/;
 const MAX_SEGMENTS = 6;
@@ -94,7 +91,6 @@ export function pageViewPath(pathname: string): string | null {
 const APP_SEGMENTS: ReadonlyMap<string, PageViewApp> = new Map<string, PageViewApp>([
   ['help', 'Help'],
   ['telemetry', 'Dashboard'],
-  ['community', 'Community'],
   ...[...LIVE_ROUTE_SEGMENTS].map((segment): [string, PageViewApp] => [segment, 'Live']),
 ]);
 

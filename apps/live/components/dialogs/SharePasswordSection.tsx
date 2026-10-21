@@ -22,9 +22,6 @@ type SharePasswordSectionProps = {
   onSetPassword: (password: string | null) => Promise<boolean | undefined> | void;
   busy: boolean;
   setBusy: (busy: boolean) => void;
-  // Why a password can't be set (the document is in the Community: docs/specs/025-community/
-  // community.md, a post and a password exclude each other). Disables the switch and says why.
-  lockedReason?: string | null;
 };
 
 // The nested detail under the switch: indented to the footnote's edge with a
@@ -37,7 +34,6 @@ export function SharePasswordSection({
   onSetPassword,
   busy,
   setBusy,
-  lockedReason = null,
 }: SharePasswordSectionProps) {
   // The new password being typed. Never seeded: the saved one is unknowable.
   const [pw, setPw] = useState('');
@@ -135,14 +131,8 @@ export function SharePasswordSection({
         }}
         checked={switchOn}
         onChange={toggle}
-        // A password already in force stays removable; only setting a new one is locked.
-        disabled={busy || (lockedReason !== null && !sharePasswordSet)}
+        disabled={busy}
       />
-      {lockedReason !== null && !sharePasswordSet ? (
-        <p className="ml-3.5 border-l-2 border-slate-200 pl-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          {lockedReason}
-        </p>
-      ) : null}
       {switchOn && showSetLine ? (
         <div className={DETAIL_ROW}>
           <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -162,7 +152,7 @@ export function SharePasswordSection({
           </Button>
         </div>
       ) : null}
-      {switchOn && !showSetLine && (lockedReason === null || sharePasswordSet) ? (
+      {switchOn && !showSetLine ? (
         <div className={DETAIL_ROW}>
           <div className="relative min-w-0 flex-1">
             <LockIcon

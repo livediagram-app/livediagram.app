@@ -91,7 +91,6 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
   it('resolves a live link to its DTO', async () => {
     const db = fakeD1(() => ({ first: row({ role: 'view' }) }));
     expect(await getShareLink(db.env, 'ABCD2345')).toEqual({
-      purpose: 'share',
       code: 'ABCD2345',
       documentId: 'diag-1',
       role: 'view',
@@ -149,7 +148,6 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     const db = fakeD1();
     const link = await createShareLink(db.env, 'diag-1', 'ABCD2345', 'edit');
     expect(link).toEqual({
-      purpose: 'share',
       code: 'ABCD2345',
       documentId: 'diag-1',
       role: 'edit',
@@ -167,7 +165,6 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
       null,
       null,
       null,
-      'share',
     ]);
   });
 
@@ -199,21 +196,6 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     const db = fakeD1();
     await createShareLink(db.env, 'diag-1', 'ABCD2345', 'edit');
     expect(db.one('UPDATE documents SET shareable = 1').bindings).toEqual(['diag-1']);
-  });
-
-  it('leaves the flag alone for a Community link, which opens no room (docs/specs/025-community/community.md)', async () => {
-    const db = fakeD1();
-    const link = await createShareLink(
-      db.env,
-      'diag-1',
-      'ABCD2345',
-      'view',
-      'never',
-      null,
-      'community',
-    );
-    expect(link.purpose).toBe('community');
-    expect(db.matching('UPDATE documents SET shareable')).toHaveLength(0);
   });
 });
 

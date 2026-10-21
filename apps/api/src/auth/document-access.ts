@@ -27,7 +27,7 @@
 //   regardless of role).
 
 import { levelAtLeast, type AccessLevel } from '@liveplanner/api-schema';
-import { communityLinkAccess, getMembership } from '../db';
+import { getMembership } from '../db';
 import type { Env, ShareRole } from '../types';
 import {
   isPersonalOwner,
@@ -56,14 +56,10 @@ async function isJoinedTeamMember(
 // (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. `tabScope` is
 // null for the owner, a joined team member and an All-tabs link; `shareCode`
 // is null for the owner and a team member, who need no code.
-//
-// `community` marks a grant from a Community post's link (docs/specs/025-community/community.md "Viewing a post's
-// document"): read-only like any view link, but no realtime room and no comments.
 export type DocumentGrant = {
   role: ShareRole;
   tabScope: string | null;
   shareCode: string | null;
-  community: boolean;
 };
 
 // `owner` is the hybrid identity (Clerk sub OR unsigned X-Owner-Id guest
@@ -98,26 +94,10 @@ export async function resolveDocumentGrant(
   // short call sites fail CLOSED on a protected document rather than silently
   // bypassing the gate.
   if (!(await sharePasswordOk(env, documentId, sharePassword))) return null;
-  // A Community post's link opens its document only while the post is public
-  // (docs/specs/025-community/community.md "Reports and moderation"): hiding the post, or moving its document
-  // into the Trash or a team library, revokes the link for everyone.
-  if (link.purpose === 'community' && (await communityLinkAccess(env, link.code)) !== 'public') {
-    return null;
-  }
-  return {
-    role: link.role,
-    tabScope: link.tabId,
-    shareCode: link.code,
-    community: link.purpose === 'community',
-  };
+  return { role: link.role, tabScope: link.tabId, shareCode: link.code };
 }
 
-const FULL_EDIT: DocumentGrant = {
-  role: 'edit',
-  tabScope: null,
-  shareCode: null,
-  community: false,
-};
+const FULL_EDIT: DocumentGrant = { role: 'edit', tabScope: null, shareCode: null };
 
 // The two boolean gates. `targetTabId` names the tab the request touches;
 // omitted, the request is document-level, and a tab-scoped link grants
@@ -134,7 +114,6 @@ async function canAccessDocument(
   teamId: string | null,
   callerId: string | null,
   targetTabId: string | undefined,
-  allowCommunity = false,
 ): Promise<boolean> {
   const grant = await resolveDocumentGrant(
     env,
@@ -147,9 +126,6 @@ async function canAccessDocument(
     callerId,
   );
   if (!grant) return false;
-  // A Community link is a content-only pass (docs/specs/025-community/community.md "Viewing a post's
-  // document"): refused by every door that has not said it serves one.
-  if (grant.community && !allowCommunity) return false;
   // The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it.
   if (!levelAtLeast(grant.role, needs)) return false;
   return grant.tabScope === null || grant.tabScope === targetTabId;
@@ -190,7 +166,6 @@ export async function canReadDocument(
   teamId: string | null = null,
   callerId: string | null = null,
   targetTabId?: string,
-  allowCommunity = false,
 ): Promise<boolean> {
   return canAccessDocument(
     'view',
@@ -203,7 +178,6 @@ export async function canReadDocument(
     teamId,
     callerId,
     targetTabId,
-    allowCommunity,
   );
 }
 

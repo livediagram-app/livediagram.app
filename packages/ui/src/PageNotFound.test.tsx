@@ -15,9 +15,7 @@ describe('PageNotFound', () => {
   });
 
   it('takes a site its own way home', () => {
-    render(<PageNotFound homeHref="/community/" homeLabel="Back to Community" />);
-    expect(screen.getByRole('link', { name: 'Back to Community' }).getAttribute('href')).toBe(
-      '/community/',
-    );
+    render(<PageNotFound homeHref="/help/" homeLabel="Back to Help" />);
+    expect(screen.getByRole('link', { name: 'Back to Help' }).getAttribute('href')).toBe('/help/');
   });
 });

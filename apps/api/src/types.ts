@@ -96,24 +96,12 @@ export type Env = {
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
   // absent (self-host) → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
-  // "Tokens"): each call reaches Google's token endpoint, so it gets a far
-  // tighter bound than the general write limiter. Keyed on the Clerk user id.
-  // Optional: absent (self-host) → "allow".
-  DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md §7),
-  // keyed `community:<address range>` (community-network.ts). These callers are anonymous, so the owner-keyed write
-  // limiter would lump them all onto its 'anonymous' key. Optional: absent (self-host) → "allow".
-  COMMUNITY_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
   FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
   // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
   // Optional: absent (self-host) → "allow".
   TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
-  // turns it off; unset leaves it on. See community-enabled.ts.
-  COMMUNITY_ENABLED?: string;
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
@@ -210,18 +198,4 @@ export type Env = {
   // Unset or non-positive = no limit. Hosted liveplanner.app sets
   // this to "104857600" (100 MB).
   IMAGE_MAX_BYTES_PER_OWNER?: string;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
-  // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
-  // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
-  // refresh tokens, otherwise the browser holds its own short-lived tokens.
-  // Unset = every /api/drive route answers 503 drive_not_configured.
-  GOOGLE_CLIENT_ID?: string;
-  GOOGLE_CLIENT_SECRET?: string;
-  // base64 of 32 random bytes (`openssl rand -base64 32`): seals refresh
-  // tokens (AES-GCM) and, through HKDF, signs the consent state.
-  DRIVE_TOKEN_KEY?: string;
-  // Test-only: where the token exchange and revoke go instead of
-  // https://oauth2.googleapis.com (the e2e suite's fake Google). Never set
-  // by a real deployment.
-  GOOGLE_OAUTH_BASE_URL?: string;
 };

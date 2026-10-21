@@ -633,8 +633,8 @@ export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';
-// The whole-document `liveplanner.document` envelope and the per-tab JSON and Markdown export (the editor, the
-// Drive mirror and the CLI's pull files).
+// The whole-document `liveplanner.document` envelope and the per-tab JSON and Markdown export (the editor and the
+// CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';
 export * from './export-tab-plan';

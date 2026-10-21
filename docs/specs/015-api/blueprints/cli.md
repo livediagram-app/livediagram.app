@@ -293,8 +293,7 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
   `GET .../tabs/:tabId/render.svg` (`apps/api/src/routes/tab-render-route.ts`, `renderTabSvg` in
   `apps/api/src/thumbnail.ts`), two tabs of one name told apart by `-<id8>`.
 - **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
-  (`apps/cli/src/link/sync-state.ts`, the test `sync` uses for `ahead`) finds a tab hashing other than its pulled
-  record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
+  (`apps/cli/src/sync/pull-file.ts`) finds a tab hashing other than its pulled record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
   the check and overwrites.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
@@ -565,7 +564,6 @@ hint: liveplanner skill install --to ~/.claude/skills
 type CapabilitiesResponse = {
   aiEnabled: boolean;
   emailEnabled?: boolean;
-  driveMode?: DriveMode;
   apiBase?: string; // `${url.origin}/api` (CLI9)
   authEnabled?: boolean; // CLERK_JWKS_URL is set (CLI11)
   oauthIssuer?: string; // OAUTH_ISSUER, an https origin; absent when unset or invalid

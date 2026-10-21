@@ -15,8 +15,7 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
 import { imageRefIdsFromData } from '../image-refs/extract';
-import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
-import { redactTabDataForCommunity } from '../community-redact';
+import { collabIndexCopyStatements } from './collab-index';
 import { redactTabDataAuthors } from '../comments';
 import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
@@ -30,7 +29,6 @@ import {
   tabStatsOfData,
   tabStatsStatement,
 } from './tab-stats';
-import { PUBLIC_POST } from './community';
 import type { RecordedIntent } from '@liveplanner/api-schema';
 import { readRecordedIntent, type RecordedIntentRow } from '../document-intent-row';
 
@@ -54,9 +52,6 @@ type DocumentRow = {
   // row for this document, or NULL when no share links exist. Replaces
   // the legacy diagrams.share_code column dropped in migration 0008.
   share_code: string | null;
-  // The document's Community post state (docs/specs/025-community/community.md); the full document read
-  // and the list projection both select it.
-  community_state?: string | null;
 } & RecordedIntentRow;
 
 export type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
@@ -98,10 +93,6 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     tabs,
     shareable: row.shareable === 1,
     shareCode: row.share_code,
-    communityState:
-      row.community_state === 'listed' || row.community_state === 'hidden'
-        ? row.community_state
-        : null,
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentDTO['source']) ?? null,
@@ -121,22 +112,14 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
 // stable across calls; "primary" is the oldest link the owner has
 // minted for the document.
 const SHARE_CODE_EXPR =
-  "(SELECT code FROM share_links WHERE share_links.document_id = documents.id AND share_links.purpose = 'share' ORDER BY created_at ASC LIMIT 1) AS share_code";
+  '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
 // `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
-// The document's Community post state, for the owner's header badge and the Explorer's Public badge
-// (docs/specs/025-community/community.md). 'listed' only while the post is public by the rule every public read
-// uses (PUBLIC_POST): a listed post whose document moved into a team library, changed owner or took a password reads
-// as no post, so its badge falls back to Team, Shared or Private. community_posts.document_id is UNIQUE and d is
-// the same row by its primary key: two index lookups a row.
-const COMMUNITY_STATE_EXPR = `(SELECT CASE WHEN cp.state <> 'listed' THEN cp.state WHEN ${PUBLIC_POST} THEN 'listed' END
-  FROM community_posts cp JOIN documents d ON d.id = cp.document_id
-  WHERE cp.document_id = documents.id) AS community_state`;
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-export const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
+export const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -232,7 +215,6 @@ export function rowToSummary(row: SummaryRow): DocumentSummary {
     name: row.name,
     shareable: row.shareable === 1,
     shareCode: row.share_code,
-    communityListed: row.community_state === 'listed',
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentSummary['source']) ?? null,
@@ -289,8 +271,8 @@ export async function upsertDocumentMeta(
   // never rewritten by a later metadata upsert (rename / autosave / move).
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
-  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy,
-  // a sync or a Drive import brings (docs/specs/026-plan/item-types.md); after that only
+  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy
+  // or a sync brings (docs/specs/026-plan/item-types.md); after that only
   // setDocumentItemTypes writes it.
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
   // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
@@ -486,30 +468,15 @@ export function thumbnailKey(documentId: string): string {
   return `thumb/${documentId}`;
 }
 
-// The Community's own snapshot (docs/specs/025-community/community.md "Viewing a post's document"): drawn from the
-// redacted tab (no comments, no people), so the public card image never serves the owner's snapshot.
-export function communityThumbnailKey(documentId: string): string {
-  return `thumb-community/${documentId}`;
-}
-
 // The share card a link preview shows (docs/specs/013-workspace/share-link-previews.md): the first-tab snapshot drawn
-// as a 1200 x 630 PNG, and the Community's own, drawn from its redacted snapshot.
+// as a 1200 x 630 PNG.
 export function shareCardKey(documentId: string): string {
   return `og/${documentId}`;
 }
 
-export function communityShareCardKey(documentId: string): string {
-  return `og-community/${documentId}`;
-}
-
 // Every cached snapshot a document can have, for the paths that delete it.
 export function snapshotKeys(documentId: string): string[] {
-  return [
-    thumbnailKey(documentId),
-    communityThumbnailKey(documentId),
-    shareCardKey(documentId),
-    communityShareCardKey(documentId),
-  ];
+  return [thumbnailKey(documentId), shareCardKey(documentId)];
 }
 
 // When the cached snapshot was last rendered (docs/specs/006-document/document-snapshots.md), or null when it
@@ -550,9 +517,6 @@ export async function copyDocument(
   newName: string,
   // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md) takes their tab only.
   onlyTabId: string | null = null,
-  // A copy through a Community post's link (docs/specs/025-community/community.md) carries the document
-  // without its comments or the people on its actions, and so none of their index rows.
-  redactForCommunity = false,
   // A copy by anyone but the source's owner: its comments keep only the copier's own author ids, as
   // the tab read serves them (redactCommentAuthorIds). An author id is a guest's credential.
   redactAuthorsFor: string | null = null,
@@ -602,14 +566,8 @@ export async function copyDocument(
   const inserts = rows.flatMap((row) => {
     const freshTabId = tabIdMap.get(row.id)!;
     const remapped = remapTabDataLinks(row.data, tabIdMap);
-    // A Community copy is redacted, and its index rebuilt from the redacted elements (the source's rows
-    // would name the people redaction removed).
-    const redacted = redactForCommunity ? redactTabDataForCommunity(remapped) : null;
-    const data = redacted
-      ? redacted.data
-      : redactAuthorsFor !== null
-        ? redactTabDataAuthors(remapped, redactAuthorsFor)
-        : remapped;
+    const data =
+      redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped;
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(
@@ -619,15 +577,12 @@ export async function copyDocument(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,
       ).bind(newId, freshTabId, row.order_index, now),
-      // From the copied body itself: a Community copy's redaction drops comments
-      // (docs/specs/013-workspace/explorer-details-view.md).
+      // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
       tabStatsStatement(env, freshTabId, tabStatsOfData(data).stats, now),
       // The copy carries the source's actions + threads inside its
       // data, so its index rows are copied the same way, without a
       // parse (docs/specs/013-workspace/inbox.md §2.1).
-      ...(redacted
-        ? collabIndexStatements(env, freshTabId, redacted.elements)
-        : collabIndexCopyStatements(env, row.id, freshTabId)),
+      ...collabIndexCopyStatements(env, row.id, freshTabId),
       // Image references from the copied body itself, not the source rows, so
       // a copy is indexed even if its source never was.
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
@@ -644,7 +599,6 @@ export async function copyDocument(
     sourceId,
     newId,
     await copiedItemIds(env, sourceId, rows, onlyTabId),
-    redactForCommunity,
   );
   // The sheets of the copied tabs, each under its tab's new id (docs/specs/029-sheets/sheet-store.md "Copies").
   const sheetCopies = copySheetsStatements(env, sourceId, newId, tabIdMap, now);

@@ -1,5 +1,5 @@
 // What a tab save needs of its document (docs/specs/015-api/api.md "Tab save"), in one query. The save ran the
-// full getDocument (the row with its share-code and Community subqueries, then the owner's participant and
+// full getDocument (the row with its share-code subquery, then the owner's participant and
 // the tab summaries) and used eight fields of it, two sequential round trips before anything else on every
 // autosave (~600 ms while someone edits). Live documents only, like every document read.
 

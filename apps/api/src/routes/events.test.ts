@@ -130,7 +130,7 @@ describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', 
       body: {
         events: [
           { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
-          { category: 'Timing', action: 'Measured', type: 'Lcp.Community.Over10000ms' },
+          { category: 'Timing', action: 'Measured', type: 'Lcp.Help.Over10000ms' },
           // A raw number, a bucket from another scale, an unknown metric, another action.
           { category: 'Timing', action: 'Measured', type: 'DocumentLoad.812' },
           { category: 'Timing', action: 'Measured', type: 'Save.Under200ms' },
@@ -145,7 +145,7 @@ describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', 
       expect.anything(),
       [
         { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
-        { category: 'Timing', action: 'Measured', type: 'Lcp.Community.Over10000ms' },
+        { category: 'Timing', action: 'Measured', type: 'Lcp.Help.Over10000ms' },
       ],
       expect.any(Number),
     );

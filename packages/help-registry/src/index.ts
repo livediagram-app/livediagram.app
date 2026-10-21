@@ -89,8 +89,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
-    articleCount: 9,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
+    articleCount: 8,
   },
   {
     slug: 'privacy-and-security',
@@ -110,8 +110,8 @@ export const categories: Category[] = [
     slug: 'developers',
     title: 'Developers',
     description:
-      'Call the liveplanner REST API from your own scripts or the command line: authentication, worked examples, the CLI, repositories and developer tools, errors and limits, and the OpenAPI reference.',
-    articleCount: 9,
+      'Call the liveplanner REST API from your own scripts or the command line: authentication, worked examples, the CLI and developer tools, errors and limits, and the OpenAPI reference.',
+    articleCount: 8,
   },
   {
     slug: 'troubleshooting',
@@ -568,15 +568,6 @@ export const articles: Article[] = [
     parentSlug: 'connect-ai-mcp',
   },
   {
-    slug: 'google-drive',
-    title: 'Google Drive',
-    description: 'Sync My documents to your own Google Drive, both ways.',
-    keywords:
-      'google drive mirror sync backup copy cloud storage open with liveplanner file folders',
-    category: 'Account and Data',
-    categorySlug: 'account-and-data',
-  },
-  {
     slug: 'email-notifications',
     title: 'Email Notifications',
     description: 'The optional emails we send, and how to turn each kind off in Settings.',
@@ -647,16 +638,6 @@ export const articles: Article[] = [
       'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
     keywords:
       'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
-    category: 'Developers',
-    categorySlug: 'developers',
-  },
-  {
-    slug: 'repositories',
-    title: 'Diagrams in Your Repository',
-    description:
-      'Link a repository with liveplanner.toml so agents find your diagrams, and keep snapshots in git.',
-    keywords:
-      'repository repo git github link liveplanner.toml sync mirror snapshot index monorepo codebase coding agent ripgrep search folder commit',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -815,17 +796,17 @@ export const articles: Article[] = [
     title: 'Configuration and Optional Auth',
     description: 'Environment variables, optional Clerk auth, and guest-only mode.',
     keywords:
-      'env vars environment clerk setup secrets settings configure resend email ai openai google drive mcp telemetry r2 community',
+      'env vars environment clerk setup secrets settings configure resend email ai openai mcp telemetry r2',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
   },
   {
-    slug: 'drive-and-mcp',
-    title: 'Google Drive and MCP on a Self-Hosted Instance',
-    description: 'Set up the Drive mirror and the MCP server on your own deployment.',
+    slug: 'mcp-server',
+    title: 'The MCP Server on a Self-Hosted Instance',
+    description: 'Set up the MCP server for AI tools on your own deployment.',
     keywords:
-      'google drive mirror oauth client id secret picker api key drive token key mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
+      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting/configuration',
     parentSlug: 'configuration',
@@ -2825,27 +2806,6 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Sharing ----
-  {
-    slug: 'finding-community-documents',
-    title: 'Finding Documents in the Community',
-    description:
-      'Search the Community by words, #tags, category and sort, then make a document your own.',
-    keywords:
-      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/sharing',
-    parentSlug: 'sharing',
-  },
-  {
-    slug: 'community',
-    title: 'Sharing to the Community',
-    description: 'Publish a document to the public gallery for others to view and copy.',
-    keywords:
-      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/sharing',
-    parentSlug: 'sharing',
-  },
   {
     slug: 'share-passwords',
     title: 'Share Passwords',

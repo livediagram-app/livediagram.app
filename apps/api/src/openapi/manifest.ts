@@ -167,21 +167,6 @@ const wrap = (key: string, name: string): BodySchema => ({
   required: [key],
 });
 
-// The gallery's search parameters, shared by the public list and My Shares (docs/specs/025-community/community.md
-// "Gallery"): every filter can also be a word in `q` (`#tag`, `category:`, `sort:`, `is:mine`).
-const COMMUNITY_QUERY = [
-  {
-    name: 'q',
-    required: false,
-    description:
-      'Search words: plain terms (title, description, tags), `#tag`, `category:<id>`, `sort:loved|copied`.',
-  },
-  { name: 'category', required: false, description: 'One category id.' },
-  { name: 'tag', required: false, description: 'One tag.' },
-  { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
-  { name: 'offset', required: false, description: 'From `nextOffset`.' },
-] as const;
-
 export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Meta ----
   {
@@ -1240,41 +1225,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/community',
-    segment: 'documents',
-    tag: 'Community',
-    summary: "The document's Community post, in any state, or null (owner only).",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
-      required: ['post'],
-    },
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/documents/{id}/community',
-    segment: 'documents',
-    tag: 'Community',
-    summary:
-      'Publish the document to Community, or save its listing (signed-in owner; not a team document, not password protected).',
-    auth: 'clerk',
-    requestSchema: ref('CommunityPostInput'),
-    responseSchema: wrap('post', 'CommunityOwnPost'),
-    statuses: [200, 201, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/community',
-    segment: 'documents',
-    tag: 'Community',
-    summary: 'Remove the document from Community (owner only).',
-    auth: 'guest-or-clerk',
-    statuses: [204, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'GET',
     path: '/documents/{id}/thumbnail',
     segment: 'documents',
     tag: 'Documents',
@@ -1660,101 +1610,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/community/posts',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'List Community posts. Send X-Community-Key to learn which you like.',
-    auth: 'public',
-    query: [...COMMUNITY_QUERY],
-    responseSchema: ref('CommunityListResponse'),
-    statuses: [200, 400, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/mine',
-    segment: 'community',
-    tag: 'Community',
-    summary:
-      "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
-    auth: 'clerk',
-    query: [...COMMUNITY_QUERY],
-    responseSchema: ref('CommunityMineResponse'),
-    statuses: [200, 400, 401, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/featured',
-    segment: 'community',
-    tag: 'Community',
-    summary:
-      'The six posts the home page features: most liked in the last 3 months, topped up with the best of all time.',
-    auth: 'public',
-    responseSchema: ref('CommunityFeaturedResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/sitemap',
-    segment: 'community',
-    tag: 'Community',
-    summary:
-      'Every public post, newest first (up to 5,000), with when it last changed: the sitemap source.',
-    auth: 'public',
-    responseSchema: ref('CommunitySitemapResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/facets',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Post counts per category and the most used tags.',
-    auth: 'public',
-    responseSchema: ref('CommunityFacetsResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/posts/{id}',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'One Community post with More Like This.',
-    auth: 'public',
-    responseSchema: ref('CommunityPostResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/community/posts/{id}/like',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Like a post (needs X-Community-Key).',
-    auth: 'public',
-    responseSchema: ref('CommunityLikeResponse'),
-    statuses: [200, 400, 404, 429],
-  },
-  {
-    method: 'DELETE',
-    path: '/community/posts/{id}/like',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Unlike a post (needs X-Community-Key).',
-    auth: 'public',
-    responseSchema: ref('CommunityLikeResponse'),
-    statuses: [200, 400, 404, 429],
-  },
-  {
-    method: 'POST',
-    path: '/community/posts/{id}/report',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Report a post (needs X-Community-Key).',
-    auth: 'public',
-    requestSchema: ref('CommunityReportInput'),
-    statuses: [204, 400, 404, 429],
-  },
-  {
-    method: 'GET',
     path: '/shared',
     segment: 'shared',
     tag: 'Sharing',
@@ -1788,7 +1643,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         document: ref('Document'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
-        community: ref('CommunityShareInfo'),
       },
       required: ['document', 'role', 'tabId'],
     },
@@ -1819,7 +1673,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'share',
     tag: 'Sharing',
     summary:
-      "A link preview's text: the shared document's name. 404 wherever the live image is (a dead code, a share password, a Community post that is not public).",
+      "A link preview's text: the shared document's name. 404 wherever the live image is (a dead code, a share password).",
     auth: 'public',
     responseSchema: {
       type: 'object',
@@ -2596,177 +2450,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [{ name: 'url', required: true, description: 'The URL to unfurl.' }],
     responseSchema: 'UnfurlResult',
     statuses: [200, 400, 429],
-  },
-
-  // ---- Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md) ----
-  // Every route needs a Clerk SESSION: the guest header and API tokens are both
-  // refused, and each answers 503 drive_not_configured when the deployment has
-  // no GOOGLE_CLIENT_ID. First-party only; the mirror runs in the user's browser.
-  {
-    method: 'POST',
-    path: '/drive/state',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Mint the signed consent `state` for a redirect URI (broker mode). Clerk session only.',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { redirectUri: { type: 'string' } },
-      required: ['redirectUri'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: { state: { type: 'string' } },
-      required: ['state'],
-    },
-    statuses: [200, 400, 401, 503],
-  },
-  {
-    method: 'POST',
-    path: '/drive/connect',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Redeem a Google consent code: the refresh token is sealed and stored, never returned. Clerk session only.',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { code: { type: 'string' }, state: { type: 'string' } },
-      required: ['code', 'state'],
-    },
-    responseSchema: wrap('connection', 'DriveConnection'),
-    statuses: [200, 400, 401, 502, 503],
-  },
-  {
-    method: 'POST',
-    path: '/drive/account-switch',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Confirm a pending switch to another Google account: the mirror state is cleared and the new account takes over. 409 drive_account_switch_expired when none is pending. Clerk session only.',
-    auth: 'clerk',
-    responseSchema: wrap('connection', 'DriveConnection'),
-    statuses: [200, 401, 409, 503],
-  },
-  {
-    method: 'DELETE',
-    path: '/drive/account-switch',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Cancel a pending switch to another Google account: its grant is revoked and the connection stays as it was. Clerk session only.',
-    auth: 'clerk',
-    statuses: [204, 401, 503],
-  },
-  {
-    method: 'POST',
-    path: '/drive/token',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Mint a one-hour Google access token from the stored refresh token. 409 drive_needs_reconnect when Google revoked the grant; 429 drive_token_rate_limited past 10 a minute.',
-    auth: 'clerk',
-    responseSchema: 'DriveAccessToken',
-    statuses: [200, 401, 404, 409, 429, 502, 503],
-  },
-  {
-    method: 'GET',
-    path: '/drive/connection',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary: "The caller's Drive connection summary, or null.",
-    auth: 'clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { connection: { oneOf: [ref('DriveConnection'), { type: 'null' }] } },
-      required: ['connection'],
-    },
-    statuses: [200, 401, 503],
-  },
-  {
-    method: 'PUT',
-    path: '/drive/connection',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Record the mirror root folder and changes page token. In browser mode this also creates the connection.',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        rootFolderId: { type: ['string', 'null'] },
-        pageToken: { type: 'string' },
-      },
-    },
-    responseSchema: wrap('connection', 'DriveConnection'),
-    statuses: [200, 400, 401, 404, 503],
-  },
-  {
-    method: 'DELETE',
-    path: '/drive/connection',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Disconnect: revoke the grant at Google and delete the stored token and mirror rows. Drive files stay.',
-    auth: 'clerk',
-    statuses: [204, 401, 503],
-  },
-  {
-    method: 'GET',
-    path: '/drive/items',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary: "The caller's mirrored documents and folders with the Drive state last written.",
-    auth: 'clerk',
-    responseSchema: listOf('items', 'DriveItem'),
-    statuses: [200, 401, 503],
-  },
-  {
-    method: 'PUT',
-    path: '/drive/items',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary:
-      'Upsert up to 100 mirrored items. 409 drive_item_conflict when a Drive file id is already held.',
-    auth: 'clerk',
-    requestSchema: listOf('items', 'DriveItem'),
-    responseSchema: listOf('items', 'DriveItem'),
-    statuses: [200, 400, 401, 404, 409, 503],
-  },
-  {
-    method: 'DELETE',
-    path: '/drive/items/{kind}/{ldId}',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary: 'Forget one mirrored item (`kind` is `document` or `folder`).',
-    auth: 'clerk',
-    statuses: [204, 400, 401, 503],
-  },
-  {
-    method: 'POST',
-    path: '/drive/lease',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary: 'Take or renew the cross-device write lease for this holder.',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { holder: { type: 'string' } },
-      required: ['holder'],
-    },
-    responseSchema: 'DriveLease',
-    statuses: [200, 400, 401, 404, 503],
-  },
-  {
-    method: 'DELETE',
-    path: '/drive/lease',
-    segment: 'drive',
-    tag: 'Google Drive',
-    summary: 'Release the write lease, if this holder has it.',
-    auth: 'clerk',
-    query: [{ name: 'holder', required: true, description: 'The device id holding the lease.' }],
-    statuses: [204, 400, 401, 503],
   },
 
   // ---- Telemetry ----

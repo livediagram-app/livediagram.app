@@ -1,7 +1,6 @@
 export {
   GUEST_IDENTITY_KEYS,
   REPAIR_KEPT_KEYS,
-  REPAIR_KEPT_PREFIXES,
   REPAIR_SCOPE_PREFIXES,
   isRepairClearable,
 } from './kept-keys';

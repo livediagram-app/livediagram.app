@@ -1,6 +1,6 @@
-// A document as `pull` and `sync` read it (docs/specs/015-api/blueprints/cli.md "Pull and push"; repository-link
-// blueprint "One sync pass" step 7): its envelope fields, then every tab's plain read with its ETag revision, in
-// `orderIndex` order, each kept as a read copy (CLI24, RL15) and hashed as written.
+// A document as `pull` reads it (docs/specs/015-api/blueprints/cli.md "Pull and push"): its envelope fields, then
+// every tab's plain read with its ETag revision, in `orderIndex` order, each kept as a read copy (CLI24) and hashed
+// as written.
 
 import { readPlainTab, type VerbContext } from '@liveplanner/agent-verbs';
 import type { DocumentResponse } from '@liveplanner/api-schema';

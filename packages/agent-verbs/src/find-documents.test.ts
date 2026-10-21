@@ -15,7 +15,6 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
     name: 'Untitled',
     shareable: false,
     shareCode: null,
-    communityListed: false,
     folderId: null,
     teamId: null,
     source: null,

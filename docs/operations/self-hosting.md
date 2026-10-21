@@ -8,17 +8,17 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Workers paid plan**                | All eight workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
 | **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                                    |
 | **Durable Object namespace**         | `apps/api`        | One stateful room per document for realtime presence + ops.                                                                                                                                                                                                                                                                                |
 | **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, API-token reads, and Community likes and reports. Any binding you don't provision falls through to "allow", so none are required.                                                                                                    |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                                                  |
 | **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                                                    |
 
 What you do NOT need:
 
 - Clerk: auth is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With Clerk configured, the api worker reaches `CLERK_JWKS_URL` to verify Bearer tokens — an outbound call only on the auth path.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the AI features ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)) and a model key for the AI features ([AI Assistance](../specs/007-editor/ai-assistance.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -70,7 +70,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
 2. Copy the publishable key and the JWKS URL.
 3. Set them on the two workers / apps:
-   - **Live and Community (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/live/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
+   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/live/.env.production`.
    - **API (worker secret)**:
 
      ```sh
@@ -126,28 +126,27 @@ After the one-time Cloudflare setup:
 git clone https://github.com/liveplanner-app/liveplanner.app liveplanner
 cd liveplanner
 pnpm install
-pnpm build           # static export for marketing + live + telemetry + help + community,
+pnpm build           # static export for marketing + live + telemetry + help,
                      # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
 pnpm --filter @liveplanner/marketing exec wrangler deploy
 pnpm --filter @liveplanner/live exec wrangler deploy
 pnpm --filter @liveplanner/telemetry exec wrangler deploy
 pnpm --filter @liveplanner/help exec wrangler deploy
-pnpm --filter @liveplanner/community exec wrangler deploy
 pnpm --filter @liveplanner/api exec wrangler deploy
-pnpm --filter @liveplanner/router exec wrangler deploy   # last, depends on the six above
+pnpm --filter @liveplanner/router exec wrangler deploy   # last, depends on the five above
 ```
 
 Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
 
-Deploy order matters: the router's service bindings reference six other workers, so it can't deploy until they exist; `live`, `community` and the optional `mcp` worker deploy after `api` (each binds to it; `live` and `community` only for link previews and work without it). The GitHub Actions deploy workflow encodes this as job dependencies.
+Deploy order matters: the router's service bindings reference five other workers, so it can't deploy until they exist; `live` and the optional `mcp` worker deploy after `api` (each binds to it; `live` only for link previews and works without it). The GitHub Actions deploy workflow encodes this as job dependencies.
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
 - `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and every push to `main`.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
 - `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
-- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all seven workers (marketing, live, telemetry, help, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
@@ -197,7 +196,7 @@ tool does the thinking. See [MCP server](../specs/015-api/mcp-server.md).
 
 The api worker's telemetry ingest (`/api/events`) is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks ingest nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in liveplanner.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). If you DO turn it on, the public `/telemetry` dashboard renders aggregate counts from your own D1; there's no third-party analytics involved. See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
 
-Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the frontends. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but every emitting frontend (the editor, the help centre, the Community, and the page-view counters on marketing and the dashboard, [Page view telemetry](../specs/017-telemetry/page-view-telemetry.md)) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`. So a fork that only flips the api flag will see "ingest on" but no events flow. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or each frontend's `.env.production`) alongside the api flag. The `/telemetry` dashboard's data has no client-side gate of its own: it just reads `/api/telemetry/summary`, and the api worker returns an empty `enabled: false` payload until you flip `TELEMETRY_ENABLED` (the build flag only governs its own page-view count). Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
+Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the frontends. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but every emitting frontend (the editor, the help centre, and the page-view counters on marketing and the dashboard, [Page view telemetry](../specs/017-telemetry/page-view-telemetry.md)) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`. So a fork that only flips the api flag will see "ingest on" but no events flow. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or each frontend's `.env.production`) alongside the api flag. The `/telemetry` dashboard's data has no client-side gate of its own: it just reads `/api/telemetry/summary`, and the api worker returns an empty `enabled: false` payload until you flip `TELEMETRY_ENABLED` (the build flag only governs its own page-view count). Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
 
 If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret on both `apps/api` and `apps/mcp` (`wrangler secret put INTERNAL_EVENTS_KEY` in each). The MCP worker reaches the api over a service binding, which carries no `CF-Connecting-IP`, so without a matching key its telemetry lands in the anonymous per-IP rate-limit bucket and throttles itself. Leaving it unset is safe and needs no configuration — you just get the shared-bucket behaviour.
 
@@ -287,30 +286,6 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 
 Plan-mode Sheets ([Sheet store](../specs/029-sheets/sheet-store.md)) need no setup: migration `0078_sheets.sql` creates the `sheets` and `sheet_cells` tables and runs with the others, and the worker's existing daily scheduled run removes sheets that no Sheet element shows any more.
 
-## Google Drive mirror (optional, needs Clerk)
-
-Signed-in users can mirror My Documents to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
-
-1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
-2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.liveplanner+json`, default extension `liveplanner`.
-3. Set the client id on the api worker as a `[vars]` entry `GOOGLE_CLIENT_ID`, and build the live app with the same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
-4. For syncing without a click every hour, also set two worker secrets (without them the browser holds hour-long tokens and asks the user to **Resume sync**):
-
-```sh
-pnpm --filter @liveplanner/api exec wrangler secret put GOOGLE_CLIENT_SECRET
-pnpm --filter @liveplanner/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
-```
-
-5. Optional: `NEXT_PUBLIC_GOOGLE_API_KEY`, a browser API key (restricted by HTTP referrer) for the Google Picker, which lets users show liveplanner a folder they made in Drive. Without it the mirror works and that one step is not offered.
-
-**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and live build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. liveplanner.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the live build carry the same client id.
-
-If your site redirects one host to another (liveplanner.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
-
-The mirror's root folder in each user's Drive is named **`liveplanner (self-hosted)`** on your deployment (liveplanner.app's own is `liveplanner`, its staging and local development `liveplanner (staging)`), so a user of both never gets two folders of the same name. There is no setting: the name comes from the host, is given only when the folder is created, and users may rename or move it freely.
-
-`DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; liveplanner.app's is in the help centre under Policies.
-
 ## Per-owner image gallery caps
 
 The api worker honours two optional `[vars]` that cap how much one owner can keep in the image gallery ([Image element + per-owner gallery](../specs/009-elements/images.md)), surfaced as a 403 `{ error: "gallery_full", reason, limit, current }` on `POST /api/images`:
@@ -328,14 +303,9 @@ Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and
 - `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
 - `/telemetry` → telemetry dashboard
 - `/help` → help centre
-- `/community` → Community, the public gallery of shared documents
 - `/api/*` → api worker
 
-The Community is on by default and needs nothing. To switch it off, set the api worker's `COMMUNITY_ENABLED` to
-`false` (a `[vars]` entry or `wrangler secret put COMMUNITY_ENABLED`): every Community route and link closes and it
-disappears from every app, with nothing deleted ([Community](../specs/025-community/community.md#turning-the-community-off)).
-
-The six downstream workers don't need their own domain; the router fans out via service bindings.
+The five downstream workers don't need their own domain; the router fans out via service bindings.
 
 ## What can break, and how to debug
 

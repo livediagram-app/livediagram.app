@@ -153,9 +153,6 @@ importers:
       '@liveplanner/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
-      smol-toml:
-        specifier: ^1.9.1
-        version: 1.9.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -181,76 +178,6 @@ importers:
       oxlint:
         specifier: ^1.88.0
         version: 1.88.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.2)(vite@7.3.5(@types/node@26.6.4)(jiti@2.7.0)(lightningcss@1.32.0))
-
-  apps/community:
-    dependencies:
-      '@clerk/react':
-        specifier: ^6.17.8
-        version: 6.17.8(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@liveplanner/api-schema':
-        specifier: workspace:*
-        version: link:../../packages/api-schema
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
-      '@liveplanner/telemetry-client':
-        specifier: workspace:*
-        version: link:../../packages/telemetry-client
-      '@liveplanner/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      next:
-        specifier: ^16.4.1
-        version: 16.4.1(@playwright/test@1.63.0)(@types/node@26.6.4)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      react:
-        specifier: ^19.3.1
-        version: 19.3.1
-      react-dom:
-        specifier: ^19.3.1
-        version: 19.3.1(react@19.3.1)
-    devDependencies:
-      '@liveplanner/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
-      '@liveplanner/tailwind-config':
-        specifier: workspace:*
-        version: link:../../packages/tailwind-config
-      '@liveplanner/vitest-config':
-        specifier: workspace:*
-        version: link:../../packages/vitest-config
-      '@tailwindcss/postcss':
-        specifier: ^4.3.3
-        version: 4.3.3
-      '@testing-library/react':
-        specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.4
-      '@types/react':
-        specifier: ^19.3.0
-        version: 19.3.0
-      '@types/react-dom':
-        specifier: ^19.3.0
-        version: 19.3.0(@types/react@19.3.0)
-      jsdom:
-        specifier: ^30.1.2
-        version: 30.1.2
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.88.0(oxlint-tsgolint@7.0.2004)
-      tailwindcss:
-        specifier: ^4.3.3
-        version: 4.3.3
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -451,9 +378,6 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@liveplanner/fake-google':
-        specifier: workspace:*
-        version: link:../../packages/fake-google
       '@liveplanner/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
@@ -1055,27 +979,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^5.0.3
         version: 5.0.3(vitest@5.0.3)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.88.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.2)(vite@7.3.5(@types/node@26.6.4)(jiti@2.7.0)(lightningcss@1.32.0))
-
-  packages/fake-google:
-    devDependencies:
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@liveplanner/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.4
       oxlint:
         specifier: ^1.88.0
         version: 1.88.0(oxlint-tsgolint@7.0.2004)
@@ -4290,10 +4193,6 @@ packages:
     resolution: {integrity: sha512-6x6dK6zJdpTzF4sQeNYxwtvBzf6Eg4GtlesS94HOvTudUeyK2WXAaIfmDgsyslYrRBeFIlsi54AYsFGUuhmvrQ==}
     engines: {node: '>= 0.4'}
 
-  smol-toml@1.9.1:
-    resolution: {integrity: sha512-j7WyPdf0CJoutMzMoPLF/bVXHtKZIT9Rb4eGeEbWw8X2t5oirjPgpL+OpaENZrILYaXqYwnVH+qgUwVbl+pUJQ==}
-    engines: {node: '>= 18'}
-
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
@@ -7478,8 +7377,6 @@ snapshots:
       side-channel-list: 1.0.1
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
-
-  smol-toml@1.9.1: {}
 
   source-map-js@1.2.2: {}
 

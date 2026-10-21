@@ -34,7 +34,6 @@ import {
   type OverviewTabInput,
   type ViewRequest,
 } from '@liveplanner/document-views';
-import { redactTabForCommunity } from '../community-redact';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
@@ -309,21 +308,13 @@ export async function answerTabView(
   return parsed.json ? json(rendered.json, { headers }) : textPlain(rendered.text, { headers });
 }
 
-async function inScopeFacts(
-  env: Env,
-  document: DocumentDTO,
-  tabScope: string | null,
-  community: boolean,
-) {
+async function inScopeFacts(env: Env, document: DocumentDTO, tabScope: string | null) {
   const tabIds = document.tabs.map((t) => t.id);
   const facts = new Map<string, ReturnType<typeof headerFactsOf>>();
   let batches = 0;
   const take = (tabs: readonly TabDTO[]) => {
     for (const tab of tabs) {
-      // A Community visitor's overview counts what they can read: no comment threads, no people
-      // (docs/specs/025-community/community.md "Viewing a post's document").
-      const seen = community ? redactTabForCommunity(tab) : tab;
-      facts.set(tab.id, headerFactsOf(seen, { rev: tab.rev, tabIds }));
+      facts.set(tab.id, headerFactsOf(tab, { rev: tab.rev, tabIds }));
     }
   };
   if (tabScope !== null) {
@@ -347,10 +338,9 @@ export async function answerOverview(
   parsed: ParsedView,
   document: DocumentDTO,
   tabScope: string | null,
-  community = false,
 ): Promise<Response> {
   const started = Date.now();
-  const { facts, batches } = await inScopeFacts(ctx.env, document, tabScope, community);
+  const { facts, batches } = await inScopeFacts(ctx.env, document, tabScope);
   const tabs: OverviewTabInput[] = document.tabs.flatMap((summary): OverviewTabInput[] => {
     if (summary.outOfScope) return [{ id: summary.id, outOfScope: true }];
     const tabFacts = facts.get(summary.id);

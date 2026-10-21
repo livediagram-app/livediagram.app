@@ -299,8 +299,7 @@ client guard — belt and suspenders against the most destructive failure.
 
 ### A save never adopts another document's tab
 
-The save upserts by tab id, so a tab id seen elsewhere (a share link, a
-Community post's document) could otherwise overwrite that tab and link it
+The save upserts by tab id, so a tab id seen elsewhere (a share link) could otherwise overwrite that tab and link it
 into the caller's own document. So when this document has no tab with the
 id, and the id already names a tab not linked to this document, the save
 is **refused with 409 `tab_id_taken`**, never overwritten or adopted, and

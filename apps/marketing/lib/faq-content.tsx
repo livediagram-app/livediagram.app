@@ -453,7 +453,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'sharing',
     title: 'Sharing and embedding',
-    blurb: 'Links, passwords, embeds and the Community.',
+    blurb: 'Links, passwords and embeds.',
     icon: lucideGlyph(lucideShare2, ICON),
     items: [
       {
@@ -491,18 +491,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. A live image is a plain image URL that follows your document, redrawn after each save, so a GitHub README or a doc always shows the current version. See live images.',
-      },
-      {
-        q: 'What is the Community?',
-        a: (
-          <>
-            A public gallery of documents people are proud of. Signed-in owners can publish a
-            document with a title, description and tags; anyone can browse it, open it read-only,
-            like it and make their own copy in one click. <a href="/community/">Take a look</a>.
-          </>
-        ),
-        aText:
-          'A public gallery of documents people are proud of. Signed-in owners can publish a document with a title, description and tags; anyone can browse it, open it read-only, like it and make their own copy in one click. Take a look.',
       },
     ],
   },
@@ -547,19 +535,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there a command-line tool?',
         a: 'Yes. Install it from npm as @liveplanner/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents.',
       },
-      {
-        q: 'Can I keep my diagrams next to my code?',
-        a: (
-          <>
-            Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of
-            each one in the repository, so coding agents find your diagrams by name and read them as
-            text. liveplanner stays the home of every document. See{' '}
-            <a href="/help/developers/repositories/">diagrams in your repository</a>.
-          </>
-        ),
-        aText:
-          'Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. liveplanner stays the home of every document. See diagrams in your repository.',
-      },
     ],
   },
   {
@@ -583,10 +558,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can I turn a photo of sticky notes into a board?',
         a: 'Yes, on an event storming board. Take a photo of the wall and liveplanner finds the sticky notes and places them on the canvas for you to tidy up.',
-      },
-      {
-        q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the documents in My documents are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
       },
     ],
   },
@@ -679,7 +650,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email and the Google Drive mirror once sign-in and their own keys are set up.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email once sign-in and its own key are set up.',
       },
     ],
   },

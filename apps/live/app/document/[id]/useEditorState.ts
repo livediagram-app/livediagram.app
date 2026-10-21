@@ -201,7 +201,6 @@ import {
 import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
-import { useDriveFollow } from './useDriveFollow';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useIdeaPosts } from '@/hooks/collab/useIdeaPosts';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
@@ -663,8 +662,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useEditorComments({
     applyElementDelta,
     selfParticipant,
-    // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
-    commentsOff: realtime.sessionCommunity !== null,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
   });
@@ -850,16 +847,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     viaShareLink: sessionShareCode !== null,
   });
-  // A change made in Google Drive reaches the open editor (docs/specs/022-drive-mirror/drive-mirror.md,
-  // "Other views follow"). Only the owner's own session mirrors, never a share link.
-  useDriveFollow({
-    ownerId: selfParticipant.id === 'self' ? null : selfParticipant.id,
-    documentId,
-    enabled: sessionShareCode === null && appChrome,
-    refreshDocumentList,
-    setDocumentName,
-    setDocumentTrashed: documentTrashed.setDocumentTrashed,
-  });
   // Sharing / session / owner / share-link state + the room refs all now
   // live in useEditorRealtime, destructured above. Embeds honour the share
   // code's role (docs/specs/013-workspace/embeds.md): a view code renders a read-only viewer, an edit
@@ -1038,7 +1025,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
-      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharedDocuments,
       setShareLinks,
@@ -1270,7 +1256,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     documentServerStored: realtime.documentServerStored,
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
-    enabled: realtime.sessionCommunity === null && !workbench?.ended,
+    enabled: !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     documentTeamId,
     selfParticipant,

@@ -13,8 +13,8 @@ import { PagesHelpView } from './PagesHelpView';
 import type { SectionFocus } from './SectionedView';
 import { SECTION_TAB, sectionId, type SectionKey, type ViewKey } from './view-keys';
 
-// Six tabs, not twelve (docs/specs/017-telemetry/telemetry.md): the Dashboard leads with the key
-// metrics, the four Detail tabs gather what were separate tabs as sections, and a stack's See also
+// Five tabs, not twelve (docs/specs/017-telemetry/telemetry.md): the Dashboard leads with the key
+// metrics, the three Detail tabs gather what were separate tabs as sections, and a stack's See also
 // lands on the section it names.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -76,10 +76,8 @@ describe('the Detail tabs', () => {
     },
   );
 
-  it('keep a single-area tab for its own key only', () => {
-    const single = SECTIONS.filter((s) => !SECTIONED[SECTION_TAB[s]]);
-    expect(single).toEqual(['community']);
-    expect(SECTION_TAB.community).toBe('community');
+  it('map every section to a sectioned tab', () => {
+    expect(SECTIONS.filter((s) => !SECTIONED[SECTION_TAB[s]])).toEqual([]);
   });
 
   it('scroll an asked-for section in once, and again only when asked again', () => {
@@ -154,7 +152,7 @@ describe('the active tab', () => {
     expect(host!.textContent).toContain('Per-metric trends aren’t available');
   });
 
-  it.each(['features', 'pages', 'community', 'health', 'search'] as const)(
+  it.each(['features', 'pages', 'health', 'search'] as const)(
     'mounts the %s tab, whose code loads on its own',
     (view) => {
       const props = {

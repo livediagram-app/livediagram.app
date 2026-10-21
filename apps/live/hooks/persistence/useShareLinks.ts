@@ -20,7 +20,6 @@ import {
 } from '@/lib/api-client';
 import { LEVEL_TELEMETRY_TYPE } from '@liveplanner/api-schema';
 import { track } from '@/lib/telemetry';
-import { ApiError } from '@/lib/api/core';
 import { useToast } from '@/hooks/ui/useToast';
 import type { Participant } from '@/lib/identity';
 
@@ -179,15 +178,8 @@ export function useShareLinks(deps: ShareLinksDeps) {
       // Telemetry (docs/specs/017-telemetry/telemetry.md): the `type` is a preset, never the password.
       track('Document', 'Shared', passwordSet ? 'PasswordSet' : 'PasswordCleared');
       return passwordSet;
-    } catch (err) {
-      // A document in the public Community cannot ask for a password (docs/specs/025-community/community.md):
-      // say so, since trying again can never work.
-      // The Community's message table loads only for this rare answer, keeping it off the editor's first load.
-      toast.error(
-        err instanceof ApiError && err.code === 'community_published'
-          ? (await import('@/lib/community-errors')).communityCodeMessage('community_published')
-          : 'Could not update the share password. Try again.',
-      );
+    } catch {
+      toast.error('Could not update the share password. Try again.');
       return undefined;
     }
   };
