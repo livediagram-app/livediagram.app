@@ -57,17 +57,17 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 
 ### What each link role can do today
 
-| Capability                                                           | Path                                                                            | view | edit |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | ---- |
-| Open, read every admitted tab, pan, zoom, follow, be seen            | `gateRead`; presence ops                                                        | yes  | yes  |
-| Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                                              | yes  | yes  |
-| Answer a live poll                                                   | `poll-answer`, classed as **presence**                                          | yes  | yes  |
-| Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side                                    | yes  | yes  |
-| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1                              | yes  | yes  |
-| Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                                                    | no   | yes  |
-| Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                                             | no   | yes  |
-| Change elements, tabs, document                                      | room mutations, tab `PUT`                                                       | no   | yes  |
-| Run session tools, hold the facilitator baton                        | `canHold` is edit-only (facilitator.ts) | no   | yes  |
+| Capability                                                           | Path                                               | view | edit |
+| -------------------------------------------------------------------- | -------------------------------------------------- | ---- | ---- |
+| Open, read every admitted tab, pan, zoom, follow, be seen            | `gateRead`; presence ops                           | yes  | yes  |
+| Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                 | yes  | yes  |
+| Answer a live poll                                                   | `poll-answer`, classed as **presence**             | yes  | yes  |
+| Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side       | yes  | yes  |
+| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1 | yes  | yes  |
+| Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                       | no   | yes  |
+| Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                | no   | yes  |
+| Change elements, tabs, document                                      | room mutations, tab `PUT`                          | no   | yes  |
+| Run session tools, hold the facilitator baton                        | `canHold` is edit-only (facilitator.ts)            | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
 [document-room.ts](../../../apps/api/src/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),

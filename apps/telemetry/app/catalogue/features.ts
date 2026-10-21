@@ -135,8 +135,8 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
-  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: eraser and format painter options.',
+  { typeIn: (t) => /^(Eraser|Format)/.test(t ?? '') },
 );
 
 // AI assistance (Editing tab). Ask and Clean split AI Requests by mode. The
@@ -925,12 +925,9 @@ export const PALETTE_USE: MetricStack = {
 // The canvas selection modes, one chart per mode, and the options set inside
 // them (Canvas Modes tab has the rankings).
 const MODE_TITLES: Record<string, string> = {
-  Laser: 'Laser',
-  Spotlight: 'Spotlight',
   Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
-  AvatarMode: 'Avatar Mode',
 };
 
 export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
@@ -943,40 +940,11 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
-// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
-export const OFFICE_DRINKS = chart(
-  'Canvas',
-  'Used',
-  'Office Drinks',
-  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
-  { types: ['WaterCooler', 'CoffeeMachine'] },
-);
-
-// Avatar Pad arrivals (docs/specs/009-elements/avatar-pad.md "Telemetry"): an entry into Avatar mode that started on a
-// pad, once per entry, never per peer seen arriving.
-export const AVATAR_PAD_ARRIVALS = chart(
-  'Canvas',
-  'Used',
-  'Avatar Pad Arrivals',
-  'An entry into Avatar mode that started on an Avatar Pad, the character beamed in.',
-  { types: ['AvatarPadArrival'] },
-);
-
-// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
-// either door, never what they said.
-export const AVATAR_MESSAGES = chart(
-  'Canvas',
-  'Used',
-  'Avatar Messages',
-  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
-  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
-);
-
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_PAD_ARRIVALS, AVATAR_MESSAGES, MODE_OPTIONS],
+  members: [...MODE_METRICS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
@@ -1091,14 +1059,6 @@ export const PLAN_TOUR_OFFERED = opened(
   (t) => t === 'PlanTourOffer',
 );
 
-// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
-// the Visitors tab.
-export const WORKSHOP_TOUR_OFFERED = opened(
-  'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode.',
-  (t) => t === 'WorkshopTourOffer',
-);
-
 // The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
 export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
@@ -1111,13 +1071,6 @@ export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',
   'The Forms tour offered, the first time an Editor opens a Form tab.',
   (t) => t === 'FormTourOffer',
-);
-
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
-export const AVATAR_TOUR_OFFERED = opened(
-  'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar.',
-  (t) => t === 'AvatarTourOffer',
 );
 
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
@@ -1151,12 +1104,6 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const SLIDE_DECK_OPENED = opened(
-  'Slide Deck Opened',
-  'The Slide Deck panel or presentation settings opened.',
-  (t) => t === 'SlideDeck' || t === 'PresentationSettings',
-);
-
 export const EXPLORER_REASONS_OPENED = opened(
   'Explorer Banner: Learn More',
   'The Explorer\u2019s sign-in banner: Learn more opened the reasons to sign in.',
@@ -1181,12 +1128,6 @@ export const SESSION_VOTE_OPENED = opened(
   'Vote Button Opened',
   'The Vote button in the bottom bar opened, to start a vote or to follow the one running.',
   (t) => t === 'SessionVote',
-);
-
-export const SESSION_POLL_OPENED = opened(
-  'Poll Button Opened',
-  'The Poll button in the bottom bar opened, to ask a question or to read the answers.',
-  (t) => t === 'SessionPoll',
 );
 
 // Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then

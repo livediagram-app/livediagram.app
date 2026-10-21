@@ -31,7 +31,6 @@ export function usePageContents({
   tab,
   here,
   settleMs = 0,
-  slidesTool = true,
   onWent,
 }: {
   view: PagesModeView;
@@ -40,9 +39,6 @@ export function usePageContents({
   here: string | undefined;
   // How long the tab rests before the thumbnails redraw (usePageThumbnails); 0 redraws at once.
   settleMs?: number;
-  // Whether a slide page's toolbar offers Add to Slides (the popover's; the sidebar leaves it to
-  // the page's own title bar).
-  slidesTool?: boolean;
   // After a press went to a page (the phone's sheet closes then).
   onWent?: () => void;
 }) {
@@ -52,10 +48,9 @@ export function usePageContents({
   const rows = useMemo(
     () =>
       contentsRows(pages, {
-        ...(view.deck ? { inDeck: (id: string) => !!view.deck!.slideOf(id) } : {}),
         ...(view.articles ? { articles: view.articles.flows } : {}),
       }),
-    [pages, view.deck, view.articles],
+    [pages, view.articles],
   );
   // The words on each page, read only while a search is typed.
   const searching = query.trim() !== '';
@@ -192,13 +187,10 @@ export function usePageContents({
       : undefined;
   // A page's own toolbar (an Editor's): what each press does, absent where it cannot. Delete and
   // the rest refuse a locked page as its title bar's do, so a locked page offers only Unlock.
-  const { edit, deck } = view;
+  const { edit } = view;
   const actionsFor = (row: ContentsRow): PageActions | null => {
     if (!edit) return null;
     return {
-      ...(slidesTool && row.kind === 'slide' && deck && row.inDeck === false
-        ? { addToSlides: () => deck.add(row.id) }
-        : {}),
       ...(edit.duplicatePage && edit.canDuplicate(row.id) && !full
         ? { duplicate: () => edit.duplicatePage!(row.id) }
         : {}),

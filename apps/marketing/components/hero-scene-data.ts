@@ -11,15 +11,7 @@ import type { HeroMode } from './hero-mode-palette';
 import type { PlanTab } from './hero-plan-bars';
 
 export type HeroSceneKey =
-  | 'diagram'
-  | 'draw'
-  | 'mindmap'
-  | 'infographic'
-  | 'slides'
-  | 'article'
-  | 'plan'
-  | 'sheet'
-  | 'form';
+  'diagram' | 'draw' | 'mindmap' | 'infographic' | 'slides' | 'article' | 'plan' | 'sheet' | 'form';
 
 export type HeroSceneData = {
   key: HeroSceneKey;

@@ -31,11 +31,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [documentName, setDocumentName] = useState(UNTITLED_DOCUMENT_NAME);
-  // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md) exactly as the api returned it, seeded on
-  // load and never read again after useSlideDeck parses it. Kept as raw text
-  // rather than a parsed Deck so hydration has one obvious moment, and a deck
-  // the parser cannot read costs the deck rather than the document.
-  const [documentPresentation, setDocumentPresentation] = useState<string | null>(null);
   // The document's type catalogue as stored (docs/specs/026-plan/item-types.md), null for the default
   // types, with its revision: seeded on load, then set by a save here or the room's `item-types` op.
   // See useItemTypes, which shows this editor's unsaved changes over it.
@@ -161,8 +156,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     setSavedAt,
     documentName,
     setDocumentName,
-    documentPresentation,
-    setDocumentPresentation,
     documentItemTypes,
     setDocumentItemTypes,
     documentList,

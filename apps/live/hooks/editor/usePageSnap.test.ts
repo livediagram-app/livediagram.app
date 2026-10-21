@@ -34,7 +34,7 @@ const fitOf = (pageId: string) => computeFitBelow(SIZE, row.find((p) => p.id ===
 
 function mount(
   viewport: ViewportStore,
-  opts: { suspended?: () => boolean; mode?: 'pages' | 'diagram' } = {},
+  opts: { mode?: 'pages' | 'diagram' } = {},
 ) {
   const canvas = document.createElement('main');
   Object.defineProperty(canvas, 'offsetWidth', { value: SIZE.width });
@@ -53,7 +53,6 @@ function mount(
       clearSelection: vi.fn(),
       toastInfo: vi.fn(),
       viewport,
-      ...(opts.suspended ? { snapSuspended: opts.suspended } : {}),
     }),
   );
 }
@@ -172,15 +171,6 @@ describe('a view moved by anything else', () => {
     expect(viewport.get().zoom).toBe(fitOf('p2').zoom / 3);
     rest();
     expect(viewport.get()).toEqual(fitOf('p2'));
-  });
-
-  it('leaves the view be while following or presenting', () => {
-    const viewport = createViewportStore(fitOf('p2').zoom);
-    mount(viewport, { suspended: () => true });
-    const loose = { zoom: fitOf('p2').zoom / 3, offset: fitOf('p2').offset };
-    act(() => viewport.setView(loose));
-    rest();
-    expect(viewport.get()).toEqual(loose);
   });
 
   it('does nothing outside Pages mode', () => {

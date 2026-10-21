@@ -16,9 +16,6 @@ export const PALETTE_TYPE_ALIASES: TypeAliases = {
   'Mind-node': 'MindNode',
   'Session-button': 'SessionButton',
   'Comment-pin': 'CommentPin',
-  'Done-check': 'DoneCheck',
-  'Reaction-pad': 'ReactionPad',
-  'Mode-button': 'ModeButton',
   'Action-card': 'ActionPanel',
   'Code-block': 'CodeBlock',
 };
@@ -36,13 +33,5 @@ export const PALETTE_KINDS: ReadonlySet<string> = new Set(
 
 // The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
 // Canvas·Used events are not modes a person selects: InsertBetween is a drag
-// gesture and FollowMe is pinning your view to a peer's (it has its own card
-// on the Collaboration tab), so the ranking names the modes it counts.
-export const SELECTION_MODES: readonly string[] = [
-  'Laser',
-  'Spotlight',
-  'Eraser',
-  'FormatPainter',
-  'Isometric',
-  'AvatarMode',
-];
+// gesture, so the ranking names the modes it counts.
+export const SELECTION_MODES: readonly string[] = ['Eraser', 'FormatPainter', 'Isometric'];

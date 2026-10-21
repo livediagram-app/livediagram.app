@@ -5,9 +5,7 @@ import { logoTitleBarRoom } from './LogoTitleBar';
 import { pageArticleRoom } from './PageArticleButtons';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
-import { pageDeckRoom } from './PageDeckButton';
 import { pageLockRoom } from './PageLockButton';
-import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
 import { pageDeviceRoom } from './wireframe/PageDeviceButton';
 
@@ -19,9 +17,6 @@ type TitleBarButtons = {
   // Someone may edit: the cog and the lock show.
   edit: boolean;
   locked: boolean;
-  deck: boolean;
-  // A slide in the deck: its Add Notes.
-  notes: boolean;
   logo: boolean;
   // An infographic or slide page's Layout and Background.
   page: boolean;
@@ -36,8 +31,6 @@ type TitleBarButtons = {
 export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
   return (
     (b.edit ? COG_ROOM + pageLockRoom(b.locked, named) : 0) +
-    (b.deck ? pageDeckRoom(named) : 0) +
-    (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.article ? pageArticleRoom(named) + pageBackgroundRoom(named) : 0) +

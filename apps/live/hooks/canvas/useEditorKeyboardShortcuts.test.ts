@@ -50,11 +50,6 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
   });
 
-  it('binds Laser to K (not L)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
-    expect(VIEW_TOOL_KEYS.l).toBeUndefined();
-  });
-
   it('keeps Isometric on I and Zen on Z', () => {
     expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');

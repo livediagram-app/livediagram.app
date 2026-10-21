@@ -16,7 +16,7 @@ describe('templateFamilyOf', () => {
     expect(templateFamilyOf('kanban')).toBe('kanban');
   });
 
-  it.each(['event-storming', 'incident-postmortem', 'lean-coffee'] as const)(
+  it.each(['event-storming', 'incident-postmortem', 'brainstorm'] as const)(
     'reads %s as no family',
     (kind) => {
       expect(templateFamilyOf(kind)).toBeNull();

@@ -48,7 +48,7 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 | One-time room ticket minted over authenticated REST                  | `routes/document-room-routes.ts`                       | How a CLI process with an `lvd_` token can open a socket for `wait`/`watch` |
 | Server-built presence (random presence id, clamped name and colour)  | `helloPresence` in `document-room-rules.ts`            | An agent presence entry slots into the same roster                          |
 | Room remembers per-session state in the socket attachment (`tabId`)  | `document-room.ts` `SessionAttachment`                 | Precedent for remembering each session's selection                          |
-| Follow-me viewport, bring focus                                      | the since-removed follow-me-viewport spec   | "Show me what you changed" for free                                         |
+| Follow-me viewport, bring focus                                      | the since-removed follow-me-viewport spec              | "Show me what you changed" for free                                         |
 | Comment endpoints (add, delete-own) that relay to the room           | `routes/document-subresource-routes.ts`                | Agent comments already go live                                              |
 
 ### 2.2 The gaps, verified

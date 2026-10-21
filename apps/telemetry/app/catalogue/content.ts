@@ -443,7 +443,7 @@ export const TOOLS_ADDED = addedFrom(
 export const COLLABORATE_ADDED = addedFrom(
   'collaborate',
   'Collaborate Added',
-  'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+  'Temperature checks, decisions, comment and action panels.',
 );
 
 export const COMPONENTS_ADDED = addedFrom(

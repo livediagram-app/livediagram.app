@@ -27,7 +27,6 @@ const ctx: CommandContext = {
   // A tool nothing else uses, so every real tool is offered.
   canvasTool: 'none',
   canvasEmpty: false,
-  isMobile: false,
   esBoard: false,
   photoImportAvailable: false,
 };
@@ -36,7 +35,7 @@ const noop = () => new Proxy({}, { get: () => vi.fn() }) as unknown as CommandHa
 
 describe('tool commands against the palette dropdown', () => {
   it('covers every tool the dropdown offers', () => {
-    const dropdown = buildCanvasToolOptions({ isMobile: false, includeZen: true })
+    const dropdown = buildCanvasToolOptions({ includeZen: true })
       .map((o) => o.id)
       // Zen is an ACTION in the dropdown, not a tool, and it already has its
       // own command ('zen'), so it is not expected under the tool: prefix.
@@ -48,17 +47,8 @@ describe('tool commands against the palette dropdown', () => {
     expect(commands).toEqual(dropdown);
   });
 
-  it('matches the dropdown on the mobile carve-out too', () => {
-    const dropdown = buildCanvasToolOptions({ isMobile: true, includeZen: false }).map((o) => o.id);
-    const commands = buildEditorCommands({ ...ctx, isMobile: true }, noop())
-      .map((c) => c.id)
-      .filter((id) => id.startsWith('tool:'))
-      .map((id) => id.slice('tool:'.length));
-    expect(commands).toEqual(dropdown);
-  });
-
   it('matches the dropdown on which tools an empty canvas disables', () => {
-    const enabled = buildCanvasToolOptions({ isMobile: false, canvasEmpty: true })
+    const enabled = buildCanvasToolOptions({ canvasEmpty: true })
       .filter((o) => !o.disabled)
       .map((o) => o.id);
     const commands = buildEditorCommands({ ...ctx, canvasEmpty: true }, noop())

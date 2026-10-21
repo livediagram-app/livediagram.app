@@ -22,7 +22,6 @@ who re-renders when it changes.
 | `apps/live/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
 | `apps/live/components/canvas/LayerSelectionChrome.tsx`     | Next-note buttons, quick-connect pluses, union resize box                           |
 | `apps/live/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/live/components/panels/SlideDeckPanel.tsx`           | Reads the selection it slides from the store                                        |
 | `apps/live/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
@@ -112,8 +111,6 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     selected element when it is a path) for the path tool, which flips only for paths;
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
     subscription;
-  - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
-    with `sameMembers`); `useSlideDeck` no longer returns `selectionCount` / `currentSelectionIds`.
 
 ### Above the canvas
 

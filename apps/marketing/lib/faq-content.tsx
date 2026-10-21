@@ -35,7 +35,7 @@ const ICON = 18;
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
 export const TEMPLATE_COUNT = 135;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 14;
+export const TEMPLATE_CATEGORY_COUNT = 13;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 61;
 // Pages mode's infographic page layouts and logo layouts, pinned the same way.

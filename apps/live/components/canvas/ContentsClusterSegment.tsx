@@ -9,7 +9,7 @@ const ContentsIcon = lucideGlyph(lucideListOrdered, 16);
 // Contents in the bottom-right cluster, in Pages mode (docs/specs/007-editor/
 // pages-mode.md "Contents"): every page of the tab one press away, for every role. Named
 // beside its icon on a desktop; its icon alone on a phone. The first segment of the pages strip
-// (PagesClusterStrip), Slides beside it.
+// (PagesClusterStrip).
 export function ContentsClusterSegment(props: {
   popoverOpen: boolean;
   onTogglePopover: (button: HTMLElement) => void;

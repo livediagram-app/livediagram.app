@@ -1,17 +1,14 @@
-// The runtime behaviour of the three interactive Behaviour elements that act
-// on the SESSION rather than on the document: the Session button (docs/specs/012-collaboration/session-button.md),
-// the Reveal zone's local uncover (docs/specs/009-elements/reveal-zone.md), and the Picker's roll (docs/specs/012-collaboration/picker.md).
+// The runtime behaviour of the interactive Behaviour elements that act on the SESSION rather than on the
+// document: the Session button (docs/specs/012-collaboration/session-button.md) and the Picker's roll
+// (docs/specs/012-collaboration/picker.md).
 //
 // They live together because they share a shape — a press resolves what to do
 // from the element, then calls something that already exists (the session-tool
-// entry points, the presence list, the element commit) — and because none of
-// them belongs to the style hooks: two of the three don't write to the document
-// at all.
+// entry points, the presence list, the element commit) — and because neither
+// belongs to the style hooks.
 
-import { useState } from 'react';
 import {
   sessionButtonPlan,
-  type PollStyle,
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
@@ -27,7 +24,6 @@ export function useBehaviourElements({
   commitTabs,
   tickTabs,
   editsBlocked,
-  sessionToolsBlocked,
   selfParticipant,
   livePresence,
   activeTimer,
@@ -36,7 +32,6 @@ export function useBehaviourElements({
   pauseTimer,
   resumeTimer,
   startVote,
-  startPoll,
 }: {
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
@@ -46,9 +41,6 @@ export function useBehaviourElements({
   // session tool but not start one (docs/specs/012-collaboration/session-tools.md), and their picker roll is theirs
   // alone rather than a write everyone sees.
   editsBlocked: boolean;
-  // Somebody else is facilitating (docs/specs/012-collaboration/facilitator.md): pressing a session button,
-  // spinning the picker for the room and lifting a cover are theirs.
-  sessionToolsBlocked: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
   // The tab's timer right now, so a timer button can act on it rather than
@@ -62,18 +54,14 @@ export function useBehaviourElements({
   pauseTimer: () => void;
   resumeTimer: () => void;
   startVote: (votesPerPerson: number) => void;
-  startPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
 }) {
   // --- Session button (docs/specs/012-collaboration/session-button.md) --------------------------------------------
   // Pressing one starts the tool FOR THE ROOM, through the same entry points
   // the menus use — so the edit gate and the telemetry
   // that go with each tool all still happen exactly once, in one place.
   const pressSessionButton = (element: ShapeElement) => {
-    // It starts the timer / vote / poll for the room, so it is one of the
-    // facilitator's (docs/specs/012-collaboration/facilitator.md) rather than an ordinary press.
-    if (editsBlocked || sessionToolsBlocked) return;
+    if (editsBlocked) return;
     const plan = sessionButtonPlan(element.session);
-    if (!plan) return;
     if (plan.tool === 'timer') {
       // Mid-session the button is the timer's control, not a reset: someone
       // pressing it while five minutes are running means "hold on", and
@@ -92,37 +80,11 @@ export function useBehaviourElements({
       else resumeTimer();
       return;
     }
-    if (plan.tool === 'vote') {
-      // A vote already open is the room's round: somebody pressing the
-      // button again mid-vote means "we're voting", not "start over", and
-      // starting over wiped every dot cast so far (docs/specs/012-collaboration/collab-race-hardening.md). Ending it stays
-      // with the vote's own controls.
-      if (activeVote?.active) return;
-      startVote(plan.dots);
-      return;
-    }
-    // The button's OWN style and answers (docs/specs/012-collaboration/session-button.md). This used to hard-code
-    // `style: 'text'`, which threw away every answer the author had written
-    // and asked the room a free-text question instead.
-    startPoll({ question: plan.question, style: plan.style, options: plan.options });
-  };
-
-  // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) -----------------------------------------------
-  // Which covers THIS viewer has lifted. Session state, deliberately: it is
-  // not a property of the document, it is a property of having looked. Lost on
-  // reload, which is right for something whose job is to start closed.
-  const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(new Set());
-  const toggleRevealForMe = (elementId: string) => {
-    // While somebody is facilitating (docs/specs/012-collaboration/facilitator.md) a cover is theirs to lift, and
-    // they lift it for the room through the element's own `revealed` field
-    // rather than peeking privately. The personal lift below is what a canvas
-    // with no facilitator keeps.
-    if (sessionToolsBlocked) return;
-    setRevealedIds((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(elementId)) next.add(elementId);
-      return next;
-    });
+    // A vote already open is the room's round: somebody pressing the
+    // button again mid-vote means "we're voting", not "start over", and
+    // starting over wiped every dot cast so far (docs/specs/012-collaboration/collab-race-hardening.md). Ending it stays
+    // with the vote's own controls.
+    if (!activeVote?.active) startVote(plan.dots);
   };
 
   // --- Picker (docs/specs/012-collaboration/picker.md) ----------------------------------------------------
@@ -142,17 +104,14 @@ export function useBehaviourElements({
       // Whether OUR roll reaches the element (and so the room). The face needs
       // it to tell its own landing apart from one arriving from a peer, which
       // is what lets everyone watch the same spin (docs/specs/012-collaboration/picker.md).
-      shared: !editsBlocked && !sessionToolsBlocked,
+      shared: !editsBlocked,
       roll: () => {
         const picked = rollPicker(candidates);
         if (picked === null) return null;
         const result = picked.label;
         // A view-role visitor still gets their roll — it just stays on their
         // screen. Everyone else writes it, so the room lands on one answer.
-        // Under a facilitator (docs/specs/012-collaboration/facilitator.md) the same is true of anybody who is
-        // not them: they may spin for themselves, but the room's answer is the
-        // facilitator's to land.
-        if (!editsBlocked && !sessionToolsBlocked) {
+        if (!editsBlocked) {
           // Not undoable (docs/specs/012-collaboration/collab-race-hardening.md): the room's answer is a fact about the
           // session, and one person's Ctrl+Z must not re-roll it for all.
           tickTabs((ts) =>
@@ -179,10 +138,6 @@ export function useBehaviourElements({
   // one element; the selection-wide setter in usePortalSetters stays for the
   // context menu, which acts on whatever is selected.
   const setSessionConfigFor = (element: ShapeElement, config: SessionButtonConfig) => {
-    // Its configuration IS the timer's length and the poll's question, so
-    // changing it mid-session changes what the next press does to everybody
-    // (docs/specs/012-collaboration/facilitator.md). The owner who wants to edit it takes the baton back.
-    if (sessionToolsBlocked) return;
     if (editsBlocked) return;
     commitTabs((ts) =>
       ts.map((tab) =>
@@ -201,8 +156,6 @@ export function useBehaviourElements({
 
   return {
     pressSessionButton,
-    revealedIds,
-    toggleRevealForMe,
     pickerFor,
     setSessionConfigFor,
   };

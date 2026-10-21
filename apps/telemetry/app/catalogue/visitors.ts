@@ -9,10 +9,8 @@ import {
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
   PLAN_TOUR_OFFERED,
-  WORKSHOP_TOUR_OFFERED,
   DRAW_TOUR_OFFERED,
   FORM_TOUR_OFFERED,
-  AVATAR_TOUR_OFFERED,
   PAGES_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
@@ -269,74 +267,7 @@ export const PLAN_TOUR: MetricStack = {
   headline: PLAN_TOURS_STARTED,
 };
 
-// The Workshop tour (docs/specs/012-collaboration/workshop-tour.md): its own funnel, beside the Plan
-// tour's.
-export const WORKSHOP_TOUR_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Workshop Tours Declined',
-  'The Workshop tour turned down on its welcome card, before it started.',
-  { types: ['WorkshopTourOffer'], rising: 'neutral' },
-);
-
-export const WORKSHOP_TOURS_STARTED = chart(
-  'UI',
-  'Started',
-  'Workshop Tours Started',
-  'The Workshop tour started.',
-  { types: ['WorkshopTour'] },
-);
-
-export const WORKSHOP_TOURS_FROM_WELCOME = chart(
-  'UI',
-  'Selected',
-  'Workshop Tours from the Welcome Tour',
-  "Show me Workshop pressed on the welcome tour's closing card (retired October 2026, when the welcome tour became the Diagram tour).",
-  { types: ['WorkshopTourFromWelcome'] },
-);
-
-export const WORKSHOP_TOUR_STEPS_VIEWED = chart(
-  'UI',
-  'View',
-  'Workshop Tour Steps Viewed',
-  'A step of the Workshop tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('WorkshopTourStep') },
-);
-
-export const WORKSHOP_TOURS_COMPLETED = chart(
-  'UI',
-  'Ended',
-  'Workshop Tours Completed',
-  'The Workshop tour run to its last step.',
-  { types: ['WorkshopTourCompleted'] },
-);
-
-export const WORKSHOP_TOURS_SKIPPED = chart(
-  'UI',
-  'Ended',
-  'Workshop Tours Skipped',
-  'The Workshop tour closed before its end.',
-  { types: ['WorkshopTourSkipped'], rising: 'neutral' },
-);
-
-export const WORKSHOP_TOUR: MetricStack = {
-  stack: true,
-  title: 'Workshop Tour',
-  blurb:
-    "The first time in Workshop mode: the Workshop tour offered (on its own card; on the welcome tour's closing card until October 2026), stepped through, finished or skipped.",
-  members: [
-    WORKSHOP_TOUR_OFFERED,
-    WORKSHOP_TOUR_DECLINED,
-    WORKSHOP_TOURS_STARTED,
-    WORKSHOP_TOURS_FROM_WELCOME,
-    WORKSHOP_TOUR_STEPS_VIEWED,
-    WORKSHOP_TOURS_COMPLETED,
-    WORKSHOP_TOURS_SKIPPED,
-  ],
-  headline: WORKSHOP_TOURS_STARTED,
-};
-
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Workshop tour's.
+// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Plan tour's.
 export const DRAW_TOUR_DECLINED = chart(
   'UI',
   'Closed',
@@ -448,63 +379,6 @@ export const FORM_TOUR: MetricStack = {
     FORM_TOURS_SKIPPED,
   ],
   headline: FORM_TOURS_STARTED,
-};
-
-// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.
-export const AVATAR_TOUR_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Avatar Tours Declined',
-  'The Avatar tour turned down on its welcome card, before it started.',
-  { types: ['AvatarTourOffer'], rising: 'neutral' },
-);
-
-export const AVATAR_TOURS_STARTED = chart(
-  'UI',
-  'Started',
-  'Avatar Tours Started',
-  'The Avatar tour started.',
-  { types: ['AvatarTour'] },
-);
-
-export const AVATAR_TOUR_STEPS_VIEWED = chart(
-  'UI',
-  'View',
-  'Avatar Tour Steps Viewed',
-  'A step of the Avatar tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('AvatarTourStep') },
-);
-
-export const AVATAR_TOURS_COMPLETED = chart(
-  'UI',
-  'Ended',
-  'Avatar Tours Completed',
-  'The Avatar tour run to its last step.',
-  { types: ['AvatarTourCompleted'] },
-);
-
-export const AVATAR_TOURS_SKIPPED = chart(
-  'UI',
-  'Ended',
-  'Avatar Tours Skipped',
-  'The Avatar tour closed before its end.',
-  { types: ['AvatarTourSkipped'], rising: 'neutral' },
-);
-
-export const AVATAR_TOUR: MetricStack = {
-  stack: true,
-  title: 'Avatar Tour',
-  blurb:
-    'The first time in Avatar mode: the Avatar tour offered, stepped through, finished or skipped.',
-  members: [
-    AVATAR_TOUR_OFFERED,
-    AVATAR_TOUR_DECLINED,
-    AVATAR_TOURS_STARTED,
-    AVATAR_TOUR_STEPS_VIEWED,
-    AVATAR_TOURS_COMPLETED,
-    AVATAR_TOURS_SKIPPED,
-  ],
-  headline: AVATAR_TOURS_STARTED,
 };
 
 // The Pages tour (docs/specs/007-editor/pages-tour.md): its own funnel, beside the Pages tour's.
@@ -709,10 +583,8 @@ export const ONBOARDING_TOURS: MetricStack = {
   members: [
     TOURS_STARTED,
     PLAN_TOURS_STARTED,
-    WORKSHOP_TOURS_STARTED,
     DRAW_TOURS_STARTED,
     FORM_TOURS_STARTED,
-    AVATAR_TOURS_STARTED,
     PAGES_TOURS_STARTED,
     ELEMENT_TOURS_STARTED,
     SHOW_ME_TOURS_STARTED,

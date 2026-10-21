@@ -50,7 +50,7 @@ describe('usePageThumbnails', () => {
     draw.mockClear();
     rerender({ tab: tabWith([a, boxOn(1, 'b', 'Edited'), c]) });
     expect(draw).toHaveBeenCalledTimes(1);
-    expect(draw.mock.calls[0]![0].pageId).toBe('p2');
+    expect(draw.mock.calls[0]![0]).toBe('p2');
     expect(result.current.get('p1')).toBe(before.get('p1'));
     expect(result.current.get('p2')).not.toBe(before.get('p2'));
   });
@@ -69,7 +69,7 @@ describe('usePageThumbnails', () => {
   it('draws only the pages asked for', () => {
     const draw = vi.spyOn(slideThumb, 'slideThumbFor');
     renderHook(() => usePageThumbnails(tabWith([boxOn(0, 'a')]), ['p2']));
-    expect(draw.mock.calls.map((c) => c[0].pageId)).toEqual(['p2']);
+    expect(draw.mock.calls.map((c) => c[0])).toEqual(['p2']);
   });
 
   it('with settleMs, redraws once the tab has rested, not on every change', () => {

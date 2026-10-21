@@ -340,21 +340,21 @@ The table line prints its label first when it has one. Every text a summary prin
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `temperature`           | `votes=<responses.length>`                                                            |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer) or `:<dots>` (vote)                      |
-| `decision`              | `status=<decisionStatus>` when set                                                    |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
-| `stat-row`              | `stats=<stats.length>`                                                                |
-| `process`               | `steps=<processSteps.length>`                                                         |
-| `site-header`           | `links=<navLinks.length>`                                                             |
-| `legend`                | `items=<legendItems.length>`                                                          |
-| `rating`                | `rating=<rating>/5`                                                                   |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
-| `timeline-rail`         | `points=<railCount>`                                                                  |
-| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
-| `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
+| Kind                    | State attribute                                                  |
+| ----------------------- | ---------------------------------------------------------------- |
+| `temperature`           | `votes=<responses.length>`                                       |
+| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer) or `:<dots>` (vote) |
+| `decision`              | `status=<decisionStatus>` when set                               |
+| `picker`                | `picked=<attrValue(pickerResult)>` when set                      |
+| `stat-row`              | `stats=<stats.length>`                                           |
+| `process`               | `steps=<processSteps.length>`                                    |
+| `site-header`           | `links=<navLinks.length>`                                        |
+| `legend`                | `items=<legendItems.length>`                                     |
+| `rating`                | `rating=<rating>/5`                                              |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                   |
+| `timeline-rail`         | `points=<railCount>`                                             |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set       |
+| `badge`, `step`         | `attached` when `attachedTo` is set                              |
 
 Every other kind has no state attribute; `show` has its content.
 

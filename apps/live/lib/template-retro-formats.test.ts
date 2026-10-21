@@ -167,13 +167,13 @@ describe('start, stop, continue template', () => {
 describe('mad, sad, glad template', () => {
   const els = buildTemplate('mad-sad-glad', 0, 0);
 
-  it('opens on honesty: how are you, really, and an anonymous idea box', () => {
+  it('opens on honesty: how are you, really, and a note for what nobody says', () => {
     expectRitual(els, 'How are you, really?', 6);
-    const box = shapesOf(els, 'idea-box')[0]!;
-    expect(box.label).toBe('Say it anonymously');
-    // Two cards already in, still sealed until the facilitator opens it.
-    expect(box.ideaCards).toHaveLength(2);
-    expect(box.ideasRevealed).toBeFalsy();
+    const box = els.find(
+      (el): el is Extract<typeof el, { type: 'sticky' }> =>
+        el.type === 'sticky' && (el.label ?? '').startsWith('Say it anonymously'),
+    )!;
+    expect(box).toBeDefined();
     // Sits in the rail, between the mood check and the tools.
     const mood = shapesOf(els, 'temperature')[0]!;
     expect(box.x).toBe(mood.x);
@@ -272,7 +272,11 @@ describe('sailboat template', () => {
   it('runs the ritual round a drawn scene on a blank canvas', () => {
     expect(templateCanvasOverrides('sailboat').backgroundPattern).toBe('blank');
     expectRitual(els, 'How’s the voyage feeling?', 8);
-    expect(shapesOf(els, 'agenda')[0]!.agendaItems!.map((i) => i.label)).toContain('Anchors');
+    expect(
+      shapesOf(els, 'checklist').some((c) =>
+        (c.checklistItems ?? []).some((i) => i.text.startsWith('Anchors')),
+      ),
+    ).toBe(true);
     // The picture is locked against the theme so the sea stays blue.
     // (FreehandElement does not declare the flag; the theme reads it generically.)
     expect((sea as { themeLockFill?: boolean }).themeLockFill).toBe(true);

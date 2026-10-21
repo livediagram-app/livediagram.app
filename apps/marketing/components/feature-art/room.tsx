@@ -2,15 +2,7 @@
 // into 3D. Built on ./page-kit so it reads in light and in dark.
 
 import { Frame } from './shared';
-import {
-  at,
-  EMERALD,
-  INK,
-  INK_SOFT,
-  SKY,
-  SKY_DEEP,
-  VIOLET,
-} from './page-kit';
+import { at, EMERALD, INK, INK_SOFT, SKY, SKY_DEEP, VIOLET } from './page-kit';
 
 // One plane of the tilted canvas: a rhombus centred on (110, y).
 function Plane({

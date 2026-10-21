@@ -77,8 +77,6 @@ describe('the whiteboard shape catalogue', () => {
       'collab-ask',
       'collab-tools',
       'collab-record',
-      'collab-react',
-      'collab-mode',
       'collab-navigate',
     ]);
   });

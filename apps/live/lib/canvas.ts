@@ -59,13 +59,13 @@ export function inheritedSizeFor(
   // grid's, not the selection's.
   if (base.type === 'table') return { width: base.width, height: base.height };
   // Same for the kinds whose silhouette IS the element: a portal's ring
-  // (docs/specs/009-elements/portal-element.md) and the fixed-size Selection Mode button (docs/specs/009-elements/mode-button.md). Inheriting
+  // (docs/specs/009-elements/portal-element.md) and the fixed-size Session button (docs/specs/012-collaboration/session-button.md). Inheriting
   // whatever box happened to be selected — a wide banner, a thin rail — hands
   // you something that doesn't read as the thing you asked for, and for a
   // fixed-size control it is simply not resizable afterwards.
   if (
     base.type === 'shape' &&
-    (base.shape === 'portal' || base.shape === 'reveal' || isFixedSizeShape(base.shape))
+    (base.shape === 'portal' || isFixedSizeShape(base.shape))
   ) {
     return { width: base.width, height: base.height };
   }

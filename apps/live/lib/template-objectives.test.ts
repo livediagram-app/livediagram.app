@@ -3,7 +3,7 @@ import { isValidElement, type Element } from '@liveplanner/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from '@liveplanner/templates';
 import { buildTemplate } from './template-builders';
 
-// Structure pins for the Meeting agenda and the Objectives planner
+// Structure pins for the Objectives planner
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). Each test maps to
 // a sentence of that spec.
 
@@ -28,86 +28,6 @@ const expectDisjoint = (boxes: Box[]) => {
     boxes.slice(i + 1).forEach((b) => expect(overlaps(a, b), JSON.stringify([a, b])).toBe(false)),
   );
 };
-
-describe('meeting agenda template', () => {
-  const els = buildTemplate('meeting-agenda', 0, 0);
-  const scaffold = els.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
-  const content = els.filter((el) => el.layerId === TEMPLATE_CONTENT_LAYER_ID);
-
-  it('is a weekly product sync, read Before / During / After', () => {
-    expect(labels(els)).toContain('Weekly product sync · Tue 10:00 · 45 min');
-    const phases = textsOf(scaffold).map((t) => t.label ?? '');
-    for (const p of ['1 · Before', '2 · During', '3 · After'])
-      expect(phases.some((l) => l.startsWith(p))).toBe(true);
-  });
-
-  it('opens on the purpose and the outcomes the meeting leaves with', () => {
-    const [purpose] = shapesOf(els, 'card').filter((c) => c.pageTitle === 'Purpose');
-    expect(purpose?.label).toMatch(/reorder/);
-    const outcomes = shapesOf(els, 'checklist')[0]!;
-    expect(outcomes.checklistItems).toHaveLength(3);
-  });
-
-  it('names the room, with a facilitator, a note-taker and a timekeeper', () => {
-    const roles = shapesOf(els, 'stadium').map((s) => s.label);
-    for (const r of ['Facilitator', 'Note-taker', 'Timekeeper']) expect(roles).toContain(r);
-    expect(shapesOf(els, 'circle').filter((c) => /^[A-Z]{2}$/.test(c.label ?? ''))).toHaveLength(5);
-  });
-
-  it('runs a live agenda whose segments carry owners and sum to the 45 minutes', () => {
-    const [agenda] = shapesOf(els, 'agenda');
-    const items = agenda!.agendaItems!;
-    expect(items).toHaveLength(6);
-    expect(items.reduce((sum, i) => sum + i.minutes, 0)).toBe(45);
-    for (const item of items) expect(item.label).toMatch(/ · \S/);
-    expect(agenda!.agendaCurrent).toBeUndefined();
-  });
-
-  it('parks four stickies inside the dashed parking bay', () => {
-    const bay = shapesOf(els, 'square').find((s) => s.strokeStyle === 'dashed')!;
-    const notes = els.filter((el) => el.type === 'sticky');
-    expect(notes).toHaveLength(4);
-    for (const n of notes) expect(inside(n, bay)).toBe(true);
-  });
-
-  it('records one accepted decision with its drivers and date, and one proposed', () => {
-    const decisions = shapesOf(els, 'decision');
-    expect(decisions.map((d) => d.decisionStatus)).toEqual(['accepted', 'proposed']);
-    expect(decisions[0]!.decisionDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(decisions[0]!.decisionDrivers!.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('closes on actions with an owner and a day each, then rates the meeting', () => {
-    const actions = shapesOf(els, 'checklist')[1]!;
-    expect(actions.checklistItems).toHaveLength(4);
-    for (const item of actions.checklistItems!) expect(item.text.split(' · ')).toHaveLength(3);
-    const [rate] = shapesOf(els, 'temperature');
-    expect(rate!.label).toBe('Rate this meeting');
-  });
-
-  it('keeps the working elements apart and valid', () => {
-    const blocks = [
-      ...shapesOf(els, 'card'),
-      ...shapesOf(els, 'checklist'),
-      ...shapesOf(els, 'agenda'),
-      ...shapesOf(els, 'decision'),
-      ...shapesOf(els, 'temperature'),
-      shapesOf(els, 'square').find((s) => s.strokeStyle === 'dashed')!,
-    ];
-    expectDisjoint(blocks);
-    for (const el of els) expect(isValidElement(el), JSON.stringify(el)).toBe(true);
-  });
-
-  it('puts the board on the scaffold and what the week fills in on the notes', () => {
-    expect(scaffold.length + content.length).toBe(els.length);
-    for (const kind of ['agenda', 'decision', 'checklist', 'temperature'])
-      for (const s of shapesOf(els, kind)) expect(s.layerId).toBe(TEMPLATE_CONTENT_LAYER_ID);
-    for (const n of els.filter((el) => el.type === 'sticky'))
-      expect(n.layerId).toBe(TEMPLATE_CONTENT_LAYER_ID);
-    for (const h of ['Run of show', 'Parking lot', 'Decisions', 'Actions'])
-      expect(labels(scaffold)).toContain(h);
-  });
-});
 
 describe('objectives planner template', () => {
   const els = buildTemplate('objectives-planner', 0, 0);

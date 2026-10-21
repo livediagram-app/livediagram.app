@@ -8,11 +8,9 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@liveplanner/document';
 import { buildTemplate } from './template-builders';
 
-// Structure pins for the board, session and workshop starters redesigned
-// together (docs/specs/008-canvas/canvas-and-palette.md "Templates", and
-// docs/specs/012-collaboration/qa-board.md "Templates" for the two session
-// boards): the Plan templates, SWOT, prioritization matrix, Lean Coffee, Town Hall Q&A,
-// affinity map and user story map. Each test maps to a sentence of those specs.
+// Structure pins for the board and workshop starters redesigned together
+// (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Plan templates, SWOT, prioritization matrix,
+// affinity map and user story map. Each test maps to a sentence of that spec.
 
 type Shape = Extract<Element, { type: 'shape' }>;
 type Sticky = Extract<Element, { type: 'sticky' }>;
@@ -154,70 +152,12 @@ describe('prioritization matrix template', () => {
   it('runs the ritual in a rail: vote, size, commit', () => {
     const vote = shapesOf(els, 'session-button');
     expect(vote.map((v) => v.session?.tool)).toEqual(['vote']);
-    expect(shapesOf(els, 'estimate')[0]?.estimateScale).toBe('tshirt');
+    expect(els.some((el) => el.type === 'sticky' && /XS · S · M · L · XL/.test(el.label ?? ''))).toBe(
+      true,
+    );
     const commit = shapesOf(els, 'checklist')[0]?.checklistItems ?? [];
     expect(commit.length).toBeGreaterThan(0);
     expect(commit.every((c) => c.text.split(' · ').length === 3)).toBe(true);
-  });
-});
-
-describe('lean coffee template', () => {
-  const els = buildTemplate('lean-coffee', 0, 0);
-
-  it('draws the four-step loop as joined cards with a loop back to Discuss', () => {
-    for (const s of ['Propose', 'Vote', 'Discuss', 'Keep going?']) expect(texts(els)).toContain(s);
-    const links = arrows(els);
-    expect(links).toHaveLength(4);
-    expect(links.every((a) => a.from.kind === 'pinned' && a.to.kind === 'pinned')).toBe(true);
-    expect(links.filter((a) => a.label === 'Next topic')).toHaveLength(1);
-  });
-
-  it('seats an empty Topics board in the middle', () => {
-    const board = shapesOf(els, 'qa-board');
-    expect(board.map((b) => b.label)).toEqual(['Topics']);
-    expect(board[0]!.qaNotes).toBeUndefined();
-  });
-
-  it('lays the kit out in the order it is pressed: timebox, poll, extension', () => {
-    const kit = shapesOf(els, 'session-button').sort((a, b) => a.y - b.y);
-    expect(kit.map((k) => k.session)).toEqual([
-      { tool: 'timer', minutes: 8 },
-      { tool: 'poll', question: 'Keep going on this topic?', style: 'yesNo' },
-      { tool: 'timer', minutes: 4 },
-    ]);
-    expect(shapesOf(els, 'checklist')).toHaveLength(1);
-  });
-});
-
-describe('town hall template', () => {
-  const els = buildTemplate('town-hall', 0, 0);
-
-  it('introduces the panel with initials discs', () => {
-    const discs = shapesOf(els, 'circle');
-    expect(discs).toHaveLength(3);
-    expect(discs.every((d) => d.themeLockFill)).toBe(true);
-    expect(texts(els)).toContain('Maya Chen');
-  });
-
-  it('runs the show from an agenda whose segments name their owner', () => {
-    const items = shapesOf(els, 'agenda')[0]?.agendaItems ?? [];
-    expect(items.length).toBe(5);
-    expect(items.every((i) => i.label.includes(' · '))).toBe(true);
-    expect(items.find((i) => i.label.startsWith('Open Q&A'))?.minutes).toBe(30);
-  });
-
-  it('centres an empty questions board', () => {
-    const board = shapesOf(els, 'qa-board');
-    expect(board.map((b) => b.label)).toEqual(['Questions for the panel']);
-    expect(board[0]!.qaNotes).toBeUndefined();
-  });
-
-  it('keeps a facilitator kit: Q&A timer, applause and a closing rating poll', () => {
-    const kit = shapesOf(els, 'session-button').map((b) => b.session);
-    expect(kit).toContainEqual({ tool: 'timer', minutes: 30 });
-    expect(kit.find((k) => k?.tool === 'poll')?.style).toBe('rating');
-    expect(shapesOf(els, 'reaction-pad')[0]?.reaction).toBe('applause');
-    expect(texts(els)).toContain('Follow-ups');
   });
 });
 

@@ -14,13 +14,12 @@ import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { isBoxed, unionBoxedBounds, type PageRect, type Tab } from '@liveplanner/document';
+import { isBoxed, unionBoxedBounds, type Tab } from '@liveplanner/document';
 import {
   computeFitToScreen,
   computeViewportCanvasRect,
   computeViewportCenter,
 } from '@/lib/viewport';
-import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 import { onMapShown } from '@/lib/fit-clear-of-panel';
@@ -112,10 +111,6 @@ type EditorViewportApi = {
     // canvas so a narrow window still has a band to reveal into.
     opts?: { center?: boolean; sideMargin?: number },
   ) => void;
-  // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
-  centreOn: (at: { x: number; y: number }) => void;
-  // Is that point already in the middle of this view? With its page (Pages), is that page framed?
-  isCentredOn: (at: { x: number; y: number }, page?: PageRect | null) => boolean;
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
@@ -322,49 +317,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     [depsRef, fitToScreen, zoomRef, viewportOffsetRef],
   );
 
-  // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
-  // the pan moves: the presser's zoom on somebody else's screen size shows a
-  // different amount of canvas, so copying it left the element too big or too
-  // small to read, and the zoom somebody chose for their own screen is theirs.
-  const centreOn = useCallback(
-    (at: { x: number; y: number }) => {
-      const node = canvasMainRef.current;
-      if (!node) return;
-      // offsetWidth/Height rather than the transformed rect, for the reason
-      // fitToBounds gives below.
-      const rect = { width: node.offsetWidth, height: node.offsetHeight };
-      // The offset is in CANVAS units, not screen ones: the zoom is applied
-      // separately about the viewport's own centre, which is why
-      // computeFitToScreen's offset has no zoom factor in it either. Multiplying
-      // by the zoom here put everyone in the top-left corner of the canvas.
-      setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
-    },
-    [setViewportOffset],
-  );
-
-  // The inverse question: is this view ALREADY the one centreOn would give?
-  // Bring Focus asks it before putting an invitation on screen, so a second
-  // press re-asks the people who said no without pestering the ones who came
-  // (docs/specs/012-collaboration/bring-focus.md).
-  // The rule itself is shared with the presser's side of the press, which asks
-  // the same thing of everyone else's published viewport.
-  const isCentredOn = useCallback(
-    (at: { x: number; y: number }, page?: PageRect | null) => {
-      const node = canvasMainRef.current;
-      if (!node) return false;
-      return viewIsCentredOn(
-        {
-          size: { width: node.offsetWidth, height: node.offsetHeight },
-          pan: viewportOffsetRef.current,
-          zoom: zoomRef.current,
-        },
-        at,
-        page,
-      );
-    },
-    [viewportOffsetRef, zoomRef],
-  );
-
   // The running Focus glide's frame, so a new fit (or another glide) takes over from it.
   const glide = useRef<number | null>(null);
   const stopGlide = useCallback(() => {
@@ -480,8 +432,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
-    centreOn,
-    isCentredOn,
     scrollIntoView,
   };
 }

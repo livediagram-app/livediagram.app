@@ -6,7 +6,6 @@ import {
   type EventStormingNoteKind,
 } from '@liveplanner/document';
 import { useState } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
@@ -61,7 +60,6 @@ type Deps = Pick<
   };
 
 export function usePaletteCatalogue({
-  canvasTool,
   onSetCanvasTool,
   onToggleZen,
   canvasEmpty,
@@ -99,16 +97,9 @@ export function usePaletteCatalogue({
   onTileUsed,
   participant = false,
 }: Deps) {
-  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
-  // cursor and on left/right-click to resize the light, none of which map to
-  // touch — so drop it from the tool picker on mobile viewports. Reactive
-  // (the shared useIsMobileViewport, as MovablePanel uses) so the option
-  // appears / disappears as the viewport crosses the breakpoint; a client
-  // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
   // The viewer's editor mode picks the palette layout (palette-layouts).
   const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
-  const isMobile = useIsMobileViewport();
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
@@ -298,10 +289,8 @@ export function usePaletteCatalogue({
   // tool selected (see canvas-tool-options).
   const allCanvasToolOptions = buildCanvasToolOptions({
     canvasEmpty,
-    isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

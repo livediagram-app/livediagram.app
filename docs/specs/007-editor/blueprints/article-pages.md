@@ -489,13 +489,9 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   the canvas awaits `document.fonts.ready` then `drawArticleOps`, before the elements.
   Margin-note markers are left out (`isArticleNoteMarker`). PDF renders each page through the
   canvas (`exportPagesAsPdf`).
-- **The Map and slide thumbnails**: `pageWritingBars(page, ink)` (`handle.bars`) as soft rects
+- **The Map**: `pageWritingBars(page, ink)` (`handle.bars`) as soft rects
   through `articleOpsToSvg`; the Map recomputes on `writing` identity and on
-  `useArticleLaidOutSeq()` (as do slide thumbnails, `useSlideThumbnails`).
-- **Present** (`presentedPages(view, tab, presentingPageId, articles)`, `lib/presented-pages.ts`):
-  the view narrowed to the page, `rowPages` the whole row (the writing lays out across all its
-  pages), `articles.editable: false`. Outside Pages mode the sheets are built from the tab and
-  the `ArticlesView` passed in (`useArticles` is on while a page slide presents).
+  `useArticleLaidOutSeq()`.
 - **Phone framing**: `ArticleFlows` calls `view.readPage(pageId)` once each time the writing takes
   focus on a phone (`computeReadingFrame` with the margin, so the column fills the width), gliding
   there (`glideViewport`, `VIEW_GLIDE_MS`; at once under reduced motion); a finger's pan
@@ -718,7 +714,6 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | A page held by its article's lock: Delete disabled with the reason                                                                                                                                                 | `apps/live/components/canvas/PagePanel.locks.test.tsx` "a page held by its article lock"                                             |
 | Toolbar Colour: each picker titled on screen (Text Colour, Highlight), Default and Accent before the strong colours, No highlight before the soft ones; the Style tab's Accent leads with Theme, previews on hover | `apps/live/components/canvas/article/article-colours.test.tsx`                                                                       |
 | A margin note's marker carries no badge strip                                                                                                                                                                      | `apps/live/components/canvas/useElementIndicators.test.ts` "gives an annotation no note indicator, and a margin note nothing at all" |
-| Present from any mode: an article page with its writing, read only                                                                                                                                                 | `apps/live/lib/presented-pages.test.ts` "outside Pages, presents an article page with its writing, read only"                        |
 | Agents read and write an article as Markdown                                                                                                                                                                       | `packages/document/src/article-markdown-io.test.ts`; `packages/edit-operations/src/pages/article-write.test.ts`                      |
 | `article` is a mutation op (never relayed from a view-role session)                                                                                                                                                | `apps/api/src/document-room.test.ts` "lets no document-mutating op kind into the presence set" (generic, every mutation kind)        |
 

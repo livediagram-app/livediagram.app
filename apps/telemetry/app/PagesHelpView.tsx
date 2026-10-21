@@ -3,10 +3,8 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { HelpView } from './HelpView';
 import {
-  AVATAR_TOUR,
   DRAW_TOUR,
   ELEMENT_TOURS,
-  WORKSHOP_TOUR,
   FORM_TOUR,
   PAGES_TOUR,
   NEW_VERSION_PROMPT,
@@ -30,10 +28,8 @@ export const TOURS_GROUPS: MetricGroup[] = [
     metrics: [
       WELCOME_TOUR,
       PLAN_TOUR,
-      WORKSHOP_TOUR,
       DRAW_TOUR,
       FORM_TOUR,
-      AVATAR_TOUR,
       PAGES_TOUR,
       ELEMENT_TOURS,
       SHOW_ME_TOURS,

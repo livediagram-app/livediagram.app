@@ -119,18 +119,13 @@ export async function apiSaveDocumentMeta(
     name?: string;
     tabs?: { id: string; folder?: string }[];
     tabIds?: string[];
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. Absent leaves the stored deck alone,
-    // which is what every save that isn't about the deck sends; null clears
-    // it. JSON.stringify drops an undefined field, so "absent" travels as
-    // absent rather than as null.
-    presentation?: string | null;
   },
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(d.id)) {
     await offlineSaveDocumentMeta(
       d.id,
-      { name: d.name, tabs: d.tabs, presentation: d.presentation },
+      { name: d.name, tabs: d.tabs },
       Date.now(),
     );
     return;
@@ -139,7 +134,6 @@ export async function apiSaveDocumentMeta(
     name: d.name,
     tabs: d.tabs,
     tabIds: d.tabIds,
-    presentation: d.presentation,
   });
   const res = await apiFetch(`${API_BASE}/documents/${d.id}`, {
     method: 'PUT',
@@ -157,8 +151,8 @@ export async function apiSaveDocumentMeta(
 export async function apiCreateDocument(
   ownerId: string,
   // `teamId` / `folderId` are the placement, filed by the create itself and refused by name when
-  // invalid (docs/specs/013-workspace/folders.md "Placement on create"). `createdAt` /
-  // `presentation` are for an Offline Mode sync (docs/specs/006-document/offline-mode.md), which must
+  // invalid (docs/specs/013-workspace/folders.md "Placement on create"). `createdAt` is for an
+  // Offline Mode sync (docs/specs/006-document/offline-mode.md), which must
   // carry what the offline record held: the server copy is all that is left once the local one is
   // deleted. `createdAt` / `savedAt` also date an imported board as the board
   // (docs/specs/015-api/api.md "Document dates").
@@ -175,7 +169,6 @@ export async function apiCreateDocument(
     intent?: CreationIntent;
     createdAt?: number;
     savedAt?: number;
-    presentation?: string | null;
     // Whether making it is a use, so it joins Explorer Home's Jump Back In at once
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
@@ -208,7 +201,6 @@ export async function apiCreateDocument(
       ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
-      ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
       ...(d.items && d.items.length ? { items: d.items } : {}),
       // The sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"): typed since Sheets

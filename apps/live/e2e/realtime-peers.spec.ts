@@ -11,8 +11,7 @@ import {
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
-// never saved back over or reverted), and a walking avatar shows on the other screen
-// (docs/specs/008-canvas/avatar-mode.md).
+// never saved back over or reverted).
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
@@ -31,11 +30,6 @@ async function openAs(
         if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
         localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       }
-      // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
-      localStorage.setItem(
-        'liveplanner:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
-      );
     },
     { o: owner, sig: owner ? guestSigFor(owner) : null },
   );
@@ -64,21 +58,9 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         {
           id: tabId,
           name: 'Board',
-          opensIn: 'workshop',
+          opensIn: 'diagram',
           elements: [
             { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
-            // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
-            {
-              id: 'walk',
-              type: 'shape',
-              shape: 'mode-button',
-              mode: 'avatar',
-              label: 'Walk In',
-              x: 400,
-              y: 100,
-              width: 120,
-              height: 120,
-            },
           ],
         },
       ],
@@ -126,15 +108,10 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         ? (((await res.json()) as { tab?: { elements?: unknown[] } }).tab?.elements?.length ?? 0)
         : 0;
     })
-    .toBe(4);
+    .toBe(3);
   await ownerPage.reload();
   await ownerPage.locator(CANVAS).waitFor();
   await expect(squares(ownerPage)).toHaveCount(3);
-
-  // The peer walks as an avatar; the owner sees the character.
-  await peerPage.getByRole('button', { name: /switch to Avatar mode/ }).click();
-  await peerPage.locator(CANVAS).click({ position: { x: 900, y: 300 } });
-  await expect(ownerPage.locator('[data-avatar="peer"]')).toHaveCount(1);
 
   await ownerPage.context().close();
   await peerPage.context().close();

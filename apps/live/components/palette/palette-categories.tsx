@@ -173,7 +173,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Tools',
     group: 0,
     description:
-      'Facilitation for the team: temperature, estimates, an idea box, a picker and timers.',
+      'Facilitation for the team: a temperature check, a picker and timers.',
     icon: <BehaviourTabIcon />,
   },
   {

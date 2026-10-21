@@ -5,10 +5,7 @@ import type {
   ArrowEnds,
   ComponentKind,
   EmbedProvider,
-  EstimateScale,
   EventStormingNoteKind,
-  Reaction,
-  SelectionMode,
   SessionTool,
   ShapeKind,
 } from '@liveplanner/document';
@@ -34,11 +31,10 @@ export type PendingDraw =
   // drag to size) instead of dropping at a fixed size.
   // `stickerId` rides the same intent for the `sticker` kind (docs/specs/010-palette/stickers.md), the
   // way `iconId` does for `icon`.
-  // `session` (docs/specs/012-collaboration/session-button.md) and `reaction` (docs/specs/009-elements/reaction-pad.md) ride the same intent for
-  // the same reason: both kinds are ONE element with a mode field, and the
-  // palette offers a tile per mode rather than one tile you then reconfigure.
-  // Carrying the choice on the intent is what lets "Add poll" place a poll
-  // instead of placing a timer you have to go and change.
+  // `session` (docs/specs/012-collaboration/session-button.md) rides the same intent for the same
+  // reason: the kind is ONE element with a tool field, and the palette offers a tile per tool rather
+  // than one tile you then reconfigure. Carrying the choice on the intent is what lets "Add Dot Vote"
+  // place a vote instead of placing a timer you have to go and change.
   | {
       type: 'shape';
       kind: ShapeKind;
@@ -46,9 +42,6 @@ export type PendingDraw =
       stickerId?: string;
       label?: string;
       session?: SessionTool;
-      reaction?: Reaction;
-      mode?: SelectionMode;
-      estimateScale?: EstimateScale;
       // A Plan board's preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md).
       plan?: string;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
@@ -79,7 +72,7 @@ export type PendingDraw =
   // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
   | { type: 'table' }
   | { type: 'link-card' }
-  // `provider` rides the intent the way `session` / `reaction` do above: the
+  // `provider` rides the intent the way `session` does above: the
   // Media tab offers a tile per service and they are all one `video` kind, so
   // the choice has to survive the gesture or "Add Loom" would place a bare
   // embed the user then has to go and re-point.
@@ -139,7 +132,7 @@ export type PendingDraw =
 /** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
 export type AddShapeOptions = Pick<
   Extract<PendingDraw, { type: 'shape' }>,
-  'session' | 'reaction' | 'mode' | 'estimateScale' | 'plan' | 'variant' | 'name'
+  'session' | 'plan' | 'variant' | 'name'
 >;
 
 // The shape the banner names ("Tap to drop or drag to draw Square"), as the tile the person just picked names it.

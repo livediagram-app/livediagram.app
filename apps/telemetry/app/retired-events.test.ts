@@ -59,6 +59,24 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
+  it("retires Workshop mode's facilitation features, not the session tools Plan keeps", () => {
+    expect(isRetiredEvent('Facilitator', 'Started', 'Claimed')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Started', 'Poll')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'FollowMe')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Quiz')).toBe(true);
+    expect(isRetiredEvent('Element', 'Used', 'ReactionPad')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'Presentation')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'AvatarClothing')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'WorkshopTourStepOutro')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Started', 'Vote')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Started', 'CountdownTimer')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Temperature')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Picker')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

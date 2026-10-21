@@ -26,8 +26,6 @@ export type ContentsRow = {
   // Its shape on the sheet, for the thumbnail's frame.
   aspect: number;
   kind: PageKind;
-  // A slide page with a slide in the deck; absent where there is no deck to ask.
-  inDeck?: boolean;
 };
 
 // More pages than this show the Find a Page box.
@@ -44,8 +42,6 @@ const KIND_NAME = {
 export function contentsRows(
   pages: readonly LaidOutPage[],
   opts: {
-    // Whether the deck has a slide of the page; absent where there is no deck to ask.
-    inDeck?: (pageId: string) => boolean;
     articles?: Readonly<Record<string, ArticleFlow>>;
   } = {},
 ): ContentsRow[] {
@@ -58,8 +54,6 @@ export function contentsRows(
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'wireframe') {
       line += ` · ${pageSizeLabel(p)}${p.orientation === 'landscape' && pageHasOrientation(p) ? ' Landscape' : ''}`;
-    } else if (kind === 'slide' && opts.inDeck) {
-      line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
     } else if (kind === 'article' && p.flow) {
       const flow = opts.articles?.[p.flow];
       const title = flow ? articleTitleOf(flow).trim() : '';
@@ -73,7 +67,6 @@ export function contentsRows(
       locked: p.locked === true,
       aspect: p.rect.width / p.rect.height,
       kind,
-      ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
     };
   });
 }

@@ -8,7 +8,6 @@ import {
   API_TOKEN_ACTIVITY,
   COUNTDOWNS,
   DISCUSSION,
-  POLLS,
   STOPWATCHES,
   TEAM_ACTIVITY,
 } from './metric-catalogue';
@@ -21,12 +20,12 @@ import { windowLabel } from './windows';
 
 // The Features tab (docs/specs/017-telemetry/telemetry.md): what people build with, gathering what
 // were five tabs until October 2026 (Editing, Palette, Modes, Look & Feel, Settings) as sections,
-// plus the facilitation tools and connections the Dashboard leaves out.
+// plus the session tools and connections the Dashboard leaves out.
 
 export const FACILITATION_GROUPS: MetricGroup[] = [
   {
     title: 'Facilitation tools',
-    metrics: [DISCUSSION, TEAM_ACTIVITY, POLLS, COUNTDOWNS, STOPWATCHES],
+    metrics: [DISCUSSION, TEAM_ACTIVITY, COUNTDOWNS, STOPWATCHES],
   },
 ];
 
@@ -76,7 +75,7 @@ export function FeaturesView({ summary, active, focus }: Props & { focus?: Secti
           content: (
             <>
               <GroupsIntro
-                text="Comments, teams, polls and timers, beside the voting and presenting on the Dashboard"
+                text="Comments, teams and timers, beside the voting on the Dashboard"
                 active={active}
               />
               <MetricGroups groups={FACILITATION_GROUPS} summary={summary} active={active} />

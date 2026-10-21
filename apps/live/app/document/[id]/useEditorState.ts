@@ -51,11 +51,8 @@ import {
   useMemo,
   useRef,
   useState,
-  useEffectEvent,
 } from 'react';
 import {
-  pagesOf,
-  layOutPages,
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
@@ -78,8 +75,6 @@ import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
-import { isMobileViewportSync } from '@/lib/responsive';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
@@ -164,7 +159,7 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import {
   actionRowsFromElements,
   commentRowsFromElements,
@@ -456,7 +451,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     useCanvasTool({
       defaultPan: embedMode,
     });
-  useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -1277,9 +1271,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
 
-  // Open or collapse a comment panel (docs/specs/012-collaboration/comment-pin.md). Persisted rather than local,
-  // so a facilitator opening the thread they want discussed opens it for the
-  // room instead of only for themselves.
   // Same trick for selfParticipant — the WS effect intentionally
   // omits selfParticipant from its dep list (re-opening the socket
   // on every name/colour change would be wasteful), so the
@@ -1310,8 +1301,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fitToScreen,
     fitToBounds,
     focusOn,
-    centreOn,
-    isCentredOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
@@ -1576,9 +1565,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // below stays blocked with a single check, and the interaction
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
-  // Running a session (start, end, reveal, clear, pace) is an Editor's, whoever holds the baton
+  // Running a session (start, end, reveal, clear, pace) is an Editor's
   // (docs/specs/013-workspace/share-roles.md): a Participant's editsBlocked is false, so it is shut here.
-  const runsBlocked = facilitator.sessionToolsBlocked || isReadOnly;
+  const runsBlocked = isReadOnly;
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
@@ -1897,18 +1886,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
-  // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
-  // Pages mode, and while a page slide presents in any mode (read only, then: nothing is
-  // edited while presenting).
-  const presentingPage = presentingStep?.slide.pageId ?? null;
-  const presentPages = useMemo(
-    () => (!pagesMode && presentingPage ? layOutPages(pagesOf(activeTab)) : null),
-    [pagesMode, presentingPage, activeTab],
-  );
+  // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md), in
+  // Pages mode.
   const articles = useArticles({
     activeTab,
-    on: pagesMode !== null || presentingPage !== null,
-    pages: pagesMode?.pages ?? presentPages,
+    on: pagesMode !== null,
+    pages: pagesMode?.pages ?? null,
     localEditSeq: localEditSeqRef,
     placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
     canEdit: !isReadOnly,
@@ -1934,22 +1917,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
-  // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
-  const pageDeck = useMemo(
-    () =>
-      pageDeckControls(currentDeck, activeId, !isReadOnly, {
-        newPageSlide,
-        toggleSlideHidden,
-        setSlideNotes,
-      }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
-  );
   const pagesModeView = useMemo(
     () =>
-      pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck } : pagesMode,
-    [pagesMode, articles, pageDeck],
+      pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}) } : pagesMode,
+    [pagesMode, articles],
   );
   // --- Placement helpers ---------------------------------------------------
 
@@ -2269,7 +2241,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     checkpointBurst,
   });
 
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): facilitator timer + dot-voting handlers.
+  // Live session tools (docs/specs/012-collaboration/session-tools.md): timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
   // UI reads it straight off the tab; these are just the mutators.
   const {
@@ -2289,8 +2261,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     retractVote,
   } = useTabSession({
     editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    isFacilitator: facilitator.isFacilitator,
+    runsBlocked,
     activeId,
     activeTab,
     // The non-history mutator, per docs/specs/012-collaboration/session-tools.md: starting a timer or
@@ -2319,15 +2290,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // The interactive Behaviour elements that act on the SESSION rather than the
-  // document (docs/specs/012-collaboration/session-button.md, /106, /107): the session button's press, the reveal
-  // zone's local uncover, and the picker's roll.
-  const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor, setSessionConfigFor } =
+  // document (docs/specs/012-collaboration/session-button.md, /107): the session button's press and the
+  // picker's roll.
+  const { pressSessionButton, pickerFor, setSessionConfigFor } =
     useBehaviourElements({
       activeId,
       commitTabs,
       tickTabs,
       editsBlocked,
-      sessionToolsBlocked: runsBlocked,
       selfParticipant,
       livePresence,
       activeTimer: activeTab.timer,
@@ -2336,7 +2306,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       pauseTimer,
       resumeTimer,
       startVote,
-      startPoll: livePoll.startPoll,
     });
 
   // The collaboration elements (docs/specs/012-collaboration/participant-responses.md). Sibling of the
@@ -2353,31 +2322,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md).
   const { toggleChecklistItem } = collabElements;
-  // The Quiz (docs/specs/012-collaboration/quiz.md): its own verbs, on the same facilitator-gated patch.
-  const quiz = useQuizElements({
-    activeId,
-    commitTabs,
-    applyElementDelta,
-    patchAsFacilitator: collabElements.patchAsFacilitator,
-    editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    selfParticipant,
-  });
-
-  // Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md). Ends the poll for the room through
-  // the SAME `endPoll` the plain End uses — one op, so a participant sees no
-  // difference and no new op kind exists — and additionally drops the tallies
-  // onto the canvas as an ordinary, undoable element.
-  // Keep Results (docs/specs/012-collaboration/poll-result-capture.md): drop a chart of the tallies so far onto the
-  // active tab. The poll keeps running, so it can be kept again later
-  // (a second chart), and End is still the only thing that ends it.
-  const keepPollResults = () => {
-    const poll = livePoll.poll;
-    if (!poll) return;
-    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
-    track('Element', 'Added', 'PollResult');
-  };
-
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
   // that state or its six handlers — see useEditorImages + docs/specs/009-elements/images.md.
@@ -2766,14 +2710,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -2869,9 +2808,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
-    setReactionSelected,
     setPickerOptionsSelected,
   } = usePortalSetters({
     currentSelectionIds,
@@ -2880,7 +2817,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     activeId,
     setSelectedId,
-    sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
@@ -3063,7 +2999,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useVoteReview({
     activeTab,
     selfId: voteSelfId,
-    facilitating: facilitator.isFacilitator,
     scrollIntoView,
     clearVote,
     setVoteReviewIndex,
@@ -3419,8 +3354,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tidyUpSelected,
     // Arms a draw tool: the Logo palette's markers, from the live pen (PaletteLogoTab).
     beginDraw,
-    // A page slide presenting outside Pages draws its article's writing from these.
-    presentArticles: articles,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
@@ -3451,12 +3384,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     boardSceneInsert,
     insertLibraryShape,
     ...panelLayout,
-    // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
-    // tab bar, panels and palette all gone, so a projector shows the document
-    // rather than the workbench. An OVERRIDE of the spread above rather than a
-    // write to zen state, so exiting a presentation restores whatever zen the
-    // user actually had.
-    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null,
     ...dialogs,
     ...uiState,
     ...persistence,
@@ -3550,8 +3477,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewCleanup,
     endCleanupPreview,
     assessCleanupKind,
-    // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
-    facilitator,
     setTabFinish,
     applyTabLook,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
@@ -3589,17 +3514,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginPolygon,
     beginPath,
     bringSelectedToFront,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    avatarShove,
-    fireReaction,
-    pressFocusButton,
-    focusInvite,
-    reactionBursts: reactions.bursts,
-    clearReactionBurst: reactions.clear,
     broadcastCursor,
-    broadcastLaser,
     canvasPointerRef,
     canRedo,
     canUndo,
@@ -3609,7 +3524,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
     skipTabFitRef,
     canvasTool,
-    exitAvatarTool,
     exitFormatTool,
     beginErase,
     chooseTemplate,
@@ -3674,7 +3588,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
     can: participant.can,
     participating: participant.participating,
-    laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,
     linkPickerInitialMode,
@@ -3685,25 +3598,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openCellLinkPicker,
     applyCellLink,
     activeTabLoadState,
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object, like livePoll —
-    // nothing outside the panel and the overlay reads into it.
-    slideDeck,
     commentMentions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
-    // What the presentation is showing, or null. The canvas renders THESE
-    // instead of the tab's elements while it is non-null, which is what makes
-    // a slide a slide.
-    presentingElements,
-    // The page a page slide is presenting (docs/specs/007-editor/pages-mode.md "Slides"):
-    // the canvas then shows that sheet alone, as it shows the slide's elements alone.
-    presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
-    // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
-    // rather than a dozen flattened keys, since nothing else reads into it.
-    livePoll,
-    keepPollResults,
-    followMe,
     loadAllTabs,
     loadedTabIds,
     loadingDocument,
@@ -3725,10 +3623,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openNote,
     participantsByTab,
     pendingDraw,
-    pollCollaborators,
     redo,
     refreshRecentImages,
-    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,
@@ -3868,30 +3764,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
-    setReactionSelected,
     setPickerOptionsSelected,
     pressSessionButton,
-    revealedIds,
-    toggleRevealForMe,
     setSessionConfigFor,
     pickerFor,
     collabElements,
-    quiz,
-    qaBoard,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -3926,14 +3811,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     setCanvasTool: pickCanvasTool,
-    laserConfig: laserPen.config,
-    onChangeLaserField: laserPen.setField,
     eraserConfig: eraserSettings.config,
     onChangeEraserField: eraserSettings.setField,
     formatConfig: formatSettings.config,
     onToggleFormatGroup: formatSettings.toggleGroup,
     onSetFormatMode: formatSettings.setMode,
-    pressModeButton,
     setContextMenu,
     setDocumentSharePassword,
     setFillColorSelected,

@@ -91,8 +91,6 @@ describe('palette layouts', () => {
       'collab-ask',
       'collab-tools',
       'collab-record',
-      'collab-react',
-      'collab-mode',
       'collab-navigate',
       'icons',
       'stickers',
@@ -102,7 +100,7 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory('workshop', false)).toBe('popular');
   });
 
-  it("puts the session kit on Workshop's Popular as four openers", () => {
+  it("puts the session kit on Workshop's Popular as three openers", () => {
     const popular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!;
     expect(popular.tiles!.map((t) => t.id)).toEqual([
       'shapes:square',
@@ -114,7 +112,6 @@ describe('palette layouts', () => {
       'open:collab-ask',
       'open:collab-tools',
       'open:collab-record',
-      'open:collab-react',
     ]);
     // A divider of its own between the tiles and the openers, here only.
     expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toContain('tools:image');
@@ -320,8 +317,6 @@ describe('palette layouts', () => {
     ]);
     expect(tileIds('plan', 'plan-tools')).toEqual([
       'collab:temperature',
-      'collab:estimate',
-      'collab:idea-box',
       'tools:picker',
       'tools:session-timer',
       'tools:session-stopwatch',

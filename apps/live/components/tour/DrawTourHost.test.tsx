@@ -79,7 +79,6 @@ afterEach(() => {
   vi.useRealTimers();
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
-  setActiveTour('workshop', false);
   setActiveTour('draw', false);
   setStartPanelOpen(false);
   clearTourPending();
@@ -178,8 +177,8 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('never runs beside the Workshop tour', () => {
-    setActiveTour('workshop', true);
+  it('never runs beside the Plan tour', () => {
+    setActiveTour('plan', true);
     editor();
     render(<DrawTourHost />);
     act(() => {

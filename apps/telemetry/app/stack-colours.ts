@@ -11,7 +11,7 @@ import { categoryColor } from './event-vocab';
 // stack is often a single category: Document Actions is all Document) take
 // shades of it, darkest first, so the lines still tell apart while the stack
 // stays one family. Grouped by the colour, not the category name, since two
-// categories can share a hue (Folder and Facilitator) and must still split.
+// categories can share a hue (Team and Plan) and must still split.
 
 type Categorised = { category: string };
 

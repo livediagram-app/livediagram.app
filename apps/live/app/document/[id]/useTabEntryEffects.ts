@@ -14,9 +14,8 @@ import { isEditorPath } from '@/lib/legacy-editor-path';
 //    is empty, so what the user adds afterwards, the first shape included,
 //    never resnaps their pan / zoom. Replacing a tab's content wholesale
 //    (a template, an import) asks for a fit through `requestFit`.
-//    A tab entry that ARRIVES already positioned (a Bring Focus jump,
-//    docs/specs/012-collaboration/bring-focus.md) names itself in
-//    `skipFitForTabRef` and is left alone: the fit lands a frame after the jump's centring,
+//    A tab entry that ARRIVES already positioned (a changeset's Show, side by side) names itself in
+//    `skipFitForTabRef` and is left alone: the fit lands a frame after the jump's framing,
 //    so without this it would quietly undo it.
 export function useTabEntryEffects({
   hydrated,

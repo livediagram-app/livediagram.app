@@ -187,9 +187,7 @@ takes these blocks:
 - The animated elements: `lvd-anim-*`, `lvd-text-*`, `lvd-svg-*`, `lvd-trace-run`, `lvd-grad-*`,
   `lvd-vote-*`, `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
   their reduced-motion block.
-- `[data-insert-shift]` and `lvd-done-*`.
-- The presentation slide transitions (`lvd-slide-*`, `[data-slide-move]` and the reduced-motion
-  fade).
+- `[data-insert-shift]`.
 - `longpress-hold` and the new `element-pop-in`.
 
 The only change on the way is `element-pop-in`. Non-motion canvas rules stay in `globals.css`:
@@ -355,7 +353,6 @@ logging, because motion isn't a decision point.
 | Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |
 | The root takes no View Transition part       | `apps/live/app/view-transitions.test.ts`                                                    |
 | View Transition classes stay in their files  | `apps/live/app/view-transitions.test.ts`                                                    |
-| Slide moves animate, reduced motion cuts     | `apps/live/e2e/perf/slide-transition.perf.ts`, `PresentationHost.test.tsx`                  |
 
 ### The runtime guard
 

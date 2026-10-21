@@ -73,7 +73,7 @@ export function PaletteView({
           <RankCard
             trend={trend}
             title="Collaborate"
-            subtitle="Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls"
+            subtitle="Temperature checks, decisions, comment and action panels"
             category="Element"
             action="Added"
             items={collaborate}

@@ -13,7 +13,6 @@ const pages = layOutPages([
 
 describe('the Contents list', () => {
   const rows = contentsRows(pages, {
-    inDeck: (id) => id === 'b',
     articles: {
       f1: {
         blocks: [{ type: 'paragraph', style: 'title', runs: [{ text: 'Field Notes' }] }],
@@ -24,7 +23,7 @@ describe('the Contents list', () => {
   it('numbers each page, names it, and says what it is', () => {
     expect(rows.map((r) => [r.number, r.name, r.line])).toEqual([
       [1, 'Cover', 'Infographic · A4 Portrait'],
-      [2, 'Page 2', 'Slide · In the deck'],
+      [2, 'Page 2', 'Slide'],
       [3, 'Page 3', 'Article · Field Notes'],
       [4, 'Page 4', 'Logo'],
     ]);

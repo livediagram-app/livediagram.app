@@ -23,8 +23,7 @@ import type { AccessLevel } from '@liveplanner/api-schema';
 // presence-fade animation behaviour is testable in isolation.
 //
 // Clicking any avatar, or the "+N" overflow badge, opens the Collaborators
-// modal (docs/specs/012-collaboration/collaborator-enhancements.md), which lists everyone by tab and is where Follow lives
-// (docs/specs/012-collaboration/follow-me-viewport.md). The avatar used to start following directly.
+// modal (docs/specs/012-collaboration/collaborator-enhancements.md), which lists everyone by tab.
 
 // An exit hold (docs/specs/004-interface-design/motion.md): a leaver stays mounted exactly
 // as long as its pop-out runs.

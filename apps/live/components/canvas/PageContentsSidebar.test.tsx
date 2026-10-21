@@ -50,12 +50,11 @@ function show({
     setLocked: vi.fn(),
     removePage: vi.fn(),
   };
-  const deck = { slideOf: (id: string) => (id === 'p1' ? { id: 's1' } : undefined), add: vi.fn() };
   const store = createViewportStore(1);
   const view = {
     pages: laid,
     focusPage,
-    ...(canEdit ? { edit, deck } : {}),
+    ...(canEdit ? { edit } : {}),
   } as unknown as PagesModeView;
   render(
     <ViewportStoreProvider store={store}>
@@ -69,7 +68,7 @@ function show({
       />
     </ViewportStoreProvider>,
   );
-  return { focusPage, addPage, onMinimise, onMoveToSide, edit, deck, store };
+  return { focusPage, addPage, onMinimise, onMoveToSide, edit, store };
 }
 
 // The view centred on a page (the centred transform, lib/viewport.ts), in jsdom's 0 x 0 canvas.
@@ -112,8 +111,6 @@ describe('PageContentsSidebar', () => {
 
   it("gives each page a toolbar, an Editor's alone, whose presses never glide", () => {
     const h = show();
-    // Add to Slides stays on the page's own title bar: the sidebar's toolbar leaves it out.
-    expect(screen.queryByRole('button', { name: 'Add to Slides Page 2' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Duplicate Page 2' }));
     expect(h.edit.duplicatePage).toHaveBeenCalledWith('p2');
     fireEvent.click(screen.getByRole('button', { name: 'Lock Page 2' }));
@@ -121,8 +118,6 @@ describe('PageContentsSidebar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete Page 2' }));
     expect(h.edit.removePage).toHaveBeenCalledWith('p2');
     expect(h.focusPage).not.toHaveBeenCalledWith('p2');
-    // No line of what each page is: the toolbar and the picture say it.
-    expect(screen.queryByText(/Not in the deck|In the deck/)).toBeNull();
     cleanup();
     show({ canEdit: false });
     expect(screen.queryByRole('toolbar')).toBeNull();

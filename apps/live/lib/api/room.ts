@@ -14,7 +14,6 @@ import {
   WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
-  type FacilitatorReason,
   type RoomIncoming,
   type RoomOp,
   type RoomOutgoing,
@@ -30,21 +29,6 @@ export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
   onPresence: (participants: ParticipantPresence[], agents: AgentPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
-  // Who holds the facilitator baton (docs/specs/012-collaboration/facilitator.md), and the token when it is
-  // ours. Arrives on every change and once on connect with reason 'state'.
-  onFacilitator?: (msg: {
-    holder: string | null;
-    by?: string;
-    reason: FacilitatorReason;
-    token?: string;
-  }) => void;
-  // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock). Sent
-  // to this socket alone, so being called IS the addressing — there is no id to
-  // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
-  onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
-  // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
-  // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
-  onFollowers?: (ids: string[]) => void;
   onClose?: () => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
@@ -78,8 +62,6 @@ type RoomConnectOptions = {
   // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent the
   // first one again was refused, and the session lost the room for good. Called before every reconnect.
   mintTicket?: () => Promise<string | null>;
-  // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
-  readFollowing?: () => string | null;
 };
 
 // The room WebSocket's query string. Browsers can't set headers on a WebSocket upgrade, so whatever
@@ -146,10 +128,6 @@ export function connectRoom(
   initialParticipant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomConnectOptions = {},
-  // Read at every (re)connect rather than captured once: the baton can be
-  // taken while this socket is open, and the token we present has to be the
-  // one we hold NOW (docs/specs/012-collaboration/facilitator.md).
-  readFacilitatorToken?: () => string | null,
 ): {
   send: (msg: RoomOutgoing) => void;
   close: () => void;
@@ -262,16 +240,7 @@ export function connectRoom(
       lastHeard = Date.now();
       keepalive = setInterval(checkAlive, ROOM_KEEPALIVE_TICK_MS);
       attempts = 0;
-      // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
-      // the room we are the same facilitator it granted before the refresh.
-      const facilitatorToken = readFacilitatorToken?.();
-      socket.send(
-        JSON.stringify({
-          kind: 'hello',
-          participant,
-          ...(facilitatorToken ? { facilitatorToken } : {}),
-        } satisfies RoomOutgoing),
-      );
+      socket.send(JSON.stringify({ kind: 'hello', participant } satisfies RoomOutgoing));
       // A reconnect (not the first open): ask the room for the ops we missed
       // while we were gone before resuming live traffic.
       if (opened) {
@@ -280,17 +249,6 @@ export function connectRoom(
         );
       }
       opened = true;
-      // A new socket is a new presence id: nobody follows it yet, and our own follow is said again.
-      handlers.onFollowers?.([]);
-      const following = options.readFollowing?.();
-      if (following) {
-        socket.send(
-          JSON.stringify({
-            kind: 'op',
-            op: { kind: 'follow', target: following },
-          } satisfies RoomOutgoing),
-        );
-      }
       // A new socket is a session the room knows nothing about: our selection (which holds elements
       // from an agent, docs/specs/024-agents/agent-changesets.md "Held elements") and our tab are
       // said again, including when they were set before this socket first opened.
@@ -315,9 +273,7 @@ export function connectRoom(
           settleTimings(true);
           const frame = splitPresenceFrame(msg);
           handlers.onPresence(frame.participants, frame.agents);
-        } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
-        else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
-        else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
+        }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
           noteServerDocumentFormat(msg.format);

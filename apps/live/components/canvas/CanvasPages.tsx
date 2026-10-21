@@ -7,7 +7,6 @@ import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './pa
 import { EmptyPageLayouts } from './EmptyPageLayouts';
 import { EmptyPageInvite } from './EmptyPageInvite';
 import { LayoutGalleryDialog } from './LayoutGalleryDialog';
-import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from './PageLockButton';
@@ -16,7 +15,6 @@ import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { PageDeviceButton } from './wireframe/PageDeviceButton';
-import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { PageArticleButtons } from './PageArticleButtons';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
@@ -70,8 +68,6 @@ import {
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
-// Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
-const LETTERBOX_SPREAD = 100_000;
 // The empty page's layout button beside the cog: with its words, or just its icon.
 const INVITE_WIDE = 150;
 const INVITE_ICON = 30;
@@ -270,23 +266,12 @@ export function CanvasPages({
           !bare &&
           !locked &&
           offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
-        // A slide page's deck button sits beside its cog (PageDeckButton); any other page shows it
-        // once the deck has a slide of it, so its eye is there wherever the page is presented.
-        const deckButton =
-          !!edit &&
-          !!view.deck &&
-          !mobile &&
-          (page.kind === 'slide' || !!view.deck.slideOf(page.id));
-        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
-        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
-        // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
+        // The title bar's fixed buttons (the cog, the lock, a logo page's own and
         // an infographic or slide page's): the invite and the label share what they leave.
         const buttons = {
           edit: !!edit,
           locked,
-          deck: deckButton,
-          notes: notesButton,
           logo: logoButtons,
           page: pageButtons,
           article: articleButtons,
@@ -331,12 +316,9 @@ export function CanvasPages({
               top: page.rect.y,
               width: page.rect.width,
               height: page.rect.height,
-              // Presenting a page slide, a spread shadow blacks out the whole surround.
-              boxShadow: view.letterbox
-                ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
-                : device
-                  ? undefined
-                  : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
+              boxShadow: device
+                ? undefined
+                : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
               ...(device ? {} : pageSheetStyle(background, rulingOf(page), pictureOf)),
             }}
           >
@@ -425,14 +407,6 @@ export function CanvasPages({
                 {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
                 {logoButtons && view.logo ? (
                   <LogoTitleBar pageId={page.id} tools={view.logo} labelled={labelled} />
-                ) : null}
-                {/* First, left of Layout and Background: this slide's place in the deck, and its
-                    notes once it is in it. */}
-                {deckButton && view.deck ? (
-                  <PageDeckButton pageId={page.id} deck={view.deck} labelled={labelled} />
-                ) : null}
-                {notesButton && view.deck ? (
-                  <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
                 ) : null}
                 {/* An article page's Style and Text (PageArticleButtons), then its Background. */}
                 {articleButtons && page.flow ? (

@@ -189,7 +189,6 @@ describe('arming a draw over a press tool', () => {
   it.each([
     ['eraser', 'select'],
     ['format', 'select'],
-    ['laser', 'pan'],
   ] as const)('puts the %s down for %s', (tool, next) => {
     const setCanvasTool = vi.fn();
     const { result, rerender } = setup(vi.fn<Commit>(), setCanvasTool);

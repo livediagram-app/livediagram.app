@@ -10,10 +10,10 @@ toolbar beside a selected element.
 
 ## Domain language
 
-| Term                | Means                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------ |
-| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                 |
-| **Show Me surface** | A surface that carries a Show Me button (the list below)                                   |
+| Term                | Means                                                                            |
+| ------------------- | -------------------------------------------------------------------------------- |
+| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**       |
+| **Show Me surface** | A surface that carries a Show Me button (the list below)                         |
 | **mode tour**       | One of the tours that offer themselves once, in a mode (Diagram, Plan); not this |
 
 ## Where it lives

@@ -5,7 +5,7 @@
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
 import { IsoCard, iso } from './palette-modes-parts';
-import { PickerTrigger, } from './selection-modes';
+import { PickerTrigger } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
 

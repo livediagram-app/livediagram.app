@@ -75,19 +75,8 @@ describe('TEMPLATES catalogue', () => {
     'raci-matrix',
     'user-story-map',
     'affinity-map',
-    'lean-coffee',
     'brainstorm',
     'workshop-board',
-    'town-hall',
-    'pub-quiz',
-    'icebreaker-questions',
-    'virtual-office',
-    'coworking-space',
-    'team-pod',
-    'all-hands-hall',
-    'two-truths-and-a-lie',
-    'would-you-rather',
-    'people-bingo',
     'business-model-canvas',
     'empathy-map',
     'funnel',
@@ -117,7 +106,6 @@ describe('TEMPLATES catalogue', () => {
     'family-tree',
     'value-stream-map',
     'user-persona',
-    'meeting-agenda',
     'objectives-planner',
     'floor-plan',
     'whiteboard',
@@ -607,7 +595,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // rules, the parking bay and hints. Notes: title + sticker, purpose,
     // outcomes checklist, 5 attendees, the agenda, 4 parked stickies, 2
     // decision records, actions checklist, rating gauge, next-sync callout.
-    'meeting-agenda': { names: ['Board', 'Notes'], scaffold: 37, content: 34 },
     // Planner: how-to, 3 phase bands, 3 column heads, why labels, the formula
     // guide + rewrite + SMART check, 3 card frames with section labels, the
     // check-in strip. Objectives: title + sticker, focus, 6 stickies, 2 corner

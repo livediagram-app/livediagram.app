@@ -20,7 +20,7 @@ describe('portalsOnTab', () => {
     const els: Element[] = [
       createShape('square', 0, 0),
       portal('a'),
-      createShape('mode-button', 0, 0),
+      createShape('session-button', 0, 0),
       portal('b'),
     ];
     expect(portalsOnTab(els).map((d) => d.id)).toEqual(['a', 'b']);

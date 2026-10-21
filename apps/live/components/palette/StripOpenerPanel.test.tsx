@@ -36,18 +36,18 @@ describe('StripOpenerPanel', () => {
   it('places what a card stands for', () => {
     const a = actions();
     panel(a);
-    const poll = tilesForCategory('collab-ask').find((t) => t.id === 'tools:session-poll')!;
-    fireEvent.click(screen.getByRole('button', { name: poll.label }));
+    const vote = tilesForCategory('collab-ask').find((t) => t.id === 'tools:session-vote')!;
+    fireEvent.click(screen.getByRole('button', { name: vote.label }));
     expect(a.addShape).toHaveBeenCalledWith(
       'session-button',
-      expect.objectContaining({ session: 'poll' }),
+      expect.objectContaining({ session: 'vote' }),
     );
   });
 
   it('clears the canvas preview when a drag ends, dropped or not', () => {
     panel(actions());
-    const poll = tilesForCategory('collab-ask').find((t) => t.id === 'tools:session-poll')!;
-    const card = screen.getByRole('button', { name: poll.label });
+    const vote = tilesForCategory('collab-ask').find((t) => t.id === 'tools:session-vote')!;
+    const card = screen.getByRole('button', { name: vote.label });
     setPaletteDragPreview({ kind: 'session-button', width: 10, height: 10 });
     fireEvent.dragEnd(card);
     expect(getPaletteDragPreview()).toBeNull();

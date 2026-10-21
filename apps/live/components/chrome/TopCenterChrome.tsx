@@ -6,12 +6,11 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
-import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
+import { TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 import { formatBannerMessage } from '@/lib/format-page-brush';
 
-// Everything that floats at the top of the canvas: the follow-me pill,
-// the active editor-mode banner. (The session timer and the vote's status and
+// Everything that floats at the top of the canvas: the active editor-mode banner. (The session timer and the vote's status and
 // results walkthrough live in the Session strip's popovers,
 // docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
@@ -33,11 +32,6 @@ type TopCenterChromeProps = Pick<
   dockOnTop?: boolean;
   // The tab has a Plan board: an armed Plan card's hint says to pick a column, not to add a board first.
   hasPlanBoard?: boolean;
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
-  // offer the way out. Any canvas gesture also ends it silently — this is the
-  // explicit door, not the only one.
-  followingName?: string | null;
-  onStopFollowing?: () => void;
 };
 
 export function TopCenterChrome({
@@ -51,8 +45,6 @@ export function TopCenterChrome({
   formatSourceId,
   pagesMode,
   dockOnTop = false,
-  followingName,
-  onStopFollowing,
 }: TopCenterChromeProps) {
   // The palette strip, when it is on screen: the mode banners hang from it as its tray
   // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
@@ -74,32 +66,6 @@ export function TopCenterChrome({
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
       <OfflineBanner readOnly={readOnly === true} />
-      {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
-          moved around by somebody else without being told why is the one state
-          this feature must never leave you in. */}
-      {followingName ? (
-        <TopCenterRow>
-          {/* A TopCenterBanner rather than a hand-rolled pill, because the
-              stack is `pointer-events-none` and each pill re-enables events
-              for ITSELF. Built by hand, this one never did: Stop could not be
-              clicked and did not even take the pointer cursor, so the only
-              exit from being followed was a canvas gesture. */}
-          <TopCenterBanner tone="live" className="gap-2 px-3 py-1 text-[11px] font-medium">
-            <span className="relative flex h-1.5 w-1.5" aria-hidden>
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/80" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
-            </span>
-            <span className="max-w-[12rem] truncate">Following {followingName}</span>
-            <button
-              type="button"
-              onClick={onStopFollowing}
-              className="cursor-pointer rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold transition hover:bg-white/30"
-            >
-              Stop
-            </button>
-          </TopCenterBanner>
-        </TopCenterRow>
-      ) : null}
       {/* The active mode banner. `empty:hidden` collapses the row (and its
           stack gap) when nothing in it is active. */}
       {/* The multi-selection toolbar used to sit here; it now floats over the

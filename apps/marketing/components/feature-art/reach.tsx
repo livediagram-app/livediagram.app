@@ -2,7 +2,6 @@
 // command palette, and a document shown live somewhere else (an embed
 // or a live image in a README). Panels use the editor's floating chrome; diagrams the Default ink.
 
-
 import {
   ARROW,
   Caret,

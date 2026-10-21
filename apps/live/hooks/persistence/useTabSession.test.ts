@@ -13,12 +13,13 @@ import { useTabSession } from './useTabSession';
 // they stand, then hands back its handlers.
 function harness(
   initial: Partial<Tab> = {},
-  opts: { editsBlocked?: boolean } = {},
+  opts: { editsBlocked?: boolean; runsBlocked?: boolean } = {},
 ) {
   let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial }];
   const hook = renderHook(() =>
     useTabSession({
       editsBlocked: opts.editsBlocked ?? false,
+      runsBlocked: opts.runsBlocked ?? false,
       activeId: 't1',
       activeTab: tabs[0]!,
       commitTabs: (map) => {
@@ -44,7 +45,7 @@ afterEach(() => {
   vi.mocked(track).mockClear();
 });
 
-describe('a timer run’s startedAt (docs/specs/012-collaboration/agenda.md)', () => {
+describe('a timer run’s startedAt (docs/specs/012-collaboration/session-tools.md)', () => {
   it('is minted at start, returned, and kept through pause, resume and extend', () => {
     const h = harness();
     expect(h.session().startTimer('countdown', 60_000)).toBe(1_000_000);
@@ -57,7 +58,7 @@ describe('a timer run’s startedAt (docs/specs/012-collaboration/agenda.md)', (
   });
 
   it('is undefined when the start is refused', () => {
-    const { session } = harness({}, { sessionToolsBlocked: true });
+    const { session } = harness({}, { runsBlocked: true });
     expect(session().startTimer('countdown', 60_000)).toBeUndefined();
   });
 });

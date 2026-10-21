@@ -33,7 +33,6 @@ import {
 import { useLatest } from '@/hooks/ui/useLatest';
 import { arrowPageDir } from '@/lib/page-step';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
-import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import { altGraphHeld } from '@/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
@@ -64,7 +63,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       pendingDraw === null &&
       canvasTool !== 'format' &&
       canvasTool !== 'isometric' &&
-      canvasTool !== 'avatar' &&
       !whiteboardEraser
     )
       return;
@@ -80,13 +78,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (e.key === 'Escape') {
         const live = liveRef.current;
         // Claim the key when it cancelled something, so a later listener
-        // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
+        // knows it's spoken for.
         if (
           live.formatSourceId !== null ||
           live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
           live.canvasTool === 'isometric' ||
-          live.canvasTool === 'avatar' ||
           (live.whiteboard !== null && live.canvasTool === 'eraser')
         ) {
           e.preventDefault();
@@ -102,13 +99,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
         // Isometric: Escape leaves the view back to the normal editing tool —
         // Select on desktop, Hand (pan) on touch where Select isn't the
-        // default. Mirrors how Spotlight reverts to Select.
+        // default.
         if (liveRef.current.canvasTool === 'isometric') {
-          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
-        }
-        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
-        // hands editing back, same revert rule as Isometric.
-        if (liveRef.current.canvasTool === 'avatar') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
         if (liveRef.current.pendingDraw !== null) {
@@ -217,7 +209,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
-        live.canvasTool !== 'avatar' &&
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         selectedId === null &&
         multiSelectedIds.size === 0
@@ -256,7 +247,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
-        live.canvasTool !== 'avatar' &&
         // A whiteboard eraser in hand is put down first (the narrow listener).
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         (selectedId !== null || multiSelectedIds.size > 0)
@@ -300,7 +290,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // --- Plain key tool + element-add shortcuts ---
       // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
       // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
-      //   V (S alias) = Select, H = Hand, K = Laser, I = Isometric,
+      //   V (S alias) = Select, H = Hand, I = Isometric,
       //   Z = Zen, E = Eraser, P (F alias) = Pencil (tools)
       //   R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
@@ -322,9 +312,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // arrows keep their default page behaviour). Placed before the
       // letter shortcuts; arrow keys never collide with them.
       if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
-        // Avatar mode (docs/specs/008-canvas/avatar-mode.md) owns the arrow keys: they steer the walking
-        // character (useAvatarWalk), and the mode is read-only anyway.
-        if (live.canvasTool === 'avatar') return;
         const hasSelection = multiSelectedIds.size > 0 || selectedId !== null;
         // With nothing selected in Pages mode, an arrow goes to the next or previous page (for every
         // role: it only moves the view).
@@ -386,11 +373,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md
-      // "Keyboard actions", useAvatarActionKeys): S spins rather than searching, 1 throws confetti rather than
-      // picking Select. V / H / K / I / Z and Escape stay the way out.
-      if (live.canvasTool === 'avatar' && avatarActionForKey(e)) return;
-
       // A whiteboard's keys are its dock's, and only these
       // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
       // mode keys have no palette to mirror there.
@@ -405,7 +387,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // Non-mutating view tools (Select / Hand / Laser / Isometric /
+      // Non-mutating view tools (Select / Hand / Isometric /
       // Zen): before the read-only gate so view-role visitors get them.
       const viewAction = VIEW_TOOL_KEYS[lower];
       if (viewAction) {
@@ -417,19 +399,13 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (live.isReadOnly) {
         // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
         const add =
-          live.participant && live.canvasTool !== 'avatar' ? PARTICIPANT_KEYS[lower] : undefined;
+          live.participant ? PARTICIPANT_KEYS[lower] : undefined;
         if (add) {
           e.preventDefault();
           add(live);
         }
         return;
       }
-      // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
-      // element-add / Eraser / Pencil keys stay dormant while walking, so a
-      // stray keypress can't drop a shape mid-narration. The view tools above
-      // already ran, so V / H / K / I / Z remain the way out.
-      if (live.canvasTool === 'avatar') return;
-
       // Image (`9`): separate from EDIT_KEYS because its callback is
       // nullable on guest deploys without an api worker.
       if (lower === '9' && live.onAddImage) {

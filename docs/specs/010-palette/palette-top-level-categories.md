@@ -185,12 +185,12 @@ session.
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group        | Holds                                   |
-| ------------ | --------------------------------------- |
-| **Ask**      | Temperature, Dot vote                   |
-| **Tools**    | Picker, Timer, Stopwatch                |
+| Group        | Holds                                       |
+| ------------ | ------------------------------------------- |
+| **Ask**      | Temperature, Dot vote                       |
+| **Tools**    | Picker, Timer, Stopwatch                    |
 | **Record**   | Comment panel, Action card, Decision record |
-| **Navigate** | Portal, Link card                       |
+| **Navigate** | Portal, Link card                           |
 
 **There is no Session group.** It held the Timer and the Dot vote — a group
 named after the machinery that runs them rather than the job they do. A dot

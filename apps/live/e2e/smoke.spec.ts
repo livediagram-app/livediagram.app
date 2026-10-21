@@ -301,7 +301,7 @@ test('a note already on the board inserts between two others', async ({ page, pa
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
 //
-// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
+// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote), and at
 // phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
 // was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
 // strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the
@@ -322,7 +322,7 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    // The strip is Workshop's (docs/specs/012-collaboration/workshop-mode.md), so a Blank Session.
+    // The strip is Workshop's (docs/specs/012-collaboration/session-tools.md), so a Blank Session.
     await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.

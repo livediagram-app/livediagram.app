@@ -17,7 +17,7 @@ import {
   to,
   VIEW,
 } from './features-parts';
-import { Frame, SKY, } from './shared';
+import { Frame, SKY } from './shared';
 
 /** Images: a photo placed and selected on the canvas, and one dragged in from your gallery. */
 export function ImagesArt() {
@@ -197,7 +197,6 @@ export function SessionToolsArt() {
         <VoteSticky x={124} fill="#fde68a" ink="#78350f" label="Ship v2" votes={4} i={0} />
         <VoteSticky x={174} fill="#fbcfe8" ink="#831843" label="Onboarding" votes={2} i={1} />
         <VoteSticky x={224} fill="#bbf7d0" ink="#14532d" label="Dark mode" votes={3} i={2} />
-
       </svg>
     </Frame>
   );

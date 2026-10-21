@@ -58,7 +58,6 @@ const base: CommandContext = {
   // assertions live; the tool commands have their own describe block.
   canvasTool: 'select',
   canvasEmpty: false,
-  isMobile: false,
   esBoard: false,
   photoImportAvailable: false,
 };
@@ -265,9 +264,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       // Reads the room, writes nothing — a viewer may ask who else is here.
       'collaborators',
       'tool:pan',
-      'tool:laser',
-      'tool:spotlight',
-      // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
       'tool:isometric',
     ]);
   });
@@ -340,9 +336,6 @@ describe('canvas tool commands', () => {
       'tool:pan',
       'tool:eraser',
       'tool:format',
-      'tool:laser',
-      'tool:spotlight',
-      'tool:slide-deck',
       'tool:isometric',
     ]);
     // Select is the current tool, so it is not offered.
@@ -354,9 +347,9 @@ describe('canvas tool commands', () => {
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
     buildEditorCommands(base, h)
-      .find((c) => c.id === 'tool:laser')!
+      .find((c) => c.id === 'tool:isometric')!
       .run();
-    expect(h.setTool).toHaveBeenCalledWith('laser');
+    expect(h.setTool).toHaveBeenCalledWith('isometric');
   });
 
   it('drops the content-dependent tools on an empty canvas', () => {
@@ -366,19 +359,8 @@ describe('canvas tool commands', () => {
     expect(got).toEqual(['tool:pan']);
   });
 
-  it('withholds Spotlight on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:spotlight');
-    expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
-  });
-
-  it('withholds Slide Deck on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
-    expect(ids(base)).toContain('tool:slide-deck');
-  });
-
-  it('gives a read-only visitor the presenting tools but not the editing ones', () => {
+  it('gives a read-only visitor the viewing tools but not the editing ones', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
-    expect(got).toContain('tool:laser');
     expect(got).toContain('tool:isometric');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
@@ -490,12 +472,6 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     const got = ids({ ...base, planMode: true });
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
-    expect(got).toContain('tool:laser');
-  });
-
-  it('never offers Avatar Mode (docs/specs/008-canvas/avatar-mode.md "Where it lives")', () => {
-    expect(ids(base)).not.toContain('tool:avatar');
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('tool:avatar');
-    expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');
+    expect(got).toContain('tool:isometric');
   });
 });

@@ -18,7 +18,6 @@ import {
   isFixedSizeShape,
   isLayerLocked,
   isLayerVisible,
-  REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
 } from '@liveplanner/document';
@@ -395,15 +394,7 @@ export function buildDrawnBoxed(
           // other. Only on a TAP — a deliberate drag is the user saying what
           // size they want.
           ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
-          // A POLL carries the question on its face, and the default box is
-          // sized for "Start vote" — anything of a realistic length was
-          // clipped before it finished. Wider and a little taller so a
-          // sentence fits on two lines.
-          ...(intent.session === 'poll' && isTap ? { width: 240, height: 116 } : {}),
         }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
-      ? { estimateScale: intent.estimateScale }
       : {}),
     // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
     // the item store as the card lands (docs/specs/026-plan/plan-mode.md "The palette").
@@ -431,12 +422,6 @@ export function buildDrawnBoxed(
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-view' && isTap
       ? planViewSize(intent.plan)
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
-      ? { mode: intent.mode }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
-      ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),
     // Sticker draw intent (docs/specs/010-palette/stickers.md): carry the chosen art. Lands SQUARE to
     // the canvas — an automatic tilt was tried and dropped, see the spec.

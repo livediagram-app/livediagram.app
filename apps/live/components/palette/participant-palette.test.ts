@@ -52,14 +52,9 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
   });
 
   it("names real selection modes, and none of an Editor's tools", () => {
-    const ids = buildCanvasToolOptions({
-      isMobile: false,
-      includeZen: true,
-      // Avatar is listed while in force (docs/specs/008-canvas/avatar-mode.md "Where it lives").
-      currentTool: 'avatar',
-    }).map((o) => o.id);
+    const ids = buildCanvasToolOptions({ includeZen: true }).map((o) => o.id);
     for (const tool of PARTICIPANT_CANVAS_TOOLS) expect(ids).toContain(tool);
-    for (const tool of ['eraser', 'format', 'slide-deck']) {
+    for (const tool of ['eraser', 'format']) {
       expect(PARTICIPANT_CANVAS_TOOLS).not.toContain(tool);
     }
   });

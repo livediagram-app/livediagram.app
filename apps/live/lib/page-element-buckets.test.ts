@@ -96,10 +96,9 @@ describe('pageElementBuckets', () => {
     const buckets = pageElementBuckets(tab.elements, laid);
     const labels = tabArrowLabels(tab);
     for (const page of laid) {
-      const slide = { id: `c-${page.id}`, tabId: tab.id, elementIds: [], pageId: page.id };
-      const whole = slideThumbFor(slide, tab, { iconsLoaded: false, labels });
+      const whole = slideThumbFor(page.id, tab, { iconsLoaded: false, labels });
       const own = slideThumbFor(
-        slide,
+        page.id,
         { ...tab, elements: buckets.get(page.id)! },
         { iconsLoaded: false, labels },
       );

@@ -13,7 +13,6 @@ import {
   lucideSearch,
 } from '@liveplanner/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@liveplanner/ui';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DropCaret } from '@/components/primitives/DropCaret';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import {
@@ -276,7 +275,7 @@ function NameLine({
   );
 }
 
-// A page's own toolbar: Add to Slides (a slide page not yet in the deck), Duplicate, Lock or Unlock
+// A page's own toolbar: Duplicate, Lock or Unlock
 // and Delete, each a glyph with its Tooltip. None for a Participant or a Viewer. Shown while the row
 // is hovered or focused, and while it is here (or always, to a finger); laid out all along, so the
 // row never shifts as it shows.
@@ -291,13 +290,6 @@ function PageToolbar({
 }) {
   if (!actions) return null;
   const tools: { key: string; label: string; icon: React.ReactNode; run: () => void }[] = [];
-  if (actions.addToSlides)
-    tools.push({
-      key: 'slides',
-      label: 'Add to Slides',
-      icon: <SlideDeckIcon />,
-      run: actions.addToSlides,
-    });
   if (actions.duplicate)
     tools.push({
       key: 'duplicate',
@@ -373,14 +365,6 @@ function PageMenu({ row, actions }: { row: ContentsRow; actions: PageActions | n
       {menu.open ? (
         <PortalMenu anchor={menu.triggerRef.current} placement="below" onClose={menu.close}>
           <MenuHeader title={row.name} />
-          {actions.addToSlides ? (
-            <MenuActionRow
-              plain
-              icon={<SlideDeckIcon />}
-              label="Add to Slides"
-              onClick={then(actions.addToSlides)}
-            />
-          ) : null}
           {actions.duplicate ? (
             <MenuActionRow
               plain

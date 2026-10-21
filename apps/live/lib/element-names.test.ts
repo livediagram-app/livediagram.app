@@ -154,7 +154,6 @@ describe('a session button’s kind', () => {
         ...(session ? { session } : {}),
       }) as Element;
     expect(kindLabel(button())).toBe('Timer');
-    expect(kindLabel(button({ tool: 'poll', question: 'Q' }))).toBe('Poll');
     expect(kindLabel(button({ tool: 'vote', dots: 3 }))).toBe('Dot vote');
     expect(kindLabel(button({ tool: 'stopwatch' }))).toBe('Stopwatch');
   });
@@ -182,10 +181,9 @@ describe('elementRole', () => {
     for (const kind of [
       'session-button',
       'checklist',
-      'qa-board',
-      'agenda',
-      'quiz',
-      'reaction-pad',
+      'temperature',
+      'picker',
+      'decision',
     ])
       expect(elementRole(shape(kind))).toBe('group');
     expect(

@@ -91,20 +91,6 @@ export type PagesModeView = {
   logo?: LogoToolsView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
-  // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
-  // where the deck cannot be changed.
-  deck?: PageDeckControls;
-  // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
-  letterbox?: boolean;
-};
-
-export type PageDeckControls = {
-  // The deck's slide of this page (on this tab), if it has one.
-  slideOf: (pageId: string) => { id: string; hidden: boolean; notes: string } | undefined;
-  add: (pageId: string) => void;
-  toggleHidden: (slideId: string) => void;
-  // The slide's speaker notes, as the Slide Deck panel writes them (an empty string removes them).
-  setNotes: (slideId: string, notes: string) => void;
 };
 
 export function usePagesMode(deps: {
@@ -120,9 +106,6 @@ export function usePagesMode(deps: {
   getViewport: () => ViewPose;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
-  // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
-  // open) another; set whether or not this tab is in Pages mode.
-  framePageRef?: RefObject<((pageId: string) => void) | null>;
   // Given the landing framing while the tab shows pages (null otherwise), so the fit on landing
   // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
   // whole row of pages.
@@ -133,8 +116,6 @@ export function usePagesMode(deps: {
   viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
-  // The view is not this person's to snap onto a page: following someone, or presenting.
-  snapSuspended?: () => boolean;
 }): PagesModeView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
@@ -244,7 +225,6 @@ export function usePagesMode(deps: {
       glide.current?.();
       glide.current = null;
     },
-    suspended: deps.snapSuspended ?? (() => false),
   });
   // The page you were last on, remembered as the view rests (docs/specs/007-editor/
   // pages-mode.md "Back to the page you were on").
@@ -318,15 +298,6 @@ export function usePagesMode(deps: {
     const raf = requestAnimationFrame(() => goToLanded());
     return () => cancelAnimationFrame(raf);
   }, [landed]);
-
-  const { framePageRef } = deps;
-  useEffect(() => {
-    if (!framePageRef) return;
-    framePageRef.current = setGoTo;
-    return () => {
-      framePageRef.current = null;
-    };
-  }, [framePageRef]);
 
   if (!on) return null;
   const focusPage = (pageId: string) => {

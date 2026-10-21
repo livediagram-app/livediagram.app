@@ -48,8 +48,6 @@ export function usePageSnap(deps: {
   fitOf: (page: LaidOutPage) => SnapFrame;
   glideTo: (frame: SnapFrame) => void;
   cancelGlide: () => void;
-  // Following someone or presenting: the view is not this person's to move.
-  suspended: () => boolean;
 }): void {
   const latest = useLatest(deps);
   const { on, viewport } = deps;
@@ -78,7 +76,7 @@ export function usePageSnap(deps: {
     const snap = (swipe: boolean) => {
       clearTimeout(timer);
       const d = latest.current;
-      if (d.suspended() || canvasGestureNow() !== 'idle' || pointers.size > 0) return;
+      if (canvasGestureNow() !== 'idle' || pointers.size > 0) return;
       const m = d.measure();
       if (!m) return;
       const view = viewport.get();

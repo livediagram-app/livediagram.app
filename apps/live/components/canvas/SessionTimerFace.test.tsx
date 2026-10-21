@@ -17,20 +17,15 @@ const face = (props: Partial<Parameters<typeof SessionTimerFace>[0]>) =>
     />,
   );
 
-// docs/specs/012-collaboration/facilitator.md "Being told you cannot": a Timer element somebody else's baton
-// governs shows its clock without controls, and says whose it is.
-describe('SessionTimerFace while somebody else facilitates', () => {
-  it('names the facilitator and drops the Start', () => {
-    face({ runBy: 'Ana', onStart: vi.fn() });
-    expect(
-      screen.getByText('Ana is facilitating this session; ask them to run the timer.'),
-    ).toBeTruthy();
+// docs/specs/012-collaboration/session-button.md: a read-only Timer element shows its clock without controls.
+describe('SessionTimerFace controls', () => {
+  it('drops the Start on a read-only face', () => {
+    face({ onStart: vi.fn() });
     expect(screen.queryByRole('button', { name: 'Start timer' })).toBeNull();
   });
 
-  it('says nothing of it to the facilitator or with nobody facilitating', () => {
-    face({ readOnly: false, runBy: null, onStart: vi.fn() });
-    expect(screen.queryByText(/is facilitating/)).toBeNull();
+  it('offers the Start to whoever may run it', () => {
+    face({ readOnly: false, onStart: vi.fn() });
     expect(screen.getByRole('button', { name: 'Start timer' })).toBeTruthy();
   });
 });

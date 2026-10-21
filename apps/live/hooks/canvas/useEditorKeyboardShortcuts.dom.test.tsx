@@ -234,13 +234,11 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     expect(wb.pickPath).toHaveBeenCalledTimes(1);
   });
 
-  it('leaves the other diagram tab keys out: no laser on K, no parallelogram on G', () => {
-    const { wb, addShape, setCanvasTool } = board();
-    press('k');
+  it('leaves the other diagram tab keys out: no parallelogram on G', () => {
+    const { wb, addShape } = board();
     press('g');
     expect(addShape).not.toHaveBeenCalled();
     expect(wb.pickShape).not.toHaveBeenCalled();
-    expect(setCanvasTool).not.toHaveBeenCalledWith('laser');
   });
 
   it('puts the eraser down before clearing a selection', () => {

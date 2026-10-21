@@ -21,6 +21,9 @@ import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {
   editsBlocked: boolean;
+  // Running a session (start, end, reveal, clear, pace) is an Editor's (docs/specs/013-workspace/share-roles.md).
+  // Casting and retracting a dot stay open to whoever may edit: answering is what the room is for.
+  runsBlocked: boolean;
   activeId: string;
   activeTab: Tab;
   // Tab mutator that does NOT push undo history (same one the appearance
@@ -42,17 +45,19 @@ type TabSessionDeps = {
 
 export function useTabSession(deps: TabSessionDeps) {
   const { editsBlocked, activeId, commitTabs, selfId, emitVote } = deps;
+  // One flag for every verb that runs the room, so a new one cannot be added
+  // without deciding which side of the line it is on.
+  const runBlocked = editsBlocked || deps.runsBlocked;
 
   const patchActive = (patch: (t: Tab) => Tab) =>
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
 
   // --- Timer ---------------------------------------------------------------
 
-  // Returns the run's `startedAt`, so a caller that started it (an Agenda
-  // segment, docs/specs/012-collaboration/agenda.md) can recognise it later;
-  // undefined when nothing started.
+  // Returns the run's `startedAt`, so a caller that started it can recognise
+  // it later; undefined when nothing started.
   const startTimer = (mode: TimerMode, durationMs?: number): number | undefined => {
-    if (editsBlocked) return undefined;
+    if (runBlocked) return undefined;
     const now = Date.now();
     const timer =
       mode === 'countdown'
@@ -69,7 +74,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // session. Each is gated on the state actually changing, so a press that
   // does nothing (pausing an already-paused timer) counts nothing.
   const pauseTimer = () => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     if (!deps.activeTab.timer?.running) return;
     patchActive((t) => {
       if (!t.timer?.running) return t;
@@ -80,7 +85,7 @@ export function useTabSession(deps: TabSessionDeps) {
   };
 
   const resumeTimer = () => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     const current = deps.activeTab.timer;
     if (!current || current.running) return;
     const now = Date.now();
@@ -107,7 +112,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // is asking for more time, not for the session to stop; one who extends a
   // paused timer is setting up the next round.
   const setTimerDuration = (durationMs: number) => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     const existing = deps.activeTab.timer;
     // Nothing running: the element's own config is the length, and it will be
     // used at the next start. Nothing to do here.
@@ -122,7 +127,7 @@ export function useTabSession(deps: TabSessionDeps) {
   };
 
   const resetTimer = () => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     if (!deps.activeTab.timer) return;
     patchActive((t) => {
       const timer = t.timer;
@@ -172,7 +177,7 @@ export function useTabSession(deps: TabSessionDeps) {
   };
 
   const clearTimer = () => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     // Read the mode BEFORE the patch drops it — this is the counterpart to
     // the typed Started event, so the two are directly comparable.
     const mode = deps.activeTab.timer?.mode;
@@ -191,7 +196,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // has no mid-vote toggle, so a participant can trust that what was
   // hidden stayed hidden for the whole vote.
   const startVote = (votesPerPerson: number, setup?: VoteSetup) => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     const vote: TabVote = {
       active: true,
       revealed: false,
@@ -222,7 +227,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // Whether it ended an open vote, so the caller tallying its Plan cards does so only for a real end.
   const endVote = (): boolean => {
-    if (editsBlocked) return false;
+    if (runBlocked) return false;
     // Host-only (docs/specs/012-collaboration/session-tools.md). Ending is destructive-ish — you can restart a
     // vote but every dot is lost — so a participant can't do it by
     // accident. Re-checked here as well as hidden in the UI, since the
@@ -235,7 +240,7 @@ export function useTabSession(deps: TabSessionDeps) {
   };
 
   const revealVote = () => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     // Revealing also seats the shared walkthrough on the top pick, so
     // every participant lands on the same element as the host.
@@ -246,7 +251,7 @@ export function useTabSession(deps: TabSessionDeps) {
   };
 
   const clearVote = () => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     if (!deps.activeTab.vote) return;
     patchActive((t) => {
@@ -288,7 +293,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // reviews the picks together, so participants follow rather than each
   // wandering the list on their own screen (docs/specs/012-collaboration/session-tools.md).
   const setVoteReviewIndex = (index: number) => {
-    if (editsBlocked) return;
+    if (runBlocked) return;
     if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, reviewIndex: index } } : t));
   };

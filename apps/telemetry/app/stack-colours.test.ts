@@ -25,8 +25,8 @@ describe('stack colours', () => {
   });
 
   it('splits two categories that share a hue', () => {
-    // Folder and Facilitator are both #a855f7.
-    const [a, b] = stackMemberColors([{ category: 'Folder' }, { category: 'Facilitator' }]);
+    // Team and Plan are both #2563eb.
+    const [a, b] = stackMemberColors([{ category: 'Team' }, { category: 'Plan' }]);
     expect(a).not.toBe(b);
   });
 

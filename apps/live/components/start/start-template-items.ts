@@ -81,26 +81,8 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
     {
       id: 'meetings',
       name: 'Meetings',
-      line: 'Agendas, Q&A and open discussion with the room.',
-      kinds: ['meeting-agenda', 'workshop-board', 'town-hall', 'lean-coffee'],
-    },
-    {
-      id: 'spaces',
-      name: 'Spaces',
-      line: 'Offices and halls to walk round together in Avatar mode.',
-      kinds: ['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall'],
-    },
-    {
-      id: 'games',
-      name: 'Quizzes & Games',
-      line: 'Quizzes, icebreakers and games to warm up the room.',
-      kinds: [
-        'pub-quiz',
-        'icebreaker-questions',
-        'two-truths-and-a-lie',
-        'would-you-rather',
-        'people-bingo',
-      ],
+      line: 'The kickoff wall for a longer session.',
+      kinds: ['workshop-board'],
     },
     {
       id: 'ideation',

@@ -21,17 +21,17 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                        | Meaning                                                |
-| -------------- | ------------------------------------------------- | ------------------------------------------------------ |
-| Portal         | shape kind `'portal'`                             | The element                                            |
-| Target         | `ShapeElement.portalTarget: ElementId`            | The id of the portal this one leads to                 |
-| Link           | a pair of `portalTarget`s                         | Two portals pointing at each other                     |
-| Incoming link  | another portal's `portalTarget === this.id`       | Honoured when this portal's own target fails           |
-| Site           | `PortalSite = { tabId, tabName, portal }`         | A portal with the tab it lives on                      |
-| Destination    | `PortalDestination = { portal, tabId, elements }` | The far portal, its tab and that tab's elements        |
-| Unlinked       | `resolvePortalDestination(...) === null`          | Dead ring, inert                                       |
-| Portal name    | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [QF11]      |
-| Travel         | `enterPortal(from)` (`usePortalTravel`)           | Switch tab, centre camera                              |
+| Term          | Identifier                                        | Meaning                                           |
+| ------------- | ------------------------------------------------- | ------------------------------------------------- |
+| Portal        | shape kind `'portal'`                             | The element                                       |
+| Target        | `ShapeElement.portalTarget: ElementId`            | The id of the portal this one leads to            |
+| Link          | a pair of `portalTarget`s                         | Two portals pointing at each other                |
+| Incoming link | another portal's `portalTarget === this.id`       | Honoured when this portal's own target fails      |
+| Site          | `PortalSite = { tabId, tabName, portal }`         | A portal with the tab it lives on                 |
+| Destination   | `PortalDestination = { portal, tabId, elements }` | The far portal, its tab and that tab's elements   |
+| Unlinked      | `resolvePortalDestination(...) === null`          | Dead ring, inert                                  |
+| Portal name   | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [QF11] |
+| Travel        | `enterPortal(from)` (`usePortalTravel`)           | Switch tab, centre camera                         |
 
 Banned synonyms: "door" (it survives only as the persisted palette tile id `tools:door`), "pair id",
 "teleporter", "warp".
@@ -120,18 +120,18 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 
 ## Errors and edge cases
 
-| #   | Case                                      | Handling                                              |
-| --- | ----------------------------------------- | ----------------------------------------------------- |
-| E1  | Target deleted                            | Unlinked, unless an incoming link exists              |
-| E2  | Target re-pointed at a non-portal         | Unlinked                                              |
-| E3  | Self-target                               | Unlinked                                              |
-| E4  | One-sided link                            | Resolves both ways                                    |
-| E5  | Own target and an incoming link disagree  | Own target wins                                       |
-| E6  | Far portal on another tab                 | Tab switch first, then camera                         |
-| E7  | Unlinked press                            | Face inert; hover card explains                       |
-| E8  | Drag on the ring                          | Moves, never travels                                  |
-| E12 | Create with a third portal on another tab | Released on every tab [QF10]                          |
-| E13 | Multi-selection linked to one target      | Last source takes the return link (D114)              |
+| #   | Case                                      | Handling                                 |
+| --- | ----------------------------------------- | ---------------------------------------- |
+| E1  | Target deleted                            | Unlinked, unless an incoming link exists |
+| E2  | Target re-pointed at a non-portal         | Unlinked                                 |
+| E3  | Self-target                               | Unlinked                                 |
+| E4  | One-sided link                            | Resolves both ways                       |
+| E5  | Own target and an incoming link disagree  | Own target wins                          |
+| E6  | Far portal on another tab                 | Tab switch first, then camera            |
+| E7  | Unlinked press                            | Face inert; hover card explains          |
+| E8  | Drag on the ring                          | Moves, never travels                     |
+| E12 | Create with a third portal on another tab | Released on every tab [QF10]             |
+| E13 | Multi-selection linked to one target      | Last source takes the return link (D114) |
 
 ## Security and trust
 

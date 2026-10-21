@@ -20,7 +20,6 @@ test.beforeEach(async ({ page }) => {
           ...prefs,
           planTourSeen: true,
           planTourTracks: ['boards', 'sheets'],
-          workshopTourSeen: true,
         }),
       );
     } catch {

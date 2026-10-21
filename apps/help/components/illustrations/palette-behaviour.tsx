@@ -8,7 +8,7 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Label, Avatar, Button, } from './primitives';
+import { Scene, Label, Avatar, Button } from './primitives';
 
 // --- Small motifs the primitive kit does not carry -------------------------
 

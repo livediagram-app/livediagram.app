@@ -13,7 +13,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/document/src/quick-swatches.ts`)                                                                               |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/document`), `documentColours(...)` (`apps/live/lib/document-colours.ts`), `useDocumentColours()` (`apps/live/hooks/ui/`) |
 | custom colour editor | `CustomColourEditor` (`apps/live/components/colour/CustomColourEditor.tsx`)                                                                                                                     |
-| skins                | inline `ColourPicker`; row (`ColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                              |
+| skins                | inline `ColourPicker`; row (`ColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                |
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                              |
 
 Grey is a **neutral stock colour**: `GREY_PEN_COLOUR = 'grey'`, `PenColourName = 'ink' | 'grey' | HuedPenColourName`.

@@ -38,13 +38,13 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 
 ### Readers above the canvas
 
-| Reader                            | Becomes                                                                                                                                                                                                     |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useKeyboardAvoidance` (`zoom`)   | reads `zoomRef.current` when the keyboard moves                                                                                                                                                             |
-| `useCanvasPinchZoom`              | reads `viewport.get()` per event (bursts within a frame compound correctly) and zooms at a point with one `setView`                                                                                         |
-| `TourHost` (viewport centre)      | `viewport.get().offset` when the step runs                                                                                                                                                                  |
-| The editor context                | carries `viewport`, not `viewportZoom` / `viewportOffset`                                                                                                                                                   |
-| `EditorCanvasHost` → `Canvas`     | passes no view; `EditorView` provides the store (`ViewportStoreProvider`) and `CanvasView` subscribes with `useViewportOf`                                                                                  |
+| Reader                          | Becomes                                                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `useKeyboardAvoidance` (`zoom`) | reads `zoomRef.current` when the keyboard moves                                                                            |
+| `useCanvasPinchZoom`            | reads `viewport.get()` per event (bursts within a frame compound correctly) and zooms at a point with one `setView`        |
+| `TourHost` (viewport centre)    | `viewport.get().offset` when the step runs                                                                                 |
+| The editor context              | carries `viewport`, not `viewportZoom` / `viewportOffset`                                                                  |
+| `EditorCanvasHost` → `Canvas`   | passes no view; `EditorView` provides the store (`ViewportStoreProvider`) and `CanvasView` subscribes with `useViewportOf` |
 
 ### Inside the canvas
 

@@ -72,8 +72,6 @@ type CanvasElementListProps = Pick<
   | 'canWriteText'
   | 'canResize'
   | 'voteReview'
-  | 'revealedIds'
-  | 'reactionBursts'
   | 'tabFont'
   | 'tabFinish'
 > & {
@@ -123,8 +121,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   voteReview,
   commentActionsFor,
   actionActionsFor,
-  revealedIds,
-  reactionBursts,
   tabFont,
   tabFinish,
   stackedIds,
@@ -255,8 +251,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 isVoteFocus={voteReview?.focusId === element.id}
                 commentActions={commentActionsFor?.(element.id)}
                 actionActions={actionActionsFor?.(element.id)}
-                revealedForMe={revealedIds?.has(element.id)}
-                reactionBurst={reactionBursts?.get(element.id)}
                 // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
                 // the face, so it outranks the tab default — but not an explicit
                 // per-element font, which is a deliberate author choice.

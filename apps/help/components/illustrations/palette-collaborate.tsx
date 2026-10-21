@@ -8,7 +8,7 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Label, } from './primitives';
+import { Scene, Label } from './primitives';
 
 // --- Shared card chrome ------------------------------------------------------
 

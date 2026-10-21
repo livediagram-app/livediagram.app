@@ -70,7 +70,6 @@ describe('foldAliases / rank', () => {
 describe('what each ranking leaves out', () => {
   it('Selection Modes excludes the Canvas·Used events that are not modes', () => {
     expect(SELECTION_MODES).not.toContain('InsertBetween');
-    expect(SELECTION_MODES).not.toContain('FollowMe');
   });
 
   it('Canvas Styles excludes the colour, opacity and scale controls', () => {

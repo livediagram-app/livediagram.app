@@ -48,14 +48,6 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M5.5 4h5M6 12V9.5M8 12V8M10 12v-1.5" />
     </>,
   ),
-  // Slide decks: a slide on its stand, a play mark on it.
-  slides: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="13" height="8.5" rx="1" />
-      <path d="M7 5l3 1.75L7 8.5z" />
-      <path d="M8 11v2.5M5.5 14h5" />
-    </>,
-  ),
   // Documents: a page of writing.
   documents: glyph(
     <>

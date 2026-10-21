@@ -73,7 +73,6 @@ export function PageContentsSidebar({
     tab,
     here,
     settleMs: CONTENTS_SIDEBAR_SETTLE_MS,
-    slidesTool: false,
   });
 
   // The page in view followed as the view moves on (a pan, a zoom, the pages row's arrows): marked,

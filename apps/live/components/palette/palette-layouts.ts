@@ -380,7 +380,7 @@ const WORKSHOP: PaletteLayout = {
   categories: [
     {
       // What a session is most often run with: a square, notes and words, a frame and an arrow to arrange them,
-      // then, behind a divider, the session kit as four openers (palette-openers), each its Collaborate category in
+      // then, behind a divider, the session kit as three openers (palette-openers), each its Collaborate category in
       // a popover.
       id: 'popular',
       tiles: [
@@ -448,8 +448,6 @@ const PLAN: PaletteLayout = {
       id: 'plan-tools',
       tiles: [
         'collab:temperature',
-        'collab:estimate',
-        'collab:idea-box',
         'tools:picker',
         'tools:session-timer',
         'tools:session-stopwatch',
@@ -636,15 +634,10 @@ export function participantPaletteCategories(
   return [{ ...identity, tiles: participantTiles(mode, esBoard) }];
 }
 
-// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
-// Painter, Slide Deck).
+// The selection modes a Participant has: look around, never an Editor's tools (Eraser, Format Painter).
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',
   'pan',
-  'laser',
-  'spotlight',
-  // Avatar is listed by the picker only while in force (canvas-tool-options), for every role alike.
-  'avatar',
   'isometric',
   'zen',
 ];

@@ -94,13 +94,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
-  // The canvas tool an armed draw cannot share the pointer with: laser goes to pan (it swallows pointer-down to paint
-  // trail dots and would block the draw), and the eraser and the format painter to select, as a whiteboard's pens
-  // put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
+  // The canvas tool an armed draw cannot share the pointer with: the eraser and the format painter go to select, as a
+  // whiteboard's pens put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
   // erased what it crossed.
   const putDownPressTool = () => {
-    if (canvasTool === 'laser') setCanvasTool('pan');
-    else if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
+    if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
   };
 
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and

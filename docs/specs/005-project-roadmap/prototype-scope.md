@@ -97,7 +97,6 @@ The editor is real:
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#password-cache)).
 - **A contributor switch** arming the photo import's ground-truth export (`liveplanner:truth`, [Event storming](../021-event-storming/event-storming.md)).
 
-
 - **Participant share links** ([Share roles](../013-workspace/share-roles.md)): a third level between Viewer and Editor, so a facilitator hands a retro to a team who add stickies, write, move and recolour stickies and vote, without reshaping the board; the room applies their changes through one participant content rule.
 
 ## Next

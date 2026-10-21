@@ -1,9 +1,9 @@
-// Setters for the Behaviour elements (docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md), off useEditorState rather
+// Setters for the Behaviour elements (docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/012-collaboration/picker.md), off useEditorState rather
 // than the style hook: a portal link is the one element setting that reaches
 // ACROSS TABS, so these need the whole tab list and a tabs-wide commit, not the
-// active tab's element mapper every other setter uses — and the session button,
-// reveal zone, and picker settings sit beside it because they are configured
-// from the same menu, on the same kinds of element.
+// active tab's element mapper every other setter uses — and the session button
+// and picker settings sit beside it because they are configured from the same
+// menu, on the same kinds of element.
 //
 // Three actions, all keyed off the current selection:
 //  - link this portal to another (either tab), or unlink it,
@@ -14,7 +14,6 @@
 import {
   createShape,
   type PickerSource,
-  type Reaction,
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
@@ -32,7 +31,6 @@ export function usePortalSetters({
   tabs,
   activeId,
   setSelectedId,
-  sessionToolsBlocked,
 }: {
   currentSelectionIds: () => Set<string>;
   // The element the open context menu is acting on. The menu can be opened on
@@ -45,9 +43,6 @@ export function usePortalSetters({
   tabs: Tab[];
   activeId: string;
   setSelectedId: (id: string | null) => void;
-  // Somebody else holds the baton (docs/specs/012-collaboration/facilitator.md "What the facilitator runs"):
-  // configuring a session button and lifting a cover for the room are theirs.
-  sessionToolsBlocked: boolean;
 }) {
   // The selected portals on the active tab — the only place a selection can
   // live, so the sources are always local even when the target isn't.
@@ -179,30 +174,19 @@ export function usePortalSetters({
     track('Element', 'Changed', telemetry);
   };
 
-  const setSessionConfigSelected = (session: SessionButtonConfig) => {
-    if (sessionToolsBlocked) return;
+  const setSessionConfigSelected = (session: SessionButtonConfig) =>
     patchTarget({ session }, 'session-button', 'SessionButton');
-  };
-  const setRevealedSelected = (revealed: boolean) => {
-    if (sessionToolsBlocked) return;
-    patchTarget({ revealed }, 'reveal', 'Reveal');
-  };
   const setPickerSourceSelected = (pickerSource: PickerSource) =>
     patchTarget({ pickerSource }, 'picker', 'Picker');
   const setPickerOptionsSelected = (pickerOptions: string[]) =>
     patchTarget({ pickerOptions }, 'picker', 'Picker');
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst it throws.
-  const setReactionSelected = (reaction: Reaction) =>
-    patchTarget({ reaction }, 'reaction-pad', 'ReactionPad');
 
   return {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
     setPickerOptionsSelected,
-    setReactionSelected,
   };
 }
