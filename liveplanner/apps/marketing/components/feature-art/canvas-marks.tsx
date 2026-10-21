@@ -1,0 +1,86 @@
+// Shared marks for the richer feature-card scenes (content.tsx, structure.tsx, motion.tsx): the
+// scene's SVG surface, the editor's chrome surfaces, a teammate's cursor and a text caret. Each
+// scene reads finished at rest and moves only an accent (fa-d-* in app/feature-art/content.css),
+// so any moment of the loop is a good picture, in light and in dark.
+
+import type { CSSProperties, ReactNode } from 'react';
+import { Cursor as TeammateCursor } from './shared';
+
+// Every scene is drawn in this box: the card's art strip is about three times wider than tall.
+const VIEWBOX = '0 0 300 96';
+
+// The editor's floating chrome (a picker, a toolbar, a panel): white on light, slate on dark.
+export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
+export const SHADOW =
+  '[filter:drop-shadow(0_1px_1.5px_rgb(15_23_42/0.10))] dark:[filter:drop-shadow(0_1px_2px_rgb(0_0_0/0.45))]';
+export const TEXT_STRONG = 'fill-slate-800 dark:fill-slate-100';
+export const TEXT_BODY = 'fill-slate-600 dark:fill-slate-300';
+export const TEXT_MUTED = 'fill-slate-400 dark:fill-slate-500';
+export const HAIRLINE = 'stroke-slate-200 dark:stroke-slate-700';
+
+// An unpainted canvas element: the Default scheme's ink, light or dark with the appearance.
+export const INK = 'fill-(--art-ink-fill) stroke-(--art-ink-stroke)';
+
+// The selection the editor draws round what you picked, and its corner handles.
+export const SELECT = 'stroke-brand-500 dark:stroke-brand-400';
+
+export function Scene({ children }: { children: ReactNode }) {
+  return (
+    <svg
+      viewBox={VIEWBOX}
+      className="absolute inset-0 h-full w-full"
+      fontFamily="inherit"
+      aria-hidden
+    >
+      {children}
+    </svg>
+  );
+}
+
+// A teammate's cursor with their name: drawn where it ends up, gliding in from (fx, fy) away.
+export function Cursor({
+  x,
+  y,
+  color,
+  name,
+  fx = 0,
+  fy = 0,
+  delay = '0s',
+}: {
+  x: number;
+  y: number;
+  color: string;
+  name: string;
+  fx?: number;
+  fy?: number;
+  delay?: string;
+}) {
+  const moving = fx !== 0 || fy !== 0;
+  return (
+    <g
+      className={moving ? 'fa-d-move' : undefined}
+      style={
+        moving
+          ? ({ '--fx': `${fx}px`, '--fy': `${fy}px`, animationDelay: delay } as CSSProperties)
+          : undefined
+      }
+    >
+      <g transform={`translate(${x} ${y})`}>
+        <TeammateCursor color={color} name={name} size={9.5} />
+      </g>
+    </g>
+  );
+}
+
+// A blinking text caret.
+export function Caret({ x, y, h = 9 }: { x: number; y: number; h?: number }) {
+  return (
+    <rect
+      className="fa-d-blink fill-brand-500 dark:fill-brand-400"
+      x={x}
+      y={y}
+      width="0.9"
+      height={h}
+    />
+  );
+}

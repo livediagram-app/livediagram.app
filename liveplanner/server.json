@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.liveplanner-app/liveplanner",
+  "title": "liveplanner",
+  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on liveplanner.app.",
+  "version": "0.1.0",
+  "websiteUrl": "https://liveplanner.app",
+  "repository": {
+    "url": "https://github.com/liveplanner-app/liveplanner.app",
+    "source": "github",
+    "subfolder": "apps/mcp"
+  },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/liveplanner-app/liveplanner.app/main/marketing/media/icons/liveplanner-icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.liveplanner.app/mcp"
+    }
+  ]
+}

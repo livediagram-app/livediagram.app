@@ -1,0 +1,39 @@
+{
+  "name": "@liveplanner/cli",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "liveplanner": "./src/bin.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage dist"
+  },
+  "dependencies": {
+    "@liveplanner/agent-verbs": "workspace:*",
+    "@liveplanner/api-client": "workspace:*",
+    "@liveplanner/api-schema": "workspace:*",
+    "@liveplanner/diagram-lint": "workspace:*",
+    "@liveplanner/document": "workspace:*",
+    "@liveplanner/document-views": "workspace:*",
+    "@liveplanner/icons": "workspace:*",
+    "@liveplanner/render-png": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "esbuild": "^0.28.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

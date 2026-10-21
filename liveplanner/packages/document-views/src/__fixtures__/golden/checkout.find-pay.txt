@@ -1,0 +1,7 @@
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+frame c991 "Services"
+  square 146b "Orders service" icon=server note="Owns the order lifecycle and is the source of"… → e4a8 "charge", d41e, 6406 "OrderPlaced"
+  square e4a8 "Payments service" icon=credit-card comments=1 resolved → e6d7 "HTTPS" ~dashed
+table 480a 4x3 Service | p99 latency | Availability
+sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
+4 matches: 2 labels, 1 note, 1 cell

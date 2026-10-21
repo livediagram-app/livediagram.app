@@ -1,0 +1,133 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { NewDocumentWelcome } from '@/components/illustrations/getting-started';
+import { AddingElements, CanvasOverview } from '@/components/illustrations/canvas';
+
+export const metadata = helpMetadata({
+  title: 'Your First Diagram',
+  description:
+    'Create your first liveplanner in a couple of minutes: open a new diagram, drop in shapes, and connect them with arrows. No sign-in needed.',
+  path: '/help/getting-started/your-first-diagram/',
+});
+
+<ArticleLayout title="Your First Diagram" description="From a blank canvas to a connected flow in a couple of minutes, with no account required." categoryTitle="Getting Started" categorySlug="getting-started">
+
+The quickest way to learn liveplanner is to build something. This walkthrough takes you from a blank canvas to a small connected diagram. You do not need to sign in, the [canvas always works as a guest](/help/getting-started/guest-vs-account/).
+
+## Create a new diagram
+
+<Step n={1}>
+  Open [a new diagram](/new). This is liveplanner's entry point: the **New Document** wizard, which
+  asks one thing, what you are making.
+</Step>
+
+<Step n={2}>
+  Pick what you are making: Diagram, Draw, Workshop, Pages or Plan. Each card shows a few of the
+  things that mode makes and, on a computer, its number: press 1 to 5 to pick it from the keyboard.
+  Choose **Diagram** to follow along: the editor opens on your new document straight away.
+</Step>
+
+<Step n={3}>
+  It is saved where new documents go: to your account once you have signed in, or in this browser
+  while you try things out as a guest (you can [move it to your
+  account](/help/privacy-and-security/offline-mode/) any time). Click its name at the top to rename
+  it; [Default Folders](/help/explorer/folders/default-folders/) decide which folder it lands in.
+</Step>
+
+<Step n={4}>
+  The empty tab opens on **Start Diagramming**: Recommended picks and every Diagram
+  [template](/help/canvas/templates/) by category, with a search. Click one to start from it, or
+  choose **Blank Diagram** (or the ×) to follow along from scratch. Templates for the other modes
+  wait in their own starts, and the search finds them too, from whichever start you are on.
+</Step>
+
+<Figure caption="The New Document wizard: pick a mode and the document is made there and then.">
+  <NewDocumentWelcome />
+</Figure>
+
+On your very first document, once you have picked a template or closed Start Diagramming, the editor
+offers the [Diagram Tour](/help/getting-started/diagram-tour/) of the essentials. Take it or dismiss it; you can rerun it
+any time from **Settings**, under **Tours**.
+
+<Tip>
+  In a hurry? **Skip** on the Mode step creates a Blank Diagram straight away, with no Location
+  step. **Start Blank** in the liveplanner site header (on a computer) opens the same wizard, and
+  the mode you pick there opens blank, with no templates offered, or open
+  [/new?blank=1](/new?blank=1) directly. The wizard's **X** (or Escape) backs out without creating
+  anything, and **Open Existing Document** jumps to your library instead.
+</Tip>
+
+You can rename the document later: click its title in the header at the top of the editor and
+type. Renaming is instant and saved for you. Names cap at **60 characters**: typing simply stops
+there, which is plenty for a title and short enough to stay readable in a tab bar or a list row.
+
+## Add your first shapes
+
+<Step n={1}>
+  Find the **Palette**, the strip across the top of the canvas. Its categories sit along it by name:
+  rest on **Shapes** and its panel opens, with Square, Circle and Diamond first. Everything else is
+  one press away in the other categories.
+</Step>
+
+<Step n={2}>
+  **Click a shape tile**, then **click the canvas** where you want it: it drops there at its default
+  size. Or, after picking the tile, **drag on the canvas** to draw it at the size you want, or drag
+  the tile itself straight onto the canvas. Try a Square to start.
+</Step>
+
+<Step n={3}>
+  **Double-click the shape** to add a label, then type. Enter starts a new line; click away to
+  finish the label, or press Escape to cancel. A selected empty shape also shows an **Add Text**
+  button in its toolbar, and simply typing while a shape is selected starts a label too.
+</Step>
+
+<Step n={4}>
+  Drop a second shape nearby the same way. If a shape is selected when you pick the next tile, a
+  click drops the new shape at the same size, handy for chaining similarly-sized nodes.
+</Step>
+
+For the full set of shapes, devices, and icons you can drop, see the [Palette](/help/palette/) guides.
+
+<Figure caption="Drag a tile from the Palette onto the canvas to drop a shape, which lands selected.">
+  <AddingElements />
+</Figure>
+
+## Connect them with arrows
+
+<Step n={1}>
+  Select a shape and look for the quick-connect **+** buttons around it. Drag one onto another shape
+  to draw an arrow that stays pinned to both, or click it to open its options and drag **Arrow**
+  instead. (On a phone, tap **Arrow**, then tap the target.) **Duplicate** in the same options makes
+  a connected copy of the shape beside it in one go.
+</Step>
+
+<Step n={2}>
+  Prefer to draw freely? Pick **Arrow** from the Palette (it is in the **Draw** category), or press
+  `A`, and drag between two points.
+</Step>
+
+<Step n={3}>
+  Right-click an arrow (long-press on touch) to change its style: **Straight**, **Curved** or
+  **Angled** in the **Line** section, with its thickness and pattern, and the arrowheads under
+  **Pointer**. Double-click an arrow to give it a label.
+</Step>
+
+## Keep going
+
+You now have a connected diagram. From here you can:
+
+<Figure caption="A few shapes joined by arrows, with the Palette strip across the top: the editor at a glance.">
+  <CanvasOverview />
+</Figure>
+
+- **Move and multi-select.** Drag to reposition; drag on empty canvas to marquee-select several elements at once, or Shift-click to add one at a time.
+- **Recolour everything** with a [theme](/help/canvas/themes/).
+- **Share it live.** Hand a colleague a link and they join the same canvas. See [Sharing your document](/help/getting-started/sharing-your-document/).
+
+<Tip>
+  Made a mistake? [Undo](/help/canvas/undo/) and [Redo](/help/canvas/redo/) sit in the controls in
+  the bottom-right corner (or press `Cmd/Ctrl+Z`), and the common keyboard shortcuts are in
+  [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
+</Tip>
+
+</ArticleLayout>

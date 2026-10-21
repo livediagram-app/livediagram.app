@@ -1,0 +1,200 @@
+/* The scenes' Plan windows (components/hero-plan-board.tsx, hero-sheet-board.tsx,
+   hero-form-board.tsx, hero-dashboard-board.tsx; docs/specs/019-marketing/marketing-site.md
+   "Feature scenes"). Every mark plays once at its own delay (--d): the
+   window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
+   last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced
+   motion every mark shows settled. */
+
+/* A piece lands: a small overshoot from 70%. */
+.hm-pop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hm-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) var(--d, 0s) both;
+}
+@keyframes hm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A stroke draws on along its length (--len) over --dur, as a hand would draw it; --to stops it
+   short (the donut fills only its share). */
+.hm-draw {
+  stroke-dasharray: var(--len) var(--len);
+  animation: hm-draw var(--dur, 0.6s) ease-in-out var(--d, 0s) both;
+}
+@keyframes hm-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--len);
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: var(--to, 0);
+  }
+}
+/* A bar grows up from its axis. */
+.hm-grow {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: hm-grow 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) var(--d, 0s) both;
+}
+@keyframes hm-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A cursor comes in from its start (--sx, --sy), settles on its mark (--cx, --cy), and stays. */
+.hm-cursor {
+  opacity: 0;
+  animation: hm-cursor 0.8s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-cursor {
+  from {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy));
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translate(var(--cx), var(--cy));
+  }
+}
+
+.hero-static .hm-pop,
+.hero-static .hm-draw,
+.hero-static .hm-grow {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  stroke-dashoffset: var(--to, 0);
+}
+.hero-static .hm-cursor {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-pop,
+  .hm-draw,
+  .hm-grow {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    stroke-dashoffset: var(--to, 0);
+  }
+  .hm-cursor {
+    animation: none;
+    opacity: 1;
+    transform: translate(var(--cx), var(--cy));
+  }
+}
+
+/* A piece fades in. */
+.hm-fade {
+  opacity: 0;
+  animation: hm-fade 0.5s ease-out var(--d, 0s) both;
+}
+@keyframes hm-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* A label typed out, one letter a step (--steps), as its shape lands. */
+.hm-type {
+  /* jump-none: the last step is the whole word, reached inside the animation, so a finished label
+     never rests a letter short (steps(n, end) can hold its final step a hair before 100%). */
+  animation: hm-type 0.5s steps(var(--steps, 10), jump-none) var(--d, 0s) both;
+}
+@keyframes hm-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.hero-static .hm-fade,
+.hero-static .hm-type {
+  animation: none;
+  opacity: 1;
+  clip-path: none;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-fade,
+  .hm-type {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+  }
+}
+
+/* A value gives way to the next (a count ticking over). */
+.hm-out {
+  animation: hm-out 0.25s ease-in var(--d, 0s) both;
+}
+@keyframes hm-out {
+  to {
+    opacity: 0;
+  }
+}
+/* A piece slides to its new place: a card across the board (--dx, --dy). */
+.hm-move {
+  animation: hm-move 0.6s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-move {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translate(var(--dx, 0), var(--dy, 0));
+  }
+}
+.hero-static .hm-out {
+  animation: none;
+  opacity: 0;
+}
+.hero-static .hm-move {
+  animation: none;
+  transform: translate(var(--dx, 0), var(--dy, 0));
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-out {
+    animation: none;
+    opacity: 0;
+  }
+  .hm-move {
+    animation: none;
+    transform: translate(var(--dx, 0), var(--dy, 0));
+  }
+}
+
+/* --- The Plan window (components/hero-plan-board.tsx) --- */
+
+/* A carrier's pointer rides its card (hm-move on the group) once it has arrived (hm-cursor); a settled
+   board shows the cards where they were dropped, with nobody holding them. */
+.hero-static .hm-carrier {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-carrier {
+    display: none;
+  }
+}

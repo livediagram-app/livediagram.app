@@ -1,0 +1,178 @@
+// Canvas accessibility baseline (docs/specs/004-interface-design/canvas-accessibility.md). Two concerns, both scoped
+// to the active tab:
+//
+// - **Tab traversal**: while the canvas surface itself is focused,
+//   Tab / Shift+Tab move the selection through the tab's elements in
+//   render (z) order — selection IS focus, so the existing selection
+//   ring doubles as the focus indicator. No wrap: walking past either
+//   end falls through to the browser's default Tab, so keyboard focus
+//   can always leave the canvas (no trap). Elements locked by another
+//   participant are skipped, mirroring pointer selection.
+// - **Announcements**: selection changes are spoken through the SR
+//   live region (lib/announcer), named by the same helpers the change
+//   log prints (lib/element-names).
+
+import { useEffect } from 'react';
+import { isBoxed, type Element } from '@liveplanner/document';
+import { anyModalOpen } from '@/lib/modal-guard';
+import { announce, getAnnouncementSnapshot } from '@/lib/announcer';
+import { describeMany, describeSelected } from '@/lib/element-names';
+import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
+import type { Selection, SelectionStore } from '@/lib/selection-store';
+
+// The traversal step, pure so it's unit-testable: which element index a
+// Tab (dir 1) / Shift+Tab (dir -1) press should select, or null when the
+// walk runs off either end (the caller then lets the browser's default
+// Tab move focus on — no wrap, no trap). Blocked ids (locked by another
+// participant) are skipped.
+export function nextTraversalIndex(
+  elements: readonly { id: string }[],
+  selectedId: string | null,
+  dir: 1 | -1,
+  isBlocked: (id: string) => boolean,
+): number | null {
+  if (elements.length === 0) return null;
+  const currentIndex = selectedId ? elements.findIndex((el) => el.id === selectedId) : -1;
+  // First press with nothing selected starts at the nearest end.
+  let i = currentIndex === -1 && dir === -1 ? elements.length - 1 : currentIndex + dir;
+  while (i >= 0 && i < elements.length && isBlocked(elements[i]!.id)) i += dir;
+  return i >= 0 && i < elements.length ? i : null;
+}
+
+type CanvasA11yDeps = {
+  // The per-device shortcuts toggle: traversal is a keyboard shortcut
+  // surface, so it honours the same switch.
+  enabled: boolean;
+  elements: Element[];
+  // Read when a key is pressed and followed for announcements; never a render input, so the editor
+  // root does not render for a selection (docs/specs/008-canvas/blueprints/selection-store.md).
+  selection: SelectionStore;
+  editingId: string | null;
+  selectElement: (id: string) => void;
+  lockedByOther: (id: string) => boolean;
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): skipped by the
+  // traversal exactly like remotely-locked ones.
+  layerInertIds: Set<string>;
+  scrollIntoView: (x: number, y: number, w: number, h: number) => void;
+  // Elements that claim Tab for themselves. A selected mind node grows a
+  // child on Tab (docs/specs/009-elements/mind-node.md), and both handlers listen on window: this one
+  // is mounted first, so without the check it consumed every Tab and the
+  // selection walked the tab instead of the branch growing.
+  ownsTabKey: (id: string) => boolean;
+};
+
+export function useCanvasA11y(deps: CanvasA11yDeps): void {
+  // Live ref so the mount-once listener reads current state without
+  // re-subscribing per keystroke (the editor-shortcuts hub's pattern).
+  const ref = useLatest(deps);
+
+  useEffect(() => {
+    // The element this walk last selected. Tab grows a selected mind node or flowchart step, but not one the
+    // walk just landed on: there Tab walks on, or every keyboard user reaching a step would be trapped on it,
+    // a new step per press (docs/specs/004-interface-design/canvas-accessibility.md "No wrap, no trap"). A
+    // pointer press hands the selection back to growth.
+    let walkedTo: string | null = null;
+    const onPointer = () => {
+      walkedTo = null;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.defaultPrevented) return;
+      if (anyModalOpen()) return;
+      const live = ref.current;
+      if (!live.enabled) return;
+      if (live.editingId !== null) return;
+      // Engage only when the canvas surface ITSELF is focused. Focus on
+      // anything else (palette buttons, panels, header) keeps the
+      // browser's normal Tab order.
+      const active = document.activeElement;
+      if (!(active instanceof HTMLElement) || active.dataset.canvasA11yRoot === undefined) return;
+      // Shift+Tab still walks backwards through the elements: only plain
+      // Tab is the growth key, so reverse traversal never had a rival.
+      const { selectedId, multiSelectedIds } = live.selection.get();
+      if (
+        !e.shiftKey &&
+        selectedId !== null &&
+        selectedId !== walkedTo &&
+        multiSelectedIds.size === 0 &&
+        live.ownsTabKey(selectedId)
+      )
+        return;
+      const els = live.elements;
+      const dir = e.shiftKey ? -1 : 1;
+      const i = nextTraversalIndex(
+        els,
+        selectedId,
+        dir,
+        (id) => live.lockedByOther(id) || live.layerInertIds.has(id),
+      );
+      // Past either end: leave the event to the browser so focus moves
+      // on to the next control — deliberately no wrap.
+      if (i === null) {
+        walkedTo = null;
+        return;
+      }
+      const next = els[i]!;
+      e.preventDefault();
+      walkedTo = next.id;
+      live.selectElement(next.id);
+      if (isBoxed(next)) live.scrollIntoView(next.x, next.y, next.width, next.height);
+      track('Element', 'Selected', 'Keyboard');
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onPointer, true);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', onPointer, true);
+    };
+  }, [ref]);
+
+  // Announce selection changes: single ("Selected 'Login'"), multi (a
+  // counted summary), and clearing. Keyed on a stable string so
+  // reorderings of the same multi-selection don't re-announce. Spoken on the next frame, once React has
+  // committed the change that came with it: an element created and selected in one event is then on the
+  // board this reads. Changes within a frame are spoken once, as they ended.
+  const { selection } = deps;
+  useEffect(() => {
+    const keyOf = (s: Selection) =>
+      s.multiSelectedIds.size > 0 ? [...s.multiSelectedIds].sort().join(',') : (s.selectedId ?? '');
+    let prevKey = keyOf(selection.get());
+    let frame = 0;
+    const speak = () => {
+      frame = 0;
+      const s = selection.get();
+      const key = keyOf(s);
+      if (key === prevKey) return;
+      const hadSelection = prevKey !== '';
+      prevKey = key;
+      const { elements } = ref.current;
+      if (s.multiSelectedIds.size > 0) {
+        const members = elements.filter((el) => s.multiSelectedIds.has(el.id));
+        if (members.length > 0) announce(`Selected ${describeMany(members)}`);
+        return;
+      }
+      if (s.selectedId) {
+        const el = elements.find((x) => x.id === s.selectedId);
+        if (el) announce(`Selected ${describeSelected(el, elements)}`);
+        return;
+      }
+      // A clear that came with a verb which said what happened ("Deleted 'Login'") leaves its word standing:
+      // "Selection cleared" spoken over it would be all the reader heard.
+      if (hadSelection && getAnnouncementSnapshot().nonce === heardAtChange) {
+        announce('Selection cleared');
+      }
+    };
+    // The announcer's count when the selection changed, so speak can tell whether another verb has spoken since.
+    let heardAtChange = getAnnouncementSnapshot().nonce;
+    const unsubscribe = selection.subscribe(() => {
+      if (frame) return;
+      heardAtChange = getAnnouncementSnapshot().nonce;
+      frame = requestAnimationFrame(speak);
+    });
+    return () => {
+      unsubscribe();
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [selection, ref]);
+}

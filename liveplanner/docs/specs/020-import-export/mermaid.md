@@ -1,0 +1,298 @@
+# Mermaid input & export
+
+Agents (the MCP server, the CLI and the public API) can hand liveplanner [Mermaid](https://mermaid.js.org/)
+text in place of a graph or elements, and the CLI's `export --format mermaid` writes a tab back out as
+**flowchart** text. Mermaid is the lingua franca of diagram-as-code, sitting in countless READMEs, issues, and
+AI outputs, and it carries the full **connection graph** (which node points at what), so a round-trip preserves
+the diagram's structure, not just its labels.
+
+## Scope: flowcharts, state diagrams, ER diagrams
+
+We support the diagram types that are **node/edge graphs at heart**, because
+they map onto liveplanner's model losslessly: `graphToElements`
+(packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
+arrows.
+
+- **Flowcharts** (`graph TD`, `flowchart LR`, …) — read **and**
+  written. The richest dialect: nodes, edges, node shapes, edge styles,
+  labels, subgraphs, click links, layout direction.
+- **State diagrams** (`stateDiagram` / `stateDiagram-v2`) — **import only**.
+  States and transitions are nodes and edges; composite states reuse the
+  cluster/frame machinery.
+- **ER diagrams** (`erDiagram`) — **import only**. Entities and
+  relationships are nodes and edges; each entity becomes an Entity element
+  with its attributes as field rows.
+
+Import is per-dialect; **export always emits flowchart text**. The canvas has
+no semantic layer (a state and a flowchart node are both just shapes once
+imported), so exporting back to `stateDiagram` / `erDiagram` would mean
+guessing meaning from geometry — the flowchart export preserves the
+connection graph, which is the part that's real.
+
+Sequence diagrams are drawn too (below, [Sequence diagrams](#sequence-diagrams-agents)). Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant)
+and class diagrams remain out of scope; importing one reports a clear error naming the supported types.
+
+Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
+theme owns colours — Mermaid styling is skipped, never an error) and true
+`RL` / `BT` layouts (`RL` folds to LR, `BT` to TB; the graph is identical,
+only the sweep direction differs).
+
+## Flowchart syntax coverage
+
+- **Header**: `graph`/`flowchart` + a direction (`TD`/`TB` → top-to-bottom,
+  `LR`/`RL` → left-to-right; `BT` folds to TB). Missing header still parses as
+  a top-down graph.
+- **Nodes**: a bare id (`A`) is a box labelled with its id; a bracketed def
+  sets the label + shape. Shape brackets map to the shape vocabulary:
+  `["…"]` square · `(…)` / `([…])` stadium · `{…}` diamond · `((…))` /
+  `(((…)))` circle · `[(…)]` cylinder · `{{…}}` hexagon · `[/…/]` `[\…\]`
+  parallelogram · `[/…\]` `[\…/]` trapezoid · `[[…]]` subroutine → square ·
+  `>…]` flag → square. An unknown bracket → square. A node seen only in an
+  edge is created on sight. The v11.3 attribute form `id@{ shape: …, label:
+"…" }` is read too, with a name map onto the same vocabulary (`rect`,
+  `rounded`, `stadium`, `circle`, `dbl-circ`, `diam`/`decision`,
+  `hex`/`prepare`, `cyl`/`database`, `lean-r`/`lean-l`, `trap-b`/`trap-t`,
+  `doc`/`document`, `tri`/`triangle`; unknown names → square).
+- **Edges**: `A --> B`, with an optional label (`A -->|yes| B` or the inline
+  form `A -- yes --> B`), chained (`A --> B --> C` = two edges), and fanned
+  (`A & B --> C & D` = the cartesian product). Operators map onto the arrow
+  element's real style fields, not just "an arrow":
+  - stroke: `-->` solid · `-.->` dashed (`strokeStyle: 'dashed'`) · `==>`
+    thick (`strokeWidth`: the thick preset);
+  - heads: `---` no head (`arrowEnds: 'none'`) · `<-->` both ends
+    (`arrowEnds: 'both'`) · trailing/leading `o` → hollow-circle arrowhead ·
+    `x` → open-V arrowhead (closest marker we have to Mermaid's cross);
+  - `~~~` (invisible link) is parsed and **dropped** — it exists for Mermaid
+    layout spacing and would be an invisible-arrow trap on a real canvas.
+
+  An edge to an id with no node still creates the node.
+
+- **Labels**: `<br/>` (any spelling) becomes a newline in the element label
+  and newlines export back as `<br/>`; `&quot;` / `&amp;` are decoded on
+  import and `"` re-escapes as `&quot;` on export, so quoted labels
+  round-trip. Mermaid's numeric entity codes (`#124;` is `|`, `#37;` is `%`)
+  decode on import. On export a `|` in an edge label is written `#124;`, a
+  `%%` is written `#37;#37;` (an unquoted edge label would otherwise read it
+  as a comment), and a `#` that would read as an entity code is written
+  `#35;`, so every label round-trips losslessly.
+- **Subgraphs → frames**: a top-level `subgraph id[Title] … end` block imports
+  as a **frame** shape ([Canvas and palette](../008-canvas/canvas-and-palette.md)) drawn around its member nodes, laid out as a
+  cluster: members are laid out among themselves, the cluster participates in
+  the top-level flow as one block, and the frame is sized around the result.
+  A node belongs to the **first subgraph that mentions it** (matching
+  Mermaid), wherever it was first written: `A --> C` above a `subgraph Kitchen` whose block uses `C` still puts
+  `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id — the arrow pins to the frame.
+  Nested subgraphs fold into their top-level ancestor (frames import one
+  level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
+  groups draw one level deep"), rather than dropping the nesting silently. On export, each frame becomes a `subgraph` block containing
+  the boxed nodes whose centre sits inside it (a node inside several frames
+  belongs to the smallest).
+- **Click links**: `click A "https://…"` (and the `click A href "https://…"`
+  form) imports as the node's element link (`{ kind: 'url' }`), and a node
+  whose element carries a URL link exports a matching `click` line. Callback
+  forms (`click A someJsFunction`) are skipped — there's no code to call.
+- Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
+  `direction`, comments `%%`) are skipped, not fatal: a real-world paste
+  imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`):
+  the edge after it still lands.
+- **Statements** end at a newline or a `;`, as in Mermaid: `graph TD; A-->B; B-->C;` is three statements. A `;`
+  inside a label (quoted, in a node's brackets or an edge's `|…|`) is label text.
+- **Markdown strings** (``A["`**Bold** text`"]``) keep their words: the backticks and the `**` / `__` / `*` / `_`
+  emphasis marks are dropped. A `%%` inside a
+  double-quoted label is label text, not a comment.
+
+## State diagram coverage (import)
+
+- **Header**: `stateDiagram` / `stateDiagram-v2`; a top-level `direction
+LR` line sets the layout direction (TB default).
+- **States**: rounded boxes (stadium). Declared via transitions, bare ids,
+  `state "Long description" as s1`, or `s1 : description` (the description
+  becomes the label). `<<choice>>` states render as diamonds; `<<fork>>` /
+  `<<join>>` as squares.
+- **Start / end**: each `[*]` becomes an empty-label node ("Node boxes and text" below): a start node when it's a
+  transition source, a small solid dot (a circle); an end node when it's a target, a bullseye (`final-state`, a ring
+  round the dot, one element), as UML draws them (one of each per diagram, matching Mermaid's semantics).
+- **Transitions**: `A --> B` with an optional `: label`.
+- **Composite states**: `state Name { … }` becomes a cluster → frame, same
+  as a flowchart subgraph; nested composites fold into their top-level
+  ancestor. Transitions may reference a composite's id (pins to the frame).
+- Notes, concurrency separators (`--`), and history states are skipped.
+
+## ER diagram coverage (import)
+
+- **Header**: `erDiagram`; a `direction LR` (or `RL`) line lays it out left to right, otherwise top to bottom.
+- **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
+'entity'`), the canvas's own record box: the entity name is the title and
+  each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
+  `name` with its type as the row's type text. Key markers become the field's
+  key (`PK` primary, `FK` foreign, both `PK FK`, `UK` unique; [The entity](../009-elements/entity.md)
+  "Keys"), drawn in the key gutter as the ER template's are; comments are dropped. The box is sized to its rows (a title band plus a row
+  each). This replaced square boxes whose label held the name and every
+  attribute on its own line, which read as a paragraph and did not survive a
+  label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
+  it to "SHARE_LINK text code text document_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
+author]`, `a["Customer account"]`), wherever the entity is named (its block, a relationship, a bare line), is
+  the title shown; the name stays its id. Without one the title is the name.
+- **Every way Mermaid's own docs write them**: a name in double quotes (`"Order line"`, a bare line or either end
+  of a relationship) is an entity named by its words; a `:::class` after a name is styling and is skipped, never
+  the reason a line is missed; a relationship's operator may sit against its names (`id1||--||id2`); and the words
+  Mermaid allows for a cardinality read as its symbols do (`only one` / `1` as `||`, `zero or one` / `one or zero`
+  as `|o`, `zero or more` / `zero or many` / `many(0)` / `0+` as `}o`, `one or more` / `one or many` / `many(1)` /
+  `1+` as `}|`), joined by `to` (identifying) or `optionally to` (non-identifying, dashed):
+  `CAR 1 to zero or more NAMED-DRIVER : allows`. Found importing the examples in Mermaid's ER documentation, five
+  of which were refused as "No entities found".
+- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with its verb alone (none with no verb): the
+  ER ends say the multiplicity, which the label spelled out in words (`places · 1 : 0..*`) while the heads could
+  only say "many".
+  Cardinality maps onto the ER arrow ends at both tables (`ends: 'both'`): `||` One, `|o` Zero or One, `}o` / `o{`
+  Zero or Many, `}|` / `|{` One or Many, the line's start taking its left token and its end its right
+  (`arrowheadStartShape` and `arrowheadShape`). Non-identifying (dotted `..`) relationships render dashed.
+  **Hub first**: each relationship is oriented away from the best-connected entity (most relationships, the first
+  declared on a tie), by its distance from it, each separate cluster from its own best-connected entity, so the
+  layered layout puts the hub at the top with its neighbours round it rather than last with every line reaching
+  back to it. A relationship draws an end at each table, so turning it round (its two ends swapped with it) draws
+  the same thing; on the bookstore fixtures it took crossings from one to none and shared runs from 280 px to 30.
+  Only the layout sees the turn: each laid-out arrow is turned back after (its ends, heads, bends and label place
+  swapped, the line unchanged), so the stored relationship reads as written (`AUTHOR -> BOOK_AUTHOR "writes"`), never
+  "Book publishes Publisher". Two entities related both ways (one relationship turned, the other not) are told apart
+  by order, so only the turned one is turned back.
+
+## Sequence diagrams (agents)
+
+The MCP's `mermaid` input (and graph input's `style: "sequence"`, [MCP server](../015-api/mcp-server.md) §4.7) takes
+a `sequenceDiagram` and draws it the way the sequence diagram template does.
+
+- **Syntax**: `participant A` / `participant A as Label`, `actor A` (a UML stick figure with its name beneath);
+  participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
+  head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
+  `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
+  `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
+  `activate B` follows ends on the bar it starts, not on B's lifeline inside it. An activation the author opened (`+`,
+  `activate`) stays open until its `-` or `deactivate`; a reply on the way does not close it. `Note over A,B: text`, `Note right of A: text`,
+  `Note left of A: text`; a note over one participant whose bar is open sits beside the bar, as a right-of note
+  does (left of it on the last participant, the side with room), since centred it hid the bar, and a beside note keeps clear of the bars. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
+  each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
+  diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
+- **Activations without markers**: a call to another participant activates it from that message until it replies
+  to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
+  stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
+  only those bars: answered calls add none, so an author's bars are never doubled.
+- **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
+  pitch wide enough for the longest message label in one gap (up to 520 px), as a message keeps its label in its
+  first gap; messages a row each, edge to edge of the activation bars, labels above their line, wrapped to the gap
+  and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back
+  into its nested one; a note is a sticky over or beside its participants, as tall as its text needs (one line, 48
+  px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every
+  lifeline when they involve none), wide enough to hold its notes whole and every fragment nested in it a step
+  inside, with its operator as its label and
+  each guard in muted text, operands split by a dashed divider.
+- **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
+  naming the limit.
+
+## Layout
+
+Mermaid is laid out as an agent's graph is ([MCP server](../015-api/mcp-server.md) §4.7, `graphFromMermaid` then
+`layoutGraph`): the flowchart direction, subgraphs as frames, the template look, and lines that bend round the
+boxes, a line back to an earlier step going round the outside rather than straight behind the boxes between. A long
+label is cut to a heading with its full text in the node's note. A front-matter `title:` heads the drawing.
+
+A loop through a group starts where the Mermaid starts it: the contracted layout takes its blocks in the order the
+graph wrote them (a group where its first member was), so the first-written node leads, not whichever group came
+first.
+
+## The engine lives in `packages/document`
+
+Pure, tested, and shared by the MCP server, the CLI and the api's changesets:
+
+- **`parseMermaid(text)`** → `{ ok: true, graph: DiagramGraph, direction }` or
+  `{ ok: false, error }`. Detects the diagram type from the header and
+  dispatches: flowcharts parse in `mermaid.ts`, state diagrams in
+  `mermaid-state.ts`, ER diagrams in `mermaid-er.ts` (shared line/label
+  helpers in `mermaid-shared.ts`; every dialect returns the same
+  `DiagramGraph`, so the caller doesn't care which it was).
+  `DiagramGraph` carries subgraphs / composite states as optional
+  `clusters: { id, label, members }[]`; `GraphEdge` carries the edge style
+  (`line: solid|dashed|thick`, `ends: to|none|both|from`, `head:
+triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
+  all additive, so every existing `graphToElements` caller (the MCP) is
+  untouched.
+- **`layoutGraph(graph)`** (graph-input.ts), over **`graphFromMermaid(text)`**: the entry every caller
+  shares ("Layout" above).
+- **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts) —
+  the layered composition point `layoutGraph` builds on. Without clusters it's exactly
+  `graphToElements` + `autoLayoutElements({ direction })`. With clusters it
+  lays out each cluster's members, contracts each cluster to one
+  block-sized node, lays out the contracted graph (via a new
+  `autoLayoutElements` option `fixedSizeIds` that exempts the block nodes
+  from peer-size normalisation), then expands: members shift into place and
+  the frame element is emitted around them. Edgeless nodes (in a cluster or
+  at top level) are swept into rows below the laid-out graph instead of
+  piling at the origin.
+- **`mermaidFromTab(tab)`** → a `flowchart TD` string (the CLI's export). Boxed nodes become
+  `id["label"]` with the bracket for their shape; a document or a triangle, which have no bracket, is written in the
+  attribute form the parser reads (`id@{ shape: doc, label: "…" }`, `tri`), a `}` in its label as `#125;`, so the
+  shape survives a round trip; frames become `subgraph`
+  blocks; arrows become `from --> to` with `|label|`, choosing the operator
+  from the arrow's real stroke/ends/head fields (dashed → `-.->`, thick →
+  `==>`, no head → `---`, both heads → `<-->`, head-at-from exports with the
+  endpoints swapped, circle heads → `o`). Edgeless boxed content (titles,
+  captions) and non-graph element kinds (tables, images, freehand) have no
+  flowchart representation and are dropped with the graph preserved — the
+  export is the connection graph, faithfully.
+  - **Every connection is kept.** Stickies are nodes like shapes (a board of
+    them exports as nodes, not an empty flowchart its own import refuses),
+    and any other boxed element an arrow is pinned at both ends to (a text,
+    a table, an image) becomes a node for that arrow's sake, so the line is
+    never dropped. Each is a square box, labelled with its label or text.
+  - **No label stays no label.** An unlabelled node or frame is written with
+    a blank quoted label (`n1[" "]`, `subgraph s1[" "]`), never its id: the id
+    came back as a label on import, so a 28 px dot returned as a 96 px circle
+    reading "n18". On import a blank label (only spaces) is no label.
+
+## Limits
+
+A graph is laid out only within `GRAPH_LAYOUT_MAX_NODES` (500 nodes) and `GRAPH_LAYOUT_MAX_EDGES`
+(1 000 connections), `packages/document/src/graph-limits.ts`. The layered layout's crossing
+reduction grows faster than linearly with the connections: a random 1 000-node / 1 000-edge graph
+took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119` took 21 s. So:
+
+- `parseMermaid` refuses a graph over either cap with "The diagram is too large to lay out (<n>
+  nodes, <m> connections): up to 500 nodes and 1000 connections are supported. Split it into
+  several diagrams." A fan-out line is checked before its pairs are built, so the refusal costs no
+  more than reading the line.
+- The MCP's `graph` input carries the same caps in its schema and in `resolveGraphInput`
+  ([MCP server](../015-api/mcp-server.md) §4.7).
+
+## Node boxes and text
+
+A graph's nodes (Mermaid text, the MCP's graph input) are sized to their
+labels and set in one text size for the whole graph (`md`, the templates' size, up to `LOOK_MD_MAX_NODES` nodes;
+`sm` past it, so a large system still fits), not the shape default that
+scales text to fill each box: fitted boxes with scaling text made a short
+heading huge beside a long one set small (`labelBoxSize` in `graph-authoring.ts`).
+The clustered layout **keeps those sizes** rather than stretching each box to
+its widest peer, so one long label no longer inflates every box.
+
+An **unlabelled circle is a dot**: 28 px, solid in the theme's accent through
+the `solid` colour preset (resolved against the tab's theme).
+That is what a state diagram's `[*]` start becomes; drawn at the default
+circle size it read as a large empty box waiting for text. An unlabelled `final-state` is the end's bullseye, 34 px,
+in the same accent.
+
+Inside a subgraph, members that no arrow **inside** the subgraph touches (a
+"Core services" group of peers wired only to things outside it) are **lined up
+across the flow** in one row or column, not wrapped into a grid, and every
+group's members that share a rank are then ordered by where their neighbours
+outside the group ended up, so arrows from outside reach each member without
+crossing another. A node outside every group that members link to then sits by
+those members rather than by the middle of the whole group (a database under the
+service that owns it), its rank kept in order with its gaps; an edge to or from a
+subgraph itself leaves the frame facing its other end; and a frame whose first
+member a line enters from above, down the page, is padded both sides so that line
+clears the header ([MCP server](../015-api/mcp-server.md) §4.7 "Groups keep their
+lines clear", the same layout).
+
+A subgraph's frame carries its title as a **header**: top-left, bold, at the
+nodes' size, in the band the clustered layout reserves above the members (it
+used to be centred and scaled to fill the frame, a giant word across the nodes
+inside).

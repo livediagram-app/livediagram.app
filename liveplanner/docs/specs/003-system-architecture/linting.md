@@ -1,0 +1,124 @@
+# Linting
+
+Status: shipped
+
+## What
+
+Every workspace is linted by **oxlint** with one shared config, `@liveplanner/oxlint-config`
+(`packages/oxlint-config`). `pnpm lint` runs `turbo run lint`, and each workspace's `lint` script is
+`oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/live`
+adds one override for its Playwright suite). Every rule is an **error**; there are no warnings.
+
+## Why
+
+The linter must not hold the compiler back. ESLint's TypeScript support imports the classic TypeScript
+compiler API, which TypeScript 7 does not ship; oxlint parses TypeScript itself, and runs faster. The
+rules the repo enforced under ESLint carry over one by one, so the move changes the tool, not the bar.
+
+## The rules
+
+The shared config turns every oxlint category off and names each rule, so `packages/oxlint-config/index.ts`
+is the whole of what the repo enforces.
+
+- **ESLint's recommended rules**, as oxlint's native `eslint/*` rules, with ESLint's options where
+  oxlint's defaults differ (`no-irregular-whitespace` checks templates, regular expressions and JSX
+  text; `no-constant-binary-expression` skips relational comparisons).
+- **typescript-eslint's recommended rules**, as oxlint's native `typescript/*` rules (and `eslint/*`
+  for `no-unused-vars`, `no-unused-expressions` and `no-array-constructor`, which oxlint runs on
+  TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
+- **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
+  rules (see [Type-aware rules](#type-aware-rules)), each at zero findings
+  ([#711](https://github.com/liveplanner-app/liveplanner.app/issues/711)); every rule of the set but
+  `require-await`:
+  - `await-thenable`
+  - `no-array-delete`
+  - `no-base-to-string`
+  - `no-duplicate-type-constituents`
+  - `no-floating-promises`
+  - `no-for-in-array`
+  - `no-implied-eval`
+  - `no-misused-promises`
+  - `no-redundant-type-constituents`
+  - `no-unnecessary-type-assertion`
+  - `no-unsafe-argument`
+  - `no-unsafe-assignment`, in source only
+  - `no-unsafe-call`
+  - `no-unsafe-enum-comparison`
+  - `no-unsafe-member-access`
+  - `no-unsafe-return`
+  - `no-unsafe-unary-minus`
+  - `only-throw-error`
+  - `prefer-promise-reject-errors`, a reason of type `unknown` allowed
+  - `restrict-plus-operands`
+  - `restrict-template-expressions`
+  - `unbound-method`, in source only
+- **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
+  written to a function parameter and overwritten before it is read. oxc reports it from
+  [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
+  takes the first oxlint release that contains it, and fixes what it finds
+  ([#721](https://github.com/liveplanner-app/liveplanner.app/issues/721)).
+- **By language**: the rules TypeScript's compiler already enforces (`no-undef`, `no-dupe-keys`,
+  `constructor-super` and the rest) run on JavaScript files only; `no-var`, `prefer-const`,
+  `prefer-rest-params` and `prefer-spread` run on TypeScript files only. JavaScript files know the
+  browser, Node and ES2022 globals.
+- **The React hooks rules**, as oxlint's native port of `eslint-plugin-react-hooks` (`react/*`): every
+  rule the plugin recommends, the React Compiler's included (`rules-of-hooks`, `exhaustive-deps`,
+  `purity`, `refs`, `immutability`, `globals`, `set-state-in-effect`, `set-state-in-render`,
+  `static-components`, `use-memo`, `preserve-manual-memoization`, `incompatible-library`,
+  `error-boundaries`, `unsupported-syntax`). The plugin's `config` and `gating` rules are not part of
+  the port: they check React Compiler options, and the repo sets none.
+  [React state and effects](react-state-and-effects.md) says why they are errors.
+- **The repo's own rules**, in the `liveplanner` JS plugin (`packages/oxlint-config/plugin.ts`):
+  - `liveplanner/no-native-title`: no native `title` outside `iframe` and `abbr`
+    ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md));
+  - `liveplanner/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
+    ([Iconography](../004-interface-design/iconography.md)).
+- **No formatting rules.** Prettier owns formatting.
+
+## Type-aware rules
+
+- A type-aware rule needs the type of an expression, not only its syntax, so the type-aware rules
+  run on TypeScript files only: a JavaScript file carries no types, and every value in it reads as
+  `any`.
+- oxlint hands those rules to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is
+  built on typescript-go: the same TypeScript 7 the repo type-checks with, so no second compiler is
+  involved.
+- A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts` scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of Node scripts beside browser code has its own, which adds Node's types. A file no tsconfig includes is typed on its own, as an inferred project, without the workspace's options and paths; only the tool configs (`oxlint.config.ts`, `vitest.config.ts`) are.
+- `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
+  and a dependency of `@liveplanner/oxlint-config`, whose tests run it.
+- A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it
+  by default, and `prefer-promise-reject-errors` is set to allow rejecting with it
+  (`allowThrowingUnknown`). Wrapping it would lose what was caught. A value typed `any` is still
+  refused, so a forwarded reason is given `unknown` where it is read.
+- `unbound-method` and `no-unsafe-assignment` run on source only, not on tests (`*.test.*`,
+  `*.spec.*` and the `e2e/` suites). A test stubs and restores a method by reference
+  (`Storage.prototype.getItem`, `element.scrollIntoView`), which is what `unbound-method` refuses;
+  in source, a member that reads no `this` and is passed on as a callback is declared as a function
+  property, not a method. Vitest types its asymmetric matchers (`expect.any`,
+  `expect.objectContaining`) as `any`, which is what `no-unsafe-assignment` refuses.
+- `require-await` stays off. An `async` function with no `await` is how the repo writes a fake or an
+  implementation of an async interface (`vi.fn(async () => value)`, a store answering a promise), and
+  how `act(async () => ...)` is called; rewriting each as `Promise.resolve(...)` reads worse, and turns a
+  throw in its body from a rejection into a synchronous throw.
+- A finding is fixed where it arises (a truer signature, a handled promise), never cast or
+  suppressed away. A value that crosses into the program untyped (parsed JSON, a library's `any`)
+  is given its type once, where it enters, with a comment when the library's own type is wrong.
+
+## Disable directives
+
+- Only `oxlint-disable` directives count. An `eslint-disable` comment suppresses nothing, so one
+  pasted from elsewhere never hides a finding.
+- A directive that suppresses nothing is itself an error, so a stale one cannot linger.
+
+## Files
+
+- Each workspace lints its own tree; build output (`dist`, `build`, `.next*`, `out`, `.turbo`,
+  `.wrangler`, `coverage`), `node_modules` and Next's `next-env.d.ts` are ignored.
+- Files outside every workspace (root `scripts/`, `docs/demo/`) are not part of `pnpm lint`; the root
+  `oxlint.config.ts` exists so an editor lints them with the same rules.
+
+## Guarantees
+
+`packages/oxlint-config` lints scratch files with the real config in its tests: one deliberate
+violation per rule family (hooks, React Compiler, `any`, a type-aware rule, the repo's own rules), an
+unused directive, an ignored `eslint-disable`, and the JavaScript-only and TypeScript-only splits.

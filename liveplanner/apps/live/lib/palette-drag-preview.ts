@@ -1,0 +1,100 @@
+'use client';
+
+import { useSyncExternalStore } from 'react';
+import type { ShapeKind } from '@liveplanner/document';
+import { createListeners } from '@/lib/listeners';
+
+// Shared, transient state for the palette drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). A
+// palette tile publishes what it's dragging on `dragstart` so the canvas's
+// PaletteDragGhost can preview it — `dataTransfer.getData()` is unreadable
+// during `dragover` (browser security), so the source has to hand it over.
+// Module-level because a drag is global, single-at-a-time, and transient; it
+// would be awkward to thread through the editor's prop tree.
+
+type PaletteDragPreview = {
+  kind: ShapeKind;
+  iconId?: string;
+  // The shape's default footprint (canvas units); the ghost scales it by zoom.
+  width: number;
+  height: number;
+  // A Plan card tile's item type (docs/specs/026-plan/plan-mode.md "The palette"): the boards that
+  // show it open a gap where it would land.
+  planType?: string;
+  // The tile's creation choice (a preset, a view, a Dashboard Layout tile's `layout:`), for a drop target that reads
+  // it while dragging (a Dashboard's drop zones).
+  choice?: string;
+};
+
+let current: PaletteDragPreview | null = null;
+const listeners = createListeners();
+
+export function setPaletteDragPreview(next: PaletteDragPreview | null): void {
+  current = next;
+  listeners.notify();
+}
+
+// The drag in flight, read outside render (a dragover handler), and told when it ends.
+export function getPaletteDragPreview(): PaletteDragPreview | null {
+  return current;
+}
+export const subscribePaletteDragPreview = listeners.subscribe;
+
+export function usePaletteDragPreview(): PaletteDragPreview | null {
+  return useSyncExternalStore(
+    listeners.subscribe,
+    () => current,
+    () => null,
+  );
+}
+
+// Replace the browser's default drag image (a snapshot of the dragged tile)
+// with a 1×1 transparent pixel, so the only thing the user sees while dragging
+// is the canvas ghost. A detached data-URI <img> works across engines.
+let transparentImg: HTMLImageElement | null = null;
+export function suppressNativeDragImage(e: { dataTransfer: DataTransfer | null }): void {
+  if (!e.dataTransfer || typeof Image === 'undefined') return;
+  if (!transparentImg) {
+    transparentImg = new Image();
+    transparentImg.src =
+      'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  }
+  try {
+    e.dataTransfer.setDragImage(transparentImg, 0, 0);
+  } catch {
+    // Non-DnD contexts / older engines: harmless to skip.
+  }
+}
+
+// The live snap offset for the in-flight palette drag (docs/specs/010-palette/palette-drag-ghost.md): canvas-unit
+// dx/dy the dragged footprint has latched onto its neighbours. Published by
+// the one owner that computes it (usePaletteDragGuides, which also produces
+// the guide lines), read by the ghost (so it DRAWS snapped) and by the drop
+// (so it LANDS snapped). Module-level for the same reason as the preview
+// above: a drag is global, single-at-a-time and transient.
+let snap: { dx: number; dy: number } | null = null;
+const snapListeners = new Set<() => void>();
+
+export function setPaletteDragSnap(next: { dx: number; dy: number } | null): void {
+  if (snap?.dx === next?.dx && snap?.dy === next?.dy) return;
+  snap = next;
+  for (const l of snapListeners) l();
+}
+
+export function getPaletteDragSnap(): { dx: number; dy: number } | null {
+  return snap;
+}
+
+function subscribeSnap(l: () => void): () => void {
+  snapListeners.add(l);
+  return () => {
+    snapListeners.delete(l);
+  };
+}
+
+export function usePaletteDragSnap(): { dx: number; dy: number } | null {
+  return useSyncExternalStore(
+    subscribeSnap,
+    () => snap,
+    () => null,
+  );
+}

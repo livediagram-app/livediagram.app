@@ -1,0 +1,332 @@
+import { describe, expect, it } from 'vitest';
+import { EMBED_PROVIDERS } from '@liveplanner/document';
+import {
+  drawBannerMessage,
+  drawIntentCursor,
+  isHeldPenIntent,
+  isPathIntent,
+  isPlanCardIntent,
+  opensForTyping,
+  type PendingDraw,
+} from './draw-mode';
+
+// Every pen variant, keyed so the compiler owns the list: `variant` is an
+// optional union on the freehand intent, and adding a member to it fails
+// this Record until a sample is added below. That check is here because the
+// hand-written array underneath it drifted twice — 'shape-pen' (docs/specs/008-canvas/two-pens.md)
+// and 'component' both shipped with dedicated branches in BOTH exported
+// functions while the sweeps below walked straight past them.
+type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['variant']>;
+const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
+  highlighter: { type: 'freehand', variant: 'highlighter' },
+  'shape-pen': { type: 'freehand', variant: 'shape-pen' },
+  whiteboard: { type: 'freehand', variant: 'whiteboard', colour: null, width: 4, recognise: false },
+};
+
+// One sample per discriminant. Typing it as a Record over PendingDraw['type']
+// means a NEW intent type also fails to compile until it's represented, so
+// neither axis of the union can drift out of the sweeps again.
+const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
+  shape: [{ type: 'shape', kind: 'square' }],
+  text: [{ type: 'text' }],
+  sticky: [{ type: 'sticky' }],
+  image: [{ type: 'image' }],
+  table: [{ type: 'table' }],
+  'link-card': [{ type: 'link-card' }],
+  // Every provider, plus the no-provider case the empty state falls back on.
+  // The banner names the service, so a new EMBED_PROVIDERS member without a
+  // label would otherwise reach the user as "undefined".
+  video: [
+    { type: 'video' },
+    ...EMBED_PROVIDERS.map((provider): PendingDraw => ({ type: 'video', provider })),
+  ],
+  arrow: [{ type: 'arrow' }],
+  polygon: [{ type: 'polygon' }],
+  path: [{ type: 'path' }],
+  // Component kinds share one branch and one label table that is already a
+  // Record<ComponentKind, string>, so the compiler covers that axis; one
+  // sample is enough here.
+  component: [{ type: 'component', kind: 'banner' }],
+  // Plain pen plus every variant.
+  freehand: [{ type: 'freehand' }, ...Object.values(FREEHAND_VARIANTS)],
+};
+
+const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
+
+describe('drawBannerMessage', () => {
+  it('tells a pressed Plan card where it goes, or that a board comes first', () => {
+    const card = { type: 'shape', kind: 'plan-card' } as const;
+    expect(drawBannerMessage(card, false, { hasPlanBoard: true })).toBe(
+      'Select the board column you want this card to appear in',
+    );
+    expect(drawBannerMessage(card, false)).toBe('Add a board first in order to use cards');
+    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
+  });
+
+  // docs/specs/008-canvas/canvas-and-palette.md: the banner names a shape as the tile that armed it named it.
+  it('names a shape as its tile does, a variant or a compound kind included', () => {
+    expect(
+      drawBannerMessage(
+        { type: 'shape', kind: 'pyramid', variant: 'funnel', name: 'Funnel' },
+        false,
+      ),
+    ).toBe('Tap to drop or drag to draw Funnel');
+    expect(drawBannerMessage({ type: 'shape', kind: 'hub', name: 'Hub and Spoke' }, false)).toBe(
+      'Tap to drop or drag to draw Hub and Spoke',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
+      'Tap to drop or drag to draw Square',
+    );
+  });
+
+  it('renders the combined tap/drag copy per box intent', () => {
+    expect(drawBannerMessage({ type: 'text' }, false)).toBe('Tap to drop or drag to place text');
+    expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(
+      'Tap to drop or drag to draw a sticky note',
+    );
+    expect(drawBannerMessage({ type: 'image' }, false)).toBe(
+      'Tap to drop or drag to draw image bounds',
+    );
+    expect(drawBannerMessage({ type: 'arrow' }, false)).toBe(
+      'Tap to drop or drag to draw an arrow',
+    );
+    expect(drawBannerMessage({ type: 'table' }, false)).toBe('Tap to drop or drag to draw a table');
+    expect(drawBannerMessage({ type: 'arrow', ends: 'none' }, false)).toBe(
+      'Tap to drop or drag to draw a line',
+    );
+    expect(drawBannerMessage({ type: 'link-card' }, false)).toBe(
+      'Tap to drop or drag to draw a link card',
+    );
+  });
+
+  it('names the embed service rather than saying "video" for all six', () => {
+    expect(drawBannerMessage({ type: 'video', provider: 'loom' }, false)).toBe(
+      'Tap to drop or drag to draw Loom (stays 16:9)',
+    );
+    expect(drawBannerMessage({ type: 'video', provider: 'gdocs' }, false)).toBe(
+      'Tap to drop or drag to draw Google Docs (stays 16:9)',
+    );
+    // No provider = the generic website embed, not a blank.
+    expect(drawBannerMessage({ type: 'video' }, false)).toBe(
+      'Tap to drop or drag to draw Website (stays 16:9)',
+    );
+  });
+
+  it('drops the 16:9 note on mobile, where it overflows the banner', () => {
+    expect(drawBannerMessage({ type: 'video', provider: 'vimeo' }, true)).toBe(
+      'Tap to drop or drag to draw Vimeo',
+    );
+  });
+
+  // The banner names the shape as the tile just picked does: the palette's Square and Circle (and the selection
+  // badge's), Draw mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
+  it('names the shape as the tile that armed it', () => {
+    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
+      'Tap to drop or drag to draw Square',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'circle' }, false)).toBe(
+      'Tap to drop or drag to draw Circle',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'square', board: true }, false)).toBe(
+      'Tap to drop or drag to draw Rectangle',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'circle', board: true }, false)).toBe(
+      'Tap to drop or drag to draw Ellipse',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'diamond' }, false)).toBe(
+      'Tap to drop or drag to draw Diamond',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'pie-chart' }, false)).toBe(
+      'Tap to drop or drag to draw Pie chart',
+    );
+  });
+
+  it('spells out a hyphenated kind instead of leaving the hyphen in', () => {
+    // 'Mode-button' / 'Code-block' is the capitalise-the-first-letter fallback
+    // showing through; these are two-word names.
+    expect(drawBannerMessage({ type: 'shape', kind: 'mode-button' }, false)).toBe(
+      'Tap to drop or drag to draw Mode button',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'code-block' }, false)).toBe(
+      'Tap to drop or drag to draw Code block',
+    );
+  });
+
+  it('capitalises any other shape kind for the banner', () => {
+    expect(drawBannerMessage({ type: 'shape', kind: 'cylinder' }, false)).toBe(
+      'Tap to drop or drag to draw Cylinder',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'hexagon' }, false)).toBe(
+      'Tap to drop or drag to draw Hexagon',
+    );
+  });
+
+  it('keeps freehand gestural-only, with the close hint only on desktop', () => {
+    // The pencil collects a pointer stream (no tap-to-drop), so it keeps
+    // "Drag to draw"; the release-near-start hint overflows the mobile
+    // banner so phones get the bare copy.
+    expect(drawBannerMessage({ type: 'freehand' }, false)).toBe(
+      'Drag to draw (release near the start to close)',
+    );
+    expect(drawBannerMessage({ type: 'freehand' }, true)).toBe('Drag to draw');
+  });
+
+  it('has the shape pen announce that it converts, shortened on mobile', () => {
+    // Recognition used to be a hidden toggle; it is now which pen you picked
+    // (docs/specs/008-canvas/two-pens.md), so the banner is where that gets said. Distinct from plain
+    // freehand on both viewports, or the two pens would read identically.
+    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).toBe(
+      'Draw a rough shape; it snaps to the real one',
+    );
+    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, true)).toBe(
+      'Draw a shape',
+    );
+    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).not.toBe(
+      drawBannerMessage({ type: 'freehand' }, false),
+    );
+  });
+
+  it('gives the highlighter variant its own copy with no close hint', () => {
+    // The highlighter never closes / fills (docs/specs/008-canvas/highlighter.md), so both viewports
+    // get the same short copy.
+    expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, false)).toBe(
+      'Drag to highlight',
+    );
+    expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, true)).toBe(
+      'Drag to highlight',
+    );
+  });
+
+  it('describes the polygon click-to-place gesture, shortened on mobile', () => {
+    expect(drawBannerMessage({ type: 'polygon' }, false)).toBe(
+      'Click to place points, click the start to close, double-click to finish',
+    );
+    expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
+  });
+
+  it('uses the friendly component name, not the raw kind', () => {
+    // Components have their own label table rather than the shape
+    // capitalise-fallback, so 'stat' reads "Stat row" and not "Stat".
+    expect(drawBannerMessage({ type: 'component', kind: 'banner' }, false)).toBe(
+      'Tap to drop or drag to draw Banner',
+    );
+    expect(drawBannerMessage({ type: 'component', kind: 'stat' }, false)).toBe(
+      'Tap to drop or drag to draw Stat row',
+    );
+    expect(drawBannerMessage({ type: 'component', kind: 'process' }, false)).toBe(
+      'Tap to drop or drag to draw Process steps',
+    );
+  });
+
+  it('returns a non-empty string for every intent on both viewports', () => {
+    for (const intent of ALL_INTENTS) {
+      expect(drawBannerMessage(intent, false).length).toBeGreaterThan(0);
+      expect(drawBannerMessage(intent, true).length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('drawIntentCursor', () => {
+  // The shared builder anchors every custom cursor's crosshair at the
+  // (4,4) hotspot and ends in a `crosshair` system fallback.
+  const isInlineSvgCursor = (c: string) =>
+    c.startsWith('url("data:image/svg+xml') && c.endsWith('4 4, crosshair');
+
+  it('returns an inline-SVG cursor (4,4 hotspot) for every non-shape intent', () => {
+    for (const intent of [
+      { type: 'text' },
+      { type: 'sticky' },
+      { type: 'image' },
+      { type: 'arrow' },
+      { type: 'freehand' },
+    ] as PendingDraw[]) {
+      expect(isInlineSvgCursor(drawIntentCursor(intent))).toBe(true);
+    }
+  });
+
+  it('gives square / circle / diamond a custom glyph cursor', () => {
+    for (const kind of ['square', 'circle', 'diamond'] as const) {
+      expect(isInlineSvgCursor(drawIntentCursor({ type: 'shape', kind }))).toBe(true);
+    }
+  });
+
+  it('falls back to the plain system crosshair for shape kinds without a glyph', () => {
+    // The banner already names the kind, so non-special shapes don't need
+    // a bespoke cursor and use the system crosshair.
+    expect(drawIntentCursor({ type: 'shape', kind: 'cylinder' })).toBe('crosshair');
+    expect(drawIntentCursor({ type: 'shape', kind: 'cloud' })).toBe('crosshair');
+  });
+
+  it('gives every component kind the stacked-blocks glyph cursor', () => {
+    // One cursor for the whole category (matching the Components palette
+    // tile), so the kind doesn't change it.
+    for (const kind of ['banner', 'hero', 'avatar'] as const) {
+      expect(isInlineSvgCursor(drawIntentCursor({ type: 'component', kind }))).toBe(true);
+    }
+  });
+
+  it('gives each pen variant its own cursor', () => {
+    // Three pens share the freehand intent and each has its own glyph — the
+    // highlighter's marker, the shape pen's nib-plus-dashed-square, and the
+    // plain nib. If any two collided, the cursor would stop telling you
+    // which pen is armed, which is the one thing it is there to do.
+    const cursors = [
+      drawIntentCursor({ type: 'freehand' }),
+      drawIntentCursor({ type: 'freehand', variant: 'highlighter' }),
+      drawIntentCursor({ type: 'freehand', variant: 'shape-pen' }),
+    ];
+    for (const c of cursors) expect(isInlineSvgCursor(c)).toBe(true);
+    expect(new Set(cursors).size).toBe(3);
+  });
+
+  it('never returns an empty or inherited ("auto") cursor', () => {
+    for (const intent of [...ALL_INTENTS, { type: 'shape', kind: 'cloud' } as PendingDraw]) {
+      const c = drawIntentCursor(intent);
+      expect(c).toBeTruthy();
+      expect(c).not.toBe('auto');
+    }
+  });
+});
+
+describe('opensForTyping', () => {
+  it('opens a drawn text box for typing everywhere', () => {
+    expect(opensForTyping({ type: 'text' }, false)).toBe(true);
+  });
+
+  it('opens a sticky for typing on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md)', () => {
+    expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
+    expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
+  });
+
+  it('leaves shapes selected, not typing', () => {
+    expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
+  });
+});
+
+describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
+  it('is a one-shot arm, not a held pen: it wears the mode banner', () => {
+    expect(isHeldPenIntent({ type: 'freehand', variant: 'highlighter' })).toBe(false);
+  });
+});
+
+describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
+  it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
+    expect(isHeldPenIntent({ type: 'path' })).toBe(true);
+    expect(isPathIntent({ type: 'path' })).toBe(true);
+    expect(isPathIntent({ type: 'polygon' })).toBe(false);
+  });
+
+  it('has its own cursor and screen-reader copy', () => {
+    expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
+    expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
+  });
+});
+
+describe('a pressed Plan card (docs/specs/026-plan/plan-mode.md "The palette")', () => {
+  it('is told apart from every other shape in hand', () => {
+    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-card', plan: 'task' })).toBe(true);
+    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-board' })).toBe(false);
+    expect(isPlanCardIntent({ type: 'text' })).toBe(false);
+    expect(isPlanCardIntent(null)).toBe(false);
+  });
+});

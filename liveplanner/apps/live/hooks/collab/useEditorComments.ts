@@ -1,0 +1,202 @@
+// Comment-thread state machine for the editor, lifted out of
+// editor-page.tsx. The bundle covers:
+//
+// - `commentThreadOpenId`: which element's thread popover is open
+//   (null when none). The dynamic `<CommentThreadPopover>` is
+//   gated on this so the chunk only loads when a thread is opened.
+// - every change goes out as ONE element delta (docs/specs/012-collaboration/collab-race-hardening.md): an add, a
+//   delete, an id swap or a resolve, applied locally without a history
+//   push (typing a comment then Ctrl+Z doesn't blow it away) and sent to
+//   the room at once. The thread used to ride the whole-element update,
+//   so two replies inside one save window lost one of them.
+// - `openComments`, `closeComments`, `addComment`, `deleteComment`,
+//   `resolveThread`, `unresolveThread`: the six actions the
+//   comment thread popover + the Comment panel bind to.
+//
+// Telemetry (docs/specs/017-telemetry/telemetry.md) lives HERE, not at the call sites: the anchored
+// popover and the Comment panel (docs/specs/012-collaboration/comment-pin.md) both drive these actions, and an
+// emit beside one surface silently missed the other. Each action counts once,
+// whichever surface ran it. Added / Deleted with a `persist` callback (the
+// view-role path, which writes through the dedicated comment endpoints rather
+// than the tab autosave) count only once the server accepted the write.
+//
+// History bypass is the key reason this lives in its own hook
+// rather than alongside the main element-CRUD path: every other
+// element mutation runs through `commit`, which captures
+// a history snapshot. Comments must NOT
+// snapshot history, so they go through `applyElementDelta`, which
+// ticks. Keeping that rule in one file makes the policy auditable.
+
+import { useState } from 'react';
+import { createComment, type CommentMention } from '@liveplanner/document';
+import { track } from '@/lib/telemetry';
+import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
+
+type EditorCommentsDeps = {
+  // Applies one delta to the ACTIVE tab without pushing a snapshot (a
+  // comment is not an undoable edit) and sends
+  // it to the room. Comments are tab-scoped: switching tabs while a
+  // thread is open keeps the popover up, but the write targets whichever
+  // tab is active at call time.
+  applyElementDelta: ApplyElementDelta;
+  // The local participant. Their name + color stamp every comment
+  // the user adds so other participants see "Tom: ..." rather
+  // than anonymous bubbles. The id is stamped as the comment's
+  // authorId so the optimistic local copy already qualifies for the
+  // delete-own affordance (it equals the server `owner` the API
+  // stamps, for guests and Clerk users alike).
+  selfParticipant: { id: string; name: string; color: string };
+  // A comment with @-mentions just landed (docs/specs/012-collaboration/comment-mentions.md): count it and
+  // ask the api to email the people named. Absent where nobody can be named.
+  onMentioned?: (text: string, mentions: CommentMention[]) => void;
+};
+
+// A view-role write through the dedicated comment endpoints (docs/specs/015-api/api.md). The
+// add resolves to the server's comment (its id replaces the local one).
+type PersistAdd = (localId: string) => Promise<{ id?: string } | null | undefined>;
+// A delete, resolve or reopen through the comment endpoints.
+type PersistDelete = () => Promise<unknown>;
+
+type EditorCommentsApi = {
+  commentThreadOpenId: string | null;
+  // The Sheet cell whose thread is open (docs/specs/029-sheets/sheet.md "Cell comments"), its key; null for the
+  // element's own thread.
+  commentThreadOpenCell: string | null;
+  // Toggle open / closed: clicking the same id (and cell) again closes the
+  // popover (matches the existing behaviour). `cell` opens a Sheet cell's thread.
+  openComments: (elementId: string, cell?: string) => void;
+  closeComments: () => void;
+  // Returns the minted comment id. With `persist` (view-role visitors, who
+  // don't autosave the tab), the hook runs it, adopts the server-minted id
+  // via `replaceCommentId`, and counts the add only once the server took it.
+  addComment: (
+    elementId: string,
+    text: string,
+    persist?: PersistAdd,
+    mentions?: CommentMention[],
+    cell?: string,
+  ) => string;
+  // Swap a comment's id in place — the view-role persist path gets the
+  // authoritative id back from POST /comments, and without adopting it
+  // the visitor's own delete sends an id the server doesn't have (the
+  // comment resurrects on refresh).
+  replaceCommentId: (elementId: string, oldId: string, newId: string) => void;
+  deleteComment: (elementId: string, commentId: string, persist?: PersistDelete) => void;
+  // With `persist` (a session that may comment but not edit), the hook runs it and counts the change once the
+  // server took it, as for an add.
+  resolveThread: (elementId: string, persist?: PersistDelete, cell?: string) => void;
+  unresolveThread: (elementId: string, persist?: PersistDelete, cell?: string) => void;
+};
+
+export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
+  // One state, so the element and its cell always change together.
+  const [open, setOpen] = useState<{ id: string; cell: string | null } | null>(null);
+  const commentThreadOpenId = open?.id ?? null;
+  const commentThreadOpenCell = open?.cell ?? null;
+
+  const openComments = (elementId: string, cell?: string) => {
+    const at = cell ?? null;
+    // Closure read before the toggle so we emit only on the open
+    // transition, never on close, and never double-fire under React
+    // strict mode (which would re-run an updater-internal side
+    // effect).
+    const wasOpen = open?.id === elementId && open.cell === at;
+    setOpen((cur) =>
+      cur?.id === elementId && cur.cell === at ? null : { id: elementId, cell: at },
+    );
+    if (!wasOpen) track('Comment', 'Opened');
+  };
+  const closeComments = () => setOpen(null);
+
+  const addComment = (
+    elementId: string,
+    text: string,
+    persist?: PersistAdd,
+    mentions?: CommentMention[],
+    cell?: string,
+  ): string => {
+    // Mint OUTSIDE the updater: state updaters must stay pure (strict
+    // mode re-invokes them), and the caller needs the id.
+    const comment = createComment(
+      text,
+      {
+        id: deps.selfParticipant.id,
+        name: deps.selfParticipant.name,
+        color: deps.selfParticipant.color,
+      },
+      mentions,
+    );
+    if (mentions?.length) deps.onMentioned?.(text, mentions);
+    // Adding a comment unresolves a resolved thread (applyElementDelta):
+    // the new message is itself a signal the conversation isn't done.
+    deps.applyElementDelta(elementId, {
+      kind: 'comment-add',
+      comment,
+      ...(cell !== undefined ? { cell } : {}),
+    });
+    if (persist) {
+      void persist(comment.id)
+        .then((created) => {
+          if (created?.id) replaceCommentId(elementId, comment.id, created.id);
+          track('Comment', 'Added');
+        })
+        .catch(() => {});
+    } else {
+      // Owners / editors persist through the tab autosave, the same path
+      // as every element edit, so the local add is the event.
+      track('Comment', 'Added');
+    }
+    return comment.id;
+  };
+
+  const replaceCommentId = (elementId: string, oldId: string, newId: string) => {
+    deps.applyElementDelta(elementId, { kind: 'comment-rekey', from: oldId, to: newId });
+  };
+
+  const deleteComment = (elementId: string, commentId: string, persist?: PersistDelete) => {
+    // The last comment going takes the thread with it.
+    deps.applyElementDelta(elementId, { kind: 'comment-remove', commentId });
+    if (persist) {
+      void persist()
+        .then(() => track('Comment', 'Deleted'))
+        .catch(() => {});
+    } else {
+      track('Comment', 'Deleted');
+    }
+  };
+
+  const setResolved = (
+    elementId: string,
+    resolved: boolean,
+    persist?: PersistDelete,
+    cell?: string,
+  ) => {
+    const at = cell !== undefined ? { cell } : {};
+    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved, ...at });
+    const count = () => track('Comment', resolved ? 'Resolved' : 'Unresolved');
+    if (!persist) return count();
+    // A change the server refused goes back, so the thread never shows a state nobody else sees.
+    void persist()
+      .then(count)
+      .catch((err: unknown) => {
+        console.warn('[comments] thread state not saved', { resolved, error: String(err) });
+        deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: !resolved, ...at });
+      });
+  };
+  const resolveThread = (elementId: string, persist?: PersistDelete, cell?: string) =>
+    setResolved(elementId, true, persist, cell);
+  const unresolveThread = (elementId: string, persist?: PersistDelete, cell?: string) =>
+    setResolved(elementId, false, persist, cell);
+
+  return {
+    commentThreadOpenId,
+    commentThreadOpenCell,
+    openComments,
+    closeComments,
+    addComment,
+    replaceCommentId,
+    deleteComment,
+    resolveThread,
+    unresolveThread,
+  };
+}

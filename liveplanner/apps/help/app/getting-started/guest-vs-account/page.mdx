@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { GuestVsAccount } from '@/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'Guest vs Account',
+  description:
+    'The liveplanner canvas always works without signing in. Learn what you get as a guest and what an account adds.',
+  path: '/help/getting-started/guest-vs-account/',
+});
+
+<ArticleLayout title="Guest vs Account" description="The canvas always works without signing in. Here is what a guest gets, and what an account adds on top." categoryTitle="Getting Started" categorySlug="getting-started">
+
+A core principle of liveplanner is that **the canvas always works without signing in**. A first-time visitor can open a [new document](/new), build something real, share it, and collaborate, all as a guest. Signing in is never a wall in front of the editor; it simply unlocks a few things that need an account to make sense. This article explains the difference so you can choose what suits you.
+
+<Figure caption="As a guest your library lives in one browser; an account syncs the same documents across every device.">
+  <GuestVsAccount />
+</Figure>
+
+## What you get as a guest
+
+As a guest you have the full editing experience. Your work is saved automatically against your browser, so it is there when you come back on the same device.
+
+- **The full canvas:** every shape, arrow, drawing tool, theme, and template.
+- **Persistence** for your documents, on this device ([sign in](/help/account-and-data/signing-in/) to sync across devices).
+- **Your settings**, saved against the same per-browser id. See [Guest Identity](/help/account-and-data/guest-identity/).
+- **Sharing and collaboration:** open share links as an Editor, Participant or Viewer, and mint your own share links so others can join.
+- **Real-time presence** on any shared session.
+
+The one trade-off: your guest identity lives in your current browser. Clearing your browser data, or switching to another device, means that guest library does not follow you.
+
+## What an account adds
+
+Creating a free account (at `/get-started`, confirmed with a code we email you, or with Google where it is enabled; see [Signing In](/help/account-and-data/signing-in/)) adds the things that only make sense once you have an identity:
+
+- **Cross-device sync.** Your documents travel with your account, so they appear on every device you sign in to.
+- **A persistent identity.** Your display name comes from your profile rather than being set per session.
+- **[Teams](/help/collaboration/teams/).** Join or create a team to work in a shared space with teammates.
+- **[Email notifications](/help/account-and-data/email-notifications/)** when someone joins or comments on your documents, mentions you, assigns you an action, or answers a team invite, on deployments that send email.
+- **A [profile picture](/help/explorer/profile/)** on your avatar, cursor and comments, where collaborators see it.
+- **[API tokens](/help/account-and-data/api-tokens/)** for your own scripts and for AI tools connected over MCP.
+
+Accounts are free like everything else in liveplanner, there is no paid tier.
+
+## The Sign-In Reminder
+
+While you work as a guest, a card at the bottom of the screen reminds you that an account is there: **Sign in to access Teams & AI**, with a line saying what that brings: sharing with your team, building with AI, and your documents synced across devices. It has two buttons and a close:
+
+- **Sign in** takes you to the sign-in page, and brings you back where you were afterwards.
+- **Learn more** opens **Why sign in?**, a short list of what an account adds: keeping your documents safe from a cache clear, opening them on any device, working as a team, connecting AI tools with API tokens, showing your real name to collaborators, and managing all your share links in one place. It has its own **Sign in** button, and **Maybe later** to close it.
+- **×** dismisses the card.
+
+**When it appears.** In the [Explorer](/help/explorer/explorer-page/) it shows straight away. In the editor it waits until you have been in a document for about five minutes, so it never greets you the moment you open one, and it stays out of [Zen mode](/help/tools/zen-mode/) and embedded documents.
+
+**Dismissing it** hides it everywhere in this browser, in the Explorer and the editor alike, and it doesn't come back. It is only a reminder: nothing stops working if you ignore it.
+
+It never appears once you are signed in, or on a self-hosted copy that has no sign-in.
+
+## Moving from guest to account
+
+You do not lose anything by signing up. When you create your account, or sign in to one, in the same browser, everything you built as a guest **migrates into your account** automatically: your documents and folders, favourites, custom themes and images. Your guest settings carry over to a new account; when you sign in to an account that already has settings, the account's settings are kept. The work you have already done carries over rather than being left behind.
+
+The two paths also coexist forever: a signed-in user can hand a [share link](/help/getting-started/sharing-your-document/) to a guest, who edits the same document with no account at all.
+
+<Note>
+  liveplanner is open source, and accounts are optional. A self-hosted deployment can run in
+  pure-guest mode with no sign-in at all, and the editor stays fully usable.
+</Note>
+
+</ArticleLayout>

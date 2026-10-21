@@ -1,0 +1,42 @@
+{
+  "name": "@liveplanner/agent-verbs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mcp": "./src/mcp/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveplanner/api-client": "workspace:*",
+    "@liveplanner/api-schema": "workspace:*",
+    "@liveplanner/diagram-lint": "workspace:*",
+    "@liveplanner/document": "workspace:*",
+    "@liveplanner/document-views": "workspace:*",
+    "@liveplanner/edit-operations": "workspace:*",
+    "@liveplanner/forms": "workspace:*",
+    "@liveplanner/items": "workspace:*",
+    "@liveplanner/page-background": "workspace:*",
+    "@liveplanner/sheets": "workspace:*",
+    "@liveplanner/templates": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

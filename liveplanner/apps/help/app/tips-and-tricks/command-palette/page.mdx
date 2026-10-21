@@ -1,0 +1,45 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CommandPalette } from '@/components/illustrations/tips';
+
+export const metadata = helpMetadata({
+  title: 'The Palette',
+  description:
+    'Learn the liveplanner palette: pick a selection mode, add shapes, text, icons and more, and see how its dropdowns, categories and placing work.',
+  path: '/help/tips-and-tricks/command-palette/',
+});
+
+<ArticleLayout title="The Palette" description="Pick tools and drop new elements onto the canvas from the palette strip across the top of your diagram." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+
+The palette is the strip across the top of the canvas. It holds the canvas tools and every category of thing you can add to a diagram, so it is your main launchpad while you build.
+
+## The two dropdowns
+
+The **menu button** and the tab's name sit just left of the strip (a tab's mode is chosen on its start while it is empty; see [Editor Modes](/help/canvas/editor-modes/)). The strip itself starts with the selection mode, then the categories:
+
+- On the left, the **selection mode** (what your pointer does), shown as a grid in three groups. **Edit**: **Select** (`V`), **Hand** (`H`), **Eraser** (`E`) and the [Format](/help/tips-and-tricks/format-painter/) painter. **Present**: **Laser** (`K`), **Spotlight** and [Slide Deck](/help/selection-modes/slide-deck/), with **Avatar** shown only while you are walking (an Avatar button on the board is its way in). **Preview**: **Isometric** (`I`) and **Zen** (`Z`). Spotlight and Slide Deck are desktop only, Plan mode leaves Eraser and Format out, and most of these stay greyed out until the canvas has something on it. See [Selection Modes](/help/selection-modes/).
+- Then the **categories**, by name. Rest the pointer on one, or click it, and its elements open in a panel underneath, in named groups; click one to add it or drag it onto the canvas. In Diagram mode they are **Shapes**, **Write** (text, notes and comments), **Draw** (the pens and arrows), **Diagrams** (mind maps, flowcharts, tables and more), **Concepts**, **Layout** (lanes, frames, cards and badges), **Icons**, **Tech** (full-colour technology marks) and **Media**.
+
+  [Workshop mode](/help/canvas/workshop-mode/) has no Diagrams, Concepts or Tech: after **Layout** come **Ask** and **Session**, the interactive elements for workshops, then Icons, **Stickers**, Media and **Data**.
+
+**Search** (the magnifier, or `S`) finds any element by name. Each mode has its own set: Pages mode adds the wireframing **Components** and **Devices** and the **Data** charts, and [Plan mode](/help/canvas/plan-mode/) has no palette at all: its boards, sheets and dashboards carry their own tools. See [where each one lives](/help/palette/tools/).
+
+<Figure caption="The palette strip: the selection mode, the categories by name and Search, with the menu button and the tab's name to its left.">
+  <CommandPalette />
+</Figure>
+
+## Adding elements
+
+Pick a tile and it arms a **tap-or-drag** gesture: click the canvas to drop the element at its natural size, or drag on the canvas to size it as you place it. You can also drag a tile straight onto the canvas. An annotation is the exception: it drops at the centre of the visible canvas, ready to move.
+
+If a boxed element is already selected when you click to drop another, the new one inherits its width and height, so you can chain similarly-sized nodes quickly. (A circle or diamond takes a square the size of the larger side, and a selected frame or lane never passes its size on.)
+
+A tile with a keyboard shortcut shows its key in the corner on the strip; in the More and Search grids, hold `⌘` (Ctrl on Windows and Linux) to show them. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+
+## More about the strip
+
+The strip stays pinned to the top of the canvas on every device; on a phone its categories swipe sideways. It steps aside in [Draw mode](/help/canvas/draw-mode/), where a dock takes its place, in Zen mode, and on a view-only link. See [Toolbar Layout](/help/palette/toolbar-layout/) for the categories, Search and the order of the tiles, and [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
+
+Looking for commands rather than elements? `⌘K` opens search with its actions; see [the Command Palette](/help/search-panel/the-search-panel/command-palette/).
+
+</ArticleLayout>

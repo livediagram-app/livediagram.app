@@ -1,0 +1,97 @@
+/*
+ * Forms motion (docs/specs/030-forms/forms.md "Filling in a form"): the confirmation's check mark draws in, its ring
+ * then its tick. Under reduced motion (globals.css collapses every animation to an instant finish) both end drawn,
+ * so the check mark is still there, only still.
+ */
+@keyframes form-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.form-check-ring {
+  stroke-dasharray: 190;
+  stroke-dashoffset: 190;
+  animation: form-check-draw 160ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.form-check-tick {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: form-check-draw 120ms 120ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+/*
+ * A form's look (docs/specs/030-forms/forms.md "Look"; components/forms/form-look.ts). The root carries both halves
+ * of its colour, and the viewer's appearance picks one. These rules sit outside Tailwind's layers, so they outrank
+ * its utilities. A finish only reshapes boxes marked `form-box`, and recolours only an outline marked `form-ink`
+ * (a box in its plain state): focus, a pick and an error keep their own colours.
+ */
+[data-form-look] {
+  --form-accent: var(--form-accent-light);
+  --form-on-accent: var(--form-on-accent-light);
+  --form-ink: #334155;
+}
+.dark [data-form-look] {
+  --form-accent: var(--form-accent-dark);
+  --form-on-accent: var(--form-on-accent-dark);
+  --form-ink: #cbd5e1;
+}
+
+/* Professional: square corners and fine lines, as its canvas boxes. */
+[data-form-finish='professional'] .form-box {
+  border-radius: 2px;
+}
+
+/* Sketch: outlines drawn by hand, a marker's weight, in ink, with a pencil shadow; neighbours wobble differently. */
+[data-form-finish='sketch'] .form-box {
+  border-width: 2px;
+  border-radius: 255px 14px 225px 14px / 14px 225px 14px 255px;
+  box-shadow: 2px 3px 0 -1px color-mix(in srgb, var(--form-ink) 35%, transparent);
+}
+[data-form-finish='sketch'] .form-box:nth-child(even) {
+  border-radius: 14px 225px 14px 255px / 225px 14px 255px 14px;
+}
+[data-form-finish='sketch'] .form-ink:not(:focus, :focus-within) {
+  border-color: var(--form-ink);
+}
+
+/* Marker: outlines in a felt-tip's 3 px, in slightly see-through ink, corners a touch uneven, no shadow (a marker
+   drawing casts none); neighbours drawn differently. */
+[data-form-finish='marker'] .form-box {
+  border-width: 3px;
+  border-radius: 9px 13px 8px 12px / 12px 8px 13px 9px;
+  box-shadow: none;
+}
+[data-form-finish='marker'] .form-box:nth-child(even) {
+  border-radius: 13px 8px 12px 9px / 8px 12px 9px 13px;
+}
+[data-form-finish='marker'] .form-ink:not(:focus, :focus-within) {
+  border-color: color-mix(in srgb, var(--form-ink) 86%, transparent);
+}
+
+/*
+ * Builder motion (docs/specs/030-forms/forms.md "Building a form"): a question slides to its new place when moved
+ * (useFlipList adds .form-q-move), grows in when added, and fades and shrinks away before it is deleted. Reduced
+ * motion: useFlipList moves nothing and the leave is skipped; globals.css collapses the animations to their end.
+ */
+.form-q-move {
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes form-q-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+.form-q-enter {
+  animation: form-q-enter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes form-q-leave {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+.form-q-leave {
+  animation: form-q-leave 160ms ease-in forwards;
+  pointer-events: none;
+}

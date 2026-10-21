@@ -1,0 +1,287 @@
+// The four display label renderers (docs/specs/008-canvas/canvas-and-palette.md), split out of
+// element-labels.tsx: the auto-scaling single-line SVG label, the
+// fixed-size single-line label, the sticky multi-line label, and the
+// per-range RichLabel. renderLabel (the dispatcher the element views
+// call) stays in element-labels.tsx and picks between them.
+
+import { useLayoutEffect, useRef, useState } from 'react';
+import {
+  type BoxedElement,
+  type TextAlignX,
+  type TextAlignY,
+  type TextRun,
+  labelFontPx,
+  type TextSize,
+} from '@liveplanner/document';
+import {
+  ALIGN_ITEMS,
+  effectiveRunStyle,
+  labelTypographyClass,
+  labelBasePx,
+  labelRunPx,
+  labelTextStyleCss,
+  wordmarkTextCss,
+  TEXT_ALIGN,
+  type LabelPadding,
+  type LabelTextStyle,
+} from '@/components/canvas/label-style';
+
+function svgPreserve(alignX: TextAlignX, alignY: TextAlignY): string {
+  const ax = alignX === 'left' ? 'xMin' : alignX === 'right' ? 'xMax' : 'xMid';
+  const ay = alignY === 'top' ? 'YMin' : alignY === 'bottom' ? 'YMax' : 'YMid';
+  return `${ax}${ay} meet`;
+}
+
+// --- Auto-scaling single-line label (SVG fit-to-bounds) --------------------
+
+export function ScalingLabel({
+  text,
+  alignX,
+  alignY,
+  padding,
+  style,
+}: {
+  text: string;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+  padding: number;
+  style?: LabelTextStyle;
+}) {
+  const textRef = useRef<SVGTextElement>(null);
+  const [bbox, setBBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const node = textRef.current;
+    if (!node) return;
+    const b = node.getBBox();
+    setBBox({ x: b.x, y: b.y, w: b.width || 1, h: b.height || 1 });
+    // Tracking, weight and case change the glyphs' extent too.
+  }, [text, style?.letterSpacing, style?.weight, style?.uppercase, style?.lowercase]);
+
+  const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
+
+  return (
+    <div className="pointer-events-none absolute inset-0 flex" style={{ padding }}>
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={viewBox}
+        preserveAspectRatio={svgPreserve(alignX, alignY)}
+        overflow="visible"
+      >
+        <text
+          ref={textRef}
+          x="0"
+          y="0"
+          dominantBaseline="hanging"
+          fontFamily={style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif'}
+          fontWeight={style?.weight ?? (style?.bold ? 700 : 500)}
+          style={{
+            letterSpacing: style?.letterSpacing ? `${style.letterSpacing}em` : undefined,
+            textTransform: style?.uppercase
+              ? 'uppercase'
+              : style?.lowercase
+                ? 'lowercase'
+                : undefined,
+          }}
+          fontStyle={style?.italic ? 'italic' : undefined}
+          textDecoration={
+            style?.underline && style?.strikethrough
+              ? 'underline line-through'
+              : style?.underline
+                ? 'underline'
+                : style?.strikethrough
+                  ? 'line-through'
+                  : undefined
+          }
+          fontSize="20"
+          fill="currentColor"
+        >
+          {text.split('\n').map((line, i) => (
+            // One tspan per line so multi-line labels (Enter inserts a
+            // newline now) lay out as separate lines; getBBox below
+            // unions them, so the auto-fit still scales the whole block.
+            <tspan key={i} x="0" dy={i === 0 ? 0 : '1.2em'}>
+              {line || ' '}
+            </tspan>
+          ))}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+// --- Fixed-size single-line label (sm/md/lg) -------------------------------
+
+export function FixedSizeLabel({
+  text,
+  px,
+  alignX,
+  alignY,
+  padding,
+  style,
+}: {
+  text: string;
+  // The label's font px: its size preset's, times a text box's Shift-resize scale.
+  px: number;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+  // A number of px on every side, or a CSS padding (a whiteboard text box's 2px 4px).
+  padding: LabelPadding;
+  style?: LabelTextStyle;
+}) {
+  if (!text) return null;
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 flex overflow-hidden font-medium leading-tight"
+      style={{
+        fontSize: `${px}px`,
+        alignItems: ALIGN_ITEMS[alignY],
+        padding,
+      }}
+    >
+      <div
+        className="w-full whitespace-pre-wrap break-words"
+        style={{
+          textAlign: TEXT_ALIGN[alignX],
+          ...labelTextStyleCss(style ?? {}),
+        }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+}
+
+// --- Multi-line display (used by sticky) -----------------------------------
+
+type MultilineLabelProps = {
+  text: string;
+  placeholder: string;
+  textSize: TextSize;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+  className?: string;
+  // Auto-fit size: when the element's size is 'scale', the
+  // caller measures the text against the box and passes the px it fits at,
+  // so 'scale' means fill-the-note rather than a fixed small size. The
+  // editor is handed the SAME number, or the text jumps on double-click.
+  fitPx?: number;
+};
+
+export function MultilineLabel({
+  text,
+  placeholder,
+  textSize,
+  alignX,
+  alignY,
+  padding,
+  className = '',
+  style,
+  fitPx,
+}: MultilineLabelProps & {
+  padding: number;
+  style?: LabelTextStyle;
+}) {
+  const fontSize = `${fitPx ?? labelFontPx(textSize, true)}px`;
+  const outerStyle = {
+    fontSize,
+    alignItems: ALIGN_ITEMS[alignY],
+    padding,
+  };
+  const innerStyle = { textAlign: TEXT_ALIGN[alignX], ...labelTextStyleCss(style ?? {}) };
+  if (!text) {
+    return (
+      <div
+        style={outerStyle}
+        className={`pointer-events-none absolute inset-0 flex overflow-hidden opacity-50 ${className}`}
+      >
+        <div className="w-full whitespace-pre-wrap" style={innerStyle}>
+          {placeholder}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div
+      style={outerStyle}
+      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${className}`}
+    >
+      <div className="w-full whitespace-pre-wrap" style={innerStyle}>
+        {text}
+      </div>
+    </div>
+  );
+}
+
+// --- Per-range rich label (docs/specs/008-canvas/canvas-and-palette.md) ---------------------------------------
+
+// Display renderer for a label carrying per-range formatting. Mirrors the
+// FixedSizeLabel / MultilineLabel wrapper (alignment + padding + base font
+// + family) and lays the runs out as styled <span>s. Applying any per-run
+// override opts the label out of SVG auto-fit (`scale`) into fixed-px
+// rendering — mixing per-run sizes with whole-element auto-fit is
+// contradictory; see docs/specs/008-canvas/canvas-and-palette.md.
+export function RichLabel({
+  runs,
+  element,
+  textSize,
+  alignX,
+  alignY,
+  padding,
+  textScale = 1,
+  fontFamily,
+  multiline,
+  uppercase,
+  wordmark,
+  className = '',
+}: {
+  runs: TextRun[];
+  element: BoxedElement;
+  textSize: TextSize;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+  padding: LabelPadding;
+  // A Shift-resized text box's scale on every size (docs/specs/023-draw-mode/draw-mode.md).
+  textScale?: number;
+  fontFamily?: string;
+  multiline: boolean;
+  // Paint in capitals (a text's Upper case) — whole-label, so
+  // it sits on the wrapper rather than on each run's style.
+  uppercase?: boolean;
+  // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.
+  wordmark?: LabelTextStyle;
+  className?: string;
+}) {
+  const basePx = labelBasePx(multiline, textSize) * textScale;
+  const runSizePx = labelRunPx(multiline, textScale);
+  return (
+    <div
+      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${labelTypographyClass(
+        multiline,
+      )} ${className}`}
+      style={{ fontSize: `${basePx}px`, alignItems: ALIGN_ITEMS[alignY], padding }}
+    >
+      <div
+        className="w-full whitespace-pre-wrap break-words"
+        style={{
+          textAlign: TEXT_ALIGN[alignX],
+          fontFamily,
+          ...(wordmark ? wordmarkTextCss(wordmark) : {}),
+          textTransform:
+            uppercase || wordmark?.uppercase
+              ? 'uppercase'
+              : wordmark?.lowercase
+                ? 'lowercase'
+                : undefined,
+        }}
+      >
+        {runs.map((run, i) => (
+          <span key={i} style={effectiveRunStyle(run, element, runSizePx)}>
+            {run.text}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}

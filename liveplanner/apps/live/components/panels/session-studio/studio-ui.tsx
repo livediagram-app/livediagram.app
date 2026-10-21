@@ -1,0 +1,200 @@
+'use client';
+
+// The small visual vocabulary the session panes share: the button family, a segmented control, the round transport
+// buttons under the timer, and the callout. One file so the three panes read
+// as one surface, and so nothing here grows a fourth copy of the chip / button
+// class strings the old per-tool sections each carried.
+
+import type { ReactNode } from 'react';
+import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL, Glyph } from '@liveplanner/ui';
+
+type ButtonVariant = 'primary' | 'secondary';
+
+const BUTTON_CLASS: Record<ButtonVariant, string> = {
+  primary: `bg-brand-700 text-white shadow-sm hover:bg-brand-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-500 ${SOLID_BRAND_DARK_CONTROL}`,
+  secondary:
+    'border border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:text-white',
+};
+
+export function StudioButton({
+  variant = 'secondary',
+  icon,
+  children,
+  onClick,
+  disabled,
+  title,
+}: {
+  variant?: ButtonVariant;
+  icon?: ReactNode;
+  children: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={title}
+      className={`inline-flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold transition disabled:cursor-not-allowed ${BUTTON_CLASS[variant]}`}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+// A pill segmented control for a small, exclusive choice (Countdown or
+// Stopwatch; a vote's layer). Wraps rather than scrolls, so a long layer list
+// stays readable in the narrow panel.
+export function StudioSegmented<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: readonly { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  label: string;
+}) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1">
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(o.value)}
+            className={`max-w-full truncate rounded-full border px-2.5 py-1 text-[11px] font-medium transition ${
+              on
+                ? 'border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-500/60 dark:bg-brand-500/20 dark:text-brand-100'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-white'
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Round transport button under the timer face: an icon in a circle with its
+// verb underneath, so the controls read like a media player rather than a
+// row of identical text buttons.
+export function TransportButton({
+  label,
+  icon,
+  onClick,
+  primary = false,
+}: {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+  primary?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex flex-col items-center gap-1 text-[10px] font-medium text-slate-500 dark:text-slate-400"
+    >
+      <span
+        className={`flex items-center justify-center rounded-full transition ${
+          primary
+            ? `h-12 w-12 bg-brand-700 text-white shadow-md group-hover:bg-brand-800 ${SOLID_BRAND_DARK} dark:group-hover:bg-brand-700`
+            : 'h-9 w-9 border border-slate-200 bg-white text-slate-600 group-hover:border-brand-300 group-hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:border-brand-500/60 dark:group-hover:text-white'
+        }`}
+      >
+        {icon}
+      </span>
+      {label}
+    </button>
+  );
+}
+
+export function StudioCallout({
+  tone = 'info',
+  children,
+}: {
+  tone?: 'info' | 'warn';
+  children: ReactNode;
+}) {
+  return (
+    <p
+      className={`rounded-lg px-2.5 py-1.5 text-[11px] leading-snug ${
+        tone === 'warn'
+          ? 'bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200'
+          : 'bg-slate-50 text-slate-600 dark:bg-slate-800/70 dark:text-slate-300'
+      }`}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function StudioLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-2">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {children}
+      </span>
+      {aside ? (
+        <span className="text-[10px] tabular-nums text-slate-500 dark:text-slate-400">{aside}</span>
+      ) : null}
+    </div>
+  );
+}
+
+// Somebody else is running the session (docs/specs/012-collaboration/facilitator.md): said once, above
+// the controls it disables, in the Studio and on the Session strip's popovers alike.
+export function FacilitatedNote({ name }: { name: string }) {
+  return (
+    <p className="rounded-md bg-slate-100 px-2.5 py-2 text-[12px] leading-snug text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <span className="font-semibold">{name}</span> is facilitating this session. Ask them to start
+      the timer, the vote or a poll.
+    </p>
+  );
+}
+
+// --- Glyphs ------------------------------------------------------------------
+// Transport icons at the 16px grid the rest of the menu icons use.
+
+export function PlayGlyph({ size = 16 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={16} filled>
+      <path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.6-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5z" />
+    </Glyph>
+  );
+}
+
+export function PauseGlyph({ size = 16 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={16} filled>
+      <rect x="4" y="3" width="3" height="10" rx="0.8" />
+      <rect x="9" y="3" width="3" height="10" rx="0.8" />
+    </Glyph>
+  );
+}
+
+export function RestartGlyph() {
+  return (
+    <Glyph size={14} units={16}>
+      <path d="M3 8a5 5 0 1 0 1.5-3.6" />
+      <path d="M3 2.5v2.5h2.5" />
+    </Glyph>
+  );
+}
+
+export function StopGlyph() {
+  return (
+    <Glyph size={12} units={16} filled>
+      <rect x="3" y="3" width="10" height="10" rx="1.5" />
+    </Glyph>
+  );
+}

@@ -1,0 +1,325 @@
+'use client';
+
+// The feed (docs/specs/013-workspace/timeline.md §2).
+//
+// Renders the day rail, the groups, and the cards. It deliberately
+// has NO header of its own: the controls live in <TimelineControls>, so
+// the host can put them in its own page-header row rather than stacking
+// a second toolbar underneath one (docs/specs/013-workspace/timeline.md §2.3). Both halves share
+// one `useTimelineControls()` state, so a filter chip and the list it
+// filters can never disagree.
+//
+// State this owns: which stacks are expanded, and nothing else. The
+// events and paging belong to the consumer, because only it knows how
+// to fetch.
+
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
+import { TimelineGroup } from './TimelineGroup';
+import { TimelineCard } from './TimelineCard';
+import { StackedCard } from './StackedCard';
+import { ExpandedStack } from './ExpandedStack';
+import { isNewEvent } from './newness';
+import { TimelineCalendarView } from './TimelineCalendarView';
+import { TimelineErrorState } from './TimelineErrorState';
+import { buildStacks } from './stacking';
+import { pickRenderer } from './renderers';
+import { useTimelineGrouping } from './useTimelineGrouping';
+import type { TimelineControls } from './useTimelineControls';
+import type {
+  TimelineCardSlotsFor,
+  TimelineRendererRegistry,
+  TimelineStackSlotsFor,
+} from './types';
+import { CARD_GRID } from '../cardGrid';
+import { NoMatches } from '../CompactEmptyState';
+
+export type TimelineProps = {
+  /** Shared with <TimelineControls>; see useTimelineControls. */
+  controls: TimelineControls;
+  /** Compared against each event's actorId so renderers can say "You". */
+  viewerId: string | null;
+  renderers?: TimelineRendererRegistry;
+  /**
+   * What the host adds to a card that a renderer can't: the ⋯ menu and
+   * an inline rename (docs/specs/013-workspace/timeline.md §2.8). Omitted on feeds that have no
+   * Explorer context to build them from.
+   */
+  cardSlots?: TimelineCardSlotsFor;
+  /** The same for a collapsed run: a menu that acts on every member (docs/specs/013-workspace/timeline.md §2.9). */
+  stackSlots?: TimelineStackSlotsFor;
+  /** True while the first page is still resolving. */
+  loading?: boolean;
+  /** True when the feed is genuinely empty, as opposed to filtered empty. */
+  isEmpty?: boolean;
+  emptyState?: ReactNode;
+  /**
+   * The last read failed. Outranks `isEmpty`, because a feed we
+   * couldn't read is not a feed with nothing in it (docs/specs/013-workspace/timeline.md §2.4).
+   */
+  error?: boolean;
+  onRetry?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
+  onStackExpand?: () => void;
+  /** Events after this timestamp are marked New (docs/specs/013-workspace/timeline.md §2.5). */
+  lastSeenAt?: number;
+  /** Event id to scroll to and highlight — the deep-link target. */
+  focusEventId?: string;
+};
+
+export function Timeline({
+  controls,
+  viewerId,
+  renderers = {},
+  cardSlots,
+  stackSlots,
+  loading,
+  isEmpty,
+  emptyState,
+  error,
+  onRetry,
+  hasMore,
+  loadingMore,
+  onLoadMore,
+  onStackExpand,
+  lastSeenAt,
+  focusEventId,
+}: TimelineProps) {
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  // Both bounds, and why the upper one exists, live in newness.ts.
+  const isNew = useCallback(
+    (occurredAt: number) => isNewEvent(occurredAt, lastSeenAt),
+    [lastSeenAt],
+  );
+  const ctx = { viewerId };
+  const { visibleEvents, pulseDay, clearPulse } = controls;
+  const groups = useTimelineGrouping(visibleEvents);
+
+  // Every visible event's position in the whole feed, so the first-load
+  // cascade staggers by global order rather than restarting per day.
+  //
+  // Pre-computed into a map rather than incremented inside the JSX: the
+  // index has to be the same however many times React calls the render
+  // function (its development mode double-invokes), and it must not
+  // depend on the order JSX children happen to be evaluated in.
+  const fanIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    let i = 0;
+    for (const group of groups) {
+      for (const event of group.events) map.set(event.id, i++);
+    }
+    return map;
+  }, [groups]);
+
+  // Expanding and collapsing are the same control, so they're one
+  // handler. An expand-only set meant a run you opened to check a
+  // single rename stayed open for the rest of the visit.
+  const toggleStack = useCallback((key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // Deep link (docs/specs/013-workspace/timeline.md §2.7). A linked event may be inside a collapsed
+  // stack, so those stacks are forced open — otherwise the reader
+  // follows a link to a row that isn't rendered and lands on a generic
+  // "4 events" bubble with no idea which one they came for.
+  //
+  // DERIVED rather than pushed into `expanded` from an effect: which
+  // stack holds the target is a function of the data, so computing it
+  // avoids a setState-in-effect and the extra render that costs. The
+  // reader can still collapse it — `expanded` stays a separate toggle.
+  const forcedOpen = useMemo(() => {
+    const keys = new Set<string>();
+    if (!focusEventId) return keys;
+    for (const group of groups) {
+      for (const stack of buildStacks(group.events)) {
+        if (stack.events.length > 1 && stack.events.some((e) => e.id === focusEventId)) {
+          keys.add(stack.key);
+        }
+      }
+    }
+    return keys;
+  }, [focusEventId, groups]);
+
+  // Scroll after paint, so the row exists by the time we look for it.
+  useEffect(() => {
+    if (!focusEventId) return;
+    const raf = requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-timeline-event="${focusEventId}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focusEventId, groups]);
+
+  // Clear the mini-calendar pulse once it has played. Guarded on
+  // pulseDay so the timer only exists while one is running.
+  useEffect(() => {
+    if (!pulseDay) return;
+    const timer = setTimeout(clearPulse, 1400);
+    return () => clearTimeout(timer);
+  }, [pulseDay, clearPulse]);
+
+  if (loading) return <SkeletonFeed />;
+  // Order matters: a failed read with nothing loaded must not fall
+  // through to "nothing has happened yet". With events already on
+  // screen the failure is silent — a stale feed is better than an
+  // alarm, and the next return to the tab re-reads it.
+  if (error && isEmpty) return <TimelineErrorState onRetry={onRetry} />;
+  if (isEmpty) return <>{emptyState ?? null}</>;
+
+  // Distinct from the empty state above. Telling someone with three
+  // years of history that they have none, because a chip is off, is the
+  // kind of small lie that erodes trust in a feed. The filters run on
+  // the loaded pages only, so while the server has more, "nothing
+  // matches" would be the same lie; the copy narrows its claim and
+  // Show More stays reachable.
+  if (visibleEvents.length === 0) {
+    return (
+      <div>
+        {/* The shared empty state (docs/specs/004-interface-design/empty-states.md). */}
+        <NoMatches
+          size="regular"
+          className="py-10"
+          things={hasMore ? 'loaded events' : 'events'}
+          filters={1}
+          hint={hasMore ? 'Show More to look further back, or remove a filter.' : undefined}
+          onClear={controls.resetFilters}
+        />
+        {hasMore && <ShowMore loading={loadingMore} onClick={onLoadMore} />}
+      </div>
+    );
+  }
+
+  if (controls.mode === 'calendar') {
+    return (
+      <TimelineCalendarView
+        events={visibleEvents}
+        monthKey={controls.monthKey}
+        onMonthChange={controls.setMonthKey}
+        registry={renderers}
+        ctx={ctx}
+        cardSlots={cardSlots}
+      />
+    );
+  }
+
+  return (
+    <div>
+      {groups.map((group) => (
+        <TimelineGroup
+          key={group.key}
+          label={group.label}
+          year={group.year}
+          isToday={group.isToday}
+          isFuture={group.isFuture}
+          dateKey={group.key}
+          pulse={pulseDay === group.key}
+        >
+          {buildStacks(group.events).map((stack) => {
+            // A stack of one was never collapsed, so there is no
+            // collapse affordance to offer.
+            if (stack.events.length === 1) {
+              const event = stack.events[0]!;
+              return (
+                <div
+                  key={event.id}
+                  className="tl-fan-out"
+                  style={{ animationDelay: `${cascadeDelayMs(fanIndex.get(event.id) ?? 0)}ms` }}
+                >
+                  <TimelineCard
+                    event={event}
+                    isNew={isNew(event.occurredAt)}
+                    focused={event.id === focusEventId}
+                    rendered={pickRenderer(event, renderers)(event, ctx)}
+                    slots={cardSlots?.(event)}
+                  />
+                </div>
+              );
+            }
+            const open = expanded.has(stack.key) || forcedOpen.has(stack.key);
+            // One <StackedCard> element in both states, so toggling
+            // flips its props rather than remounting it: a remount would
+            // replay its arrival animation every time the run closes.
+            // The members mount after it only while the run is open.
+            return (
+              <Fragment key={stack.key}>
+                <StackedCard
+                  stack={stack}
+                  registry={renderers}
+                  ctx={ctx}
+                  expanded={open}
+                  isNew={stack.events.some((e) => isNew(e.occurredAt))}
+                  stagger={cascadeDelayMs(fanIndex.get(stack.events[0]!.id) ?? 0)}
+                  slots={stackSlots?.(stack)}
+                  onToggle={() => {
+                    toggleStack(stack.key);
+                    if (!open) onStackExpand?.();
+                  }}
+                />
+                {open && (
+                  <ExpandedStack
+                    stack={stack}
+                    registry={renderers}
+                    ctx={ctx}
+                    cardSlots={cardSlots}
+                    isNew={isNew}
+                    focusEventId={focusEventId}
+                  />
+                )}
+              </Fragment>
+            );
+          })}
+        </TimelineGroup>
+      ))}
+
+      {hasMore && <ShowMore loading={loadingMore} onClick={onLoadMore} />}
+    </div>
+  );
+}
+
+/** Appends the next page (docs/specs/013-workspace/timeline.md §2.3). */
+function ShowMore({ loading, onClick }: { loading?: boolean; onClick?: () => void }) {
+  return (
+    <div className="pt-2 text-center">
+      <button
+        type="button"
+        disabled={loading}
+        onClick={onClick}
+        className="rounded-lg border border-slate-200 px-4 py-2 text-xs text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        {loading ? 'Loading…' : 'Show More'}
+      </button>
+    </div>
+  );
+}
+
+// A skeleton rather than a spinner or the empty state: the feed
+// arriving after a fetch would otherwise pop in and read as a layout
+// jump, and showing "nothing has happened yet" while loading is a
+// statement that's usually false.
+function SkeletonFeed() {
+  return (
+    <div className="space-y-6" aria-hidden>
+      {[0, 1].map((row) => (
+        <div key={row} className="flex gap-4">
+          <div className="mt-3 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-slate-200 dark:bg-slate-700" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className={CARD_GRID}>
+              {[0, 1, 2].map((card) => (
+                <div key={card} className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800" />
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

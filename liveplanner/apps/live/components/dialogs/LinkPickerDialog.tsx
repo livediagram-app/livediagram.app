@@ -1,0 +1,329 @@
+import { useState } from 'react';
+import {
+  Button,
+  CompactEmptyState,
+  TextInput,
+  Glyph,
+  DialogCloseButton,
+  DialogHeader,
+} from '@liveplanner/ui';
+import { Dialog } from '@/components/dialogs/Dialog';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { normaliseUrl } from '@/lib/url-safety';
+import type { ElementLink } from '@liveplanner/document';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
+
+// Shared link picker, styled like the import / export dialogs (centred
+// modal, brand chrome). Used for BOTH element links and per-cell table
+// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Document, or an
+// external URL — plus a Remove action when a link already exists.
+//
+// Generic by design: the dialog builds the chosen `ElementLink` and
+// hands it back via `onCommit` (null = remove). The caller decides where
+// it lands (an element's `link`, or a table cell's `cellStyles.link`).
+
+type LinkTarget = { id: string; name: string };
+
+type LinkPickerDialogProps = {
+  // What's being linked, for the header ("Link element" / "Link cell").
+  title: string;
+  // The link currently on the target, or null. Seeds the active mode +
+  // the URL field, and reveals the Remove button.
+  currentLink: ElementLink | null;
+  // Tabs in this document. The current tab is marked but still selectable
+  // (a cell may legitimately link back to its own tab's start).
+  tabs: LinkTarget[];
+  currentTabId: string;
+  // The caller's other documents (newest first), for the Document mode.
+  recentDocuments: LinkTarget[];
+  // Pre-select a mode (the context menu's split Link entries open the modal
+  // straight onto webpage / tab / document). Falls back to the current link's
+  // kind, then 'url', when unset.
+  initialMode?: 'tab' | 'document' | 'url';
+  // Restricts the dialog to the URL mode, with caller-supplied copy and
+  // validation. For an element whose link IS its content — a video's YouTube
+  // URL (docs/specs/009-elements/youtube-video.md) — the tab and document modes are not a narrower choice, they
+  // are a meaningless one: a video pointed at a tab has nothing to play.
+  urlOnly?: UrlOnlyConfig;
+  onCommit: (link: ElementLink | null) => void;
+  onClose: () => void;
+};
+
+type UrlOnlyConfig = {
+  // Replaces the header's "Jump to a tab, open another document, ..." line.
+  subtitle: string;
+  fieldLabel: string;
+  placeholder: string;
+  // Sits under the field, replacing the generic "Opens in a new tab" note.
+  hint: string;
+  // Returns a message when the URL is not acceptable, or null when it is.
+  // Runs on the NORMALISED url (so a bare host has gained its https://),
+  // matching what would actually be stored.
+  validate: (url: string) => string | null;
+};
+
+type Mode = 'tab' | 'document' | 'url';
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'url', label: 'External URL' },
+  { id: 'tab', label: 'Tab' },
+  { id: 'document', label: 'Document' },
+];
+
+export function LinkPickerDialog({
+  title,
+  currentLink,
+  tabs,
+  currentTabId,
+  recentDocuments,
+  initialMode,
+  urlOnly,
+  onCommit,
+  onClose,
+}: LinkPickerDialogProps) {
+  // A caller-requested mode wins; otherwise open on the existing link's mode,
+  // else External URL.
+  const [mode, setMode] = useState<Mode>(
+    (urlOnly ? 'url' : undefined) ??
+      initialMode ??
+      (currentLink?.kind === 'document'
+        ? 'document'
+        : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
+          ? 'tab'
+          : 'url'),
+  );
+  const [urlInput, setUrlInput] = useState(currentLink?.kind === 'url' ? currentLink.url : '');
+  // The validation message for what's typed so far, or null. Computed rather
+  // than held in state so it can't go stale against the field.
+  const typed = urlInput.trim();
+  const urlError = urlOnly && typed ? urlOnly.validate(normaliseUrl(typed) ?? typed) : null;
+
+  const commit = (link: ElementLink | null) => {
+    onCommit(link);
+    onClose();
+  };
+
+  const saveUrl = () => {
+    const url = normaliseUrl(urlInput);
+    if (!url) return;
+    // The same validator the field shows, run again at the point of commit so
+    // an Enter keypress can't slip past a message the user hasn't read.
+    if (urlOnly?.validate(url)) return;
+    commit({ kind: 'url', url });
+  };
+
+  const linkedTabId =
+    currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
+  const linkedDocumentId = currentLink?.kind === 'document' ? currentLink.documentId : null;
+
+  return (
+    <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
+      <DialogHeader
+        title={title}
+        subtitle={
+          urlOnly
+            ? urlOnly.subtitle
+            : 'Jump to a tab, open another document, or go to a web address.'
+        }
+      >
+        {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
+            it points at the embed article rather than the generic links one:
+            "which links work here" is the question being asked. */}
+        <HelpArticleLink
+          size="md"
+          article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
+        />
+        <DialogCloseButton onClick={onClose} />
+      </DialogHeader>
+
+      {/* Mode switcher — hidden entirely when the caller restricts to a URL:
+          a one-button switcher is a control that can't do anything. */}
+      {urlOnly ? null : (
+        <div className="flex gap-1 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setMode(m.id)}
+              aria-pressed={mode === m.id}
+              className={
+                mode === m.id
+                  ? 'rounded-md bg-brand-100 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+              }
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        {mode === 'tab' ? (
+          <ul className="flex flex-col gap-1">
+            {tabs.map((t) => (
+              <li key={t.id}>
+                <RowButton
+                  active={linkedTabId === t.id}
+                  icon={<TabGlyph />}
+                  onClick={() => commit({ kind: 'tab', tabId: t.id })}
+                >
+                  <span className="truncate">{t.name}</span>
+                  {t.id === currentTabId ? (
+                    <span className="inline-flex items-center ml-2 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      <span className="text-optical-line text-optical-caps [--optical-tracking:0.025em]">
+                        current
+                      </span>
+                    </span>
+                  ) : null}
+                </RowButton>
+              </li>
+            ))}
+          </ul>
+        ) : mode === 'document' ? (
+          recentDocuments.length === 0 ? (
+            <CompactEmptyState
+              className="py-10"
+              icon={<DocumentGlyph />}
+              title="No other documents yet"
+              description="Make another document to link to it."
+            />
+          ) : (
+            <ul className="flex flex-col gap-1">
+              {recentDocuments.map((d) => (
+                <li key={d.id}>
+                  <RowButton
+                    active={linkedDocumentId === d.id}
+                    icon={<DocumentGlyph />}
+                    onClick={() => commit({ kind: 'document', documentId: d.id, name: d.name })}
+                  >
+                    <span className="truncate">{d.name}</span>
+                  </RowButton>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : (
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              {urlOnly ? urlOnly.fieldLabel : 'Web address'}
+            </label>
+            <TextInput
+              type="url"
+              inputMode="url"
+              autoFocus
+              value={urlInput}
+              placeholder={urlOnly ? urlOnly.placeholder : 'https://example.com'}
+              aria-invalid={!!urlError}
+              aria-describedby={urlError ? 'link-picker-url-error' : undefined}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  saveUrl();
+                }
+              }}
+            />
+            {urlError ? (
+              <p
+                id="link-picker-url-error"
+                className="text-[11px] font-medium text-rose-600 dark:text-rose-400"
+              >
+                {urlError}
+              </p>
+            ) : (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {urlOnly
+                  ? urlOnly.hint
+                  : "Opens in a new tab. We'll add https:// if you leave off the scheme."}
+              </p>
+            )}
+            <Button
+              size="xs"
+              onClick={saveUrl}
+              disabled={!typed || !!urlError}
+              className="mt-1 self-start shadow-sm"
+            >
+              Save link
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {currentLink ? (
+        <DialogFooter>
+          <button
+            type="button"
+            onClick={() => commit(null)}
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          >
+            Remove link
+          </button>
+        </DialogFooter>
+      ) : null}
+    </Dialog>
+  );
+}
+
+function RowButton({
+  active,
+  icon,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  icon?: React.ReactNode;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={
+        active
+          ? 'flex w-full items-center gap-2.5 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 text-left text-sm font-medium text-brand-800 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
+          : 'flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
+      }
+    >
+      <span
+        className={
+          active
+            ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
+            : 'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
+        }
+      >
+        {icon}
+      </span>
+      <span className="flex min-w-0 flex-1 items-center">{children}</span>
+      {active ? <CheckGlyph /> : null}
+    </button>
+  );
+}
+
+function TabGlyph() {
+  return (
+    <Glyph size={14} units={16} strokeLinecap="butt">
+      <path d="M2 5.5A1.5 1.5 0 0 1 3.5 4h3l1.2 1.5H12.5A1.5 1.5 0 0 1 14 7v4.5A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5z" />
+    </Glyph>
+  );
+}
+
+function DocumentGlyph() {
+  return (
+    <Glyph size={14} units={16} strokeLinecap="butt">
+      <rect x="2" y="2.5" width="5" height="4" rx="1" />
+      <rect x="9" y="9.5" width="5" height="4" rx="1" />
+      <path d="M4.5 6.5v3.5a1 1 0 0 0 1 1H9" />
+    </Glyph>
+  );
+}
+
+function CheckGlyph() {
+  return (
+    <Glyph size={14} units={16} className="shrink-0">
+      <path d="M3.5 8.5l3 3 6-6.5" />
+    </Glyph>
+  );
+}

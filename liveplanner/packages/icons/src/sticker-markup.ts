@@ -1,0 +1,99 @@
+// The sticker's artwork, built once and shared by every renderer (docs/specs/010-palette/stickers.md):
+// the editor canvas, the palette tile, the SVG / PNG / PDF export, the api
+// worker's share thumbnail, and the MCP inline render. One builder rather than
+// a React version and a markup version, because the whole point of a sticker
+// is that it looks the same wherever it turns up.
+//
+// The look, in three layers: a soft shadow, the die-cut white plate, then the
+// content (an emoji glyph, or a word on a coloured pill). Deliberately NO
+// <filter> — an SVG filter needs a defs id, and the export packs every element
+// into one document where those ids would collide. The shadow is a plain
+// offset rounded rect at low opacity instead, which renders identically in
+// every target including headless ones.
+
+import { STICKER_TONE_COLOR, type StickerDef } from './sticker-types';
+import { capBandBaselineY } from './svg-cap-band';
+import { xmlEscape } from './xml';
+
+// Two decimals keeps the markup short and stable across renders.
+const num = (n: number) => String(Math.round(n * 100) / 100);
+
+// Inner SVG markup plus the viewBox it is drawn in. The caller owns the <svg>
+// element, so the same art serves an 18px palette tile and a 400px element.
+export type StickerArt = { viewBox: string; markup: string };
+
+const SHADOW = '#0f172a';
+const SHADOW_OPACITY = 0.14;
+// The hairline around the white plate. Without it a white sticker on a white
+// canvas is invisible except for its shadow.
+const PLATE_EDGE = '#e2e8f0';
+// The plate follows its tab's finish where the art does not (docs/specs/008-canvas/finish.md "Stickers"): its shadow
+// is marked so Professional and Marker drop it, and the emoji's own drawing is kept out of the finish's redraw.
+const SHADOW_ATTRS = 'data-sticker-shadow="" data-finish-keep=""';
+
+// A badge's word has to fit its pill, and the words run from "P0" to
+// "OUT OF SCOPE". Bold uppercase at this letter-spacing measures ~0.70em per
+// character, so size the text off the character count and cap it so short
+// words don't balloon.
+function badgeFontSize(text: string): number {
+  const AVAILABLE = 168; // pill width (204) less its side padding
+  return Math.min(34, Math.round((AVAILABLE / (Math.max(2, text.length) * 0.7)) * 10) / 10);
+}
+
+// The badge's coloured pill (the inner rect below) and its word's tracking, in viewBox units.
+const BADGE_PILL = { x: 14, y: 14, width: 192, height: 60 };
+const BADGE_TRACKING = 1.2;
+
+// An emoji sticker's plate: its shadow and its white, hairlined tile.
+const EMOJI_PLATE =
+  `<rect x="8" y="12" width="84" height="84" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}" ${SHADOW_ATTRS}/>` +
+  `<rect x="8" y="8" width="84" height="84" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>`;
+
+// An emoji's own drawing (its SVG's viewBox and contents), for a render with no emoji font (resolve.ts).
+export type EmojiArt = { viewBox: string; markup: string };
+
+// The box an emoji sticker's glyph fills on its plate (font size 54 about the plate's middle), and an emoji icon's on
+// its 24 grid (size 20 about its middle).
+const STICKER_GLYPH_BOX = { x: 23, y: 23, size: 54 };
+export const ICON_GLYPH_BOX = { x: 2, y: 2, size: 20 };
+
+export function emojiArtMarkup(art: EmojiArt, box: { x: number; y: number; size: number }): string {
+  return `<svg x="${box.x}" y="${box.y}" width="${box.size}" height="${box.size}" viewBox="${art.viewBox}" data-finish-keep="">${art.markup}</svg>`;
+}
+
+// An emoji sticker drawn from its emoji's own art rather than a font's glyph: the same plate, the art where the
+// glyph sits.
+export function emojiStickerArt(art: EmojiArt): StickerArt {
+  return { viewBox: '0 0 100 100', markup: EMOJI_PLATE + emojiArtMarkup(art, STICKER_GLYPH_BOX) };
+}
+
+export function stickerArt(def: StickerDef): StickerArt {
+  if (def.kind === 'badge') {
+    const fill = STICKER_TONE_COLOR[def.tone];
+    const text = xmlEscape(def.text.toUpperCase());
+    const fs = badgeFontSize(def.text);
+    // Dead centre in the pill (docs/specs/004-interface-design/optical-alignment.md): the cap band on the
+    // pill's centre line, and half the trailing letter-space given back, since SVG centres the word with it.
+    const x = BADGE_PILL.x + BADGE_PILL.width / 2 + BADGE_TRACKING / 2;
+    const y = capBandBaselineY(BADGE_PILL.y + BADGE_PILL.height / 2, fs);
+    return {
+      viewBox: '0 0 220 88',
+      markup:
+        `<rect x="6" y="10" width="208" height="76" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}" ${SHADOW_ATTRS}/>` +
+        `<rect x="6" y="6" width="208" height="76" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>` +
+        `<rect x="${BADGE_PILL.x}" y="${BADGE_PILL.y}" width="${BADGE_PILL.width}" height="${BADGE_PILL.height}" rx="20" fill="${fill}"/>` +
+        `<text x="${num(x)}" y="${num(y)}" font-family="system-ui, sans-serif" font-size="${fs}"` +
+        ` font-weight="800" letter-spacing="${BADGE_TRACKING}" fill="#ffffff" text-anchor="middle">${text}</text>`,
+    };
+  }
+  return {
+    viewBox: '0 0 100 100',
+    markup:
+      EMOJI_PLATE +
+      // The emoji font supplies its own colours, so no fill is set; stroke is
+      // cleared in case a non-emoji fallback character is substituted, which
+      // would otherwise inherit a stroke from an ancestor group.
+      `<text x="50" y="52" font-family="system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif"` +
+      ` font-size="54" stroke="none" text-anchor="middle" dominant-baseline="central">${xmlEscape(def.glyph)}</text>`,
+  };
+}

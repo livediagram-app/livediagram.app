@@ -1,0 +1,47 @@
+{
+  "name": "@liveplanner/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --inspector-port 9330",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "staging:check": "wrangler deploy --dry-run --env staging",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveplanner/agent-verbs": "workspace:*",
+    "@liveplanner/api-client": "workspace:*",
+    "@liveplanner/api-schema": "workspace:*",
+    "@liveplanner/diagram-lint": "workspace:*",
+    "@liveplanner/document": "workspace:*",
+    "@liveplanner/edit-operations": "workspace:*",
+    "@liveplanner/forms": "workspace:*",
+    "@liveplanner/icons": "workspace:*",
+    "@liveplanner/items": "workspace:*",
+    "@liveplanner/plan-art": "workspace:*",
+    "@liveplanner/render-png": "workspace:*",
+    "@liveplanner/sheets": "workspace:*",
+    "@liveplanner/templates": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "hono": "^4.13.13",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261007.1",
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.148.0"
+  }
+}

@@ -1,0 +1,176 @@
+'use client';
+
+import { pruneCustomThemeSwatchOverrides } from '@/lib/swatch-override-prefs';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { CustomTheme, CustomThemeDefinition } from '@liveplanner/api-schema';
+import {
+  apiCreateCustomTheme,
+  apiDeleteCustomTheme,
+  apiListCustomThemes,
+  apiUpdateCustomTheme,
+} from '@/lib/api-client';
+import {
+  registerCustomTheme,
+  registerCustomThemes,
+  unregisterCustomTheme,
+} from '@/lib/custom-theme-registry';
+import { track } from '@/lib/telemetry';
+
+// Reactive owner-scoped custom-theme list + CRUD (docs/specs/011-theme/custom-themes.md). Wraps the
+// editor and the Explorer so the theme picker / builder / Themes pane
+// share one source of truth. Every mutation writes THROUGH to the
+// module registry (custom-theme-registry.ts) so the synchronous
+// getTheme path stays current; the React state drives re-renders so a
+// custom-themed tab repaints the moment the boot fetch lands or a theme
+// is edited. A null ownerId (auth still bootstrapping) is "not ready":
+// no fetch, mutations no-op.
+
+type CustomThemeContextValue = {
+  themes: CustomTheme[];
+  loading: boolean;
+  // Create + persist; returns the saved theme (with its `custom:` id) or
+  // undefined on failure. The id is minted here.
+  createTheme: (
+    name: string,
+    definition: CustomThemeDefinition,
+  ) => Promise<CustomTheme | undefined>;
+  updateTheme: (
+    id: string,
+    patch: { name?: string; definition?: CustomThemeDefinition },
+  ) => Promise<CustomTheme | undefined>;
+  deleteTheme: (id: string) => void;
+  // False in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): the
+  // themes are read, never built, edited or deleted there.
+  writable: boolean;
+};
+
+const CustomThemeContext = createContext<CustomThemeContextValue | null>(null);
+
+// Safe consumer: returns an inert value when there's no provider (e.g. a
+// surface that doesn't mount one), so callers don't have to null-check.
+export function useCustomThemes(): CustomThemeContextValue {
+  return (
+    useContext(CustomThemeContext) ?? {
+      themes: [],
+      loading: false,
+      createTheme: async () => undefined,
+      updateTheme: async () => undefined,
+      deleteTheme: () => {},
+      writable: false,
+    }
+  );
+}
+
+export function CustomThemeProvider({
+  ownerId,
+  onThemeDeleted,
+  readOnly = false,
+  children,
+}: {
+  ownerId: string | null;
+  readOnly?: boolean;
+  // Called synchronously when a theme is deleted, with its id, BEFORE the
+  // delete is persisted. The editor uses it to revert any tab in the open
+  // document that was using the now-dead `custom:<uuid>` id back to the
+  // default theme, so the deletion is reflected on the canvas immediately
+  // (docs/specs/011-theme/custom-themes.md). Surfaces other than the editor (Explorer, new-document) omit
+  // it — they have no open document to repaint.
+  onThemeDeleted?: (id: string) => void;
+  children: ReactNode;
+}) {
+  const [themes, setThemes] = useState<CustomTheme[]>([]);
+  // The owner whose list has settled (loaded or failed): loading until that is the current owner.
+  const [settledFor, setSettledFor] = useState<string | null>(null);
+  if (!ownerId && settledFor !== null) setSettledFor(null);
+  const loading = ownerId ? settledFor !== ownerId : false;
+
+  useEffect(() => {
+    if (!ownerId) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const list = await apiListCustomThemes(ownerId);
+        if (!alive) return;
+        registerCustomThemes(list);
+        setThemes(list);
+        // A custom theme deleted on another device takes its quick-style
+        // swatch overrides with it (docs/specs/008-canvas/quick-style-panel.md).
+        const live = new Set(list.map((t) => t.id));
+        pruneCustomThemeSwatchOverrides(ownerId, (id) => live.has(id));
+      } catch {
+        // Silent: custom themes are optional; documents fall back to
+        // built-ins via getTheme. The next mount retries.
+      } finally {
+        if (alive) setSettledFor(ownerId);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [ownerId]);
+
+  const createTheme = useCallback(
+    async (name: string, definition: CustomThemeDefinition) => {
+      if (!ownerId) return undefined;
+      const id = `custom:${crypto.randomUUID()}`;
+      try {
+        const theme = await apiCreateCustomTheme(ownerId, {
+          id,
+          name: name.trim() || 'My theme',
+          definition,
+        });
+        registerCustomTheme(theme);
+        setThemes((prev) => [theme, ...prev]);
+        track('Theme', 'Created', 'Custom');
+        return theme;
+      } catch {
+        return undefined;
+      }
+    },
+    [ownerId],
+  );
+
+  const updateTheme = useCallback(
+    async (id: string, patch: { name?: string; definition?: CustomThemeDefinition }) => {
+      if (!ownerId) return undefined;
+      try {
+        const theme = await apiUpdateCustomTheme(ownerId, id, patch);
+        registerCustomTheme(theme);
+        setThemes((prev) => prev.map((t) => (t.id === id ? theme : t)));
+        track('Theme', 'Changed', 'CustomEdited');
+        return theme;
+      } catch {
+        return undefined;
+      }
+    },
+    [ownerId],
+  );
+
+  const deleteTheme = useCallback(
+    (id: string) => {
+      if (!ownerId) return;
+      // Repaint affected tabs BEFORE unregistering: resetTabsUsingTheme
+      // does a hard reset to the default theme, so it doesn't depend on
+      // the dead id still resolving — but keeping this order means the
+      // registry and the canvas never disagree mid-delete.
+      onThemeDeleted?.(id);
+      pruneCustomThemeSwatchOverrides(ownerId, (themeId) => themeId !== id);
+      setThemes((prev) => prev.filter((t) => t.id !== id));
+      unregisterCustomTheme(id);
+      // The local unregister above is optimistic; the count follows the server.
+      void apiDeleteCustomTheme(ownerId, id)
+        .then(() => track('Theme', 'Deleted', 'Custom'))
+        .catch(() => {});
+    },
+    [ownerId, onThemeDeleted],
+  );
+
+  return (
+    <CustomThemeContext.Provider
+      value={{ themes, loading, createTheme, updateTheme, deleteTheme, writable: !readOnly }}
+    >
+      {children}
+    </CustomThemeContext.Provider>
+  );
+}

@@ -1,0 +1,26 @@
+/* The privacy illustrations' palette (components/PrivacyArt.tsx), in both appearances
+ * (docs/specs/004-interface-design/appearance.md). Their SVG reads these through presentation
+ * attributes, so one switch recolours every piece. Light sits on the white band card; dark keeps
+ * the brand's violet on night. The --pa-sky names are the pieces' original accent; they now carry the
+ * brand violet. */
+:root {
+  --pa-sky: #7c3aed;
+  --pa-sky-faint: rgba(139, 92, 246, 0.12);
+  --pa-slate: #94a3b8;
+  --pa-slate-faint: rgba(148, 163, 184, 0.3);
+  --pa-rose: #e11d48;
+  --pa-rose-faint: rgba(225, 29, 72, 0.08);
+  --pa-on-sky: #ffffff;
+  --pa-surface: #ffffff;
+}
+
+.dark {
+  --pa-sky: #a78bfa;
+  --pa-sky-faint: rgba(167, 139, 250, 0.16);
+  --pa-slate: #94a3b8;
+  --pa-slate-faint: rgba(148, 163, 184, 0.25);
+  --pa-rose: #fb7185;
+  --pa-rose-faint: rgba(251, 113, 133, 0.12);
+  --pa-on-sky: #1e1033;
+  --pa-surface: #0f172a;
+}

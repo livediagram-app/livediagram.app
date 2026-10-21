@@ -1,0 +1,86 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PollPromptSheet, PollResultsPanel } from '@/components/illustrations/polls';
+
+export const metadata = helpMetadata({
+  title: 'Polls',
+  description:
+    'Ask everyone in the document a quick question, see the answers tally live, and keep the results on the canvas if you want them.',
+  path: '/help/collaboration/session-tools/polls/',
+});
+
+<ArticleLayout title="Polls" description="Ask a question, watch the answers land, then keep the result or let it vanish." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "polls")}>
+
+A poll is a quick pulse-check on the people in the room: "does everyone approve of this design?", "how confident are we, 1 to 5?", "what would you change?". Unlike [dot voting](/help/collaboration/session-tools/voting/), a poll attaches to nothing on the canvas and leaves nothing behind unless you choose to keep its results.
+
+## Running a poll
+
+Press the **Poll** button in the bottom bar to open the poll composer above it. Polls are in [Workshop mode](/help/canvas/workshop-mode/); Diagram, Plan, Draw and Pages mode have no Poll button. When you ask, the popover stays open and becomes the Poll panel.
+
+<Step n={1}>
+  Type your question (up to 200 characters) and pick an answer style from the tiles. If the style is
+  **Choices**, add your answers (between two and ten; **Enter** moves to the next one, and **+ Add
+  answer** adds another). For **Collaborators**, a **Who people can pick** list shows the names that
+  will be on the ballot. Then choose **Ask everyone**, or press **Enter** in the question. Until the
+  poll is ready, the button says what is missing instead, like "Write a question to ask".
+</Step>
+
+<Step n={2}>
+  Everyone currently in the document gets the question on a sheet that rises from the bottom of the
+  screen. The canvas stays live behind it, so they can look at what they are being asked about. They
+  can answer, or press **Skip** (or **Esc**) if they would rather not weigh in.
+</Step>
+
+<Figure caption="Everyone gets the question on a sheet at the bottom of the screen, with Skip, while the canvas stays live behind it.">
+  <PollPromptSheet />
+</Figure>
+
+<Step n={3}>
+  Press the **Poll** button in the bottom bar (a green dot on it means a poll is running) to open
+  the **Poll** panel above it, which updates as answers land. Press **End Poll** when you're done,
+  and the question, the answers, and the panel all disappear for everyone at once.
+</Step>
+
+<Figure caption="The host's Poll panel: a bar per answer, how many answered and skipped, and Keep Results above End Poll.">
+  <PollResultsPanel />
+</Figure>
+
+Only one poll runs at a time in a document, and it goes to everyone in the document, whichever tab they are on. A [session button](/help/palette/behaviour/session-buttons/) on the canvas can carry a ready-made poll, so a template can ask its question with one press.
+
+## Answer styles
+
+- **Yes / No**, and **+ Abstain** when you want to let people sit one out explicitly.
+- **Choices**: between two and ten options you write yourself.
+- **Collaborators**: the people in the document become the answers ("who should present?"). The list is taken when you ask, so anyone who joins afterwards isn't on it, and it needs at least two people.
+- **Rating 1-5**: for confidence, priority, or "how did that go?".
+- **Free text**: short written answers of up to 280 characters, listed in the panel as they arrive.
+
+## Who can answer, and who can see results
+
+**Everyone who can take part is asked: editors and anyone on a Participant pass.** A Viewer isn't asked and doesn't see the poll or its results, so to hear back from an audience, share a Participant pass with them. Starting and ending a poll still needs edit access (and, while someone is the [facilitator](/help/collaboration/facilitator/), it is theirs), so an audience member can answer but cannot open a poll of their own or close yours. On a document you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
+
+**The results panel is for people who have responded**, plus whoever started the poll. Answering, or pressing **Skip**, is what unlocks it. That way nobody can watch the numbers build up and let them sway their own answer.
+
+**Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and the document does not record who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
+
+## Keeping the results
+
+A poll exists only while it is running, and ending it removes every trace. To keep the outcome, press **Keep Results** on the Poll panel before you end it. It drops the results so far onto the canvas, at the centre of your view:
+
+- a **bar chart** of the answers, titled with the question (answers nobody picked stay in at zero), or
+- for a free-text poll, an [idea box](/help/palette/collaborate/idea-boxes/) holding the answers, already open.
+
+The poll keeps running after you keep its results, so you can keep another snapshot later. The chart or idea box is an ordinary element: move it, restyle it or delete it like any other.
+
+## While it runs
+
+The live session holds on to the poll while it runs, so nobody gets left behind:
+
+- **Someone who opens the document after the poll started is asked too**, and sees the answers so far.
+- **Refreshing the page keeps you in the poll**, with your answer still counted.
+- **If the host refreshes or reconnects**, they can still end the poll. Anyone else can press **Dismiss** to clear their own results panel (and the button's green dot) without ending it.
+
+Starting or ending a poll is never part of [Undo](/help/canvas/undo/).
+
+</ArticleLayout>

@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Themes',
+  description:
+    'Restyle a whole tab in one click with a theme, preview each one on the canvas, and build your own custom themes to reuse.',
+  path: '/help/canvas/themes/',
+});
+
+<ArticleLayout
+  title="Themes"
+  description="Recolour an entire tab in a single click, browse a catalogue of themes that work in light and dark mode, and save your own to reuse across documents."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("themes")}
+>
+
+A theme is the fastest way to make a diagram look intentional. Instead of colouring each shape, border, and background by hand, pick a theme and liveplanner recolours the whole tab at once, from the canvas backdrop to every element on it. The catalogue ships twenty-four themes, and you can save your own too.
+
+## What a Theme Covers
+
+A theme sets the canvas background and pattern together with the fill, border, and text colours of your elements, so the diagram reads as one coherent style. Most themes paint every element the same colours; some are cleverer, tinting each branch of a hierarchy a different hue, or colouring each shape kind by its meaning (the **UML** theme makes decisions amber and data stores purple, for example). Sticky notes keep their own note colours, and switching themes leaves your [fonts](/help/canvas/text-and-fonts/) untouched.
+
+A theme belongs to one tab, so the tabs of one document can each wear a different one. A new document starts on Default, and a tab you add starts on the theme of the tab you added it from.
+
+## Light and Dark, for Everyone
+
+Every theme has a light half and a dark half. Which half you see is your own [appearance](/help/tools/dark-mode/): on **Default**, light chrome shows the off-white canvas with the familiar blue elements and dark chrome the blue-slate canvas with grey ones, and every other theme turns the same way, keeping its own hues.
+
+Nothing is saved when the half changes: a colleague in light chrome sees the light half of the very same tab while you work in the dark one. A colour someone picked by hand is drawn as it is for everyone.
+
+## Browsing and Applying
+
+You change a tab's theme from the **Tab Style** dialog: click the **Theme & canvas** button in the bottom-right corner of the editor, beside the zoom controls, and it opens on its home. At the top are twenty-nine **Looks** (from **Everyday**, **Whiteboard** and **Graph Paper** to colourful ones like **Spectrum** and **Daydream**), each setting the theme, the [finish](/help/canvas/finish/), the tab font and the canvas pattern together in one click, led by a **Mashup** card that rolls a random mix of all four each time you press it, and a dropdown beside them narrows the looks to one finish. To pick a theme on its own, press **Colours** under **Fine-tune**: every theme sits in one list, nine to a page. Click one to apply it. See [Changing the Theme](/help/canvas/themes/changing-theme/) for the full walkthrough.
+
+<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+  <LookAndFeelTheme />
+</Figure>
+
+## Beyond a Single Colour
+
+Two kinds of theme go past the one-colour look. [Multicolour themes](/help/canvas/themes/multicolour-themes/) give each branch of a mind map or hierarchy its own hue, the way a rainbow mind map does. And when no built-in theme fits, [custom themes](/help/canvas/themes/custom-themes/) let you author your own palette, save it, and reuse it across documents.
+
+## Quick Emphasis
+
+For tweaks to a single element rather than the whole tab, the [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click colour and border variations derived from the active theme, so a key shape can stand out while still matching the overall look.
+
+<Tip>
+  Every control in the Tab Style dialog applies as you click, with no Apply or Cancel, so you can
+  try themes on the canvas behind the dialog until one feels right. Undo takes a theme change back
+  if you change your mind later.
+</Tip>
+
+</ArticleLayout>

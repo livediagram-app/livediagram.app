@@ -1,0 +1,225 @@
+# Menus
+
+Status: shipped
+
+## What
+
+Every floating list of actions or settings that opens from a control, a right-click, a long press or
+Shift+F10 is a **menu** to the person using it. To assistive technology a menu is announced by what
+it holds, and every menu behaves the same way from the keyboard. This meets WCAG 2.2 AA and follows
+the WAI-ARIA Authoring Practices [Menu and Menubar](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)
+and [Menu Button](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/) patterns.
+
+## Two kinds of menu
+
+| Kind             | Holds                                                                                   | Announced as              |
+| ---------------- | --------------------------------------------------------------------------------------- | ------------------------- |
+| **Command menu** | Only verbs and choices: rows, tiles, tool buttons, checkable entries, submenus of these | `menu` of menu items      |
+| **Control menu** | Anything more: a slider, a text field, a select, a swatch row, a dial, a sub-panel      | Non-modal `dialog`, named |
+
+A menu holding even one control is a control menu: ARIA lets a `menu` own nothing but menu items,
+groups and separators, so a slider inside one is invisible or garbled to a screen reader. The words
+"menu", "context menu" and "tab menu" stay in copy for both kinds; the kind is how they are built.
+
+## Command menus
+
+### Semantics
+
+- The menu is `role="menu"`, named by its header when it has one (`aria-labelledby`), otherwise by
+  its trigger's name.
+- A verb is `menuitem`; an on/off entry is `menuitemcheckbox` and a one-of-a-set entry is
+  `menuitemradio`, each with `aria-checked`.
+- An entry that exists but cannot run now stays in the menu, focusable, with `aria-disabled="true"`;
+  activating it does nothing.
+- A group's title (an accordion header inside a menu) is a `menuitem` with `aria-expanded`, and the
+  rows it reveals are a `group` labelled by it. Collapsed rows are inert: not focusable, not read.
+- A divider is a `separator`. A header naming the menu is not an item and is never focused; its
+  title alone names the menu (a badge beside it, such as a document's visibility, is decoration).
+- Every item has a name: an icon-only tile carries one (the element menu's Shape tiles are named
+  after their shape).
+- A submenu's trigger is a `menuitem` with `aria-haspopup="menu"`, `aria-expanded` and, while open,
+  `aria-controls`; the submenu is a `menu` named by its header or its trigger.
+- A menu's trigger carries `aria-haspopup="menu"`, `aria-expanded` and, while open, `aria-controls`
+  naming the menu.
+
+### Keyboard
+
+There is one Tab stop: focus lives on one item at a time and the arrow keys move it.
+
+| Key                      | Does                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Enter, Space, Down Arrow | On the trigger: open the menu, focus on its first item (the checked one in a one-of-a-set menu)       |
+| Up Arrow                 | On a menu button: open the menu on its last item (a row's ⋯ opens on its first)                       |
+| Down Arrow / Up Arrow    | Next / previous item, wrapping at the ends                                                            |
+| Home / End               | First / last item                                                                                     |
+| A letter or digit        | Next item whose name starts with what was typed in the last half second; one letter again cycles them |
+| Enter, Space             | Activate the item (a submenu trigger opens its submenu and focuses its first item)                    |
+| Right Arrow              | On a submenu trigger: open the submenu and focus its first item                                       |
+| Left Arrow               | In a submenu: close it and focus its trigger                                                          |
+| Escape                   | Close the menu holding focus (only the submenu, when in one) and return focus to what opened it       |
+| Tab, Shift+Tab           | Close the whole menu and move to the control after (before) where focus was when it opened            |
+
+- **Focus moves into the menu on open**, however it was opened: to the checked entry of a
+  one-of-a-set menu, else the first item. A menu opened by hovering (the zoom presets) is the one
+  exception: hover is not asking for the keyboard, so focus stays where it was.
+- **Focus moving elsewhere closes it.** A click or Tab that takes focus outside the menu (and its
+  submenus) closes it; a press that moves focus nowhere (Safari does not focus a pressed button)
+  leaves it open.
+- **Focus comes back.** When a menu closes while it holds focus (Escape, choosing a verb) focus
+  returns to where it was when the menu opened: the trigger that opened it, the tree row Shift+F10
+  was pressed on, the element that was right-clicked. If that place is gone, or was nowhere, it
+  goes to the menu's trigger; a control that re-renders as the menu closes (the selection
+  toolbar's More actions, which steps aside while the element menu is up) is found again by its
+  id. A verb that opens a dialog or a rename field hands focus on from there.
+- **The zoom percentage is a button of its own**: Enter and Space fit the screen, as a click does,
+  and Down Arrow or Up Arrow opens its presets.
+- Opening never takes focus from a live text edit: a menu opened beside a label being edited
+  leaves the caret where it is.
+- While focus is inside a menu of either kind the canvas's shortcuts stand down: an arrow in a menu
+  never nudges the selection, and Delete, Escape or Tab in one never deletes, deselects or grows
+  the diagram.
+
+## Control menus
+
+- The menu is a non-modal `role="dialog"` with a name ("Element menu", "Selection menu", "Cell
+  menu", "Tab menu", "Canvas menu", "<layer> layer menu", the session tool's "<tool> options",
+  "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the selection
+  toolbar's More actions, an element's settings ⋯).
+- Its controls keep their own roles: buttons, toggle buttons (`aria-pressed`), sliders, fields,
+  selects. Its accordion headers are disclosure buttons (`aria-expanded`) and collapsed sections are
+  inert. Its flyouts are triggered by a button with `aria-haspopup="dialog"` and `aria-expanded`,
+  and are themselves named non-modal dialogs.
+- **Keyboard**: Tab and Shift+Tab walk its controls in reading order. Focus moves to its first
+  control when it was opened from the keyboard (the last interaction was a key press: Enter on a
+  trigger, Shift+F10, the Menu key); opened
+  by pointer it stays beside the canvas without taking focus, as it always has, so a right-click
+  followed by Delete still deletes. Escape closes the innermost open flyout first, then the menu,
+  and focus returns as for a command menu. Focus is not trapped: Tab past the last control leaves
+  it, and it stays open, because it is a companion to the canvas.
+- Opening a flyout from the keyboard moves focus to its first control; Escape in the flyout closes
+  only the flyout and returns focus to its trigger.
+- **One menu per item, its cog.** A Plan item with a settings cog (a board, a Sheet, a chart, a Dashboard
+  slot) has that cog as its only menu: never a ⋯ beside it. Anything else that item's container offers (a
+  Dashboard slot's Open Tab, Add a Slot, Clear Slot, Remove Slot) is a collapsible section in the same cog's
+  popover, one section open at a time, and an item with no cog of its own gets the container's cog (Slot
+  Settings) rather than a ⋯, so the trigger looks the same everywhere ([Plan tabs](../026-plan/plan-tabs.md#dashboard-tab)).
+
+## Focus ring
+
+Every item and control in either kind of menu shows the keyboard focus ring **inside** its own edge
+(a 2px outline, inset 2px), so a full-width row in a clipped menu never loses half its ring. It is
+brand 600 in light (3.57:1 or more against every row tone: white, the hover slate 100, the checked
+brand 100) and brand 400 in dark (5.6:1 or more against slate 900, slate 800 and the checked tint),
+meeting WCAG 1.4.11's 3:1. Pointer focus never shows it (`:focus-visible`).
+
+The app-wide ring outside menus moves from brand 500 to brand 600 in light for the same reason:
+brand 500 on white is 2.77:1. Dark keeps brand 500 (4.4:1 or more on the dark surfaces).
+
+## Pointer behaviour is unchanged
+
+Click, right-click, long press, hover-open (the zoom presets), outside-press dismissal, the
+bottom sheet on a phone, menu-follows-selection on the canvas and
+[flyout height stability](./flyout-height-stability.md) behave exactly as before. Roles, focus and
+keys add nothing to a menu's box: no row grows, moves or appears when focus arrives.
+
+## Item labels
+
+Every item an element's menus print is **Title Case**: the element menu and the selection menu
+(accordion titles, tiles, toggle rows, action buttons and the row buttons inside a section), the
+cell menu, the locked element menu, the selection filter menu and the element quick menus. Short
+articles, conjunctions and prepositions (a, an, the, and, or, of, to, in, on, for, at, by, with,
+from, as) stay lowercase unless they lead: "Empty the Box", "Reset to Theme", "Start at Exact
+Anchor", "A List".
+
+The same rule covers the close cousins of a menu item, the controls that name an action on an
+element or add one:
+
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@liveplanner/api-schema`).
+- **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
+  Point", "Add Stat".
+- **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
+  Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
+  Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
+  export draws an accent bar with the same words.
+- **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
+  "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
+- **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
+  Tool (or 1)"): the name is Title Case and a trailing hint in parentheses stays as written. A row
+  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)",
+  "On a mind node: add a child") and the presentation rows, which pair with the presentation
+  controls' tooltips, keep sentence case.
+
+Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
+control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
+for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
+case. An element's own name in prose ("a Done check") stays sentence case too. A help article
+that names an item in bold spells it exactly as the editor does
+(`apps/help/lib/ui-labels-in-articles.test.ts`).
+
+## The menus
+
+Each menu, how it opens, what it holds, and what the keyboard could do before this spec.
+
+### Command menus
+
+| Menu                  | Opens from                                                     | Holds                                                                    | Keyboard before                                     |
+| --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10 | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
+| Folder menu           | Same, on a folder; My Documents in the sidebar and panel       | Name header, verbs, **Use as Default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
+| Timeline card menu    | ⋯ on a Timeline card                                           | Verbs                                                                    | Tab only                                            |
+| Explorer More menu    | More in the Explorer panel header                              | Verbs in bands                                                           | Tab only                                            |
+| New menus             | + in the Explorer pane header and a team library header        | Document, Folder tiles                                                   | Tab only                                            |
+| Team menu             | ⋯ on a team in the Teams pane                                  | Tiles                                                                    | Tab only                                            |
+| Slide menu            | ⋯ on a presentation slide row                                  | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
+| Embed copy menu       | Embed on a share pass                                          | Copy rows                                                                | Tab only                                            |
+| Selection filter menu | The filter button on a mixed selection                         | One tile per element type                                                | Tab only                                            |
+| Custom colour menu    | Right-click, long press or Shift+F10 on a custom Draw colour   | Remove                                                                   | Focus in, Escape                                    |
+| Editor mode menu      | The mode chip                                                  | One-of-a-set modes                                                       | Arrows, Home, End, Escape; no typeahead, Tab        |
+| Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
+| Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
+| Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
+| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                   | Verbs, All Settings… under a separator                                   | Tab only                                            |
+| Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
+| Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
+| Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |
+
+### Control menus
+
+| Menu                  | Opens from                                                               | Holds                                                                   |
+| --------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Element menu          | Right-click, long press or Shift+F10 on an element; an element's ⋯       | Accordions, tiles, sliders, colour rows, fields, flyouts, session panes |
+| Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts                        |
+| Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                        |
+| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                               |
+| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
+| Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The session pane for that tool                                          |
+| Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
+| Settings cog          | The cog on a board, Sheet or chart header, a Dashboard slot or page      | Collapsible sections of fields, tiles and pictures                      |
+
+Before this spec every one of them was `role="menu"`, so their sliders, fields and toggles sat inside
+a menu that may not own them, and opening one from the keyboard left focus behind.
+
+A panel opened from inside another (a cog's Style section opening a colour picker, a Delete asking in a
+`ConfirmPopover`) sits on top of it: **Escape closes only the top one**, focus going back to the control that opened
+it, and the next Escape closes the one beneath; a press inside the top one never closes the one beneath, while a
+press elsewhere in the one beneath closes the top one. The open anchored panels (`AnchoredPopover`, `ConfirmPopover`)
+keep one stack for this (`components/primitives/popover-stack.ts`).
+
+### Not menus
+
+Listbox dropdowns (the palette and canvas-tool pickers, the rich-text toolbar's dropdowns, the
+Explorer filter chips), dialog popovers (Settings, presence, infographic pages), mention suggestions
+and toolbars follow their own patterns and are out of scope.
+
+## Telemetry
+
+None. Menus already count the verbs chosen in them; how focus moved is not an action.
+
+## Where it lives
+
+- `@liveplanner/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
+  `useMenuButton`, `useControlMenu`), so the editor, help, telemetry and marketing menus
+  behave as one.
+- The editor's menu primitives (`PortalMenu`, `ContextMenu`, `MenuFlyoutSection` and the row
+  components) pick each row's role from the kind of menu they sit in.
+- The focus ring rules live in the shared Tailwind theme.

@@ -1,0 +1,184 @@
+import { makeTestRouteContext } from './test-route-context';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { qaVoterId, type QaNote } from '@liveplanner/document';
+import type { QaWriteRequest } from '../qa-board-write';
+
+// The Q&A board endpoint (docs/specs/012-collaboration/qa-board.md). What the ROUTE has to get right: the role
+// split (audience verbs on read access, board-running verbs on edit access),
+// an actor derived from the authenticated caller rather than the request, and
+// handing the write to the document's room. The write and its serialisation are
+// the room's, covered in document-room-qa.test.ts and qa-board-write.test.ts.
+
+const { db, gates, votes } = vi.hoisted(() => ({
+  db: { getDocument: vi.fn(), getParticipant: vi.fn() },
+  gates: { gateParticipate: vi.fn(), gateEdit: vi.fn() },
+  votes: { refuseGuestVoteOverCap: vi.fn() },
+}));
+vi.mock('../db', () => db);
+vi.mock('../vote-integrity', () => votes);
+vi.mock('./context', async (orig) => ({
+  ...(await orig<typeof import('./context')>()),
+  gateParticipate: gates.gateParticipate,
+  gateEdit: gates.gateEdit,
+}));
+
+import { handleQaBoardRoute } from './qa-board-routes';
+
+const PATH = '/api/documents/d1/tabs/t1/qa';
+
+function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 })) {
+  const sent: { url: string; body: QaWriteRequest; room: string }[] = [];
+  let room = '';
+  const env = {
+    DOCUMENT_ROOM: {
+      idFromName: (n: string) => n,
+      get: (id: string) => {
+        room = id;
+        return {
+          fetch: vi.fn(async (url: string, init: { body: string }) => {
+            sent.push({ url, body: JSON.parse(init.body) as QaWriteRequest, room });
+            return reply();
+          }),
+        };
+      },
+    },
+  } as never;
+  const call = (body: unknown, owner = 'owner-1') =>
+    handleQaBoardRoute(makeTestRouteContext('POST', PATH, { owner, body, env }));
+  return { call, sent };
+}
+
+beforeEach(() => {
+  for (const fn of [...Object.values(db), ...Object.values(gates)]) fn.mockReset();
+  db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-0', teamId: null, tabs: [] });
+  db.getParticipant.mockResolvedValue({ name: 'Priya', color: '#0af' });
+  gates.gateParticipate.mockResolvedValue(true);
+  gates.gateEdit.mockResolvedValue(false);
+  votes.refuseGuestVoteOverCap.mockReset();
+  votes.refuseGuestVoteOverCap.mockResolvedValue(null);
+});
+
+// docs/specs/012-collaboration/vote-integrity.md: an upvote is admitted against the guest-voter cap; taking one back
+// never is.
+describe('guest voter cap', () => {
+  it('refuses an upvote the cap refuses, without reaching the room', async () => {
+    votes.refuseGuestVoteOverCap.mockResolvedValue(
+      Response.json({ error: 'vote_limit' }, { status: 429 }),
+    );
+    const { call, sent } = setup();
+    const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
+    expect(res!.status).toBe(429);
+    expect(votes.refuseGuestVoteOverCap).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-1');
+    expect(sent).toEqual([]);
+  });
+
+  it('never gates withdrawing a vote, or adding a question', async () => {
+    const { call } = setup();
+    await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: false } });
+    await call({
+      elementId: 'b1',
+      action: { type: 'add', id: 'q1', text: 'Why?', anonymous: true },
+    });
+    expect(votes.refuseGuestVoteOverCap).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleQaBoardRoute', () => {
+  it('ignores other paths', async () => {
+    const res = await handleQaBoardRoute(makeTestRouteContext('POST', '/api/documents/d1/tabs/t1'));
+    expect(res).toBeNull();
+  });
+
+  it('lets a read-only visitor add a note, with the author from their participant row', async () => {
+    const { call, sent } = setup();
+    const res = await call({
+      elementId: 'b1',
+      action: { type: 'add', id: 'n1', text: 'Why?', anonymous: false, author: { name: 'Fake' } },
+    });
+    expect(res!.status).toBe(200);
+    expect(gates.gateEdit).not.toHaveBeenCalled();
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.url).toBe('https://room/qa');
+    // The document's own room, so every write for it queues in one place.
+    expect(sent[0]!.room).toBe('d1');
+    expect(sent[0]!.body).toMatchObject({
+      documentId: 'd1',
+      tabId: 't1',
+      elementId: 'b1',
+      action: { type: 'add', id: 'n1', text: 'Why?', anonymous: false },
+      actor: { author: { name: 'Priya', color: '#0af' } },
+    });
+    // Nothing the client claimed about itself survives.
+    expect(JSON.stringify(sent[0]!.body)).not.toContain('Fake');
+  });
+
+  it('sends no author for an anonymous note and never reads the participant', async () => {
+    const { call, sent } = setup();
+    await call({
+      elementId: 'b1',
+      action: { type: 'add', id: 'n1', text: 'Why?', anonymous: true },
+    });
+    expect(sent[0]!.body.actor.author).toBeNull();
+    expect(db.getParticipant).not.toHaveBeenCalled();
+  });
+
+  it('derives the voter id from the authenticated caller and returns it', async () => {
+    const notes: QaNote[] = [{ id: 'n1', text: 'a', at: 1, voters: ['x'] }];
+    const { call, sent } = setup(() => Response.json({ notes, rev: 7 }));
+    const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n1', on: true } });
+    const expected = await qaVoterId('owner-1', 'b1');
+    expect(sent[0]!.body.actor.voterId).toBe(expected);
+    expect(await res!.json()).toEqual({ notes, rev: 7, voterId: expected });
+  });
+
+  it('needs edit access to run the board', async () => {
+    const { call, sent } = setup();
+    const res = await call({ elementId: 'b1', action: { type: 'clear' } });
+    expect(res!.status).toBe(403);
+    expect(gates.gateEdit).toHaveBeenCalled();
+    expect(sent).toEqual([]);
+  });
+
+  it('refuses a caller who cannot read the document', async () => {
+    gates.gateParticipate.mockResolvedValue(false);
+    const { call } = setup();
+    const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
+    expect(res!.status).toBe(403);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md: the board lives on a tab, so both gates name it and
+  // a link scoped to another tab is refused.
+  it("names the board's tab to both gates", async () => {
+    const { call } = setup();
+    await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
+    expect(gates.gateParticipate).toHaveBeenCalledWith(
+      expect.anything(),
+      'd1',
+      'owner-0',
+      null,
+      't1',
+    );
+    await call({ elementId: 'b1', action: { type: 'clear' } });
+    expect(gates.gateEdit).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-0', null, 't1');
+  });
+
+  it('rejects a malformed action before touching the room', async () => {
+    const { call, sent } = setup();
+    expect((await call({ elementId: 'b1', action: { type: 'nuke' } }))!.status).toBe(400);
+    expect((await call({ action: { type: 'clear' } }))!.status).toBe(400);
+    expect(sent).toEqual([]);
+  });
+
+  it('relays the room’s refusals', async () => {
+    const missing = setup(() => new Response(null, { status: 404 }));
+    expect(
+      (await missing.call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } }))!
+        .status,
+    ).toBe(404);
+    const busy = setup(() => new Response(null, { status: 409 }));
+    expect(
+      (await busy.call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } }))!
+        .status,
+    ).toBe(409);
+  });
+});

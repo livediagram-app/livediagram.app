@@ -1,0 +1,149 @@
+'use client';
+
+// "Add a card" (docs/specs/026-plan/plan-board.md "Working on a board"): a cell's Add card button
+// opens this menu, as Pages mode's + opens "Add a page". It offers the card types the board shows,
+// each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
+// the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
+// option list (OptionRows), so arrow keys, Escape, focus return and an outside press behave as every other
+// menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
+// away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Add New Card Type under the
+// tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
+import { useEffect, useRef, type SyntheticEvent } from 'react';
+import { type ItemFields, type ItemTypeDef } from '@liveplanner/items';
+import { BottomSheet } from '@/components/primitives/BottomSheet';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { AddCardTypeButton } from './AddCardTypeButton';
+import { OptionRows } from './OptionRows';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { PlanTypeGlyph } from './plan-type-glyph';
+import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
+
+export type NewCard = { type: string; fields: ItemFields };
+
+// A portal's events still bubble up the React tree to the board and canvas.
+const stop = (e: SyntheticEvent) => e.stopPropagation();
+
+export function AddCardPopover({
+  anchor,
+  types,
+  onAdd,
+  onCreateType,
+  onClose,
+}: {
+  // The Add card button the menu hangs from.
+  anchor: HTMLElement | null;
+  // The types this board shows, in the document's order.
+  types: readonly ItemTypeDef[];
+  onAdd: (card: NewCard) => void;
+  // Create Card Type: absent, the row is not offered (a viewer, or a catalogue with no room).
+  onCreateType?: () => void;
+  onClose: () => void;
+}) {
+  const mobile = useIsMobileViewport();
+  // Closes on a wheel (a pan or a zoom) anywhere but the menu itself, which may scroll.
+  const box = useRef<HTMLDivElement>(null);
+  const close = useLatest(onClose);
+  useEffect(() => {
+    if (mobile) return;
+    const onWheel = (e: WheelEvent) => {
+      const menu = box.current?.ownerDocument.querySelector('[data-add-card-menu]');
+      if (e.target instanceof Node && menu?.contains(e.target)) return;
+      close.current();
+    };
+    document.addEventListener('wheel', onWheel, { capture: true, passive: true });
+    return () => document.removeEventListener('wheel', onWheel, { capture: true });
+  }, [mobile, close]);
+  const choices = (
+    <AddCardChoices
+      types={types}
+      onAdd={(card) => {
+        onClose();
+        onAdd(card);
+      }}
+      {...(onCreateType
+        ? {
+            onCreateType: () => {
+              onClose();
+              onCreateType();
+            },
+          }
+        : {})}
+    />
+  );
+
+  if (mobile) {
+    return (
+      <BottomSheet
+        role="dialog"
+        aria-label="Add a card"
+        onClose={onClose}
+        zClassName="z-[var(--z-overlay)]"
+        onPointerDown={stop}
+      >
+        <div className="flex flex-col gap-1 px-2 pb-3" onKeyDown={stop}>
+          <p className="px-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Add a Card
+          </p>
+          {choices}
+        </div>
+      </BottomSheet>
+    );
+  }
+  return (
+    // display: contents, so it lays out nothing; it only catches what bubbles out of the portal, and
+    // keys typed in the menu never reach the canvas's shortcuts.
+    <div ref={box} className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
+      <PortalMenu anchor={anchor} placement="below-start" onClose={onClose} initialFocus="first">
+        {/* No header: it opens right under its own Add card button, which names it. */}
+        <div data-add-card-menu="">{choices}</div>
+      </PortalMenu>
+    </div>
+  );
+}
+
+// The choices themselves, shared by the Add a Card menu and the Plan strip's New Card panel: a row per card type
+// (its glyph on a tint of its colour, its name), then, given a way to make one, a full-width Add New Card Type.
+export function AddCardChoices({
+  types,
+  onAdd,
+  onCreateType,
+}: {
+  types: readonly ItemTypeDef[];
+  onAdd: (card: NewCard) => void;
+  onCreateType?: () => void;
+}) {
+  return (
+    <>
+      {/* A board taking no types yet offers only Add New Card Type. */}
+      {types.length === 0 ? null : (
+        <OptionRows
+          kind="action"
+          label="Card Types"
+          className="mx-1 my-1"
+          rows={types.map((t) => ({
+            id: t.id,
+            label: t.label,
+            icon: (
+              <span
+                className={`flex h-7 w-7 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+                style={accentVars(t.color)}
+              >
+                <PlanTypeGlyph glyph={t.glyph} size={15} />
+              </span>
+            ),
+          }))}
+          onPick={(id) => {
+            const t = types.find((x) => x.id === id);
+            if (t) onAdd({ type: t.id, fields: { title: t.newTitle } });
+          }}
+        />
+      )}
+      {onCreateType ? (
+        <div className="mt-1.5 px-1 pb-1">
+          <AddCardTypeButton onClick={onCreateType} />
+        </div>
+      ) : null}
+    </>
+  );
+}

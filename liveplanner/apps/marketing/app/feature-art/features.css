@@ -1,0 +1,49 @@
+/* ── The API and MCP cards (components/feature-art/foundations.tsx). Both loops run 6s on one
+   timeline: what a call returns arrives at 40% (fa-b-late) as what it replaced leaves (fa-b-early).
+   Reduced motion shows the finished frame. ── */
+@keyframes fa-b-late {
+  0%,
+  34% {
+    opacity: 0;
+  }
+  40%,
+  90% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-b-late {
+  opacity: 0;
+  animation: fa-b-late 6s ease-in-out infinite;
+}
+@keyframes fa-b-early {
+  0%,
+  34% {
+    opacity: 1;
+  }
+  40%,
+  92% {
+    opacity: 0;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+.fa-b-early {
+  animation: fa-b-early 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-b-late {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .fa-b-early {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

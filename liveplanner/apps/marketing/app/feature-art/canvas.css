@@ -1,0 +1,169 @@
+/* ─────────────────────────────────────────────────────────────────
+ * Template, collaboration, sharing, Sheet and Form card art (components/feature-art/canvas.tsx,
+ * together.tsx, sharing.tsx, sheet.tsx, forms.tsx, imports.tsx): one shared 6s
+ * timeline. Each piece is placed where it ends up and staggered with --d;
+ * every class here settles to its final, fully visible frame under reduced
+ * motion (the "out" half of a swap settles hidden).
+ * ───────────────────────────────────────────────────────────────── */
+.fa-a-in,
+.fa-a-pop,
+.fa-a-late,
+.fa-a-out,
+.fa-a-move {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+}
+.fa-a-in {
+  animation-name: fa-a-in;
+}
+.fa-a-pop {
+  animation-name: fa-a-pop;
+  animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.fa-a-late {
+  animation-name: fa-a-late;
+}
+.fa-a-out {
+  animation-name: fa-a-out;
+}
+.fa-a-move {
+  animation-name: fa-a-move;
+}
+.fa-a-blink {
+  animation: fa-a-blink 1s steps(1) infinite;
+}
+@keyframes fa-a-in {
+  0% {
+    opacity: 0;
+  }
+  7%,
+  88% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes fa-a-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  8% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  13%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+/* The "after" half of a swap: in at mid-cycle, out before the loop. */
+@keyframes fa-a-late {
+  0%,
+  44% {
+    opacity: 0;
+  }
+  52%,
+  90% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+/* The "before" half of a swap: out at mid-cycle, back for the loop. */
+@keyframes fa-a-out {
+  0%,
+  44% {
+    opacity: 1;
+  }
+  52%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* Travels in from (--x0, --y0) to where it is drawn, holds, then heads back. */
+@keyframes fa-a-move {
+  0%,
+  6% {
+    transform: translate(var(--x0, 0), var(--y0, 0));
+  }
+  34%,
+  86% {
+    transform: none;
+  }
+  100% {
+    transform: translate(var(--x0, 0), var(--y0, 0));
+  }
+}
+@keyframes fa-a-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-a-in,
+  .fa-a-pop,
+  .fa-a-late,
+  .fa-a-move,
+  .fa-a-blink {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  .fa-a-out {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* Canvas and collaboration card art, continued: the spotlight's tour of three steps, the laser's travelling streak (--dash
+   long, over a --len path), the expiry ring draining, and the marquee drawn out from its corner. */
+.fa-a-drain {
+  animation-duration: 6s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+}
+.fa-a-drain {
+  animation-name: fa-a-drain;
+  animation-timing-function: linear;
+}
+@keyframes fa-a-drain {
+  0% {
+    stroke-dashoffset: 4;
+  }
+  100% {
+    stroke-dashoffset: 27;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-a-drain {
+    animation: none !important;
+    stroke-dashoffset: 8 !important;
+  }
+}
