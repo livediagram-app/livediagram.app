@@ -134,12 +134,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 - Merged and combined pen strokes: `combine.ts` `styleOf` gives a freehand without a `strokeColor`
   its `penColour` (else `INK_PEN_COLOUR`) and `strokeWidth: 'none'`; `resolveStockColours` fills a
   closed path with no outline from its `penColour` per surface.
-- `PALETTE_CATEGORIES` gains `logo` (Common band, `LogoTabIcon`, a pen nib); the Pages layout
-  lists it after Popular with `tiles: ['logo:pen', 'tools:pencil', 'tools:text', 'shapes:square', 'shapes:circle',
-'shapes:diamond']` and `logoOnly: true`.
-  `paletteCategoriesFor(mode, { esBoard, logoPages })` drops a `logoOnly` entry unless
-  `logoPages`. `PaletteProps.logoPages` (picked by `ToolbarPalette`) is
-  `pagesMode.pages.some(kind === 'logo')`, passed by `CanvasChrome`.
+- `PALETTE_CATEGORIES` gains `logo` (Common band, `LogoTabIcon`, a pen nib); the Pages layout lists it after Popular with `tiles: ['logo:pen', 'tools:pencil', 'tools:text', 'shapes:square', 'shapes:circle', 'shapes:diamond']` and `logoOnly: true`. `paletteCategoriesFor` drops a `logoOnly` entry unless `logoPages`. `PaletteProps.logoPages` (picked by `ToolbarPalette`) is `pagesMode.pages.some(kind === 'logo')`, passed by `CanvasChrome`.
 - `logo:pen` (section `logo`, `ShapePenIcon`): action `{ type: 'path' }`, handled by
   `PaletteTileActions.beginPath`, threaded from `useShapeDrawing.beginPath` (`beginDraw({ type:
 'path' })`) through `useEditorState`, `EditorCanvasHost`, `onBeginPath` and

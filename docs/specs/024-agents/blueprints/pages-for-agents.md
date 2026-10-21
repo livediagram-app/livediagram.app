@@ -57,7 +57,6 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 
 `page-changes.ts` `applyPageChanges(tab, changes, { themeId, newId })`:
 
-1. Refuse `tab.locked` → `tab_locked`; `tabKindOf(tab) === 'event-storming'` → `tab_kind`.
 2. `switched = opensInOf(tab) !== 'pages'`; if so `tab = withEditorModeSwitched(tab, 'pages')`.
 3. For each change `i` in order, against the current `tab`:
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
@@ -282,7 +281,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Spec rule                                       | Test                                                                                    |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------- |
 | Request read strictly, each refusal by name     | `packages/edit-operations/src/pages/parse.test.ts`                                      |
-| Which tab, switch, event storming, locked tab   | `packages/edit-operations/src/pages/page-changes.test.ts` "which tab"                   |
+| Which tab, switch, locked tab                   | `packages/edit-operations/src/pages/page-changes.test.ts` "which tab"                   |
 | Naming a page (id, place, name, order)          | `page-changes.test.ts` "naming a page", `summary.test.ts`                               |
 | Each change and each refusal, the fresh tab     | `page-changes.test.ts`                                                                  |
 | Pure edits match the editor                     | `packages/document/src/pages-edits.test.ts`, the editor's own page-edit tests           |

@@ -14,7 +14,7 @@ const EMPTY: readonly PlanTabEntry[] = [];
 let list: readonly PlanTabEntry[] = EMPTY;
 const listeners = createListeners();
 
-// The Board, Sheet and Diagram tabs of `tabs` (every tab but a Dashboard: a diagram or an Event Storming board shows
+// The Board, Sheet and Diagram tabs of `tabs` (every tab but a Dashboard: a diagram shows
 // as a Diagram), in tab-bar order.
 export function planTabEntries(tabs: readonly Tab[]): PlanTabEntry[] {
   return tabs.flatMap((t): PlanTabEntry[] => {

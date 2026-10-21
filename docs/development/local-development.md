@@ -98,7 +98,6 @@ Run from the repo root:
 | `pnpm licences`                                                 | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                                                                                                                                                  |
 | `pnpm icons:vendor`                                             | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                                                                                                                                                       |
 | `pnpm icons:sheet`                                              | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                                                                                                                                                       |
-| `pnpm demo:sticky-vision`                                       | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                                                                                                                                                |
 | `pnpm bench:stroke-points`                                      | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-document/stroke-points.md)).                                                                                                                                                                           |
 | `pnpm --filter @liveplanner/document stroke-points <file.json>` | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                             |
 
@@ -157,15 +156,11 @@ both at a scratch directory to keep a test run apart from your own sign-in.
 The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
 
 ```sh
-# apps/api/.dev.vars (gitignored). One key serves every AI feature.
-OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=..., or both:
-#                              # the assistant then runs on OpenAI, the reader on Google
+# apps/api/.dev.vars (gitignored).
+OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=...
 # AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
 # AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
 # AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
-# AI_VISION_MODEL=...          # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
-#                              # On Google this defaults to gemini-2.5-flash-lite,
-#                              # which reads handwriting better than the big model.
 ```
 
 Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
@@ -203,12 +198,10 @@ NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adoptin
 
 It is signed-in only, so Clerk must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
 
-## Trying the photo import without an AI key
+## Trying the editor without an AI key
 
 The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
-time, beside a running stack, as a deployment WITHOUT an AI key runs it — so
-the photo import reads the handwriting with the in-browser model (and shows
-its download the first time):
+time, beside a running stack, as a deployment WITHOUT an AI key runs it:
 
 ```bash
 E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
@@ -221,11 +214,6 @@ on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
 `.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
 verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
-
-To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
-`E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every
-`/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
-to the in-browser model and says so ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9).
 
 ## Four gotchas
 

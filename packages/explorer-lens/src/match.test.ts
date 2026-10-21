@@ -24,7 +24,6 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   people: 'me',
   madeByAi: false,
   opensIn: 'diagram',
-  kind: null,
   template: null,
   ...overrides,
 });
@@ -37,7 +36,6 @@ describe('documentSubject', () => {
     teamId: null,
     source: null,
     opensIn: 'draw',
-    tabKind: 'event-storming',
     templateFamily: 'retrospective',
   };
 
@@ -49,7 +47,6 @@ describe('documentSubject', () => {
       people: 'me',
       madeByAi: false,
       opensIn: 'draw',
-      kind: 'event-storming',
       template: 'retrospective',
     });
   });
@@ -66,31 +63,23 @@ describe('documentSubject', () => {
     expect(documentSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
   });
 
-  it('reads the general diagram tab as no kind', () => {
-    expect(documentSubject({ ...summary, tabKind: 'diagram' }, 'me-id').kind).toBeNull();
-  });
-
   it('reads an unrecorded or retired intent as unknown', () => {
     const unrecorded = {
       ...summary,
       opensIn: undefined,
-      tabKind: undefined,
       templateFamily: undefined,
     };
     expect(documentSubject(unrecorded, 'me-id')).toMatchObject({
       opensIn: null,
-      kind: null,
       template: null,
     });
     const retired = {
       ...summary,
       opensIn: 'whiteboard',
-      tabKind: 'mindmap',
       templateFamily: 'swot',
     };
     expect(documentSubject(retired, 'me-id')).toMatchObject({
       opensIn: null,
-      kind: null,
       template: null,
     });
   });
@@ -105,7 +94,6 @@ describe('sharedSubject', () => {
       people: 'others',
       madeByAi: null,
       opensIn: null,
-      kind: null,
       template: null,
     });
   });
@@ -123,7 +111,6 @@ describe('matchesLens', () => {
 
   it.each([
     ['opens-in:draw', { opensIn: 'draw' }, { opensIn: 'diagram' }],
-    ['kind:event-storming', { kind: 'event-storming' }, { kind: null }],
     ['template:kanban', { template: 'kanban' }, { template: 'retrospective' }],
     ['made-by:ai', { madeByAi: true }, { madeByAi: false }],
     ['people:others', { people: 'others' }, { people: 'me' }],
@@ -145,9 +132,8 @@ describe('matchesLens', () => {
   });
 
   it('matches no value of a dimension the row cannot answer', () => {
-    const unknown = subject({ opensIn: null, kind: null, template: null, madeByAi: null });
+    const unknown = subject({ opensIn: null, template: null, madeByAi: null });
     expect(matchesLens(unknown, lensOf('opens-in:diagram,draw'), now)).toBe(false);
-    expect(matchesLens(unknown, lensOf('kind:event-storming'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('template:kanban'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('made-by:ai'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('plan'), now)).toBe(true);

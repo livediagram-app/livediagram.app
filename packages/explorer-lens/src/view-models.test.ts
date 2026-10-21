@@ -9,7 +9,7 @@ const scoped: LensContext = { ...aggregate, view: 'scoped' };
 
 describe('lensChips', () => {
   it('shows one chip per dimension, Space only on aggregate views', () => {
-    const order = ['opens-in', 'kind', 'template', 'made-by', 'edited', 'people'];
+    const order = ['opens-in', 'template', 'made-by', 'edited', 'people'];
     expect(lensChips(parseLens('', aggregate), aggregate).map((c) => c.dimension)).toEqual([
       ...order,
       'space',
@@ -21,7 +21,7 @@ describe('lensChips', () => {
     const template = lensChips(
       parseLens('plan template:kanban template:retrospective', aggregate),
       aggregate,
-    )[2];
+    )[1];
     expect(template).toEqual({
       dimension: 'template',
       label: 'Template',
@@ -38,7 +38,7 @@ describe('lensChips', () => {
   });
 
   it('names an unset chip as any, with Any selected', () => {
-    const edited = lensChips(parseLens('', aggregate), aggregate)[4];
+    const edited = lensChips(parseLens('', aggregate), aggregate)[3];
     expect(edited).toMatchObject({ values: [], valueLabels: [], name: 'Edited, any' });
     expect(edited?.options[0]).toEqual({ value: null, label: 'Any', selected: true });
     expect(edited?.options.map((o) => o.label)).toEqual([
@@ -51,20 +51,15 @@ describe('lensChips', () => {
     ]);
   });
 
-  it('labels Kind by the tab kind', () => {
-    const kind = lensChips(parseLens('kind:event-storming', aggregate), aggregate)[1];
-    expect(kind).toMatchObject({ label: 'Kind', name: 'Kind: Event Storming' });
-  });
-
   it('makes Made by AI a toggle named by itself', () => {
-    const off = lensChips(parseLens('', aggregate), aggregate)[3];
-    const on = lensChips(parseLens('made-by:ai', aggregate), aggregate)[3];
+    const off = lensChips(parseLens('', aggregate), aggregate)[2];
+    const on = lensChips(parseLens('made-by:ai', aggregate), aggregate)[2];
     expect(off).toMatchObject({ control: 'toggle', name: 'Made by AI', values: [] });
     expect(on).toMatchObject({ control: 'toggle', name: 'Made by AI', values: ['ai'] });
   });
 
   it('names a team by its name, never its id', () => {
-    const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[6];
+    const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[5];
     expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Documents, Acme' });
     expect(space?.options.map((o) => o.label)).toEqual([
       'Any',
@@ -128,7 +123,7 @@ describe('issueMessage', () => {
 
   it.each([
     ['colour:red', '“colour:red” isn’t a filter, so it’s searched as text.'],
-    ['kind:', '“kind:” needs a value, so it’s searched as text.'],
+    ['template:', '“template:” needs a value, so it’s searched as text.'],
     ['edited:7d,', '“edited:7d,” needs a value, so it’s searched as text.'],
     ['template:mindmap', '“mindmap” isn’t a Template option, so it’s searched as text.'],
     ['space:team:', '“space:team:” needs a value, so it’s searched as text.'],

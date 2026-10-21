@@ -1,6 +1,6 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { ComponentKind, ShapeKind } from '@liveplanner/document';
-import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -26,10 +26,7 @@ export type PaletteTileActions = {
   beginPolygon: () => void;
   beginPath: () => void;
   addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
-  // Optional fill + kind: the Event Storming tiles pass their note kind's
-  // canonical colour and the kind itself (which routes the note onto its
-  // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add Sticky Note" passes nothing.
-  addSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
+  addSticky: () => void;
   addTable: () => void;
   addImage: () => void;
   addAnnotation: () => void;
@@ -92,9 +89,7 @@ export function tileHandler(
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
     case 'sticky':
-      // Wrapped so the button's MouseEvent can't land in the optional fill
-      // parameter; the tile's own fill + kind (if any) ride instead.
-      return () => actions.addSticky(a.fill, a.esKind);
+      return () => actions.addSticky();
     case 'table':
       return actions.addTable;
     case 'image':
@@ -159,15 +154,8 @@ export function tileActive(
     // Vimeo alongside it (the same trap the shape branch above avoids).
     case 'video':
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
-    // The Event Storming tiles all arm the one sticky intent, split by the
-    // fill + kind payload — match on both or arming Command would light up
-    // all eight notes plus the plain sticky tile (the video / shape trap).
     case 'sticky':
-      return (
-        pendingDraw.type === 'sticky' &&
-        pendingDraw.fill === a.fill &&
-        pendingDraw.esKind === a.esKind
-      );
+      return pendingDraw.type === 'sticky';
     // Icon / sticker tiles DO arm (they ride the shape intent carrying their
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys

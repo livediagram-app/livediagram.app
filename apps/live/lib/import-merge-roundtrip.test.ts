@@ -1,20 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { type Tab, tabToJsonText } from '@liveplanner/document';
-import { isEventStormingTab } from '@liveplanner/document';
 import { parseImportedTab } from './import-tab';
 import { mergeImportedTab } from './import-merge';
 
-// The whole journey a workshop board takes when someone mails it to a
-// colleague: export to JSON, import into a fresh tab, and it must STILL be a
-// workshop board. This is the end-to-end pin for the merge rule — each half
-// was correct on its own while the join quietly dropped the board.
+// The whole journey a Plan tab takes when someone mails it to a colleague: export to JSON, import into a
+// fresh tab, and it must STILL be that kind of tab. This is the end-to-end pin for the merge rule — each half
+// was correct on its own while the join quietly dropped the kind.
 describe('export -> import round trip', () => {
-  const esBoard = (): Tab =>
+  const board = (): Tab =>
     ({
       id: 'src',
-      name: 'Cart Emptied',
-      kind: 'event-storming',
-      layers: [{ id: 'layer:es:board', name: 'Event Storming' }],
+      name: 'Roadmap',
+      kind: 'board',
+      opensIn: 'plan',
+      layers: [{ id: 'layer:cards', name: 'Cards' }],
       elements: [
         {
           id: 'n1',
@@ -23,26 +22,23 @@ describe('export -> import round trip', () => {
           y: 0,
           width: 200,
           height: 200,
-          label: 'Cart Emptied',
-          esKind: 'domain-event',
-          layerId: 'layer:es:board',
+          label: 'Ship it',
+          layerId: 'layer:cards',
         },
       ],
     }) as unknown as Tab;
 
   const plainTab = (): Tab => ({ id: 'dest', name: 'Tab 1', elements: [] });
 
-  it('keeps the board a board', () => {
-    const parsed = parseImportedTab(tabToJsonText(esBoard()));
+  it('keeps the kind', () => {
+    const parsed = parseImportedTab(tabToJsonText(board()));
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    const merged = mergeImportedTab(plainTab(), parsed.tab);
-    expect(isEventStormingTab(merged)).toBe(true);
-    expect(merged.kind).toBe('event-storming');
+    expect(mergeImportedTab(plainTab(), parsed.tab).kind).toBe('board');
   });
 
   it('keeps the layer the notes are filed on, so their layerId resolves', () => {
-    const parsed = parseImportedTab(tabToJsonText(esBoard()));
+    const parsed = parseImportedTab(tabToJsonText(board()));
     if (!parsed.ok) throw new Error('parse failed');
     const merged = mergeImportedTab(plainTab(), parsed.tab);
     const layerIds = (merged.layers ?? []).map((l) => l.id);
@@ -55,6 +51,6 @@ describe('export -> import round trip', () => {
     const plain = { ...plainTab(), id: 'src', elements: [] } as Tab;
     const parsed = parseImportedTab(tabToJsonText(plain));
     if (!parsed.ok) throw new Error('parse failed');
-    expect(isEventStormingTab(mergeImportedTab(plainTab(), parsed.tab))).toBe(false);
+    expect(mergeImportedTab(plainTab(), parsed.tab).kind).toBeUndefined();
   });
 });

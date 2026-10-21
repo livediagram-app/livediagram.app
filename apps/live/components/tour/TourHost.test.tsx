@@ -51,7 +51,6 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     isReadOnly: false,
     embedMode: false,
-    esBoard: false,
     editorMode: { mode: 'diagram' },
     activeTab: { id: 'tab1', locked: false },
     userPreferences: { tourSeen: false },

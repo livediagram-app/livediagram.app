@@ -88,24 +88,6 @@ describe('SelectionGripsLayer', () => {
     expect(frame.className).toContain('pointer-events-none');
   });
 
-  it('follows an insert-between shift ahead of the rotation', () => {
-    const { container } = render(
-      <Harness>
-        <SelectionChromeLayer
-          elementId="a"
-          box={box}
-          rotation={0}
-          shiftX={12}
-          showHandles
-          showAnchors={false}
-          onBeginDrag={vi.fn()}
-        />
-      </Harness>,
-    );
-    const frame = layerOf(container).querySelector<HTMLElement>('[data-grips-for="a"]')!;
-    expect(frame.style.transform).toBe('translateX(12px)');
-  });
-
   it('keeps the rotation-aware cursor and the counter-scale on each handle', () => {
     const { container } = render(<Harness>{chrome()}</Harness>);
     const [nw] = layerOf(container).querySelectorAll<HTMLElement>('[data-canvas-handle]');
@@ -164,7 +146,7 @@ describe('SelectionGripsLayer', () => {
     const { container, getByTestId } = render(
       <Harness>
         <svg>
-          <ArrowGripsPortal arrowId="ar">
+          <ArrowGripsPortal>
             <SelectedArrowHandles
               arrow={arrow}
               from={{ x: 0, y: 0 }}

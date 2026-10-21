@@ -35,8 +35,8 @@ and one category's tiles:
   are the Palette's tiles (`palette-tile-defs`, arranged by the mode's palette layout, [Editor modes](editor-modes.md#the-palette-per-mode)),
   rendered by the shared `PaletteTile`, so the strip and its popovers stay alike.
 - **Right: More (⋯ ▾)** (Plan), when the category has more than the strip shows.
-- **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
-  "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
+- **Far right: Search** (a magnifier), in every mode's strip (see "Search: every element type").
+  Draw mode shows its dock instead of the strip, so it has none.
 
 ## The category bar
 
@@ -166,19 +166,9 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **Where:** the last control on the strip, after More (and after Plan's Edit Cards and
   Plan's Edit Cards), behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put beside More while the tiles swipe.
-- **Not on an event-storming board:** the notation is the palette there, as the board hides the
-  pickers. Draw mode has no strip, so no Search.
 - **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), and the
   session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
-- **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
-  screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
-  strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes
-  it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it
-  had fallen to the page. **S** opens it too, wherever the strip is shown (an editor, not an
-  event-storming board, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
-  alias of Select. The field's clear button (×, once there is text) clears the query and returns to
-  the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
-  it).
+- **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it had fallen to the page. **S** opens it too, wherever the strip is shown; everywhere else S keeps its old meaning, the legacy alias of Select. The field's clear button (×, once there is text) clears the query and returns to the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
   each once however many categories hold it. **Icons, Stickers and Technology** are searched too,
   entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
@@ -203,11 +193,7 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **Two sections:**
   - **This mode's elements** first, as the palette's tile grid, drawn from every tile the current
     mode's layout offers (Plan's Cards follow the document's item types, as on the strip).
-  - **Other modes**, below, as an accordion titled **"Elements From Other Modes"**, with a
-    count: the matching tiles no category of this mode offers, from the other modes' layouts and
-    the event-storming notation. **Closed by default** each time the popover opens: modes are
-    tailored on purpose, so the rest is one deliberate click away, never hidden. Opened, it stays
-    open while typing. It is absent when nothing outside the mode matches.
+  - **Other modes**, below, as an accordion titled **"Elements From Other Modes"**, with a count: the matching tiles no category of this mode offers, from the other modes' layouts. **Closed by default** each time the popover opens: modes are tailored on purpose, so the rest is one deliberate click away, never hidden. Opened, it stays open while typing. It is absent when nothing outside the mode matches.
   - **Another mode's own elements**, last, as an accordion titled **"Not Available in Diagram
     Mode"** (the current mode's name), with a count, closed by default and absent when empty like
     the one above. These are the tiles of Plan's own categories (Cards, Boards, Metrics,
@@ -306,7 +292,6 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
-- **Event Storming**: the notation | Hotspot.
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
 Technology catalogues have none. A category
@@ -451,9 +436,6 @@ their bottom-row buttons. What changes to fit the width:
     for the Explorer: it would cover the popover's top.
   - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
-- Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
-  the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
-  photo import.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.

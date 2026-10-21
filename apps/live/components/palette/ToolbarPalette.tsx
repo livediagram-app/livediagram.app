@@ -28,7 +28,6 @@ import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
-import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planCardTile } from './palette-plan-tiles';
 import { EditCardsStripButton } from './EditCardsStripButton';
@@ -89,8 +88,6 @@ type Props = Pick<
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
-  | 'esBoard'
-  | 'esBoardControls'
   | 'themeTint'
 > &
   PaletteAddHandlers & {
@@ -156,7 +153,7 @@ function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode })
 }
 
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, esBoard, themeTint, pendingDraw, leading } = props;
+  const { canvasTool, themeTint, pendingDraw, leading } = props;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   // A Sheet covering the canvas, maximised or filling its tab, hides the palette (docs/specs/026-plan/plan-board.md
@@ -196,8 +193,8 @@ export function ToolbarPalette(props: Props) {
         bar.popover.setOpen(false);
       },
     });
-  // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
-  // mode's Popular, or the notation on an event-storming board; Plan's Cards, or Boards while the tab has no board
+  // The landing rule (palette-layouts): the
+  // mode's Popular; Plan's Cards, or Boards while the tab has no board
   // (docs/specs/026-plan/plan-mode.md "The palette"). A Participant lands on Participate.
   const hasPlanBoard = useMemo(
     () => (props.tabElements ?? []).some((el) => el.type === 'shape' && el.shape === 'plan-board'),
@@ -207,10 +204,9 @@ export function ToolbarPalette(props: Props) {
   // canvas, so there is nothing for a mode to act on (docs/specs/026-plan/plan-tabs.md).
   const dashboardTab = usePlanTabKind() === 'dashboard';
   // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
-  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not on an event-storming board, whose
-  // notation is the palette, nor for a Participant, whose palette is one category.
-  const categoryBar =
-    CATEGORY_BAR_MODES.has(editorMode) && !esBoard && !participant && !dashboardTab;
+  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
+  // category.
+  const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant && !dashboardTab;
   // In Pages mode with the palette's kind Article, the strip holds the article's formatting in place of the bar.
   const paletteKind = usePaletteKind();
   const articleDock = categoryBar && editorMode === 'pages' && paletteKind === 'article';
@@ -220,18 +216,16 @@ export function ToolbarPalette(props: Props) {
     ? 'participate'
     : dashboardTab
       ? DASHBOARD_PALETTE_LANDING
-      : paletteLandingCategory(editorMode, !!esBoard, hasPlanBoard);
-  // Crossing an ES / non-ES tab boundary re-lands on the right default: the
-  // host keys this component on `esBoard`, so a board change re-lands the category.
+      : paletteLandingCategory(editorMode, hasPlanBoard);
   const [categoryId, setCategoryId] = useState(defaultId);
   // A Plan tab gaining its first board moves the palette on from Boards to Cards, and losing its last moves it
   // back; a category the person picked otherwise stays. Adjusted during render.
   const [hadPlanBoard, setHadPlanBoard] = useState(hasPlanBoard);
   if (hadPlanBoard !== hasPlanBoard) {
     setHadPlanBoard(hasPlanBoard);
-    const from = paletteLandingCategory('plan', false, hadPlanBoard);
+    const from = paletteLandingCategory('plan', hadPlanBoard);
     if (editorMode === 'plan' && categoryId === from)
-      setCategoryId(paletteLandingCategory('plan', false, hasPlanBoard));
+      setCategoryId(paletteLandingCategory('plan', hasPlanBoard));
   }
   // Arriving on a Dashboard opens its Popular; leaving one, the mode's landing (adjusted during render).
   const [wasDashboard, setWasDashboard] = useState(dashboardTab);
@@ -374,7 +368,7 @@ export function ToolbarPalette(props: Props) {
     if (pendingDraw) tileActions.cancelDraw?.();
   };
   // S asks for the Search (lib/toolbar-search-request): answered only while it is on show, so the
-  // key keeps its Select meaning on an event-storming board or with the chrome away.
+  // key keeps its Select meaning with the chrome away.
   const searchButtonRef = useRef<HTMLDivElement>(null);
   const openSearchFromKey = useEffectEvent(() => {
     const button = searchButtonRef.current?.querySelector<HTMLElement>(
@@ -388,9 +382,9 @@ export function ToolbarPalette(props: Props) {
     search.openFrom(button);
   });
   useEffect(() => {
-    if (esBoard || participant || hidden) return;
+    if (participant || hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [esBoard, participant, hidden]);
+  }, [participant, hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     beforeSearch();
@@ -492,17 +486,7 @@ export function ToolbarPalette(props: Props) {
                         : CARD_CLASS
                     }
                   >
-                    {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
-                notation is the palette there. */}
-                    {/* ...and lead with the board's own control instead, as the Event Storming
-                category's body does. */}
-                    {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
-                      <>
-                        <EsPhotoStripButton controls={props.esBoardControls} />
-                        <Divider />
-                      </>
-                    ) : null}
-                    {esBoard && !participant ? null : (
+                    {
                       <>
                         {dashboardTab ? null : (
                           <>
@@ -569,7 +553,7 @@ export function ToolbarPalette(props: Props) {
                         {/* The bar ends on its last category; Search brings its own divider. */}
                         {categoryBar ? null : <Divider />}
                       </>
-                    )}
+                    }
                     {categoryBar ? null : (
                       <>
                         <ToolbarStripRail
@@ -622,9 +606,8 @@ export function ToolbarPalette(props: Props) {
                       </>
                     ) : null}
                     {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
-                    "Search: every element type"). Not on an event-storming board, whose notation is
-                    its palette. */}
-                    {esBoard || participant ? null : (
+                    "Search: every element type"). */}
+                    {participant ? null : (
                       <>
                         <Divider />
                         <div ref={searchButtonRef} className="flex">
@@ -673,7 +656,7 @@ export function ToolbarPalette(props: Props) {
                 )}
               </StripPopover>
             ) : null}
-            {search.open && !esBoard && !participant ? (
+            {search.open && !participant ? (
               <StripPopover
                 right={search.right}
                 isMobile={isMobile}

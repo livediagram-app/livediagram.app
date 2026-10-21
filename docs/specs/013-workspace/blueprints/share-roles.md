@@ -185,14 +185,7 @@ Hooks that write a tab's structure, or write without passing `commit`, take `str
 snap colours, the whiteboard, the eraser, swatch overrides, the cleanup preview and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
-Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant
-(`ToolbarPalette participant`, `usePaletteCatalogue participant`): one category, `participate`
-(`participantPaletteCategories`: an Event Storming board's notes, else the Sticky and Text tiles),
-the selection modes in `PARTICIPANT_CANVAS_TOOLS`, no Search, no Event Storming photo import, on every mode; inline text edit (`canWriteText`); a
-move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for
-what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move)
-beside `canEdit` (structure) and `canRetire` (Trash, Archive, the type editor). Sheets: `canEdit` writes cells,
-`canShape` (an Editor) changes rows, columns, settings and the title; the controller's `write` refuses the rest.
+Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant (`ToolbarPalette participant`, `usePaletteCatalogue participant`): one category, `participate`, the selection modes in `PARTICIPANT_CANVAS_TOOLS`, no Search, on every mode; inline text edit (`canWriteText`); a move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move) beside `canEdit` (structure) and `canRetire` (Trash, Archive, the type editor). Sheets: `canEdit` writes cells, `canShape` (an Editor) changes rows, columns, settings and the title; the controller's `write` refuses the rest.
 
 Invariants:
 

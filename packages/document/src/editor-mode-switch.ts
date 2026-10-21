@@ -14,7 +14,7 @@ export type EditorModeSwitch<T> = {
 };
 
 /** The tab switched to `mode`, with what the mode brings; the same tab when it is already in it
- *  (or is an event-storming board). */
+ *  (or is a Plan tab). */
 export function withEditorModeSwitched<T extends Tab>(
   tab: T,
   mode: EditorMode,

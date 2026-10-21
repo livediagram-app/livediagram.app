@@ -28,7 +28,7 @@ showing it is up to date.
   writing is the editor's own where that article is laid out, else as estimated without a browser (the agents'
   previews' estimate). A **Form** tab is drawn as its form on its tab's look, as respondents see it (the picture its
   thumbnail and an agent's preview draw). Every mode is drawn: Diagram, Draw, Workshop (its timer and vote are live
-  session tools, never drawn), Event Storming, Pages and Plan. It follows every change to the tab (an edit, a
+  session tools, never drawn), Pages and Plan. It follows every change to the tab (an edit, a
   collaborator's) at a deferred priority, so a burst of edits never competes with the canvas.
 - **Moving**: the drawing moves as the tab does on the canvas. Each shown arrow's flow that runs along its line (all
   but Dots and Comet) plays in the window with its own Speed and Repeat, by the same motion the canvas draws. The

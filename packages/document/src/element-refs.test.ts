@@ -249,11 +249,6 @@ describe('kindWordOf (R9)', () => {
     expect(kindWordOf(createSticky(0, 0))).toBe('sticky');
   });
 
-  it('names an event-storming note by its notation, es:actor apart (E28)', () => {
-    expect(kindWordOf({ ...createSticky(0, 0), esKind: 'domain-event' })).toBe('domain-event');
-    expect(kindWordOf({ ...createSticky(0, 0), esKind: 'actor' })).toBe('es:actor');
-  });
-
   it('marks unknown types and shapes with ? (E12)', () => {
     const unknownShape = { ...createShape('square', 0, 0), shape: 'blob' } as unknown as Element;
     expect(kindWordOf(unknownShape)).toBe('? blob');

@@ -27,7 +27,6 @@ import {
   PaletteDrawTab,
   PaletteBuildTab,
   PaletteWriteTab,
-  PaletteEventStormingTab,
   PaletteShapesTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
@@ -35,7 +34,6 @@ import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import type { ResolvedPaletteCategory } from './palette-layouts';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -68,9 +66,6 @@ export function paletteCategoryTabs(
     categories: ResolvedPaletteCategory[];
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
-    // Board-level switches for the Event Storming category (docs/specs/021-event-storming/event-storming.md),
-    // supplied only when the active tab IS one of those boards.
-    esBoardControls?: EsBoardControls;
   } & IconDeps &
     StickerDeps &
     TechDeps,
@@ -79,7 +74,6 @@ export function paletteCategoryTabs(
     categories,
     pendingDraw,
     tileActions,
-    esBoardControls,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -149,8 +143,6 @@ export function paletteCategoryTabs(
         );
       case 'devices':
         return <DevicePickerTab {...tab} tiles={tiles} />;
-      case 'event-storming':
-        return <PaletteEventStormingTab {...tab} tiles={tiles} board={esBoardControls} />;
       case 'media':
         return <PaletteMediaTab {...tab} tiles={tiles} />;
       case 'components':

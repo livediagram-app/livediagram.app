@@ -22,7 +22,7 @@ design decision. Draw mode's own tools are blueprinted in
 | Legacy names elsewhere      | `parsePlacementDefaultKey`, `legacyPlacementDefaultKeys` (`packages/api-schema/src/placement-defaults.ts`); `pagesModeEnabled` / `infographicModeEnabled` / `planModeEnabled` in `RETIRED` (`legacy-preferences.ts`) |
 | The tab's mode              | `Tab.opensIn?: EditorMode` (stored name kept), read through `opensInOf(tab)`                                                                                                                                         |
 | Setting the mode            | `setTabOpensIn(tab, mode)`                                                                                                                                                                                           |
-| A tab offers the switch     | `editorModeSwitchable(tab)`: false on an event-storming board, new or legacy, and on a Board, Sheet or Dashboard tab (always Plan)                                                                                   |
+| A tab offers the switch     | `editorModeSwitchable(tab)`: false on a Board, Sheet or Dashboard tab (always Plan)                                                                                                                                  |
 | The look's one gate         | `hasBoardLook(mode)`: true in Draw mode (the person's own pattern)                                                                                                                                                   |
 | The person's effective mode | `useEditorMode(tab, { canEdit })` → `EditorModeState`                                                                                                                                                                |
 | The mode resolver           | `resolveEditorMode({ tab, canEdit })`, `apps/live/lib/editor-mode-store.ts`                                                                                                                                          |
@@ -70,8 +70,7 @@ A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
 
 `resolveEditorMode({ tab, canEdit })` (pure, `editor-mode-store.ts`):
 
-1. `mode = opensInOf(tab)`: the tab's own mode, the same for everyone; Diagram when absent or on
-   an event-storming board; Plan on a Board, Sheet or Dashboard tab.
+1. `mode = opensInOf(tab)`: the tab's own mode, the same for everyone; Diagram when absent; Plan on a Board, Sheet or Dashboard tab.
 2. `canSwitch = tab && editorModeSwitchable(tab) && canEdit && tab.locked !== true`.
 3. `lockedReason` ("A Board tab is always in Plan.", likewise a Sheet tab and a Dashboard) for an
    editor on a Plan kind's tab: the switch shows, and only its own mode can be picked.
@@ -120,26 +119,10 @@ crossPlan?, newTabIn? }`; `crossPlan = canSwitch && tab.elements.length === 0`; 
 
 ### Opening mode
 
-- `opensInOf(tab)`: Plan on a Board, Sheet or Dashboard tab; Diagram on an event-storming board; `parseEditorMode(tab.opensIn)` when it is
-  one (a stored `infographic` reads as Pages); else Diagram. `creationIntentOf` and
-  `readCreationIntent` read modes the same way.
+- `opensInOf(tab)`: Plan on a Board, Sheet or Dashboard tab; `parseEditorMode(tab.opensIn)` when it is one (a stored `infographic` reads as Pages); else Diagram. `creationIntentOf` and `readCreationIntent` read modes the same way.
 - `setTabOpensIn(tab, mode)`: the same tab when not switchable or unchanged; else
   `{ ...tab, opensIn: mode }` (written explicitly, Diagram included).
-- **New tab** (`useTabActions.addTab(mode?)`): `newTabSeed(activeTab)` copies the source tab's look and
-  never an `opensIn`; the mode comes from `newTabOpening(editorMode, mode)` (new-tab-seed.ts), where `editorMode` is
-  the active tab's mode (`opensInOf(activeTab)`, so Plan on a Board, Sheet or Dashboard tab and Diagram on an
-  event-storming board). It returns `{ opensIn: mode ?? editorMode }`, leaving `opensIn` out when
-  that is Diagram (absent reads as Diagram). So the tab bar's **+** and **Create New Tab** (`addTab()`) open the
-  tab in the active tab's mode, and `addTab(mode)` from `newTabIn` in the mode asked for. The mode's own start
-  shows (Start Diagramming, Start Drawing,
-  Start a Workshop, Start Making Pages, Start Planning). `addTab` returns before anything when
-  `!canEditStructure` (a Participant, a Viewer, a tab-scoped link). A template chosen for it then decides (`useTemplateFlow`): `templateOpensIn(overrides)`
-  is `overrides.opensIn` when set (the template's own mode, `templateEditorMode`), else
-  `undefined` for an event-storming template (`overrides.kind` set), else `'diagram'` (Blank
-  included). When
-  defined it is written on the tab after `templateCanvasOverrides`, so everyone on the tab moves
-  to it. A new document's first tab takes the same `templateCanvasOverrides` on `/new`, so it
-  too opens in its template's mode.
+- **New tab** (`useTabActions.addTab(mode?)`): `newTabSeed(activeTab)` copies the source tab's look and never an `opensIn`; the mode comes from `newTabOpening(editorMode, mode)` (new-tab-seed.ts), where `editorMode` is the active tab's mode. It returns `{ opensIn: mode ?? editorMode }`, leaving `opensIn` out when that is Diagram (absent reads as Diagram). So the tab bar's **+** and **Create New Tab** (`addTab()`) open the tab in the active tab's mode, and `addTab(mode)` from `newTabIn` in the mode asked for. The mode's own start shows (Start Diagramming, Start Drawing, Start a Workshop, Start Making Pages, Start Planning). `addTab` returns before anything when `!canEditStructure` (a Participant, a Viewer, a tab-scoped link). A template chosen for it then decides (`useTemplateFlow`): `templateOpensIn(overrides)` is `overrides.opensIn` when set (the template's own mode, `templateEditorMode`), else `'diagram'` (Blank included). When defined it is written on the tab after `templateCanvasOverrides`, so everyone on the tab moves to it. A new document's first tab takes the same `templateCanvasOverrides` on `/new`, so it too opens in its template's mode.
 - **Templates, MCP, imports**: `templateCanvasOverrides(kind)` writes `opensIn:
 templateEditorMode(kind)` for every template not in Diagram (`template-modes.ts`; `'whiteboard'`
   → `{ opensIn: 'draw', backgroundPattern: 'graph' }`; the Pages ones also their `pages`),
@@ -254,8 +237,7 @@ lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip`:
 - `TabModeIcon({ tab, style? })`: the tab's mode's `EDITOR_MODE_ICON`, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
 - `templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined`.
-- Wire: `Tab.opensIn` and `TextElement.sizing` are in the OpenAPI schema
-  (`EditorMode`, `TextSizing`); `TabKind` is `'diagram' | 'event-storming'`.
+- Wire: `Tab.opensIn` and `TextElement.sizing` are in the OpenAPI schema (`EditorMode`, `TextSizing`).
 - Validation: `isValidElement` accepts `sizing` of `fit` or `wrap` only and `penColour` /
   `penTextColour` of a `PenColourName`, `'ink'` included; `isValidTab` leaves `opensIn` to
   `opensInOf`, which reads anything else as Diagram.
@@ -292,7 +274,6 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | A key from the per-person era in storage          | Never read; the tab's mode wins                                                              |
 | A peer's op with no presence name yet             | The toast says "Someone"                                                                     |
 | Undo or redo across a switch                      | The snapshot restores `opensIn`; everyone moves to that mode, no toast for the one who undid |
-| Forged `opensIn` on an event-storming board       | `opensInOf` → Diagram; `setTabOpensIn` returns the tab                                       |
 | Unknown `opensIn` value                           | Read as Diagram                                                                              |
 | Legacy `opensIn: 'infographic'`                   | Read as Pages (`parseEditorMode`); not rewritten                                             |
 | Switch by a visitor, on a locked tab or ES board  | `setMode` returns early: nothing written, no telemetry                                       |
@@ -302,7 +283,6 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | A Board, Sheet or Dashboard tab                   | The switch shows its own mode only, with `lockedReason`; other rows offer a new tab          |
 | A peer switches while I type in a label           | The editor stays open; the text commits as usual; a toast names the peer                     |
 | Previewing as a viewer                            | `canEdit` false: no switch, the tab's mode, read-only                                        |
-| Event-storming board, or outside an editor        | `StartModeSwitch` renders nothing; the pill icon shows Diagram                               |
 | Stale client sends a `Whiteboard` telemetry event | Refused by the closed category list                                                          |
 
 ## Security and trust

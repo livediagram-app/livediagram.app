@@ -289,7 +289,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
     ['POST', 'ai'],
-    ['POST', 'ai/read-notes'],
     ['GET', 'drive'],
     ['POST', 'oauth'],
     ['POST', 'teams'],

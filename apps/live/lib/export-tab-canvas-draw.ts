@@ -137,7 +137,7 @@ export function drawBoxed(
   alpha = 1,
   // The tab default face (docs/specs/004-interface-design/fonts.md). The PNG rasterises in the browser, where
   // the webfonts are already loaded, so it can paint the real typeface —
-  // element font, else the notation's, else this.
+  // element font, else this.
   tabFont?: string,
   // The paper being exported onto, for elements with no colours of their own.
   surface: CanvasSurface = 'light',

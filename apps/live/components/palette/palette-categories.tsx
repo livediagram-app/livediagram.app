@@ -25,7 +25,6 @@ import {
   StickersTabIcon,
   TechTabIcon,
   WriteTabIcon,
-  EventStormingTabIcon,
   ParticipateTabIcon,
 } from '@liveplanner/ui';
 import {
@@ -260,17 +259,6 @@ export const PALETTE_CATEGORIES: {
     description:
       'Wireframing device frames: browser, monitor, laptop, phone, tablet, foldable, smartwatch.',
     icon: <DevicesTabIcon />,
-  },
-  {
-    // Event Storming (docs/specs/021-event-storming/event-storming.md): the workshop notation as a first-class
-    // kit. Structure band — like Build, it's a set you reach for when
-    // deciding how a board is arranged, not a decoration or a behaviour.
-    id: 'event-storming',
-    label: 'Event Storming',
-    group: 1,
-    description:
-      'The sticky-note workshop notation: events, commands, actors, policies, read models, and more.',
-    icon: <EventStormingTabIcon />,
   },
   {
     id: 'icons',

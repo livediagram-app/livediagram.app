@@ -41,7 +41,6 @@ function editor(over: Record<string, unknown> = {}) {
     canRedo: false,
     zenMode: false,
     canvasTool: 'select',
-    esBoard: false,
     photoImportAvailable: false,
     undo: vi.fn(),
     redo: vi.fn(),

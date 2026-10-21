@@ -1,8 +1,7 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/document';
 import type { ShapeKind } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 export type CanvasTool =
   | 'pan'
@@ -64,15 +63,7 @@ export type PaletteProps = {
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
   onAddText: () => void;
-  // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
-  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
-  // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md): the
-  // palette then opens on the Event Storming category instead of
-  // Popular — the notation is what the board is for.
-  esBoard?: boolean;
-  // Board-level switches shown above the notation on one of those boards
-  // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Omitted everywhere else.
-  esBoardControls?: EsBoardControls;
+  onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.

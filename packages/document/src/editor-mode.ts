@@ -1,8 +1,6 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
 // Draw, Workshop, Pages or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
-import type { Layer } from './layers';
-import { isEventStormingTab } from './event-storming';
 import { isPlanTabKind } from './tab-kind';
 
 // Every editor mode, in the order the interface lists them (the mode switch, the tab menu's Opens
@@ -93,18 +91,16 @@ export function parseEditorMode(v: unknown): EditorMode | undefined {
   return typeof v === 'string' ? LEGACY_EDITOR_MODES[v] : undefined;
 }
 
-type ModeTab = { kind?: string; opensIn?: string; layers?: Layer[] };
+type ModeTab = { kind?: string; opensIn?: string };
 
-// An event-storming board keeps its own tools and notation, so it is worked on in Diagram mode and
-// offers no switch, whatever a forged or stale `opensIn` says; a Board, Sheet or Dashboard tab is always in Plan
-// (docs/specs/026-plan/plan-tabs.md).
+// A Board, Sheet or Dashboard tab is always in Plan and offers no switch, whatever a forged or stale
+// `opensIn` says (docs/specs/026-plan/plan-tabs.md).
 export function editorModeSwitchable(tab: ModeTab | undefined): boolean {
-  return !isEventStormingTab(tab) && !isPlanTabKind(tab?.kind);
+  return !isPlanTabKind(tab?.kind);
 }
 
 /** The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md "Where
- *  the mode lives"): its stored mode, Diagram when absent or unreadable, always Diagram on an
- *  event-storming board. */
+ *  the mode lives"): its stored mode, Diagram when absent or unreadable, always Plan on a Plan tab. */
 export function opensInOf(tab: ModeTab | undefined): EditorMode {
   if (isPlanTabKind(tab?.kind)) return 'plan';
   if (!editorModeSwitchable(tab)) return DEFAULT_EDITOR_MODE;
@@ -112,7 +108,7 @@ export function opensInOf(tab: ModeTab | undefined): EditorMode {
 }
 
 // The tab's mode set (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the mode only.
-// The same tab when nothing changes; an event-storming board is always Diagram and is never given
+// The same tab when nothing changes; a Plan tab is always Plan and is never given
 // a mode. A switch also brings what the mode brings: withEditorModeSwitched (editor-mode-switch.ts).
 export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: EditorMode): T {
   if (!editorModeSwitchable(tab) || opensInOf(tab) === mode) return tab;

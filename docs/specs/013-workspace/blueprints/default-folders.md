@@ -47,7 +47,7 @@ Scope, by file:
 | Dimension        | `DEFAULT_KEY_DIMENSIONS = ['kind', 'template', 'mode']`                                                  | Most specific first; the precedence between keys            |
 | Creation intent  | `CreationIntent` `{ mode: EditorMode, tabKind: CreationTabKind, templateFamily?: TemplateFamily }`       | What a new document is made as; body field `intent`         |
 | Opens in         | `EditorMode`, `EDITOR_MODES`; column `opens_in`, field `opensIn`                                         | The editor mode the first tab opens in                      |
-| Tab kind         | `CreationTabKind`, `CREATION_TAB_KINDS = ['diagram', 'event-storming']`; `tab_kind`, `tabKind`           | The first tab's kind at creation                            |
+| Tab kind         | `CreationTabKind`, `CREATION_TAB_KINDS = ['diagram']`; `tab_kind`, `tabKind`                             | The first tab's kind at creation                            |
 | Specific kind    | `SpecificTabKind`, `SPECIFIC_TAB_KINDS` (every creatable kind but `diagram`)                             | The kinds that have a `kind:` key                           |
 | Template family  | `TemplateFamily`, `TEMPLATE_FAMILIES = ['retrospective', 'kanban']`; `template_family`, `templateFamily` | The family of templates a document was made from            |
 | Recorded intent  | `RecordedIntent` `{ opensIn, tabKind, templateFamily }`, each nullable                                   | What the create insert wrote; null `opensIn` = unknown      |
@@ -65,9 +65,7 @@ kind in an intent (a whiteboard is `mode: 'draw'`, `tabKind: 'diagram'`).
 `creationIntentOf(tab, templateFamily = null)` over `{ kind?: string; opensIn?: string; layers?: Layer[] } | undefined`:
 
 1. `mode`: `draw` when `kind === 'whiteboard'` (legacy) or `opensIn === 'draw'`, else `diagram`.
-2. `tabKind`: `event-storming` when `isEventStormingTab(tab)` (the document model's reader: the kind,
-   or a legacy board's layer), else `diagram`.
-3. `templateFamily`: the argument, left out when null.
+2. `templateFamily`: the argument, left out when null.
 
 Callers pass `templateFamilyOf(templateKind)` where a template made the document (the wizard and its
 bypasses, MCP template tabs) and nothing otherwise (imports, Drive copies, MCP element or graph tabs).
@@ -83,9 +81,6 @@ not mapped fails the typecheck. Its non-null rows:
 | `four-ls`             | `retrospective` |
 | `sailboat`            | `retrospective` |
 | `kanban`              | `kanban`        |
-
-Every other template kind maps to null: `event-storming` (a tab kind, read from the tab),
-`incident-postmortem` and `lean-coffee` included.
 
 `PLACEMENT_DEFAULT_KEYS` is generated in list order: one `mode:<m>` per `EDITOR_MODES` entry, one
 `kind:<k>` per `SPECIFIC_TAB_KINDS` entry, one `template:<f>` per `TEMPLATE_FAMILIES` entry.
@@ -152,20 +147,10 @@ Location step and no client-side resolution ([New document route](../../007-edit
 
 ## Interfaces and contracts
 
-- **Create body:** `folderId?: string | null` (absent = no choice, null = the space's root chosen),
-  `teamId?: string | null`, `intent?: { mode: EditorMode; tabKind?: 'diagram' | 'event-storming';
-templateFamily?: 'retrospective' | 'kanban' }`. `readCreationIntent(value)`: `undefined` or `null` →
-  `{ ok: true, intent: null }`; an object whose `mode` is a member, whose `tabKind` is absent, null
-  (both `diagram`) or a member, and whose `templateFamily` is absent, null (dropped) or a member →
-  `{ ok: true, intent }` (other fields ignored, `D22`); anything else → `{ ok: false }` → 400
-  `{ error: 'intent_invalid' }`, nothing written.
+- **Create body:** `folderId?: string | null` (absent = no choice, null = the space's root chosen), `teamId?: string | null`, `intent?: { mode: EditorMode; templateFamily?: 'retrospective' | 'kanban' }`. `readCreationIntent(value)`: `undefined` or `null` → `{ ok: true, intent: null }`; an object whose `mode` is a member, whose `tabKind` is absent, null (both `diagram`) or a member, and whose `templateFamily` is absent, null (dropped) or a member → `{ ok: true, intent }` (other fields ignored, `D22`); anything else → `{ ok: false }` → 400 `{ error: 'intent_invalid' }`, nothing written.
 - **`GET /api/placement-defaults`** → 200 `{ defaults: PlacementDefault[] }`, in
   `PLACEMENT_DEFAULT_KEYS` order (`D20`); a stored row whose key is not listed is left out.
-- **`PUT /api/placement-defaults/:key`**, body `{ folderId: string }` → 204 (`D19`). `:key` is
-  `decodeURIComponent`d, so `kind:event-storming` and `kind%3Aevent-storming` both name it (`D18`); an
-  undecodable segment is `default_key_invalid`. Order: key → body (`default_folder_invalid` for a
-  non-object, a missing, non-string or empty `folderId`, `D25`) → folder visibility
-  (`judgeDefaultFolder`, any skip reason → 404 `folder_not_found`) → upsert (a repeat replaces, `D21`).
+- **`PUT /api/placement-defaults/:key`**, body `{ folderId: string }` → 204 (`D19`). Order: key → body (`default_folder_invalid` for a non-object, a missing, non-string or empty `folderId`, `D25`) → folder visibility (`judgeDefaultFolder`, any skip reason → 404 `folder_not_found`) → upsert (a repeat replaces, `D21`).
 - **`DELETE /api/placement-defaults/:key`** → 204 whether or not a row existed;
   `default_key_invalid` first.
 - Other methods or deeper paths → 404 `not_found`. No resolved owner → the shared `missingAuth()`.
@@ -278,7 +263,7 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 | Constant                 | Value                               | Provenance               | Safe range                   |
 | ------------------------ | ----------------------------------- | ------------------------ | ---------------------------- |
 | Mode keys                | `mode:<m>` per `EDITOR_MODES` entry | Spec "Default keys"      | Grows with the editor modes  |
-| `CREATION_TAB_KINDS`     | `['diagram', 'event-storming']`     | Spec "Creation intent"   | `TabKind` members, no legacy |
+| `CREATION_TAB_KINDS`     | `['diagram']`                       | Spec "Creation intent"   | `TabKind` members, no legacy |
 | `TEMPLATE_FAMILIES`      | `['retrospective', 'kanban']`       | Spec "Default keys"      | Closed; a new one adds a key |
 | `DEFAULT_KEY_DIMENSIONS` | `['kind', 'template', 'mode']`      | Spec "Precedence"        | Most specific first          |
 | Rate limit               | `WRITE_RATE_LIMITER`                | `apps/api/wrangler.toml` | Shared with every write      |
@@ -287,15 +272,7 @@ No environment variable or binding is added.
 
 ## Telemetry
 
-`placementDefaultTelemetryType(key)` derives one closed value per key, `Default` + each part in
-PascalCase (`DefaultModeDiagram`, `DefaultModeDraw`, `DefaultKindEventStorming`,
-`DefaultTemplateRetrospective`, `DefaultTemplateKanban`), so a new editor mode gains its value with its
-key. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and
-`Folder·Cleared·<value>` before the write; the one emitter is the store
-(`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default
-Folders Set and Default Folders Cleared in its Organisation stack
-(`apps/telemetry/app/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS`
-(`apps/telemetry/app/computed-emitters.ts`).
+`placementDefaultTelemetryType(key)` derives one closed value per key, `Default` + each part in PascalCase, so a new editor mode gains its value with its key. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and `Folder·Cleared·<value>` before the write; the one emitter is the store (`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default Folders Set and Default Folders Cleared in its Organisation stack (`apps/telemetry/app/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS` (`apps/telemetry/app/computed-emitters.ts`).
 
 ## Defaults ledger
 
@@ -517,7 +494,6 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Icon                  | Source                        | Licence | Path                                                               |
 | --------------------- | ----------------------------- | ------- | ------------------------------------------------------------------ |
 | Diagrams, Whiteboards | `FlowchartIcon`, `MarkerIcon` | MIT     | `packages/ui/src/icons/drawing-kinds.tsx`                          |
-| Event Storming boards | Lucide `sticky-note`          | ISC     | `packages/icons/src/lucide.generated.ts`                           |
 | Retrospectives        | Lucide `history`              | ISC     | same                                                               |
 | Kanban boards         | Lucide `square-kanban`        | ISC     | same, vendored by `pnpm --filter @liveplanner/icons vendor:lucide` |
 | Use as Default for    | Lucide `folder-check`         | ISC     | same                                                               |

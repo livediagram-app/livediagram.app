@@ -1,10 +1,9 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { headlineCase } from '@liveplanner/api-schema';
 import { badgePresetFace, type PenColour } from '@liveplanner/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
-import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/document';
+import { REACTION_EMOJI } from '@liveplanner/document';
 
 import type {
   ComponentKind,
@@ -74,7 +73,6 @@ import {
   CodeBlockTileArt,
   FigmaTileArt,
   LoomTileArt,
-  NoteTileArt,
   VimeoTileArt,
   YouTubeTileArt,
 } from '@/components/palette/palette-tile-art';
@@ -110,10 +108,6 @@ export type PaletteTileSection =
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
-  // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): a top-level category of the
-  // eight workshop note kinds, each an ordinary sticky in its semantic
-  // colour.
-  | 'event-storming'
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): boards by preset,
   // cards by item type.
   | 'plan-boards'
@@ -186,13 +180,7 @@ type PaletteTileAction =
   | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@liveplanner/document').ArrowEnds }
-  // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
-  // eight semantic colours over the one sticky type, one tile per note kind.
-  // `fill` + `esKind` ride the sticky action for the Event Storming tiles
-  // (docs/specs/021-event-storming/event-storming.md): eight semantic colours over the one sticky type, one tile
-  // per note kind. The kind lets the commit path route the note onto its
-  // workshop stage's layer on event-storming boards.
-  | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
+  | { type: 'sticky' }
   | { type: 'table' }
   | { type: 'image' }
   | { type: 'annotation' }
@@ -268,7 +256,6 @@ export type PaletteTileDef = {
   // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
   // selection-mode buttons; 'move' / 'tools' the rest of Behaviour; and
   // 'ask' / 'record' the two halves of Collaborate.
-  // 'event-storming' = the Write tab's sticky-notation group (docs/specs/021-event-storming/event-storming.md).
   tileGroup?:
     'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'tools' | 'ask' | 'record';
   label: string;
@@ -2383,31 +2370,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
-  // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind, derived
-  // from the EVENT_STORMING_NOTES catalogue in @liveplanner/document so the
-  // palette can never drift from the colours the template builder (and any
-  // future consumer) uses. Each tile arms the ordinary sticky gesture with
-  // the kind's canonical fill + kind riding the intent (the kind routes the
-  // note onto its stage's layer on event-storming boards). Its own top-level
-  // category in the Structure band — promoted out of the Write accordion.
-  // Tile ids keep their historical 'tools:' prefix: ids are stable, since palette layouts and
-  // search address tiles by them.
-  ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
-    id: `tools:es-${note.kind}`,
-    section: 'event-storming',
-    label: `Add ${headlineCase(note.label)} Note`,
-    caption: headlineCase(note.label),
-    blurb: note.blurb,
-    description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
-    noTint: true,
-    // The notation, then the Hotspot: a problem marker rather than a part of the model.
-    ...(note.kind === 'aggregate' ? { dividerAfter: true as const } : {}),
-    action: { type: 'sticky', fill: note.fill, esKind: note.kind },
-    // The glyph mirrors the note's stationery silhouette (docs/specs/021-event-storming/event-storming.md): a
-    // standard square, a WIDE rect for the prose kinds, a small square for
-    // the actor — so the row's picture says the shape before the blurb does.
-    icon: <NoteTileArt size={note.size} fill={note.fill} />,
-  })),
   // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
   ...PLAN_TILES,
   // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").

@@ -59,7 +59,7 @@ drags for collaborators.
   preview lives in a hook-level ref, so it survives the effect re-running within one gesture (a
   quick-connect arrow turning to follow the pointer).
 - Every read of `depsRef.current.activeTab` inside the drag effect and the release path goes through
-  `virtualTab()`, so snapping, lanes, insert-between and Shift-duplicate see the gesture's own
+  `virtualTab()`, so snapping and Shift-duplicate see the gesture's own
   result as they saw the written document before.
 - The Shift-duplicate swap at the gesture's start writes through the same `tick`.
 - On release: a click-to-place arrow turning to follow, or follow mode riding through a release,

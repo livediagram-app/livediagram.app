@@ -3,7 +3,7 @@
  *
  * Motion OF the canvas, not of the chrome around it: element entry,
  * arrow flow, icon / progress / rating / pie
- * animations, the event-storming insert preview, the done-check flash,
+ * animations, the done-check flash,
  * presentation slide transitions and the touch long-press ring. Each follows
  * its own spec, so this stylesheet is the one the chrome motion budget does
  * not read (the guard in apps/live/motion-budget.test.ts lists it as canvas).
@@ -1046,16 +1046,6 @@
   .lvd-concept-flow .lvd-cg-arc {
     stroke-dasharray: none;
   }
-}
-
-/* Insert-between preview (docs/specs/021-event-storming/event-storming.md): the slot opening and closing.
-   Only mounted while a palette drag is in flight over an event-storming
-   board, so a real move / drag never eases — the drop must land instantly
-   where the preview promised. Short and ease-out, so the board reads as
-   making room rather than sliding about. The global reduce-motion rules
-   above collapse it to ~instant. */
-[data-insert-shift] {
-  transition: transform 120ms ease-out;
 }
 
 /* A stack's reflow (docs/specs/009-elements/stack.md "Animation"): a child the stack holds glides from where it was to

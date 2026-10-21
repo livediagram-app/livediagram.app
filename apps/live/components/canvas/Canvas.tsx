@@ -20,7 +20,6 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@liveplanner/document';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Reused as the excludeIds argument to snapResizeBounds during draw-
 // to-size: the new element doesn't exist yet, so there's nothing to
@@ -112,7 +111,6 @@ function CanvasView(props: CanvasProps) {
     tabBackgroundPattern,
     tabBackgroundColor,
     tabLayers,
-    tabKind,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
     tabBackgroundAnimationSpeed,
@@ -215,7 +213,6 @@ function CanvasView(props: CanvasProps) {
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
-    onDropPhoto: props.onDropPhoto,
     onDropFile: props.onDropFile,
     // A tile DRAGGED onto the canvas is an edit too (docs/specs/008-canvas/avatar-mode.md), so it leaves
     // Avatar mode the same way a tile click does — otherwise the element
@@ -273,7 +270,6 @@ function CanvasView(props: CanvasProps) {
       isPaintMode,
       tabLocked,
       readOnly,
-      esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
       plusBlocked,
@@ -284,8 +280,6 @@ function CanvasView(props: CanvasProps) {
       isPaintMode,
       tabLocked,
       readOnly,
-      tabLayers,
-      tabKind,
       props.elementMenuOpen,
       arrowLabels,
       plusBlocked,
@@ -365,7 +359,6 @@ function CanvasView(props: CanvasProps) {
     });
 
   const {
-    stamp,
     drawDrag,
     penPoints,
     penStroke,
@@ -938,7 +931,6 @@ function CanvasView(props: CanvasProps) {
               marquee={marquee}
               drawDrag={drawDrag}
               drawHover={drawHover}
-              stamp={stamp}
               // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
               penPoints={
                 penPoints ??

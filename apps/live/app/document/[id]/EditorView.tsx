@@ -67,7 +67,6 @@ import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
-import { EditorPhotoImport } from '@/components/chrome/EditorPhotoImport';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -141,7 +140,6 @@ export function EditorView() {
     livePresence,
     canvasTool,
     drag,
-    esBoard,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -457,11 +455,7 @@ export function EditorView() {
             onCloseCanvasMenu={closeContextMenu}
             canvasActions={{
               // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
-              onPaste: () =>
-                pasteFromClipboard(
-                  undefined,
-                  contextMenu?.mode === 'canvas' ? (contextMenu.canvasPoint ?? null) : null,
-                ),
+              onPaste: () => pasteFromClipboard(),
               canPaste: hasClipboard,
             }}
           />
@@ -706,14 +700,12 @@ export function EditorView() {
                                     ) : null}
                                     <EditorStartPanels />
 
-                                    {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
-          right now, and offers the Alt insert-between gesture while a note is
-          on the move. Suppressed while a mode banner owns the top slot. */}
+                                    {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
+          right now. Suppressed while a mode banner owns the top slot. */}
                                     {minimalChrome ? null : (
                                       <ModifierHint
                                         readOnly={isReadOnly}
                                         drag={drag}
-                                        esBoard={esBoard}
                                         elements={activeTab.elements}
                                         hasElements={activeTab.elements.length > 0}
                                         suppressed={
@@ -723,8 +715,6 @@ export function EditorView() {
                                         }
                                       />
                                     )}
-
-                                    <EditorPhotoImport />
 
                                     {/* An editor older than the server's document format offers a reload, once its edits
             are saved (docs/specs/016-platform/new-version-prompt.md). */}

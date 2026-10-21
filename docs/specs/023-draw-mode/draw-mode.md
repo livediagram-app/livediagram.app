@@ -27,9 +27,7 @@ pen widths, dock spacing) are named constants, tuned in place.
   move between drawing and diagramming without a new tab.
 - **No second editor.** Every editor feature reads the same elements, so Draw
   mode inherits fixes and features for free and nothing drifts.
-- **Kinds stay rare.** A tab kind is kept for a very specific use with its own
-  notation, as event storming has; whiteboarding needs only other tools in
-  focus.
+- **Kinds stay rare.** A tab kind is kept for a very specific use with its own notation; whiteboarding needs only other tools in focus.
 
 ## Creating one
 
@@ -852,8 +850,4 @@ Draw mode is built in rounds and tuned with the operator between them.
 
 ## References
 
-[Editor modes](../007-editor/editor-modes.md), [Event storming](../021-event-storming/event-storming.md) (a tab kind, for contrast), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)
-(shape recogniser),
-[Eraser panel](../008-canvas/eraser-panel.md),
-[Appearance](../004-interface-design/appearance.md),
-[Google Drive mirror](../022-drive-mirror/drive-mirror.md).
+[Editor modes](../007-editor/editor-modes.md), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) (shape recogniser), [Eraser panel](../008-canvas/eraser-panel.md), [Appearance](../004-interface-design/appearance.md), [Google Drive mirror](../022-drive-mirror/drive-mirror.md).

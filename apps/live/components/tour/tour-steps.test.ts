@@ -28,29 +28,29 @@ describe('tour steps', () => {
 // current surface doesn't render must be dropped up front, so the count
 // reads right and the tour never anchors to hidden chrome.
 describe('tourStepsFor', () => {
-  const ids = (opts: { mobile: boolean; esBoard: boolean }) => tourStepsFor(opts).map((s) => s.id);
+  const ids = (opts: { mobile: boolean }) => tourStepsFor(opts).map((s) => s.id);
 
   it('keeps every step on a desktop diagram', () => {
-    expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
+    expect(ids({ mobile: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
   // docs/specs/007-editor/editor-tour.md "The steps": no Tab Mode step; Element Menu follows Palette Categories.
   it('has no Tab Mode step, the Element Menu following Palette Categories', () => {
-    const desktop = ids({ mobile: false, esBoard: false });
+    const desktop = ids({ mobile: false });
     expect(desktop).not.toContain('editor-mode');
     expect(desktop.indexOf('context-menu')).toBe(desktop.indexOf('categories') + 1);
   });
 
   // A phone opens Tab Style as a modal sheet, and the tour stands aside while a modal is open.
   it('drops the Theme & Canvas step on a phone', () => {
-    const mobile = ids({ mobile: true, esBoard: false });
+    const mobile = ids({ mobile: true });
     expect(mobile).not.toContain('theme-canvas');
     expect(mobile).toContain('palette');
   });
 
   it('reads tap and long-press words on a touch screen, click and right-click words otherwise', () => {
     const body = (touch: boolean, id: string) =>
-      tourStepsFor({ mobile: true, esBoard: false, touch }).find((s) => s.id === id)!.body;
+      tourStepsFor({ mobile: true, touch }).find((s) => s.id === id)!.body;
     expect(body(false, 'categories')).toMatch(/Click to add/);
     expect(body(true, 'categories')).toBe(
       'Tap a category to see what is in it. Tap to add, or drag onto the canvas.',
@@ -61,30 +61,14 @@ describe('tourStepsFor', () => {
     expect(body(true, 'tabs')).toBe(body(false, 'tabs'));
   });
 
-  it('drops the palette-header steps on an event-storming board', () => {
-    const board = ids({ mobile: false, esBoard: true });
-    expect(board).not.toContain('selection-modes');
-    expect(board).not.toContain('categories');
-    // The rest of the tour still applies: the board has a palette, elements,
-    // tabs, and a paintbrush.
-    expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
-  });
-
-  it('counts six steps on a desktop diagram, five on a phone and three on a phone board', () => {
-    const count = (opts: { mobile: boolean; esBoard: boolean }) =>
-      tourStepsFor(opts).filter((s) => !s.card).length;
-    expect(count({ mobile: false, esBoard: false })).toBe(6);
-    expect(count({ mobile: true, esBoard: false })).toBe(5);
-    expect(count({ mobile: true, esBoard: true })).toBe(3);
+  it('counts six steps on a desktop diagram and five on a phone', () => {
+    const count = (opts: { mobile: boolean }) => tourStepsFor(opts).filter((s) => !s.card).length;
+    expect(count({ mobile: false })).toBe(6);
+    expect(count({ mobile: true })).toBe(5);
   });
 
   it('keeps the bookend cards on every surface', () => {
-    for (const opts of [
-      { mobile: false, esBoard: false },
-      { mobile: true, esBoard: false },
-      { mobile: false, esBoard: true },
-      { mobile: true, esBoard: true },
-    ]) {
+    for (const opts of [{ mobile: false }, { mobile: true }]) {
       const steps = tourStepsFor(opts);
       expect(steps[0]!.card).toBe('welcome');
       expect(steps[steps.length - 1]!.card).toBe('outro');

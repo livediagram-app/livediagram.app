@@ -63,15 +63,6 @@ describe('drawBannerMessage', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
   });
 
-  it('says a workshop note is placed, not drawn (docs/specs/021-event-storming/event-storming.md)', () => {
-    expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, false)).toBe(
-      'Click to place a command note',
-    );
-    expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, true)).toBe(
-      'Tap to place a command note',
-    );
-  });
-
   // docs/specs/008-canvas/canvas-and-palette.md: the banner names a shape as the tile that armed it named it.
   it('names a shape as its tile does, a variant or a compound kind included', () => {
     expect(

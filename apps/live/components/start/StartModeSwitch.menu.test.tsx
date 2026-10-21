@@ -9,7 +9,6 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EDITOR_MODES,
-  ES_BOARD_LAYER_ID,
   editorModeDescription,
   editorModeLabel,
   type EditorMode,
@@ -255,15 +254,6 @@ describe('StartModeSwitch in the editor', () => {
   it('offers a visitor who cannot edit no switch', () => {
     const { container } = render(<Host tab={freshTab()} canEdit={false} />);
     expect(slot(container)).toBeNull();
-  });
-
-  it('offers no switch on an event-storming board, nor a legacy one known by its layer', () => {
-    const { container } = render(<Host tab={freshTab({ kind: 'event-storming' })} />);
-    expect(slot(container)).toBeNull();
-    cleanup();
-    const layers = [{ id: ES_BOARD_LAYER_ID, name: 'Board', visible: true }];
-    const legacy = render(<Host tab={freshTab({ layers })} />);
-    expect(slot(legacy.container)).toBeNull();
   });
 });
 

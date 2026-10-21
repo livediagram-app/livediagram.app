@@ -176,12 +176,8 @@ describe('upsertTab — tab kind', () => {
     expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');
   });
 
-  it('keeps a workshop board a workshop board', () => {
-    expect(upsertTab(rec(), tab({ kind: 'event-storming' }), 2).tabs[0]!.kind).toBe(
-      'event-storming',
-    );
-    const legacy = tab({ layers: [{ id: 'layer:es:board', name: 'Event Storming' }] });
-    expect(upsertTab(rec(), legacy, 2).tabs[0]!.kind).toBe('event-storming');
+  it('keeps a Plan tab a Plan tab', () => {
+    expect(upsertTab(rec(), tab({ kind: 'sheet' }), 2).tabs[0]!.kind).toBe('sheet');
   });
 });
 

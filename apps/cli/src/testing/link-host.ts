@@ -14,7 +14,7 @@ export type HostTab = {
   name: string;
   rev: number;
   elements: Element[];
-  kind?: 'event-storming';
+  kind?: 'board';
   folder?: string;
   theme?: string;
 };

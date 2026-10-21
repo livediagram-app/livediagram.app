@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @liveplanner/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 147;
+export const TEMPLATE_COUNT = 146;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -160,7 +160,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -573,10 +573,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Does it work with Mermaid?',
         a: 'Yes, through the API, the CLI and AI assistants. Hand over a Mermaid flowchart, state diagram, ER diagram or sequence diagram and liveplanner lays it out on the canvas with every connection intact; the CLI exports a tab back to Mermaid text for your READMEs and issues. Other Mermaid types, such as class, Gantt, pie and mind map, are not supported.',
-      },
-      {
-        q: 'Can I turn a photo of sticky notes into a board?',
-        a: 'Yes, on an event storming board. Take a photo of the wall and liveplanner finds the sticky notes and places them on the canvas for you to tidy up.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',

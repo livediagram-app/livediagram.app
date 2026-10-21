@@ -27,13 +27,13 @@ where it is and changes only how the next mark is made.
 
 ## Kinds versus modes
 
-- **A tab kind is for a very specific use** whose notation, rules and data are
-  its own: the [event-storming board](../021-event-storming/event-storming.md)
-  is one. A new kind is added only when a use cannot be served by a mode.
+- **A tab kind is for a very specific use** whose rules and data are its own: Plan's Board, Sheet,
+  Dashboard and Form tabs are. A new kind is added only when a use cannot be served by a mode.
+
 - **Everything else is the general tab** (`kind: 'diagram'`, the default). It
   carries every element type; every mode works on it.
-- **Whiteboarding is a mode, not a kind.** `TabKind` is `'diagram' |
-'event-storming'`; there is no `'whiteboard'` kind.
+- **Whiteboarding is a mode, not a kind.** `TabKind` is `'diagram' | 'board' | 'sheet' | 'dashboard' |
+'form'`; there is no `'whiteboard'` kind.
 - **Content is shared between modes.** A stroke drawn in Draw mode is a
   `freehand` element in Diagram mode too, and a shape placed in Diagram mode
   is there in Draw mode. Nothing is hidden, converted or locked by a switch.
@@ -89,8 +89,6 @@ where it is and changes only how the next mark is made.
   viewport does not move.
 - **Where it is offered:** on the start of a general, unlocked, empty tab, to anyone who can edit. A view-role
   visitor, and everyone on a locked tab, sees no switch and sees the tab in its mode.
-- **Not on event-storming boards:** the tab kind keeps its own tools and
-  notation, and shows no switch.
 - **Zero layout shift:** the switch fills its row, and nothing next to it moves when the mode changes.
 - **Shift+D** moves an **empty** tab to the next mode, wrapping round through all five, shown in the switch's
   preview, `aria-keyshortcuts` and Settings › Keyboard; a switch by key is announced politely ("Draw mode"). On a tab
@@ -136,39 +134,20 @@ switch lists every mode unlocked, and Shift+D steps through all five. The first 
     stroke) is finished first, as a switch of one's own finishes it;
   - a toast says who switched: "<Name> switched this tab to <Mode>." ("Someone" when the room
     gives no name); no toast for one's own switch, undo or redo.
-- **Who can switch:** an editor on a general tab. A view-role visitor and everyone on a locked tab
-  follow the tab's mode and see no switch. An event-storming board is always Diagram and shows no switch.
+- **Who can switch:** an editor on a general tab. A view-role visitor and everyone on a locked tab follow the tab's mode and see no switch.
 - **The tab says what it opens in** because its mode is stored: a tab opens in its mode for
   everyone, including a person opening it for the first time. The Whiteboard template, Quick
   Start entry and whiteboard imports set it to `draw`.
 - **Nothing is remembered per person.** A mode chosen before this change and kept in a browser
   (`liveplanner:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
   left in place and ignored.
-- **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
-  **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new
-  tab): made from a Pages tab it is a Pages tab, from a Draw tab a Draw tab, from a Plan tab (a Board,
-  Sheet or Dashboard tab included) a Plan tab, and from an event-storming board, always Diagram, a Diagram tab. The
-  **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
-  source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
-  follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
-  opens empty on its mode's own start (Start Diagramming, Start Drawing, Start a
-  Workshop, Start Making Pages, Start Planning: [Template starts](start-diagramming.md), [Plan
-  mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
-  search also finds every other mode's templates. Only the template chosen for it changes that:
-  every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
-  Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
-  keeps the original's mode. Adding a tab is an Editor's alone: a Participant, a Viewer and any tab-scoped link add
-  no tab ([Share roles](../013-workspace/share-roles.md), [Tab-scoped share
-  links](../013-workspace/tab-scoped-share-links.md)), so who may add one is unchanged by the mode it opens in.
+- **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new tab): made from a Pages tab it is a Pages tab, from a Draw tab a Draw tab, from a Plan tab (a Board, Sheet or Dashboard tab included) a Plan tab, always Diagram, a Diagram tab. The **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab opens empty on its mode's own start (Start Diagramming, Start Drawing, Start a Workshop, Start Making Pages, Start Planning: [Template starts](start-diagramming.md), [Plan mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose search also finds every other mode's templates. Only the template chosen for it changes that: every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw, Blank in Diagram. **Duplicate** is not a new tab: the copy keeps the original's mode. Adding a tab is an Editor's alone: a Participant, a Viewer and any tab-scoped link add no tab ([Share roles](../013-workspace/share-roles.md), [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)), so who may add one is unchanged by the mode it opens in.
 - **A new document opens in Diagram** unless its maker chose otherwise: a new document's Mode step on `/new` picks
   its mode's blank, so the document opens in that mode ([New document route](new-document-route.md)). An import that
   sets its own mode wins.
 - **No Mode in the tab menu.** The tab menu offers no mode choice; it was retired with the top chrome's chip
   (above).
-- **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
-  glyph the mode switch uses), tinted with the tab's theme accent. An
-  event-storming board is always Diagram, so it shows the Diagram icon. A Board, Sheet or Dashboard tab, always Plan,
-  shows its kind's glyph instead ([Plan tabs](../026-plan/plan-tabs.md#the-kinds)).
+- **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same glyph the mode switch uses), tinted with the tab's theme accent. A Board, Sheet or Dashboard tab, always Plan, shows its kind's glyph instead ([Plan tabs](../026-plan/plan-tabs.md#the-kinds)).
 
 ## One look
 
@@ -284,11 +263,7 @@ holds.
   (`PALETTE_TILES`). A layout only arranges them, so one tile can sit in
   different categories in different modes, and a category can be renamed,
   re-banded or re-filled for one mode without touching another.
-- **A layout entry** names a category and may override its `label`,
-  `description` and `band`, and list its `tiles` by id, in order. With no list
-  it holds the category's own tiles (`tilesForCategory`), so a layout spells
-  out only where a mode differs. `boardOnly` keeps a category to
-  event-storming boards.
+- **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by id, in order. With no list it holds the category's own tiles (`tilesForCategory`), so a layout spells out only where a mode differs.
 - **Catalogue categories** (Icons, Stickers, Tech) are
   bodies with their own content and take no tile list.
 - **A body decides presentation only** (a grid, rows with a blurb, Media's
@@ -337,7 +312,6 @@ and sets targets as often as a page reports them.
 | Components        | no      | yes       | no   | no       |
 | Concepts          | yes     | yes       | no   | no       |
 | Devices           | no      | yes       | no   | no       |
-| Event Storming    | board   | no        | no   | no       |
 | Icons             | yes     | yes       | no   | yes      |
 | Stickers          | no      | yes       | no   | yes      |
 | Tech              | yes     | no        | no   | no       |
@@ -351,10 +325,9 @@ or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
 Plan shows no palette: its boards, sheets and dashboards carry their own tools
 ([Plan mode](../026-plan/plan-mode.md#no-palette)).
 
-- **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an
-  event-storming board
-  (the layout's `landing`). Switching mode re-lands the palette there, so it
-  never shows a category the new mode leaves out.
+- **The landing category** is the mode's **Popular** (Plan's is **Cards**) (the layout's `landing`).
+  Switching mode re-lands the palette there, so it never shows a category the new mode leaves out.
+
 - **Popular** is the landing category of every mode but Plan: the tiles that mode is most
   often built from (twelve at most), listed in its layout entry, fixed (not edited or
   reordered). A layout may put a divider of its own between two entries (`DIVIDE`), shown on the strip as a
@@ -557,6 +530,4 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 ## References
 
-[Document](../006-document/document.md), [Draw mode](../023-draw-mode/draw-mode.md),
-[Event storming](../021-event-storming/event-storming.md),
-[Toolbar layout](toolbar-layout.md), [Zen mode](zen-mode.md).
+[Document](../006-document/document.md), [Draw mode](../023-draw-mode/draw-mode.md), [Toolbar layout](toolbar-layout.md), [Zen mode](zen-mode.md).

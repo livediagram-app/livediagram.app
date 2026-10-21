@@ -162,7 +162,7 @@ type MultilineLabelProps = {
   alignX: TextAlignX;
   alignY: TextAlignY;
   className?: string;
-  // Auto-fit size (docs/specs/021-event-storming/event-storming.md): when the element's size is 'scale', the
+  // Auto-fit size: when the element's size is 'scale', the
   // caller measures the text against the box and passes the px it fits at,
   // so 'scale' means fill-the-note rather than a fixed small size. The
   // editor is handed the SAME number, or the text jumps on double-click.
@@ -246,7 +246,7 @@ export function RichLabel({
   textScale?: number;
   fontFamily?: string;
   multiline: boolean;
-  // Paint in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md) — whole-label, so
+  // Paint in capitals (a text's Upper case) — whole-label, so
   // it sits on the wrapper rather than on each run's style.
   uppercase?: boolean;
   // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.

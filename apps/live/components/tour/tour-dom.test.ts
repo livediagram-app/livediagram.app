@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { clickTour, findTour, waitForTour } from './tour-dom';
 
 // A tour anchor has to be something the user can actually SEE: chrome that
-// a surface hides (the event-storming board's palette header, docs/specs/021-event-storming/event-storming.md)
+// a surface hides
 // still sits in the DOM with display:none, and anchoring to it put the
 // highlight ring at 0x0 in the top-left corner and clicked a trigger whose
 // menu then opened off-screen. jsdom does no layout, so laid-out nodes are

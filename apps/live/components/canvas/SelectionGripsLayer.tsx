@@ -7,7 +7,6 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 
 // The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize", "The handles are always on
 // top"): one layer in the canvas's transformed world, drawn after every element, that holds every
@@ -68,14 +67,9 @@ export function BoxGripsPortal({ children }: { children: ReactNode }) {
   return hosts ? createPortal(children, hosts.box) : null;
 }
 
-// SVG grips, in canvas coordinates, moved into the layer's <svg>. An arrow standing aside for the
-// insert-between preview shifts its <svg>, so its grips take the same shift here.
-export function ArrowGripsPortal({ arrowId, children }: { arrowId: string; children: ReactNode }) {
+// SVG grips, in canvas coordinates, moved into the layer's <svg>.
+export function ArrowGripsPortal({ children }: { children: ReactNode }) {
   const hosts = useContext(SelectionGripsContext);
-  const shiftX = useInsertShift().xFor(arrowId);
   if (!hosts) return null;
-  return createPortal(
-    <g transform={shiftX ? `translate(${shiftX} 0)` : undefined}>{children}</g>,
-    hosts.arrows,
-  );
+  return createPortal(<g>{children}</g>, hosts.arrows);
 }
