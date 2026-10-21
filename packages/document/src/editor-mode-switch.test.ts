@@ -30,10 +30,8 @@ describe('withEditorModeSwitched', () => {
     expect(draw).toMatchObject({ pagedContent: false, tab: { opensIn: 'draw' } });
   });
 
-  it('returns the same tab when it is already in the mode, or is an event-storming board', () => {
+  it('returns the same tab when it is already in the mode', () => {
     const inDraw = tab([], { opensIn: 'draw' });
     expect(withEditorModeSwitched(inDraw, 'draw').tab).toBe(inDraw);
-    const es = tab([], { kind: 'event-storming' });
-    expect(withEditorModeSwitched(es, 'pages').tab).toBe(es);
   });
 });

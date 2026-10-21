@@ -2,8 +2,6 @@
 // the fill's shape, how a stored one is read, the tone the page reads as under its overlay, and the
 // gallery images a tab's pages name. Pure, shared by the editor, the exports, the api's image
 // reference index and the agents' page summaries.
-import { isImageCredit, type ImageCredit } from './image-credit';
-
 // The overlays over the picture, under everything on the page.
 export type PageImageOverlayKind = 'light' | 'dark' | 'tint' | 'fade';
 const PAGE_IMAGE_OVERLAY_KINDS: readonly PageImageOverlayKind[] = ['light', 'dark', 'tint', 'fade'];
@@ -24,10 +22,6 @@ export type PageImageFill = {
   // Absent is no overlay.
   overlay?: PageImageOverlay;
   position?: PageImagePosition;
-  // The search pick's credit (docs/specs/009-elements/image-search.md "Credit on the element").
-  credit?: ImageCredit;
-  // A hover preview's picture (an Openverse thumbnail, https): never stored, dropped on read.
-  preview?: string;
 };
 
 // The most an overlay covers: always some picture shows through.
@@ -74,7 +68,7 @@ function parseOverlay(v: unknown): PageImageOverlay | undefined {
 }
 
 /** A stored image fill, or undefined when its picture is not one a page may name. Its optional
- *  fields keep what is valid and drop the rest (a preview is never kept). */
+ *  fields keep what is valid and drop the rest. */
 export function parsePageImageFill(f: Record<string, unknown>): PageImageFill | undefined {
   if (f.kind !== 'image' || !isPageImageId(f.imageId)) return undefined;
   const overlay = parseOverlay(f.overlay);
@@ -87,7 +81,6 @@ export function parsePageImageFill(f: Record<string, unknown>): PageImageFill | 
     ...(typeof f.tone === 'string' && HEX.test(f.tone) ? { tone: f.tone } : {}),
     ...(overlay ? { overlay } : {}),
     ...(position ? { position } : {}),
-    ...(isImageCredit(f.credit) ? { credit: f.credit } : {}),
   };
 }
 
@@ -95,7 +88,6 @@ export function parsePageImageFill(f: Record<string, unknown>): PageImageFill | 
 export function samePageImage(a: PageImageFill, b: PageImageFill): boolean {
   return (
     a.imageId === b.imageId &&
-    a.preview === b.preview &&
     a.position === b.position &&
     a.overlay?.kind === b.overlay?.kind &&
     a.overlay?.strength === b.overlay?.strength &&

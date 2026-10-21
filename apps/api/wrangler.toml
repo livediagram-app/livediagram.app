@@ -259,14 +259,12 @@ simple = { limit = 20, period = 60 }
 #   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
 #   Production: `wrangler secret put <NAME>`.
 #
-# Each feature takes its own provider from the keys that are set: the assistant
-# (/api/ai) prefers OpenAI, the crop reader (/api/ai/read-notes) prefers Google,
-# and one key serves both. Production sets both named keys to split them.
-# AI_BASE_URL / AI_MODEL / AI_VISION_MODEL are plain [vars]; AI_MODEL is the
-# assistant's model and AI_VISION_MODEL the reader's (docs/specs/007-editor/ai-assistance.md).
+# The assistant (/api/ai) takes the first key that is set, OpenAI before Google.
+# AI_BASE_URL / AI_MODEL are plain [vars]; AI_MODEL is the
+# assistant's model (docs/specs/007-editor/ai-assistance.md).
 #
 # With no key the whole surface is hidden: GET /api/capabilities answers
-# { aiEnabled: false }, the editor shows no AI panel and no photo import, and
+# { aiEnabled: false }, the editor shows no AI panel, and
 # the AI routes answer 503. That is the self-host default.
 
 # Per-owner soft caps on the image gallery (docs/specs/009-elements/images.md). Both default to

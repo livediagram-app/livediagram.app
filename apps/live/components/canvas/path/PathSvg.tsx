@@ -1,4 +1,3 @@
-import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
@@ -42,8 +41,6 @@ export function PathSvg({
   const width = polygonStrokePx({ strokeWidth: element.strokeWidth }, finish);
   const dash = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const filled = element.closed && fill !== 'transparent';
-  // A Drawing animation (docs/specs/028-animation/element-animations.md) on the drawn line.
-  const anim = useDrawingAnimation(element, d, width, stroke);
   return (
     <>
       <svg
@@ -52,9 +49,7 @@ export function PathSvg({
         preserveAspectRatio="none"
         aria-hidden
       >
-        {anim.defs}
         <path
-          {...anim.mainProps}
           d={d}
           fill={filled && !handDrawn ? fill : 'none'}
           fillRule={fillRule}
@@ -76,7 +71,6 @@ export function PathSvg({
           />
         ) : null}
       </svg>
-      {anim.overlay}
     </>
   );
 }

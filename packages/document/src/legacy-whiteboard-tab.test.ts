@@ -96,7 +96,7 @@ describe('migrateWhiteboardKind', () => {
     for (const tab of [
       { id: 't', name: 'T', elements: [shape()] },
       { id: 't', name: 'T', kind: 'diagram', opensIn: 'draw', elements: [shape()] },
-      { id: 't', name: 'T', kind: 'event-storming', elements: [] },
+      { id: 't', name: 'T', kind: 'board', elements: [] },
     ] as Tab[]) {
       expect(migrateWhiteboardKind(tab)).toBe(tab);
     }

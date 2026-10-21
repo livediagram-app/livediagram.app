@@ -207,10 +207,9 @@ The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) i
 To turn it on, set the key as a worker secret:
 
 ```bash
-# One key serves every AI feature:
+# One key turns AI on:
 pnpm --filter @liveplanner/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
 # or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars]).
-# Set both named keys to split them: the assistant on OpenAI, the reader on Google.
 ```
 
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
@@ -218,20 +217,12 @@ Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, o
 The provider is inferred from WHICH key you set ([AI Assistance](../specs/007-editor/ai-assistance.md)): a Google AI Studio
 key means Google, an OpenAI key means OpenAI, and `AI_API_KEY` means "anything
 else that speaks the OpenAI wire" — which needs `AI_BASE_URL` too (a local
-llama.cpp is `http://127.0.0.1:8080/v1`). Each AI feature picks its own
-provider from the keys you set: the assistant prefers OpenAI, the sticky-note
-reader prefers Google, each falling back to whichever key exists, and
-`AI_API_KEY` is used only when neither named key is set.
+llama.cpp is `http://127.0.0.1:8080/v1`). The assistant prefers OpenAI, falling back to
+whichever key exists, and `AI_API_KEY` is used only when neither named key is set.
 
 - `AI_MODEL`: the assistant's model, overriding its preset default
-  (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). The reader uses it
-  too when both features run on the same provider. Required when using
+  (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). Required when using
   `AI_API_KEY`.
-- `AI_VISION_MODEL`: model id for reading sticky-note crops
-  (`POST /api/ai/read-notes`, [Event storming](../specs/021-event-storming/event-storming.md)). On Google this defaults to
-  `gemini-2.5-flash-lite` rather than the assistant's model — it reads
-  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
-  single provider, setting `AI_MODEL` moves the reader too unless you set this.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3102`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits liveplanner.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 

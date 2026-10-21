@@ -269,7 +269,7 @@ export const EXPORTS: Metric = {
   allTypes: true,
   title: 'Exports',
   blurb:
-    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw). For the text formats, copying to the clipboard counts as an export too.',
+    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Markdown). For the text formats, copying to the clipboard counts as an export too.',
 };
 
 // The document + tab lifecycle as stacks (Dashboard). Loaded is the opens
@@ -577,26 +577,6 @@ export const ELEMENT_ACTIONS_USED = chart(
   'Used',
   'Element Actions Used',
   'Using an element in place: a reaction pad, Bring into Focus, playing a video.',
-  // Image search picks have their own chart below.
-  { typeIn: (type) => type !== 'ImageSearch' },
-);
-
-// Image search (docs/specs/009-elements/image-search.md): searches run in the
-// image picker, and the results attached to an image.
-export const IMAGE_SEARCHES = chart(
-  'Element',
-  'Searched',
-  'Image Searches',
-  "Searches run in the image picker's Search tab, for openly licensed pictures.",
-  { types: ['Image'] },
-);
-
-export const IMAGE_SEARCH_PICKS = chart(
-  'Element',
-  'Used',
-  'Image Search Picks',
-  'A searched picture attached to an image element.',
-  { types: ['ImageSearch'] },
 );
 
 export const KEYBOARD_SELECTIONS = chart(
@@ -604,38 +584,6 @@ export const KEYBOARD_SELECTIONS = chart(
   'Selected',
   'Keyboard & Filter Selections',
   'Elements selected from the keyboard, or by selecting everything matching a filter.',
-);
-
-export const INSERTED_BETWEEN = chart(
-  'Canvas',
-  'Used',
-  'Inserted Between',
-  'A note dropped into the gap between two notes on an event-storming board, the board making room for it.',
-  { types: ['InsertBetween'] },
-);
-
-export const NEXT_NOTES_ADDED = chart(
-  'Canvas',
-  'Used',
-  'Next Notes Added',
-  'A next-note tab beside an event-storming note clicked, adding the note the notation puts there.',
-  { types: ['AddNextNote'] },
-);
-
-export const NOTE_KINDS_CHANGED = chart(
-  'Canvas',
-  'Used',
-  'Note Kinds Changed',
-  'An event-storming note turned into another kind, say a domain event into a hotspot.',
-  { types: ['ChangeNoteKind'] },
-);
-
-export const LANES_SETTLED = chart(
-  'Canvas',
-  'Used',
-  'Boards Lined Up On Lanes',
-  'An older event-storming board opened for the first time since notes always sit on a lane, its stray notes lined up in one undoable step.',
-  { types: ['LanesSettled'] },
 );
 
 export const ELEMENT_EDITING: MetricStack = {
@@ -653,13 +601,7 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENT_OPTIONS_TOGGLED,
     ELEMENTS_LOCKED,
     ELEMENT_ACTIONS_USED,
-    IMAGE_SEARCHES,
-    IMAGE_SEARCH_PICKS,
     KEYBOARD_SELECTIONS,
-    INSERTED_BETWEEN,
-    NEXT_NOTES_ADDED,
-    NOTE_KINDS_CHANGED,
-    LANES_SETTLED,
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
@@ -786,22 +728,15 @@ export const TAB_IMPORTS = chart(
   'Tab',
   'Imported',
   'Tabs Imported',
-  'A tab imported from draw.io, Excalidraw, Mermaid, Markdown or JSON.',
-);
-
-export const PASTES_FROM_EXCALIDRAW = chart(
-  'Element',
-  'Imported',
-  'Pasted from Excalidraw',
-  'Drawings copied in Excalidraw and pasted or dropped onto the canvas.',
+  'A tab imported from a liveplanner JSON export.',
 );
 
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving liveplanner as files and text, and tabs and drawings coming in from other tools.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
+    'Diagrams leaving liveplanner as files and text, and tabs coming back in from JSON exports.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 

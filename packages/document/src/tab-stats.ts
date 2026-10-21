@@ -41,7 +41,7 @@ export function tabStatsOf(body: TabStatsBody, data: string): TabStats {
     }
   }
   return {
-    mode: opensInOf(body as Parameters<typeof opensInOf>[0]),
+    mode: opensInOf(body),
     elementCount: elements.length,
     commentCount,
     dataBytes: encoder.encode(data).length,

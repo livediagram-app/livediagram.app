@@ -64,8 +64,6 @@ export function EditorTabDialogs() {
     setShareDialogOpen,
     syncToCloud,
     leavePages,
-    setSelectedId,
-    setMultiSelectedIds,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -110,10 +108,6 @@ export function EditorTabDialogs() {
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
           documentTabs={tabs}
           loadTabs={loadAllTabs}
-          onClearSelection={() => {
-            setSelectedId(null);
-            setMultiSelectedIds(new Set());
-          }}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
@@ -124,10 +118,6 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Pages mode and a Dashboard tab import a liveplanner tab only: the other formats are diagrams
-          // (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
-          // Export of a Dashboard").
-          formats={pagesMode || activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

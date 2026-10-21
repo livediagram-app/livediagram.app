@@ -157,7 +157,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 18,
+    articleCount: 15,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -174,7 +174,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 36,
+    articleCount: 35,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 31,
+    articleCount: 30,
     kind: 'feature',
     groups: [
       'Basics',
@@ -213,8 +213,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 5,
+      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, and cleanup.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -519,7 +519,7 @@ export const articles: Article[] = [
     title: 'Exporting Diagrams',
     description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf image save picture screenshot json mermaid markdown excalidraw embed backup',
+      'export download png svg pdf image save picture screenshot json markdown csv embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -618,7 +618,7 @@ export const articles: Article[] = [
     title: 'Plan Items, Sheets and Images',
     description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy shape libraries custom themes api',
+      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -1067,20 +1067,10 @@ export const articles: Article[] = [
     description:
       'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
-  },
-  {
-    slug: 'event-storming',
-    title: 'Event Storming Elements',
-    description: 'The workshop note grammar: eight sticky kinds, each colour a meaning.',
-    keywords:
-      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage timeline lanes grid snap photo camera wall import add from photo',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
   },
   {
     slug: 'build',
@@ -1663,21 +1653,10 @@ export const articles: Article[] = [
     description:
       'Work on a tab as pages: sizes for print and social, layouts, colour and photo backgrounds, then export or present.',
     keywords:
-      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
-  },
-  {
-    slug: 'event-storming-boards',
-    title: 'Event Storming Boards',
-    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
-    keywords:
-      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie lane lanes timeline grid rows columns stagger staggered snap align rhythm gap gutter spacing space between line up lined up neighbour neighbor edges next note add beside quick add neighbouring note in front on top stacking order actor hotspot photo camera wall picture ocr scan import read transcribe handwriting capture snapshot draft review accept discard add notes already here duplicate matched change kind re-kind recolour recolor wrong colour misread fix words paste drop image detect stickies zoom zoom in magnify enlarge pan scroll close up untick missed draw box pinch mouse wheel middle click middle mouse button move resize delete remove select handle corner wrong box kind colour always on a lane between lanes free placement ctrl cmd arrow keys nudge up down paste at pointer paste here copy duplicate staggered tidy line up older board settle undo',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-    parentSlug: 'templates',
   },
   {
     slug: 'infographic-layouts',
@@ -1737,9 +1716,9 @@ export const articles: Article[] = [
   {
     slug: 'exporting-pages',
     title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
+    description: 'Every page or one page as a PDF or images, and pages as slides.',
     keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
     category: 'Canvas',
     categorySlug: 'canvas/pages-mode',
     parentSlug: 'pages-mode',
@@ -1820,9 +1799,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import a liveplanner tab exported as JSON into the active tab, by pasting it or picking the file.',
     keywords:
-      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
+      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1830,9 +1809,8 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab or a selection as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF: copy the text formats or set image options.',
-    keywords:
-      'export download save png svg pdf gif animated json mermaid markdown excalidraw image picture',
+      'Export the active tab or a selection as JSON, Markdown, CSV, PNG, SVG, or PDF: copy the text formats or set image options.',
+    keywords: 'export download save png svg pdf json markdown csv image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1901,17 +1879,6 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'shape-libraries',
-    title: 'Shape libraries',
-    description:
-      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
-    keywords:
-      'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
     slug: 'tags',
     title: 'Tags',
     description:
@@ -1921,28 +1888,6 @@ export const articles: Article[] = [
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
-  },
-  {
-    slug: 'drawio-import',
-    title: 'Importing draw.io files',
-    description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own document with a tab per page.',
-    keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
-    slug: 'microsoft-whiteboard-import',
-    title: 'Importing Microsoft Whiteboard boards',
-    description:
-      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
-    keywords:
-      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
   },
   {
     slug: 'explorer-panel',
@@ -2022,7 +1967,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents new document wizard pages plan',
+      'default folder where new documents go automatic placement file whiteboards retrospectives kanban diagrams use as default settings documents new document wizard pages plan',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -2033,7 +1978,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -2128,14 +2073,6 @@ export const articles: Article[] = [
     description: 'Optional Ask and Clean helpers on the canvas.',
     keywords:
       'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
-    slug: 'markdown-import',
-    title: 'Markdown Import',
-    description: 'Turn a Markdown outline into a themed tree diagram.',
-    keywords: 'outline text to diagram tree convert bullet list paste',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -2248,9 +2185,9 @@ export const articles: Article[] = [
   {
     slug: 'animations',
     title: 'Animating Elements',
-    description: 'Animate shapes, text, notes, drawings, media, tables, arrows, and icons.',
+    description: 'Send flow along arrows and animate icons, charts, progress bars and ratings.',
     keywords:
-      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
+      'animate animation motion pulse loop effects moving flow spin icon chart progress rating',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2452,9 +2389,8 @@ export const articles: Article[] = [
   {
     slug: 'images',
     title: 'Images',
-    description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
-    keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
+    description: 'Add images to the canvas by uploading, or from your gallery.',
+    keywords: 'picture photo upload png jpg insert logo screenshot gallery reuse',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

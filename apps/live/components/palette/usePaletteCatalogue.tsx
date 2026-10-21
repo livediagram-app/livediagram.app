@@ -1,10 +1,6 @@
 import type { PaletteTileDef } from './palette-tile-defs';
 import { usePaletteKind } from '@/lib/palette-kind';
-import {
-  DEFAULT_EDITOR_MODE,
-  type EmbedProvider,
-  type EventStormingNoteKind,
-} from '@liveplanner/document';
+import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@liveplanner/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -16,7 +12,6 @@ import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
-import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
@@ -51,8 +46,6 @@ type Deps = Pick<
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
-  | 'esBoard'
-  | 'esBoardControls'
   | 'onTileUsed'
 > &
   PaletteAddHandlers & {
@@ -71,7 +64,6 @@ export function usePaletteCatalogue({
   onAddIcon,
   onAddSticker,
   onAddTechIcon,
-  onInsertLibraryShape,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -96,8 +88,6 @@ export function usePaletteCatalogue({
   onBeginPolygon,
   onBeginPath,
   pendingDraw,
-  esBoard,
-  esBoardControls,
   onTileUsed,
   participant = false,
 }: Deps) {
@@ -107,7 +97,6 @@ export function usePaletteCatalogue({
   // (the shared useIsMobileViewport, as MovablePanel uses) so the option
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
-  const { libraries } = useShapeLibraries();
   // The viewer's editor mode picks the palette layout (palette-layouts).
   const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
@@ -136,8 +125,7 @@ export function usePaletteCatalogue({
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
   const addText = armed(onAddText);
-  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) =>
-    armed(() => onAddSticky(fill, esKind))();
+  const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
   // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
   // fixed 44x44 marker has no box to draw.
@@ -242,10 +230,7 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
-  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
-  // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
-  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
+  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
   // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
   const boardFillingTab = useBoardFillingTab();
   // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
@@ -260,7 +245,7 @@ export function usePaletteCatalogue({
   const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
-    ? participantPaletteCategories(editorMode, !!esBoard)
+    ? participantPaletteCategories()
     : boardFillingTab
       ? coveredPaletteCategories()
       : dashboardTab
@@ -271,22 +256,15 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, {
-            esBoard: !!esBoard,
-            ...(pages ? { pagesKind: paletteKind } : {}),
-          })
-            .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-            .map((c) =>
-              c.id === 'draw' && markers.length
-                ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
-                : c,
-            );
+        : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
+            c.id === 'draw' && markers.length
+              ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
+              : c,
+          );
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
     tileActions,
-    // Only on an ES board: a board switch anywhere else means nothing.
-    esBoardControls: esBoard ? esBoardControls : undefined,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -300,7 +278,6 @@ export function usePaletteCatalogue({
     techQuery,
     setTechQuery,
     techResults,
-    insertLibraryShape: (item) => armed(() => onInsertLibraryShape(item))(),
   });
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an

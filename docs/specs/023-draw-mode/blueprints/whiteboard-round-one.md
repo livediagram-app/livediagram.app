@@ -684,7 +684,7 @@ outline is rebuilt per update, as Excalidraw does.
 ### Still canvas
 
 - `CanvasStillProvider` (`apps/live/components/canvas/CanvasStillContext.tsx`), provided by `Canvas` with
-  `still = editorMode === 'draw'`; `useBoxedElementAnimation` drops `animate-element-pop-in` when
+  `still = editorMode === 'draw'`; `useElementPopIn` drops `animate-element-pop-in` when
   still. Author-set looping animations are untouched.
 - On entering a whiteboard with `format` held, the hook sets `select`, and arms the
   pen when the tab has no elements; `buildEditorCommands` with `whiteboard: true` drops `tool:format`.
@@ -950,8 +950,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Observability
 
-- Telemetry per the spec's table (`Whiteboard` category); `Created` / `Import` is reserved for the
-  Microsoft Whiteboard import and not yet emitted. The dashboard charts the four pairs in a
+- Telemetry per the spec's table (`Whiteboard` category). The dashboard charts the four pairs in a
   Whiteboards stack headed by Whiteboards Created.
 - Parse fallbacks log once: `console.warn('[whiteboard] prefs reset: <reason>')`.
 - Discarded pinch strokes: `console.debug('[whiteboard] stroke discarded: pinch')`; cancelled ones:

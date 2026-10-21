@@ -1,6 +1,5 @@
-// Which header actions each Explorer section offers (docs/specs/013-workspace/folders.md "Import from"
-// and "Create", docs/specs/013-workspace/shape-libraries.md). Kept pure and apart from ExplorerPane
-// so the per-section table is unit-testable without mounting the pane.
+// Which header actions each Explorer section offers (docs/specs/013-workspace/folders.md "Create"). Kept
+// pure and apart from ExplorerPane so the per-section table is unit-testable without mounting the pane.
 
 import type { SelectedNode } from './views';
 
@@ -16,7 +15,6 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'shared',
   'gallery',
   'themes',
-  'shape-libraries',
   'trash',
   'team',
   'invites',
@@ -34,18 +32,8 @@ const NEW_FOLDER: ReadonlySet<Kind> = new Set<Kind>(['all', 'folder']);
 type PaneHeaderActions = {
   newDocument: boolean;
   newFolder: boolean;
-  /** The "Import from" toolbar. */
-  importFrom: boolean;
 };
 
 export function paneHeaderActions(kind: Kind): PaneHeaderActions {
-  const newDocument = !NO_NEW_DOCUMENT.has(kind);
-  return {
-    newDocument,
-    newFolder: NEW_FOLDER.has(kind),
-    // Import from sits wherever New document does (imports land where new documents do),
-    // except Home, which carries no import; plus Shape libraries, where draw.io libraries
-    // are imported and its empty state points to Import from draw.io.
-    importFrom: (newDocument && kind !== 'home') || kind === 'shape-libraries',
-  };
+  return { newDocument: !NO_NEW_DOCUMENT.has(kind), newFolder: NEW_FOLDER.has(kind) };
 }

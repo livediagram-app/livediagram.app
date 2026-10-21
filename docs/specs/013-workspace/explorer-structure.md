@@ -96,11 +96,11 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### More
 
-| Row          | Opens                                  | Children                                     | Badge                     |
-| ------------ | -------------------------------------- | -------------------------------------------- | ------------------------- |
-| This Browser | `/explorer/offline`                    | None                                         | Documents in this browser |
-| Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Themes, Shape Libraries | None                      |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                         | None                      |
+| Row          | Opens                                  | Children                    | Badge                     |
+| ------------ | -------------------------------------- | --------------------------- | ------------------------- |
+| This Browser | `/explorer/offline`                    | None                        | Documents in this browser |
+| Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Themes | None                      |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                        | None                      |
 
 - **This Browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
@@ -148,14 +148,13 @@ The sidebar's **Trash** row takes a document or a folder dragged onto it, the wa
 A view is named by its row, everywhere it is named: the page heading, the document title (`<label> | liveplanner`),
 the breadcrumb and the help centre's copy. Routes stay as they are.
 
-| Row             | Route                       | Page title      |
-| --------------- | --------------------------- | --------------- |
-| Home            | `/explorer/home`            | Home            |
-| Shared With Me  | `/explorer/shared`          | Shared With Me  |
-| My Documents    | `/explorer/all`             | My Documents    |
-| This Browser    | `/explorer/offline`         | This Browser    |
-| Image gallery   | `/explorer/images`          | Image gallery   |
-| Shape libraries | `/explorer/shape-libraries` | Shape libraries |
+| Row            | Route               | Page title     |
+| -------------- | ------------------- | -------------- |
+| Home           | `/explorer/home`    | Home           |
+| Shared With Me | `/explorer/shared`  | Shared With Me |
+| My Documents   | `/explorer/all`     | My Documents   |
+| This Browser   | `/explorer/offline` | This Browser   |
+| Image gallery  | `/explorer/images`  | Image gallery  |
 
 Every other row's view already carries its row's label (Inbox, Timeline, a folder or team by its name, Invites,
 Themes, Trash). Views without a row keep their own names (Recent, Favourites, Search results). Recent is reached from
@@ -310,7 +309,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                                                                                                                                                               | New Folder |
 | Tags           | Each tag as a heading (its chip and count) over its documents as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                                                                                                                 | None       |
 | This Browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                                                                                                                           | None       |
-| Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                                                                                                                         | None       |
+| Library        | Two tabs: Image gallery and Themes, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                                                                                                                                         | None       |
 | Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                            | None       |
 
 - **Every document the pane shows** (a place's rows, Home's cards and What Happened, the Timeline's document events)
@@ -371,7 +370,7 @@ same pill (`ThisBrowserPill`) on the document's thumbnail ([Explorer Home](explo
 
 Each sidebar activation emits `UI / Selected / Sidebar.<Row>`, where `<Row>` is the row kind from a closed set (Home,
 Inbox, Timeline, SharedWithMe, MyDocuments, Folder, Team, TeamFolder, Invites, NewTeam, ThisBrowser, Library, ImageGallery,
-Themes, ShapeLibraries, Trash), never a name or id
+Themes, Trash), never a name or id
 ([Telemetry](../017-telemetry/telemetry.md)). Creating the team is still `Team / Created`. The Inbox row was the Activity row, and
 `Sidebar.Activity` (and `ExplorerPanel.Activity`) stay readable on the dashboard as its history.
 

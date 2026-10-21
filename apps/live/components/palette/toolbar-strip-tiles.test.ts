@@ -33,9 +33,9 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The three searchable catalogues and My shapes (no strip tiles of its own) can only be fully
+    // The three searchable catalogues can only be fully
     // reached through More.
-    for (const id of ['icons', 'stickers', 'technology', 'my-shapes']) {
+    for (const id of ['icons', 'stickers', 'technology']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });

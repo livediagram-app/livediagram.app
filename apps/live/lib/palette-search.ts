@@ -76,7 +76,7 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
 }
 
 // Every tile that is NOT a shape: Text, Arrow, Sticky note, Table, Image, the
-// pens, embeds, web components, event-storming notes. Search used to offer
+// pens, embeds, web components. Search used to offer
 // shapes only, so none of these could be added from it. They are keyed on
 // the tile id and run through the tile's own handler (tileHandler), which is
 // what keeps a search add identical to clicking the tile. Dynamic icon /

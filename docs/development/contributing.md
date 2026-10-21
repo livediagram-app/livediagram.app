@@ -45,11 +45,9 @@ Adding or upgrading a dependency that ships to a browser or a worker can fail `p
 
 A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the root `package.json` `pnpm.overrides` is for when no upstream release fixes it; `package.json` holds no comments, so each such entry is listed here with its alert:
 
-| Override                                 | Alert                                                | Why no upstream fix                                                                                                                                                                      |
-| ---------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sharp` `^0.35.5`                        | GHSA-wq5f-xc86-pv6w (librsvg in sharp `< 0.35.5`)    | `@huggingface/transformers` 3.8.1, the last 3.x, asks for `^0.34.1`; 4.x is ruled out by the 25 MiB asset limit ([Deployment](../specs/016-platform/deployment.md))                      |
-| `onnxruntime-node>global-agent` `^4.1.3` | GHSA-hp3w-g68c-fv3c (sprintf-js, no patched release) | transformers 3.8.1 pins `onnxruntime-node` 1.21.0, whose `global-agent` 3 pulls `roarr` 2 and `sprintf-js`; `global-agent` 4 has neither and keeps the `bootstrap` its postinstall calls |
-| `@tensorflow/tfjs>argparse` `^2.0.1`     | GHSA-hp3w-g68c-fv3c (sprintf-js, no patched release) | `@tensorflow/tfjs` 4.22.0, the latest, declares `argparse` 1 but never requires it; `argparse` 2 has no dependencies                                                                     |
+| Override          | Alert                                             | Why no upstream fix                                |
+| ----------------- | ------------------------------------------------- | -------------------------------------------------- |
+| `sharp` `^0.35.5` | GHSA-wq5f-xc86-pv6w (librsvg in sharp `< 0.35.5`) | `miniflare` 5.20261006.0-alpha pins `sharp` 0.35.4 |
 
 Drop an entry once an upstream release makes it redundant.
 
@@ -154,7 +152,7 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
 - **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveplannerNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and `packages/next-config/apps-use-shared.test.js` lists the app.
-- **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@liveplanner/ui`, and only for markup our own escaping builders made; `DOMParser` goes through `parseInert`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.
+- **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@liveplanner/ui`, and only for markup our own escaping builders made, and nothing parses with `DOMParser`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.
 
 ## Reporting issues
 

@@ -234,7 +234,7 @@ export function RichTextEditor({
           // Wordmark type (docs/specs/007-editor/logo-pages.md): the tracking, weight and case the
           // committed label wears, so editing never shifts the text.
           ...wordmarkTextCss(wordmark),
-          // Same capitals the committed label wears (docs/specs/021-event-storming/event-storming.md): the typed
+          // Same capitals the committed label wears: the typed
           // text is stored as written, it just reads as the note will.
           textTransform:
             uppercase || wordmark.uppercase

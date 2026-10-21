@@ -16,7 +16,7 @@ whole artefact.
 
 `shape: 'page'`. The alternative, a new `BoxedElement` member, would mean
 touching validation, both export renderers, Mermaid, Markdown,
-Excalidraw, the MCP tools and the API schema, to arrive at something that
+the MCP tools and the API schema, to arrive at something that
 behaves like a shape in every one of them.
 
 A shape already carries what a document needs:

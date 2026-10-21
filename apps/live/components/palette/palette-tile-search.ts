@@ -1,6 +1,6 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // which element tiles a query finds, split into the ones the current editor mode's palette offers
-// and the ones only another mode's (or the event-storming notation) does. Pure, so the split and
+// and the ones only another mode's does. Pure, so the split and
 // the ranking are tested without a strip.
 import {
   componentShapeKind,
@@ -43,7 +43,7 @@ function boundToMode(tile: PaletteTileDef, mode: EditorMode): PaletteTileDef {
 // --- The element types on the tab --------------------------------------------------------------
 // A tile and an element meet on a signature: the element type, plus the creation-time choice that
 // tells two tiles of one type apart where the element records it (the shape kind and its session,
-// reaction, mode, scale or plan view; a sticky's workshop kind; a pen; an embed's provider; an
+// reaction, mode, scale or plan view; a pen; an embed's provider; an
 // arrow's or a line's ends). Where an element does not record the choice (which board preset, which
 // card type), the tiles share a signature and the first in layout order stands for them.
 
@@ -71,7 +71,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return kind ? shapeSig(kind) : null;
     }
     case 'sticky':
-      return `sticky:${a.esKind ?? ''}`;
+      return 'sticky:';
     case 'freehand':
       return 'freehand:';
     case 'highlighter':
@@ -106,7 +106,7 @@ export function elementSignature(el: Element): string {
         el.session?.tool ?? el.reaction ?? el.mode ?? el.estimateScale ?? el.planView?.view,
       );
     case 'sticky':
-      return `sticky:${el.esKind ?? ''}`;
+      return 'sticky:';
     case 'freehand':
       return `freehand:${el.pen ?? ''}`;
     case 'arrow':
@@ -155,12 +155,12 @@ export function modeElementTiles(
   );
 }
 
-// Every mode's tiles, the event-storming notation included: a fixed set, so built once.
+// Every mode's tiles: a fixed set, so built once.
 let everyModeTiles: PaletteTileDef[] | null = null;
 function allElementTiles(): PaletteTileDef[] {
   everyModeTiles ??= unique(
     (Object.keys(PALETTE_LAYOUTS) as EditorMode[]).flatMap((mode) =>
-      paletteCategoriesFor(mode, { esBoard: true }).flatMap((c) => c.tiles ?? []),
+      paletteCategoriesFor(mode).flatMap((c) => c.tiles ?? []),
     ),
   );
   return everyModeTiles;

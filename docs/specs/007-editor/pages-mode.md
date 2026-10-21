@@ -514,30 +514,16 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
 ### Image backgrounds
 
 An infographic, slide or article page can be painted with a picture:
-`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, credit? }`. A logo page offers no
+`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position? }`. A logo page offers no
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
-- **The Image category**, while the page has no picture: a search field and its results (the image
-  picker's Search, [Image search](../009-elements/image-search.md), three tiles across), under
-  them **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
+- **The Image category**, while the page has no picture: **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
   opens beside the panel so the panel stays in view; one press picks and closes it; an offline
   document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
   the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
-  one edit), its **Credit** line when it came from a search (the image element's Credit row: the
-  text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
-  search, Choose From My Images and Upload again under **Replace Image**.
-- **The search suits a page.** It asks Openverse only for pictures of the page's shape
-  (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
-  `square` for a square page), so a result covers the page without a lopsided crop. It does not
-  ask for large ones (`size=large`): Openverse cannot render thumbnails for most of those, so every
-  result drew broken. Everything else is the picker's search: the licences, no mature
-  results, Load more, the loading, error and empty states, the footer credit.
-- **Hover previews**: hovering or focusing a result paints its Openverse thumbnail on the page
-  under the overlay a pick would get; leaving the results puts the page back. A press downloads
-  and stores the picture as the picker's pick does (into the gallery, or embedded in an
-  [Offline Mode](../006-document/offline-mode.md) document), with the same stages and failure
-  copy, then commits **one edit**: the fill with its credit and tone, and the overlay. An upload
-  commits the same way, with no credit.
+  one edit), then **Overlay**, **Strength** and **Position**, then Choose From My Images and
+  Upload again under **Replace Image**.
+- **One edit**: a pick or an upload commits the fill with its tone, and the overlay.
 - **Fit**: the picture **covers** the sheet, cropped and never stretched, centred across.
   **Position** (**Top**, **Centre**, **Bottom**) keeps that band of a taller picture when it is
   cropped; Centre is the default and is not stored.
@@ -575,8 +561,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
   picture in the gallery).
 - **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
-  (beside the background's own `PageBackground`); a search counts as the picker's
-  `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
+  (beside the background's own `PageBackground`).
 
 ### Copying a background
 
@@ -1470,10 +1455,8 @@ is while the rest of the tab is worked on.
 
 In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 
-- **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
-  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), plus **JSON** (the tab
-  itself, a backup that imports back). The diagram-tool formats (Mermaid, Markdown, Excalidraw) are not offered: a page is not
-  a diagram.
+- **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab
+  itself, a backup that imports back). Markdown is not offered: a page is not an outline.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
   the first.
@@ -1501,9 +1484,8 @@ In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 
 ## Import
 
-In Pages mode the Import dialog offers **JSON** only (a liveplanner tab, which may carry
-pages), and opens straight at it, with no list of formats to go back to. Mermaid, Markdown, Excalidraw and draw.io
-are diagram formats and are not offered.
+In Pages mode the Import dialog takes a liveplanner tab's **JSON**, which may carry pages, as it does in every
+mode.
 
 ## Telemetry
 
@@ -1514,8 +1496,8 @@ are diagram formats and are not offered.
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
 `PageKindLogo` (the first page's own choice);
-`Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
-`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
+`Document · Exported · PagesPNG / PagesSVG / PagesPDF` (one page) and
+`PagesPNGPages / PagesSVGPages / PagesPDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page

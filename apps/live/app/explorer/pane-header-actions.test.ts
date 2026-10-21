@@ -12,23 +12,17 @@ describe('paneHeaderActions', () => {
     }
   });
 
-  it('shows Import from on Shape Libraries, where its empty state points to it', () => {
-    // docs/specs/013-workspace/shape-libraries.md: the Import from group shows on that page.
-    expect(paneHeaderActions('shape-libraries')).toEqual({
-      newDocument: false,
-      newFolder: false,
-      importFrom: true,
-    });
-  });
-
-  it('pairs Import from with New Document everywhere else, except Home', () => {
-    expect(paneHeaderActions('home')).toEqual({
-      newDocument: true,
-      newFolder: false,
-      importFrom: false,
-    });
-    for (const kind of ['recent', 'all', 'folder', 'favourites', 'search', 'timeline'] as const) {
-      expect(paneHeaderActions(kind).importFrom, kind).toBe(true);
+  it('offers New Document everywhere a new document lands, Home included', () => {
+    for (const kind of [
+      'home',
+      'recent',
+      'all',
+      'folder',
+      'favourites',
+      'search',
+      'timeline',
+    ] as const) {
+      expect(paneHeaderActions(kind).newDocument, kind).toBe(true);
     }
     for (const kind of [
       'inbox',
@@ -40,11 +34,7 @@ describe('paneHeaderActions', () => {
       'invites',
       'offline',
     ] as const) {
-      expect(paneHeaderActions(kind), kind).toEqual({
-        newDocument: false,
-        newFolder: false,
-        importFrom: false,
-      });
+      expect(paneHeaderActions(kind), kind).toEqual({ newDocument: false, newFolder: false });
     }
   });
 });

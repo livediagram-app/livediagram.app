@@ -85,7 +85,6 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | This Browser ([Offline Mode](../006-document/offline-mode.md)) | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
 | Themes                                                         | `/explorer/themes`                                                 |
-| Shape libraries ([Shape libraries](shape-libraries.md))        | `/explorer/shape-libraries`                                        |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
 A retired address replaces itself with its successor, so links already out there keep working, and the sidebar highlights the successor's row at once; the Inbox was once called Activity, hence `/explorer/activity`. `/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
@@ -404,20 +403,6 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     list of links into those documents so the user can spot
     orphaned bytes that are safe to delete. Upload validation +
     hashing share the editor's path via `apps/live/lib/upload-image.ts`.
-- **Import from:** the page header, left of Help, carries a group styled
-  like the Help button: the muted label "Import from", then one icon button
-  per shipped import source, built from one source list (today
-  [Microsoft Whiteboard](../020-import-export/whiteboard-import.md),
-  [Excalidraw](../020-import-export/excalidraw-import-export.md) and
-  [draw.io](../020-import-export/drawio-import.md), in that order; a
-  later source is one entry). The group is a `toolbar` named "Import from"; each
-  button shows the source's icon, names itself "Import from <source>", shows
-  the source's name in the app's tooltip, takes keyboard focus with a visible
-  ring, and opens that source's import. It sits wherever the section offers
-  New Document, so imported documents land where new ones do (in the focused
-  folder, inside a folder section), except Home, which carries none; and on
-  [Shape libraries](shape-libraries.md), where draw.io libraries are imported. It is as tall as Help; below the `sm`
-  breakpoint the "Import from" label hides first, leaving the icons.
 - **Create:** a single floating action button at the bottom-right
   opens a popover with "New Document" and "New folder" (or "New
   subfolder" when a folder is focused). The documents-page FAB on the

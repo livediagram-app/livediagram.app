@@ -10,7 +10,7 @@ import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 afterEach(cleanup);
 
-function show(target: ShapeElement, stepsInOrder = false) {
+function show(target: ShapeElement) {
   const ops: ElementStyleOps = {
     preview: vi.fn(),
     end: vi.fn(),
@@ -22,7 +22,6 @@ function show(target: ShapeElement, stepsInOrder = false) {
     <ChipMenuSection
       target={target}
       ops={ops}
-      stepsInOrder={stepsInOrder}
       sectionProps={() => ({ open: true, onToggle: () => {}, flush: true })}
     />,
   );
@@ -53,20 +52,14 @@ describe('ChipMenuSection', () => {
     expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'ChipDetach');
   });
 
-  it('renumbers and plays a step set in order across the tab', () => {
+  it('renumbers a step set across the tab', () => {
     const ops = show(step({ label: '3' }));
     fireEvent.click(screen.getByText('Renumber Steps'));
     expect(ops.commitTab).toHaveBeenCalledWith(expect.any(Function), 'RenumberSteps');
-    fireEvent.click(screen.getByRole('button', { name: /Play in Order/ }));
-    const map = (ops.commitTab as ReturnType<typeof vi.fn>).mock.calls[1]![0] as (
-      els: Element[],
-    ) => ShapeElement[];
-    expect(map([step({ id: 'a' }), step({ id: 'b' })]).every((s) => s.stepSequence)).toBe(true);
   });
 
   it('shows no step controls on a badge', () => {
     show(badge());
     expect(screen.queryByText('Renumber Steps')).toBeNull();
-    expect(screen.queryByText('Play in Order')).toBeNull();
   });
 });

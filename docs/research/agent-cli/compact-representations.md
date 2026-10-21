@@ -252,17 +252,16 @@ agent needs it.
 
 **Content-bearing types say what they hold, briefly:**
 
-| Type                       | Outline form                                                                                    |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `entity`                   | fields inline in braces, first 8, then `+N`                                                     |
-| `table`                    | `RxC` and the header row; full cells via `show`                                                 |
-| `code-block`               | `lang=ts lines=24` and the first line as the label                                              |
-| `bar-chart`, `pie-chart`   | `slices=5`; `line-chart`: `series=2 x=12`                                                       |
-| `checklist`                | `done=2/5`                                                                                      |
-| `sticky` on Event Storming | the note's `esKind` as the token (`domain-event`, `command`, `hotspot`), `draft` when `esDraft` |
-| `image`                    | `alt=…`                                                                                         |
-| `freehand`                 | runs of unlabelled strokes collapse into one line: `freehand ×12 (3 closed)`                    |
-| collaboration shapes       | their state, one attribute: `votes=4 revealed`, `status=accepted`                               |
+| Type                     | Outline form                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `entity`                 | fields inline in braces, first 8, then `+N`                                  |
+| `table`                  | `RxC` and the header row; full cells via `show`                              |
+| `code-block`             | `lang=ts lines=24` and the first line as the label                           |
+| `bar-chart`, `pie-chart` | `slices=5`; `line-chart`: `series=2 x=12`                                    |
+| `checklist`              | `done=2/5`                                                                   |
+| `image`                  | `alt=…`                                                                      |
+| `freehand`               | runs of unlabelled strokes collapse into one line: `freehand ×12 (3 closed)` |
+| collaboration shapes     | their state, one attribute: `votes=4 revealed`, `status=accepted`            |
 
 **Notes, comments, actions, links.** A note is meaning, so it shows, cut to 48 characters; `--notes full`
 shows all of it and `--notes off` hides it (saving 15% on the test tab). A comment thread shows only as
@@ -472,7 +471,6 @@ budget 2k: 82 of 300 elements shown · --budget 8k or --in <ref> for more
 | Free or on-arrow endpoints                   | own line, `free` or `arrow:<ref>`                                                        |
 | Parallel arrows between one pair             | both listed; the `a..b` selector errors with both arrow refs                             |
 | Self-loop                                    | `→ <own ref>`                                                                            |
-| Event Storming tab                           | header `kind=event-storming`; lanes are containers; stickies print their `esKind`        |
 | Mind map                                     | nesting follows `mindParentId`, not geometry                                             |
 | Board drawn in Draw mode (mostly ink)        | strokes collapse into `freehand ×N`; text and stickies stay legible                      |
 | Huge table or long code                      | outline shows dimensions; `show` prints in full, under the budget                        |

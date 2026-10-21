@@ -152,10 +152,6 @@ describe('sessionStripTools', () => {
       runningOnly: true,
     });
   });
-
-  it('keeps all three on an event-storming board, a workshop that is always Diagram', () => {
-    expect(sessionStripTools('diagram', true)).toEqual({ timer: true, vote: true, poll: true });
-  });
 });
 
 describe('stripCanStart', () => {

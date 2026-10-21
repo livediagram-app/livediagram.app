@@ -81,25 +81,20 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Created',
   'Element·Deleted',
   'Element·Duplicated',
-  'Element·Imported',
   'Element·Linked',
   'Element·Locked',
   'Element·Removed',
   'Element·Reordered',
-  // A search submitted in the image picker (docs/specs/009-elements/image-search.md).
-  'Element·Searched',
   'Element·Selected',
   'Element·Toggled',
   'Element·Unlinked',
   'Element·Unlocked',
-  // Playback started on a video element (docs/specs/009-elements/youtube-video.md),
-  // or a search result attached to an image (docs/specs/009-elements/image-search.md).
+  // Playback started on a video element (docs/specs/009-elements/youtube-video.md).
   'Element·Used',
   'Element·Voted',
   'Error·Api',
   'Error·Client',
-  // The hosted reader's budget was spent and the photo import failed over to
-  // the in-browser reader (docs/specs/021-event-storming/event-storming.md Phase 9).
+  // A degradation the load was carried through rather than stopped by (lib/api/error-report.ts).
   'Error·Warning',
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
   // question is whether rooms use the role at all, never who held it.

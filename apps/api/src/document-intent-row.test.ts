@@ -28,10 +28,8 @@ describe('readRecordedIntent', () => {
     });
   });
 
-  it('reads an event-storming board', () => {
-    expect(readRecordedIntent(row('diagram', 'event-storming', null)).tabKind).toBe(
-      'event-storming',
-    );
+  it('reads a retired event-storming kind as unknown', () => {
+    expect(readRecordedIntent(row('diagram', 'event-storming', null)).tabKind).toBeNull();
   });
 
   it.each([

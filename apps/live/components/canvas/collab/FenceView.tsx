@@ -8,17 +8,14 @@ import { fenceParts, FENCE_RAIL_OPACITY, type ShapeElement } from '@liveplanner/
 export function FenceView({
   element,
   stroke,
-  animClass,
 }: {
   element: ShapeElement;
   // The resolved timber colour: the element's own stroke, or the wood brown for the paper.
   stroke: string;
-  // Glow / pulse / trace / gradient, on the drawing's silhouette rather than the transparent box.
-  animClass?: string;
 }) {
   const { width, height } = element;
   return (
-    <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
+    <div className="pointer-events-none absolute inset-0">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="absolute inset-0 h-full w-full overflow-visible"

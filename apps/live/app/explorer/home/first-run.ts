@@ -52,7 +52,4 @@ export const WELCOME_COPY = {
   signInTitle: 'Nothing here yet? Sign in',
   signInLine: 'If you have used liveplanner before, sign in and your documents come back with you.',
   signIn: 'Sign In',
-  importTitle: 'Bring It With You',
-  importLine:
-    'Import boards from Miro, draw.io, Excalidraw or Microsoft Whiteboard; each becomes its own document.',
 } as const;

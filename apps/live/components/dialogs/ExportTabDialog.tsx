@@ -1,6 +1,6 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
@@ -11,7 +11,6 @@ import { LogoKitPanel } from './LogoKitPanel';
 import {
   isLayerVisible,
   tabLayers,
-  mermaidFromTab,
   type LaidOutPage,
   type Tab,
   tabToJsonText,
@@ -34,7 +33,6 @@ import {
   type PageScope,
 } from '@/lib/export-pages';
 import { ExportPagePicker } from './ExportPagePicker';
-import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -42,22 +40,15 @@ import { useTabWindowExport } from './useTabWindowExport';
 import { usePlanImageExport } from './usePlanImageExport';
 import type { ExportFormatKey } from '@liveplanner/plan-art';
 
-// The animated GIF's panel and its capture, loaded only when the GIF card opens
-// (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
-const GifExportPanel = lazy(() => import('./gif/GifExportPanel'));
-
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
-  mermaid: 'Mermaid',
   markdown: 'Markdown',
   csv: 'CSV',
-  excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
-  gif: 'GIF',
   'logo-kit': 'LogoKit',
 };
 
@@ -85,7 +76,7 @@ const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
 
 // The formats Pages mode exports to (docs/specs/007-editor/pages-mode.md "Export"):
 // its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
+const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'file'];
 // The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
 const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
@@ -123,8 +114,6 @@ type ExportTabDialogProps = {
   documentTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
-  // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
-  onClearSelection?: () => void;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
@@ -133,12 +122,12 @@ const NO_DOCUMENT_TABS: readonly Tab[] = [];
 // "Export"), while the tab has one.
 export type Format = ExportFormatKey;
 
-// The four text formats each open a view/edit/copy panel; the three image
+// The three text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown' | 'csv' | 'excalidraw';
+type TextFormat = 'file' | 'markdown' | 'csv';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'csv' || f === 'excalidraw';
+  f === 'file' || f === 'markdown' || f === 'csv';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -146,12 +135,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'file',
     title: 'JSON',
     description: 'A liveplanner file. Copy it or save a .json to import back with full fidelity.',
-  },
-  {
-    kind: 'mermaid',
-    title: 'Mermaid',
-    description:
-      'This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd.',
   },
   {
     kind: 'markdown',
@@ -163,12 +146,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'CSV',
     description:
       'The cards or cells as comma-separated values, for a spreadsheet. Copy it or save a .csv.',
-  },
-  {
-    kind: 'excalidraw',
-    title: 'Excalidraw',
-    description:
-      'An .excalidraw scene to open at excalidraw.com. Rich shapes simplify to labelled boxes.',
   },
   {
     kind: 'png',
@@ -184,12 +161,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
-  },
-  {
-    // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
-    kind: 'gif',
-    title: 'GIF',
-    description: 'An animated image of the pages, moving as they move on the canvas.',
   },
   {
     kind: 'logo-kit',
@@ -218,14 +189,6 @@ const TEXT_PANELS: Record<
     mime: 'application/json',
     getText: tabToJsonText,
   },
-  mermaid: {
-    blurb:
-      "This tab as a Mermaid flowchart. Edit it here to copy a variant; your edits don't change the tab.",
-    downloadLabel: 'Download .mmd',
-    ext: 'mmd',
-    mime: 'text/plain',
-    getText: (tab) => mermaidFromTab(tab),
-  },
   markdown: {
     blurb:
       "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
@@ -242,18 +205,10 @@ const TEXT_PANELS: Record<
     mime: 'text/csv',
     getText: (tab) => tabCsvText(tab),
   },
-  excalidraw: {
-    blurb:
-      'This tab as an Excalidraw scene: shapes Excalidraw lacks become labelled boxes. Edit it here to copy a variant.',
-    downloadLabel: 'Download .excalidraw',
-    ext: 'excalidraw',
-    mime: 'application/json',
-    getText: tabToExcalidrawText,
-  },
 };
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
-// Mermaid / Markdown) open an editable view/copy panel; image formats
+// Markdown / CSV) open an editable view/copy panel; image formats
 // (PNG / SVG / PDF) open an options-and-download panel with the isometric +
 // background-pattern toggles. The main grid stays clean — no format-specific
 // options bleed onto it.
@@ -267,7 +222,6 @@ export function ExportTabDialog({
   pages,
   documentTabs,
   loadTabs,
-  onClearSelection,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
@@ -312,20 +266,16 @@ export function ExportTabDialog({
   // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
   const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? [
-        // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
-        ...PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
-        ...(hasLogoPage ? (['logo-kit'] as const) : []),
-      ].map((kind) => {
+    ? [...PAGES_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // Off Pages there are no pages, so no logo page and no GIF: never the Logo Kit or GIF. A Plan tab offers
+    : // Off Pages there are no pages, so no logo page: never the Logo Kit. A Plan tab offers
       // its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an empty file.
       CARDS.filter((c) =>
         planImage.formats
           ? planImage.formats.includes(c.kind)
-          : c.kind !== 'logo-kit' && c.kind !== 'gif' && c.kind !== 'csv',
+          : c.kind !== 'logo-kit' && c.kind !== 'csv',
       );
 
   const isSelection = scope === 'selection';
@@ -349,7 +299,7 @@ export function ExportTabDialog({
   // When an image format is picked, load the icon catalogues + image bitmaps
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
-    if (!active || isTextFormat(active) || active === 'gif') return;
+    if (!active || isTextFormat(active)) return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
@@ -479,11 +429,9 @@ export function ExportTabDialog({
   const subtitle = activeCard
     ? active === 'logo-kit'
       ? 'Download a logo page as an SVG, PNGs and a favicon.'
-      : active === 'gif'
-        ? 'Set how the pages play, then download the GIF.'
-        : isTextFormat(active!)
-          ? `Copy this tab as ${activeCard.title}, or download a file.`
-          : `Set the image options for ${activeCard.title}, then download.`
+      : isTextFormat(active!)
+        ? `Copy this tab as ${activeCard.title}, or download a file.`
+        : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -528,25 +476,6 @@ export function ExportTabDialog({
             onDone={onClose}
             onBack={() => setActive(null)}
           />
-        ) : active === 'gif' && pages && page ? (
-          <Suspense
-            fallback={
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Preparing the GIF options…
-              </p>
-            }
-          >
-            <GifExportPanel
-              tab={tab}
-              pages={pages}
-              page={page}
-              baseName={baseName}
-              onPick={setPageIndex}
-              onDone={onClose}
-              onBack={() => setActive(null)}
-              onClearSelection={onClearSelection}
-            />
-          </Suspense>
         ) : active ? (
           <ImageExportPanel
             pagePicker={

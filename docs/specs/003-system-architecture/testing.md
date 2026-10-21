@@ -53,7 +53,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   pure helpers: the document data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
-  is fast (a linear scan, a converter, the sticky detector) measures it with
+  is fast (a linear scan, a converter) measures it with
   `cpuMsOf` (or `cpuMsOfAsync`) from `@liveplanner/vitest-config/cpu-time`, never
   `performance.now()`. Turbo runs every package's suite at once, and a
   wall-clock budget also counts the time a test waits for a core, which made
@@ -133,7 +133,7 @@ from the repository root (`apps/live/lib/...`), so reports from different
 workspaces never collide. Only first-party TypeScript source under `src/` and
 `lib/` is counted; the editor (`apps/live`) also counts `app/`, `components/`
 and `hooks/`, where most of its source lives. Fixtures beside the code
-(`.drawio`, goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
+(goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
 package's `index.ts` is its implementation (e.g. `@liveplanner/document`), not
 a barrel of re-exports.
@@ -256,22 +256,13 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/document`: the data model end to end: element
-    factories + defaults, geometry / anchor / snap math, arrow path +
-    avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels,
-    layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
-    Mermaid import/export (flowchart, state, ER), graph authoring, freehand +
-    shape recognition, rich text, tables, comments + mentions, element ops and
-    deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds and the
-    event-storming lanes + photo placement, names, themes, element shadows,
-    the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand + shape recognition, rich text, tables, comments + mentions, element ops and deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
-    placement, help deep links, the photo-model worker's plumbing), the pure
-    helpers behind hooks, and a large jsdom layer of hook and component tests
-    (below). Cross-app guards: every `HELP_ARTICLES` deep link resolves to a
-    real help page.
+    placement, help deep links), the pure helpers behind hooks, and a large jsdom
+    layer of hook and component tests (below). Cross-app guards: every
+    `HELP_ARTICLES` deep link resolves to a real help page.
     Source guards read the class strings where a rule cannot fail a build:
     `dark-mode-coverage.test.ts` and `dark-palette.test.ts` (the dark palette's
     tokens, solid brand fills, brand text, identity colours;
@@ -296,13 +287,6 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
     view-model copy, `?q=` and carry-over, the telemetry facets.
-  - `packages/sticky-vision`: the classical sticky-note detector for the photo
-    import ([Event storming](../021-event-storming/event-storming.md)): colour
-    classification, contours, seams, necks and spill, the boundary-model hybrid,
-    and a ground-truth set of photos scored against their truth.
-  - `packages/sticky-model`: the learned boundary model's browser-safe parts
-    and training helpers: cues, tiling, stride, resize, quantisation, decode and
-    the wall / notes layout.
   - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
     appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
     and the Timeline's cards, stacking, grouping, tones and categories, rendered

@@ -36,7 +36,7 @@ export const GROUP_LABEL =
   'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
 
 /** A still surface: a white card on the page, a hairline edge (the raised surface in dark). */
-export const PANEL_SURFACE =
+const PANEL_SURFACE =
   'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800';
 
 /** A card's surface at rest; it lifts to a sky edge on hover. */

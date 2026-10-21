@@ -610,7 +610,6 @@ export * from './access-levels';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
 export * from './changesets';
@@ -632,7 +631,6 @@ export * from './document-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
-export * from './shape-libraries';
 export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).

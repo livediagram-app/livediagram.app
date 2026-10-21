@@ -42,15 +42,15 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_  | Popular, full width                                                                                                                                                                           |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw (and Pages' Logo kind, [logo pages](../007-editor/logo-pages.md#the-logo-palette)) |
-| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)     |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                            |
-| **Dynamic**     | Data (Pages, Workshop)                                                                                                                                                                        |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                      |
-| **Screen**      | Components and Elements, first, in Pages' Wireframe kind ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette))                                                           |
+| Band            | Categories                                                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_  | Popular, full width                                                                                                                     |
+| **Common**      | Shapes, Write, Draw (and Pages' Logo kind, [logo pages](../007-editor/logo-pages.md#the-logo-palette))                                  |
+| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                      |
+| **Dynamic**     | Data (Pages, Workshop)                                                                                                                  |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                |
+| **Screen**      | Components and Elements, first, in Pages' Wireframe kind ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette))     |
 
 ## Why flatten
 

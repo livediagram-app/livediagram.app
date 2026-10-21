@@ -36,11 +36,6 @@ missing the look.
 The palette's **Org Chart** tile (Build, after Mind Node) drops a person root in the Downward flow, "Ana Kim" / "Head
 of Engineering". Tab from it adds the first report.
 
-## Animation
-
-Person nodes take the Shape set and the Text set like any mind node. A level-by-level build is not part of this
-element; a map's nodes animate one by one as any element does.
-
 ## Element tour
 
 The first time an Editor selects a person node, a small **Show Me** toolbar beside its selection toolbar offers the

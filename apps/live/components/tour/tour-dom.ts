@@ -8,8 +8,7 @@ function tourSelector(tourId: string): string {
 }
 
 // An anchor only counts once it RENDERS: a surface that hides chrome keeps
-// the node in the DOM (the event-storming board's palette header band is
-// `display:none`, docs/specs/021-event-storming/event-storming.md), and anchoring to it parked the highlight ring
+// the node in the DOM (`display:none`), and anchoring to it parked the highlight ring
 // at 0x0 in the top-left corner and opened its menu off-screen. A node with
 // no client rects has no box, so it is treated as absent — the step is
 // skipped rather than pointing at nothing.

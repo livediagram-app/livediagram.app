@@ -66,13 +66,6 @@ export function EditorContextMenuHost() {
     commitTextAlign,
     previewTextAlign,
     bringSelectedToFront,
-    copySelection,
-    deleteSelected,
-    setEsKindOf,
-    createBlocked,
-    duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
     sendSelectedToBack,
     layers,
     moveSelectedToLayer,
@@ -181,10 +174,8 @@ export function EditorContextMenuHost() {
     burstSelectedStyle,
     commitElements,
     resetArrowStyleSelected,
-    commitSetAnimation,
     commitArrowFlow,
     commitIconAnimation,
-    previewSetAnimation,
     previewArrowFlow,
     previewIconAnimation,
     setIconAnimationSpeedSelected,
@@ -192,9 +183,7 @@ export function EditorContextMenuHost() {
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
     setProgressAnimRepeatSelected,
-    setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
-    setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     resetColorsSelected,
@@ -355,25 +344,6 @@ export function EditorContextMenuHost() {
       onSetLaneUprightTitle={setLaneUprightTitleSelected}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
-      // Event-storming note verbs (docs/specs/021-event-storming/event-storming.md). Front/back here are the
-      // IN-LAYER stack (same as the selection popover), not the layer
-      // moves above: on a workshop board the notes share one band and
-      // "bring to front" means "over the note it overlaps".
-      onCutElement={() => {
-        copySelection({ cut: true });
-        // A Cut keeps the sheets of its Sheets for the paste: it never asks (sheet-store.md "Deleting a sheet").
-        deleteSelected({ cut: true });
-      }}
-      onCopyElement={copySelection}
-      onDuplicateElement={duplicateSelected}
-      onDeleteElement={deleteSelected}
-      onSetEsKind={
-        createBlocked || contextMenu.mode !== 'element'
-          ? undefined
-          : (kind) => setEsKindOf(contextMenu.elementId, kind)
-      }
-      onStackFront={stackSelectedFront}
-      onStackBack={stackSelectedBack}
       layers={layers}
       selectionLayerId={selectionLayerId}
       // "Move to layer" goes with the Layers panel's Settings switch
@@ -507,10 +477,8 @@ export function EditorContextMenuHost() {
       onApplyChartPalette={commitChartPalette}
       onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
-      onSetSetAnimation={commitSetAnimation}
       onSetArrowFlow={commitArrowFlow}
       onSetIconAnimation={commitIconAnimation}
-      onPreviewSetAnimation={previewSetAnimation}
       onPreviewArrowFlow={previewArrowFlow}
       onPreviewIconAnimation={previewIconAnimation}
       onAnimationPreviewEnd={clearStylePreview}
@@ -519,9 +487,7 @@ export function EditorContextMenuHost() {
       onSetProgressAnim={setProgressAnimSelected}
       onSetProgressAnimSpeed={setProgressAnimSpeedSelected}
       onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
-      onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
       onSetFlowSpeed={setFlowSpeedSelected}
-      onSetSetAnimationRepeat={setSetAnimationRepeatSelected}
       onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
       onSetFlowRepeat={setFlowRepeatSelected}
       onResetColors={resetColorsSelected}

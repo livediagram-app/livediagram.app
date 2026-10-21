@@ -7,7 +7,6 @@ Follow the references below only as needed; never upfront.
 - ./default-folders.md - when implementing or changing default folders: the table, the routes, the intent, the resolver step, the menus, marker, wizard and Settings surfaces
 - ./folder-delete.md - when changing what deleting a folder does: contents move up to the parent, in one batch
 - ./tags.md - when implementing or changing tags: the tables, `/api/tags`, the owner migration merge, the provider and its optimistic writes, the picker, chips, the Tags page, sidebar rows and the panel section
-- ./shape-libraries.md - when implementing or changing shape libraries: the table, api, import landing, My shapes, the Explorer page
 - ./explorer-filters.md - when implementing or changing Explorer filters: the lens grammar, matching, suggestions, view models, `q`
 - ./explorer-structure.md - when implementing or changing the Explorer sidebar: layout rules, rows, ARIA tree keyboard hook
 - ./explorer-details-view.md - when implementing or changing the Details view: `tab_stats` and its writers, `DocumentSummary.stats`, the backfill, the preview hint, the table and its sort

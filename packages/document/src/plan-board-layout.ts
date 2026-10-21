@@ -1,6 +1,5 @@
 // Where a Plan board's parts sit in an export (docs/specs/026-plan/plan-board.md "Both elements everywhere"):
-// its title, its columns and the card faces that fit in each. One layout, read by the SVG export and the
-// Excalidraw export, so the two draw a board the same way. Pure.
+// its title, its columns and the card faces that fit in each. One layout, read by the SVG export. Pure.
 
 import {
   ITEM_TYPES,

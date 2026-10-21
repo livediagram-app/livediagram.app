@@ -45,10 +45,7 @@ describe('a picture on the sheet', () => {
     expect(style.backgroundColor).toBe('#203040');
   });
 
-  it('previews a hovered result from its thumbnail, and an offline picture from its bytes', () => {
-    expect(pageImageSrc(fill({ preview: 'https://api.openverse.org/t/' }), blob)).toBe(
-      'https://api.openverse.org/t/',
-    );
+  it('paints an offline picture from its bytes, and a gallery one from its blob', () => {
     expect(pageImageSrc(fill({ imageId: 'data:image/png;base64,AA==' }))).toBe(
       'data:image/png;base64,AA==',
     );

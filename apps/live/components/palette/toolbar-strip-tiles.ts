@@ -32,7 +32,7 @@ const PHONE_STRIP_CHROME_PX = 236;
 // (top-left, 12px in, 96px wide with the mode switch, plus an 8px gap) on BOTH sides. Its own
 // chrome is wider than a phone's because the category picker shows its name:
 // measured at 239px with "Favourites" (as long as "Popular"), padded for a longer name like
-// "Event Storming". Twelve tiles fit from about 970px; a narrower window
+// "Technology". Twelve tiles fit from about 970px; a narrower window
 // sheds tiles to More rather than running the strip under the menu button.
 const DESKTOP_MENU_CLEARANCE_PX = 116;
 const DESKTOP_STRIP_CHROME_PX = 280;
@@ -81,7 +81,7 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
 // picker. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology', 'my-shapes']);
+const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology']);
 
 function allTilesFor(
   categoryId: string,

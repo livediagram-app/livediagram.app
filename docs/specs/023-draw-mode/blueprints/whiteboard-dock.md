@@ -182,9 +182,7 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 - An entry's group is its tile's palette category (`section`, or `toolGroup` inside Tools); Line
   and Arrow file under Draw. Groups sort in `PALETTE_CATEGORIES` order; that order is the
   catalogue's, which breaks search ties and extends the slots' fallback.
-- Intent: the six via `whiteboardShapeIntent`; a tile entry `{ type: 'shape', kind, ...choice,
-board: true }`. `armedWhiteboardShape(intent)` reads a board intent (or the plain sticky intent;
-  an Event Storming note, with a fill or a kind, is not it) back to its key.
+- Intent: the six via `whiteboardShapeIntent`; a tile entry `{ type: 'shape', kind, ...choice, board: true }`.
 
 ### Shape slots
 

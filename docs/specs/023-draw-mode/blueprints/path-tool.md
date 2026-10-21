@@ -31,7 +31,6 @@ Scope, by file:
 | `apps/live/lib/quick-style.ts`, `quick-style-tool.ts`       | A path is a quick-style target; "Next path" phantom                                                                               |
 | `apps/live/lib/style-memory.ts`                             | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
 | `apps/live/lib/element-names.ts`                            | "Path, N points" / "Closed path, N points"                                                                                        |
-| `apps/live/lib/excalidraw-export.ts`                        | A path as a sampled `line`                                                                                                        |
 | `apps/live/components/canvas/path/PathSvg.tsx`              | The canvas renderer, shared by committed and draft paths                                                                          |
 | `apps/live/components/canvas/path/usePathDrawGesture.ts`    | Drawing: presses, drags, keys, commit                                                                                             |
 | `apps/live/components/canvas/path/usePathEditGesture.ts`    | Edit mode: presses, drags, keys, commit                                                                                           |
@@ -357,9 +356,6 @@ With the Path tool in hand, the draft is editable (as in Figma):
 - SVG export: `svgPathElementShape(el, stroke, fill)` writes `<path d="…" fill stroke stroke-width
 stroke-dasharray stroke-linecap="round" stroke-linejoin="round"/>` with `pathD(..., r2)`, inside the
   element's opacity and rotation group, as `svgFreehandShape` is.
-- Excalidraw: a `line` with `points` from `samplePath` relative to the element's box (as a freehand's
-  are), `strokeColor`,
-  `backgroundColor` (closed and filled), `strokeWidth` px.
 
 ## Interfaces and contracts
 
@@ -514,7 +510,6 @@ numbers only).
 | `pickPath`                                                                                      | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                                                 |
 | Quick style and memory                                                                          | `apps/live/lib/quick-style.test.ts`, `style-memory.test.ts`                                                     |
 | Accessible name                                                                                 | `apps/live/lib/element-names.test.ts`                                                                           |
-| Excalidraw line                                                                                 | `apps/live/lib/excalidraw-export.test.ts`                                                                       |
 | Telemetry vocabulary and sentences                                                              | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry`                                                    |
 | Edit keys, Tab on into the toolbar                                                              | `apps/live/lib/path-edit-keys.test.ts`                                                                          |
 | Node types, open, cursors, `toWorld`, `dragNodes`                                               | `apps/live/lib/path-edit.test.ts`                                                                               |

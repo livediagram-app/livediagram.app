@@ -231,8 +231,7 @@ export function MenuAccordionSection({
 // A plain ACTION row: the same shape and rhythm as an accordion header
 // (fixed icon slot, uppercase label, full width) but it performs a verb
 // instead of expanding. For menus whose entries are things to DO rather than
-// settings to open — e.g. the event-storming note menu (docs/specs/021-event-storming/event-storming.md), which is
-// six verbs and no styling at all. Horizontal bars rather than a tile grid:
+// settings to open — e.g. a document row's menu. Horizontal bars rather than a tile grid:
 // a verb list reads down the menu like every other row here.
 export function MenuActionRow({
   label,

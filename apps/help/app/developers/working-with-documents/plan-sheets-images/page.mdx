@@ -209,7 +209,7 @@ curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/changesets \
 
 ## Pages and Articles
 
-`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/canvas/pages-mode/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Pages by the same edit; a locked tab or an Event Storming board is refused.
+`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/canvas/pages-mode/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Pages by the same edit; a locked tab is refused.
 
 ```bash
 # Add two slides and rename the first page
@@ -248,18 +248,11 @@ curl -X POST https://liveplanner.app/api/documents/$DOC/copy \
 
 Makes a copy in your own files and answers `201` with the new `document`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
 
-## Shape Libraries and Custom Themes
+## Custom Themes
 
-Your [shape libraries](/help/explorer/shape-libraries/) and [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
+Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
 
 ```bash
-# A shape library: each item is a reusable shape, its elements placed from its top-left corner
-curl -X POST https://liveplanner.app/api/shape-libraries \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "'"$(uuidgen)"'", "name": "Network kit", "source": "drawio",
-        "items": [ { "id": "'"$(uuidgen)"'", "title": "Router", "width": 120, "height": 60,
-          "elements": [ { "id": "r1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 120, "height": 60, "label": "Router" } ] } ] }'
-
 # A custom theme
 curl -X POST https://liveplanner.app/api/custom-themes \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
@@ -268,6 +261,6 @@ curl -X POST https://liveplanner.app/api/custom-themes \
           "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
 ```
 
-A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their documents). A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on either path lists yours.
+A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET /custom-themes` lists yours.
 
 </ArticleLayout>

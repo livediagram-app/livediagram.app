@@ -1,7 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { headlineCase } from '@liveplanner/api-schema';
-import { EVENT_STORMING_NOTES } from '@liveplanner/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { CARD_TILE_GLYPH_PX } from './palette-plan-tiles';
 import {
@@ -39,40 +37,6 @@ describe('PALETTE_TILES catalogue', () => {
   it('no tile outside the tools section carries a toolGroup (the field is Tools-tab metadata)', () => {
     for (const tile of PALETTE_TILES.filter((t) => t.section !== 'tools')) {
       expect(tile.toolGroup, tile.id).toBeUndefined();
-    }
-  });
-});
-
-// The Event Storming category (docs/specs/021-event-storming/event-storming.md): one tile per note kind in the
-// EVENT_STORMING_NOTES catalogue, a top-level palette category of its own.
-// The tiles derive from the catalogue, so this pins the derivation both
-// ways: every note kind has a tile, every tile arms a sticky intent
-// carrying that kind's canonical fill AND its kind (the commit path routes
-// the note onto its stage's layer on event-storming boards).
-describe('event-storming tiles', () => {
-  const tiles = tilesForCategory('event-storming');
-
-  it('offers one tile per note kind, in catalogue (workshop) order', () => {
-    expect(tiles.map((t) => t.id)).toEqual(EVENT_STORMING_NOTES.map((n) => `tools:es-${n.kind}`));
-  });
-
-  it('every tile arms a sticky intent with its kind + canonical fill', () => {
-    for (const note of EVENT_STORMING_NOTES) {
-      const tile = tiles.find((t) => t.id === `tools:es-${note.kind}`)!;
-      expect(tile.action, note.kind).toEqual({
-        type: 'sticky',
-        fill: note.fill,
-        esKind: note.kind,
-      });
-      expect(tile.label, note.kind).toBe(`Add ${headlineCase(note.label)} Note`);
-    }
-  });
-
-  it('is its own section — no toolGroup, no tileGroup (a top-level category)', () => {
-    for (const tile of tiles) {
-      expect(tile.section, tile.id).toBe('event-storming');
-      expect(tile.toolGroup, tile.id).toBeUndefined();
-      expect(tile.tileGroup, tile.id).toBeUndefined();
     }
   });
 });
@@ -125,7 +89,7 @@ describe('tool blurbs', () => {
 // description and decide whether it still describes what is in the tab.
 //
 // Categories filled from a catalogue or a layout rather than from tiles (Popular,
-// Icons, Stickers, Technology, My shapes) hold none, and are pinned at 0 so that stays
+// Icons, Stickers, Technology) hold none, and are pinned at 0 so that stays
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
@@ -141,7 +105,6 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   icons: 0,
   stickers: 0,
   technology: 0,
-  'my-shapes': 0,
   media: 9,
   components: 12,
   concepts: 8,
@@ -154,8 +117,6 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-react': 5,
   'collab-mode': 8,
   'collab-navigate': 15,
-  // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
-  'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
   // card per item type.
   'plan-boards': 10,

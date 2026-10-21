@@ -9,15 +9,14 @@ import {
   PALETTE_LAYOUTS,
   coveredPaletteCategories,
   paletteCategoriesFor,
-  paletteCategoryOffered,
   paletteLandingCategory,
   participantTiles,
 } from './palette-layouts';
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'pages' | 'plan' | 'workshop', esBoard = false) =>
-  paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
+const ids = (mode: 'diagram' | 'pages' | 'plan' | 'workshop') =>
+  paletteCategoriesFor(mode).map((c) => c.id);
 const tileIds = (mode: 'diagram' | 'pages' | 'plan' | 'workshop', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
@@ -43,7 +42,6 @@ describe('palette layouts', () => {
     expect(ids('diagram')).toEqual([
       'popular',
       'shapes',
-      'my-shapes',
       'write',
       'draw',
       'diagrams',
@@ -84,7 +82,6 @@ describe('palette layouts', () => {
     expect(ids('workshop')).toEqual([
       'popular',
       'shapes',
-      'my-shapes',
       'write',
       'draw',
       'layout',
@@ -99,7 +96,7 @@ describe('palette layouts', () => {
       'media',
       'data',
     ]);
-    expect(paletteLandingCategory('workshop', false)).toBe('popular');
+    expect(paletteLandingCategory('workshop')).toBe('popular');
   });
 
   it("puts the session kit on Workshop's Popular as four openers", () => {
@@ -179,23 +176,17 @@ describe('palette layouts', () => {
   });
 
   it('gives a Workshop Participant Sticky and Text, and an image', () => {
-    expect(participantTiles('workshop', false).map((t) => t.id)).toEqual([
+    expect(participantTiles().map((t) => t.id)).toEqual([
       'tools:sticky',
       'tools:text',
       'tools:image',
     ]);
   });
 
-  it('offers Event Storming on a board only', () => {
-    expect(ids('diagram', true)).toContain('event-storming');
-    expect(paletteCategoryOffered('diagram', 'event-storming')).toBe(false);
-  });
-
   it('narrows Pages to the categories a visual page is made of', () => {
     expect(ids('pages')).toEqual([
       'popular',
       'shapes',
-      'my-shapes',
       'write',
       'concepts',
       'components',
@@ -207,10 +198,9 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('lands every mode on its Popular, a board on its notation', () => {
-    expect(paletteLandingCategory('diagram', false)).toBe('popular');
-    expect(paletteLandingCategory('pages', false)).toBe('popular');
-    expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
+  it('lands every mode on its Popular', () => {
+    expect(paletteLandingCategory('diagram')).toBe('popular');
+    expect(paletteLandingCategory('pages')).toBe('popular');
   });
 
   it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
@@ -326,11 +316,10 @@ describe('palette layouts', () => {
       'tools:session-timer',
       'tools:session-stopwatch',
     ]);
-    expect(paletteLandingCategory('plan', false)).toBe('plan-cards');
+    expect(paletteLandingCategory('plan')).toBe('plan-cards');
     // A tab without a board opens on Boards: a card lands on a board.
-    expect(paletteLandingCategory('plan', false, false)).toBe('plan-boards');
-    expect(paletteLandingCategory('diagram', false, false)).toBe('popular');
-    expect(paletteLandingCategory('plan', true, false)).toBe('event-storming');
+    expect(paletteLandingCategory('plan', false)).toBe('plan-boards');
+    expect(paletteLandingCategory('diagram', false)).toBe('popular');
     for (const mode of ['diagram', 'pages'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');
@@ -369,15 +358,7 @@ describe('palette layouts', () => {
 
   it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Library, Media (logo-pages.md)', () => {
     const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
-    expect(logo.map((c) => c.id)).toEqual([
-      'popular',
-      'draw',
-      'shapes',
-      'write',
-      'icons',
-      'my-shapes',
-      'media',
-    ]);
+    expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons', 'media']);
     const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
     expect(tilesOf('draw')).toEqual([
       'logo:pen',
@@ -401,7 +382,6 @@ describe('palette layouts', () => {
       'write',
       'shapes',
       'media',
-      'my-shapes',
       'data',
       'concepts',
       'components',

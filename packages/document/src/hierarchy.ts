@@ -9,7 +9,7 @@ import { isBoxed, type Element, type ElementId } from './index';
 //
 // Pure + dependency-free so the assignment is unit-testable without
 // rendering (hierarchy.test.ts) and reusable by every theme-apply path
-// (template build, Markdown import, in-editor theme switch / reset).
+// (template build, in-editor theme switch / reset).
 
 // Sentinel branch for the hierarchy's TRUNK: root nodes (no incoming
 // pinned edge) and any element not yet wired into the graph. A palette

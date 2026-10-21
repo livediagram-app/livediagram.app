@@ -3,7 +3,6 @@ import {
   AiAssistArt,
   AlignmentGuidesArt,
   AnimatedIconsArt,
-  AnimatedShapesArt,
   ApiArt,
   ArrowsArt,
   ArticleFlowArt,
@@ -13,7 +12,7 @@ import {
   AssignedActionsArt,
   AvatarModeArt,
   BoardCsvArt,
-  BoardImportArt,
+  SheetImportArt,
   BoardWidgetsArt,
   BorderStyleArt,
   BringFocusArt,
@@ -35,7 +34,6 @@ import {
   EmbedArt,
   EntityArt,
   ErasersArt,
-  EventStormingArt,
   ExpiryArt,
   ExportArt,
   WorkshopModeArt,
@@ -69,14 +67,12 @@ import {
   LockArt,
   LogoPageArt,
   MarginCommentsArt,
-  MarkdownImportArt,
   MarkersArt,
   MarqueeArt,
   McpArt,
   MermaidArt,
   MindMapArt,
   NotesArt,
-  PagesGifArt,
   PalmRejectionArt,
   PathToolArt,
   PencilArt,
@@ -106,7 +102,6 @@ import {
   SlideLayoutsArt,
   SlideTimingArt,
   SpotlightArt,
-  StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
   TabWindowArt,
@@ -392,7 +387,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'A shape for everything',
         description:
-          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next. Import a draw.io library and its shapes join the palette as a shape library of your own, under My shapes.',
+          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
       },
       {
         art: <ArrowsArt />,
@@ -473,22 +468,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Code blocks with highlighting',
         description:
           'Put the payload beside the API arrow and the query under the database. A code block highlights TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS and YAML, wraps long lines if you like, and keeps its own colour scheme whatever the theme.',
-      },
-      {
-        art: <EventStormingArt />,
-        href: '/help/canvas/event-storming-boards/',
-        group: 'Event storming',
-        title: 'Event storming boards',
-        description:
-          'A board built for the workshop: the eight note kinds of the notation one click away, written in marker capitals on paper that keeps its size and colour. Notes snap to timeline lanes, and holding Alt over a gap slides the rest of the wall along to make room for the step you missed.',
-      },
-      {
-        art: <StickyPhotoArt />,
-        href: '/help/canvas/event-storming-boards/',
-        group: 'Event storming',
-        title: 'Bring the paper wall in from a photo',
-        description:
-          'Ran the session on a real wall? Take a photo and every sticky comes in as a note: its words read from the handwriting, its kind from the paper\u2019s colour, laid out where it was. Untick what is not a note, fix a misreading, then add them as a draft you check in place.',
       },
       {
         art: <IconsArt />,
@@ -707,14 +686,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Copy a tab's full contents into another document you own, as a ready-made starting point you can take further.",
       },
       {
-        art: <AnimatedShapesArt />,
-        href: '/help/canvas/animations/',
-        group: 'Bring it to life',
-        title: 'Animate any shape',
-        description:
-          'Give a shape a looping animation to draw the eye or signal status: pulse an attention ring, glow a soft halo, blink a status light, trace the outline, breathe, shimmer, or a heartbeat for gentle emphasis. Pick one of four speeds, choose whether it repeats or plays once, and the format painter copies the motion to the next shape.',
-      },
-      {
         art: <FlowingArrowsArt />,
         href: '/help/canvas/animations/',
         group: 'Bring it to life',
@@ -764,27 +735,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <MermaidArt />,
-        href: '/help/tabs/import-tabs/',
+        href: '/help/developers/cli/',
         group: 'AI & your tools',
         title: 'Works with Mermaid',
         description:
-          'Paste or open a Mermaid flowchart and liveplanner lays it out on the canvas, keeping every connection, not just the outline. Export a diagram tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
-      },
-      {
-        art: <MarkdownImportArt />,
-        href: '/help/tools/markdown-import/',
-        group: 'AI & your tools',
-        title: 'Import a Markdown outline',
-        description:
-          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it replaces the current tab’s contents, and one undo puts them back.',
-      },
-      {
-        art: <BoardImportArt />,
-        href: '/help/explorer/drawio-import/',
-        group: 'AI & your tools',
-        title: 'Bring your boards from other tools',
-        description:
-          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a document you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page.',
+          'Hand a Mermaid flowchart to liveplanner through the API, the CLI or an AI assistant and it lays it out on the canvas, keeping every connection, not just the outline. The CLI exports a tab back out as Mermaid. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
         art: <ExportArt />,
@@ -792,7 +747,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Export as PNG, SVG, or PDF',
         description:
-          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown or Excalidraw. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
+          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
       },
       {
         art: <ApiArt />,
@@ -951,13 +906,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
-      },
-      {
-        art: <PagesGifArt />,
-        href: '/help/canvas/pages-mode/exporting-pages/',
-        title: 'Pages as an animated GIF',
-        description:
-          'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
       },
     ],
   },
@@ -1286,7 +1234,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'A Budget Planner, an Invoice, a Sales Pipeline, a Grade Book, a Loan Calculator and more, many with charts already in, or a blank spreadsheet to type into.',
       },
       {
-        art: <BoardImportArt />,
+        art: <SheetImportArt />,
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Paste from Sheets and Excel, CSV in and out',
         description:

@@ -22,7 +22,6 @@ let logs: string[];
 const DIAGRAM = { mode: 'diagram' };
 const DRAW = { mode: 'draw' };
 const KANBAN = { mode: 'diagram', templateFamily: 'kanban' };
-const EVENT_STORMING = { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' };
 
 function create(
   who: { owner: string; clerkUserId: string | null },
@@ -99,17 +98,6 @@ describe('POST /documents with default folders', () => {
     expect(logs).toContain('placement: default-skipped key=template:kanban reason=folder_missing');
     expect(logs).toContain(
       'placement: resolved scope=personal folder=set via=default key=mode:diagram',
-    );
-  });
-
-  it('files an event-storming board in its kind default before its template default', async () => {
-    await setPlacementDefault(db.env, 'user_alice', 'template:kanban', 'boards');
-    await setPlacementDefault(db.env, 'user_alice', 'kind:event-storming', 'es-boards');
-    const res = await create(asUser('user_alice'), { intent: EVENT_STORMING });
-    expect(res.status).toBe(201);
-    expect(stored()?.folder_id).toBe('es-boards');
-    expect(logs).toContain(
-      'placement: resolved scope=personal folder=set via=default key=kind:event-storming',
     );
   });
 

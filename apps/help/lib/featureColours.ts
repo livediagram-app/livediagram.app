@@ -21,7 +21,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'text-and-fonts': '#0891b2',
   themes: '#d946ef',
   templates: '#14b8a6',
-  'event-storming-boards': '#d97706',
   'editor-modes': '#4338ca',
   'draw-mode': '#78716c',
   'plan-mode': '#2563eb',
@@ -56,7 +55,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   sharing: '#0284c7',
   'zen-mode': '#475569',
   ai: '#7c3aed',
-  'markdown-import': '#0d9488',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
   // The last ten cards
@@ -104,7 +102,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Palette → Elements
   write: '#0891b2',
   build: '#22c55e',
-  'event-storming': '#ea580c',
   'mind-maps': '#8b5cf6',
   flowcharts: '#0ea5e9',
   'edit-outline': '#7c3aed',
@@ -237,10 +234,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'linking-tabs': '#10b981',
   'add-to-document': '#6366f1',
   'import-tabs': '#0891b2',
-  'shape-libraries': '#7c3aed',
   tags: '#e11d48',
-  'drawio-import': '#ea580c',
-  'microsoft-whiteboard-import': '#0d9488',
   'export-tabs': '#0284c7',
   'tab-cleanup': '#2563eb',
   // Search Panel guides

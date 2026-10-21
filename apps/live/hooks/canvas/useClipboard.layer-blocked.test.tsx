@@ -25,7 +25,6 @@ const copied: StickyElement = {
 function harness(createBlocked: boolean) {
   let elements: Element[] = [copied];
   const explainCreateBlocked = vi.fn();
-  const onPastePhoto = vi.fn();
   const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: false,
@@ -44,10 +43,9 @@ function harness(createBlocked: boolean) {
       ownerId: 'me',
       documentId: 'd',
       toast: { error: vi.fn(), info: vi.fn() } as never,
-      onPastePhoto,
     }),
   );
-  return { result, elements: () => elements, explainCreateBlocked, onPastePhoto };
+  return { result, elements: () => elements, explainCreateBlocked };
 }
 
 function paste(text: string, files: File[] = []) {
@@ -76,13 +74,6 @@ describe('paste onto a hidden or locked active layer', () => {
     act(() => h.result.current.copySelection());
     act(() => h.result.current.pasteFromClipboard());
     expect(h.elements()).toHaveLength(1);
-    expect(h.explainCreateBlocked).toHaveBeenCalledTimes(1);
-  });
-
-  it('refuses a pasted photo read onto the board', () => {
-    const h = harness(true);
-    paste('', [new File(['x'], 'wall.png', { type: 'image/png' })]);
-    expect(h.onPastePhoto).not.toHaveBeenCalled();
     expect(h.explainCreateBlocked).toHaveBeenCalledTimes(1);
   });
 

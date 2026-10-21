@@ -25,7 +25,7 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 - **Node:** `>=22` (Wrangler 4 requires it). Both `ci.yml` and `deploy.yml` pin Node 22.
 - **pnpm:** `9.15.0` via `pnpm/action-setup`.
 - **Wrangler:** `^4.40.0` across all workspaces.
-- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it first. `@huggingface/transformers` stays on 3.x for this reason: 4.3.0 ships a 25.6 MiB onnxruntime wasm, and Dependabot ignores its majors.
+- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it first.
 
 ## CI
 
@@ -40,7 +40,7 @@ Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`,
 
 No job needs another's output: only the nine apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
 
-The two test steps run two packages at a time. Each package's Vitest already fills the runner's cores, and turbo's default fan-out on the 4-vCPU runner slowed the CPU-heavy `sticky-vision` suite about 70x, into timeouts. `pnpm test` cannot carry the flag: it is pnpm's built-in test command, so CI calls turbo directly.
+The two test steps run two packages at a time. `pnpm test` cannot carry the flag: it is pnpm's built-in test command, so CI calls turbo directly.
 
 CI is the gate you check before deploying to production, but it does **not** trigger that deploy — production is a separate, manually-dispatched workflow (see below). It **does** trigger the staging deploy, via `workflow_run` on a successful CI run on `main` ([Staging environment](staging-environment.md)).
 

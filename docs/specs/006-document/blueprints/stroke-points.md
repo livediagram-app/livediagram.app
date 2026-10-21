@@ -166,16 +166,13 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
     the stroke had pressures, its interpolated pressures.
   - The style preset that drops pen ink (`style-presets.ts`): re-packs the same points without
     pressures.
-  - Imports: every board scene (Excalidraw files, pastes and drops; Microsoft Whiteboard boards)
-    lands its strokes through the board-scene landing (`land-marks.ts`, `land-diagram.ts`), which
-    packs them with `packFreehandPoints`.
 - **Live ink:** the stroke being drawn keeps its raw samples (`freehandGeometry`, unpacked, through
   `PenStrokeSource`'s `points` form), so settled ink never re-quantises as the box grows; the landed
   stroke is within `STROKE_POINT_MAX_ERROR` of it, the only difference release makes.
 - **Readers** (each decodes through the cache): canvas freehand view (pen outline and the
   100-unit polyline), SVG export (`svgFreehandShape`), the pen outline helpers
   (`freehandPenStroke`, `penStrokeSvg`), the eraser (`freehandAbsolutePoints`,
-  `strokeTouchesBrush`, `inkHalfWidth`), the Excalidraw exporter.
+  `strokeTouchesBrush`, `inkHalfWidth`).
 - **Migration entry points:** `migrateStoredTab` (api tab read, thumbnail, offline store, import
   merge) gains `migrateLegacyStrokePoints` through `migrateStoredElements`. Untrusted input goes
   through two guards in `stored-tab.ts`: `migrateIncomingTab(tab: unknown): unknown` (an object
@@ -211,8 +208,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Commit types        | `apps/live/components/canvas/Canvas.types.ts`                                        | `PenInk` owns `pressures`                                                           |
 | Pen commit          | `apps/live/hooks/canvas/commit-freehand.ts`                                          | pressures to `createFreehand`                                                       |
 | Style presets       | `apps/live/lib/style-presets.ts`                                                     | re-pack without pressures                                                           |
-| Excalidraw export   | `apps/live/lib/excalidraw-export.ts`                                                 | decode                                                                              |
-| Board-scene imports | `apps/live/lib/board-scene/land-marks.ts`, `land-diagram.ts`                         | `packFreehandPoints`                                                                |
 | Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                                          |
 | Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
 | Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                                                     |

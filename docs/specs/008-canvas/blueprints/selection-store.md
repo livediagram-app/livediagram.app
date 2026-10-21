@@ -20,7 +20,7 @@ who re-renders when it changes.
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                                   |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | Subscribes; runs `deriveCanvasSelection` itself                                     |
 | `apps/live/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
-| `apps/live/components/canvas/LayerSelectionChrome.tsx`     | Next-note buttons, quick-connect pluses, union resize box                           |
+| `apps/live/components/canvas/LayerSelectionChrome.tsx`     | Quick-connect pluses, union resize box                                              |
 | `apps/live/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
 | `apps/live/components/panels/SlideDeckPanel.tsx`           | Reads the selection it slides from the store                                        |
 | `apps/live/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
@@ -104,7 +104,7 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     `lib/canvas-selection.ts`, which `deriveCanvasSelection` also uses, so the rule lives once;
   - `FreeArrowFrame` reads `single` for its arrow and takes no zoom; only the framed arrow's
     `FramedArrow` reads `useCanvasZoom()`, so a zoom renders no other arrow's slot;
-  - `LayerSelectionChrome` (the next-note buttons, quick-connect pluses and union resize box) and
+  - `LayerSelectionChrome` (the quick-connect pluses and union resize box) and
     `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
     inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
   - `Canvas` reads the store with `get()` in handlers (`currentSelection`, `readSelection` for

@@ -82,13 +82,6 @@ migration runs where the other stored-element migrations run (the api's read pat
 load and the JSON import), so the editor, MCP, share links and thumbnails only ever see cards. The validator still
 accepts `callout` on write, so a browser on a cached build can still save; the next read migrates it.
 
-## Animation
-
-A card takes the **Shape** set for its body (its silhouette is its rounded box, the header band and accent edge
-included) and the **Text** set for its label ([Element animations](../028-animation/element-animations.md)). The
-title, meta line and tags are part of the body: a pulse or float moves the whole card, and they are not animated on
-their own.
-
 ## Palette
 
 | Mode     | Where                                                       |

@@ -677,15 +677,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
       "articleNote": {
         "enum": [
           "comment",
@@ -1760,10 +1751,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "solid",
       "dashed",
-      "dotted",
-      "dash-dot",
-      "long-dash",
-      "dash-dot-dot"
+      "dotted"
     ],
     "type": "string"
   },
@@ -2819,10 +2807,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "CreationTabKind": {
-    "enum": [
-      "diagram",
-      "event-storming"
-    ],
+    "const": "diagram",
     "type": "string"
   },
   "CurrentTokenResponse": {
@@ -5322,18 +5307,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DrawingAnimation": {
-    "enum": [
-      "draw",
-      "trace",
-      "dash",
-      "boil",
-      "ink",
-      "glow",
-      "shimmer"
-    ],
-    "type": "string"
-  },
   "DropdownOption": {
     "additionalProperties": false,
     "properties": {
@@ -5485,25 +5458,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wont-do"
     ],
     "type": "string"
-  },
-  "ElementAnimation": {
-    "anyOf": [
-      {
-        "$ref": "#/components/schemas/ShapeAnimation"
-      },
-      {
-        "$ref": "#/components/schemas/StickyAnimation"
-      },
-      {
-        "$ref": "#/components/schemas/DrawingAnimation"
-      },
-      {
-        "$ref": "#/components/schemas/MediaAnimation"
-      },
-      {
-        "$ref": "#/components/schemas/TableAnimation"
-      }
-    ]
   },
   "ElementId": {
     "type": "string"
@@ -5810,19 +5764,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fibonacci",
       "tshirt",
       "powers"
-    ],
-    "type": "string"
-  },
-  "EventStormingNoteKind": {
-    "enum": [
-      "domain-event",
-      "command",
-      "actor",
-      "policy",
-      "read-model",
-      "external-system",
-      "aggregate",
-      "hotspot"
     ],
     "type": "string"
   },
@@ -6535,15 +6476,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -7268,25 +7200,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ImageCredit": {
-    "additionalProperties": false,
-    "properties": {
-      "licenseUrl": {
-        "type": "string"
-      },
-      "sourceUrl": {
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "text",
-      "sourceUrl"
-    ],
-    "type": "object"
-  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -7296,15 +7209,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "alt": {
         "type": "string"
       },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
       "aspectLocked": {
         "type": "boolean"
       },
@@ -7313,9 +7217,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
-      },
-      "credit": {
-        "$ref": "#/components/schemas/ImageCredit"
       },
       "fillColor": {
         "type": "string"
@@ -8906,15 +8807,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
       "aspectLocked": {
         "type": "boolean"
       },
@@ -9214,20 +9106,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "MediaAnimation": {
-    "enum": [
-      "kenburns",
-      "zoom",
-      "pan",
-      "tilt",
-      "develop",
-      "focus",
-      "wipe",
-      "iris",
-      "sheen"
-    ],
-    "type": "string"
-  },
   "MindFlow": {
     "enum": [
       "tree",
@@ -9252,42 +9130,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wide"
     ],
     "type": "string"
-  },
-  "NoteCrop": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "number"
-      },
-      "image": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "image"
-    ],
-    "type": "object"
-  },
-  "NoteText": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "number"
-      },
-      "legible": {
-        "type": "boolean"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "legible"
-    ],
-    "type": "object"
   },
   "NumOp": {
     "enum": [
@@ -9989,9 +9831,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageImageFill": {
     "additionalProperties": false,
     "properties": {
-      "credit": {
-        "$ref": "#/components/schemas/ImageCredit"
-      },
       "imageId": {
         "type": "string"
       },
@@ -10004,9 +9843,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "position": {
         "$ref": "#/components/schemas/PageImagePosition"
-      },
-      "preview": {
-        "type": "string"
       },
       "tone": {
         "type": "string"
@@ -10653,15 +10489,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -11718,36 +11545,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ReadNotesRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "crops": {
-        "items": {
-          "$ref": "#/components/schemas/NoteCrop"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "crops"
-    ],
-    "type": "object"
-  },
-  "ReadNotesResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "texts": {
-        "items": {
-          "$ref": "#/components/schemas/NoteText"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "texts"
-    ],
-    "type": "object"
-  },
   "RefCandidate": {
     "additionalProperties": false,
     "properties": {
@@ -11968,8 +11765,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "enum": [
               "make room",
               "carried",
-              "laid out",
-              "landed on a lane"
+              "laid out"
             ],
             "type": "string"
           },
@@ -12397,26 +12193,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ShapeAnimation": {
-    "enum": [
-      "pulse",
-      "blink",
-      "glow",
-      "trace",
-      "gradient",
-      "heartbeat",
-      "breathe",
-      "shimmer",
-      "highlight",
-      "bounce",
-      "wobble",
-      "shake",
-      "jelly",
-      "float",
-      "swing"
-    ],
-    "type": "string"
-  },
   "ShapeElement": {
     "additionalProperties": false,
     "properties": {
@@ -12446,15 +12222,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "agendaTimerStartedAt": {
         "type": "number"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -13001,9 +12768,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "stepSequence": {
-        "type": "boolean"
-      },
       "stickerId": {
         "type": "string"
       },
@@ -13030,15 +12794,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textAlignY": {
         "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textAnimation": {
-        "$ref": "#/components/schemas/TextAnimation"
-      },
-      "textAnimationRepeat": {
-        "type": "boolean"
-      },
-      "textAnimationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "textBold": {
         "type": "boolean"
@@ -13190,82 +12945,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "plan-view",
       "plan-sheet"
     ],
-    "type": "string"
-  },
-  "ShapeLibrary": {
-    "additionalProperties": false,
-    "properties": {
-      "createdAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "items": {
-        "items": {
-          "$ref": "#/components/schemas/ShapeLibraryItem"
-        },
-        "type": "array"
-      },
-      "name": {
-        "type": "string"
-      },
-      "ownerId": {
-        "type": "string"
-      },
-      "source": {
-        "$ref": "#/components/schemas/ShapeLibrarySource"
-      },
-      "updatedAt": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "ownerId",
-      "name",
-      "source",
-      "items",
-      "createdAt",
-      "updatedAt"
-    ],
-    "type": "object"
-  },
-  "ShapeLibraryItem": {
-    "additionalProperties": false,
-    "description": "One reusable shape: its elements placed from its top-left corner at (0, 0).",
-    "properties": {
-      "elements": {
-        "items": {
-          "$ref": "#/components/schemas/Element"
-        },
-        "type": "array"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "title",
-      "width",
-      "height",
-      "elements"
-    ],
-    "type": "object"
-  },
-  "ShapeLibrarySource": {
-    "const": "drawio",
-    "description": "Where a library came from; one value today.",
     "type": "string"
   },
   "ShapeMarker": {
@@ -14096,21 +13775,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "StickyAnimation": {
-    "enum": [
-      "flutter",
-      "sway",
-      "peel",
-      "lift",
-      "wiggle",
-      "drop",
-      "slap",
-      "pulse",
-      "glow",
-      "highlight"
-    ],
-    "type": "string"
-  },
   "StickyElement": {
     "additionalProperties": false,
     "properties": {
@@ -14120,27 +13784,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "addedBy": {
         "type": "string"
       },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
       "aspectLocked": {
         "type": "boolean"
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
-      },
-      "esDraft": {
-        "const": true,
-        "type": "boolean"
-      },
-      "esKind": {
-        "$ref": "#/components/schemas/EventStormingNoteKind"
       },
       "fillColor": {
         "type": "string"
@@ -14213,15 +13861,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textAlignY": {
         "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textAnimation": {
-        "$ref": "#/components/schemas/TextAnimation"
-      },
-      "textAnimationRepeat": {
-        "type": "boolean"
-      },
-      "textAnimationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "textBold": {
         "type": "boolean"
@@ -14383,9 +14022,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "esLanesSettled": {
-        "type": "boolean"
-      },
       "finish": {
         "$ref": "#/components/schemas/Finish"
       },
@@ -14463,7 +14099,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming",
       "board",
       "sheet",
       "dashboard",
@@ -14515,9 +14150,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/Element"
         },
         "type": "array"
-      },
-      "esLanesSettled": {
-        "type": "boolean"
       },
       "finish": {
         "$ref": "#/components/schemas/Finish"
@@ -14717,19 +14349,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "TableAnimation": {
-    "enum": [
-      "rows",
-      "columns",
-      "cells",
-      "scan",
-      "sweep",
-      "header",
-      "pulse",
-      "glow"
-    ],
-    "type": "string"
-  },
   "TableCellStyle": {
     "additionalProperties": false,
     "properties": {
@@ -14765,15 +14384,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -14898,15 +14508,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textAlignY": {
         "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textAnimation": {
-        "$ref": "#/components/schemas/TextAnimation"
-      },
-      "textAnimationRepeat": {
-        "type": "boolean"
-      },
-      "textAnimationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "textBold": {
         "type": "boolean"
@@ -15553,25 +15154,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "TextAnimation": {
-    "enum": [
-      "typewriter",
-      "words",
-      "cascade",
-      "focus",
-      "scramble",
-      "highlighter",
-      "underline",
-      "wave",
-      "shine",
-      "flicker",
-      "rainbow",
-      "glow",
-      "bounce",
-      "float"
-    ],
-    "type": "string"
-  },
   "TextElement": {
     "additionalProperties": false,
     "properties": {
@@ -15580,15 +15162,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "addedBy": {
         "type": "string"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -15675,15 +15248,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textAlignY": {
         "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textAnimation": {
-        "$ref": "#/components/schemas/TextAnimation"
-      },
-      "textAnimationRepeat": {
-        "type": "boolean"
-      },
-      "textAnimationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "textArc": {
         "type": "number"
@@ -16070,15 +15634,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "aspectLocked": {
         "type": "boolean"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSticky, type Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { attributesOf, isOpenCommentsAttribute, type AttributeContext } from './attributes';
 import { styleBaselines } from './style-attributes';
@@ -57,19 +57,6 @@ describe('attributesOf (VW14)', () => {
     expect(link({ kind: 'document' })).toBe('');
     expect(link({ kind: 'url' })).toBe('');
     expect(link({ kind: 'wormhole' })).toBe('');
-  });
-
-  it('marks a draft event-storming note first (VW13)', () => {
-    const note = {
-      ...createSticky(0, 0),
-      id: 'n',
-      esKind: 'domain-event',
-      esDraft: true,
-      locked: true,
-    } as Element;
-    expect(printed(note)).toBe('draft locked');
-    const sticky = { ...createSticky(0, 0), id: 's', esDraft: true } as Element;
-    expect(printed(sticky)).toBe('');
   });
 
   it("prints an image's alt text, cut", () => {

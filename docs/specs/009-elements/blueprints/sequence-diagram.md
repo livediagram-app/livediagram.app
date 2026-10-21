@@ -174,7 +174,7 @@ under coverage, 281 ms on CI).
   API → Browser).
 - The Sequence section: `N participants · M messages`, Edit Sequence (secondary, full width; only with
   `onEditSequence`), Numbered. Play is the Animation row's Sequence section (`ElementAnimationTiles.tsx` `SequenceAnimTiles`: None, Play,
-  then Speed / Repeat); a sequence diagram takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
+  then Speed / Repeat).
 - The dialog: size `3xl`, `phoneSheet`, `max-h-[90vh]`; header title "Sequence Diagram" and its line, labelled Help
   (`sequenceDiagram` → `palette/sequence-diagrams`), close. Tabs Messages / Text (`DialogTabs`). Body: rows column and
   a 280 px preview (white paper, `max-h-[360px]`, 160 px on a phone, above the rows there). Footer: Numbered switch,

@@ -29,10 +29,9 @@ function show(uploadOnly?: boolean) {
 afterEach(() => apiListImages.mockClear());
 
 describe('ImagePicker', () => {
-  it('offers the gallery and search, and reads the gallery', () => {
+  it('offers the gallery, and reads the gallery', () => {
     show();
     expect(screen.getByRole('button', { name: /Gallery/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Search' })).toBeTruthy();
     expect(apiListImages).toHaveBeenCalledWith('user_1');
   });
 
@@ -45,7 +44,6 @@ describe('ImagePicker', () => {
   it('offers upload only in a workbench, and never reads the gallery', () => {
     show(true);
     expect(screen.queryByRole('button', { name: /Gallery/ })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
     expect(screen.getByText('Drop, paste, or click to choose an image')).toBeTruthy();
     expect(apiListImages).not.toHaveBeenCalled();
   });

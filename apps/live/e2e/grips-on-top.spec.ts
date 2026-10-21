@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { test, expect, expectNoPageErrors, openStartBlank, seedTab } from './fixtures';
 
 // The handles are always on top (docs/specs/008-canvas/canvas-and-palette.md "Resize"): whatever the
-// selected element's place in the stacking order, its rotation, opacity or animation, and whatever
+// selected element's place in the stacking order, its rotation or opacity, and whatever
 // is drawn over it, the element under every grip's centre is the grip itself. Unit tests cannot see
 // stacking contexts, so this reads document.elementFromPoint in a real browser.
 
@@ -24,7 +24,6 @@ const box = (id: string, x: number, y: number, extra: Record<string, unknown> = 
 const CASES = [
   { name: 'rotated', target: { rotation: 20 } },
   { name: 'faded', target: { opacity: 0.6 } },
-  { name: 'animated', target: { animation: 'bounce' } },
   {
     name: 'under a note',
     target: { opacity: 0.8 },

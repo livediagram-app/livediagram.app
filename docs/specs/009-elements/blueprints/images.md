@@ -44,9 +44,7 @@ Scope, by file:
 
 Out of this blueprint, cited where they touch images: the reference index and the retention sweep
 ([Image reference index](image-reference-index.md)), Offline Mode data-URI embedding
-(`apps/live/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the
-import pipeline (`apps/live/lib/import-images/`,
-[Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
+(`apps/live/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the Explorer gallery
 (`apps/live/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
 account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash

@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @liveplanner/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 147;
+export const TEMPLATE_COUNT = 146;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -160,7 +160,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -220,13 +220,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I add pictures?',
         a: (
           <>
-            Yes. Upload an image once and reuse it from your gallery, or search Openverse for an
-            openly licensed photo or illustration without leaving the editor. See{' '}
+            Yes. Upload an image once and reuse it from your gallery. See{' '}
             <a href="/help/palette/tools/images/">images</a>.
           </>
         ),
-        aText:
-          'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
+        aText: 'Yes. Upload an image once and reuse it from your gallery. See images.',
       },
       {
         q: 'Can I show data, like a chart?',
@@ -244,13 +242,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I animate things?',
         a: (
           <>
-            Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a
-            label can type itself in, and a drawing can draw itself. Hover a choice to preview it on
-            your selection first. See <a href="/help/canvas/animations/">animations</a>.
+            Yes. Right-click an element and pick an animation that suits it: an arrow can flow, an
+            icon can spin, and a chart can grow in. Hover a choice to preview it on your selection
+            first. See <a href="/help/canvas/animations/">animations</a>.
           </>
         ),
         aText:
-          'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
+          'Yes. Right-click an element and pick an animation that suits it: an arrow can flow, an icon can spin, and a chart can grow in. Hover a choice to preview it on your selection first. See animations.',
       },
       {
         q: 'Can I use the same tab in two documents?',
@@ -545,19 +543,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Markdown or a portable JSON file, pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',
-        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and liveplanner lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
-      },
-      {
-        q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too, and a CSV file dropped on a Plan tab becomes a Sheet.',
-      },
-      {
-        q: 'Can I turn a photo of sticky notes into a board?',
-        a: 'Yes, on an event storming board. Take a photo of the wall and liveplanner finds the sticky notes and places them on the canvas for you to tidy up.',
+        a: 'Yes, through the API, the CLI and AI assistants. Hand over a Mermaid flowchart, state diagram, ER diagram or sequence diagram and liveplanner lays it out on the canvas with every connection intact; the CLI exports a tab back to Mermaid text for your READMEs and issues. Other Mermaid types, such as class, Gantt, pie and mind map, are not supported.',
       },
     ],
   },

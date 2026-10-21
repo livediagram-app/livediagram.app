@@ -13,7 +13,6 @@ describe('the dimension catalogue', () => {
   it('lists the dimensions in canonical order', () => {
     expect(LENS_DIMENSIONS).toEqual([
       'opens-in',
-      'kind',
       'template',
       'made-by',
       'edited',
@@ -41,7 +40,6 @@ describe('the dimension catalogue', () => {
     expect(LENS_TELEMETRY_TYPES).toEqual({
       text: 'Text',
       'opens-in': 'OpensIn',
-      kind: 'Kind',
       template: 'Template',
       'made-by': 'MadeBy',
       edited: 'Edited',

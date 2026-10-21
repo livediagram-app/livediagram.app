@@ -2,8 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import { overFloatingPanel, pastePointer } from './canvas-pointer';
 
-// Where a paste lands on an event-storming board depends on whether the pointer
-// is over the CANVAS (docs/specs/021-event-storming/event-storming.md "Always on a lane"). A floating panel sits
+// Where a pasted board scene lands depends on whether the pointer
+// is over the CANVAS. A floating panel sits
 // on top of the canvas and still lets its pointer moves through, so it has to
 // count as "elsewhere" by hand.
 describe('pastePointer', () => {

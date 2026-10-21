@@ -16,10 +16,8 @@ const bar = (mode: EditorMode) =>
 
 describe('the category bar’s categories', () => {
   it('drops Popular and offers Write, Draw, Diagrams and Layout apart in Diagram', () => {
-    // My shapes is in the layout; the palette leaves it out until there is a library to place from.
     expect(bar('diagram').map((c) => c.id)).toEqual([
       'shapes',
-      'my-shapes',
       'write',
       'draw',
       'diagrams',
@@ -68,7 +66,6 @@ describe('the category bar’s categories', () => {
     const cats = bar('workshop');
     expect(cats.map((c) => c.id)).toEqual([
       'shapes',
-      'my-shapes',
       'write',
       'draw',
       'layout',

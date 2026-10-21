@@ -1,9 +1,9 @@
 /*
  * Canvas motion (docs/specs/004-interface-design/motion.md "Where durations live").
  *
- * Motion OF the canvas, not of the chrome around it: element entry, the
- * animated-element set, arrow flow, icon / progress / rating / pie
- * animations, the event-storming insert preview, the done-check flash,
+ * Motion OF the canvas, not of the chrome around it: element entry,
+ * arrow flow, icon / progress / rating / pie
+ * animations, the done-check flash,
  * presentation slide transitions and the touch long-press ring. Each follows
  * its own spec, so this stylesheet is the one the chrome motion budget does
  * not read (the guard in apps/live/motion-budget.test.ts lists it as canvas).
@@ -41,149 +41,13 @@
 
 /*
  * Animated elements (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Looping, decorative
- * animations applied as a class on a boxed element's wrapper, an arrow's
- * path, or an animated icon glyph. Deterministic (CSS only, nothing
- * broadcast), and every rule below is disabled under prefers-reduced-motion
- * (see the media query at the end). The `--lvd-anim-color` custom property is
- * set inline from the element's stroke / text colour so the ring + glow take
- * the element's accent; it falls back to brand sky.
+ * animations applied as a class on an arrow's path or an animated icon glyph. Deterministic (CSS only, nothing
+ * broadcast), and every rule below is disabled under prefers-reduced-motion (see the media query at the end).
  */
 
-/* The Shape set's classes live in motion-shape.css (docs/specs/028-animation/element-animations.md). */
-
-/* A tab window's drawing (docs/specs/009-elements/tab-window.md "The drawing") puts an element's set class on the
- * SVG group that draws it. A group has no layout box, so its transforms measure from its own drawing and pivot on
- * its centre as the canvas's wrapper does. Zero specificity, so a set that pivots elsewhere (Swing, a sticky's
- * Flutter and Sway from the top edge) keeps its own origin. */
-:where(.lvd-svg-motion) {
-  transform-box: fill-box;
-  transform-origin: center;
-}
 /* A window off screen holds still (TabWindowDrawing's useHoldOffscreen). */
 [data-tab-window-drawing][data-held] * {
   animation-play-state: paused !important;
-}
-
-/* Text-native animations (docs/specs/008-canvas/canvas-and-palette.md). A standalone text element has no fill or
- * border, so the box-shadow / ring / background versions above would animate an
- * invisible bounding rectangle around the words. These variants ride the
- * rendered glyphs instead and are applied to the label content node (not the
- * wrapper) for text elements — see isTextNativeAnim in BoxedElementView. The
- * content node has a transparent background, so a drop-shadow filter follows the
- * text's alpha and the halo hugs each letter shape; the gradient is clipped to
- * the text. Colour + speed inherit the wrapper's --lvd-anim-* custom properties;
- * --lvd-anim-text carries the element's own text colour so the gradient blends
- * from it toward the accent. */
-@keyframes lvd-text-glow {
-  0%,
-  100% {
-    filter: drop-shadow(
-      0 0 1px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 35%, transparent)
-    );
-  }
-  50% {
-    filter: drop-shadow(
-      0 0 6px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
-    );
-  }
-}
-.lvd-anim-text-glow {
-  animation: lvd-text-glow calc(2s * var(--lvd-anim-speed, 1)) ease-in-out
-    var(--lvd-anim-iter, infinite);
-}
-
-/* Pulse — a rhythmic emphasis: the letters swell a touch and flash a halo, like
- * a heartbeat, then settle. transform-origin keeps the swell centred. */
-@keyframes lvd-text-pulse {
-  0% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 0%, transparent));
-  }
-  30% {
-    transform: scale(1.06);
-    filter: drop-shadow(
-      0 0 5px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 60%, transparent)
-    );
-  }
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 0%, transparent));
-  }
-}
-.lvd-anim-text-pulse {
-  transform-origin: center;
-  animation: lvd-text-pulse calc(1.8s * var(--lvd-anim-speed, 1)) ease-out
-    var(--lvd-anim-iter, infinite);
-}
-
-/* Trace — the box version runs a light around the outline; on text a coloured
- * drop-shadow orbits the glyphs (offset sweeps around the clock) so the same
- * "light travelling the edge" reads on the letters themselves. */
-@keyframes lvd-text-trace {
-  0% {
-    filter: drop-shadow(
-      2px 0 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
-    );
-  }
-  25% {
-    filter: drop-shadow(
-      0 2px 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
-    );
-  }
-  50% {
-    filter: drop-shadow(
-      -2px 0 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
-    );
-  }
-  75% {
-    filter: drop-shadow(
-      0 -2px 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
-    );
-  }
-  100% {
-    filter: drop-shadow(
-      2px 0 2px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
-    );
-  }
-}
-.lvd-anim-text-trace {
-  animation: lvd-text-trace calc(2.4s * var(--lvd-anim-speed, 1)) linear
-    var(--lvd-anim-iter, infinite);
-}
-
-/* Gradient on a STICKER: its own colours cycle, rather than a background
- * clipped to glyphs it doesn't have. Same idea — a colour that moves — on a
- * surface that actually has one. Follows the speed / repeat variables the
- * other animations use, so the speed control works on it too. */
-.lvd-anim-sticker-gradient {
-  animation: lvd-sticker-hue calc(3.2s * var(--lvd-anim-speed, 1)) linear
-    var(--lvd-anim-iter, infinite);
-}
-
-@keyframes lvd-sticker-hue {
-  from {
-    filter: hue-rotate(0deg);
-  }
-  to {
-    filter: hue-rotate(360deg);
-  }
-}
-
-.lvd-anim-text-gradient {
-  background-image: linear-gradient(
-    120deg,
-    var(--lvd-anim-text, #334155) 0%,
-    var(--lvd-anim-text, #334155) 35%,
-    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 70%, var(--lvd-anim-text, #334155)) 50%,
-    var(--lvd-anim-text, #334155) 65%,
-    var(--lvd-anim-text, #334155) 100%
-  );
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out
-    var(--lvd-anim-iter, infinite);
 }
 
 /* Vote-results walkthrough focus (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
@@ -605,8 +469,7 @@
   transform-origin: top center;
 }
 /* --lvd-icon-anim-speed (set inline from iconAnimationSpeed) scales every
- * icon-animation duration the same way --lvd-anim-speed does for boxed
- * elements: slow = 2, normal = 1, fast = 0.5. */
+ * icon-animation duration: slow = 2, normal = 1, fast = 0.5. */
 .lvd-icon-spin {
   animation: lvd-icon-spin calc(1.1s * var(--lvd-icon-anim-speed, 1)) linear
     var(--lvd-icon-anim-iter, infinite);
@@ -1078,23 +941,6 @@
     calc(var(--lvd-cg-i, 0) * 0.6s * var(--lvd-concept-speed, 1)) var(--lvd-concept-iter, infinite)
     both;
 }
-/* A pointer note's tip under Pulse (docs/specs/009-elements/pointer-note.md "Animation"): a ring grows from the dot
- * and fades, drawing the eye to the spot the note is about. Transform and opacity only. */
-@keyframes lvd-pointer-tip-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  70%,
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-.lvd-pointer-tip-pulse {
-  animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
-}
-
 /* A sequence diagram's Play (docs/specs/009-elements/sequence-diagram.md "Animation"): the picture is uncovered top
  * to bottom, 0.4 s per message scaled by Speed (--lvd-seq-dur, set by the face), so messages appear in the order they
  * happen. Once, or with Repeat a reveal, hold and clear on a loop. A clip-path on one layer per diagram. */
@@ -1145,11 +991,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lvd-anim-text-glow,
-  .lvd-anim-text-pulse,
-  .lvd-anim-text-trace,
-  .lvd-anim-text-gradient,
-  .lvd-anim-sticker-gradient,
   .lvd-arrow-flow,
   .lvd-arrow-dot,
   .lvd-arrow-beads,
@@ -1198,29 +1039,13 @@
   .lvd-concept-build .lvd-cg-row,
   .lvd-concept-build-loop .lvd-cg-row,
   .lvd-concept-pulse .lvd-cg-row,
-  .lvd-concept-flow .lvd-cg-arc,
-  .lvd-pointer-tip-pulse {
+  .lvd-concept-flow .lvd-cg-arc {
     animation: none;
-  }
-  /* The tip's pulse ring alone has no rest frame: it is hidden, never the elements above, which rest still and
-     visible. */
-  .lvd-pointer-tip-pulse {
-    opacity: 0;
   }
   /* A still Flow is the rest frame: solid arcs. */
   .lvd-concept-flow .lvd-cg-arc {
     stroke-dasharray: none;
   }
-}
-
-/* Insert-between preview (docs/specs/021-event-storming/event-storming.md): the slot opening and closing.
-   Only mounted while a palette drag is in flight over an event-storming
-   board, so a real move / drag never eases — the drop must land instantly
-   where the preview promised. Short and ease-out, so the board reads as
-   making room rather than sliding about. The global reduce-motion rules
-   above collapse it to ~instant. */
-[data-insert-shift] {
-  transition: transform 120ms ease-out;
 }
 
 /* A stack's reflow (docs/specs/009-elements/stack.md "Animation"): a child the stack holds glides from where it was to

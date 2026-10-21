@@ -15,8 +15,6 @@ const importsOf = (path: string) => staticImports(read(path));
 describe('the document page’s first load', () => {
   it.each([
     ['app/document/[id]/EditorView.tsx', '@/components/panels/EditorSearchPanel'],
-    ['components/chrome/EditorPhotoImport.tsx', '@/components/chrome/PhotoReviewOverlay'],
-    ['components/chrome/EditorPhotoImport.tsx', '@/lib/photo-detect'],
     ['components/tour/EditorTours.tsx', '@/components/tour/PlanTourHost'],
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
@@ -31,8 +29,6 @@ describe('the document page’s first load', () => {
     ['components/canvas/PresentationHost.tsx', '@/components/canvas/PresentationOverlay'],
     ['components/canvas/SessionTimerFace.tsx', '@/components/canvas/SessionElementSettings'],
     ['components/canvas/SessionSettingsMenu.tsx', '@/components/canvas/SessionElementSettings'],
-    ['hooks/canvas/usePhotoDraft.ts', '@/lib/photo-detect'],
-    ['hooks/canvas/usePhotoReread.ts', '@/lib/photo-detect'],
   ])('%s loads %s on demand', (file, module) => {
     expect(importsOf(file)).not.toContain(module);
   });

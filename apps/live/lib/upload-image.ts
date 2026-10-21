@@ -1,5 +1,4 @@
 import { sha256Hex, type ImageSummary } from '@liveplanner/api-schema';
-import type { ImageCredit } from '@liveplanner/document';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
 import {
@@ -40,14 +39,12 @@ export const UPLOAD_MAX_BYTES = MAX_IMAGE_BYTES;
 
 type UploadResult = { image: ImageSummary; deduped: boolean };
 
-// What the image picker hands back, from any of its tabs: the stored image and,
-// for an Image search pick, the credit it carries (docs/specs/009-elements/image-search.md).
+// What the image picker hands back, from any of its tabs: the stored image.
 export type PickedImage = {
   id: string;
   width: number;
   height: number;
   originalName?: string;
-  credit?: ImageCredit;
 };
 
 // Thrown for any user-facing validation / upload failure. The

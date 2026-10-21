@@ -70,9 +70,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   Axis**, a choice of None or one series, which moves that series to the right (one commit, `Element·Changed·
 ChartAxis`); a series on the right shows "(right)" after its name in the Data summary. An Editor changes it.
 - The **Animation** category carries the chart-specific animations
-  (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
-  in place of the boxed-element animation set — a chart animates its marks, not
-  the whole box. Grow / Pop play once (an entrance); Spin / Pulse loop.
+  (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle):
+  a chart animates its marks, not the whole box. Grow / Pop play once (an entrance); Spin / Pulse loop.
 - Mark colours default to **variants of the active theme** (`themeChartPalette`
   — each branch hue on multi-colour themes, accent tints/shades on single-accent
   themes), overridable per datum. So a chart reads as part of the theme out of

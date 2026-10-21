@@ -42,12 +42,11 @@ const SHAPE_CONTENT = [
   'chartSource',
 ] as const satisfies readonly (keyof ShapeElement)[];
 
-// What a picture carries into a picture place: the picture itself and what credits it.
+// What a picture carries into a picture place: the picture itself and its alt text.
 const IMAGE_CONTENT = [
   'imageId',
   'naturalWidth',
   'naturalHeight',
-  'credit',
   'alt',
 ] as const satisfies readonly (keyof ImageElement)[];
 

@@ -102,8 +102,8 @@ export function MultiStyleSections({
   );
   return (
     <>
-      {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set in
-          the selection, each applying to that set's members only. */}
+      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): one category per animation set in the selection, each
+          applying to that set's members only. */}
       {part === 'motion' ? (
         <AnimationSections
           elements={arrowSrc ? [...boxedSel, arrowSrc] : boxedSel}

@@ -15,7 +15,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 | Term         | Answers                        | Values                                                      | Where it lives                                |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
 | **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Pages, Plan (`EditorMode`)         | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
+| **kind**     | What is a tab?                 | the general diagram tab, or a Plan tab (`TabKind`)          | `Tab.kind`                                    |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
@@ -37,8 +37,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
   general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. **Event Storming** is the only other kind among the canvas modes;
-  Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
+- The general diagram tab is the default kind. Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
   tab of [Forms](../030-forms/forms.md)), each always in Plan.
 - A new kind is added only when no mode can serve the use.
 - "Board type" means a kind. It never names a template or a mode.
@@ -161,12 +160,9 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
 
 ## Animation
 
-- An **animation set** is the catalogue of animations one family of elements takes: Shape, Sticky, Drawing,
-  Media, Table, and Text for words ([Element animations](../028-animation/element-animations.md)). Icons, charts
-  and arrows keep sets of their own.
-- An element's **body set** animates the element; the **Text set** animates its words. A set is never a kind or a
-  mode.
-- A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
+- An **animation set** is the catalogue of animations one family of elements takes: Icon, Chart, Progress,
+  Rating, Concept, Sequence and Arrow ([Animated elements](../008-canvas/canvas-and-palette.md#animated-elements)). A set is never a kind or a mode.
+- A **reveal** brings an element in; a **loop** repeats around the rest frame.
 
 ## This Browser
 

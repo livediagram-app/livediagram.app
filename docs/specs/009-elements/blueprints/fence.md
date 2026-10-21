@@ -6,28 +6,26 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                      | Role                                                                  |
-| --------------------------------------------------------- | --------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                     | `'fence'` in `ShapeKind`                                              |
-| `packages/document/src/fence.ts`                          | `fenceRun`, `fencePostCentres`, `fenceParts`, `fenceLine`, constants  |
-| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE.fence` 240x24                                     |
-| `packages/document/src/colors.ts`                         | `behaviourSkin`: transparent box, `FENCE_WOOD` stroke; self-painting  |
-| `packages/document/src/data-shapes.ts`                    | `isSelfDrawingShape('fence')`: no label, no text align                |
-| `packages/document/src/element-types.ts`                  | `UNTYPED_SHAPES`: no caret                                            |
-| `packages/document/src/behaviour-shapes.ts`               | In `BEHAVIOUR_SHAPES`; `carriesSharedSettingsMenu('fence') === false` |
-| `packages/document/src/validate.ts`                       | Accepts the kind                                                      |
-| `packages/document/src/svg-render-faces.ts`               | `fenceArt`: the export fence                                          |
-| `packages/document/src/animation-membership.ts`           | Wordless                                                              |
-| `apps/live/components/canvas/collab/FenceView.tsx`        | The canvas fence                                                      |
-| `apps/live/components/canvas/BoxedElementView.tsx`        | Mounts `FenceView` with the resolved stroke                           |
-| `apps/live/components/canvas/shape-svg-overlay.tsx`       | Not an SVG-overlay shape (box path, transparent)                      |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                  |
-| `apps/live/lib/avatar-fence.ts`                           | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
-| `apps/live/lib/avatar-walk.ts`                            | `elementUnderFeet` skips fences                                       |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`                 | Memoised segments; every walk step goes through `fenceStep`           |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | `tools:fence` in **Navigate** (`tileGroup: 'move'`)                   |
-| `apps/live/components/palette/palette-icons.tsx`          | `FenceIcon`                                                           |
-| `packages/api-schema/src/telemetry-schema.ts`             | `Fence` element type token                                            |
+| File                                                 | Role                                                                  |
+| ---------------------------------------------------- | --------------------------------------------------------------------- |
+| `packages/document/src/shape-kind.ts`                | `'fence'` in `ShapeKind`                                              |
+| `packages/document/src/fence.ts`                     | `fenceRun`, `fencePostCentres`, `fenceParts`, `fenceLine`, constants  |
+| `packages/document/src/shape-factory.ts`             | `SHAPE_DEFAULT_SIZE.fence` 240x24                                     |
+| `packages/document/src/colors.ts`                    | `behaviourSkin`: transparent box, `FENCE_WOOD` stroke; self-painting  |
+| `packages/document/src/data-shapes.ts`               | `isSelfDrawingShape('fence')`: no label, no text align                |
+| `packages/document/src/element-types.ts`             | `UNTYPED_SHAPES`: no caret                                            |
+| `packages/document/src/behaviour-shapes.ts`          | In `BEHAVIOUR_SHAPES`; `carriesSharedSettingsMenu('fence') === false` |
+| `packages/document/src/validate.ts`                  | Accepts the kind                                                      |
+| `packages/document/src/svg-render-faces.ts`          | `fenceArt`: the export fence                                          |
+| `apps/live/components/canvas/collab/FenceView.tsx`   | The canvas fence                                                      |
+| `apps/live/components/canvas/BoxedElementView.tsx`   | Mounts `FenceView` with the resolved stroke                           |
+| `apps/live/components/canvas/shape-svg-overlay.tsx`  | Not an SVG-overlay shape (box path, transparent)                      |
+| `apps/live/lib/avatar-fence.ts`                      | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
+| `apps/live/lib/avatar-walk.ts`                       | `elementUnderFeet` skips fences                                       |
+| `apps/live/hooks/canvas/useAvatarWalk.ts`            | Memoised segments; every walk step goes through `fenceStep`           |
+| `apps/live/components/palette/palette-tile-defs.tsx` | `tools:fence` in **Navigate** (`tileGroup: 'move'`)                   |
+| `apps/live/components/palette/palette-icons.tsx`     | `FenceIcon`                                                           |
+| `packages/api-schema/src/telemetry-schema.ts`        | `Fence` element type token                                            |
 
 ## Domain and naming
 

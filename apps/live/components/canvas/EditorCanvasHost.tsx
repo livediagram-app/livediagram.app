@@ -42,8 +42,6 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
-import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
@@ -133,18 +131,9 @@ export function EditorCanvasHost() {
     addShape,
     addStatRow,
     addSticky,
-    esBoard,
-    addNextNote,
-    photoImportAvailable,
-    photoImportBlocked,
-    openPhotoImport,
-    readPhotoFile,
     dropBoardFile,
-    photoDraft,
-    createBlocked,
     addTable,
     addTechIcon,
-    insertLibraryShape,
     addText,
     aiCapable,
     aiPanelPosition,
@@ -381,20 +370,7 @@ export function EditorCanvasHost() {
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
   const drawMode = editorMode.mode === 'draw';
-  // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
-  // owner's libraries, then placed at the drop point.
-  const { libraries } = useShapeLibraries();
   const startPanelOpen = useStartPanelOpen();
-  const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
-    const item = libraries
-      .find((l) => l.id === ref.libraryId)
-      ?.items.find((i) => i.id === ref.itemId);
-    if (!item) {
-      console.warn('[shape-libraries] drop ignored', { reason: 'unknown shape' });
-      return;
-    }
-    insertLibraryShape(item, at);
-  };
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -606,15 +582,6 @@ export function EditorCanvasHost() {
   });
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
-  const esBoardControls = useStableObject({
-    ...(photoImportAvailable
-      ? {
-          onImportPhoto: openPhotoImport,
-          photoDisabled: photoImportBlocked,
-          photoDisabledReason: photoDraft.draftOpen ? 'Finish the current draft first' : undefined,
-        }
-      : {}),
-  });
   const stableSlideDeck = useStableObject(slideDeck);
   const activeTheme = getTheme(activeTab.theme);
   // Tab windows (docs/specs/009-elements/tab-window.md): the tabs they show, fetched as they are shown.
@@ -679,7 +646,6 @@ export function EditorCanvasHost() {
               // knows how an element looks.
               elements={canvasElements}
               tabLayers={activeTab.layers}
-              tabKind={activeTab.kind}
               editorMode={editorMode.mode}
               // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
               // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
@@ -869,7 +835,6 @@ export function EditorCanvasHost() {
               onAddIcon={addIcon}
               onAddSticker={addSticker}
               onAddTechIcon={addTechIcon}
-              onInsertLibraryShape={(item) => void insertLibraryShape(item)}
               onDropIcon={isReadOnly ? undefined : dropIconOnElement}
               onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
               onAddTable={addTable}
@@ -886,13 +851,7 @@ export function EditorCanvasHost() {
               onAddAvatar={addAvatar}
               onAddText={addText}
               onAddSticky={addSticky}
-              esBoard={esBoard}
-              esBoardControls={esBoardControls}
-              onAddNextNote={createBlocked ? undefined : addNextNote}
-              onDropPhoto={readPhotoFile}
               onDropFile={isReadOnly ? undefined : dropBoardFile}
-              onDropLibraryShape={isReadOnly ? undefined : dropLibraryShape}
-              createBlocked={createBlocked}
               onAddImage={addImage}
               onAddArrow={addArrow}
               reshapingArrowId={reshapingArrowId}
@@ -1216,9 +1175,6 @@ export function EditorCanvasHost() {
                         mode: 'canvas',
                         x: sx,
                         y: sy,
-                        // Where a Paste from this menu lands: the right-clicked
-                        // spot, not wherever the pointer is when the row is clicked.
-                        canvasPoint: canvasPointerRef.current,
                         // Open upward when the click is in the bottom fifth of the
                         // viewport so the canvas menu's categories don't run
                         // off-screen (matching the tab menu).

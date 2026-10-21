@@ -11,16 +11,13 @@ import { useImageGallery } from '@/hooks/ui/useImageGallery';
 import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
-import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 
-// Three-tab modal launched from the Image element's placeholder + the
+// Two-tab modal launched from the Image element's placeholder + the
 // "Upload image" palette button. Tab 1 (Upload) accepts a file via
 // drag-drop or file input, runs client-side validation (MIME + size +
 // dimensions) and SHA-256 hashing for dedupe, then POSTs to
 // /api/images. Tab 2 (Gallery) lists every image the owner has
 // uploaded so they can reuse one without re-uploading. docs/specs/009-elements/images.md.
-// Tab 3 (Search) finds openly licensed pictures on Openverse and stores the
-// pick in the gallery with a credit. docs/specs/009-elements/image-search.md.
 //
 // Upload validation + hashing + the apiUploadImage call live in
 // lib/upload-image.ts so the Explorer Image Gallery can reuse the
@@ -44,7 +41,7 @@ type ImagePickerProps = {
   onSelect: (image: PickedImage) => void;
   onClose: () => void;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
-  // uploads into its one document and never reads the person's gallery: no Gallery, no Search.
+  // uploads into its one document and never reads the person's gallery: no Gallery.
   uploadOnly?: boolean;
 };
 
@@ -58,7 +55,7 @@ export function ImagePicker({
   onClose,
   uploadOnly = false,
 }: ImagePickerProps) {
-  const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
+  const [tab, setTab] = useState<'upload' | 'gallery'>('upload');
   const {
     gallery,
     setGallery,
@@ -159,9 +156,6 @@ export function ImagePicker({
             Gallery
             {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
           </TabButton>
-          <TabButton active={tab === 'search'} onClick={() => setTab('search')}>
-            Search
-          </TabButton>
         </nav>
       )}
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
@@ -174,8 +168,6 @@ export function ImagePicker({
             heightClass="h-48"
             gapClass="gap-2"
           />
-        ) : tab === 'search' ? (
-          <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
         ) : (
           <GalleryGrid
             ownerId={ownerId}

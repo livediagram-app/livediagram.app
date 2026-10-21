@@ -14,39 +14,35 @@ person, not to a folder or a team: two teammates may send the same new documents
 
 ## Domain language
 
-| Term                 | Means                                                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                            |
-| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                    |
-| **creation intent**  | What a new document is made as, captured once when it is created: opens in, tab kind and template family.  |
-| **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                          |
-| **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab, or a specific kind such as `event-storming`. |
-| **template family**  | The family of templates the document was made from, when it has one: `retrospective` or `kanban`.          |
-| **explicit root**    | The root of My Documents, chosen on purpose (the placement picker's root tile): a place like any other.    |
-| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.           |
+| Term                 | Means                                                                                                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                           |
+| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                   |
+| **creation intent**  | What a new document is made as, captured once when it is created: opens in, tab kind and template family. |
+| **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                         |
+| **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab.                                             |
+| **template family**  | The family of templates the document was made from, when it has one: `retrospective` or `kanban`.         |
+| **explicit root**    | The root of My Documents, chosen on purpose (the placement picker's root tile): a place like any other.   |
+| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.          |
 
 - "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
   specs and code say **default folder** or **placement default**.
-- A mode and a template family are never a "type": say **opens in** for a mode and **template
-  family** for a family. "Board type" is not a term here: of the boards in the list, only the
-  event-storming board is a tab kind of its own; a retrospective and a Kanban board are general
-  diagram tabs made from a template family.
+- A mode and a template family are never a "type": say **opens in** for a mode and **template family** for a family. "Board type" is not a term here: a retrospective and a Kanban board are general diagram tabs made from a template family.
 
 ## Default keys
 
 The list a person sets defaults from is titled **New documents that open as**, and holds, in this
 order:
 
-| Entry                 | Key                      |
-| --------------------- | ------------------------ |
-| Diagrams              | `mode:diagram`           |
-| Whiteboards           | `mode:draw`              |
-| Pages documents       | `mode:pages`             |
-| Plan boards           | `mode:plan`              |
-| Sessions              | `mode:workshop`          |
-| Event Storming boards | `kind:event-storming`    |
-| Retrospectives        | `template:retrospective` |
-| Kanban boards         | `template:kanban`        |
+| Entry           | Key                      |
+| --------------- | ------------------------ |
+| Diagrams        | `mode:diagram`           |
+| Whiteboards     | `mode:draw`              |
+| Pages documents | `mode:pages`             |
+| Plan boards     | `mode:plan`              |
+| Sessions        | `mode:workshop`          |
+| Retrospectives  | `template:retrospective` |
+| Kanban boards   | `template:kanban`        |
 
 - A key is `<dimension>:<value>`. The dimensions, most specific first, are `kind` (the tab kind),
   `template` (the template family) and `mode` (opens in).
@@ -55,8 +51,6 @@ order:
   - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@liveplanner/document`), one
     `mode:<mode>` per mode in the modes' order: a new editor mode gains its key, and its entry in
     the list, with no other change.
-  - **Kind keys** come from the specific tab kinds a document can be created with: every creatable
-    tab kind but the general `diagram` tab, today `event-storming`.
   - **Template keys** come from the template families (`TEMPLATE_FAMILIES`): `retrospective`,
     `kanban`.
 
@@ -64,13 +58,8 @@ order:
 
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
   document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
-  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode,
-    including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-draw-mode/draw-mode.md));
-    `diagram` otherwise, including a document with no tab and an event-storming board.
-  - `tabKind`: `event-storming` when the first tab is an
-    [event-storming board](../021-event-storming/event-storming.md), read the way the document model
-    reads a tab's kind; `diagram` otherwise (a legacy whiteboard tab included). Absent on the wire
-    reads as `diagram`.
+  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode, including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-draw-mode/draw-mode.md)); `diagram` otherwise, including a document with no tab.
+  - `tabKind`: the first tab's kind, `diagram` (a legacy whiteboard tab included). Absent on the wire reads as `diagram`.
   - `templateFamily`: by the **template** the document is made from. One exhaustive map from every
     template to its family, or none, decides it (`templateFamilyOf` in `@liveplanner/templates`):
     every retrospective format (Retrospective, Start / Stop / Continue, Mad / Sad / Glad, 4Ls,
@@ -81,7 +70,7 @@ order:
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:**
   - every create that makes something new: the New Document wizard and its bypasses
-    (`/new?blank=1`, `/new?template=`), imports into the account (board and draw.io imports) and the MCP `create_document` tool, which sends the intent of the first
+    (`/new?blank=1`, `/new?template=`) and the MCP `create_document` tool, which sends the intent of the first
     tab it built and the template it used;
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
     placement, so it is recorded and never routed ([Duplicate](#duplicate)).
@@ -113,11 +102,7 @@ never re-derived or rewritten afterwards:
 - A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
   does: they are a fact about the content, not derived again.
 - A stored value outside its list (one since retired) reads as null.
-- They feed the [Explorer filters](explorer-filters.md), one chip per dimension: **Opens
-  in** (`opensIn`, one option per editor mode), **Kind** (`tabKind`: Event Storming boards) and **Template**
-  (`templateFamily`: Retrospectives, Kanban boards). A document with an unknown value matches no option of a chip;
-  it shows whenever that chip is not set. Copy says "opens in" for a mode and never "type"
-  (see [Domain language](../003-system-architecture/domain-language.md)).
+- They feed the [Explorer filters](explorer-filters.md), one chip per dimension: **Opens in** (`opensIn`, one option per editor mode) and **Template** (`templateFamily`: Retrospectives, Kanban boards). A document with an unknown value matches no option of a chip; it shows whenever that chip is not set. Copy says "opens in" for a mode and never "type" (see [Domain language](../003-system-architecture/domain-language.md)).
 
 ## Duplicate
 
@@ -219,16 +204,15 @@ Settings.
 
 Each key has a label, the plural a sentence uses, and an icon, in list order:
 
-| Key                      | Label                 | In a sentence         | Icon                     |
-| ------------------------ | --------------------- | --------------------- | ------------------------ |
-| `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon  |
-| `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon     |
-| `mode:pages`             | Pages documents       | Pages documents       | The Pages mode's icon    |
-| `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon     |
-| `mode:workshop`          | Sessions              | sessions              | The Workshop mode's icon |
-| `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note            |
-| `template:retrospective` | Retrospectives        | retrospectives        | A clock turning back     |
-| `template:kanban`        | Kanban boards         | Kanban boards         | A board of three columns |
+| Key                      | Label           | In a sentence   | Icon                     |
+| ------------------------ | --------------- | --------------- | ------------------------ |
+| `mode:diagram`           | Diagrams        | diagrams        | The Diagram mode's icon  |
+| `mode:draw`              | Whiteboards     | whiteboards     | The Draw mode's icon     |
+| `mode:pages`             | Pages documents | Pages documents | The Pages mode's icon    |
+| `mode:plan`              | Plan boards     | Plan boards     | The Plan mode's icon     |
+| `mode:workshop`          | Sessions        | sessions        | The Workshop mode's icon |
+| `template:retrospective` | Retrospectives  | retrospectives  | A clock turning back     |
+| `template:kanban`        | Kanban boards   | Kanban boards   | A board of three columns |
 
 - A new editor mode, tab kind or template family is named once (label, plural and icon) and
   needs nothing else; until it is named, it does not compile.
@@ -288,9 +272,7 @@ it has no Location step and shows no folder browser.
 
 ### A template picked after creation
 
-The wizard makes the chosen mode's blank, and the template is picked afterwards on the new document's start screen
-([Template starts](../007-editor/start-diagramming.md)), so a template's own default (`template:kanban`,
-`kind:event-storming`) can only answer then.
+The wizard makes the chosen mode's blank, and the template is picked afterwards on the new document's start screen ([Template starts](../007-editor/start-diagramming.md)), so a template's own default can only answer then.
 
 - **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
   document it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`
@@ -357,9 +339,9 @@ new <these>", opened by Settings' Change.
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModePages` /
-  `DefaultModePlan` / `DefaultModeWorkshop` / `DefaultKindEventStorming` /
-  `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
-  default, before the write.
+  `DefaultModePlan` / `DefaultModeWorkshop` / `DefaultTemplateRetrospective` /
+  `DefaultTemplateKanban`, fired by the surface that sets a default, before the write.
+
 - `Folder` · `Cleared` · the same values, fired by the surface that clears one, before the write.
 - The value is closed: one per key, derived from it (`placementDefaultTelemetryType`), never a
   folder name or id.

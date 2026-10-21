@@ -21,12 +21,10 @@ import {
   PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
-  MyShapesTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   TechTabIcon,
   WriteTabIcon,
-  EventStormingTabIcon,
   ParticipateTabIcon,
 } from '@liveplanner/ui';
 import {
@@ -186,15 +184,6 @@ export const PALETTE_CATEGORIES: {
     icon: <ShapesTabIcon />,
   },
   {
-    // My shapes (docs/specs/013-workspace/shape-libraries.md): the owner's imported shape libraries,
-    // after Shapes in the Common band; offered only when there is a shape to place.
-    id: 'my-shapes',
-    label: 'My shapes',
-    group: 0,
-    description: 'Shapes from your imported libraries, ready to place.',
-    icon: <MyShapesTabIcon />,
-  },
-  {
     id: 'write',
     label: 'Write',
     group: 0,
@@ -270,17 +259,6 @@ export const PALETTE_CATEGORIES: {
     description:
       'Wireframing device frames: browser, monitor, laptop, phone, tablet, foldable, smartwatch.',
     icon: <DevicesTabIcon />,
-  },
-  {
-    // Event Storming (docs/specs/021-event-storming/event-storming.md): the workshop notation as a first-class
-    // kit. Structure band — like Build, it's a set you reach for when
-    // deciding how a board is arranged, not a decoration or a behaviour.
-    id: 'event-storming',
-    label: 'Event Storming',
-    group: 1,
-    description:
-      'The sticky-note workshop notation: events, commands, actors, policies, read models, and more.',
-    icon: <EventStormingTabIcon />,
   },
   {
     id: 'icons',

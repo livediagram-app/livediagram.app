@@ -37,10 +37,6 @@ the author's to write.
 
 A new key is 260 wide and grows to fit its rows (28 px a row under a 32 px title); resizing it only changes its width.
 
-## Animation
-
-A key takes the **Shape** set. It is reference, not story, so it offers no entrance of its own.
-
 ## Palette
 
 | Mode     | Where                                   |

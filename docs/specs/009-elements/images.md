@@ -28,9 +28,6 @@ type ImageElement = {
   naturalHeight?: number;
   // Optional alt text (accessibility + future export-to-markdown).
   alt?: string;
-  // Creator + licence credit of a picture picked from Image search
-  // (image-search.md); absent for uploads.
-  credit?: ImageCredit;
   // Inherited from the boxed-element shared fields:
   locked?: boolean;
   opacity?: number;
@@ -86,7 +83,7 @@ Server-side enforcement: the upload endpoint checks `Content-Type` against the w
 
 - **Per-file cap: 10 MB.** Sits comfortably above typical phone JPEGs (2–4 MB) and 4K screenshots (~3–6 MB as PNG), while staying well below the Workers request-body limit (100 MB). Going higher hurts the picker UX (long uploads on slow networks) without serving real diagram content; canvas images render at thumbnail or modest sizes, so an 8K original is wasted bytes.
 - **Per-owner soft cap: configurable via two env vars** in the api worker, `IMAGE_MAX_PER_OWNER` and `IMAGE_MAX_BYTES_PER_OWNER` (decimal strings, parsed with `parseInt`). Hosted liveplanner.app sets them to `100` and `104857600` (100 MB) respectively, through its hosted profile (`apps/api/hosted-vars.json`, sent with every hosted deploy and read back off the live worker, [Deployment](../016-platform/deployment.md) "Hosted profile"). Both are optional: unset, blank, `0`, or non-numeric values read as "no limit", which is the OSS self-host default where the operator runs their own storage budget (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). When either cap is exceeded the worker returns 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }` so the client can render an accurate message.
-- Enforcement order on POST: `Content-Length` against the per-file cap first (rejects oversize uploads before any D1 round-trip), then an early `X-Image-Sha256` dedupe lookup (returns the existing image without parsing the body when the header matches a row at `(owner, sha)`; only for the owner's own editor or a guest: a [workbench session](../013-workspace/workbench-embeds.md) or an API token skips it and uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row, its id, original name and size, for nothing more than a hash), then per-owner totals against the soft cap (a single grouped `COUNT + SUM(byte_size) WHERE owner_id = ?` query). Only uploads that clear all three actually parse the body and write to R2. The early totals check is a fast path, not the guarantee: the row's `INSERT` repeats both cap checks inside the statement, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass a cap. An insert the caps refuse deletes the R2 object it just wrote and answers the same 403 `gallery_full`; in the rare case that the gallery has room again by then (an image was deleted meanwhile) it answers 409 `{ error: "upload_conflict" }` and the client may retry (the [Import image pipeline](../020-import-export/import-image-pipeline.md) retries once).
+- Enforcement order on POST: `Content-Length` against the per-file cap first (rejects oversize uploads before any D1 round-trip), then an early `X-Image-Sha256` dedupe lookup (returns the existing image without parsing the body when the header matches a row at `(owner, sha)`; only for the owner's own editor or a guest: a [workbench session](../013-workspace/workbench-embeds.md) or an API token skips it and uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row, its id, original name and size, for nothing more than a hash), then per-owner totals against the soft cap (a single grouped `COUNT + SUM(byte_size) WHERE owner_id = ?` query). Only uploads that clear all three actually parse the body and write to R2. The early totals check is a fast path, not the guarantee: the row's `INSERT` repeats both cap checks inside the statement, so uploads racing each other cannot together pass a cap. An insert the caps refuse deletes the R2 object it just wrote and answers the same 403 `gallery_full`; in the rare case that the gallery has room again by then (an image was deleted meanwhile) it answers 409 `{ error: "upload_conflict" }` and the client may retry.
 
 ## API endpoints
 
@@ -153,18 +150,10 @@ iPhone was closed while moving between its pages.
   3. POSTs to `/api/images` with the sha + dimensions in headers. If `deduped: true`, the modal flashes "Already in your gallery" and selects the existing image.
   4. The element's `imageId` is set to the returned id; the modal closes.
 - **Gallery tab.** Renders `apiListImages()` as a 4-column grid of thumbnails (re-uses `/api/images/:id` with native `<img>` lazy loading). Hovering a tile surfaces a small "Use" button + a trash icon for delete. Clicking a tile sets the element's `imageId` and closes.
-- **Search tab.** Searches openly licensed pictures on Openverse and stores the picked one in the gallery, with a creator credit on the element. See [Image search](image-search.md).
 
 The modal also surfaces the soft-cap usage as a tiny bar at the bottom ("3.2 / 100 MB used") so users see the cap before they hit it.
 
 When the picker is opened for an element that already has an attached image, a **Remove from element** action sits in the modal footer. It clears the element's `imageId` (returning the canvas back to the placeholder state) and drops `naturalWidth` / `naturalHeight` so a later "Reset to natural size" doesn't snap to stale dimensions. The gallery copy is untouched; users can re-attach the same image (or a different one) without re-uploading.
-
-### Imported images
-
-Images inside an imported board (an Excalidraw scene's `files`, and the other importers') are
-resized in the browser and stored through the same `POST /api/images`, under the same caps, by the
-[Import image pipeline](../020-import-export/import-image-pipeline.md). Hitting the per-owner cap
-there leaves placeholders and a count, never a failed import.
 
 ### Resize behaviour
 
@@ -294,7 +283,7 @@ your image gallery: list_images lists the pictures you can place`). That keeps t
   screenshot, not a box.
 - **Why no upload.** A chat assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
   server-side requests to arbitrary hosts and pictures the user never chose. Pictures reach the gallery through the
-  editor (upload, paste, drop or Image search), where the user chooses them.
+  editor (upload, paste or drop), where the user chooses them.
 
 ## Out of scope
 
@@ -303,4 +292,4 @@ your image gallery: list_images lists the pictures you can place`). That keeps t
 - **Per-image share links.** The same image can be referenced by multiple documents of the same owner; the document-scoped `GET /api/images/:id?d=<documentId>` read endpoint covers cross-document sharing for visitors holding a share code, without any per-image plumbing.
 - **CDN / image-optimisation.** Cloudflare's edge cache (via the `immutable` Cache-Control) is the only transform layer. No on-the-fly resize / format conversion. Future: Cloudflare Image Resizing or a custom transform Worker.
 - **External-source image clipboard via `navigator.clipboard.read()`.** The Cmd+V image-paste path listens to the browser's native `paste` event and reads `clipboardData.items`, which is permissionless. The picker modal + drag-drop + the `paste` shortcut (Cmd/Ctrl+V on the canvas, image MIME on the clipboard data routes through `uploadImageFile` and lands as a new image element) are the entry paths today; `navigator.clipboard.read()` (which would let us probe the clipboard on a button click without requiring an actual paste gesture) needs the browser's clipboard-read permission prompt and is not used.
-- **External-URL images.** No `imageId === 'https://...'` shape. Every image is internal so the bytes survive an upstream taking the source down + don't leak referrer headers. [Image search](image-search.md) copies a picked picture into the gallery for the same reason.
+- **External-URL images.** No `imageId === 'https://...'` shape. Every image is internal so the bytes survive an upstream taking the source down + don't leak referrer headers.

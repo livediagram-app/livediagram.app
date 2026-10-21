@@ -82,8 +82,7 @@ jobs:
       # it in the coverage step, so plain `test` skips them; the filters come
       # from the manifests (scripts/ci-test-filters.mjs), not a list kept here.
       # Two packages at a time: each vitest already fills the runner's cores,
-      # and turbo's default fan-out starved the CPU-heavy sticky-vision suite
-      # into timeouts.
+      # and turbo's default fan-out starved the CPU-heavy suites into timeouts.
       - name: Test
         run: |
           set -euo pipefail

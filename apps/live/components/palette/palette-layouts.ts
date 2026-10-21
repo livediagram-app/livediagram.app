@@ -6,7 +6,7 @@
 // renamed or re-filled for one mode without touching another.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so a layout spells
-// out only where a mode differs. The catalogue categories (My shapes, Icons, Stickers, Tech) are
+// out only where a mode differs. The catalogue categories (Icons, Stickers, Tech) are
 // bodies with their own content and take no tile list. Every mode lands on its own Popular, a
 // fixed pick of twelve tiles from across its categories.
 import type { EditorMode } from '@liveplanner/document';
@@ -24,8 +24,6 @@ type PaletteLayoutEntry = {
   // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
-  // Offered only on an event-storming board.
-  boardOnly?: true;
 };
 
 // A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -33,14 +31,13 @@ type PaletteLayoutEntry = {
 export const DIVIDE = '|';
 
 type PaletteLayout = {
-  // The category the palette opens on (an event-storming board opens on its notation instead).
+  // The category the palette opens on.
   landing: string;
   categories: readonly PaletteLayoutEntry[];
 };
 
 // The categories whose body is its own content rather than a list of tiles.
 export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'my-shapes',
   'icons',
   'stickers',
   'technology',
@@ -145,7 +142,6 @@ const DIAGRAM: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
@@ -157,7 +153,6 @@ const DIAGRAM: PaletteLayout = {
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     // Layout after Concepts: what is built, then the ideas laid out beside it, then what it is all arranged in.
     { id: 'layout', tiles: LAYOUT_TILES },
-    { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
@@ -187,7 +182,7 @@ const PAGES_COMPONENTS = [
 const PAGES_WRITE = tilesExcept('write', 'tools:page', 'tools:annotation');
 
 // Pages mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
-// icons, behaviours or workshop notation.
+// icons or behaviours.
 const PAGES: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -212,7 +207,6 @@ const PAGES: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     { id: 'write', tiles: PAGES_WRITE },
     // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): mind maps, flowcharts, lanes and
     // frames organise a diagram, not a visual page, and the Build tiles a page uses join the categories they sit
@@ -263,7 +257,6 @@ const PAGES_SLIDE: PaletteLayout = {
     { id: 'shapes' },
     // Pictures and the embeds a talk plays (a video, a prototype, a page), in Common: a slide reaches for them first.
     { id: 'media', band: 0 },
-    { id: 'my-shapes' },
     {
       id: 'data',
       tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
@@ -315,7 +308,6 @@ const PAGES_WIREFRAME: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     { id: 'write', tiles: PAGES_WRITE },
     { id: 'icons' },
     { id: 'stickers' },
@@ -356,7 +348,6 @@ const PAGES_LOGO: PaletteLayout = {
     // Text for a wordmark, and a sticky note for a comment on the design.
     { id: 'write', tiles: ['tools:text', DIVIDE, 'tools:sticky'] },
     { id: 'icons' },
-    { id: 'my-shapes' },
     // A picture to trace or to set the mark beside.
     { id: 'media', tiles: ['tools:image'] },
   ],
@@ -374,7 +365,7 @@ const PAGES_BY_KIND: Readonly<Record<PaletteKind, PaletteLayout>> = {
 // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
 // Polygon), Diagram's Layout, the Collaborate elements as six categories, one per group, ahead of the
-// decorations a room reaches for and the charts; no tech icons, mock-up kit or workshop notation.
+// decorations a room reaches for and the charts; no tech icons or mock-up kit.
 const WORKSHOP: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -398,7 +389,6 @@ const WORKSHOP: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     // Words and notes, then a table and a checklist to keep them in. No Page or Annotation; and a Sankey reports on a
     // flow, mind maps and flowcharts build a diagram: a session does not stop for them.
     {
@@ -513,15 +503,13 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   };
 }
 
-/** The categories a mode's palette offers, in order, with their tiles. A board-only category is
- *  left out unless the tab is an event-storming board; Pages mode offers its kind's (`pagesKind`). */
+/** The categories a mode's palette offers, in order, with their tiles. Pages mode offers its kind's
+ *  (`pagesKind`). */
 export function paletteCategoriesFor(
   mode: EditorMode,
-  { esBoard = false, pagesKind }: { esBoard?: boolean; pagesKind?: PaletteKind } = {},
+  { pagesKind }: { pagesKind?: PaletteKind } = {},
 ): ResolvedPaletteCategory[] {
-  return paletteLayoutFor(mode, pagesKind)
-    .categories.filter((e) => esBoard || !e.boardOnly)
-    .map(resolve);
+  return paletteLayoutFor(mode, pagesKind).categories.map(resolve);
 }
 
 /**
@@ -589,9 +577,9 @@ export function dashboardPaletteCategories(): ResolvedPaletteCategory[] {
 }
 export const DASHBOARD_PALETTE_LANDING = DASHBOARD.landing;
 
-/** Whether a mode's palette offers category `id` (on an ordinary tab). */
+/** Whether a mode's palette offers category `id`. */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
-  return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);
+  return paletteLayoutFor(mode).categories.some((e) => e.id === id);
 }
 
 // Plan's landing while its tab has no board (docs/specs/026-plan/plan-mode.md "The palette"): a card lands on a
@@ -599,44 +587,28 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
 const PLAN_NO_BOARD_LANDING = 'plan-boards';
 
 /**
- * The category the palette opens on: an event-storming board's notation, or the mode's own (Plan's Boards while
- * the tab has no board).
+ * The category the palette opens on: the mode's own (Plan's Boards while the tab has no board).
  */
-export function paletteLandingCategory(
-  mode: EditorMode,
-  esBoard: boolean,
-  hasPlanBoard = true,
-): string {
-  if (esBoard) return 'event-storming';
+export function paletteLandingCategory(mode: EditorMode, hasPlanBoard = true): string {
   if (mode === 'plan' && !hasPlanBoard) return PLAN_NO_BOARD_LANDING;
   return paletteLayoutFor(mode).landing;
 }
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
-// Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
-// notation's coloured notes; elsewhere the Sticky and Text tiles (whatever a mode's Popular holds); then the Image
-// tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
+// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
+// mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
 const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
 const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
-export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
-  const landing = paletteLandingCategory(mode, esBoard);
-  const category = paletteCategoriesFor(mode, { esBoard }).find((c) => c.id === landing);
-  const notation = esBoard ? (category?.tiles ?? []).filter((t) => t.action.type === 'sticky') : [];
-  const base =
-    notation.length > 0
-      ? notation
-      : PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
+export function participantTiles(): PaletteTileDef[] {
+  const base = PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
   const image = tileById(PARTICIPANT_IMAGE_TILE);
   return image ? [...base, image] : base;
 }
 
-export function participantPaletteCategories(
-  mode: EditorMode,
-  esBoard: boolean,
-): ResolvedPaletteCategory[] {
+export function participantPaletteCategories(): ResolvedPaletteCategory[] {
   const identity = IDENTITY.get('participate')!;
-  return [{ ...identity, tiles: participantTiles(mode, esBoard) }];
+  return [{ ...identity, tiles: participantTiles() }];
 }
 
 // The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format

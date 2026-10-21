@@ -130,7 +130,7 @@ function rederivePresetForTheme(el: Element, theme: ThemeDefinition): Element | 
 }
 
 // Graph-aware counterpart to `recolourElementForTheme`: paints a fresh
-// scaffold (template / Markdown import) with a theme, rainbowing the
+// scaffold (a template) with a theme, rainbowing the
 // branches when the theme has a palette. Used by every "apply a theme to
 // these elements" path so single- and multi-colour themes share one
 // entry point.

@@ -34,8 +34,6 @@ function setup(initial: Partial<Props> = {}, elements: Element[] = []) {
         isPinchingRef: { current: false },
         onCommitDraw: p.onCommitDraw,
         onCommitFreehand: p.onCommitFreehand,
-        stampAt: null,
-        showStamp: vi.fn(),
         whiteboard: false,
       }),
     {

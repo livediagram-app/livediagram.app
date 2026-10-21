@@ -86,7 +86,7 @@ type LiveDoc = {
 type Tab = {
   id: TabId;
   name: string;
-  kind?: TabKind; // 'diagram' | 'event-storming' (docs/specs/021-event-storming/event-storming.md); absent = 'diagram'
+  kind?: TabKind; // 'diagram' | 'board' | 'sheet' | 'dashboard' | 'form' (docs/specs/026-plan/plan-tabs.md); absent = 'diagram'
   // The tab's editor mode, the same for everyone on it, which it also opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); absent = 'diagram'. A stored kind 'whiteboard' reads as
   // kind 'diagram' with opensIn 'draw'.
@@ -102,7 +102,6 @@ type Tab = {
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
 //                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
 //                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
-//   StickyElement    (optionally esKind — the event-storming note kind, docs/specs/021-event-storming/event-storming.md)
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,

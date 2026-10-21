@@ -1,4 +1,4 @@
-// What an import may put on a tab (docs/specs/020-import-export/board-import.md "What lands"): only elements the
+// What an import may put on a tab: only elements the
 // api will save. An element the validator refuses would make every later save of the tab fail
 // (`invalid tab`), so an import keeps each valid element, once per id, up to the tab's cap, and counts
 // the rest. Pure.

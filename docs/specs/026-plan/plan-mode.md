@@ -15,7 +15,6 @@ item store.
 | **Plan**      | In the interface, the mode's name and its palette category; never a tab kind |
 
 - "Board" alone keeps its old meanings elsewhere in the specs; in this folder it is always a **Plan board**.
-- Event-storming boards are a tab kind with their own rules and are untouched by Plan mode.
 
 ## Offering the mode
 

@@ -98,7 +98,7 @@ export type ItemTypesRoomOp = {
 export type PlanTabOutline = {
   id: string;
   name: string;
-  // What the tab is (diagram, board, sheet, dashboard, form, event-storming).
+  // What the tab is (diagram, board, sheet, dashboard, form).
   kind: string;
   // Its theme, when it has one of its own.
   theme?: string;

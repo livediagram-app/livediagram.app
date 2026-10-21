@@ -24,7 +24,7 @@ describe('headerLine (R16, VW8)', () => {
   it('prints the singulars, the kind, hidden and unknown counts, and leaves absent segments out', () => {
     const line = headerLine(
       facts({
-        tab: { id: 't', ref: 'es', name: 'Board "1"', kind: 'event-storming' },
+        tab: { id: 't', ref: 'es', name: 'Board "1"', kind: 'board' },
         elements: 1,
         counts: { boxes: 1, frames: 1, lanes: 1, arrows: 1 },
         hidden: 2,
@@ -34,7 +34,7 @@ describe('headerLine (R16, VW8)', () => {
       }),
     );
     expect(line).toBe(
-      'tab es "Board \\"1\\"" · 1 element: 1 box, 1 frame, 1 lane, 1 arrow · kind=event-storming · 2 hidden · 1 unknown',
+      'tab es "Board \\"1\\"" · 1 element: 1 box, 1 frame, 1 lane, 1 arrow · kind=board · 2 hidden · 1 unknown',
     );
   });
 

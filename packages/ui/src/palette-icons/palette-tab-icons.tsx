@@ -184,30 +184,6 @@ export function TechTabIcon() {
   );
 }
 
-/** Event Storming (docs/specs/021-event-storming/event-storming.md): three tilted sticky notes marching left to
- *  right — the workshop's opening move, matching the template's preview. */
-export function EventStormingTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="2.5" y="6" width="7" height="7" rx="0.8" transform="rotate(-4 6 9.5)" />
-      <rect x="12" y="4.5" width="7" height="7" rx="0.8" transform="rotate(3 15.5 8)" />
-      <path d="M4 19h14.5M18.5 19l-2.2-1.6M18.5 19l-2.2 1.6" />
-    </Glyph>
-  );
-}
-
-// My shapes (docs/specs/013-workspace/shape-libraries.md): a stack of cards with a shape on the top
-// one, a set of shapes that is yours, distinct from Shapes' loose cluster.
-export function MyShapesTabIcon() {
-  return (
-    <Glyph size={18} units={18} strokeLinecap="round">
-      <path d="M4.5 4.5h9.5a1 1 0 0 1 1 1v8" />
-      <rect x="2.5" y="6.5" width="10" height="9" rx="1" />
-      <circle cx="7.5" cy="11" r="2.2" />
-    </Glyph>
-  );
-}
-
 // Participate (docs/specs/013-workspace/share-roles.md): a ballot, the Participant level's glyph.
 export function ParticipateTabIcon() {
   return (

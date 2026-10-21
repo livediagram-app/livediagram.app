@@ -140,8 +140,7 @@ not make, because the feature never raises one for them (each feature's own spec
 
 ## Out of scope
 
-- The paste notice ([Board scenes](../020-import-export/board-scene.md) "In the editor") and the new-version prompt
-  ([New version prompt](../016-platform/new-version-prompt.md)) are their own surfaces, with their own placement.
-  They share the toast's look (card, border, shadow, corners), not its stack.
+- The new-version prompt ([New version prompt](../016-platform/new-version-prompt.md)) is its own surface, with its
+  own placement. It shares the toast's look (card, border, shadow, corners), not its stack.
 - The canvas's screen-reader announcements ([Canvas accessibility](canvas-accessibility.md)) are a separate,
   unconditional live region; a toast is not a substitute for one.

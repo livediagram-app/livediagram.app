@@ -48,13 +48,11 @@ import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
-import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
-import { handleShapeLibraries } from './routes/shape-libraries';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleDocuments } from './routes/documents';
@@ -427,11 +425,8 @@ async function routeApiRequest(
       case 'unfurl':
         return await handleUnfurl(ctx);
       case 'ai':
-        // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
-        // assistant at /api/ai, and the crop reader one segment deeper.
+        // The assistant (docs/specs/007-editor/ai-assistance.md) at /api/ai.
         if (segments[2] === undefined) return await handleAi(ctx);
-        if (segments[2] === 'read-notes' && segments.length === 3)
-          return await handleAiReadNotes(ctx);
         return notFound();
       case 'events':
         return await handleEvents(ctx);
@@ -452,8 +447,6 @@ async function routeApiRequest(
         return await handleForms(ctx);
       case 'custom-themes':
         return await handleCustomThemes(ctx);
-      case 'shape-libraries':
-        return await handleShapeLibraries(ctx);
       case 'teams':
         return await handleTeams(ctx);
       case 'tokens':

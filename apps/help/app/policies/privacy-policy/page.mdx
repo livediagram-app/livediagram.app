@@ -35,7 +35,6 @@ liveplanner is built to need as little of your data as possible, and the whole c
 The AI features run only when you use them, and only on a deployment that has an AI provider configured.
 
 - **The AI assistant.** When you ask the assistant something, your prompt, the tab's name, the elements on the current tab (their text, shapes and positions) and your last few messages in that conversation are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant is off until you turn it on in Settings.
-- **Reading sticky notes from a photo.** When you import a photo of sticky notes, the notes are found in your browser, and crops of them are sent through our API to **Google** (Gemini) to read the handwriting. We do not store the crops.
 - **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your documents through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
 
 We do not use your documents to train AI models. The providers above process what is sent to them under their own API terms.
@@ -73,11 +72,9 @@ We rely on a small number of providers to run the service:
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
 - **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
-- **OpenAI**, for the AI assistant, and **Google** (Gemini), for reading sticky notes from a photo (only when you use them; see **AI features** above).
+- **OpenAI**, for the AI assistant (only when you use it; see **AI features** above).
 
 These providers process data on our behalf so that we can run the service.
-
-One more service is involved only when you use it: **Openverse**, run by the WordPress Foundation, answers searches in the image picker's Search tab. Your browser sends your search words to Openverse directly, so Openverse sees them and your IP address under its own privacy policy; our servers never see the search. A picture you pick is downloaded from its original host and then stored like any image you upload.
 
 Your browser also loads the editor's fonts from **Google Fonts**. A YouTube video's poster image, and a link card's icon and image, load from the provider when a document is viewed; other embeds (Vimeo, Loom, Figma, Google Docs, any website) load only when a viewer presses Load. Either way the provider sees the viewer's IP address. Link previews are fetched by our server from the linked site.
 

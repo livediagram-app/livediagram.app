@@ -1,5 +1,5 @@
 // A three-tab document (docs/specs/024-agents/blueprints/document-views.md "Testing"): the checkout tab,
-// a 42-element lanes tab, and a 24-element event-storming tab.
+// a 42-element lanes tab, and a 24-element sticky tab.
 import {
   createComment,
   createPinnedArrow,
@@ -59,13 +59,11 @@ function retroTab(): Tab {
     ...createSticky((i % 6) * 220, Math.floor(i / 6) * 220),
     id: pinnedId('9e10', i),
     label: `Event ${i + 1}`,
-    esKind: 'domain-event',
     ...(i < 3 ? { commentThread: thread(i) } : {}),
   }));
   return {
     id: pinnedId('9e02', 101),
     name: 'Incident retro',
-    kind: 'event-storming',
     elements: [
       { ...createText(0, -100), id: pinnedId('9e20', 0), label: 'Timeline' },
       { ...createText(600, -100), id: pinnedId('9e20', 1), label: 'Hotspots' },

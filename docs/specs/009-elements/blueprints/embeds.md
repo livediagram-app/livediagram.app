@@ -41,7 +41,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useShapeDrawing.ts`              | `Element·Added·Video` on a drawn embed                                     |
 | `apps/live/lib/element-telemetry.ts`                     | `elementTelemetryType`: `video` → `Video` for copy paths                   |
 | `apps/live/lib/element-names.ts`                         | `kindLabel`: `video` reads "Embed"                                         |
-| `apps/live/lib/excalidraw-export.ts`                     | Rectangle labelled with the URL (D70) [QC2]                                |
 
 ## Domain and naming
 

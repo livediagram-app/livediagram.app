@@ -3,11 +3,9 @@
 
 import { isMadeByAiSource } from '@liveplanner/api-schema';
 import {
-  KIND_VALUES,
   OPENS_IN_VALUES,
   TEMPLATE_VALUES,
   type EditedValue,
-  type KindValue,
   type OpensInValue,
   type TemplateValue,
 } from './dimensions';
@@ -15,7 +13,7 @@ import type { Lens, LensSubject } from './types';
 
 const DAY_MS = 86_400_000;
 
-/** The fields of a document summary the lens reads. `opensIn`, `tabKind` and `templateFamily` are
+/** The fields of a document summary the lens reads. `opensIn` and `templateFamily` are
  *  the recorded creation intent; absent, null or retired values read as unknown. A document in
  *  this browser (Offline Mode) has no team, so it reads as `mine`. */
 type LensDocumentSummary = {
@@ -25,7 +23,6 @@ type LensDocumentSummary = {
   teamId: string | null;
   source: string | null;
   opensIn?: string | null;
-  tabKind?: string | null;
   templateFamily?: string | null;
 };
 
@@ -33,8 +30,7 @@ function known<T extends string>(values: readonly T[], value: string | null | un
   return values.find((candidate) => candidate === value) ?? null;
 }
 
-/** A personal, team or this-browser document as the reader sees it. The general diagram tab is
- *  no Kind value, so it reads as none. */
+/** A personal, team or this-browser document as the reader sees it. */
 export function documentSubject(summary: LensDocumentSummary, viewerId: string): LensSubject {
   return {
     name: summary.name,
@@ -43,12 +39,11 @@ export function documentSubject(summary: LensDocumentSummary, viewerId: string):
     people: summary.ownerId === viewerId ? 'me' : 'others',
     madeByAi: isMadeByAiSource(summary.source),
     opensIn: known<OpensInValue>(OPENS_IN_VALUES, summary.opensIn),
-    kind: known<KindValue>(KIND_VALUES, summary.tabKind),
     template: known<TemplateValue>(TEMPLATE_VALUES, summary.templateFamily),
   };
 }
 
-/** A row of Shared With Me: always someone else's, and silent on provenance, mode, kind and family. */
+/** A row of Shared With Me: always someone else's, and silent on provenance, mode and family. */
 export function sharedSubject(item: { name: string; savedAt: number }): LensSubject {
   return {
     name: item.name,
@@ -57,7 +52,6 @@ export function sharedSubject(item: { name: string; savedAt: number }): LensSubj
     people: 'others',
     madeByAi: null,
     opensIn: null,
-    kind: null,
     template: null,
   };
 }
@@ -105,7 +99,6 @@ export function compileLens(lens: Lens, now: number): (subject: LensSubject) => 
   const cutoff = cutoffs.length === 0 ? null : Math.min(...cutoffs);
   return (subject) =>
     admits(filters['opens-in'], subject.opensIn) &&
-    admits(filters.kind, subject.kind) &&
     admits(filters.template, subject.template) &&
     (filters['made-by'].length === 0 || subject.madeByAi === true) &&
     (cutoff === null || subject.savedAt >= cutoff) &&

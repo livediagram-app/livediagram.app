@@ -1,7 +1,7 @@
 'use client';
 
-// An object prop the editor rebuilds on every render, data and actions together (the slide deck,
-// the event-storming controls), made identity-stable for a memoised consumer
+// An object prop the editor rebuilds on every render, data and actions together (the slide
+// deck), made identity-stable for a memoised consumer
 // (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it shows"): each
 // function becomes one forwarder per key calling the newest, and the object's identity changes only
 // when a data field changes or a field comes or goes. Its functions are actions, never read in render.

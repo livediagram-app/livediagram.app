@@ -16,8 +16,6 @@
 import dynamic from 'next/dynamic';
 import { PaletteLogoTab } from './PaletteLogoTab';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { PaletteMyShapesTab } from './PaletteMyShapesTab';
-import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
@@ -29,7 +27,6 @@ import {
   PaletteDrawTab,
   PaletteBuildTab,
   PaletteWriteTab,
-  PaletteEventStormingTab,
   PaletteShapesTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
@@ -37,7 +34,6 @@ import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import type { ResolvedPaletteCategory } from './palette-layouts';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -70,11 +66,6 @@ export function paletteCategoryTabs(
     categories: ResolvedPaletteCategory[];
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
-    // Board-level switches for the Event Storming category (docs/specs/021-event-storming/event-storming.md),
-    // supplied only when the active tab IS one of those boards.
-    esBoardControls?: EsBoardControls;
-    // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
-    insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
     StickerDeps &
     TechDeps,
@@ -83,8 +74,6 @@ export function paletteCategoryTabs(
     categories,
     pendingDraw,
     tileActions,
-    esBoardControls,
-    insertLibraryShape,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -109,8 +98,6 @@ export function paletteCategoryTabs(
   const bodyFor = (c: ResolvedPaletteCategory): React.ReactNode => {
     const tiles = c.tiles ?? [];
     switch (c.id) {
-      case 'my-shapes':
-        return <PaletteMyShapesTab onInsert={insertLibraryShape} />;
       case 'icons':
         return (
           <IconPickerTab
@@ -156,8 +143,6 @@ export function paletteCategoryTabs(
         );
       case 'devices':
         return <DevicePickerTab {...tab} tiles={tiles} />;
-      case 'event-storming':
-        return <PaletteEventStormingTab {...tab} tiles={tiles} board={esBoardControls} />;
       case 'media':
         return <PaletteMediaTab {...tab} tiles={tiles} />;
       case 'components':

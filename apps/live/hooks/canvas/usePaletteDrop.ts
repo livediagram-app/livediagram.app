@@ -3,7 +3,7 @@
 // Palette drag-drop onto the canvas, lifted out of Canvas. Accepts drops
 // carrying a palette shape / line-art icon / tech-icon / sticker MIME,
 // converts the drop point to world-space canvas coords, and dispatches
-// onDropPalette (and dropped files to onDropPhoto / onDropFile). Returns the
+// onDropPalette (and dropped files to onDropFile). Returns the
 // onDragOver / onDrop handlers to spread onto the
 // canvas <main>.
 
@@ -16,14 +16,9 @@ import { STICKER_DND_MIME } from '@/lib/stickers';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { overFloatingPanel } from '@/lib/canvas-pointer';
-import {
-  LIBRARY_SHAPE_DND_MIME,
-  readLibraryShapeRef,
-  type LibraryShapeRef,
-} from '@/lib/shape-library-dnd';
 
 type PaletteDropDeps = {
-  // 'sticky' rides beside the shape kinds (docs/specs/021-event-storming/event-storming.md): a sticky is its own
+  // 'sticky' rides beside the shape kinds: a sticky is its own
   // element type, and the drop needs to build one rather than a shape.
   onDropPalette?: (
     kind: ShapeKind | 'sticky',
@@ -36,36 +31,18 @@ type PaletteDropDeps = {
   // double-click add path: its rect already bakes in zoom, pan AND the
   // origin-center pivot, so dividing by zoom yields world coords directly.
   wrapperRef: RefObject<HTMLElement | null>;
-  // A photo dropped on an EVENT-STORMING board is a piece of wall, not a
-  // picture (docs/specs/021-event-storming/event-storming.md Phase 8): it is read, and nothing becomes an image
-  // element. Supplied only on such a board with the model configured, so
-  // every other tab — and this one without a key — keeps today's behaviour
-  // exactly, which is that a dropped file does nothing here at all.
-  onDropPhoto?: (file: File) => void;
-  // Any other file dropped on the canvas, with the canvas point it was released at: an Excalidraw
-  // file or export lands there as its scene (docs/specs/020-import-export/excalidraw-import-export.md
-  // "Paste"). Absent where the canvas takes no files.
+  // Any other file dropped on the canvas, with the canvas point it was released at: an image lands
+  // there as an image element (docs/specs/008-canvas/canvas-and-palette.md). Absent where the
+  // canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // A shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md), with the
-  // canvas point it was released at. Absent where nothing can be placed.
-  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
 };
 
 export function usePaletteDrop({
   onDropPalette,
   viewportZoom,
   wrapperRef,
-  onDropPhoto,
   onDropFile,
-  onDropLibraryShape,
 }: PaletteDropDeps) {
-  // The one file the drop would read, or null. `image/*` only, and only when
-  // the board is one that reads photos.
-  const photoFrom = (e: ReactDragEvent<HTMLElement>): File | null => {
-    if (!onDropPhoto) return null;
-    const file = e.dataTransfer.files?.[0];
-    return file && file.type.startsWith('image/') ? file : null;
-  };
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
     // Something inside the canvas already took this drag (a folder in the Explorer panel taking a dragged
     // document, docs/specs/013-workspace/folders.md "Drag-and-drop"): it is that target's, so the guard below must
@@ -83,9 +60,9 @@ export function usePaletteDrop({
     // A Plan card from the palette opens a gap in the board column under the pointer
     // (docs/specs/026-plan/plan-mode.md "The palette").
     planCardDragOver(e.clientX, e.clientY);
-    // A file (a photo on an event-storming board, an Excalidraw file) is accepted the same way a tile is,
+    // A file (an image) is accepted the same way a tile is,
     // so the cursor says it will land rather than showing the no-drop sign.
-    if ((onDropPhoto || onDropFile) && e.dataTransfer.types.includes('Files')) {
+    if (onDropFile && e.dataTransfer.types.includes('Files')) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
       return;
@@ -95,8 +72,7 @@ export function usePaletteDrop({
       e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
       e.dataTransfer.types.includes(ICON_DND_MIME) ||
       e.dataTransfer.types.includes(TECH_ICON_DND_MIME) ||
-      e.dataTransfer.types.includes(STICKER_DND_MIME) ||
-      (onDropLibraryShape && e.dataTransfer.types.includes(LIBRARY_SHAPE_DND_MIME))
+      e.dataTransfer.types.includes(STICKER_DND_MIME)
     ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
@@ -113,33 +89,12 @@ export function usePaletteDrop({
     // `kind` or `kind|choice` — the creation-time choice a split tile
     // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
     // dragged Poll tile dropped a timer.
-    // A photograph of the wall, read rather than placed (docs/specs/021-event-storming/event-storming.md Phase 8).
-    const photo = photoFrom(e);
-    if (photo) {
-      e.preventDefault();
-      onDropPhoto?.(photo);
-      return;
-    }
     const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
     if (file) {
       e.preventDefault();
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect) return;
       onDropFile?.(file, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
-      return;
-    }
-    const libraryShape = onDropLibraryShape ? e.dataTransfer.getData(LIBRARY_SHAPE_DND_MIME) : '';
-    if (libraryShape) {
-      e.preventDefault();
-      const ref = readLibraryShapeRef(libraryShape);
-      const rect = wrapperRef.current?.getBoundingClientRect();
-      if (!ref || !rect) {
-        console.warn('[shape-libraries] drop ignored', {
-          reason: ref ? 'no canvas' : 'bad payload',
-        });
-        return;
-      }
-      onDropLibraryShape?.(ref, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
       return;
     }
     const payload = e.dataTransfer.getData(PALETTE_DND_MIME);
@@ -160,7 +115,7 @@ export function usePaletteDrop({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
     const raw = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    // Land where the ghost + guides promised (docs/specs/021-event-storming/event-storming.md): the alignment snap
+    // Land where the ghost + guides promised: the alignment snap
     // the drag latched onto, not the raw cursor. Cleared immediately so a
     // later drag can't inherit a stale offset.
     const snap = getPaletteDragSnap();

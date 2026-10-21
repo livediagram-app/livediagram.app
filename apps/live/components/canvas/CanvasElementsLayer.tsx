@@ -39,9 +39,7 @@ import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import { useSheetChartRenderer, type BoxedShared } from '@/components/canvas/sheet-chart-renderer';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
-import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PageClip } from '@/components/canvas/PageClip';
 import { WireframeDeviceOverlays } from '@/components/canvas/WireframeDeviceOverlays';
@@ -51,7 +49,6 @@ import {
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@liveplanner/document';
-import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -344,12 +341,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Insert-between preview (docs/specs/021-event-storming/event-storming.md): while a palette drag hovers a gap on an
-  // event-storming board, the elements at and after the insertion point RENDER
-  // shifted right to show the slot opening — see useInsertShift.
-  const insertShift = useInsertShift();
-  // Session-local view state for an open photo draft (docs/specs/021-event-storming/event-storming.md Phase 8).
-  const draftView = usePhotoDraftView();
   // Paint order (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
@@ -604,9 +595,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               isPaintMode={isPaintMode}
               tabLocked={tabLocked}
               readOnly={readOnly}
-              insertShift={insertShift}
               shiftDupGhostIds={shiftDupGhostIds}
-              draftView={draftView}
               tabVote={tabVote}
               tabLayers={tabLayers}
               remoteSelectionsByElement={remoteSelectionsByElement}
@@ -632,45 +621,42 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             />
           ) : null}
 
-          {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
-          <GifOmit>
-            {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+          {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}
-            {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-              <DrawnArrowPreview
-                arrow={props.previewDrawnArrow(
-                  props.pendingDraw,
-                  drawDrag.startX,
-                  drawDrag.startY,
-                  drawDrag.currentX,
-                  drawDrag.currentY,
-                )}
-                elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-                occluders={drawnElements}
-                draftLayout={arrowLabels.draftLayout}
-                fontFamily={tabFontStack}
-                withDefs={!hasArrows}
-              />
-            ) : null}
+          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+            <DrawnArrowPreview
+              arrow={props.previewDrawnArrow(
+                props.pendingDraw,
+                drawDrag.startX,
+                drawDrag.startY,
+                drawDrag.currentX,
+                drawDrag.currentY,
+              )}
+              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+              occluders={drawnElements}
+              draftLayout={arrowLabels.draftLayout}
+              fontFamily={tabFontStack}
+              withDefs={!hasArrows}
+            />
+          ) : null}
 
-            {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+          {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
-            <AgentFocusOverlay elements={elements} />
+          <AgentFocusOverlay elements={elements} />
 
-            {remoteCursors.map((c) => (
-              <ZoomedRemoteCursor key={c.id} cursor={c} />
-            ))}
+          {remoteCursors.map((c) => (
+            <ZoomedRemoteCursor key={c.id} cursor={c} />
+          ))}
 
-            {/* Laser overlay sits inside the viewport-transformed wrapper
+          {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-            <ZoomedLaserOverlay trails={laserTrails} />
+          <ZoomedLaserOverlay trails={laserTrails} />
 
-            {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+          {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
-            <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
-          </GifOmit>
+          <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
@@ -679,19 +665,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               selectionInput={props.selectionInput}
               tabId={props.activeTabId ?? ''}
               elements={elements}
-              editingId={editingId}
-              nextNote={
-                props.esBoard && props.onAddNextNote
-                  ? {
-                      blocked:
-                        readOnly ||
-                        tabLocked ||
-                        props.createBlocked === true ||
-                        insertShift.animates,
-                      onAdd: props.onAddNextNote,
-                    }
-                  : null
-              }
               pluses={{
                 quickRingOpen,
                 setQuickRingOpen,

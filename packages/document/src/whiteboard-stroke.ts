@@ -38,9 +38,6 @@ const STYLE_FIELDS = [
   'penColour',
   'layerId',
   'opacity',
-  'animation',
-  'animationSpeed',
-  'animationRepeat',
 ] as const satisfies readonly (keyof FreehandElement)[];
 
 // Fields only one piece can carry, so they go with the longest.

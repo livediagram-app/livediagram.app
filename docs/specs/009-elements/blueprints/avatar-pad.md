@@ -16,13 +16,11 @@ Scope, by file:
 | `packages/document/src/behaviour-shapes.ts`                     | In `BEHAVIOUR_SHAPES`; no shared settings `…`                                   |
 | `packages/document/src/data-shapes.ts`, `element-types.ts`      | Self-drawing, untyped: no label, no caret                                       |
 | `packages/document/src/colors.ts`                               | Transparent skin; in `SELF_PAINTING_SHAPES`                                     |
-| `packages/document/src/animation-membership.ts`                 | Wordless                                                                        |
 | `packages/document/src/svg-render-faces.ts`                     | `avatarPadArt`: the export pixels                                               |
 | `apps/live/components/canvas/avatar-sprite-palette.ts`          | Re-exports the sprite tones from `AVATAR_PALETTE`                               |
 | `apps/live/components/canvas/collab/AvatarPadView.tsx`          | The canvas pixels; the shimmering lights group                                  |
 | `apps/live/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                          |
 | `apps/live/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                        |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                            |
 | `apps/live/lib/avatar-pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants           |
 | `apps/live/hooks/canvas/useAvatarWalk.ts`                       | Entry order: pad, button, remembered spot, view centre; camera; telemetry       |
 | `apps/live/hooks/canvas/useAvatarPadArrivals.ts`                | Arrivals from presence: own and peers'                                          |

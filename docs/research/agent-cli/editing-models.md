@@ -52,8 +52,7 @@ What works well and should carry over:
 - Positions preserved; only touched elements are normalised (`normaliseElement`).
 - `update` is a shallow merge (`mergeElementUpdate` in `packages/document/src/element-normalise.ts`), close
   to JSON Merge Patch at the top level.
-- Off-vocabulary shape kinds are coerced; lanes are kept painting behind (`lanesToFront`);
-  event-storming arrivals land on lanes (`landMcpArrivals`).
+- Off-vocabulary shape kinds are coerced; lanes are kept painting behind (`lanesToFront`).
 
 Gaps an agent will hit, each verified in the code:
 
@@ -334,8 +333,6 @@ make room, and it reports every such move.
   outside along the nearest edge). `tidy` first lays the members out compactly with the layout
   engine, keeping their top-left, which is what "reorganise a section" usually means. The frame goes
   behind its members in z-order (`layers.ts` frame rank).
-- **Lanes and event-storming tabs**: lanes stay first in z-order (`lanesToFront`); workshop notes
-  land on lanes (`landMcpArrivals`), as the MCP does today.
 - **Coordinates the agent sees are rounded and offset** to the tab's content origin (tldraw's
   offset-and-round), so numbers are short; the engine converts back, and untouched elements keep their
   exact stored values because `set` touches only named fields.

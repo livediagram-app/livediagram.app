@@ -20,7 +20,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Page background             | `PageBackground` (`{ fill?: PageFill; pattern?: PagePattern }`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Fill                        | `PageFill` (`{ kind: 'solid'; color }` \| `{ kind: 'gradient'; from; to; angle }` \| `PageImageFill`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Picture fill                | `PageImageFill` (`{ kind: 'image'; imageId; tone?; overlay?: PageImageOverlay; position?: PageImagePosition; credit?: ImageCredit; preview? }`), `PageImageOverlay` (`{ kind: PageImageOverlayKind; strength; color? }`), `PageImageOverlayKind` (`'light' \| 'dark' \| 'tint' \| 'fade'`), `PageImagePosition` (`'top' \| 'bottom'`, absent is centre), `isPageImageId`, `parsePageImageFill`, `samePageImage`, `pageImageTone`, `pageImageOverlayColor`, `mixHex`, `defaultPageImageOverlay`, `pageImageIds`, `withPageImageIds`, `packages/document/src/page-image.ts`                                                                                |
+| Picture fill                | `PageImageFill` (`{ kind: 'image'; imageId; tone?; overlay?: PageImageOverlay; position?: PageImagePosition }`), `PageImageOverlay` (`{ kind: PageImageOverlayKind; strength; color? }`), `PageImageOverlayKind` (`'light' \| 'dark' \| 'tint' \| 'fade'`), `PageImagePosition` (`'top' \| 'bottom'`, absent is centre), `isPageImageId`, `parsePageImageFill`, `samePageImage`, `pageImageTone`, `pageImageOverlayColor`, `mixHex`, `defaultPageImageOverlay`, `pageImageIds`, `withPageImageIds`, `packages/document/src/page-image.ts`                                                                                                                |
 | Picture paint               | `pageImageOverlayCss`, `pageImagePositionCss`, `pageImageCssUrl`, `pageImageSrc`, `pageImageSvg` (`apps/live/lib/page-image-paint.ts`); `sampleImageTone`, `averageTone` (`apps/live/lib/page-image-tone.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Picture access and sources  | `PageImageAccessProvider`, `usePageImageAccess`, `usePageImageSources` (`apps/live/components/canvas/page-image-access.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Image category              | `ImageBackgroundChoices`, `pageImageFilters` (`apps/live/components/canvas/page-background-image.tsx`); `themePresetAccent` (`page-paint.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -195,8 +195,7 @@ page; "template" stays the whole-tab starting point.
     `/^[A-Za-z0-9_-]{1,128}$/`, or a `data:image/(png|jpeg|gif|webp);base64,` URI); `tone` kept when
     a 6-digit hex; `overlay` kept when its kind is one of `PAGE_IMAGE_OVERLAY_KINDS` with a finite
     `strength` (clamped to 0..`PAGE_IMAGE_OVERLAY_MAX`, rounded to 0.01) and, for `tint`, a 6-digit
-    hex `color`; `position` kept when `top` or `bottom`; `credit` kept when `isImageCredit`;
-    `preview` never kept;
+    hex `color`; `position` kept when `top` or `bottom`;
   - `pattern` kept when one of `PAGE_PATTERNS`; a background with neither fill nor pattern is
     dropped;
   - `name` trimmed and cut to `PAGE_NAME_MAX`; empty is dropped;
@@ -398,7 +397,7 @@ with content copied in; geometry and look are always the placed element's.
   a line's glyphs at `GLYPH_WIDTH` or `BOLD_GLYPH_WIDTH` of px), else the largest factor in
   [`MIN_SHRINK`, 1] that fits (12 bisection steps), rounded to 0.01.
 - Pictures: `previous` images with an `imageId`, largest area first, into `placed` images largest
-  first: `IMAGE_CONTENT` (`imageId`, `naturalWidth`, `naturalHeight`, `credit`, `alt`) and
+  first: `IMAGE_CONTENT` (`imageId`, `naturalWidth`, `naturalHeight`, `alt`) and
   `objectFit: 'cover'`.
 - Shapes: `previous` shapes with content (`hasContent`: a non-blank string or any value in
   `SHAPE_CONTENT`) and a non-placeholder `contentKey`, in reading order, each into the next free
@@ -459,7 +458,7 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
   fill are entered. `PageClip` wraps the element views in `PageSurfacesProvider`, whose
   value keeps its identity while the entries do (keyed on `id:surface` pairs).
 - `useElementSurface(id)`: the page's surface, else the canvas's; used by `BoxedElementView`,
-  `TableView`, `useBoxedElementAnimation`, `ArrowView`, `ElementFaceRouter` (the faces' own fills and accents).
+  `TableView`, `ArrowView`, `ElementFaceRouter` (the faces' own fills and accents).
 - Re-inking (`pageInkFor`, spec "Re-inking"; `pagesInkFor` for several pages, which lays out the
   pages, indexes the elements and sorts them onto their pages once, then inks each page in `inks`
   order with one memory, pruned once at the end): the page's elements in paint
@@ -519,25 +518,21 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
   "Surfaces and ink" runs in the same commit), `onPreview(fill | null)` its preview store.
 - Access: `Canvas` wraps `CanvasPages` in `PageImageAccessProvider access={props.imageContext}`;
   without it the category says "Pictures are not available here." and a sheet paints the tone.
-- Without a picture: `ImageSearchPane` with `filters = pageImageFilters(page)` (`pageDimensions`:
-  equal sides `square`, wider `wide`, else `tall`; `size: 'large'`), `columns={3}`,
-  `autoFocus={false}`, `onPreview`, `onPicked`; then a hidden file input (`UPLOAD_ACCEPT_ATTR`)
+- Without a picture: `PageGalleryPicker` (Choose From My Images); then a hidden file input (`UPLOAD_ACCEPT_ATTR`)
   behind **Upload an Image** (`Uploading…` while busy; an `ImageUploadError`'s message, else
   "Upload failed.", in the rose error box). With one: `CurrentPicture` (a strip from
-  `useImageBlobUrl`, **Remove** = `onPick(undefined)`), `ImageCreditRow` when `credit`, **Overlay**
+  `useImageBlobUrl`, **Remove** = `onPick(undefined)`), **Overlay**
   tiles (None, Light, Dark, Tint, Fade; a sample sky under each), **Strength** (`MenuSliderRow`
   0..90 step 5, preview on change, one commit on release when changed; absent for None),
   **Position** tiles (Top, Centre, Bottom; Centre deletes `position`), then **Replace Image** (local
-  `replacing` state) revealing the search and upload under a Replace Image heading; landing a
+  `replacing` state) revealing the gallery pick and upload under a Replace Image heading; landing a
   picture closes it.
 - The overlay a new picture takes: the page's, else `defaultPageImageOverlay(useCanvasSurface() ===
 'dark')`. A Tint takes the overlay's own colour when already a tint, else `accent`; a kind change
   keeps the strength.
-- A hovered result previews `{ kind: 'image', imageId: current ?? 'preview', preview: thumbnail,
-overlay, position }`; leaving the grid previews null.
-- Landing (`land`): `tone = sampleImageTone(thumbnail, or the file's object URL) ??
+- Landing (`land`): `tone = sampleImageTone(the file's object URL) ??
 storedTone(imageId)` (the stored bytes, by `apiFetchImageBlobUrl` or the inline URI), then
-  `onPick({ kind: 'image', imageId, tone?, overlay?, position?, credit? })` and
+  `onPick({ kind: 'image', imageId, tone?, overlay?, position? })` and
   `track('Tab', 'Changed', 'PageBackgroundImage')`.
 - Sheet paint: `CanvasPages` calls `usePageImageSources(pages)` once and passes it to
   `pageSheetStyle(background, ruling, resolve)`: layers top to bottom the pattern, the overlay
@@ -1186,7 +1181,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | Telemetry: the kind events, Fit to Content                                                                                                                                                                                                                                  | `page-edits.test.ts` ("SlidePageAdded", "PageKindSlide", "LogoPageAdded", "PageKindLogo"); `usePagesMode.into-pages.test.ts` ("PageFitToContent")                                                                                                                                                                                                                                                                                                                       |
 | Image backgrounds: parse, safe ids, logo drop, tone under the overlay, ids and re-homing                                                                                                                                                                                    | `packages/document/src/page-image.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Image backgrounds: sheet layers, CSS url guard, overlay and crop, export SVG and the page frame                                                                                                                                                                             | `apps/live/lib/page-image-paint.test.ts`; `apps/live/lib/page-image-tone.test.ts`; `apps/live/lib/export-tab-images.test.ts` "loads a page's picture"                                                                                                                                                                                                                                                                                                                   |
-| Image backgrounds: the category (not on a logo page), filters, hover preview, one-edit pick, overlay, strength, position, credit, Remove                                                                                                                                    | `apps/live/components/canvas/page-background-image.test.tsx`; `apps/live/components/panels/ImageSearchPane.test.tsx` "for a page background"; `apps/live/lib/image-search/openverse.test.ts`, `search.test.ts` (filters)                                                                                                                                                                                                                                                |
+| Image backgrounds: the category (not on a logo page), one-edit pick, overlay, strength, position, Remove                                                                                                                                                                    | `apps/live/components/canvas/page-background-image.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Image backgrounds: references (retention, grants), Offline Mode, agents                                                                                                                                                                                                     | `apps/api/src/image-refs/extract.test.ts` "page background picture"; `apps/api/src/db/image-refs.test.ts` (SQL parity corpus); `apps/live/lib/offline/offline-images.test.ts` "re-homes a page background"; `packages/edit-operations/src/pages/page-changes.test.ts` "keeps a picture background", `summary.test.ts`                                                                                                                                                   |
 
 Gaps (no unit test; browser-checked or uncovered):
