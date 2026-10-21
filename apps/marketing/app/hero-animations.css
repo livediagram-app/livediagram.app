@@ -1,14 +1,12 @@
 /* Hero illustration animations (landing page), split out of globals.css to
    keep each file under the ~1000-line budget. Imported from globals.css. */
 
-/* The editor's canvas for every diagram in the mock-ups, here and in the feature art
+/* The editor's canvas for every mock-up, here and in the feature art
    (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md): the
    Default colour scheme (packages/document/src/themes-data.ts, canvas-colors.ts), light half under
    :root and dark half under .dark, and the colours packages/document/src/colors.ts gives an
    unpainted element on it: a shape's ink, a text element, an arrow and its label, a table's
-   grid, and the shade a heading band or marker takes above a shape. The --art-pick-* set is the
-   green the theme picker gives a shape (Forest in light, Pine in dark), which the Diagram window's
-   recoloured step takes. app/dark-art.test.ts holds
+   grid, and the shade a heading band or marker takes above a shape. app/dark-art.test.ts holds
    every value to its source. Markup reads them through utilities, keyframes through var(). */
 :root {
   --art-paper: #fbfaf7;
@@ -21,11 +19,6 @@
   --art-arrow: #334155;
   --art-arrow-label: #334155;
   --art-table-line: #94a3b8;
-  --art-pick-paper: #f0fdf4;
-  --art-pick-grid: #bbf7d0;
-  --art-pick-fill: #dcfce7;
-  --art-pick-stroke: #15803d;
-  --art-pick-text: #14532d;
 }
 .dark {
   --art-paper: #0d121a;
@@ -38,11 +31,6 @@
   --art-arrow: #64748b;
   --art-arrow-label: #94a3b8;
   --art-table-line: #64748b;
-  --art-pick-paper: #14532d;
-  --art-pick-grid: #166534;
-  --art-pick-fill: #166534;
-  --art-pick-stroke: #86efac;
-  --art-pick-text: #dcfce7;
 }
 
 /* The window fade (docs/specs/019-marketing/marketing-site.md): a light-grey veil, solid at the very start,

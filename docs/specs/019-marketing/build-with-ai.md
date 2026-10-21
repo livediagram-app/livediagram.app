@@ -2,7 +2,7 @@
 
 Status: shipped
 
-`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a diagram in liveplanner" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
+`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a board in liveplanner" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points
 
@@ -12,11 +12,11 @@ Status: shipped
 
 ## The page, top to bottom
 
-1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in liveplanner", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.liveplanner.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the liveplanner tool, and the shared `DiagramBuildAnimation` drawing the result with its cursor labelled "AI". Reduced motion shows the finished picture.
-2. **Three steps** (`#how-it-works`), one row: **Add liveplanner** (paste the address into your tool), **Approve** (a liveplanner page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
+1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in liveplanner", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.liveplanner.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble asking for a launch board, a tool-call chip naming the liveplanner tool (`change_items`), and the board it made: three columns of cards, the newest outlined in the brand violet as the AI's. It is static, so reduced motion needs nothing.
+2. **Three steps** (`#how-it-works`), one row: **Add liveplanner** (paste the address into your tool), **Approve** (a liveplanner page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a board, a sheet, a form or a whole plan; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
-4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
-5. **What it can do**: a grid of the MCP's capabilities in plain words (diagrams from a description or Mermaid, templates and Plan boards, Sheets, slides, articles and logos, find and read with a picture, share links, live changes on an open canvas with Undo).
+4. **Try it** (`#prompts`): six starter prompts about planning (a launch board, notes into cards, a budget sheet, a feedback form, card types, catching up on a plan), each a card with a Copy button, each mapped to a shipped MCP tool.
+5. **What it can do**: a grid of the MCP's capabilities in plain words (boards and cards, card types and fields, sheets, forms, templates and tabs, find and read, share links, live changes in an open project with Undo).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, liveplanner runs no AI model of its own.
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) plus self-hosting (use your own MCP host), and a link to the full help article.
 
@@ -40,13 +40,13 @@ Third-party menu names drift, so a client whose menus are known to move (ChatGPT
 
 ## Behaviour
 
-- **Copy** buttons use `navigator.clipboard.writeText` and `useCopiedFlash`: the label turns to "Copied" with a check for two seconds and a polite live region beside the button (never inside it, where a button's children are not read as a region) announces it. A button's accessible name starts with the words it shows ("Copy prompt: Map a codebase"), so it can be named by voice. A blocked clipboard leaves the button as it was; the text is always selectable. A command's `$ ` prompt is drawn by CSS, so selecting and copying the block by hand never takes it along.
+- **Copy** buttons use `navigator.clipboard.writeText` and `useCopiedFlash`: the label turns to "Copied" with a check for two seconds and a polite live region beside the button (never inside it, where a button's children are not read as a region) announces it. A button's accessible name starts with the words it shows ("Copy prompt: Plan a launch"), so it can be named by voice. A blocked clipboard leaves the button as it was; the text is always selectable. A command's `$ ` prompt is drawn by CSS, so selecting and copying the block by hand never takes it along.
 - **Tabs** follow the WAI-ARIA tabs pattern: `role="tablist"`, roving `tabIndex`, the arrow keys (either pair) and Home/End move and select, each tab `aria-controls` its panel. The list's `aria-orientation` follows its layout: vertical down the side from `lg`, horizontal across the top below it. Its group headings cannot sit in a tablist, so each tab is `aria-describedby` its group's heading. A link to `/ai#<client>` opens on that client in the hydrating render, before paint; the static HTML itself shows the first client until the page's script runs.
 - **One-click links** (`cursor:`, `vscode:`) open the editor app when it is installed; the manual config sits right under each, so nothing depends on the link.
 
 ## Share roles
 
-The page is public marketing, outside any document, so Editor, Participant and Viewer do not apply. What the connected AI may do is the token's business ([MCP server §4.11](../015-api/mcp-server.md#411-read-only-tokens-the-one-scope)).
+The page is public marketing, outside any project, so Editor, Participant and Viewer do not apply. What the connected AI may do is the token's business ([MCP server §4.11](../015-api/mcp-server.md#411-read-only-tokens-the-one-scope)).
 
 ## Funnel and telemetry
 
@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art is static markup, with no animation.

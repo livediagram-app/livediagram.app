@@ -8,22 +8,22 @@ const DIR = fileURLToPath(new URL('.', import.meta.url));
 
 describe('Cursor', () => {
   it('draws the arrow at its own scale, with no transform at the base size', () => {
-    expect(renderToStaticMarkup(<Cursor color="#0ea5e9" />)).not.toContain('transform');
-    expect(renderToStaticMarkup(<Cursor color="#0ea5e9" size={11.5} />)).toContain(
+    expect(renderToStaticMarkup(<Cursor color="#8b5cf6" />)).not.toContain('transform');
+    expect(renderToStaticMarkup(<Cursor color="#8b5cf6" size={11.5} />)).toContain(
       'transform="scale(1.15)"',
     );
   });
 
   it('hangs the name tag below and right, or above and left when flipped', () => {
     const tag = (flip: boolean) =>
-      renderToStaticMarkup(<Cursor color="#0ea5e9" name="Sam" flip={flip} />);
+      renderToStaticMarkup(<Cursor color="#8b5cf6" name="Sam" flip={flip} />);
     expect(tag(false)).toContain('translate(7 10)');
     expect(tag(true)).toContain('translate(-20.6 -9)');
     expect(tag(true)).toContain('>Sam</text>');
   });
 
   it('leaves the tag out when nobody is named', () => {
-    expect(renderToStaticMarkup(<Cursor color="#0ea5e9" />)).not.toContain('<rect');
+    expect(renderToStaticMarkup(<Cursor color="#8b5cf6" />)).not.toContain('<rect');
   });
 });
 

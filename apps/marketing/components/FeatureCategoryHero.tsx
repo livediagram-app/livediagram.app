@@ -42,7 +42,7 @@ export function FeatureCategoryHero({ section }: { section: LandingSection }) {
             {section.description}
           </p>
           <div className="enter mt-8" style={delay(3)}>
-            <CtaLink href={ctaHref('/new', 'Feature.Hero')}>Start drawing</CtaLink>
+            <CtaLink href={ctaHref('/new', 'Feature.Hero')}>Start planning</CtaLink>
           </div>
         </div>
 

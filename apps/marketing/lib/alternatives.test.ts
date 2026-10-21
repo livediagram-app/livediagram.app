@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ALTERNATIVES, ALTERNATIVE_SLUGS, getAlternative } from './alternatives';
 
@@ -135,18 +137,57 @@ describe('getAlternative', () => {
   it('returns undefined for an unknown slug (not throw, not the first entry)', () => {
     // The page calls getAlternative(slug) at render time and
     // routes notFound() when undefined. A regression that returned
-    // ALTERNATIVES[0] as a default would show a Miro page under
+    // ALTERNATIVES[0] as a default would show a Trello page under
     // /alternatives/some-typo, which Google would index as a
-    // duplicate of the real /alternatives/miro.
+    // duplicate of the real /alternatives/trello.
     expect(getAlternative('this-competitor-does-not-exist')).toBeUndefined();
     expect(getAlternative('')).toBeUndefined();
   });
 
   it('is case-sensitive (matches the URL-safe lowercase slug)', () => {
     // generateStaticParams emits the exact lowercase slug; a
-    // case-insensitive lookup would let /alternatives/MIRO render
-    // the Miro page as a non-canonical URL.
+    // case-insensitive lookup would let /alternatives/TRELLO render
+    // the Trello page as a non-canonical URL.
     const first = ALTERNATIVES[0]!;
     expect(getAlternative(first.slug.toUpperCase())).toBeUndefined();
+  });
+});
+
+// The comparisons liveplanner retired when it became a planner (docs/specs/019-marketing/comparison-pages.md
+// "Retired comparisons") redirect permanently to the hub from public/_redirects, so old links and search
+// results keep landing, and a live comparison is never redirected away from itself.
+describe('retired comparison pages', () => {
+  const RETIRED = [
+    'microsoft-whiteboard',
+    'miro',
+    'xmind',
+    'excalidraw',
+    'drawio',
+    'google-slides',
+    'figjam',
+    'lucidchart',
+  ];
+  const rules = readFileSync(
+    fileURLToPath(new URL('../public/_redirects', import.meta.url)),
+    'utf8',
+  )
+    .split('\n')
+    .filter((line) => line.trim() && !line.startsWith('#'))
+    .map((line) => line.trim().split(/\s+/));
+
+  it('redirects every retired slug, with and without a trailing slash, to the hub', () => {
+    for (const slug of RETIRED) {
+      for (const from of [`/alternatives/${slug}`, `/alternatives/${slug}/`]) {
+        const rule = rules.find(([source]) => source === from);
+        expect(rule, from).toBeDefined();
+        expect(rule![1]).toBe('/alternatives');
+        expect(rule![2]).toBe('301');
+      }
+    }
+  });
+
+  it('never redirects a live comparison', () => {
+    const sources = new Set(rules.map(([source]) => source!.replace(/\/$/, '')));
+    for (const slug of ALTERNATIVE_SLUGS) expect(sources.has(`/alternatives/${slug}`)).toBe(false);
   });
 });

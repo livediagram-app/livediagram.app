@@ -16,13 +16,13 @@ import { EYEBROW } from '@/components/eyebrow';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 
-// Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a diagram in
+// Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a board in
 // liveplanner" in the fewest steps. One client island (the picker and the copy buttons); the rest is static.
 
 export const metadata = pageMetadata({
   title: 'Build with AI · liveplanner',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to liveplanner in a minute, then ask your AI for diagrams, boards, sheets and decks.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to liveplanner in a minute, then ask your AI to plan the work: boards, cards, sheets and forms.',
   path: '/ai',
 });
 
@@ -64,7 +64,7 @@ export default function BuildWithAiPage() {
         >
           <span
             aria-hidden
-            className="absolute inset-0 [background-image:radial-gradient(rgb(14_165_233/0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
+            className="absolute inset-0 [background-image:radial-gradient(rgb(124_58_237/0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
           />
           <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 pt-14 pb-16 sm:px-6 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:pb-20">
             <div className="min-w-0">
@@ -78,9 +78,9 @@ export default function BuildWithAiPage() {
                 Your AI, building in liveplanner
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-                Connect the AI tool you already use, then ask it for a diagram, a board, a sheet or
-                a deck. It lands in your account, ready to edit together. Set up takes about a
-                minute.
+                Connect the AI tool you already use, then ask it for a board, a sheet, a form or a
+                whole plan. It lands in your account, ready to work on together. Set up takes about
+                a minute.
               </p>
               <div className="mt-8">
                 <McpAddressCard />
@@ -195,7 +195,7 @@ export default function BuildWithAiPage() {
               </h2>
               <p className={BAND_LEAD}>
                 Connecting needs a free liveplanner account, so your AI&apos;s work is saved to you.
-                The canvas itself never needs one.
+                Planning on your own never needs one.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a

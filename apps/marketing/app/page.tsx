@@ -4,7 +4,7 @@ import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { PrivacySection } from '@/components/PrivacySection';
 import { PromisePrism } from '@/components/PromisePrism';
-import { StartDrawingCta } from '@/components/StartDrawingCta';
+import { StartPlanningCta } from '@/components/StartPlanningCta';
 import { StoryBeat } from '@/components/StoryBeat';
 import { LANDING_SECTIONS } from '@/lib/landing-content';
 // Lazy-load TemplateGallery: the `'use client'` gallery (search state +
@@ -17,7 +17,7 @@ const TemplateGallery = dynamic(() =>
 );
 
 // The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
-// diagram, its promises (built with your values in mind), then a beat per core feature, each
+// project, its promises (built with your values in mind), then a beat per core feature, each
 // linking into its own category page.
 export default function LandingPage() {
   return (
@@ -31,7 +31,7 @@ export default function LandingPage() {
           <StoryBeat key={section.id} section={section} index={index} />
         ))}
         <PrivacySection />
-        <StartDrawingCta surface="Home" />
+        <StartPlanningCta surface="Home" />
       </main>
       <Footer />
     </>

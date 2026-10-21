@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { REPO_URL } from '@liveplanner/ui';
 import { PROMISES } from '@/lib/promises';
 import { PromisePrism } from './PromisePrism';
-import { StartDrawingCta } from './StartDrawingCta';
+import { StartPlanningCta } from './StartPlanningCta';
 
 // docs/specs/019-marketing/marketing-site.md "Promises" and "Closing CTA".
 describe('the promises', () => {
@@ -28,7 +28,7 @@ describe('the promises', () => {
 
 describe('the closing band', () => {
   it('reports every link into the editor as the page’s Closing slot, with no blank launcher', () => {
-    render(<StartDrawingCta surface="Feature" />);
+    render(<StartPlanningCta surface="Feature" />);
     expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual([
       '/new?via=Feature.Closing',
       '/#templates',

@@ -36,7 +36,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Editor (live app)',
     description:
-      'The diagram editor at https://liveplanner.app/new. Static export served by a Cloudflare Worker.',
+      'The planner at https://liveplanner.app/new. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'Telemetry dashboard',
@@ -56,17 +56,17 @@ const COMPONENTS: Component[] = [
   {
     name: 'Realtime room',
     description:
-      'Per-document Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
+      'Per-project Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
   },
   {
     name: 'Database',
     description:
-      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links, telemetry events.',
+      'Cloudflare D1 (SQLite at the edge). Holds projects, tabs, change logs, share links, telemetry events.',
   },
   {
     name: 'Image storage',
     description:
-      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached document snapshots.',
+      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached project snapshots.',
   },
   {
     name: 'Edge router',

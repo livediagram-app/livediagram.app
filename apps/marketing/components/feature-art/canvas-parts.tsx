@@ -195,22 +195,22 @@ export function Pill({
   y: number;
   w: number;
   label: string;
-  tone?: 'slate' | 'sky' | 'pink' | 'green' | 'amber' | 'red' | 'solid';
+  tone?: 'slate' | 'brand' | 'pink' | 'green' | 'amber' | 'red' | 'solid';
   className?: string;
   style?: CSSProperties;
 }) {
   const face = {
     slate: 'fill-slate-100 dark:fill-slate-700',
-    sky: 'fill-sky-100 dark:fill-sky-500/25',
+    brand: 'fill-brand-100 dark:fill-brand-500/25',
     pink: 'fill-pink-100 dark:fill-pink-500/25',
     green: 'fill-emerald-100 dark:fill-emerald-500/25',
     amber: 'fill-amber-100 dark:fill-amber-500/25',
     red: 'fill-rose-100 dark:fill-rose-500/25',
-    solid: 'fill-sky-500',
+    solid: 'fill-brand-600',
   }[tone];
   const ink = {
     slate: 'fill-slate-600 dark:fill-slate-300',
-    sky: 'fill-sky-700 dark:fill-sky-200',
+    brand: 'fill-brand-700 dark:fill-brand-200',
     pink: 'fill-pink-700 dark:fill-pink-200',
     green: 'fill-emerald-700 dark:fill-emerald-200',
     amber: 'fill-amber-700 dark:fill-amber-200',
@@ -232,21 +232,6 @@ export function Pill({
       </text>
     </g>
   );
-}
-
-/** A line of text standing in for a sentence: a soft bar. */
-export function TextBar({
-  x,
-  y,
-  w,
-  className = LINE,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  className?: string;
-}) {
-  return <rect className={className} x={x} y={y} width={w} height="3" rx="1.5" />;
 }
 
 // Chrome glyphs on a 10-unit grid, drawn at (x, y) in currentColor-free strokes.
@@ -304,53 +289,6 @@ export const LOCK_PATHS = (
   </>
 );
 export const FOLDER_PATHS = <path d="M1 2.6 h3 l1 1.2 h4 v4.6 h-8 z" />;
-export const CHECK_PATHS = <path d="M2.2 5.2 l1.9 1.9 l3.7 -3.9" />;
-
-// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a little pixel character standing on the
-// canvas, in its participant's shirt colour. Pure rects on a coarse grid, the editor's sprite look,
-// its feet at (x, y).
-export function PixelWalker({
-  x,
-  y,
-  shirt,
-  flag = false,
-}: {
-  x: number;
-  y: number;
-  shirt: string;
-  flag?: boolean;
-}) {
-  const s = 1.6;
-  const p = (n: number) => n * s;
-  return (
-    <g transform={`translate(${x - p(8)} ${y - p(23)})`} shapeRendering="crispEdges">
-      <ellipse
-        cx={p(8)}
-        cy={p(23)}
-        rx={p(4.6)}
-        ry={p(1.1)}
-        className="fill-slate-900/20 dark:fill-black/50"
-      />
-      <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} fill="#3f4c63" />
-      <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} fill="#3f4c63" />
-      <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} fill="#1e293b" />
-      <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} fill="#1e293b" />
-      <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} fill={shirt} />
-      <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} fill={shirt} />
-      <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} fill={shirt} />
-      <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} fill="#f4c99b" />
-      <rect x={p(3)} y={0} width={p(10)} height={p(3)} fill="#6b4423" />
-      <rect x={p(6)} y={p(5)} width={s} height={s} fill="#243044" />
-      <rect x={p(9)} y={p(5)} width={s} height={s} fill="#243044" />
-      {flag ? (
-        <>
-          <rect x={p(13)} y={p(-4)} width={s} height={p(14)} fill="#b8845a" />
-          <rect x={p(14)} y={p(-4)} width={p(6)} height={p(3.5)} fill="#f43f5e" />
-        </>
-      ) : null}
-    </g>
-  );
-}
 
 // A card's stage: the canvas Frame and the 300 by 96 drawing on it, the frame's own proportions
 // (about 304 by 96), so a scene fills the card edge to edge with a 10-unit inner margin.

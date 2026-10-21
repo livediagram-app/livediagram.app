@@ -138,7 +138,9 @@ export function PromisePrism() {
     >
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-6 py-24 sm:py-28 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="text-center lg:text-left">
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">No catch</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
+            No catch
+          </p>
           <h2
             id="promises-heading"
             className="mt-4 text-balance text-4xl font-semibold tracking-tight sm:text-5xl"
@@ -154,7 +156,7 @@ export function PromisePrism() {
               href={REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-[#0b1026] transition-colors hover:bg-sky-100"
+              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-[#0b1026] transition-colors hover:bg-violet-100"
             >
               <span className="text-optical-centre">Read the source</span>
               <ChevronRightIcon size={14} aria-hidden />
@@ -336,7 +338,7 @@ function PromiseCard({
         <a
           href={p.link.href}
           {...(p.link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300`}
+          className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300`}
           {...events}
         >
           {body}

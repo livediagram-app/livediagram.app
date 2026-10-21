@@ -3,10 +3,10 @@ import { HeroFan } from './HeroFan';
 import { HeroSearch } from './HeroSearch';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
-// what the visitor is making and takes them straight to a starting point, so it grows with the product
+// what the visitor is planning and takes them straight to a starting point, so it grows with the product
 // instead of naming one mode. A band in the brand mark's colours (@liveplanner/ui hero-band.css, shared with the help centre): the promise
 // badge, the question, the template search, then a fan along its foot:
-// templates dealt every few seconds, or a returning visitor's own documents (HeroFanMine).
+// templates dealt every few seconds, or a returning visitor's own projects (HeroFanMine).
 const BADGE =
   'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
 
@@ -27,7 +27,7 @@ export function Hero() {
             Free and open source
           </li>
           <li className={`${BADGE} max-sm:hidden`}>
-            <span aria-hidden className="h-2 w-2 rounded-full bg-sky-500" />
+            <span aria-hidden className="h-2 w-2 rounded-full bg-brand-500" />
             No sign-up to start
           </li>
         </ul>
@@ -35,14 +35,14 @@ export function Hero() {
           data-hero-anchor="title"
           className="mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
         >
-          What are you making today?
+          What are you planning today?
         </h1>
         <p
           data-hero-anchor="lead"
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
-          Pick a starting point and release what&rsquo;s inside your mind. Diagram, sketch, plan,
-          run a session or publish, then share one link and build it together.
+          Pick a starting point: a board, a sheet, a dashboard or a form. Share one link and plan
+          the work together, live.
         </p>
         <HeroSearch />
       </div>

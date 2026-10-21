@@ -34,23 +34,23 @@ export function PlanViewsArt() {
           <g key={v}>
             {i === 0 ? (
               <rect
-                className="fill-sky-100 dark:fill-sky-500/25"
+                className="fill-brand-100 dark:fill-brand-500/25"
                 x={x}
                 y={8}
                 width="36"
                 height="11"
                 rx="3"
-                fill="#e0f2fe"
+                fill="#ede9fe"
               />
             ) : null}
             <text
-              className={i === 0 ? 'fill-sky-700 dark:fill-sky-200' : MUTED}
+              className={i === 0 ? 'fill-brand-700 dark:fill-brand-200' : MUTED}
               x={x + 18}
               y={15.6}
               textAnchor="middle"
               fontSize="6"
               fontWeight={i === 0 ? 700 : 500}
-              fill={i === 0 ? '#0369a1' : '#64748b'}
+              fill={i === 0 ? '#6d28d9' : '#64748b'}
             >
               {v}
             </text>

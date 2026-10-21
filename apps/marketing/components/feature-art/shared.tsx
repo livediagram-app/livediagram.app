@@ -7,15 +7,8 @@
 
 import type { ReactNode } from 'react';
 
-// Every diagram element reads the canvas palette (app/hero-animations.css) through a
-// utility: fill-(--art-ink-fill), stroke-(--art-ink-stroke), fill-(--art-ink-text),
-// stroke-(--art-arrow) and so on, the Default scheme's light or dark half with the
-// appearance. These restate the light half for the SVG attributes underneath.
-export const PINK = '#ec4899';
-export const SKY = '#0ea5e9';
 export const VIOLET = '#8b5cf6';
 export const EMERALD = '#10b981';
-export const AMBER = '#f59e0b';
 export const ROSE = '#f43f5e';
 
 // The monospace stack code and terminal text is set in.
