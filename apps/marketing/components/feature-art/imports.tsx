@@ -1,19 +1,22 @@
-// Feature illustration: spreadsheet data coming in (the Sheets entry). Three sources, a CSV, a
-// TSV and a paste from Excel, each landing as an editable Sheet. Motion reuses the canvas card timeline (fa-a-* in
-// app/feature-art/canvas.css), which settles to the finished frame under reduced motion.
+// Feature illustration: bringing work in from other tools (the Sheets category's "Paste from Sheets
+// and Excel, CSV in and out" card). Three sources, a CSV file, an Excel workbook and cells pasted
+// from Google Sheets, each landing as a Sheet or a board on a tab. Motion reuses the canvas card
+// timeline (fa-a-* in app/feature-art/canvas.css), which settles to the finished frame under
+// reduced motion.
 import { Connector, MUTED, Panel, Scene, TEXT, at } from './canvas-parts';
 
 const SOURCES = [
-  { name: 'budget.csv', doc: 'Budget', tint: 'fill-emerald-500' },
-  { name: 'pipeline.tsv', doc: 'Pipeline', tint: 'fill-sky-500' },
-  { name: 'Pasted from Excel', doc: 'Grade book', tint: 'fill-orange-500' },
+  { name: 'tasks.csv', doc: 'Tasks', kind: 'Board', tint: 'fill-slate-500' },
+  { name: 'budget.xlsx', doc: 'Budget', kind: 'Sheet', tint: 'fill-emerald-600' },
+  // Cells pasted from Google Sheets arrive as they were copied, so they read as the range.
+  { name: 'Pasted cells', doc: 'Q3 costs', kind: 'Sheet', tint: 'fill-emerald-500' },
 ];
 
 const ROW_H = 22;
 const Y0 = 13;
 
-/** Spreadsheet data on the left, arriving as Sheets on the right. */
-export function SheetImportArt() {
+/** Files from other tools on the left, arriving as tabs of the project on the right. */
+export function BoardImportArt() {
   return (
     <Scene>
       {SOURCES.map((s, i) => {
@@ -29,7 +32,7 @@ export function SheetImportArt() {
             <g className="fa-a-in" style={at(0.2 + i * 0.25)}>
               <Connector d={`M118 ${y + 8} H 170`} head={`M166 ${y + 5} l4 3 l-4 3`} />
             </g>
-            {/* The Sheet it becomes. */}
+            {/* The tab it becomes: a Board or a Sheet, ready to work on. */}
             <g className="fa-a-pop" style={at(0.4 + i * 0.25)}>
               <Panel x={176} y={y} w={104} h={16} />
               <rect
@@ -45,7 +48,7 @@ export function SheetImportArt() {
                 {s.doc}
               </text>
               <text className={MUTED} x="274" y={y + 10.6} fontSize="5.6" textAnchor="end">
-                Editable
+                {s.kind}
               </text>
             </g>
           </g>

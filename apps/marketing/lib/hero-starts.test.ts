@@ -25,7 +25,7 @@ describe('heroSearch', () => {
 
   it('puts a title match before one found only through its description or category', () => {
     const kinds = heroSearch('retro').map((t) => t.kind);
-    expect(kinds[0]).toBe('retrospective');
+    expect(kinds[0]).toBe('team-retro');
     const titled = heroSearch('retro', 50).map((t) => t.title.toLowerCase().includes('retro'));
     // Every title match comes before every other match.
     expect(titled.indexOf(false) === -1 || titled.lastIndexOf(true) < titled.indexOf(false)).toBe(
@@ -34,7 +34,7 @@ describe('heroSearch', () => {
   });
 
   it('finds the blanks too, and through search words, as the editor does', () => {
-    expect(heroSearch('whiteboard').map((t) => t.kind)).toContain('whiteboard');
+    expect(heroSearch('spreadsheet').map((t) => t.kind)).toContain('blank-spreadsheet');
     expect(heroSearch('mortgage').map((t) => t.kind)).toContain('loan-calculator');
   });
 
@@ -45,7 +45,7 @@ describe('heroSearch', () => {
 });
 
 describe('the fan', () => {
-  it('deals from every listed template but the blanks, each once, across every mode', () => {
+  it('deals from every listed Plan template but the blanks, each once', () => {
     expect(new Set(HERO_FAN_POOL).size).toBe(HERO_FAN_POOL.length);
     expect([...HERO_FAN_POOL].sort()).toEqual(
       galleryTemplates()
@@ -53,7 +53,7 @@ describe('the fan', () => {
         .sort(),
     );
     const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
-    expect([...modes].sort()).toEqual(['diagram', 'draw', 'pages', 'plan', 'workshop']);
+    expect([...modes]).toEqual(['plan']);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
   });
@@ -67,10 +67,10 @@ describe('the fan', () => {
   });
 
   it('deals the next kind not already showing, wrapping round the pool', () => {
-    const pool = ['kanban', 'flowchart', 'mindmap'] as const;
-    expect(nextFanKind(pool, ['kanban'], 0)).toEqual({ kind: 'flowchart', at: 1 });
-    expect(nextFanKind(pool, ['flowchart'], 0)).toEqual({ kind: 'mindmap', at: 2 });
-    expect(nextFanKind(pool, ['flowchart'], 2)).toEqual({ kind: 'kanban', at: 0 });
+    const pool = ['kanban', 'okrs', 'invoice'] as const;
+    expect(nextFanKind(pool, ['kanban'], 0)).toEqual({ kind: 'okrs', at: 1 });
+    expect(nextFanKind(pool, ['okrs'], 0)).toEqual({ kind: 'invoice', at: 2 });
+    expect(nextFanKind(pool, ['okrs'], 2)).toEqual({ kind: 'kanban', at: 0 });
   });
 
   it('throws for a kind the catalogue does not list', () => {

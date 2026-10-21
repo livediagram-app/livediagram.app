@@ -1,4 +1,5 @@
-import { SITE_NAME, SITE_PITCH, renderSocialCard } from '@liveplanner/ui';
+import { SITE_NAME, renderSocialCard } from '@liveplanner/ui';
+import { MARKETING_PITCH, MARKETING_PITCH_SENTENCE } from '@/lib/site-copy';
 import { ImageResponse } from 'next/og';
 
 // Open Graph + Twitter social card (1200x630). Rendered to a static
@@ -17,10 +18,10 @@ import { ImageResponse } from 'next/og';
 // sitemap.ts use.
 
 export const dynamic = 'force-static';
-export const alt = `${SITE_NAME}: ${SITE_PITCH}`;
+export const alt = `${SITE_NAME}: ${MARKETING_PITCH}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function OpenGraphImage() {
-  return new ImageResponse(renderSocialCard(), { ...size });
+  return new ImageResponse(renderSocialCard({ subtitle: MARKETING_PITCH_SENTENCE }), { ...size });
 }

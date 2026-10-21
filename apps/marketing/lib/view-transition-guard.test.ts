@@ -28,18 +28,12 @@ function swapTo(url: string, withTransition = true) {
 
 describe('the view transition guard', () => {
   it('keeps the crossfade between two marketing pages', () => {
-    expect(swapTo(`${ORIGIN}/features/diagrams`).skipTransition).not.toHaveBeenCalled();
+    expect(swapTo(`${ORIGIN}/features/plan`).skipTransition).not.toHaveBeenCalled();
     expect(swapTo(`${ORIGIN}/`).skipTransition).not.toHaveBeenCalled();
   });
 
   it('skips it into the editor, the help centre and the dashboard, and says so', () => {
-    for (const path of [
-      '/new?via=Home.Hero',
-      '/document/abc',
-      '/explorer',
-      '/help/tabs',
-      '/telemetry',
-    ]) {
+    for (const path of ['/new?via=Home.Hero', '/explorer', '/help/tabs', '/telemetry']) {
       const { skipTransition, debug } = swapTo(`${ORIGIN}${path}`);
       expect(skipTransition).toHaveBeenCalledTimes(1);
       expect(debug).toHaveBeenCalledWith(

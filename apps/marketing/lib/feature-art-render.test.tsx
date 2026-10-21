@@ -30,7 +30,7 @@ for (const [, selectors, body] of CSS.matchAll(/([^{}@]+)\{([^{}]*)\}/g)) {
 // coordinate or label left NaN or undefined.
 describe('feature card art', () => {
   it('finds the transformed classes it guards', () => {
-    expect(TRANSFORMED).toContain('fa-e-draw');
+    expect(TRANSFORMED).toContain('fa-f-in');
     expect(TRANSFORMED).not.toContain('fa-a-drain');
   });
 

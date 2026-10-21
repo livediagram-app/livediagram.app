@@ -90,14 +90,14 @@ The slots:
   Whiteboard (`/new?template=whiteboard`), Blank Illustration
   (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Session
   (`/new?template=blank-session`). The help centre's header has one
-  Start drawing button, its `Header`.
+  Start planning button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
 - `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
   (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
   (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank
   canvas became Drawing's whiteboard: it is the same button in the same place,
   so its series carries on. On a feature page, `Hero` is the category hero's
-  Start drawing.
+  Start planning.
 - `HeroBuild` (**retired** with the hero's stage in October 2026; the slot stays so its history still
   reads): the **Build yours** button on each of the hero's mode windows, opening the template
   step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
@@ -116,8 +116,8 @@ The slots:
   gallery search matched nothing.
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
-- `Closing`: the shared "Time to start" band (`StartDrawingCta`).
-- `Card`: the Start drawing card at the foot of the comparison and FAQ pages.
+- `Closing`: the shared "Time to start" band (`StartPlanningCta`).
+- `Card`: the Start planning card at the foot of the comparison and FAQ pages.
 
 A link into `/new` from a public page with no source (the apps menu's Editor
 item, a link inside a help article) is deliberately not a CTA and is not

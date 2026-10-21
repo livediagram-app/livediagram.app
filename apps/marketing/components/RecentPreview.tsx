@@ -16,7 +16,7 @@ export function RecentPreview({
   className?: string;
 }) {
   const thumb = useRecentThumb(diagram.id, diagram.savedAt);
-  const Icon = EDITOR_MODE_ICONS[diagram.mode ?? 'diagram'];
+  const Icon = EDITOR_MODE_ICONS[diagram.mode ?? 'plan'];
   return (
     <span
       className={`relative block overflow-hidden bg-(--hero-thumb) ${className}`}

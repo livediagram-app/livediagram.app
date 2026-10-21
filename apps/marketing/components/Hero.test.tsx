@@ -16,7 +16,7 @@ import { HERO_FAN_SWAP_MS } from './HeroFan';
 import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, a returning visitor's recent diagrams, and the dealing fan.
+// with Start Blank in its bar, a returning visitor's recent projects, and the dealing fan.
 
 let reduceMotion = false;
 // Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
@@ -71,7 +71,7 @@ describe('the hero', () => {
   it('asks the question under its two promise badges', () => {
     render(<Hero />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'What are you making today?',
+      'What are you planning today?',
     );
     const promises = within(screen.getByRole('list', { name: 'Our promises' })).getAllByRole(
       'listitem',
@@ -91,7 +91,7 @@ describe('the hero', () => {
     const list = screen.getByRole('list', { name: 'Matching templates' });
     const links = within(list).getAllByRole('link');
     expect(links.length).toBeGreaterThan(0);
-    expect(links[0]!.getAttribute('href')).toBe('/new?template=retrospective&via=Home.HeroSearch');
+    expect(links[0]!.getAttribute('href')).toBe('/new?template=team-retro&via=Home.HeroSearch');
     expect(screen.getByRole('link', { name: /Browse every template/ }).getAttribute('href')).toBe(
       '#templates',
     );
@@ -166,15 +166,15 @@ describe('the hero', () => {
     );
   });
 
-  it('keeps the template fan below RECENT_FAN_MIN recent diagrams, then deals theirs and Explorer Home', () => {
+  it('keeps the template fan below RECENT_FAN_MIN recent projects, then deals theirs and Explorer Home', () => {
     const note = (n: number) =>
       JSON.stringify({
         v: 1,
         diagrams: Array.from({ length: n }, (_, i) => ({
           id: `d${i + 1}`,
-          name: `Diagram ${i + 1}`,
+          name: `Project ${i + 1}`,
           savedAt: Date.now() - (i + 1) * 3600e3,
-          mode: 'diagram',
+          mode: 'plan',
         })),
       });
     localStorage.setItem(RECENT_DIAGRAMS_KEY, note(RECENT_FAN_MIN - 1));
@@ -189,24 +189,22 @@ describe('the hero', () => {
     const docs = screen
       .getAllByRole('link')
       .map((a) => a.getAttribute('href'))
-      .filter((h) => h?.startsWith('/document/'));
-    expect(docs).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
+      .filter((h) => h?.startsWith('/project/'));
+    expect(docs).toEqual(['/project/d1', '/project/d2', '/project/d3', '/project/d4']);
     // The save time sits at the card's foot, after its preview (out of sight until the card lifts).
-    const card = screen
-      .getAllByRole('link')
-      .find((l) => l.getAttribute('href') === '/document/d1')!;
+    const card = screen.getAllByRole('link').find((l) => l.getAttribute('href') === '/project/d1')!;
     expect(card.lastElementChild?.textContent).toMatch(/ago$/);
-    expect(card.firstElementChild?.textContent).toBe('Diagram 1');
+    expect(card.firstElementChild?.textContent).toBe('Project 1');
     expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
       '/explorer/home',
     );
-    // A phone shows the PHONE_RECENT most recent documents and leaves Explorer Home off.
+    // A phone shows the PHONE_RECENT most recent projects and leaves Explorer Home off.
     const onPhone = screen
       .getAllByRole('link')
-      .filter((a) => /^\/(document|explorer)\//.test(a.getAttribute('href') ?? ''))
+      .filter((a) => /^\/(project|explorer)\//.test(a.getAttribute('href') ?? ''))
       .filter((a) => !a.parentElement!.className.split(' ').includes('max-sm:hidden'))
       .map((a) => a.getAttribute('href'));
-    expect(onPhone).toEqual(['/document/d1', '/document/d2', '/document/d3']);
+    expect(onPhone).toEqual(['/project/d1', '/project/d2', '/project/d3']);
     expect(onPhone).toHaveLength(PHONE_RECENT);
   });
 });

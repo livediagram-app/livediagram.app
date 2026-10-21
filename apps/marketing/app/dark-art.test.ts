@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_SCHEME_DARK,
   DEFAULT_SCHEME_LIGHT,
-  THEMES,
   defaultArrowLabelColor,
   defaultArrowStrokeColor,
   defaultFillColor,
@@ -12,11 +11,10 @@ import {
   unpaintedShapeInk,
   type BoxedElement,
   type CanvasSurface,
-  type ThemeDefinition,
 } from '@liveplanner/document';
 import { describe, expect, it } from 'vitest';
 
-// Every diagram in the mock-ups is drawn as the editor draws it on the Default theme
+// Every mock-up's canvas is drawn as the editor draws it on the Default theme
 // (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md).
 // The art keeps those colours as CSS custom properties (app/hero-animations.css), so these hold
 // each one to what packages/document itself returns rather than letting a copy drift.
@@ -47,16 +45,10 @@ function element(type: BoxedElement['type']): BoxedElement {
   return { id: '', type, x: 0, y: 0, width: 0, height: 0 } as BoxedElement;
 }
 
-function theme(id: string): ThemeDefinition {
-  const found = THEMES.find((t) => t.id === id);
-  if (!found) throw new Error(`theme ${id} not found`);
-  return found;
-}
-
 function expectDefaultScheme(
   selector: ':root' | '.dark',
   surface: CanvasSurface,
-  scheme: ThemeDefinition,
+  scheme: typeof DEFAULT_SCHEME_LIGHT,
 ) {
   const ink = unpaintedShapeInk(surface);
   expect(artProperty(selector, 'art-paper')).toBe(hex(scheme.backgroundColor));
@@ -75,32 +67,15 @@ function expectDefaultScheme(
   );
 }
 
-function expectPick(selector: ':root' | '.dark', id: string) {
-  const pick = theme(id);
-  expect(artProperty(selector, 'art-pick-paper')).toBe(hex(pick.backgroundColor));
-  expect(artProperty(selector, 'art-pick-grid')).toBe(hex(pick.patternColor));
-  expect(artProperty(selector, 'art-pick-fill')).toBe(hex(pick.elementFill ?? ''));
-  expect(artProperty(selector, 'art-pick-stroke')).toBe(hex(pick.elementStroke ?? ''));
-  expect(artProperty(selector, 'art-pick-text')).toBe(hex(pick.elementText ?? ''));
-}
-
 describe('mock-up palette, light half', () => {
   it('is the Default scheme light half and the ink it gives unpainted elements', () => {
     expectDefaultScheme(':root', 'light', DEFAULT_SCHEME_LIGHT);
-  });
-
-  it('recolours the hero flowchart to Forest', () => {
-    expectPick(':root', 'forest');
   });
 });
 
 describe('mock-up palette, dark half', () => {
   it('is the Default scheme dark half and the ink it gives unpainted elements', () => {
     expectDefaultScheme('.dark', 'dark', DEFAULT_SCHEME_DARK);
-  });
-
-  it('recolours the hero flowchart to Pine', () => {
-    expectPick('.dark', 'pine');
   });
 });
 

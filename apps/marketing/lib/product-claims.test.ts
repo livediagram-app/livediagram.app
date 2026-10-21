@@ -7,6 +7,7 @@ import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 import { ALTERNATIVES } from './alternatives';
 import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
+import { MARKETING_DESCRIPTION, MARKETING_PITCH, MARKETING_TITLE } from './site-copy';
 
 // Claims marketing once made that the product has since outgrown or never matched. Each phrasing
 // here was live copy, found false against the product; the test keeps it from coming back on any
@@ -115,5 +116,37 @@ describe('mode lists in marketing copy', () => {
         .map(({ sentence }) => `${where}: ${sentence.slice(0, 80)}`),
     );
     expect(wrong).toEqual([]);
+  });
+});
+
+// liveplanner is Plan mode alone (docs/specs/019-marketing/marketing-site.md): the landing page and the
+// site's own metadata never offer what the product does not carry, and a person's work is a project,
+// never a document.
+describe('what the landing copy says liveplanner is', () => {
+  const own = [
+    ...LANDING_SECTIONS.flatMap((s) => [
+      {
+        where: `landing/${s.id}`,
+        text: [s.label, s.title, s.description, s.metaDescription, s.cta].join(' '),
+      },
+      ...s.items.map((i) => ({
+        where: `landing/${s.id}: ${i.title}`,
+        text: `${i.title} ${i.description}`,
+      })),
+    ]),
+    {
+      where: 'site-copy',
+      text: [MARKETING_TITLE, MARKETING_DESCRIPTION, MARKETING_PITCH].join(' '),
+    },
+  ];
+  const DROPPED =
+    /\b(?:diagrams?|diagramming|whiteboards?|infographics?|slides?|slide decks?|mind ?maps?|articles?|workshops?|canvas)\b/i;
+
+  it('never offers a mode liveplanner does not carry', () => {
+    expect(own.filter((c) => DROPPED.test(c.text)).map((c) => c.where)).toEqual([]);
+  });
+
+  it('calls the work a project, never a document', () => {
+    expect(own.filter((c) => /\bdocuments?\b/i.test(c.text)).map((c) => c.where)).toEqual([]);
   });
 });

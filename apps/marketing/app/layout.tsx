@@ -11,8 +11,6 @@ import {
   REPO_URL,
   SITE_NAME,
   SITE_URL,
-  SITE_DESCRIPTION,
-  SITE_TITLE,
   WebVitalsBoot,
   trustedHtml,
   trustedScriptOrigins,
@@ -20,6 +18,7 @@ import {
 } from '@liveplanner/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
+import { MARKETING_DESCRIPTION, MARKETING_TITLE } from '@/lib/site-copy';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -27,9 +26,9 @@ import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
 // against the production origin; without it Next logs a warning
 // and falls back to localhost in dev (which would otherwise leak
 // into preview builds).
-// The shared words for what liveplanner is (packages/ui site.ts).
-const TITLE = SITE_TITLE;
-const DESCRIPTION = SITE_DESCRIPTION;
+// The words for what liveplanner is (lib/site-copy.ts).
+const TITLE = MARKETING_TITLE;
+const DESCRIPTION = MARKETING_DESCRIPTION;
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
@@ -78,7 +77,7 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 // JSON-LD structured data, see docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata". Two schemas under one @graph: WebSite for brand-name
-// search results, SoftwareApplication for "diagramming tool"
+// search results, SoftwareApplication for "project planning tool"
 // category browse. Both restate facts already on the page; the
 // free-tier offer is truthful (the hosted product is currently
 // free to use).

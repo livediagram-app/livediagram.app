@@ -18,7 +18,7 @@ import {
 import { ChevronDownIcon, Glyph, lucideGlyph, SearchIcon } from '@liveplanner/ui';
 
 // Which tab a Plan scene is (hero-scene-data.ts): its bar follows.
-export type PlanTab = 'board' | 'sheet' | 'form';
+export type PlanTab = 'board' | 'sheet' | 'form' | 'dashboard';
 
 const PlusGlyph = lucideGlyph(lucidePlus, 10);
 const CogGlyph = lucideGlyph(lucideSettings, 11);
@@ -41,7 +41,15 @@ function Divider() {
 }
 
 export function PlanTabBar({ tab }: { tab: PlanTab }) {
-  return tab === 'sheet' ? <SheetBar /> : tab === 'form' ? <FormBar /> : <PlanBoardBar />;
+  return tab === 'sheet' ? (
+    <SheetBar />
+  ) : tab === 'form' ? (
+    <FormBar />
+  ) : tab === 'dashboard' ? (
+    <DashboardBar />
+  ) : (
+    <PlanBoardBar />
+  );
 }
 
 // A Plan board fills its tab, so its own bar stands at the top right where the strip would be:
@@ -156,6 +164,34 @@ function FormBar() {
       </span>
       <span className={BUTTON}>
         <HelpGlyph size={10} />
+      </span>
+      <span className={BUTTON}>
+        <CogGlyph size={11} />
+      </span>
+    </div>
+  );
+}
+
+// A Dashboard filling its tab: its layout picker, add a slot, then its settings
+// (docs/specs/026-plan/plan-tabs.md).
+function DashboardBar() {
+  return (
+    <div className={BAR}>
+      <span className={CHIP}>
+        <Glyph size={10} units={10} weight={1.4}>
+          <rect x="1" y="1" width="8" height="3" rx="0.8" />
+          <rect x="1" y="5.5" width="3.5" height="3.5" rx="0.8" />
+          <rect x="5.5" y="5.5" width="3.5" height="3.5" rx="0.8" />
+        </Glyph>
+        <span className="text-optical-line">Overview</span>
+        <ChevronDownIcon size={7} />
+      </span>
+      <span className={`${CHIP} w-6 justify-center border-dashed px-0`}>
+        <PlusGlyph size={10} />
+      </span>
+      <Divider />
+      <span className={BUTTON}>
+        <MaximiseGlyph size={10} />
       </span>
       <span className={BUTTON}>
         <CogGlyph size={11} />

@@ -6,7 +6,7 @@ import type { GalleryTemplate } from '@/lib/template-gallery';
 import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
 
-// One template as a card that creates that document straight away and opens it in the editor
+// One template as a card that creates that project straight away and opens it in the editor
 // (/new?template=<kind>, docs/specs/007-editor/new-document-route.md): the editor picker's own preview
 // (@liveplanner/template-previews), so a template looks the same here as it does in the app, then its
 // mode's glyph beside its title, then its description. Shared by the landing gallery and each category
@@ -33,7 +33,7 @@ export function TemplateCard({
         {/* The mode the template opens in, as the editor's cards show it (the link's own name
             already says what it makes). */}
         <ModeIcon size={14} aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400" />
-        {/* The link's name is its own text, "Create a Blank Diagram" and the description, so its
+        {/* The link's name is its own text, "Create a Blank Plan" and the description, so its
             visible title is part of it (WCAG 2.5.3). */}
         <span className="sr-only">{createLabelPrefix(template.title)}</span>
         {template.title}

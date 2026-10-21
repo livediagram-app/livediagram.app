@@ -1,4 +1,4 @@
-import { SITE_DESCRIPTION } from '@liveplanner/ui';
+import { MARKETING_DESCRIPTION } from '@/lib/site-copy';
 import type { MetadataRoute } from 'next';
 
 // Required for `output: 'export'`: route handlers must declare
@@ -35,7 +35,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'liveplanner',
     short_name: 'liveplanner',
-    description: SITE_DESCRIPTION,
+    description: MARKETING_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
     theme_color: '#8B5CF6',
