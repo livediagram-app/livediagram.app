@@ -1,0 +1,40 @@
+name: Preview Sweep
+
+# The safety net behind deploy-preview.yml's teardown (docs/specs/016-platform/pr-previews.md
+# "Lifecycle"): tears down every preview whose PR is no longer open, so a teardown that failed
+# or never ran (a cancelled run, an outage) does not hold workers, D1 or R2 for ever. Only
+# names of the exact preview shapes are touched; production's and staging's cannot match.
+on:
+  schedule:
+    # An hour after staging's api cron (0 3 * * *).
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: preview-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Sweep
+    if: github.repository_id == 1253158818
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # The sweep imports nothing outside Node, so no install.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Sweep closed PRs' previews
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          GH_TOKEN: ${{ github.token }}
+        run: node packages/preview-env/scripts/sweep.ts

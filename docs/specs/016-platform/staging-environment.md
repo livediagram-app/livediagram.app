@@ -106,6 +106,7 @@ Being public, it must not compete with production in search results. The router 
 sets **`X-Robots-Tag: noindex, nofollow` on every response** when its `DEPLOY_ENV` var
 is `staging` — one line at the only point every app on the host passes through, rather
 than a build flag threaded into five static apps.
+PR previews get the same header with `DEPLOY_ENV = "preview"` ([PR previews](pr-previews.md)).
 
 Two deliberate non-changes:
 

@@ -22,9 +22,10 @@ export interface Env {
   TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
   COMMUNITY_ORIGIN?: string;
-  // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
-  // response noindex so the public staging mirror can't compete with
-  // production in search results. Absent in production and in local dev.
+  // "staging" on the staging router (docs/specs/016-platform/staging-environment.md) and "preview" on a
+  // PR preview's (docs/specs/016-platform/pr-previews.md); either marks every response noindex so a
+  // public mirror can't compete with production in search results. "local" in local dev, absent in
+  // production.
   DEPLOY_ENV?: string;
 }
 
@@ -141,7 +142,11 @@ function forward(
   );
 }
 
-// Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (docs/specs/016-platform/staging-environment.md).
+// The environments whose every response is noindex: the public mirrors of production.
+const NOINDEX_ENVS: ReadonlySet<string> = new Set(['staging', 'preview']);
+
+// Stamp `X-Robots-Tag: noindex, nofollow` on a staging or preview response
+// (docs/specs/016-platform/staging-environment.md, docs/specs/016-platform/pr-previews.md).
 //
 // Staging is deliberately public — no auth wall, so a change can be shared
 // with someone before it ships — which makes keeping it out of search results
@@ -175,7 +180,7 @@ async function withCachePolicy(request: Request, env: Env): Promise<Response> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (env.DEPLOY_ENV === 'staging') {
+    if (env.DEPLOY_ENV !== undefined && NOINDEX_ENVS.has(env.DEPLOY_ENV)) {
       return markNoIndex(await withCachePolicy(request, env));
     }
     return withCachePolicy(request, env);

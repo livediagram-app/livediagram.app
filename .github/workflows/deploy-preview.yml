@@ -1,0 +1,153 @@
+name: Deploy Preview
+
+# Per-PR previews at https://pr-<N>.livediagram.app (docs/specs/016-platform/pr-previews.md).
+# Every same-repo PR gets a Preview (its own sites on staging's api); a PR that touches the
+# api, or carries the `full-preview` label, gets a Full preview with its own api, D1 and R2.
+# Closing the PR tears it all down; preview-sweep.yml catches anything a teardown missed.
+#
+# `pull_request`, never `pull_request_target`: a fork's run gets no secrets, and every job
+# below also requires the head to be a branch of this repository, so forks skip cleanly.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One run per PR, the newest winning: a burst of pushes deploys the last, and a close
+  # cancels an in-flight deploy rather than racing it. A label event for any other label
+  # does nothing, so it gets a group of its own instead of cancelling a real deploy.
+  group: >-
+    ${{
+      (contains(fromJSON('["labeled","unlabeled"]'), github.event.action) &&
+        github.event.label.name != 'full-preview')
+      && format('preview-noop-{0}', github.run_id)
+      || format('preview-pr-{0}', github.event.pull_request.number)
+    }}
+  cancel-in-progress: true
+
+jobs:
+  tier:
+    name: Choose tier
+    # The hosted repository only (as deploy-reusable.yml's HOSTED), same-repo heads only, not
+    # on close, and for label events only the label that changes the tier.
+    if: >-
+      github.repository_id == 1253158818 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action != 'closed' &&
+      (!contains(fromJSON('["labeled","unlabeled"]'), github.event.action) ||
+        github.event.label.name == 'full-preview')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The one job that may write to the PR, to add the label; it runs turbo and nothing else.
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      tier: ${{ steps.tier.outputs.tier }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          # turbo compares against the merge base, so it needs history; commits and trees only.
+          fetch-depth: 0
+          filter: blob:none
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Choose tier
+        id: tier
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          # Label names are user content: passed as data, never spliced into the script.
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node packages/preview-env/scripts/tier.ts --pr "$PR" --base "$BASE" --head "$HEAD" --labels "$LABELS"
+
+      # A label added with this token starts no new run, so this run deploys the tier it chose.
+      - name: Label the PR
+        if: steps.tier.outputs.add_label == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR" --repo "$GITHUB_REPOSITORY" --add-label full-preview
+
+  deploy:
+    name: Deploy
+    needs: tier
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      wrangler_env: preview
+      environment_name: preview
+      environment_url: https://pr-${{ github.event.pull_request.number }}.livediagram.app
+      ref: ${{ github.event.pull_request.head.sha }}
+      # No MCP of its own; the editor's MCP settings point at staging's.
+      mcp_origin: https://mcp-staging.livediagram.app
+      preview_pr: ${{ github.event.pull_request.number }}
+      preview_tier: ${{ needs.tier.outputs.tier }}
+    secrets:
+      # Only Cloudflare's. No Clerk key (previews are guest-only), no Google key, no
+      # internal-events key: none of those reach a preview.
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+  downgrade:
+    name: Remove full preview
+    # A Preview owns no api, D1 or R2. Deleting them after the deploy (which has just
+    # pointed the router at staging's api) is a no-op unless the PR used to be full.
+    needs: [tier, deploy]
+    if: needs.tier.outputs.tier == 'preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # The teardown imports nothing outside Node, so no install.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Tear down the full tier
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          PR: ${{ github.event.pull_request.number }}
+        run: node packages/preview-env/scripts/teardown.ts --pr "$PR" --scope full
+
+  teardown:
+    name: Tear down
+    if: >-
+      github.repository_id == 1253158818 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Tear down the preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          PR: ${{ github.event.pull_request.number }}
+        run: node packages/preview-env/scripts/teardown.ts --pr "$PR" --scope all

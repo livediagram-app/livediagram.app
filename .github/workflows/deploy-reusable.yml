@@ -44,6 +44,20 @@ on:
           apps/live/lib/mcp-config.ts).
         type: string
         default: ''
+      preview_pr:
+        description: >-
+          PR number for a per-PR preview (docs/specs/016-platform/pr-previews.md).
+          Empty for production and staging, which then run exactly the commands
+          they always ran. Set, every worker deploys from a generated
+          wrangler.preview.toml named for this PR.
+        type: string
+        default: ''
+      preview_tier:
+        description: >-
+          "preview" (sites only, on staging's api) or "full" (adds the PR's own
+          api, D1 and R2). Empty unless preview_pr is set.
+        type: string
+        default: ''
     secrets:
       CF_API_TOKEN:
         required: true
@@ -76,6 +90,12 @@ on:
 # the `github` context is the caller's, so both callers resolve it the same way.
 env:
   HOSTED: ${{ github.repository_id == '1253158818' }}
+  # PR previews (docs/specs/016-platform/pr-previews.md): every wrangler call
+  # gains `${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"}`, which expands to
+  # nothing for production and staging.
+  WRANGLER_CONFIG: ${{ inputs.preview_pr != '' && 'wrangler.preview.toml' || '' }}
+  PREVIEW_PR: ${{ inputs.preview_pr }}
+  PREVIEW_TIER: ${{ inputs.preview_tier }}
 
 # Least privilege: deploys authenticate to Cloudflare with CF_API_TOKEN, which
 # is a secret rather than a token permission, so no job here needs write access
@@ -167,7 +187,10 @@ jobs:
           # mirror working and the folder adoption button hidden.
           NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
           # The live build id, matched by the api's BUILD_ID (docs/specs/016-platform/stale-builds.md).
-          NEXT_PUBLIC_BUILD_ID: ${{ steps.build-id.outputs.id }}
+          # Empty on a Preview, whose editor talks to staging's api: the two ids
+          # would never match and the editor would think itself stale for ever
+          # (docs/specs/016-platform/pr-previews.md "Build").
+          NEXT_PUBLIC_BUILD_ID: ${{ inputs.preview_tier != 'preview' && steps.build-id.outputs.id || '' }}
         run: pnpm build
 
       # The live build must carry this environment's Google client id and no
@@ -247,12 +270,16 @@ jobs:
           name: marketing-out
           path: apps/marketing/out
 
+      - name: Generate preview config
+        if: inputs.preview_pr != ''
+        run: node packages/preview-env/scripts/config.ts --app marketing --pr "$PREVIEW_PR" --tier "$PREVIEW_TIER"
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/marketing
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-telemetry:
     name: Deploy telemetry
@@ -284,18 +311,24 @@ jobs:
           name: telemetry-out
           path: apps/telemetry/out
 
+      - name: Generate preview config
+        if: inputs.preview_pr != ''
+        run: node packages/preview-env/scripts/config.ts --app telemetry --pr "$PREVIEW_PR" --tier "$PREVIEW_TIER"
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/telemetry
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-community:
     name: Deploy community
     # The Community worker has a service binding to the api worker (docs/specs/025-community/community.md
     # "Search engines"), so api must exist first, as for mcp.
     needs: [build, deploy-api]
+    # deploy-api is skipped on a Preview; a skipped need must not skip this job too.
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -323,12 +356,16 @@ jobs:
           name: community-out
           path: apps/community/out
 
+      - name: Generate preview config
+        if: inputs.preview_pr != ''
+        run: node packages/preview-env/scripts/config.ts --app community --pr "$PREVIEW_PR" --tier "$PREVIEW_TIER"
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/community
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-help:
     name: Deploy help
@@ -360,18 +397,24 @@ jobs:
           name: help-out
           path: apps/help/out
 
+      - name: Generate preview config
+        if: inputs.preview_pr != ''
+        run: node packages/preview-env/scripts/config.ts --app help --pr "$PREVIEW_PR" --tier "$PREVIEW_TIER"
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/help
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-live:
     name: Deploy live
     # After the api, so a new editor never calls an api that lacks its routes
     # (docs/specs/016-platform/deployment.md, "Renaming migrations").
     needs: [build, deploy-api]
+    # deploy-api is skipped on a Preview; a skipped need must not skip this job too.
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -399,16 +442,22 @@ jobs:
           name: live-out
           path: apps/live/out
 
+      - name: Generate preview config
+        if: inputs.preview_pr != ''
+        run: node packages/preview-env/scripts/config.ts --app live --pr "$PREVIEW_PR" --tier "$PREVIEW_TIER"
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/live
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-api:
     name: Deploy api
     needs: build
+    # A Preview uses staging's api (docs/specs/016-platform/pr-previews.md "Two tiers").
+    if: inputs.preview_tier != 'preview'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The `secrets` context can't be read inside a step `if:`
@@ -472,7 +521,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           printf '%s' "$CLERK_JWKS_URL" \
-            | pnpm exec wrangler secret put CLERK_JWKS_URL ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+            | pnpm exec wrangler secret put CLERK_JWKS_URL ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # Same provisioning story for the guest-id HMAC secret (docs/specs/014-identity/auth-and-guest-access.md):
       # when present it makes /api/migrate require a signed guest id;
@@ -485,7 +534,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           printf '%s' "$GUEST_ID_HMAC_SECRET" \
-            | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+            | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # INTERNAL_EVENTS_KEY (docs/specs/017-telemetry/telemetry.md) has to hold the SAME value on the api and
       # mcp workers, and a mismatch is silent — the MCP's telemetry just lands
@@ -502,7 +551,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           printf '%s' "$INTERNAL_EVENTS_KEY" \
-            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # Runs straight before the deploy, after the secret syncs, so the time the
       # live worker runs against a schema newer than its code is only the deploy
@@ -523,6 +572,24 @@ jobs:
       # to main rehearses the migration against a real remote D1 one
       # deploy before it reaches the database holding real diagrams
       # (docs/specs/016-platform/staging-environment.md).
+      # A Full preview's own D1, R2 and config (docs/specs/016-platform/pr-previews.md).
+      # Its fresh guest-id HMAC secret rides along with the deploy as a secrets
+      # file: `wrangler secret put` cannot target a worker that does not exist yet.
+      - name: Provision the preview's D1, R2 and config
+        if: inputs.preview_pr != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          d1_id="$(node packages/preview-env/scripts/d1.ts --pr "$PREVIEW_PR" | sed -n 's/^d1_id=//p')"
+          node packages/preview-env/scripts/r2.ts --pr "$PREVIEW_PR"
+          node packages/preview-env/scripts/config.ts --app api --pr "$PREVIEW_PR" --tier full --d1-id "$d1_id"
+          secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$secret"
+          printf 'GUEST_ID_HMAC_SECRET=%s\n' "$secret" > "$RUNNER_TEMP/preview-secrets.env"
+          echo "PREVIEW_SECRETS=$RUNNER_TEMP/preview-secrets.env" >> "$GITHUB_ENV"
+
       - name: Apply D1 migrations (remote)
         working-directory: apps/api
         env:
@@ -537,7 +604,7 @@ jobs:
         # secret missing the D1: Edit permission on the account that
         # owns the database — but the `Verify Cloudflare token` step
         # above is the authoritative diagnostic.
-        run: pnpm exec wrangler d1 migrations apply DB --remote ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler d1 migrations apply DB --remote ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/api
@@ -565,14 +632,16 @@ jobs:
             flags="$(node scripts/hosted-vars.mjs flags ${WRANGLER_ENV:+--env "$WRANGLER_ENV"})"
             mapfile -t hosted_vars <<<"$flags"
           fi
-          pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} "${hosted_vars[@]}" --var "BUILD_ID:$BUILD_ID"
+          pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} ${PREVIEW_SECRETS:+--secrets-file "$PREVIEW_SECRETS"} "${hosted_vars[@]}" --var "BUILD_ID:$BUILD_ID"
 
       # Read the hosted vars back off the version now serving traffic and fail
       # the run if any is missing or different. The image caps are the R2
       # quota guard; they were once documented as live while no deploy set
       # them, and nothing noticed. This is the step that notices.
+      # Not on previews: the generated config sets APP_BASE_URL, which the
+      # preview profile entry leaves unset (docs/specs/016-platform/pr-previews.md "Build").
       - name: Verify hosted vars are live
-        if: env.HOSTED == 'true'
+        if: env.HOSTED == 'true' && inputs.preview_pr == ''
         working-directory: apps/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -585,6 +654,8 @@ jobs:
     # must exist first. Not a router dependency — mcp.livediagram.app is its own
     # host, not a path under the main hostname.
     needs: deploy-api
+    # A preview has no MCP of its own (docs/specs/016-platform/pr-previews.md).
+    if: inputs.preview_pr == ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Lifted to job level for the same reason as deploy-api's: the `secrets`
@@ -620,14 +691,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           printf '%s' "$INTERNAL_EVENTS_KEY" \
-            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/mcp
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-router:
     name: Deploy router
@@ -635,6 +706,8 @@ jobs:
     # must exist before it deploys.
     needs:
       [deploy-marketing, deploy-live, deploy-api, deploy-telemetry, deploy-help, deploy-community]
+    # deploy-api is skipped on a Preview; a skipped need must not skip this job too.
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The router is what makes the hostname serve the new code, so it is the
@@ -665,9 +738,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate preview config
+        if: inputs.preview_pr != ''
+        run: node packages/preview-env/scripts/config.ts --app router --pr "$PREVIEW_PR" --tier "$PREVIEW_TIER"
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/router
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        run: pnpm exec wrangler deploy ${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"} ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
