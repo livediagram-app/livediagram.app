@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LayerOrder } from '@/components/illustrations/element-properties';
+import { ElementLayerMenuScene } from '@/components/illustrations/layers';
+
+export const metadata = helpMetadata({
+  title: 'Layer Order and Opacity',
+  description:
+    'Control which elements sit in front or behind: Bring to Front and Send to Back move elements between layers, and the opacity slider fades them.',
+  path: '/help/canvas/layer-order/',
+});
+
+<ArticleLayout title="Layer Order and Opacity" description="Decide what stacks on top of what, and fade an element back, from the Layer category of the right-click menu." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layer-order")}>
+
+When two elements overlap, one has to sit on top. livediagram paints boxed elements in the order they were added (the newest lands on top), stacked into the tab's [layers](/help/canvas/layers/). The **Layer** controls let you change that order whenever you want, and fade an element so the content behind it shows through.
+
+<Figure caption="The front card sits on top of the back one; the faded twin shows a lower opacity.">
+  <LayerOrder />
+</Figure>
+
+## Bringing Things to Front and Back
+
+Right-click an element and open the **Layer** category:
+
+- **Bring to Front** moves the element onto the tab's top [layer](/help/canvas/layers/), so nothing overlaps it. If the top layer holds anything else, a fresh layer is created above it first.
+- **Send to Back** mirrors that at the bottom: the element lands on (or below) the bottom layer, so other elements paint over it.
+
+These two buttons are how layers accumulate even if you never open the Layers panel; a layer they empty out is removed automatically. Once the tab has more than one layer (and the Layers panel is switched on in Settings, as it is by default), the same category also shows **Move to layer** tiles, one per layer with a preview of what is on it, for placing the selection on a specific layer.
+
+<Figure caption="The Layer category of the element menu: Bring to Front and Send to Back, the Move to layer tiles, and the Opacity slider.">
+  <ElementLayerMenuScene />
+</Figure>
+
+Both also work from the keyboard while an element is selected (Ctrl in place of Cmd on Windows and Linux):
+
+- **Cmd+Shift+]** brings the selection to the front.
+- **Cmd+Shift+[** sends it to the back.
+
+The menu stays open after each one, so you can adjust several elements in a row without reopening it. Layer changes are a single undoable step.
+
+Notes on an [event storming board](/help/canvas/event-storming-boards/) have no Layer category. Their menu has **Bring to Front** and **Send to Back** rows instead, which restack the note within its own layer and close the menu.
+
+## Restacking Within a Layer
+
+The selection's floating toolbar has its own **Bring to Front** and **Send to Back** buttons. These are the quick nudge for two things overlapping on the same layer: they stack the selection in front of, or behind, everything else **on its own layer**, and never move it to another layer. They are on the toolbar of a single selected element; the toolbar for several elements has no stacking buttons, so use the right-click menu's **Layer** category for those.
+
+<Note>
+  Newly added elements always land on top, which is what you usually want. Reach for Send to Back
+  for the rarer case where a shape, frame, or background image should sit behind your content.
+</Note>
+
+## Fading an Element With Opacity
+
+The same Layer category holds an **Opacity** slider, from 0 to 100%. Drag it to make an element semi-transparent so whatever sits behind it stays partly visible. It's useful for a background watermark, a frame that shouldn't compete with its contents, or a "ghosted" element you want present but quiet.
+
+Opacity is a cosmetic property, so the [format painter](/help/selection-modes/format-painter/) copies it along with colours and borders, and it carries through to PNG and SVG [exports](/help/account-and-data/exporting-diagrams/). A layer has an opacity of its own too, which multiplies with each element's: see [Hiding, Locking, and Dimming Layers](/help/canvas/layers-visibility-and-locking/#layer-opacity).
+
+<Tip>
+  Layer order and opacity both appear in the multi-select menu too, so you can push a whole group of
+  elements to the back or fade them together in one action.
+</Tip>
+
+</ArticleLayout>

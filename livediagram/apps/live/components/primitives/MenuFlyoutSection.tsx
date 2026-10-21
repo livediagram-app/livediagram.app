@@ -1,0 +1,389 @@
+'use client';
+
+import {
+  Children,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@livediagram/ui';
+import { useMenuItemProps } from './menu-item-props';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useReposition } from '@/hooks/canvas/useReposition';
+import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { coverHost } from './menu-flyout-cover';
+import {
+  FlyoutPanel,
+  plainTriggerClass,
+  SectionTriggerFace,
+  sectionTriggerClass,
+} from './MenuFlyoutPanel';
+
+// A menu category that opens its contents in a **side flyout** instead of
+// expanding inline (docs/specs/008-canvas/canvas-and-palette.md). The trigger row looks exactly like a
+// MenuAccordionSection header (icon · uppercase title · chevron), but clicking
+// it floats a panel to the SIDE — to the right of the menu if there's room,
+// otherwise to the left — so several categories can be grouped under one row
+// without making the menu any taller. Reusable across any context menu
+// (ContextMenu / PortalMenu); its children can be anything, including ordinary
+// MenuAccordionSections that keep working as normal inside the flyout.
+//
+// The flyout panel is portalled to <body> so it escapes the host menu's
+// `overflow-hidden`, and marks itself `data-menu-flyout` so the host's
+// outside-click guard treats clicks inside it as inside the menu (ContextMenu
+// and PortalMenu both honour that marker) — the flyout runs its own
+// outside-click to close only itself when you click another row or off-menu.
+// Consecutive frames agreeing on the position before the tracker stops.
+const SETTLE_FRAMES = 3;
+
+// The menu a flyout row sits in, of either kind (docs/specs/004-interface-design/menus.md).
+const HOST_MENU = `[${MENU_SURFACE_ATTR}]`;
+
+// A flyout that would hold exactly ONE section is not a flyout at all: the
+// section takes the flyout's place in the host menu (docs/specs/008-canvas/canvas-and-palette.md).
+//
+// The children are conditional — a Tools flyout shows Progress, Rail, Rating,
+// Chart, Picker … depending on the element — so on a picker the whole "Tools"
+// row is a category with one thing in it. Opening a side panel to choose
+// between one option is two taps and a second surface for a menu with no
+// choice in it; the row that says TOOLS says nothing the row inside it doesn't
+// say better.
+//
+// It went in stages, and the middle one is worth recording: the lone section
+// used to be cloned FORCED OPEN inside the flyout, which fixed the second tap
+// but not the first, and not the panel. Promoting it removes both.
+//
+// Inline it is an ordinary accordion row — collapsed until you click it, like
+// every other row in the menu — rather than the forced-open thing it was in
+// the panel, where there was nothing else to collapse it in favour of.
+//
+// `Children.toArray` drops the `false` / `null` a conditional branch leaves
+// behind, so its length is the number of sections ACTUALLY rendered.
+//
+// ANY lone element is promoted, not just a bare `MenuAccordionSection`. The
+// first cut inspected the child's props for a controlled `open` / `onToggle`
+// pair, which quietly promoted only half the menu: an entity's Fields is a
+// `MenuAccordionSection` written inline, but a session button's Session is a
+// `SessionMenuSection` that RENDERS one and takes its scaffold state as
+// `sectionProps` — a different prop shape for the same thing, so the record
+// lost its TOOLS row and the poll button kept one. Every child of a flyout is
+// a section by construction (that is what the callers put there), so the
+// element being there is the whole test.
+function loneSection(children: ReactNode): ReactNode | null {
+  const rendered = Children.toArray(children);
+  if (rendered.length !== 1) return null;
+  const only = rendered[0];
+  // A bare string or number is the one thing with no row to become.
+  return isValidElement(only) ? only : null;
+}
+
+type FlyoutPos = { left: number; top: number; width?: number; minHeight?: number };
+
+export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
+  // A panel is one purpose-built surface, not a list of sections, so there is
+  // nothing to promote: its single child is the whole point of the flyout.
+  const lone = props.panel || props.plain ? null : loneSection(props.children);
+  // Rendered instead of the flyout, not inside it — so the hooks below (the
+  // portal, the position tracker, the outside-click) never run for a row that
+  // has no panel to position.
+  if (lone) return <>{lone}</>;
+  return <Flyout {...props} />;
+}
+
+type MenuFlyoutSectionProps = {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+  flush?: boolean;
+  onOpen?: () => void;
+  open?: boolean;
+  onToggle?: () => void;
+  // The children are ONE custom panel (the Collaborate row's Session Studio)
+  // rather than a stack of accordion sections: never promoted inline, drawn
+  // wider, and scrollable when it is taller than the screen.
+  panel?: boolean;
+  // The trigger reads as a plain verb row (MenuActionRow `plain`: sentence case, 13px, its icon in
+  // the 20px slot) with a chevron, for a verb menu such as the folder menu's "Use as Default for"
+  // (docs/specs/013-workspace/default-folders.md). Never promoted inline, as a panel is not.
+  plain?: boolean;
+};
+
+function Flyout({
+  title,
+  icon,
+  children,
+  // Match MenuAccordionSection: no top hairline where the parent bands rows
+  // into groups with its own separators.
+  flush = false,
+  // Fired each time the flyout opens — e.g. so the caller can auto-expand the
+  // first sub-category inside it.
+  onOpen,
+  // Controlled mode (the context-menu scaffold's flyoutProps): the open
+  // state lives in the caller so it survives this row remounting when the
+  // menu retargets to another element. Omit both to fall back to local
+  // state (open + onToggle travel together).
+  open: controlledOpen,
+  onToggle,
+  panel: isPanel = false,
+  plain = false,
+}: MenuFlyoutSectionProps) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  // Also held in state: the flyout's menu hook is handed it as its trigger (names it, returns focus).
+  const [triggerEl, setTriggerEl] = useState<HTMLButtonElement | null>(null);
+  const setTrigger = useCallback((el: HTMLButtonElement | null) => {
+    triggerRef.current = el;
+    setTriggerEl(el);
+  }, []);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // A submenu in a command menu, a sub-panel in a control menu (or outside any menu).
+  const kind = useMenuKind() === 'command' ? 'command' : 'control';
+  const { itemProps } = useMenuItemProps();
+  const [localOpen, setLocalOpen] = useState(false);
+  const controlled = controlledOpen !== undefined;
+  const open = controlled ? controlledOpen : localOpen;
+  // On a phone the flyout COVERS its parent menu instead of sitting beside it
+  // (docs/specs/004-interface-design/flyout-height-stability.md): there is no room to the side, so the side layout degenerated
+  // into an unlabelled panel dropped on top of the menu with no way back.
+  // `width` is only set in that mode, where the panel matches the menu it
+  // replaces; the desktop panel keeps its fixed w-56.
+  const isMobile = useIsMobileViewport();
+  const [pos, setPos] = useState<FlyoutPos | null>(null);
+  // The position last placed, read outside a setState updater: whether a measure moved anything is decided here,
+  // where measure() can answer it, never by a flag an updater sets (React may run the updater later, which left
+  // the flag reading "settled" and stopped the tracker while the panel still moved). See
+  // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits".
+  const placed = useRef<FlyoutPos | null>(null);
+  // Place the panel; true when it was already there (settled).
+  const place = useCallback((next: FlyoutPos | null): boolean => {
+    const prev = placed.current;
+    if (
+      prev &&
+      next &&
+      prev.left === next.left &&
+      prev.top === next.top &&
+      prev.width === next.width &&
+      prev.minHeight === next.minHeight
+    )
+      return true;
+    placed.current = next;
+    setPos(next);
+    return false;
+  }, []);
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (controlled) {
+        if (next !== open) onToggle?.();
+      } else {
+        setLocalOpen(next);
+      }
+    },
+    [controlled, open, onToggle],
+  );
+
+  // Place the flyout beside the trigger row: to the right when it fits, else
+  // to the left. Top-aligned with the row; when the panel would overflow the
+  // bottom it BOTTOM-ALIGNS to the row (opening upward) before falling back
+  // to a plain clamp. Runs before paint (useReposition) and again on scroll /
+  // resize / content grow.
+  //
+  // Returns whether the position it computed matches what's already on
+  // screen, so the tracker below can stop once things have settled.
+  const measure = useCallback(() => {
+    const trigger = triggerRef.current;
+    const panel = panelRef.current;
+    if (!trigger || !panel) return true;
+    const tr = trigger.getBoundingClientRect();
+    const pr = panel.getBoundingClientRect();
+    const m = VIEWPORT_EDGE_MARGIN;
+    const gap = 2;
+    // Mobile: sit exactly over the host menu, matching its box, so the child
+    // reads as having replaced the parent rather than as a stray panel. Falls
+    // through to the side layout if the trigger somehow has no menu ancestor.
+    if (isMobile) {
+      const host = trigger.closest(HOST_MENU)?.getBoundingClientRect();
+      if (host) {
+        // Cover the parent COMPLETELY (coverHost). A child shorter than its parent left
+        // the parent's remaining rows poking out below it, which reads as a
+        // stray panel dropped on the menu rather than as having drilled into
+        // it — and those rows are still tappable, so the two menus fight.
+        const { left, top, width, minHeight } = coverHost(
+          host,
+          pr.height,
+          { width: window.innerWidth, height: window.innerHeight },
+          m,
+        );
+        return place({ left, top, width, minHeight });
+      }
+    }
+    const fitsRight = tr.right + gap + pr.width + m <= window.innerWidth;
+    const rawLeft = fitsRight ? tr.right + gap : tr.left - gap - pr.width;
+    // Prefer hanging DOWN from the row. If that overflows the bottom, hang UP
+    // from it instead (the flip the trigger's own row anchors), and only if
+    // neither fits fall back to pinning at the top margin. Flipping keeps the
+    // panel attached to the row it belongs to; the old clamp-only version slid
+    // it up the screen until it no longer lined up with anything.
+    //
+    // A PANEL centres on the host menu instead. It is far taller than a list
+    // of sections and changes height as you use it (Choices adds an answer
+    // list and a preview), so hanging it from its row left it towering above
+    // or below the menu at a lopsided offset. Centred, it grows evenly both
+    // ways and always reads as belonging to the menu beside it; the clamp
+    // below still keeps it on screen.
+    const host = isPanel ? trigger.closest(HOST_MENU)?.getBoundingClientRect() : undefined;
+    const rawTop = host
+      ? host.top + host.height / 2 - pr.height / 2
+      : tr.top + pr.height + m <= window.innerHeight
+        ? tr.top
+        : Math.max(m, tr.bottom - pr.height);
+    // ROUND to whole pixels. getBoundingClientRect returns sub-pixel floats,
+    // and this used to be stored raw: a trigger sitting on a fractional
+    // boundary produced a hair-different `top` on every measurement, so the
+    // equality bail-out below never engaged and the panel re-rendered (and
+    // visibly jittered) on every frame of the tracker. Whole pixels give the
+    // comparison something stable to latch onto.
+    const left = Math.round(Math.max(m, Math.min(rawLeft, window.innerWidth - pr.width - m)));
+    const top = Math.round(Math.max(m, Math.min(rawTop, window.innerHeight - pr.height - m)));
+    return place({ left, top });
+  }, [isMobile, isPanel, place]);
+
+  const [trackNonce, setTrackNonce] = useState(0);
+  const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
+
+  const reposition = useCallback(() => {
+    if (!open) return;
+    measure();
+    retrack();
+  }, [open, measure, retrack]);
+  useReposition(reposition);
+
+  // Re-clamp when a section inside the flyout expands and grows the panel.
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const ro = new ResizeObserver(() => {
+      measure();
+      // A content change can also move the host menu (and so the trigger),
+      // so wake the tracker rather than relying on this one reading.
+      retrack();
+    });
+    ro.observe(panel);
+    return () => ro.disconnect();
+  }, [open, measure, retrack]);
+
+  // Track the TRIGGER while open. The host menu can grow or shrink under
+  // us with no scroll / resize event and no panel size change — expanding
+  // or collapsing one of its inline accordions re-lays the rows out, and
+  // a bottom-clamped menu then shifts wholesale — which left the flyout
+  // floating where its row USED to be. No observer fires for "an unrelated
+  // element moved", so poll the trigger's rect.
+  //
+  // The poll SETTLES: it stops after a few consecutive frames that agree on
+  // the position, and re-arms whenever something that could move the trigger
+  // happens (the panel resizing, a scroll, a viewport resize). It used to run
+  // unconditionally for the whole open lifetime, forcing two synchronous
+  // layout reads every frame forever — which is both wasteful and, when a
+  // measurement was unstable, an endless reposition the popover never
+  // recovered from.
+  useEffect(() => {
+    if (!open) return;
+    let raf = 0;
+    // Consecutive agreeing frames before we call it settled. More than one so
+    // a mid-animation measurement can't end the poll early.
+    let stable = 0;
+    const track = () => {
+      if (measure()) stable += 1;
+      else stable = 0;
+      if (stable >= SETTLE_FRAMES) return;
+      raf = window.requestAnimationFrame(track);
+    };
+    raf = window.requestAnimationFrame(track);
+    return () => window.cancelAnimationFrame(raf);
+  }, [open, measure, trackNonce]);
+
+  // Close the flyout on a click that's neither on its trigger nor inside its
+  // panel — i.e. another menu row, or off the menu entirely. The host menu
+  // keeps itself open for clicks inside the panel via the data-menu-flyout
+  // marker, so the two guards don't fight.
+  useEffect(() => {
+    if (!open) return;
+    // pointerdown, not mousedown: a touch only emits a compatibility mousedown
+    // when the gesture wasn't preventDefault'd, so on a phone this dismisser
+    // could simply never fire — the same flaw the tab menu's own dismisser had.
+    const onDown = (e: PointerEvent) => {
+      const t = e.target;
+      if (!(t instanceof Node)) return;
+      if (panelRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
+      // Clicking back into a text-edit session (the editor or its floating
+      // toolbar) keeps the flyout open — the context menu stays alongside
+      // the editor while a label is being edited (docs/specs/008-canvas/canvas-and-palette.md), and moving the
+      // caret shouldn't collapse the open category.
+      if (t instanceof Element && t.closest('[data-rich-text-session]')) return;
+      // Clicking a canvas ELEMENT retargets the host menu to it rather than
+      // dismissing it (docs/specs/008-canvas/canvas-and-palette.md menu-follows-selection), so the open flyout
+      // must ride along too — collapsing it on every element switch broke
+      // the style-several-elements-in-a-row flow. Empty-canvas clicks still
+      // close the whole menu (the canvas handler), which unmounts this.
+      // An element's own grips live in the canvas grips layer (data-grips-for), not inside it.
+      if (t instanceof Element && t.closest('[data-element-id], [data-grips-for]')) return;
+      setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [open, setOpen]);
+
+  return (
+    <div
+      className={flush ? '' : 'border-t border-slate-100 first:border-t-0 dark:border-slate-800'}
+    >
+      <button
+        ref={setTrigger}
+        type="button"
+        {...itemProps}
+        onClick={() => {
+          const next = !open;
+          place(null);
+          setOpen(next);
+          if (next) onOpen?.();
+        }}
+        aria-expanded={open}
+        aria-haspopup={kind === 'command' ? 'menu' : 'dialog'}
+        className={plain ? plainTriggerClass(open) : sectionTriggerClass(open)}
+      >
+        {plain ? (
+          <>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <span className="flex w-5 shrink-0 items-center justify-center text-slate-400 [&_svg]:h-4 [&_svg]:w-4">
+                {icon}
+              </span>
+              {title}
+            </span>
+            <ChevronRightIcon className="shrink-0 text-slate-400" />
+          </>
+        ) : (
+          <SectionTriggerFace icon={icon} title={title} />
+        )}
+      </button>
+      {open ? (
+        <Portal>
+          <FlyoutPanel
+            panelRef={panelRef}
+            trigger={triggerEl}
+            kind={kind}
+            isPanel={isPanel}
+            isMobile={isMobile}
+            pos={pos}
+            icon={icon}
+            title={title}
+            onClose={() => setOpen(false)}
+          >
+            {children}
+          </FlyoutPanel>
+        </Portal>
+      ) : null}
+    </div>
+  );
+}

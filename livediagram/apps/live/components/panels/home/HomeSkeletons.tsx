@@ -1,0 +1,84 @@
+// Home's loading state (docs/specs/013-workspace/explorer-home.md "States"): each skeleton has the
+// box of what replaces it, so the page lands without a shift. Decorative and hidden from assistive
+// technology; the busy section says it is loading.
+
+import {
+  COMPACT_CARD,
+  JUMP_BACK_IN_MIN_HEIGHT,
+  LARGE_CARD,
+  MOST_USED_GRID,
+  RECENT_GRID,
+  SKELETON,
+  STRIP_HEIGHT,
+  STRIP_THUMB,
+  STRIP_TILE,
+} from './home-styles';
+
+const GROUP_ITEMS = 4;
+const STRIP_ITEMS = 4;
+const ENTRY_ROWS = 3;
+
+function TileSkeleton({ thumb }: { thumb: string }) {
+  return (
+    <>
+      <div className={`${thumb} ${SKELETON}`} />
+      <div className="mt-1 h-4 py-0.5">
+        <div className={`h-3 w-3/4 ${SKELETON}`} />
+      </div>
+    </>
+  );
+}
+
+/** Jump Back In on a wide screen: both groups' labels and cards, in their reserved height. */
+export function GridSkeleton() {
+  return (
+    <div aria-hidden className={`flex flex-col gap-4 ${JUMP_BACK_IN_MIN_HEIGHT}`}>
+      <div>
+        <div className={`mb-2.5 h-4 w-20 ${SKELETON}`} />
+        <div className={MOST_USED_GRID}>
+          {Array.from({ length: GROUP_ITEMS }, (_, i) => (
+            <div key={i} className={`${LARGE_CARD} rounded-[18px] ${SKELETON}`} />
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className={`mb-2.5 h-4 w-16 ${SKELETON}`} />
+        <div className={RECENT_GRID}>
+          {Array.from({ length: GROUP_ITEMS }, (_, i) => (
+            <div key={i} className={`${COMPACT_CARD} rounded-[14px] ${SKELETON}`} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Jump Back In's phone strip. */
+export function StripSkeleton() {
+  return (
+    <div aria-hidden className={`-mx-1 flex ${STRIP_HEIGHT} gap-3 overflow-hidden px-1 pb-2 pt-1`}>
+      {Array.from({ length: STRIP_ITEMS }, (_, i) => (
+        <div key={i} className={STRIP_TILE}>
+          <TileSkeleton thumb={STRIP_THUMB} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function WhatHappenedSkeleton() {
+  return (
+    <div aria-hidden className="flex flex-col gap-1">
+      <div className={`mb-1 h-3 w-16 ${SKELETON}`} />
+      {Array.from({ length: ENTRY_ROWS }, (_, i) => (
+        <div key={i} className="flex h-14 items-center gap-3 px-2">
+          <div className={`h-7 w-7 shrink-0 rounded-full ${SKELETON}`} />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div className={`h-3 w-3/4 ${SKELETON}`} />
+            <div className={`h-2.5 w-1/3 ${SKELETON}`} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

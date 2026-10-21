@@ -1,0 +1,139 @@
+import { markupBounds } from '@livediagram/icons/centring';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import { articles, categories } from './articles';
+import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS, featureIcon } from './featureIcons';
+import {
+  FEATURE_CATEGORY_HEX,
+  FEATURE_ENTITY_HEX,
+  FEATURE_FALLBACK_HEX,
+  featureColour,
+} from './featureColours';
+
+// The feature-card icon + accent resolution (docs/specs/018-help/help-app.md).
+//
+// The state this replaced: 107 of the 172 landing cards under the ten feature
+// categories had no entry in FEATURE_ICONS, so nearly two thirds of the
+// catalogue drew the same `the-canvas` frame in the same fallback grey. Nothing
+// failed, because a missing key resolves to a valid icon — which is exactly why
+// it needs a test rather than a look.
+
+const featureCategories = categories.filter((c) => c.kind === 'feature');
+
+describe('feature category fallbacks', () => {
+  it('found the feature categories at all', () => {
+    expect(featureCategories.length).toBeGreaterThan(5);
+  });
+
+  it('gives every feature category a glyph and a hue', () => {
+    const missing = featureCategories.filter(
+      (c) => !FEATURE_CATEGORY_ICONS[c.slug] || !FEATURE_CATEGORY_HEX[c.slug],
+    );
+    expect(missing.map((c) => c.slug)).toEqual([]);
+  });
+
+  it('gives each category a distinct hue, so the fallback still groups', () => {
+    const hues = featureCategories.map((c) => FEATURE_CATEGORY_HEX[c.slug]);
+    expect(new Set(hues).size).toBe(hues.length);
+  });
+
+  it('defines no category fallback for a slug that is not a feature category', () => {
+    const known = new Set(featureCategories.map((c) => c.slug));
+    expect(Object.keys(FEATURE_CATEGORY_ICONS).filter((s) => !known.has(s))).toEqual([]);
+    expect(Object.keys(FEATURE_CATEGORY_HEX).filter((s) => !known.has(s))).toEqual([]);
+  });
+});
+
+describe('featureIcon / featureColour', () => {
+  it("prefers the feature's own glyph and hue over its category's", () => {
+    // `the-canvas` has both a bespoke entry and a category (canvas) fallback.
+    expect(featureIcon('the-canvas', 'canvas')).toBe(FEATURE_ICONS['the-canvas']);
+    expect(featureColour('the-canvas', 'canvas')).toBe(FEATURE_ENTITY_HEX['the-canvas']);
+  });
+
+  it('falls back to the top-level category for an unregistered slug', () => {
+    expect(featureIcon('no-such-feature', 'palette')).toBe(FEATURE_CATEGORY_ICONS['palette']);
+    expect(featureColour('no-such-feature', 'palette')).toBe(FEATURE_CATEGORY_HEX['palette']);
+  });
+
+  it('reads a NESTED category slug down to its first segment', () => {
+    expect(featureIcon('no-such-feature', 'palette/tools/data-elements')).toBe(
+      FEATURE_CATEGORY_ICONS['palette'],
+    );
+    expect(featureColour('no-such-feature', 'palette/tools/data-elements')).toBe(
+      FEATURE_CATEGORY_HEX['palette'],
+    );
+  });
+
+  it('falls back to the neutral defaults when there is no category either', () => {
+    expect(featureIcon('no-such-feature')).toBe(FEATURE_ICONS['the-canvas']);
+    expect(featureColour('no-such-feature')).toBe(FEATURE_FALLBACK_HEX);
+  });
+});
+
+describe('the catalogue as rendered', () => {
+  const inFeatureCategories = articles.filter((a) =>
+    featureCategories.some((c) => a.categorySlug.split('/')[0] === c.slug),
+  );
+
+  it('no longer draws the canvas frame for a card that is not about the canvas', () => {
+    const wrong = inFeatureCategories.filter(
+      (a) =>
+        a.categorySlug.split('/')[0] !== 'canvas' &&
+        featureIcon(a.slug, a.categorySlug) === FEATURE_ICONS['the-canvas'],
+    );
+    expect(wrong.map((a) => a.slug)).toEqual([]);
+  });
+
+  it('resolves a glyph and an accent for every feature card', () => {
+    for (const a of inFeatureCategories) {
+      expect(featureIcon(a.slug, a.categorySlug)).toBeTruthy();
+      expect(featureColour(a.slug, a.categorySlug)).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+
+  // The guard that keeps the catalogue drawn.
+  //
+  // Every one of the 172 cards has its own glyph now, which is what makes this
+  // assertable at all — and asserting it is the only thing that keeps it true. A
+  // new landing page with no entry here does not break: it silently resolves to
+  // its category's fallback and looks like every other undrawn card in that
+  // category, which is exactly the state 16 batches of work were spent leaving.
+  // Nothing at runtime can notice that, so the check has to.
+  //
+  // If this fails, the fix is an entry in FEATURE_ICONS and FEATURE_ENTITY_HEX
+  // (the test below insists on both), not an exemption here. docs/specs/018-help/help-app.md records the
+  // house style and the one rule worth knowing: draw what the card is ABOUT, and
+  // check it does not land on a glyph the set already uses.
+  it('gives every feature card a glyph of its own, not just a fallback', () => {
+    const undrawn = inFeatureCategories
+      .filter((a) => !FEATURE_ICONS[a.slug])
+      .map((a) => `${a.categorySlug}/${a.slug}`);
+    expect(undrawn).toEqual([]);
+  });
+
+  // A bespoke glyph paired with a category hue (or the reverse) reads as an
+  // oversight, so the two per-feature maps are kept key-for-key identical.
+  it('keeps the per-feature icon and hue maps in step', () => {
+    const iconKeys = Object.keys(FEATURE_ICONS).sort();
+    const hueKeys = Object.keys(FEATURE_ENTITY_HEX).sort();
+    expect(iconKeys).toEqual(hueKeys);
+  });
+});
+
+describe('feature icon geometry', () => {
+  // Every glyph draws inside its 24-unit box (docs/specs/004-interface-design/iconography.md), stroke included.
+  // A malformed path escapes the box and renders as clipped fragments.
+  const outside = (markup: string) => {
+    const b = markupBounds(markup, Number(/stroke-width="([\d.]+)"/.exec(markup)?.[1] ?? 0));
+    // Null = unmeasurable (a rotated sticky note); only measurable geometry is held to the box.
+    return !!b && (b.minX < 0 || b.minY < 0 || b.maxX > 24 || b.maxY > 24);
+  };
+
+  it('keeps every feature glyph inside its viewBox', () => {
+    const escaped = Object.entries(FEATURE_ICONS)
+      .filter(([, node]) => outside(renderToStaticMarkup(node)))
+      .map(([slug]) => slug);
+    expect(escaped).toEqual([]);
+  });
+});

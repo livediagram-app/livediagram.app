@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "node"],
+    // Workers runtime, not a browser — see the note in `apps/api/tsconfig.json`.
+    "lib": ["ES2024"],
+    "target": "ES2024",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", ".wrangler"]
+}

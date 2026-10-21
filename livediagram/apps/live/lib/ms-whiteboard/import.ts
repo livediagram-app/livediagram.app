@@ -1,0 +1,117 @@
+// The card's two steps (docs/specs/020-import-export/whiteboard-import.md "Importing in the
+// dialog"): list the boards a pick holds, then turn the chosen ones into board scenes.
+import type { BoardScene } from '@/lib/board-scene/scene';
+import {
+  findBoards,
+  readBoardFiles,
+  sniffImageType,
+  type BoardFiles,
+  type ExportFileSet,
+} from './board-export';
+import { readBoard, type WbBoard } from './elements';
+import { replayBoard, type ReplayedBoard } from './replay';
+import { boardDates, boardTitle, type BoardDates } from './board-identity';
+import { boardDocumentName } from '@/lib/board-scene/board-document';
+import { boardToScene, type BoardImage } from './to-scene';
+import { debugLog } from '@/lib/debug-log';
+
+export type BoardSummary = {
+  dir: string;
+  /** The board's own title, cleaned; absent for an untitled board. */
+  title?: string;
+  /** The document's name, as the import will give it (board-document.ts). */
+  name: string;
+  /** The document's dates, from the board record. */
+  dates: BoardDates;
+  elementCount: number;
+  /** Decoded once while listing, reused by the import. */
+  prepared: { files: BoardFiles; replayed: ReplayedBoard; board: WbBoard };
+};
+
+export type BoardFailure = { title: string; message: string };
+
+export const MESSAGES = {
+  noBoards: 'No Microsoft Whiteboard boards found. Pick a board folder or its .zip.',
+  unreadable: "This board's files couldn't be read.",
+} as const;
+
+const label = (dir: string) => dir.split('/').pop() || dir;
+
+/** Newest first, then by title (blueprint default M4). */
+function byRecency(a: BoardSummary, b: BoardSummary): number {
+  const ma = a.dates.modifiedAt ?? '';
+  const mb = b.dates.modifiedAt ?? '';
+  if (ma !== mb) return ma < mb ? 1 : -1;
+  return a.name.localeCompare(b.name);
+}
+
+/** Every board in the pick, decoded; boards that can't be read are listed as failures. */
+export async function listBoards(
+  files: ExportFileSet,
+): Promise<
+  { ok: true; boards: BoardSummary[]; failures: BoardFailure[] } | { ok: false; error: string }
+> {
+  const refs = findBoards(files);
+  debugLog('[ms-whiteboard] boards found', { count: refs.length });
+  if (refs.length === 0) return { ok: false, error: MESSAGES.noBoards };
+  const boards: BoardSummary[] = [];
+  const failures: BoardFailure[] = [];
+  for (const ref of refs) {
+    const read = await readBoardFiles(files, ref).catch(() => null);
+    const replayed = read?.ok ? replayBoard(read.board.treeInit, read.board.changes) : null;
+    if (!read?.ok || !replayed) {
+      console.warn('[ms-whiteboard] board failed', {
+        board: label(ref.dir),
+        rejection: 'board-unreadable',
+      });
+      failures.push({ title: label(ref.dir), message: MESSAGES.unreadable });
+      continue;
+    }
+    debugLog('[ms-whiteboard] replayed', replayed.stats);
+    const board = readBoard(replayed);
+    const dates = boardDates(read.board.created, read.board.modified);
+    const title = boardTitle(read.board.title);
+    boards.push({
+      dir: ref.dir,
+      ...(title ? { title } : {}),
+      name: boardDocumentName(
+        { title } as BoardScene,
+        dates.createdAt === undefined ? undefined : Date.parse(dates.createdAt),
+      ),
+      dates,
+      elementCount: board.elements.length,
+      prepared: { files: read.board, replayed, board },
+    });
+  }
+  if (boards.length === 0 && failures.length === 0) return { ok: false, error: MESSAGES.noBoards };
+  return { ok: true, boards: boards.sort(byRecency), failures };
+}
+
+/** A listed board as a scene, its images read from the pick. */
+export async function boardSceneOf(
+  files: ExportFileSet,
+  summary: BoardSummary,
+): Promise<BoardScene> {
+  const { files: board, replayed, board: decoded } = summary.prepared;
+  const images = new Map<string, BoardImage>();
+  const wanted = new Set(replayed.imageObjects.values());
+  for (const [objectId, path] of board.objects) {
+    if (!wanted.has(objectId)) continue;
+    const read = files.get(path);
+    const bytes = read ? await read().catch(() => null) : null;
+    const mimeType = bytes ? sniffImageType(bytes) : null;
+    if (bytes && mimeType) images.set(objectId, { bytes, mimeType });
+  }
+  const scene = boardToScene({
+    board: decoded,
+    ...(summary.title ? { title: summary.title } : {}),
+    ...summary.dates,
+    ...(board.id ? { sourceId: `microsoft-whiteboard:${board.id}` } : {}),
+    imageObjects: replayed.imageObjects,
+    images,
+  });
+  const kinds: Record<string, number> = {};
+  for (const item of scene.items) kinds[item.kind] = (kinds[item.kind] ?? 0) + 1;
+  debugLog('[ms-whiteboard] scene', { items: kinds, notes: scene.notes });
+  return scene;
+}

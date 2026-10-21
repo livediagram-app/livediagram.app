@@ -1,0 +1,563 @@
+name = "livediagram-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+
+# Bundle the share card's fonts (packages/render-png/fonts, Inter Regular and Bold) as raw bytes for the resvg PNG
+# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
+# draws shapes but no text. Inheritable, so staging takes it too.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf", "**/*.otf"]
+
+# Plain (non-secret) vars. Everything here is every fork's default too, so
+# what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
+# image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
+# with `wrangler deploy --var` on livediagram.app's own repository only, and
+# then verifies on the live worker (docs/specs/016-platform/deployment.md
+# "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
+# first-party product analytics + the public /telemetry dashboard
+# (docs/specs/017-telemetry/telemetry.md): "true" turns it on; anything else,
+# or absent, keeps it fully off.
+[vars]
+
+# Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
+# Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
+# dashboard-only value is invisible to code review, so the repo read as though
+# this endpoint were locked down while production served it wide open. A probe
+# of production (POST /api/ai with no Origin) answered `400 invalid mode`
+# rather than `403 origin_not_allowed`, which is only possible with this unset —
+# so the key behind `aiEnabled: true` was spendable from any page.
+#
+# BOTH hosts, and `www` is the one that matters: livediagram.app 301-redirects
+# to www.livediagram.app, so that is the origin a real browser sends. Listing
+# only the apex — which is what the Env comment in src/types.ts suggested, and
+# what staging does for its own single host — would 403 every genuine AI request
+# in the editor. The apex stays listed so dropping the redirect can't break it.
+#
+# Scope of the protection, honestly: this stops a third-party WEB PAGE spending
+# the key, because a browser sets Origin and cannot forge it. It does NOT stop a
+# non-browser caller, which can send any Origin it likes. Bounding the budget
+# against that needs AI_REQUIRE_CLERK (deliberately NOT set here: the editor
+# offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
+# presence alone, so requiring sign-in would leave guests a visible panel that
+# 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
+# per IP) remains the only other control.
+AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
+
+# Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
+# never only in the dashboard: every `wrangler deploy` replaces the worker's
+# plain vars with the ones this file declares, so a dashboard-only value is
+# silently wiped by the next deploy.
+#
+# GUEST_SIGNING_LIVE_AT: when production started signing guest ids. The
+# GUEST_ID_HMAC_SECRET sync shipped with the deploy that started
+# 2026-09-25T12:00:41Z, and the first signed upgrade landed at 12:03:44Z, so
+# 12:00:00Z is the latest instant at which every existing id was unsigned. An id
+# whose participant row is older may still run its one-time upgrade unsigned.
+#
+# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
+# owner leg and the legacy upgrade require a valid guest signature. Blank: not
+# armed. Every entry path now resolves a signed id before its first api call,
+# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
+# regression fails the suite; re-arming production is Tom's or Webber's call
+# (docs/specs/015-api/public-api-and-tokens.md §6).
+# `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
+# can predate their local signing secret and would be locked out of their own
+# test data.
+GUEST_SIGNING_LIVE_AT = "1790337600000"
+GUEST_SIG_ENFORCE_AFTER = ""
+
+# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
+# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
+# from an older CLI.
+OAUTH_ISSUER = "https://mcp.livediagram.app"
+
+# Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md). No binding
+# of its own: it rides the D1 database above (drive_connections, drive_items).
+#   - GOOGLE_CLIENT_ID: plain var, livediagram.app's own OAuth client, so it
+#     lives in `hosted-vars.json` (a fork has its own Google project and must
+#     not inherit ours), per environment: production and staging are separate
+#     Google Cloud projects with separate client ids. The hosted build bakes
+#     the same environment's id into the live app as NEXT_PUBLIC_GOOGLE_CLIENT_ID
+#     (scripts/hosted-vars.mjs build-env --env ...), and verify / verify-build
+#     prove the two agree on every deploy.
+#   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand exactly like
+#     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
+#     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
+# Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the live app
+# shows no Drive entry, which is the self-host default.
+
+# D1 database holding documents + participants. The local binding name
+# (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
+# is the Cloudflare-side name (must be created via `wrangler d1 create
+# livediagram` or the dashboard). `database_id` is filled in after the
+# database is created — until then deploys will fail loudly.
+[[d1_databases]]
+binding = "DB"
+database_name = "livediagram"
+database_id = "79642003-5866-4c5a-9011-7fbeb0de6b58"
+migrations_dir = "migrations"
+
+# R2 bucket holding the bytes of every uploaded image element
+# (docs/specs/009-elements/images.md). The binding name `IMAGES` is what `src/index.ts` reads
+# via the Env type. The bucket must be created out of band via
+# `wrangler r2 bucket create livediagram-images` (production) or
+# the dashboard. Leaving the binding absent locally puts the api
+# in "no uploads" mode: the image endpoints return 503 and the
+# editor's palette hides the Image entry. See docs/specs/009-elements/images.md + docs/specs/002-project-scope/open-source-and-business-model.md
+# self-host promise.
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "livediagram-images"
+
+# Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
+# Caps writes at 300 / 60s per owner: a generous ceiling for normal
+# editing (autosave + comment posts + log appends) but well below
+# what a malicious bot would push through. The api worker calls
+# `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
+# endpoint; over-limit requests get a 429. Namespace ids are
+# arbitrary local identifiers (Cloudflare scopes by binding name +
+# script). Self-host: when this binding is absent the rate-limit
+# helper falls through to "allow" so deployments without the
+# feature still work.
+[[unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+# Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
+# docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
+# public events endpoint can never eat into a user's document-write
+# budget. 120 batches / 60s per IP is generous for a real editor
+# session (which flushes a handful of batches a minute) while bounding
+# how fast one source can flood D1 / inflate the public dashboard.
+# Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
+# helper allows, so self-host still works.
+[[unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+# Durable Object for per-document realtime (presence + broadcast). One
+# instance per document id; clients connect via WebSocket through the
+# `/api/documents/<id>/ws` endpoint.
+[[durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DiagramRoom"]
+
+# The class was DiagramRoom until the container became a document
+# (docs/specs/006-document/document.md). A rename keeps every room's storage.
+[[migrations]]
+tag = "v2"
+renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+
+# Scheduled jobs the worker handles via the `scheduled` export. One
+# entry per cron; each fires the same handler with `event.cron` set
+# to the matching pattern so the body can dispatch.
+#
+# `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
+# on this trigger, among them:
+#   - events, 60-day floor (docs/specs/017-telemetry/telemetry.md "Retention"). The /telemetry
+#     dashboard surfaces a 30-day max window, so anything past 60
+#     days is dead storage.
+#   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
+#     from R2 + D1 once nothing references them.
+# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
+# warnings), both no-ops when RESEND_API_KEY is unset.
+[triggers]
+crons = ["0 3 * * *"]
+
+# Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
+# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
+# or telemetry budgets. 20 requests / 60s per IP is generous for a
+# real user session while bounding runaway OpenAI spend. Absent binding
+# → helper allows, so self-host still works without this feature.
+[[unsafe.bindings]]
+name = "AI_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+# Per-IP limiter for share-code resolution (GET /api/share/<code>). That
+# read carries the optional share password and is otherwise unauthed +
+# exempt from the write limiter, so without this an attacker holding a
+# code could brute-force the password unbounded. 30 resolves / 60s per IP
+# is ample for legit visitors. Separate namespace. Absent binding → the
+# index.ts check is skipped, so self-host still works.
+[[unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+# Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
+# page fetch for link-card previews. 60/60s is plenty for a user dropping
+# bookmark cards. Separate namespace. Absent binding → check skipped (self-host).
+[[unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+# Per-token read throttle for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5): an external
+# integration's reads, keyed on the token id, so one runaway script can't hammer
+# reads independently of the owner's app use. Token WRITES ride
+# WRITE_RATE_LIMITER (also keyed on the token id). Absent binding → allow.
+[[unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+# Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
+# "Tokens"): each call reaches Google's token endpoint to mint a one-hour access
+# token, so a healthy browser needs about one an hour. 10 / 60s per Clerk user
+# id bounds a looping client far below the general write limiter's 300. The
+# route answers 429 drive_token_rate_limited, which the browser treats like
+# Google's own rate limit (it backs off). Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "DRIVE_TOKEN_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
+
+# Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
+# docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
+# reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
+# looping client. Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "HOME_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1008"
+simple = { limit = 60, period = 60 }
+
+# Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md
+# §7, C7), keyed community:<network> (an IPv4 /24 or IPv6 /56, community-network.ts). These callers are anonymous, so the owner-keyed write limiter would put them all on
+# one key. 30 / 60s is far above a person liking cards. Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "COMMUNITY_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1009"
+simple = { limit = 30, period = 60 }
+
+# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
+# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
+# Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "WORKBENCH_TICKET_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1010"
+simple = { limit = 30, period = 60 }
+
+# Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits"),
+# keyed form:<network> and form-read:<network> (an IPv4 /24 or IPv6 /56, as Community's). Respondents are anonymous,
+# so the owner-keyed write limiter would put them all on one key. 60 / 60s lets a classroom behind one address
+# answer together. Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "FORM_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1011"
+simple = { limit = 60, period = 60 }
+
+# Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
+# email"): GET and POST /api/teams/invite-decline/<token>, keyed invite-decline:<network> (an IPv4 /24 or IPv6 /56).
+# Open doors, so the owner-keyed write limiter would put every caller on one key. 20 / 60s is far above one
+# person declining. Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "TEAM_INVITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1012"
+simple = { limit = 20, period = 60 }
+
+# The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
+# endpoint, and WHICH provider is inferred from which key is set — a key is
+# provider-specific, so its name says whose it is (see src/ai-provider.ts):
+#
+#   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
+#   OPENAI_API_KEY           -> OpenAI
+#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_MODEL
+#
+# All three are SECRETS, provisioned out-of-band:
+#   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
+#   Production: `wrangler secret put <NAME>`.
+#
+# Each feature takes its own provider from the keys that are set: the assistant
+# (/api/ai) prefers OpenAI, the crop reader (/api/ai/read-notes) prefers Google,
+# and one key serves both. Production sets both named keys to split them.
+# AI_BASE_URL / AI_MODEL / AI_VISION_MODEL are plain [vars]; AI_MODEL is the
+# assistant's model and AI_VISION_MODEL the reader's (docs/specs/007-editor/ai-assistance.md).
+#
+# With no key the whole surface is hidden: GET /api/capabilities answers
+# { aiEnabled: false }, the editor shows no AI panel and no photo import, and
+# the AI routes answer 503. That is the self-host default.
+
+# Per-owner soft caps on the image gallery (docs/specs/009-elements/images.md). Both default to
+# "no limit" so OSS self-host operators run their own storage budget;
+# hosted livediagram.app sets both, through `hosted-vars.json` (see the top of
+# this file), so a single owner can't drain the R2 bucket. POST /api/images
+# returns 403 { error: "gallery_full" } once either cap is reached:
+#
+#   - IMAGE_MAX_PER_OWNER: maximum number of image rows one owner
+#     may keep in the gallery. Hosted: "100".
+#   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
+#     across one owner's images. Hosted: "104857600" (100 MB).
+#
+# Plain vars; values are decimal strings parsed via parseInt at request time.
+# Unset, blank, "0", or non-numeric values all read as "no limit". A self-host
+# sets them in [vars] above, never only in the Cloudflare dashboard: every
+# `wrangler deploy` replaces the worker's plain vars with the ones it declares.
+
+# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
+# lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
+# the whole email feature inert — no sends, and the email_lifecycle table
+# is never touched, so a deployment with email off does zero extra work:
+#
+#   - RESEND_API_KEY: worker secret. Local dev: drop
+#     `RESEND_API_KEY=re_...` into `apps/api/.dev.vars` (gitignored).
+#     Production: `wrangler secret put RESEND_API_KEY`.
+#   - RESEND_FROM: optional [vars] From identity, e.g.
+#     "livediagram <hello@livediagram.app>" (the default). The domain
+#     must be verified in Resend.
+#   - APP_BASE_URL: optional [vars] public origin for links in emails.
+#     Defaults to "https://livediagram.app".
+
+# CLERK_JWKS_URL is provisioned out-of-band so the value never lands
+# in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+#
+#   - Local dev: drop `CLERK_JWKS_URL=https://...` into
+#     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
+#     next `wrangler dev`.
+#   - Production: stored as a Cloudflare Worker secret via
+#     `wrangler secret put CLERK_JWKS_URL`. The deploy workflow
+#     pulls it from the GitHub repo secret `CLERK_JWKS_URL` and
+#     pipes it into `wrangler secret put` on every deploy so the
+#     value can rotate by editing the GitHub secret. Secrets
+#     persist across deploys independently of this file.
+#
+# When the secret is unset the api worker stays in pure-guest mode
+# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
+# URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
+# is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
+# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
+# (production tenant).
+#
+# GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
+# `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
+# secret in prod; never in [vars] — it's secret material). When set, the
+# worker mints signed guest ids and /api/migrate requires a valid
+# signature, closing the "observe a guest id, claim its data" hole
+# (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
+# migrate (pure-guest / single-user self-host).
+
+# INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
+# OWN workers over a service binding, rather than from the open internet
+# (docs/specs/017-telemetry/telemetry.md, issue #36). Provisioned out-of-band like the two above; never in
+# [vars] — it is secret material:
+#
+#   - Local dev: `INTERNAL_EVENTS_KEY=...` in `apps/api/.dev.vars`
+#     (gitignored). Rarely needed — local dev doesn't run the MCP worker
+#     over a service binding.
+#   - Production: `wrangler secret put INTERNAL_EVENTS_KEY`, and the SAME
+#     value on the mcp worker (`wrangler secret put INTERNAL_EVENTS_KEY`
+#     from apps/mcp). Generate with `openssl rand -hex 32`.
+#
+# Why it exists: a service-binding call carries no CF-Connecting-IP, so
+# `clientIp` fell back to the literal 'anonymous' and every internal caller
+# in the world shared ONE 120/min EVENTS_RATE_LIMITER key, with the overflow
+# dropped as a 204 the caller can't distinguish from success. Since the mcp
+# worker posts one request per tool call, that ceiling was roughly two tool
+# calls per second globally. A matching key exempts those calls from the
+# per-IP limiter, which exists to stop ANONYMOUS abuse of a public endpoint
+# and was never aimed at us.
+#
+# Unset on either side = nobody is exempt, which is the pre-existing
+# behaviour and needs no configuration, so a self-host can ignore this.
+# The two sides MUST match: a mismatch is silent (the caller simply lands
+# back in the shared bucket), so check `wrangler secret list` on both if
+# Mcp·Used counts look flat.
+
+
+# ---------------------------------------------------------------------------
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-api-staging` via
+# `wrangler deploy --env staging`.
+#
+# Everything below is restated ON PURPOSE. Wrangler does NOT inherit
+# bindings into a named environment: `vars`, `d1_databases`, `r2_buckets`,
+# `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
+# block omitted here is a binding MISSING from the deployed staging worker,
+# with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
+# carry over from the production config above.
+#
+# The values that genuinely differ from production are the D1 database, the
+# R2 bucket, and the email/AI vars that name the public origin. Everything
+# else agreeing with production is the point: staging is a rehearsal.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-api-staging"
+
+# TELEMETRY_ENABLED and the image caps come from `hosted-vars.json`, exactly as
+# for production (see the top of this file). Staging's events land in its own D1,
+# on STAGING's /telemetry dashboard, never in production's published numbers.
+[env.staging.vars]
+# APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
+# back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
+RESEND_FROM = "livediagram staging <hello@livediagram.app>"
+
+# Lock the AI endpoint to the staging origin so the OpenAI key behind it
+# can't be spent from a third-party page (docs/specs/007-editor/ai-assistance.md). Production states the
+# equivalent in the top-level [vars] above, for the same reason: the
+# environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
+# edge".
+AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
+
+# Guest signature enforcement, matching production (see the top-level [vars]).
+# Staging's own database dates from 2026-09-17 and signs with its own secret;
+# its test guests take the same dates rather than drift from production.
+GUEST_SIGNING_LIVE_AT = "1790337600000"
+GUEST_SIG_ENFORCE_AFTER = ""
+
+# The staging MCP worker's OAuth server, for the CLI against staging.
+OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
+# No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
+# requiring sign-in here made staging refuse what production allows (the photo
+# reader stopped with "sign in required"), which is drift, not a staging test.
+
+# Own database, created 2026-09-17. Empty until the first staging deploy
+# applies the migrations in `migrations/` against it — which is the whole
+# reason this environment exists (docs/specs/016-platform/staging-environment.md).
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "livediagram-staging"
+database_id = "fd18e315-baad-48d5-b2c7-4a14a793e7b4"
+migrations_dir = "migrations"
+
+# Own bucket: `wrangler r2 bucket create livediagram-images-staging`. Sharing
+# production's would let the staging retention cron delete real image bytes.
+[[env.staging.r2_buckets]]
+binding = "IMAGES"
+bucket_name = "livediagram-images-staging"
+
+# Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
+# scopes a namespace per script, and `livediagram-api-staging` is a different
+# script, so these are already separate counters. Renumbering them would
+# imply the number carries meaning across workers, which it doesn't.
+[[env.staging.unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "AI_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "DRIVE_TOKEN_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "HOME_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1008"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "COMMUNITY_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1009"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "WORKBENCH_TICKET_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1010"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "FORM_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1011"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "TEAM_INVITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1012"
+simple = { limit = 20, period = 60 }
+
+# A different script is a different Durable Object namespace, so staging's
+# DOCUMENT_ROOM instances are separate from production's for free. The class
+# still needs its own migration tag in this environment.
+[[env.staging.durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_classes = ["DiagramRoom"]
+
+[[env.staging.migrations]]
+tag = "v2"
+renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+
+# The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
+# staging too, against staging's own data. Restated rather than inherited so
+# that reading this block tells you what the staging worker actually does.
+[env.staging.triggers]
+crons = ["0 3 * * *"]
+
+# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
+# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
+# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
+# hand exactly as they are for production:
+#   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
+# The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:
+#   cd apps/api && wrangler secret put DRIVE_TOKEN_KEY --env staging
+# with a DRIVE_TOKEN_KEY of its own, never production's, so a staging row can
+# never open a production refresh token. Staging has its OWN Google Cloud
+# project: its GOOGLE_CLIENT_ID is the `environments.staging` entry of
+# hosted-vars.json, its client secret belongs to that project, and its Picker
+# key is the NEXT_PUBLIC_GOOGLE_API_KEY_STAGING GitHub secret. Its client lists
+# https://staging.livediagram.app plus the two localhost dev origins, and its
+# Drive UI integration opens https://staging.livediagram.app/drive/open.
+# Worker secrets are per-environment, so staging's never collide with
+# production's.

@@ -1,0 +1,47 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ExplorerPanelLayout } from '@/components/illustrations/explorer-structure';
+
+export const metadata = helpMetadata({
+  title: 'Explorer Panel',
+  description:
+    'Your whole library without leaving the editor: the Explorer panel opens from the menu button with a rail of sections beside a pane that shows each one.',
+  path: '/help/explorer/explorer-panel/',
+});
+
+<ArticleLayout
+  title="Explorer Panel"
+  description="The Explorer inside the editor: browse your library and open another document without leaving the one you are in."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Explorer panel** is the Explorer inside the editor. Press the **menu button** (☰) in the top-left corner of the canvas and it opens under the button; press the button again, or click anywhere outside, and it closes. It holds the same sections as the [full-page Explorer](/help/explorer/explorer-page/), so you can browse your library, catch up on what happened and open another document without leaving the canvas you are on.
+
+## What the panel shows
+
+- **Current Document** at the top is the document you are in: its thumbnail, its name, when it was last saved, its visibility badge (**Private**, **Shared**, **Team**, **Public** or **This Browser**) at the right, and its **⋯** menu. **Click the name to rename it** in place: Enter saves, Escape keeps the old name. Hover the badge to see who can see the document.
+- **The rail** down the left lists every section, grouped as on the Explorer page: **Overview** (Home, Inbox, Timeline, Shared With Me), **Spaces** (My Documents and each team) and **More** (This Browser, when documents are saved only here, then [Tags](/help/explorer/tags/), Library and Trash).
+- **The pane** on the right shows the section you pick. Nothing sends you away from the editor: **Home**, the **Inbox**, the **Timeline**, the **Library** (Image gallery, Themes and Shape libraries) and the **Trash** all open right there. **My Documents**, each team, **This Browser** and **Shared With Me** list their folders and documents, each document with its thumbnail and when it was last updated; a folder opens right there in the pane, with a path above it back to where you started, and picking a document opens it in the editor. **Open Page** at the top of the pane takes that section to the full Explorer, and **New Folder** makes a folder in My Documents or the team you are looking at.
+- The panel opens on **Home** (the documents you were last in, and what others did since) and then remembers the section you last picked.
+- Along the foot are the product's other places: **Home**, **Explorer**, **Community** and **Help**.
+
+<Figure caption="The Explorer panel open under the menu button: the Current Document card, the rail of sections, and My Documents in the pane.">
+  <ExplorerPanelLayout />
+</Figure>
+
+It is the same data as the full page: folders, ownership, and sharing all behave identically. Each document has the document menu from its **⋯** button, a right-click, or **Shift+F10**, so **Change Folder**, **Favourite** and **Hide from Recent** work here as well. A document saved only in this browser carries the **This Browser** pill ([Offline Mode](/help/privacy-and-security/offline-mode/)). Drag one of your own documents onto one of your folders to file it, or onto **My Documents** in the rail to put it back at the root.
+
+The keyboard works as on the Explorer page: in the rail, **Up** and **Down** move between sections and **Enter** picks one; in the pane, **Up** and **Down** move between rows and **Enter** opens one. Answering team invites and creating a team happen in the full Explorer.
+
+The **⋯** button in the panel's header, beside the help button, opens a menu with **New Document** and **Open Explorer** (the full-page library), then **Share** and **Export** for the document you are in, then **Search**, **GitHub** (the open-source code), **Licences** and **Settings**. With [power user mode](/help/user-interface/power-user-mode/)'s Minimal chrome on, the help button moves into this menu as **Help**.
+
+## When you will see it
+
+- **In the editor**, to jump to another document without going back to the library. [Zen mode](/help/tools/zen-mode/) hides the menu button with the rest of the chrome.
+- **On a phone**, the menu button sits in its own card at the left of the palette strip, and the panel opens under it across the screen: the sections become a row of chips you swipe sideways, with the picked one's pane beneath. Held sideways, a phone has no menu button and no Explorer; turn it upright to open the Explorer.
+- **When a document can't be opened**, it stays available beside the error screen, so you can pick another document.
+
+Like everywhere else in the Explorer, the panel works whether or not you are signed in, showing the documents your browser or account owns.
+
+</ArticleLayout>

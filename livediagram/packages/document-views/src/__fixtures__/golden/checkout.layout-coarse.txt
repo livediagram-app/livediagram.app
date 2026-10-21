@@ -1,0 +1,5 @@
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+canvas: 98eb / 048c c991 ca76 e6d7 / cb02 / 480a 0c84
+048c: b811 / a3cf / 649c
+c991: 202b 146b / 6406 e4a8 / 12de 0556
+ca76: d41e / 822f

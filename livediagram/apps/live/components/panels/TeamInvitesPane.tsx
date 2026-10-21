@@ -1,0 +1,84 @@
+'use client';
+
+import { lucideGlyph, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { lucideMail } from '@livediagram/icons/lucide';
+
+import type { TeamInvite } from '@/lib/api-client';
+import { colorForKey, initialsOf } from '@/lib/identity';
+import { Button, EmptyState } from '@livediagram/ui';
+
+// Right-pane Invites view for the Explorer (docs/specs/013-workspace/teams.md accept/decline):
+// one card per pending invite — team monogram, name, organisation,
+// joined-member count — with Accept as the primary action and a
+// quieter Decline. State and the api calls live in useTeams; this is
+// pure render, like the other explorer views.
+
+export function TeamInvitesPane({
+  invites,
+  onAccept,
+  onDecline,
+}: {
+  invites: TeamInvite[];
+  onAccept: (invite: TeamInvite) => void;
+  onDecline: (invite: TeamInvite) => void;
+}) {
+  if (invites.length === 0) {
+    return (
+      <EmptyState
+        icon={<MailIcon />}
+        title="No pending invites"
+        description="When someone adds you to a team, the invitation shows up here for you to accept or decline."
+      />
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-3">
+      {invites.map((invite) => {
+        const subtitle = [
+          invite.team.organisation,
+          `${invite.memberCount} ${invite.memberCount === 1 ? 'member' : 'members'}`,
+        ]
+          .filter(Boolean)
+          .join(' · ');
+        return (
+          <li
+            key={invite.memberId}
+            className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+          >
+            <span
+              aria-hidden
+              style={{
+                ...identityVars(colorForKey(invite.team.id)),
+              }}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white ${IDENTITY_FILL}`}
+            >
+              {initialsOf(invite.team.name)}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                {invite.team.name}
+              </span>
+              <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                {subtitle}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onDecline(invite)}
+              className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              Decline
+            </button>
+            <Button size="xs" onClick={() => onAccept(invite)} className="shrink-0 shadow-sm">
+              Accept
+            </Button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+// Envelope — the empty-state badge glyph for pending invites.
+const MailIcon = lucideGlyph(lucideMail, 28);

@@ -1,0 +1,919 @@
+import { memo, useRef, useState } from 'react';
+import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
+import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
+import {
+  BORDER_DASH_ARRAY,
+  DEFAULT_BOX_RADIUS_PX,
+  MIND_NODE_RADIUS_PX,
+  cornerRadiusPx,
+  finishBorderStroke,
+  finishCornerFallbackPx,
+  finishOwnCorner,
+  BORDER_STROKE_PX,
+  DEFAULT_BORDER_STYLE,
+  PADDING_PX,
+  defaultPadding,
+  defaultFillColor,
+  defaultStrokeColor,
+  defaultTextAlign,
+  defaultTextColor,
+  ownColours,
+  isSelfDrawingShape,
+  isUprightTitle,
+  labelBodyInset,
+  uprightTitleStrip,
+  voteKeyOf,
+  type ShapeMarker,
+  type TextSize,
+  withTagAccent,
+  rotationOf,
+  finishSplitsFace,
+  faceFinishOf,
+} from '@livediagram/document';
+import { renderLabel } from '@/components/canvas/element-labels';
+import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
+import { LaneGutter } from '@/components/canvas/LaneGutter';
+import { uprightTitleFrame } from '@/components/canvas/upright-title';
+import { EntityView } from '@/components/canvas/entity/EntityView';
+import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
+import { elementAriaLabel, elementRole } from '@/lib/element-names';
+import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
+import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
+import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
+import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
+import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
+import { useTextHug } from '@/components/canvas/useTextHug';
+import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
+import { PageCornerFold } from '@/components/canvas/PageCornerFold';
+import { ReactionBurst } from '@/components/canvas/ReactionBurst';
+import { FenceView } from '@/components/canvas/collab/FenceView';
+import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
+import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
+import { RoomView } from '@/components/canvas/collab/RoomView';
+import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { describeVariant, editingLook } from '@/components/canvas/element-variant';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import { SketchFace } from '@/components/canvas/SketchFace';
+import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
+import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
+import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
+import { useTagColours } from '@/components/canvas/TagColoursContext';
+import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
+import { ElementIndicators } from '@/components/canvas/ElementIndicators';
+import { indicatorBacking } from '@/components/canvas/indicator-items';
+import { useElementIndicators } from '@/components/canvas/useElementIndicators';
+import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
+import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
+import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
+import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
+import { AnimationLayer } from '@/components/canvas/AnimationLayer';
+import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
+import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
+import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
+import { clearingInset } from '@/components/canvas/InsetContent';
+import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
+
+import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { isPanThrough } from '@/hooks/canvas/pan-through';
+
+// Wrapped in React.memo at the export below: with id-bearing
+// callbacks the parent passes a single stable function per kind
+// (rather than recreating per-element closures every render), so
+// shallow prop equality on `element` + the per-id selection flags
+// + `zoom` etc. lets BoxedElementView skip the work when only an
+// unrelated element changed. Defaulting parameters happen inside
+// the function body (rather than the destructure) so the memo's
+// shallow check sees the underlying undefined vs concrete value
+// rather than the defaulted boolean.
+// How far a non-votable element recedes during a layer-scoped vote.
+// Enough to push it back clearly, not so far it stops being legible
+// context for the elements you ARE voting on.
+const VOTE_DIMMED_OPACITY = 0.35;
+
+function BoxedElementViewImpl({
+  element,
+  isSelected,
+  isMultiSelected = false,
+  onPlainClick,
+  onPressArmedAction,
+  isEditing,
+  editCursorAtEnd = false,
+  isPaintMode,
+  showHandles,
+  showAnchors,
+  onBeginDrag,
+  onShiftSelect,
+  layerOpacity,
+  photoDraft = false,
+  photoMatched = false,
+  photoReadAs,
+  votableInVote,
+  onBeginEdit,
+  onCommitLabel,
+  onSetTextAlign,
+  onCommitTable,
+  onCommitHeaderSize,
+  onSnapSeam,
+  onToggleChecklistItem,
+  onSetEntityFields,
+  onStartFieldArrow,
+  onSetPageHeading,
+  onSetWebRows,
+  onSetPointerTip,
+  onSetHeroCaptionLine,
+  isoDepth,
+  insertShiftX,
+  insertShiftAnimates,
+  stackGlide,
+  chartPalette,
+  onCancelEdit,
+  onFollowLink,
+  onPressModeButton,
+  onPressFocusButton,
+  onPressSessionButton,
+  sessionStartBlocked,
+  sessionRunBy,
+  timerState,
+  tabTimer,
+  timerControls,
+  onSetSessionConfig,
+  onOpenElementSettings,
+  commentSelfId,
+  commentActions,
+  actionSelfId,
+  actionActions,
+  revealedForMe,
+  onToggleReveal,
+  onRollPicker,
+  collab,
+  chairSitters,
+  onEnterPortal,
+  onFireReaction,
+  reactionBurst,
+  onReactionBurstDone,
+  activeMode,
+  onOpenComments,
+  onOpenAction,
+  onOpenNote,
+  onEditLink,
+  onOpenEditDialog,
+  vote,
+  selfId,
+  voteMax,
+  voteReviewActive,
+  isVoteFocus,
+  onCastVote,
+  onRetractVote,
+  onDropIcon,
+  onLinkCell,
+  imageContext,
+  onContextSelect,
+  remoteSelectors,
+  tabLocked,
+  tabSummaries,
+  readOnly,
+  movable = true,
+  writable,
+  fontFamily,
+}: BoxedElementViewProps) {
+  // Which paper this element sits on, for every colour it doesn't carry
+  // itself (docs/specs/007-editor/live-app.md): a Default tab stores no element colours at all, so on
+  // a dark canvas this is where the greys come from.
+  const surface = useElementSurface(element.id);
+  const isLocked = element.locked === true || tabLocked;
+  // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
+  // element selected (remoteSelectors already excludes our own
+  // selection) and holds it: a Viewer's selection only shows its badge. We block select / drag / edit and show a not-allowed
+  // cursor so two people don't fight over the same element. Distinct
+  // from `isLocked` above, which is the persisted user-set padlock.
+  const remotelyLocked = remoteSelectors.some((s) => s.holds);
+  // Clockwise rotation about the element centre. The resize handles stay
+  // while rotated, turned with the box: resolveBoxedResize projects the drag
+  // into the element's own frame and anchors the opposite side, it just
+  // skips the axis-aligned snap. `isRotated` drives the wrapper transform and
+  // the zone clip below.
+  const rotation = rotationOf(element);
+  const isRotated = rotation % 360 !== 0;
+  // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
+  const zoneClip = useZoneClip(element.id);
+  const clipPath =
+    zoneClip && !isRotated ? zoneClipPolygon(zoneClip, element.x, element.y) : undefined;
+  // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
+  // vote the canvas goes back to normal so the results walkthrough reads
+  // against the full canvas. `votableInVote` already folds in the kind
+  // rule, so a text element on the votable layer dims too — correct, it
+  // can't take a dot either.
+  const voteScoped = vote?.active === true && !!vote.voteLayerId;
+  const voteDimmed = voteScoped && !votableInVote;
+  const voteHighlighted = voteScoped && votableInVote === true;
+  const label = element.label ?? '';
+  const textSize: TextSize = element.textSize ?? 'scale';
+  const defaultAlign = defaultTextAlign(element);
+  const alignX = element.textAlignX ?? defaultAlign.x;
+  const alignY = element.textAlignY ?? defaultAlign.y;
+  // A skin a Behaviour element was once created with (the old light button
+  // skin, the pre-redesign blue) reads as unset, so it follows the surface
+  // like the fill and border do (behaviour-skin.ts).
+  const own = ownColours(element);
+  const textColor = own.text ?? defaultTextColor(element, surface);
+  // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
+  // the SketchOverlay below, in place of the wrapper's border and background.
+  const finish = useElementFinish((element as { finish?: unknown }).finish);
+  const faceFinish = faceFinishOf(element, finish);
+  const sketchBackdrop = useIsSketchBackdrop(element.id);
+  const sketch = useSketchPaint(
+    element,
+    finish,
+    own.fill ?? defaultFillColor(element, surface),
+    sketchBackdrop,
+  );
+  // Rendered where it belongs below (under the content, or over an image's picture); a function, as it reads the
+  // border colour worked out further down.
+  const sketchOverlay = () =>
+    sketch ? (
+      <SketchOverlay
+        paint={sketch}
+        width={element.width}
+        height={element.height}
+        fill={own.fill ?? defaultFillColor(element, surface)}
+        stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
+      />
+    ) : null;
+
+  // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
+  // floats its note above everything; clicking it (handled in the drag
+  // engine's click-vs-drag test) opens the editable note popover.
+  const isAnnotation = element.type === 'annotation';
+  // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
+  // click opens what it carries, its comment thread or its action.
+  const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
+  const noteDown = useRef<{ x: number; y: number } | null>(null);
+  const openArticleNote = articleNote
+    ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
+    : undefined;
+  const [hovering, setHovering] = useState(false);
+
+  // Right-click selects the element + asks the page to open a
+  // context menu at the cursor. The page also keeps showing the
+  // SelectionPopover (handled by the normal selection flow), so the
+  // context menu is an additional surface, not a replacement.
+  // The element's wrapper node, so the context-menu handlers can read its
+  // live screen rect to anchor the menu at the bottom-right corner.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  // The face's own parts in its finish: Marker's frames and shapes, Professional's pills (finish.md "Faces").
+  useFaceFinishPass(wrapperRef, faceFinish, element.id);
+
+  // Gesture routing (press / double-click / context menu / long-press)
+  // lives in useBoxedElementGestures; the wrapper JSX mounts its
+  // handlers below.
+  const { handleShapeDown, handleDoubleClick, handleContextMenu, handlePointerUp, longPress } =
+    useBoxedElementGestures({
+      element,
+      wrapperRef,
+      isEditing,
+      remotelyLocked,
+      isAnnotation,
+      isMultiSelected,
+      isSelected,
+      isPaintMode,
+      vote,
+      votableInVote,
+      onCastVote,
+      onShiftSelect,
+      onPlainClick,
+      onPressArmedAction,
+      onBeginDrag,
+      onBeginEdit,
+      onEditLink,
+      onOpenEditDialog,
+      onOpenNote,
+      imageContext,
+      onContextSelect,
+    });
+
+  // A label being typed wears the text cursor and rises; a path in its edit mode does neither.
+  const editLook = editingLook(element, isEditing);
+  const cursor = remotelyLocked
+    ? 'cursor-not-allowed'
+    : isPaintMode
+      ? 'cursor-copy'
+      : editLook.textCursor
+        ? 'cursor-text'
+        : isLocked || !movable
+          ? 'cursor-default'
+          : 'cursor-move';
+  // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
+  // the box itself takes no presses, so the empty corners and the gaps between
+  // its answers behave as bare canvas. The face re-enables the disc, which is
+  // the one place that selects and drags it.
+  const bodyPassesThrough = element.type === 'shape' && element.shape === 'quiz';
+
+  // When at least one remote participant has selected this element, the
+  // border / stroke colour is overridden with the first remote selector's
+  // colour so the realtime "X is here" signal is glanceable from anywhere
+  // on the canvas — not just from the small initial-badge.
+  // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
+  const tagColours = useTagColours();
+  const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
+  // Accent for the data-element fills (progress bar / ring, rating stars): a
+  // remote selector colour wins, else the element's own stroke, else the theme
+  // default stroke. Shared by the ProgressView / RatingView branches below so
+  // they all read the same accent.
+  const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
+  // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
+  const ringed = isSelected && !(element.type === 'path' && isEditing);
+  const variant = describeVariant(
+    element,
+    ringed,
+    isMultiSelected,
+    remoteBorderColor,
+    surface,
+    finish,
+  );
+  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
+  // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
+  // once selected, the box drags either as any element, and the line still catches pointers
+  // outside the box, so a press on its outer half never falls to the board.
+  const selected = isSelected || isMultiSelected;
+  const hitLine =
+    (element.type === 'freehand' &&
+      element.penWidth !== undefined &&
+      element.pen !== 'highlighter') ||
+    (element.type === 'path' && !isEditing);
+  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
+  const onWhiteboard = useCanvasPicksByOutline();
+  const shapeHit = outlineHit(element, { onWhiteboard, selected });
+  // Not yet selected, only the drawn line picks it: the rest of its box lets pointers through.
+  const passThrough = (hitLine && !selected) || shapeHit === 'outline';
+
+  // The element's drawn corner, which its border overlay and its indicators both follow.
+  const shapeKind = element.type === 'shape' ? element.shape : undefined;
+  const cornerPx = cornerRadiusPx(
+    element.type === 'shape' ? finishOwnCorner(element, finish) : undefined,
+    element.width,
+    element.height,
+    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes"), sharper under
+    // Professional (docs/specs/008-canvas/finish.md).
+    finishCornerFallbackPx(
+      shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+      finish,
+    ),
+  );
+
+  // An inline icon sits beside the label on a regular shape (the
+  // dedicated 'icon' shape kind has its own glyph-above-caption render
+  // above and is excluded here). Computed before the label so the editor
+  // can render as a flex child (keeping the icon visible while typing).
+  const inlineIcon = element.type === 'shape' && element.shape !== 'icon' && element.iconId;
+  // A status marker (docs/specs/009-elements/shape-markers.md) sits just left of the label (or centred when the
+  // shape has no label). Progress shapes render their own centred percentage,
+  // so they skip it. Shares the icon+label flex layout below.
+  const marker: ShapeMarker | undefined =
+    element.type === 'shape' && !isSelfDrawingShape(element.shape) ? element.marker : undefined;
+  // Which surface each looping animation rides (wrapper box vs text
+  // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
+  // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
+  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle, layer, layerAnim } =
+    useBoxedElementAnimation(element, textColor);
+
+  // An icon element's caption is confined to its own band — the complement
+  // of the glyph band (docs/specs/010-palette/technology-icons.md, iconCaptionBand) — so the text can never
+  // stack over the art. The label renders with the band's INTERNAL vertical
+  // anchor (side captions centre on the glyph's row) and the JSX below wraps
+  // it in the band container.
+  const iconCaptionBand =
+    element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
+
+  // An upright lane title turns in its strip; inside the turned frame it reads along the strip,
+  // centred across it (docs/specs/009-elements/lane.md "Upright titles").
+  const uprightStrip =
+    element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
+      ? uprightTitleStrip(element, element.width, element.height)
+      : null;
+  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
+
+  // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
+  const textHug = useTextHug(element, isEditing, fontFamily);
+  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
+  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
+
+  const labelPadding = uprightStrip
+    ? // A one-line strip has no room for a roomy padding across it.
+      Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
+    : PADDING_PX[element.padding ?? defaultPadding(element)];
+  // The element's indicators, placed before the label so the content can move out of their way.
+  const indicators = useElementIndicators(
+    element,
+    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
+    { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
+    cornerPx,
+  );
+
+  // The Text animation on the label's words (docs/specs/028-animation/element-animations.md).
+  const textAnim = useLabelTextAnimation(element, label, textColor, isEditing);
+
+  // The text label, computed once so the freehand branch, the plain
+  // shape branch, and the inline-icon layout below all share it.
+  const labelNode = renderLabel(
+    element,
+    label,
+    textSize,
+    uprightStrip ? uprightStrip.alongAlign : alignX,
+    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    labelPadding,
+    isEditing,
+    (next, runs) => onCommitLabel(element.id, next, runs),
+    onCancelEdit,
+    editCursorAtEnd,
+    fontFamily,
+    onSetTextAlign,
+    // Inline (flex-child) editor whenever the label shares its box with a
+    // sibling glyph — an inline icon OR a status marker (docs/specs/009-elements/shape-markers.md). A
+    // marker-only shape still lays out through ShapeInlineIconLayout, and
+    // a full-box editor there contributes no flex width, so the marker
+    // centred alone on top of the text while editing.
+    !!inlineIcon || !!marker,
+    labelAnimClass,
+    textHug.label,
+    textAnim,
+    mindFit.onLiveText,
+  );
+
+  // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
+  // useIconDropTarget; the wrapper mounts its handlers below and the
+  // IconDropPreview band renders while dragging over.
+  const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
+    useIconDropTarget(element, onDropIcon);
+
+  // Insert-between preview (docs/specs/021-event-storming/event-storming.md). A CSS translate rather than a moved
+  // `x`: it is GPU-composited, it cannot desync from the model because the
+  // model never changed, and it unwinds by dropping a style. It composes
+  // ahead of the tilt below so the note slides and stays hand-placed.
+  const insertShift = insertShiftX ? `translateX(${insertShiftX}px) ` : '';
+
+  return (
+    <div
+      ref={wrapperRef}
+      data-element-id={element.id}
+      // Carries the slot's easing (globals.css) for as long as a slot COULD
+      // be open, so the board eases shut as well as open.
+      data-insert-shift={insertShiftAnimates ? '' : undefined}
+      data-stack-glide={stackGlide ? '' : undefined}
+      // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
+      // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
+      // so its buttons stay reachable.
+      role={elementRole(element)}
+      aria-label={elementAriaLabel(element)}
+      // Frames are tagged so isometric mode can settle them just under the
+      // base plane (globals.css [data-iso] rule): a frame's big surface is
+      // coplanar with its contents under preserve-3d, and coplanar layers
+      // z-fight (flicker) while the camera orbits.
+      data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
+      // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
+      data-face-finish={faceFinish}
+      onPointerDown={(e) => {
+        // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
+        if (isPanThrough(e)) return;
+        longPress.onPointerDown(e);
+        handleShapeDown(e);
+      }}
+      onDoubleClick={(e) => {
+        // An Editor's double-click on an entity's fields edits that field in place
+        // (docs/specs/009-elements/entity.md "Editing on the canvas"); on its title, the title.
+        if (
+          element.type === 'shape' &&
+          element.shape === 'entity' &&
+          !readOnly &&
+          !isLocked &&
+          !remotelyLocked &&
+          !element.rotation &&
+          onSetEntityFields &&
+          wrapperRef.current &&
+          openEntityFieldAt(element, wrapperRef.current.getBoundingClientRect(), e.clientY)
+        ) {
+          e.stopPropagation();
+          return;
+        }
+        handleDoubleClick(e);
+      }}
+      onContextMenu={handleContextMenu}
+      onPointerUp={handlePointerUp}
+      onClick={
+        openArticleNote
+          ? (e) => {
+              // A drag of the marker ends in a click too: only a press that stayed put opens it.
+              const down = noteDown.current;
+              if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
+              openArticleNote();
+            }
+          : undefined
+      }
+      onPointerDownCapture={
+        openArticleNote
+          ? (e) => {
+              noteDown.current = { x: e.clientX, y: e.clientY };
+            }
+          : undefined
+      }
+      onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
+      onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
+      onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
+      onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
+      onDrop={acceptsIconDrop ? handleIconDrop : undefined}
+      // `group` so the vote stepper inside can fade up on element hover
+      // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
+      className={`group group/el absolute origin-center touch-none select-none ${
+        // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
+        // class (both drive the `animation` property, so they can't co-exist).
+        wrapperAnimClass
+      } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
+      style={{
+        // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
+        ...({ '--iso-z': isoDepth } as React.CSSProperties),
+        left: element.x,
+        top: element.y,
+        width: textHug.box?.width ?? element.width,
+        height: textHug.box?.height ?? mindFit.height ?? element.height,
+        color: textColor,
+        // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
+        // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).
+        // Unset when nothing picks one, so the editor default still applies.
+        ...(fontFamily ? { fontFamily } : {}),
+        // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
+        // VISIBLE — you still need the canvas's context to judge what
+        // you're voting on — but drop back so the votable set reads as the
+        // foreground. Only while casting is open; once the vote ends the
+        // canvas returns to normal for the results walkthrough.
+        opacity:
+          (element.opacity ?? 1) * (layerOpacity ?? 1) * (voteDimmed ? VOTE_DIMMED_OPACITY : 1),
+        ...variant.style,
+        ...animStyle,
+        // Spin about the centre (the wrapper already has origin-center).
+        // The handles' frame in the grips layer turns by the same angle.
+        //
+        // The angle is ALSO published as --lvd-enter-rot, which the pop-in
+        // entry keyframe multiplies into its scale. A keyframe that touches
+        // `transform` replaces this inline value while it runs, so without
+        // that variable a tilted element (any rotated shape, and every
+        // sticker) popped in flat and then snapped to its angle at the end.
+        ...(isRotated
+          ? ({
+              transform: `${insertShift}rotate(${rotation}deg)`,
+              '--lvd-enter-rot': `${rotation}deg`,
+            } as React.CSSProperties)
+          : insertShift
+            ? { transform: insertShift.trim() }
+            : {}),
+        // Deliberately do NOT raise z-index on plain selection. Keeping
+        // the element at its natural paint order means selecting a
+        // container doesn't jump it above the content layered on top of
+        // it — users resize containers against their visible content.
+        // While EDITING the label, though, raise it so the text the user
+        // is typing isn't hidden behind elements painted above it. (The
+        // selection handles live in the grips layer, SelectionChromeLayer.)
+        ...(editLook.raise ? { zIndex: 10 } : {}),
+        ...(clipPath ? { clipPath } : {}),
+        // Only the drawn line picks an element not yet selected (its hit
+        // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
+        ...(passThrough ? { pointerEvents: 'none' as const } : {}),
+      }}
+    >
+      {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"); an image's edge goes over
+          its picture, below. */}
+      {element.type !== 'image' ? sketchOverlay() : null}
+      {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
+          (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
+          the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
+      <FaceFinishProvider finish={faceFinish ?? 'flexible'}>
+        <SketchFace
+          active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+        >
+          <AccentEdgeOverlay
+            element={withTagAccent(element, tagColours)}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          />
+          {element.type === 'shape' && element.shape === 'pointer-note' ? (
+            <PointerNoteOverlay
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              editable={isSelected && !readOnly && !isLocked}
+              onSetTip={onSetPointerTip}
+            />
+          ) : null}
+          <ShapeContentRouter
+            element={element}
+            isEditing={isEditing}
+            artAnimClass={artAnimClass}
+            accent={accent}
+            textColor={textColor}
+            remoteBorderColor={remoteBorderColor}
+            isLocked={isLocked}
+            isSelected={isSelected}
+            readOnly={readOnly}
+            onToggleChecklistItem={onToggleChecklistItem}
+            chartPalette={chartPalette}
+            fontFamily={fontFamily}
+            svgAnim={svgAnim}
+          />
+          {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+          their border via the wrapper's CSS `border`, which can't draw the
+          composite dash patterns. When one of those is picked, stroke the
+          outline here instead (element-variant drops the CSS border to
+          match). Solid / dashed / dotted stay on the cheaper CSS path. */}
+          {element.type === 'shape' &&
+          !sketch &&
+          !isSvgRenderedShape(element.shape) &&
+          !remoteBorderColor &&
+          !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
+            <BoxBorderOverlay
+              shape={element.shape}
+              width={element.width}
+              height={element.height}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
+              dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
+              radiusPx={cornerPx}
+            />
+          ) : null}
+          {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
+          {element.type === 'shape' && element.shape === 'entity' ? (
+            <EntityView
+              element={element}
+              textColor={textColor}
+              fontFamily={fontFamily}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              actions={
+                // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
+                isSelected &&
+                !readOnly &&
+                !isLocked &&
+                !remotelyLocked &&
+                !element.rotation &&
+                onSetEntityFields &&
+                onStartFieldArrow
+                  ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
+                  : undefined
+              }
+            />
+          ) : null}
+          {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
+          drawn for its facing, plus whoever presence says is sitting in it. */}
+          {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
+            <FurnitureView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              fill={own.fill ?? defaultFillColor(element, surface)}
+              sitters={chairSitters?.(element.id) ?? []}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
+          back wall (the ordinary label, which sits there). */}
+          {element.type === 'shape' && element.shape === 'room' ? (
+            <RoomView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              floor={own.fill ?? defaultFillColor(element, surface)}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
+          {element.type === 'shape' && element.shape === 'fence' ? (
+            <FenceView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
+          {element.type === 'shape' && element.shape === 'avatar-pad' ? (
+            <AvatarPadView animClass={artAnimClass} />
+          ) : null}
+          {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
+          {element.type === 'shape' && element.shape === 'lane' ? (
+            <LaneGutter
+              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+              headerFill={element.headerFill}
+              headerSize={element.headerSize}
+              titleOrientation={element.titleOrientation}
+              width={element.width}
+              height={element.height}
+              onCommitSize={
+                onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
+              }
+              onSnapSeam={onSnapSeam}
+              elementId={element.id}
+              elementX={element.x}
+              elementY={element.y}
+              alignX={alignX}
+              alignY={alignY}
+            />
+          ) : null}
+          {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
+          {element.type === 'shape' && element.shape === 'page' ? (
+            <PageCornerFold
+              width={element.width}
+              height={element.height}
+              fill={element.fillColor ?? '#ffffff'}
+              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+            />
+          ) : null}
+          {/* Browser-only HTML chrome overlay. SVG handles only the
+          outer frame + divider so the user's border style applies;
+          the dots / nav / URL bar render here so their geometry is
+          fixed-pixel and doesn't deform with the box's aspect
+          ratio. */}
+          {element.type === 'shape' && element.shape === 'browser' ? (
+            <BrowserChrome
+              stroke={
+                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+              }
+            />
+          ) : null}
+
+          {/* Whatever this element shows in place of a plain label: a pressable
+          face, a drawn body, or the label itself. See ElementFaceRouter. */}
+          <ElementFaceRouter
+            hitLine={hitLine}
+            element={element}
+            isEditing={isEditing}
+            isSelected={isSelected}
+            readOnly={readOnly}
+            writable={writable}
+            fontFamily={fontFamily}
+            activeMode={activeMode}
+            collab={collab}
+            commentActions={commentActions}
+            actionSelfId={actionSelfId}
+            actionActions={actionActions}
+            commentSelfId={commentSelfId}
+            imageContext={imageContext}
+            tabSummaries={tabSummaries}
+            tabTimer={tabTimer}
+            timerControls={timerControls}
+            timerState={timerState}
+            sessionStartBlocked={sessionStartBlocked}
+            sessionRunBy={sessionRunBy}
+            revealedForMe={revealedForMe}
+            onCommitTable={onCommitTable}
+            onEnterPortal={onEnterPortal}
+            onFireReaction={onFireReaction}
+            onFollowLink={onFollowLink}
+            onLinkCell={onLinkCell}
+            onPressModeButton={onPressModeButton}
+            onPressFocusButton={onPressFocusButton}
+            onPressSessionButton={onPressSessionButton}
+            onRollPicker={onRollPicker}
+            onSetPageHeading={onSetPageHeading}
+            onSetWebRows={onSetWebRows}
+            onSetHeroCaptionLine={onSetHeroCaptionLine}
+            onSetSessionConfig={onSetSessionConfig}
+            onOpenElementSettings={onOpenElementSettings}
+            onToggleReveal={onToggleReveal}
+            label={label}
+            labelNode={labelNode}
+            // Clear of the indicators and on the label body (a cylinder's, under its lid).
+            contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
+            textColor={textColor}
+            textSize={textSize}
+            alignX={alignX}
+            alignY={alignY}
+            isLocked={isLocked}
+            remoteBorderColor={remoteBorderColor}
+            inlineIcon={inlineIcon}
+            marker={marker}
+            iconCaptionBand={iconCaptionBand}
+            labelFrame={labelFrame}
+          />
+        </SketchFace>
+      </FaceFinishProvider>
+      {element.type === 'image' ? sketchOverlay() : null}
+
+      {shapeHit && element.type === 'shape' ? (
+        <ShapeHitOutline
+          element={element}
+          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
+        />
+      ) : null}
+
+      {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
+      {layer && layerAnim ? (
+        <AnimationLayer
+          animation={layerAnim}
+          width={element.width}
+          height={element.height}
+          radius={
+            shapeKind === 'circle' || shapeKind === 'stadium'
+              ? Math.min(element.width, element.height) / 2
+              : cornerPx
+          }
+        />
+      ) : null}
+
+      {/* Live drop preview while dragging a palette icon over this shape:
+          a brand ring + a translucent band on the side the icon will
+          land. Cleared on drop / drag-leave. */}
+      {dropSide ? <IconDropPreview side={dropSide} /> : null}
+
+      {/* The burst (docs/specs/009-elements/reaction-pad.md), a sibling of the label stack rather than a
+          child of it: the particles leave the pad's box on purpose, and the
+          face above clips to its own rounded corners. */}
+      {reactionBurst ? (
+        <ReactionBurst
+          reaction={reactionBurst.reaction}
+          seed={reactionBurst.seed}
+          width={element.width}
+          height={element.height}
+          onDone={() => onReactionBurstDone?.(element.id)}
+        />
+      ) : null}
+
+      {isLocked ? <LockBadge /> : null}
+
+      {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
+
+      {/* The annotation marker IS the note affordance, so it suppresses
+          the generic note badge (it would be redundant). */}
+      {/* A margin note shows its count on its own face (ArticleNoteFace). */}
+      {indicators.layout ? (
+        <ElementIndicators
+          element={element}
+          cornerPx={indicators.cornerPx}
+          fill={indicatorBacking(own.fill ?? defaultFillColor(element, surface))}
+          selected={isSelected}
+          items={indicators.items}
+          placed={indicators.layout}
+        />
+      ) : null}
+
+      {/* Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): a soft brand ring marking what CAN
+          take a dot. Paired with the dimming of everything else — the two
+          together answer "where do I click" without the user having to
+          work out which layer each element is on. Pointer-events-none so
+          it never intercepts the cast. */}
+      {voteHighlighted ? (
+        <div
+          className="pointer-events-none absolute -inset-0.5 ring-2 ring-brand-400/70"
+          style={{ borderRadius: 'inherit' }}
+          aria-hidden
+        />
+      ) : null}
+
+      {/* Dot-vote tally pill + winner ring (docs/specs/012-collaboration/session-tools.md) — see
+          ElementVoteOverlay. */}
+      <ElementVoteOverlay
+        voteKey={voteKeyOf(element)}
+        name={element.label ?? 'this element'}
+        vote={vote}
+        selfId={selfId}
+        voteMax={voteMax}
+        votableInVote={votableInVote}
+        voteReviewActive={voteReviewActive}
+        isVoteFocus={isVoteFocus}
+        onRetractVote={onRetractVote}
+        onCastVote={onCastVote}
+      />
+
+      {/* The photo import's marks (photo-badges.tsx). */}
+      {photoDraft ? <PhotoDraftRing /> : null}
+      {photoMatched ? <PhotoMatchedBadge readAs={photoReadAs} /> : null}
+
+      {/* Selection chrome (resize / edge-grip handles), portalled into the
+          grips layer above every element — see SelectionChromeLayer for the
+          stacking rationale. */}
+      <SelectionChromeLayer
+        elementId={element.id}
+        box={element}
+        rotation={rotation}
+        shiftX={insertShiftX}
+        showHandles={showHandles}
+        showAnchors={showAnchors}
+        onBeginDrag={onBeginDrag}
+      />
+
+      {/* Hover preview: float this annotation's note above every element
+          (docs/specs/009-elements/annotations.md). Suppressed while selected — the click/edit popover owns
+          that surface then — and only when there's note text to show. */}
+      {isAnnotation && hovering && !isSelected && !isEditing && element.note ? (
+        <AnnotationHoverNote
+          elementId={element.id}
+          note={element.note}
+          noteRich={element.noteRich}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// Default shallow-prop comparison is good enough here: `element` is
+// reference-stable across renders that don't touch it (commit /
+// commitTabs return new arrays only when something actually
+// changed), every other prop is a primitive or an id-bearing
+// callback that the parent keeps stable.
+export const BoxedElementView = memo(BoxedElementViewImpl);

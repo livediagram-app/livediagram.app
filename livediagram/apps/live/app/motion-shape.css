@@ -1,0 +1,466 @@
+/*
+ * The Shape animation set (docs/specs/028-animation/element-animations.md "Shape"), rebuilt to the
+ * spec's quality bar: true silhouettes, moves with anticipation and settle, a beat of rest on
+ * attention loops, travel proportional to the element's size, and composited properties.
+ *
+ * Every class reads variables set inline on the element wrapper (useBoxedElementAnimation):
+ *   --lvd-anim-speed  duration factor (slowest 4, slow 2, normal 1, fast 0.5)
+ *   --lvd-anim-iter   iteration count: infinite, or 1 to play once and settle
+ *   --lvd-anim-color  the accent (stroke, else text colour)
+ *   --lvd-anim-bg     the fill, for Gradient
+ *   --lvd-anim-size   min(width, height) in px, unitless
+ *   --lvd-w / --lvd-h width and height in px, unitless
+ *
+ * Rings, halos, the trace light and the gradient sheet ride a dedicated child layer
+ * (.lvd-anim-layer, AnimationLayer in BoxedElementView) rather than the wrapper's pseudo-elements,
+ * which stickies already use for their paper. The layer is invisible at rest, so reduced motion,
+ * export and a play-once that has finished all show the plain element.
+ */
+
+.lvd-anim-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Pulse: a ring the shape of the outline expands and fades, then rests. Scaling by a fixed number
+ * of px per side (24 / size) keeps the ring's travel the same on a status light and a big box. */
+@keyframes lvd-pulse-ring {
+  0% {
+    opacity: 0.75;
+    scale: 1;
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    scale: calc(1 + 24 / var(--lvd-w, 100)) calc(1 + 24 / var(--lvd-h, 100));
+  }
+}
+.lvd-anim-pulse > .lvd-anim-layer {
+  border: 2px solid var(--lvd-anim-color, #0ea5e9);
+  animation: lvd-pulse-ring calc(2s * var(--lvd-anim-speed, 1)) var(--lvd-anim-iter, infinite);
+}
+
+/* Glow: a static halo whose opacity breathes. The blur is fixed on the layer; only opacity moves. */
+@keyframes lvd-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.lvd-anim-glow > .lvd-anim-layer {
+  box-shadow: 0 0 calc(min(var(--lvd-anim-size, 100) * 0.12, 18) * 1px)
+    calc(min(var(--lvd-anim-size, 100) * 0.03, 5) * 1px)
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 55%, transparent);
+  animation: lvd-glow-breathe calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+@keyframes lvd-shown {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+/* Trace: a light with a fading tail runs the outline at a steady speed. The layer holds a rounded
+ * rectangle the size of the element whose dashes are measured onto it (AnimationLayer,
+ * useTraceDashes); the copies show and hide themselves (.lvd-svg-trace-* below). */
+.lvd-anim-trace > .lvd-anim-layer {
+  opacity: 1;
+}
+
+/* Gradient: a soft band of the accent drifts across the fill, continuously. The sheet is three
+ * boxes wide and translates, so the motion is a transform. */
+@keyframes lvd-gradient-drift {
+  from {
+    translate: -66.667% 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+.lvd-anim-gradient > .lvd-anim-layer {
+  overflow: hidden;
+  /* Over the element's face: multiply tints the fill and leaves dark text dark. */
+  mix-blend-mode: multiply;
+  animation: lvd-shown calc(4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite);
+}
+.lvd-anim-gradient > .lvd-anim-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 300%;
+  background: linear-gradient(
+    110deg,
+    transparent 0% 20%,
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 24%, transparent) 33.3%,
+    transparent 46% 53%,
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 24%, transparent) 66.7%,
+    transparent 80% 100%
+  );
+  animation: lvd-gradient-drift calc(4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite) alternate;
+}
+
+/* Blink: a status breathe with a hold at each end, so a status light reads on and off. */
+@keyframes lvd-blink {
+  0%,
+  10%,
+  90%,
+  100% {
+    opacity: 1;
+  }
+  40%,
+  60% {
+    opacity: 0.35;
+  }
+}
+.lvd-anim-blink {
+  animation: lvd-blink calc(1.6s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* The motions drive the independent translate / rotate / scale properties, so they compose with an
+ * element's own `transform: rotate()`. Each ends on its rest frame. */
+
+/* Heartbeat: lub-dub in the first 40%, then rest. */
+@keyframes lvd-heartbeat {
+  0% {
+    scale: 1;
+  }
+  10% {
+    scale: 1.08;
+    animation-timing-function: ease-in;
+  }
+  20% {
+    scale: 1;
+  }
+  30% {
+    scale: 1.12;
+    animation-timing-function: ease-in;
+  }
+  42%,
+  100% {
+    scale: 1;
+  }
+}
+.lvd-anim-heartbeat {
+  animation: lvd-heartbeat calc(1.6s * var(--lvd-anim-speed, 1)) ease-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Breathe: a slow, gentle swell on a sine. */
+@keyframes lvd-breathe {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.04;
+  }
+}
+.lvd-anim-breathe {
+  animation: lvd-breathe calc(3.2s * var(--lvd-anim-speed, 1)) cubic-bezier(0.37, 0, 0.63, 1)
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Shimmer: a quick double glint that follows any silhouette (a filter), then a long rest. */
+@keyframes lvd-shimmer {
+  0%,
+  22%,
+  100% {
+    filter: brightness(1);
+  }
+  6% {
+    filter: brightness(1.28) saturate(1.1);
+  }
+  11% {
+    filter: brightness(1.05);
+  }
+  15% {
+    filter: brightness(1.18);
+  }
+}
+.lvd-anim-shimmer {
+  animation: lvd-shimmer calc(3s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Highlight: the fill dips, then swells luminous, then rests. */
+@keyframes lvd-highlight {
+  0%,
+  60%,
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+  18% {
+    filter: brightness(0.92) saturate(1.05);
+  }
+  38% {
+    filter: brightness(1.16) saturate(1.4);
+  }
+}
+.lvd-anim-highlight {
+  animation: lvd-highlight calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Bounce: crouch, spring up, stretch on the way, squash on landing, settle, rest. The hop is 12% of
+ * the element's size, at most 18px. */
+@keyframes lvd-bounce {
+  0% {
+    translate: 0 0;
+    scale: 1;
+  }
+  10% {
+    translate: 0 0;
+    scale: 1.05 0.94;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  32% {
+    translate: 0 calc(min(var(--lvd-anim-size, 100) * 0.12, 18) * -1px);
+    scale: 0.97 1.04;
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+  }
+  52% {
+    translate: 0 0;
+    scale: 1.06 0.93;
+  }
+  62% {
+    scale: 0.98 1.02;
+  }
+  70%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+.lvd-anim-bounce {
+  animation: lvd-bounce calc(1.2s * var(--lvd-anim-speed, 1)) ease-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Wobble: tilts side to side, dying away, then rests. */
+@keyframes lvd-wobble {
+  0%,
+  70%,
+  100% {
+    rotate: 0deg;
+  }
+  14% {
+    rotate: -4deg;
+  }
+  30% {
+    rotate: 3deg;
+  }
+  45% {
+    rotate: -2deg;
+  }
+  58% {
+    rotate: 1deg;
+  }
+}
+.lvd-anim-wobble {
+  animation: lvd-wobble calc(1.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Shake: a decaying horizontal jitter, 4% of the size and at most 6px, then still. */
+@keyframes lvd-shake {
+  0%,
+  32%,
+  100% {
+    translate: 0 0;
+  }
+  4% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.04, 6) * -1px) 0;
+  }
+  9% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.04, 6) * 1px) 0;
+  }
+  14% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.03, 4.5) * -1px) 0;
+  }
+  19% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.03, 4.5) * 1px) 0;
+  }
+  24% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.015, 2) * -1px) 0;
+  }
+  28% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.015, 2) * 1px) 0;
+  }
+}
+.lvd-anim-shake {
+  animation: lvd-shake calc(1.6s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Jelly: squash, stretch, and a decaying wobble back to rest. */
+@keyframes lvd-jelly {
+  0%,
+  75%,
+  100% {
+    scale: 1;
+  }
+  15% {
+    scale: 1.12 0.88;
+  }
+  30% {
+    scale: 0.92 1.08;
+  }
+  45% {
+    scale: 1.04 0.96;
+  }
+  60% {
+    scale: 0.98 1.02;
+  }
+}
+.lvd-anim-jelly {
+  animation: lvd-jelly calc(1.2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Float: a slow drift around a soft loop, 4% of the size and at most 6px, continuous. */
+@keyframes lvd-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.04, 6) * 1px)
+      calc(min(var(--lvd-anim-size, 100) * 0.02, 3) * -1px);
+  }
+  50% {
+    translate: 0 calc(min(var(--lvd-anim-size, 100) * 0.04, 6) * -1px);
+  }
+  75% {
+    translate: calc(min(var(--lvd-anim-size, 100) * 0.04, 6) * -1px)
+      calc(min(var(--lvd-anim-size, 100) * 0.02, 3) * -1px);
+  }
+}
+.lvd-anim-float {
+  animation: lvd-float calc(6s * var(--lvd-anim-speed, 1)) cubic-bezier(0.37, 0, 0.63, 1)
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Swing: a pendulum from the top edge, decaying, then a short rest. (A manually rotated element's
+ * pivot moves to its top while swinging: transform-origin is shared with the rotation.) */
+@keyframes lvd-swing {
+  0%,
+  80%,
+  100% {
+    rotate: 0deg;
+  }
+  15% {
+    rotate: 6deg;
+  }
+  35% {
+    rotate: -5deg;
+  }
+  52% {
+    rotate: 3deg;
+  }
+  67% {
+    rotate: -2deg;
+  }
+}
+.lvd-anim-swing {
+  transform-origin: top center;
+  animation: lvd-swing calc(2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* SVG-rendered shapes (diamond, hexagon, devices, ...) draw Pulse, Glow, Trace and Gradient against
+ * their own geometry in ShapeSvgOverlay, so the effect follows the true outline. */
+
+/* Pulse: a copy of the outline expands and fades. */
+.lvd-svg-ring {
+  opacity: 0;
+  animation: lvd-pulse-ring calc(2s * var(--lvd-anim-speed, 1)) var(--lvd-anim-iter, infinite);
+}
+
+/* Glow: a blurred copy of the silhouette whose opacity breathes; the blur itself never animates. */
+.lvd-svg-halo {
+  opacity: 0;
+  filter: blur(calc(min(var(--lvd-anim-size, 100) * 0.06, 8) * 1px));
+  animation: lvd-glow-breathe calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Trace: a bright head and a wider, fainter tail run the outline. Their dashes and the outline's
+ * on-screen length (--lvd-perim, px) are measured onto each copy by useTraceDashes. */
+@keyframes lvd-svg-trace {
+  from {
+    stroke-dashoffset: calc(var(--lvd-perim, 400) * 1px);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.lvd-svg-trace-tail,
+.lvd-svg-trace-head {
+  opacity: 0;
+  animation:
+    lvd-svg-trace calc(2.4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite),
+    lvd-shown calc(2.4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite);
+}
+
+/* Gradient: three stops cycle between the fill and a soft accent tint, phase-shifted. */
+@keyframes lvd-grad-cycle {
+  0%,
+  100% {
+    stop-color: var(--lvd-anim-bg, #fff);
+  }
+  50% {
+    stop-color: color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 22%, var(--lvd-anim-bg, #fff));
+  }
+}
+.lvd-grad-s0,
+.lvd-grad-s1,
+.lvd-grad-s2 {
+  animation: lvd-grad-cycle calc(4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+.lvd-grad-s1 {
+  animation-delay: calc(-1.333s * var(--lvd-anim-speed, 1));
+}
+.lvd-grad-s2 {
+  animation-delay: calc(-2.667s * var(--lvd-anim-speed, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The layer rules' own selectors, so these match their specificity and, coming later, win. */
+  .lvd-anim-pulse > .lvd-anim-layer,
+  .lvd-anim-glow > .lvd-anim-layer,
+  .lvd-anim-trace > .lvd-anim-layer,
+  .lvd-anim-gradient > .lvd-anim-layer,
+  .lvd-anim-gradient > .lvd-anim-layer::before,
+  .lvd-anim-blink,
+  .lvd-anim-heartbeat,
+  .lvd-anim-breathe,
+  .lvd-anim-shimmer,
+  .lvd-anim-highlight,
+  .lvd-anim-bounce,
+  .lvd-anim-wobble,
+  .lvd-anim-shake,
+  .lvd-anim-jelly,
+  .lvd-anim-float,
+  .lvd-anim-swing,
+  .lvd-svg-ring,
+  .lvd-svg-halo,
+  .lvd-svg-trace-tail,
+  .lvd-svg-trace-head,
+  .lvd-grad-s0,
+  .lvd-grad-s1,
+  .lvd-grad-s2 {
+    animation: none;
+  }
+}

@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { BrowserTiles, RenderGlitch } from '@/components/illustrations/troubleshooting';
+
+export const metadata = helpMetadata({
+  title: 'Browser Compatibility',
+  description:
+    'Which browsers livediagram supports, and how to fix display or behaviour problems caused by an old browser or extensions.',
+  path: '/help/troubleshooting/browser-compatibility/',
+});
+
+<ArticleLayout title="Browser Compatibility" description="livediagram runs in modern browsers. Here is what is supported and how to clear up browser-related glitches." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+livediagram runs entirely in your browser, so the browser you use matters. It is built for modern, up-to-date browsers, and the great majority of display and behaviour problems come down to an out-of-date browser, an aggressive extension, or stale cached files. This checklist will sort out most of them.
+
+## Supported browsers
+
+Use a current version of any mainstream evergreen browser.
+
+- **Google Chrome**, **Microsoft Edge**, and other current Chromium-based browsers.
+- **Mozilla Firefox**, current version.
+- **Safari**, current version, on macOS and iOS.
+
+"Evergreen" means the browser updates itself automatically, so simply keeping it up to date is enough. Very old or unmaintained browsers are not supported and may display the canvas incorrectly or fail to connect for real-time collaboration.
+
+<Figure caption="Use a current version of any mainstream evergreen browser.">
+  <BrowserTiles />
+</Figure>
+
+## Fixing browser-related glitches
+
+1. **Update your browser.** Install any pending update and restart it. This alone resolves most rendering and connection issues.
+2. **Hard refresh the page.** Reload while bypassing the cache so you are running the latest files rather than a stale copy.
+3. **Try an incognito or private window.** This loads the site with extensions off and no cached data, which quickly tells you whether an extension is the cause.
+4. **Disable interfering extensions.** Privacy, ad-blocking, and script-blocking extensions can break parts of the editor, sign-in, or the live connection. Turn them off for the site and retry.
+5. **Clear the site's cached files** if a hard refresh did not help, then reload. Clear only cached images and files, not cookies and site data: site data holds your [guest identity](/help/account-and-data/guest-identity/) and any [documents in This Browser](/help/privacy-and-security/offline-mode/), and clearing it loses them.
+
+<Figure caption="A stale render clipping and misaligning a shape, cleared by an update or hard refresh.">
+  <RenderGlitch />
+</Figure>
+
+## Other things to check
+
+- **Allow JavaScript.** The editor cannot run with JavaScript disabled for the site.
+- **Do not block live connections.** Some networks and extensions block the connection real-time collaboration depends on; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/).
+- **Try another device.** If a problem follows you to a fresh browser on the same machine, test a different device to separate a browser issue from a network one.
+- **Private windows forget you.** A private or incognito window starts with no guest identity and throws its storage away when you close it. That makes it good for testing, but documents you make there as a guest are hard to get back: sign in first if you want to keep them.
+- **Phones and tablets work too.** See [Supported Devices](/help/supported-devices/) for what each kind of device offers.
+
+<Tip>
+  For the smoothest experience, especially with large diagrams and live collaboration, use the
+  latest version of Chrome, Edge, Firefox, or Safari on a desktop.
+</Tip>
+
+If a problem persists across an up-to-date browser and an incognito window, [contact us](/help/contact/) with your browser name and version and a description of what you see.
+
+</ArticleLayout>

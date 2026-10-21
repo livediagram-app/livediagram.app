@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Avatar Tour',
+  description:
+    'Take the Avatar tour: dressing up your character, its moves, speech bubbles and pushing, offered the first time you use Avatar mode.',
+  path: '/help/selection-modes/avatar-mode/avatar-tour/',
+});
+
+<ArticleLayout
+  title="The Avatar Tour"
+  description="A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes/avatar-mode"
+>
+
+The Avatar tour shows you everything your character can do. It works on the real editor rather than screenshots: it spotlights each part with a highlight ring and a short explanation, opening the Avatar panel to show it and closing it again after. It changes nothing on your canvas or your character, takes under a minute, and you can leave at any point.
+
+## When It's Offered
+
+The first time you use [Avatar mode](/help/selection-modes/avatar-mode/), a **Meet Your Avatar** banner at the bottom of the screen asks whether you'd like a look: **Yes** starts it, **No** dismisses it.
+
+It's offered whatever your role, including a view-only link, since Avatar mode is yours too. It isn't offered in an embed.
+
+The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
+
+## What It Covers
+
+1. **Your Avatar**: the **Avatar** button next to Undo and Redo, where your character sheet lives.
+2. **Make It Yours**: gender, clothing, hair and size, the dice for a whole new look, and right-clicking your character to swap gender.
+3. **Behaviour and Reactions**: jumping jacks, a wave, a spin, a cheer or a dance, and bursts like confetti and hearts.
+4. **Say Something**: pressing **Enter** to type in a bubble above your head, or **Send a Message** in the panel. Not shown on a view-only link, where you can't speak.
+5. **Give Someone a Push**: clicking someone else's character to walk over and push them, and walking with the arrow keys and hopping with Space.
+
+Each step has **Next**, **Back** and **Skip tour**. The last card, **You're Ready to Roam**, links to the [Avatar mode](/help/selection-modes/avatar-mode/) article and ends the tour with **Start**. If you leave Avatar mode or switch tab mid-tour, it ends as skipped.
+
+## Replaying the Tour
+
+<Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
+
+<Step n={2}>Switch **Avatar Tour** back on.</Step>
+
+<Step n={3}>
+  Close Settings. If you're in Avatar mode the tour's welcome banner shows straight away; otherwise
+  it's offered the next time you walk as an avatar.
+</Step>
+
+</ArticleLayout>

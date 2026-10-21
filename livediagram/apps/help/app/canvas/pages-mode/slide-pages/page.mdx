@@ -1,0 +1,92 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SlidePagesScene } from '@/components/illustrations/slide-pages';
+
+export const metadata = helpMetadata({
+  title: 'Slide Pages',
+  description:
+    'Build a slide deck in Pages mode: 16:9 or 4:3 slide pages with 61 layouts, each in the deck in page order, and full-screen presenting.',
+  path: '/help/canvas/pages-mode/slide-pages/',
+});
+
+<ArticleLayout
+  title="Slide Pages"
+  description="Landscape pages made for a deck: start each from a slide layout, and every one is in the slide deck, in page order, ready to present."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: 'Pages Mode', slug: 'pages-mode' }}
+  subArticles={getSubArticles('pages-mode').filter((a) => a.slug !== 'slide-pages')}
+>
+
+A **slide page** is a kind of page in [Pages mode](/help/canvas/pages-mode/) made for a presentation: one slide of a deck, always landscape, laid out to be read across a room. You build it like any page, from shapes, text, icons, images and charts, and every slide page is in the tab's slide deck as soon as you make it, in page order, ready to present.
+
+## Adding a Slide Page
+
+- New to slides? Open the page's cog and press **Show Me** at the top of its panel: it opens the Layout and Background popovers on your own slide, points at its deck button, and opens the Slide Deck where you press **Present**. The [Pages Tour](/help/canvas/pages-mode/pages-tour/) offers the same walkthrough the first time you work on a slide.
+
+- Press the **+** after the last page and choose **Slide** in **Add a Page**, or choose **Slide** when a new tab's first page asks **What Is This Page For?**
+- To start a whole deck at once, the Slide deck template opens a six-slide pitch (title, problem, solution, traction, team and the ask) on slide pages. Find it on **Start Making Pages**, an empty Pages tab's start, or by searching any start ([Templates](/help/canvas/templates/)).
+- A slide page is always **landscape**. Its page panel's **Page** tab offers two sizes and no orientation: **Slide** (widescreen 16:9) and **Classic** (the older 4:3). Its label reads, for example, "Page 3 · Slide (16:9)".
+- It takes a **Background** and a pattern like any page, from the **Background** button in its title bar or its panel's **Background** tab ([Pages Mode](/help/canvas/pages-mode/#backgrounds-and-patterns)). Its panel holds the **Page** and **Background** tabs.
+- A slide page's Background also has **Animated**: twenty-four moving backgrounds such as **Aurora**, **Starfield**, **Retro Grid**, **Waves**, **Warp**, **Orbits**, **Confetti** and **Threads**, each in your theme's colours, with **Colours** below to choose how deep or bright. They move on the slide, while you present and in a GIF export; the other exports show them still, and with **Reduce Motion** on they stay still on screen too.
+
+## Slide Layouts
+
+A slide page's **Layout** button, in its title bar beside **Background** and the cog, opens its layouts on any slide, empty or not, and an empty slide page also shows a card of layouts over it. They offer the **slide layouts** instead of the infographic ones, built for a landscape slide in your tab's theme, with type sized for a room. They are grouped into six categories:
+
+| Category       | Layouts                                                                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Openers        | Title Slide, Section Header, Agenda, Title and Image, Keynote Title, Opening Question, About the Speaker, Objectives, Agenda Grid, Agenda and Image               |
+| Content        | Title and Bullets, Two Columns, Image and Text, Statement, Quote, Three Points, Full Image, Key Takeaway, Four Ideas, Title Only, Sidebar Title, Compare Two      |
+| Pictures       | Text and Picture, Picture and Text, Hero Picture, Picture Band, Picture and Card, Quote and Picture, Two Pictures, Three Pictures, Picture Mosaic                 |
+| Data           | Big Number, Number and Picture, Key Stats, Chart Story, Comparison, Three Big Numbers, Big Chart, Chart and Insights, Goals Progress, KPI Dashboard, Market Share |
+| Steps and Time | Process, Timeline, Roadmap, Process Flow, Milestones, Now, Next, Later, Funnel, Cycle, Project Plan                                                               |
+| Closers        | Thank You, Team, Team of Three, Summary, Call to Action, Next Steps, Contact, Questions, Thank You and Image, Resources                                           |
+
+That is 61 in all. A few are worth knowing by name:
+
+- **Title Slide**: a large title, a subtitle, an accent rule, and the presenter and date at the foot.
+- **Section Header**: a big section number, an accent rule, the section's title and a line.
+- **Title and Bullets**: a title over five bullet points.
+- **Two Columns**: a title over two columns, each a heading and three bullet points.
+- **Image and Text**: an image filling the left half, with a title, a line and three bullet points to its right.
+- **Text and Picture**: a title, a line and three points on the left, a picture filling the right half right to the slide's edges. **Picture and Text** is the same the other way round.
+- **Hero Picture**: a picture filling the whole slide, darkened, with a large title over it in white.
+- **Statement**: one sentence set very large and centred, with a line under it.
+- **Thank You**: a large "Thank you", "Questions?" and a contact line.
+- **Opening Question**: one question set large to open the talk, and a line under it.
+- **Three Big Numbers**: three figures across, all the same size, a caption and a note under each.
+- **Now, Next, Later**: a roadmap in three columns of cards.
+- **Call to Action**: one bold ask, centred, with a button-like pill and where to start.
+
+The rest are the same layouts as the infographic ones of the same name. Hover a layout to preview it on the page, and click to place it: it is placed at once, your titles, words and pictures carried into it, and one **Undo** brings the old layout back. Every layout is ordinary elements holding sample text, so change anything you like. See [Infographic Layouts](/help/canvas/pages-mode/infographic-layouts/) for how the browser works.
+
+## The Deck Button
+
+Every slide page is a slide in the tab's slide deck, from the moment you make it, and the deck keeps your page order: move a page and its slide moves with it, and drag a slide in the Slide Deck panel and its page moves to match. Delete a page and its slide leaves the deck too; undo the delete and the slide comes back as it was, notes and all.
+
+First in each slide page's title bar, left of **Layout** and **Background**, is the page's **deck button**, **Hide in Slides** (an open eye): press it to keep the slide in the deck but skip it when presenting. The eye is then crossed, and **Show in Slides** brings it back. It is the same switch as the slide's visibility in the Slide Deck panel, and it is how you leave a slide page out of a talk.
+
+Beside it is **Add Notes**. Press it to write your speaker notes for that slide: they belong to the slide in the deck, so they are the same notes the Slide Deck panel shows, and you see them in the presenter view, never on the slide itself. Once a slide has notes the button reads **Notes**.
+
+<Figure caption="Two slide pages, both in the deck: the first's eye hides it in Slides, and the second's Add Notes opens its speaker notes.">
+  <SlidePagesScene />
+</Figure>
+
+Other kinds of page (infographic, article and logo) are not in the deck until you add them from the Slide Deck panel. Once one is in the deck, the same eye appears beside its cog too. The deck button is for Editors on a computer: Viewers and Participants see the pages without it, and it is not shown on a phone.
+
+## Building and Presenting the Deck
+
+The **Slides** button in the bottom-right corner opens the Slide Deck panel. There you can add any other page with **Add as slide**, rename slides, add speaker notes, hide them and reorder them ([Exporting and Presenting Pages](/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides)).
+
+A slide made from a page **is the page**, live: change the page and the slide changes with it, and reordering or resizing the page never leaves the slide behind. Delete the page and its slide stays, empty, so you can see what happened and fix it.
+
+Press **Present** and each slide page fills the screen edge to edge on its own, with no labels, cogs or neighbouring pages. A 16:9 slide fills a 16:9 screen exactly; any other shape sits between black bars, as a projector shows it. Everything else about presenting works as for any deck: see [Presenting](/help/selection-modes/slide-deck/presenting/).
+
+<Tip>
+  Arrows on a slide stay on that slide: in Pages mode an arrow's end only pins to an element on the
+  same page, so nothing on one slide is tied to another.
+</Tip>
+
+</ArticleLayout>
