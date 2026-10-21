@@ -128,8 +128,6 @@ cache, cached share passwords, and the stale-build reload guards.
   every document a guest owns;
 - `collab-key` and its secret half `collab-secret`, the per-browser keys that
   past answers and votes are matched against;
-- Google Drive mirror state (`liveplanner:v2:drive-*`,
-  `liveplanner:drive-mirror*`);
 - the offline store (IndexedDB `liveplanner-offline`): Offline Mode documents
   exist nowhere else;
 - cookies and the sign-in provider's own storage: repair never signs anyone

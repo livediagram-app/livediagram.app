@@ -10,7 +10,6 @@ const listing = vi.hoisted(() => ({ current: null as DocumentListing | null }));
 vi.mock('@/lib/api-client', () => ({
   apiListDocumentsWithTeamRecent: async () => listing.current,
 }));
-vi.mock('@/hooks/persistence/useAfterDriveChange', () => ({ useAfterDriveChange: () => {} }));
 
 import { RecentDocumentsCard } from './RecentDocumentsCard';
 

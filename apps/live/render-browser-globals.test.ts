@@ -10,8 +10,6 @@ const repo = fileURLToPath(new URL('../../', import.meta.url));
 const OUTSIDE_RENDER: Record<string, string> = {
   'apps/live/components/primitives/MovablePanel.tsx':
     'clampFree, called from handlers and an effect',
-  'apps/live/components/drive/DriveMirrorProvider.tsx':
-    'connectOutcomeOnce, module state read once in an effect',
   'apps/live/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',
   'apps/live/components/canvas/ReactionBurst.tsx': 'inside the drawing effect',

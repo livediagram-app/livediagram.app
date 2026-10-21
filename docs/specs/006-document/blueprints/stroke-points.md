@@ -220,7 +220,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                                         |
 | Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                                        |
 | MCP server          | `packages/document/src/element-normalise.ts`, `tools.ts`                             | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
-| Drive mirror        | `apps/live/lib/drive/liveplanner-port.ts`                                            | unchanged: copies create through the api                                            |
 | Templates           | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                                         |
 | Shape recognition   | `apps/live/lib/recognition-preview.ts`, `recogniseBoardStroke`                       | unchanged: reads the live stroke, not an element                                    |
 | Polygon tool        | `useCanvasPolygonGesture.ts`                                                         | unchanged: `createFreehand`                                                         |
@@ -326,7 +325,6 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Untrusted tabs and elements: migrated or passed through                                                                         | `packages/document/src/legacy-stroke-points.test.ts`                                         |
 | MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `packages/document/src/element-normalise.test.ts`                                            |
 | Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `packages/templates/src/template-tab.test.ts`                                                |
-| Drive mirror round trip keeps packed strokes byte for byte                                                                      | `apps/live/lib/drive/open-with.test.ts`                                                      |
 | End to end: draw, partial erase, undo, reload, former shape on the way in, a peer's stroke live, SVG and PNG export (dark mode) | `apps/live/e2e/whiteboard-stroke-points.spec.ts`                                             |
 | Live ink matches landed ink within the bound                                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                       |
 

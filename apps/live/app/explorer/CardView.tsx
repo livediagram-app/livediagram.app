@@ -25,15 +25,7 @@ import {
   hrefForDocument,
   ownerLabelFor,
 } from './document-row-shared';
-import {
-  FavouriteMarker,
-  FolderChip,
-  VisibilityBadge,
-  isMirrorable,
-  useIconOnlyBadges,
-} from './document-badges';
-import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
-import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
+import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@liveplanner/ui';
@@ -162,7 +154,7 @@ function DocumentCard(
         <DocumentRowTags documentId={liveDoc.id} line />
         {/* Keep every column the list shows: owner, visibility, updated. */}
         {/* One line: the badges keep their size, the time gives way with an
-            ellipsis, the sync mark holds the right edge. */}
+            ellipsis. */}
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
           {isInThisBrowser(liveDoc) ? <ThisBrowserPill /> : null}
           {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
@@ -170,21 +162,11 @@ function DocumentCard(
             <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />
           ) : null}
           {favourite ? <FavouriteMarker /> : null}
-          <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           {/* A flex box, so the time centres on the row like its neighbours;
               the time truncates itself. */}
           <span className="flex min-w-0 !shrink items-center">
             <RelativeTimeChip at={liveDoc.savedAt} />
-          </span>
-          {/* A flex box, not an inline span: an inline wrapper sits the mark on
-              the text baseline and lifts it off the row's centre. */}
-          <span className="ml-auto flex items-center">
-            <DocumentSyncMark
-              documentId={liveDoc.id}
-              savedAt={liveDoc.savedAt}
-              mirrorable={isMirrorable(liveDoc)}
-            />
           </span>
         </div>
         {ownerLabel ? (

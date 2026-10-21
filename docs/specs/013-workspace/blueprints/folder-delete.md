@@ -25,8 +25,7 @@ file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS
 WHERE parent_id = ?1`
 2. `UPDATE documents SET folder_id = (SELECT parent_id FROM folders WHERE id = ?1) WHERE
 folder_id = ?1` (live and trashed rows alike)
-3. `DELETE FROM drive_items WHERE item_kind = 'folder' AND ld_id = ?1`
-4. `DELETE FROM folders WHERE id = ?1`
+3. `DELETE FROM folders WHERE id = ?1`
 
 The parent is read by the subqueries inside the batch, never before it (`D121`), so a move of the
 folder between the read and the write cannot strand its contents. Statements 1 and 2 run while the
@@ -36,9 +35,6 @@ log only.
 Invariants: no document or folder is left pointing at a deleted folder; a subfolder's own children
 are untouched; team and owner columns are untouched (a team folder's parent is a folder of the same
 team, by the folder routes' scope rule).
-
-The Drive mirror needs no change: its outbound pass reads each item's `parentId` /
-`folderId` and moves the Drive files to `expectedParent`, then bins the tombstoned folder last.
 
 ## Interfaces and contracts
 
@@ -85,7 +81,6 @@ default-folder line when the folder is one of the reader's defaults; confirm lab
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Contents move to the parent; root for top level; trashed too; one batch | `apps/api/src/db/folders.test.ts`, `apps/api/src/db/trash.test.ts` |
 | The delete logs where the contents went                                 | `apps/api/src/routes/folders.test.ts`                              |
-| Drive outbound moves contents to the parent before the tombstone        | `apps/live/lib/drive/engine.outbound.test.ts`                      |
 | Confirmation wording                                                    | `apps/live/lib/folder-delete-confirmation.test.ts`                 |
 | Optimistic move-up                                                      | `apps/live/hooks/persistence/useFolders.test.tsx`                  |
 | End to end                                                              | `apps/live/e2e/default-folders.spec.ts`                            |

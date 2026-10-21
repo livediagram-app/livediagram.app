@@ -2,7 +2,7 @@
 // Prism module in @liveplanner/ui (docs/specs/004-interface-design/brand-mark.md):
 //   - apps/*/app/icon.svg: the compact mark, light/dark by prefers-color-scheme
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
-//   - marketing/media/icons/: transparent PNGs at Google Drive's sizes, and
+//   - marketing/media/icons/: transparent PNGs at the standard icon sizes, and
 //     white-tile PNGs (also copied to apps/marketing/public/ for the manifest)
 //   - apps/help/app/icon.png: the 256px tile, its favicon's PNG fallback
 //   - apps/marketing/public/email/liveplanner-mark-64.png: the transparent 64px mark

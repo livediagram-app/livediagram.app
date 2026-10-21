@@ -36,7 +36,7 @@ export function useEditorDialogs() {
   const [settingsCategory, setSettingsCategory] = useState<string | null>(
     settingsLink?.category ?? null,
   );
-  // Section of it to scroll to and focus (the Drive connect flow returns to Account > Cloud Sync).
+  // Section of it to scroll to and focus (settingsSectionId).
   const [settingsSection, setSettingsSection] = useState<string | null>(
     settingsLink?.section ?? null,
   );

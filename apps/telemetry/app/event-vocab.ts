@@ -51,9 +51,6 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Token: '#d946ef',
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
-  // Deep brown: apart from the greens (Action, Element, Cta), Email's teal and
-  // Activity's amber.
-  Drive: '#854d0e',
   Mcp: '#f43f5e',
   // Terminal ink: the command line, darker than the stone greys of Trash and Draw.
   Cli: '#1e293b',

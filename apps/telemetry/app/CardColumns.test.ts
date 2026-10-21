@@ -37,7 +37,7 @@ describe('weightOf', () => {
 
 describe('CardColumns', () => {
   it('sizes its single phone column by the width, not by a long unbreakable label', async () => {
-    // A bare `grid` gets an `auto` track that grows to a card's min-content ("Http404.DriveToken.DriveNotConnected"
+    // A bare `grid` gets an `auto` track that grows to a card's min-content ("Http409.WorkbenchPairings.PairingExpired"
     // stretched the Health tab past a 390px phone); grid-cols-1 is minmax(0, 1fr), so rows truncate instead.
     const { renderToStaticMarkup } = await import('react-dom/server');
     const { CardColumns } = await import('./CardColumns');

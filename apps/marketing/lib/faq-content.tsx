@@ -559,10 +559,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I turn a photo of sticky notes into a board?',
         a: 'Yes, on an event storming board. Take a photo of the wall and liveplanner finds the sticky notes and places them on the canvas for you to tidy up.',
       },
-      {
-        q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the documents in My documents are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
-      },
     ],
   },
   {
@@ -654,7 +650,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email and the Google Drive mirror once sign-in and their own keys are set up.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email once sign-in and its own key are set up.',
       },
     ],
   },

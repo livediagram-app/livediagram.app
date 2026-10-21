@@ -174,8 +174,8 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
         );
       }
       // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
-      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the
-      // Drive mirror and an embed read the same tab and are not opens. The read gate above has
+      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline and
+      // an embed read the same tab and are not opens. The read gate above has
       // already admitted the reader, and the open is theirs whoever they are.
       if (readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
         ctx.waitUntil?.(recordDocumentOpen(env, existing, owner, Date.now()));

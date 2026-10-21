@@ -78,7 +78,6 @@ import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
-import { handleDrive } from './routes/drive';
 import { handleWorkbench } from './routes/workbench';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
@@ -486,8 +485,6 @@ async function routeApiRequest(
         return await handleGuestId(ctx);
       case 'participants':
         return await handleParticipants(ctx);
-      case 'drive':
-        return await handleDrive(ctx);
       case 'workbench':
         return await handleWorkbench(ctx);
     }

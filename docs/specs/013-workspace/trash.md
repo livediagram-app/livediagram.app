@@ -207,16 +207,13 @@ tool can bin a document but never destroy one. `list_trash` and
 `restore_document` are the way back, with the REST Trash's authority. The
 permanent delete stays with the person and the REST API.
 
-## Designed for a mirror
+## One operation each
 
-A later Google Drive mirror will map Drive's bin onto this Trash: binning a
-document's file in Drive moves the document to the Trash, restoring it in Drive
-restores it, and emptying Drive's bin purges it. The three operations are plain
-calls with no HTTP concerns (`trashDocument`, `restoreDocument`,
-`purgeDocuments`) in `apps/api/src/db/trash.ts`: trash takes an id and the time,
-restore an id, purge a list of ids. Each keeps its own guard (only a live
-document is trashed, only a trashed one restored or purged), so the mirror calls
-them directly without re-checking state.
+The three operations are plain calls with no HTTP concerns (`trashDocument`,
+`restoreDocument`, `purgeDocuments`) in `apps/api/src/db/trash.ts`: trash takes
+an id and the time, restore an id, purge a list of ids. Each keeps its own guard
+(only a live document is trashed, only a trashed one restored or purged), so a
+caller uses them directly without re-checking state.
 
 ## Telemetry
 

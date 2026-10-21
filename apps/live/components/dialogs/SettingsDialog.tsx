@@ -36,8 +36,6 @@ import {
 } from '@/components/dialogs/settings/useSettingsViewMemory';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
-import { useDriveMirror } from '@/components/drive/drive-mirror-context';
-import type { CloudSyncProviderId } from '@/lib/cloud-sync/providers';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { usePlacementDefaults } from '@/hooks/persistence/usePlacementDefaults';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
@@ -54,8 +52,7 @@ type SettingsDialogProps = {
   // Category to open on without ringing a row, for the `?settings=` deep link
   // that mail and the account menu use.
   initialCategoryId?: string | null;
-  // Section of that category to scroll to and focus (settingsSectionId): the
-  // Drive connect flow returns to Account > Cloud Sync.
+  // Section of that category to scroll to and focus (settingsSectionId).
   initialSectionId?: string | null;
   // The reader's owner id, for the Documents rows (docs/specs/013-workspace/default-folders.md);
   // the owner the page loaded its default folders for when absent.
@@ -103,13 +100,6 @@ export function SettingsDialog({
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
   const powerUserMode = isPowerUserMode(settings);
   // Live settings too: a panel's rows follow its Enable switch the same way.
-  // Cloud Sync rows only where the deployment offers the provider
-  // (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting").
-  const driveMode = useDriveMirror().mode;
-  const cloudProviders = useMemo<CloudSyncProviderId[]>(
-    () => (driveMode !== 'off' ? ['googleDrive'] : []),
-    [driveMode],
-  );
   const categories = useMemo(
     () =>
       visibleCategories(aiCapable === true, {
@@ -118,10 +108,9 @@ export function SettingsDialog({
         authEnabled: clerkEnabled,
         powerUserMode,
         preferences: settings,
-        cloudProviders,
         workbench,
       }),
-    [aiCapable, emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench],
+    [aiCapable, emailEnabled, signedIn, powerUserMode, settings, workbench],
   );
 
   // The category the reader chose; null is the phone's root list. Desktop

@@ -39,7 +39,7 @@ import {
 // `open` declares this read an open of the document, for the reader's
 // Home (docs/specs/013-workspace/explorer-home.md "Opens"): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
-// Offline, the Drive mirror or an embed.
+// Offline or an embed.
 //
 // The tab's revision rides beside it (docs/specs/024-agents/agent-changesets.md "The tab revision",
 // CS41), never inside it: the editor's tabs hold content only, and the revision tells the changeset
@@ -95,7 +95,7 @@ export const apiLoadTabRevisioned = dedupeInFlight<
     `${ownerId}␟${documentId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}`,
 );
 
-// The tab alone, for callers that need no revision (a duplicate, Take Offline, the Drive mirror).
+// The tab alone, for callers that need no revision (a duplicate, Take Offline).
 export async function apiLoadTab(
   ...args: Parameters<typeof _apiLoadTabRevisioned>
 ): Promise<Tab | null> {

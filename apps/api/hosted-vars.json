@@ -4,12 +4,10 @@
   "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
   "environments": {
     "production": {
-      "APP_BASE_URL": "https://www.liveplanner.app",
-      "GOOGLE_CLIENT_ID": ""
+      "APP_BASE_URL": "https://www.liveplanner.app"
     },
     "staging": {
-      "APP_BASE_URL": "https://staging.liveplanner.app",
-      "GOOGLE_CLIENT_ID": ""
+      "APP_BASE_URL": "https://staging.liveplanner.app"
     }
   }
 }

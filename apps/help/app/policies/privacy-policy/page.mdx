@@ -24,23 +24,11 @@ liveplanner is built to need as little of your data as possible, and the whole c
 - **Your profile picture's address, if you sign in.** Your profile picture is a picture you uploaded to your account, or your Google picture. We store only its web address (hosted by Clerk), never the image, so we can show it to the people you collaborate with who are signed in: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials. Turn it off in **Settings > Account > Show My Profile Picture**; it is removed when you delete your account.
 - **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
 - **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we store the app's registration (its name and redirect address, kept for 30 days), short-lived authorization sessions and codes that expire within minutes, and, for an hour, a count of registrations from your IP address to stop abuse. The connection itself is an API token, covered above, and you can revoke it any time.
-- **Google Drive, if you connect it.** If you [mirror your documents to Google Drive](/help/account-and-data/google-drive/), we store an encrypted refresh token from Google, the id of the Google account you connected, the ids of the files and folders liveplanner created in your Drive, and the state liveplanner last wrote to them. See **Google user data** below.
 - **Team invitations.** If a teammate invites you by email, we store that address with the team, send you the invitation (and up to three reminders while nobody has answered it, each with a link to decline it), and may send you action and mention emails at that address before you create an account.
 - **Form responses.** If you publish a [form](/help/canvas/plan-mode/forms/), each response someone sends is stored in your document as a card or a sheet row, holding only what they typed into the form. People filling in a form need no account, and we store no name, account or browser id for them. A report about a form stores its reason, the optional note, a random key kept in the reporter's browser and a one-way hash of their network.
 - **Votes from guests.** To stop one person voting many times, a guest's vote stores a one-way hash of their network address combined with the document's id. It is deleted with the document.
 - **Document activity.** Your [Timeline](/help/explorer/timeline/) records what happened to your documents (created, renamed, shared, commented on) and which ones you opened, so the Explorer can show you. These records are kept for a year.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
-
-## Google user data
-
-If you connect Google Drive, liveplanner asks Google for access to **only the files it creates, or that you open with it** (the `drive.file` scope), and to appear in Drive's **Open with** menu (`drive.install`). It cannot see any other file in your Drive.
-
-- **What we read and write.** Your browser writes your documents to the `.liveplanner` files in your Drive, reads the names, folders and bin state of those files to keep liveplanner in step, and reads a file you choose to open or import with liveplanner. The traffic goes straight from your browser to Google; the contents of your Drive never pass through our servers.
-- **What we store.** An encrypted refresh token (so the mirror keeps working without asking you every hour), the id of the Google account you connected, the ids of the files and folders liveplanner created, and the state it last wrote to them. The refresh token is never shown to anyone, including you.
-- **What we never do.** We use Google user data only to provide the mirror you asked for. We do not use it for advertising, we do not sell it, we do not use it to train AI models, and nobody at liveplanner reads it unless you ask us to for support, it is needed for security, or the law requires it.
-- **Disconnecting.** Disconnecting, or deleting your account, revokes liveplanner's access at Google and deletes the token and the file ids we stored. Your files stay in your Drive. You can also remove liveplanner's access at any time from your Google account's security settings.
-
-liveplanner's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
 ## AI features
 
@@ -84,7 +72,6 @@ We rely on a small number of providers to run the service:
 
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
-- **Google**, for the Google Drive mirror (only if you connect it); your browser talks to Google directly.
 - **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
 - **OpenAI**, for the AI assistant, and **Google** (Gemini), for reading sticky notes from a photo (only when you use them; see **AI features** above).
 
@@ -102,7 +89,7 @@ Anything you put in a document you share becomes visible to people who have the 
 
 You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Comments, answers, ideas and votes that passed through a live collaboration session are also kept in that session's own storage on Cloudflare, and that copy is removed with the document. A document left empty and untouched for 30 days moves to the Trash on its own.
 
-You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, revokes the Google Drive connection, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
 
 Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
 

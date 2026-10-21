@@ -1,4 +1,4 @@
--- Community (dropped by 0100_drop_community.sql):
+-- Community (dropped by 0101_drop_community.sql):
 -- documents published to the public gallery, their likes, copies and reports, and the community link each post owns.
 
 -- What a share link is for. 'community' marks a post's own link: never listed for the owner, never expiring, no room,

@@ -2590,18 +2590,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
-  'Drive|Linked':
-    'Someone connected Google Drive, so My Documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
-  'Drive|Unlinked':
-    'Someone disconnected Google Drive. liveplanner stops updating it, and the files stay in their Drive.',
-  'Drive|Changed':
-    "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
-  'Drive|Created':
-    'A newly connected mirror finished copying every document in My Documents into Google Drive for the first time.',
-  'Drive|Applied':
-    'A change someone made in Google Drive reached liveplanner: a rename, a move (or a move into a folder liveplanner cannot see), a bin, a restore, or a permanent delete.',
-  'Drive|Opened':
-    'Someone opened a liveplanner file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
   'Folder|Changed':
     'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':

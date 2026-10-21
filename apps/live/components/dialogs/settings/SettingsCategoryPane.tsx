@@ -17,7 +17,6 @@ import { SettingsNoteRow } from './SettingsNoteRow';
 import { SettingsLinkRow } from './SettingsLinkRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
-import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
 import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
 import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -264,8 +263,6 @@ export function SettingsCategoryPane({
         return <SettingsDeleteAccountRow row={row} />;
       case 'trash':
         return <SettingsTrashRow row={row} />;
-      case 'cloudSync':
-        return <SettingsCloudSyncRow row={row} />;
       case 'placementDefault':
         return <SettingsPlacementDefaultRow row={row} lists={placementLists} />;
       case 'presetSummary':

@@ -1,5 +1,5 @@
 // The capabilities answer is deployment config, so a page asks once however many surfaces need
-// it (the editor, the Drive mirror, each Settings open), and asks again only after a failure.
+// it (the editor, each Settings open), and asks again only after a failure.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiGetCapabilities, resetCapabilitiesForTests } from './ai';
 
