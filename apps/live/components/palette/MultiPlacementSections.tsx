@@ -1,5 +1,3 @@
-import { CombineOpGlyph, CombineTiles } from '@/components/canvas/CombineMenu';
-import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import {
   rotationOf,
   supportsRotation,
@@ -23,7 +21,6 @@ import {
 import {
   MenuAccordionSection,
   MenuActionButton,
-  MenuActionRow,
 } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
@@ -64,32 +61,6 @@ export function MultiPlacementSections({
   const turnable = boxedSel.filter(supportsRotation);
   return (
     <>
-      {/* Combine (docs/specs/007-editor/logo-pages.md "Combine"): shapes on a logo page into one. */}
-      {props.onCombine ? (
-        <MenuAccordionSection
-          title="Combine"
-          icon={<CombineOpGlyph op="unite" size={16} />}
-          {...sectionProps('m-combine')}
-        >
-          <CombineTiles
-            onCombine={(op) => {
-              onClose();
-              props.onCombine!(op);
-            }}
-          />
-        </MenuAccordionSection>
-      ) : null}
-      {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
-      {props.onMirrorCopy ? (
-        <MenuActionRow
-          icon={<MirrorCopyGlyph />}
-          label="Mirror Copy"
-          onClick={() => {
-            onClose();
-            props.onMirrorCopy!();
-          }}
-        />
-      ) : null}
       {/* Layer — front/back, opacity and (for boxed members) the
                   aspect-ratio lock, selection-wide, mirroring the single
                   menu's pinned-first Layer section. */}

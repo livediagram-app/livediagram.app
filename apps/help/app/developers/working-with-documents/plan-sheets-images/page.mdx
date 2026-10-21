@@ -207,28 +207,6 @@ curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/changesets \
 
 `GET /images` lists your uploads, `GET /images/usage` maps each to the documents that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and on a host that sets a gallery limit, `403 gallery_full`.
 
-## Pages and Articles
-
-`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/canvas/pages-mode/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Pages by the same edit; a locked tab or an Event Storming board is refused.
-
-```bash
-# Add two slides and rename the first page
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/pages \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "pages": [
-    { "op": "add", "kind": "slide", "name": "Roadmap" },
-    { "op": "add", "kind": "slide", "background": { "gradient": ["#1e3a8a", "#7c3aed"] } },
-    { "op": "set", "page": 1, "name": "Cover" }
-  ] }'
-
-# Write an article: the editor flows it onto pages
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/pages \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "article": { "markdown": "# Release notes\n\nWhat changed this month.", "size": "a4" } }'
-```
-
-A page change is `add` (a `kind` of `infographic`, `slide` or `logo`, with an optional `size`, `orientation`, `name`, `background`, `layout` and `at`), `set`, `layout`, `move`, `duplicate` or `delete`; a page is named by its id, its place in the row (from 1) or its name. An article write takes `mode` `replace` (the default) or `append`, and `article` to name an existing one. The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page.
-
 ## A Tab as a Picture
 
 ```bash

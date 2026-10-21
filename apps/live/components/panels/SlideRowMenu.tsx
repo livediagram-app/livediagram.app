@@ -59,9 +59,7 @@ export function SlideRowMenu({
   onRemoveSelection: () => void;
   onToggleHidden: () => void;
   onDuplicate: () => void;
-  /** Absent where the slide cannot be deleted: a slide page's own slide, which the deck would put straight back
-   *  (docs/specs/007-editor/pages-mode.md "Slides"); Hide leaves it out of the show. */
-  onDelete?: (anchor: HTMLElement | null) => void;
+  onDelete: (anchor: HTMLElement | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<string | null>(null);
@@ -128,17 +126,14 @@ export function SlideRowMenu({
                 onDuplicate();
               }}
             />
-            {onDelete ? (
-              <div className="ml-auto">
+            <div className="ml-auto">
                 <MenuToolButton
                   icon={<TrashIcon />}
                   label="Delete"
                   description={
-                    slide.pageId
-                      ? 'Remove this slide from the deck. The page stays.'
-                      : slide.elementIds.length === 1
-                        ? 'Remove this slide from the deck. The element stays on the canvas.'
-                        : 'Remove this slide from the deck. The elements stay on the canvas.'
+                    slide.elementIds.length === 1
+                      ? 'Remove this slide from the deck. The element stays on the canvas.'
+                      : 'Remove this slide from the deck. The elements stay on the canvas.'
                   }
                   onClick={() => {
                     // Hand the menu button up as the anchor so the panel can
@@ -149,12 +144,9 @@ export function SlideRowMenu({
                   }}
                 />
               </div>
-            ) : null}
           </MenuToolbar>
           {/* No MenuGroupSeparator here: MenuAccordionSection draws its own
-              top hairline, and the two together read as a double rule. A page
-              slide is whatever is on its page, so it has no selection to edit. */}
-          {slide.pageId ? null : (
+              top hairline, and the two together read as a double rule. */}
             <MenuAccordionSection
               title="Selection"
               icon={<SelectionIcon />}
@@ -199,7 +191,6 @@ export function SlideRowMenu({
                 </MenuTileGrid>
               </div>
             </MenuAccordionSection>
-          )}
           <MenuAccordionSection
             title="Visibility"
             icon={slide.hidden ? <EyeOffIcon /> : <EyeIcon />}

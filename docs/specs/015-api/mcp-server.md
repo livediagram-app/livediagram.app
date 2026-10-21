@@ -175,8 +175,8 @@ browser. A token minted for the CLI is named "liveplanner CLI".
 
 ## 4. Tools
 
-Twenty-eight tools: thirteen for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
-([§4.9c](#49c-the-sheet-tools)), two for pages and articles ([§4.9d](#49d-the-pages-tools)) and four
+Twenty-six tools: thirteen for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
+([§4.9c](#49c-the-sheet-tools)) and four
 for forms ([§4.9e](#49e-the-form-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
@@ -763,8 +763,7 @@ checked, on every element path (`freehand-points.ts`), and an ops update giving 
 starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
-ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (a slide deck among
-them, and how to start one), `change_pages` and `write_article` say which is for slides, and the single-`tab` alias
+ranks long ones down or leaves the largest out. So `create_document` leads with what it makes, and the single-`tab` alias
 is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
 schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
 
@@ -888,27 +887,6 @@ scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation]
 - **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
   to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
 
-### 4.9d The Pages tools
-
-The pages of a tab in Pages mode and the articles written on them ([Pages for agents](../024-agents/pages-for-agents.md)).
-Pages are named by id, place (`2`) or name; articles by flow id or title. Both tools go through one api route
-(`POST /api/documents/:id/tabs/:tabId/pages`, `apps/mcp/src/pages-tools.ts` over
-`packages/agent-verbs/src/pages/`) and the editor's own page edits, switch the tab into Pages when it is
-not, and reach open editors at once.
-
-- **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
-  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, slide or logo), `set`
-  `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
-  `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
-  takes its background), written as one edit; a refusal writes nothing and names the
-  change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
-- **`write_article`** (destructive, as a replace drops the old text): an article's text from Markdown (front
-  matter `title:` / `subtitle:`, headings, lists, to-dos, quotes, code, dividers, `\pagebreak`), `replace` or
-  `append`, a new article or a named one, with an optional look, accent and page numbers. The editor flows it
-  onto as many pages as it needs.
-- **Reading**: `read_document` with `view: "pages"` lists the pages, the elements on each, the layouts on offer
-  and each article as Markdown in the form `write_article` takes.
-
 ### 4.9e The form tools
 
 A Form tab's form ([Forms](../030-forms/forms.md#agents)): its questions, sections, where its responses go and its
@@ -1025,7 +1003,7 @@ Three behaviours cover the twenty tools, and each is a preset in
 | --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                             |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                             |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_form`                                                              |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -1178,20 +1156,11 @@ name>: ...`).
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
 <!-- /legacy-names -->
 
-- **Previews**: `read_document` with `image` draws a Pages tab as its pages, each as the editor exports it
-  (`svg-render-pages.ts` over `page-frame.ts`): its background, gradient, pattern or picture, the elements
-  reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
-  under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
-  estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
-  wrapped at an estimated width, flowed down the article's pages), with the pages the editor would add after its last
-  shown and labelled as such. An emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
+- **Previews**: an emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
   that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveplanner/icons/resolve`).
-- Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
-  reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
-  once laid out"), so an agent asked for one page sees at once that it ran over.
 
 ## 5. Visualise — inline image render
 
@@ -1228,8 +1197,7 @@ Worker (no DOM, no React).
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
-- **Fonts.** The faces a tab uses beyond Inter (its elements', its own, a sheet's cells', its articles' heading and
-  body faces) are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
+- **Fonts.** The faces a tab uses beyond Inter (its elements', its own and a sheet's cells') are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
   to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
   the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the

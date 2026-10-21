@@ -46,11 +46,6 @@ import {
   type TextAlignY,
   type TextSize,
   type TextSizePreset,
-  clampLetterSpacing,
-  clampTextArc,
-  type FontWeight,
-  type TextCase,
-  type TextElement,
   withInlineIcon,
 } from '@liveplanner/document';
 import type { ShapeColorPreset } from './themes';
@@ -354,34 +349,3 @@ export function applyArrowPresetToEl(
   };
 }
 
-// Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): a patch of tracking,
-// weight, case and arc for text elements; `null` clears a field. Choosing a weight clears bold
-// (the weight wins while set, and the Bold button clears it back).
-export type WordmarkPatch = {
-  letterSpacing?: number | null;
-  fontWeight?: FontWeight | null;
-  textCase?: TextCase | null;
-  textArc?: number | null;
-};
-
-export function applyWordmarkToEl(el: Element, patch: WordmarkPatch): Element {
-  if (el.type !== 'text') return el;
-  const next: TextElement = { ...el };
-  const set = <K extends keyof WordmarkPatch>(key: K, value: TextElement[K] | undefined) => {
-    if (value === undefined) delete next[key];
-    else next[key] = value;
-  };
-  if ('letterSpacing' in patch)
-    set(
-      'letterSpacing',
-      patch.letterSpacing == null ? undefined : clampLetterSpacing(patch.letterSpacing),
-    );
-  if ('textArc' in patch)
-    set('textArc', patch.textArc == null ? undefined : clampTextArc(patch.textArc));
-  if ('textCase' in patch) set('textCase', patch.textCase ?? undefined);
-  if ('fontWeight' in patch) {
-    set('fontWeight', patch.fontWeight ?? undefined);
-    if (patch.fontWeight != null) delete next.textBold;
-  }
-  return next;
-}

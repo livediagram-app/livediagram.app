@@ -1,14 +1,10 @@
-// One slide's picture (docs/specs/012-collaboration/presentation-mode.md, docs/specs/007-editor/
-// pages-mode.md "Contents"): its elements drawn by the headless renderer the exports use,
-// framed to the slide (a page slide to its page, on its background). Shared by the Slide Deck's
-// rows and the Contents popover's page thumbnails, so a page looks the same in both. The markup is
+// One slide's picture (docs/specs/012-collaboration/presentation-mode.md): its elements drawn by the
+// headless renderer the exports use, framed to the slide, for the Slide Deck's rows. The markup is
 // our own renderer's output (user text is xmlEscaped inside it), so injecting it is safe.
 import {
   r2,
   resolveSlide,
   slideFrame,
-  pagesOf,
-  layOutPages,
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
@@ -17,13 +13,8 @@ import {
   type CanvasSurface,
   type Slide,
   type Tab,
-  tabWireframeFrameTheme,
 } from '@liveplanner/document';
 import type { Item, ItemTypeDef } from '@liveplanner/items';
-import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
-import { articleOpsToSvg } from '@/lib/article/article-draw';
-import { CANVAS_PAPER } from '@/lib/page-paint';
-import { pageExportFrame } from '@/lib/export-page';
 import { exportChartInk } from '@/lib/export-chart-ink';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 
@@ -36,8 +27,7 @@ export type SlideThumbOptions = {
   itemTypes?: readonly ItemTypeDef[];
   // The tab's arrow labels, laid out once for many slides of one tab; laid out here when absent.
   labels?: ReturnType<typeof arrowLabelPass>;
-  // The canvas's surface: a page with no fill is drawn on the paper as the canvas shows it (slate
-  // in dark mode, CANVAS_PAPER), its ink the canvas's. Light when absent.
+  // The canvas's surface, whose ink the elements are drawn in. Light when absent.
   surface?: CanvasSurface;
 };
 
@@ -55,37 +45,17 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
     : {};
   const { items, itemTypes } = opts;
   const elements = resolveSlide(slide, tab);
-  // A page slide is its page: framed to it, painted on its background.
   const bounds = slideFrame(slide, tab);
   if (!bounds) return null;
   // Boxed first, then arrows, matching the canvas's own paint order so a connector never
   // disappears under the box it points at.
   const parts: string[] = [];
-  const page = slide.pageId
-    ? layOutPages(pagesOf(tab)).find((p) => p.id === slide.pageId)
-    : undefined;
-  // A page's surface sets its ink, as the canvas draws it: light ink on a dark page, and a page with
-  // no fill on the canvas's own paper in the canvas's ink.
-  const canvasSurface = opts.surface ?? 'light';
-  let surface: CanvasSurface = canvasSurface;
-  if (page) {
-    const frame = pageExportFrame(page, {
-      paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
-      idPrefix: `lvd-slide-${slide.id}`,
-      ruling: pageRulingOf(tab, page),
-      frameTheme: tabWireframeFrameTheme(tab),
-    });
-    if (page.background?.fill) surface = frame.surface;
-    parts.push(frame.backgroundSvg);
-    // An article page's writing, as lines of text.
-    const bars = pageWritingBars(page);
-    if (bars.length) parts.push(articleOpsToSvg(bars));
-  }
+  const surface: CanvasSurface = opts.surface ?? 'light';
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(elements, tab.finish);
-  // Charts in the tab theme's colours and, on a filled page, adapted to what they sit on, as on the
-  // canvas and in the exports (without the palette every chart fell back to the built-in ramp).
-  const { chartPalette, chartGrounds } = exportChartInk(tab, page);
+  // Charts in the tab theme's colours, as on the canvas and in the exports (without the palette every
+  // chart fell back to the built-in ramp).
+  const { chartPalette } = exportChartInk(tab);
   for (const el of elements) {
     if (el.type !== 'arrow') {
       parts.push(
@@ -96,7 +66,6 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
           sketchBackdrop: backdrops.has(el.id),
           surface,
           chartPalette,
-          chartGrounds,
           ...(items ? { items } : {}),
           ...(itemTypes ? { itemTypes } : {}),
         }),

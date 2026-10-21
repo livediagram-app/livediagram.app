@@ -372,8 +372,7 @@ In Plan mode:
   away.
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
   the **Add a Card** menu (the shared anchored menu with an option list and no header, since it opens under its
-  own button; a bottom sheet titled "Add a Card" on a phone), as
-  Pages mode's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
+  own button; a bottom sheet titled "Add a Card" on a phone): a row per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so

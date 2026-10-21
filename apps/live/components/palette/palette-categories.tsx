@@ -39,21 +39,11 @@ import {
 } from '@liveplanner/ui';
 import { PlanCardsIcon, PlanIcon } from '@liveplanner/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
-import { Glyph, lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveplanner/ui';
 import { lucidePanelTop, lucideRows2 } from '@liveplanner/icons/lucide';
 
 const DashboardLayoutIcon = lucideGlyph(lucideRows2, 18);
 
-// A phone with a screen being wireframed: a bar, a picture and a button.
-function WireframeTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-      <rect x="8.5" y="6.5" width="7" height="5" rx="0.75" />
-      <path d="M8.5 14.5h7M8.5 17.5h4" />
-    </Glyph>
-  );
-}
 const TabsIcon = lucideGlyph(lucidePanelTop, 18);
 
 /**
@@ -202,16 +192,6 @@ export const PALETTE_CATEGORIES: {
     icon: <WriteTabIcon />,
   },
 
-  {
-    // Pages mode, while the tab has a wireframe page (docs/specs/007-editor/wireframe-pages.md "The
-    // Elements palette").
-    id: 'wireframe',
-    label: 'Elements',
-    group: 0,
-    description:
-      'The parts a screen is wireframed from: buttons, fields, badges, pictures, avatars, cards and lists.',
-    icon: <WireframeTabIcon />,
-  },
   {
     id: 'draw',
     label: 'Draw',

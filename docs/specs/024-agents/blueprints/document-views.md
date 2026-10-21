@@ -296,7 +296,7 @@ attribute   := key "=" attrValue | flag
 ```
 
 `kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
-`diagram` and that is not in Pages (whose pages segment already says so); `finish=` only when the tab sets one;
+`diagram`; `finish=` only when the tab sets one;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 

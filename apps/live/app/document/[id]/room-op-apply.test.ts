@@ -4,7 +4,6 @@ import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livepla
 import type { RoomOp } from '@liveplanner/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
-import { clearArticleGrow, isArticleGrowPending } from '@/lib/article/article-grow-store';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
@@ -296,59 +295,5 @@ describe('applyRoomOpToTabs: changeset', () => {
         changeset({ tabId: 'nope', elementOps: [{ kind: 'remove', id: 'a' }] }),
       ),
     ).toBe(tabs);
-  });
-});
-
-describe('applyRoomOpToTabs: documents', () => {
-  const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
-
-  it("applies a peer's block ops, merging with ours", () => {
-    const base = tab({ articles: { f: { blocks: [P('a'), P('b')] } } });
-    const mine = tab({ articles: { f: { blocks: [P('a', 'mine'), P('b')] } } });
-    const theirs = tab({ articles: { f: { blocks: [P('a'), P('b', 'theirs')] } } });
-    let tabs = [mine];
-    for (const op of tabBroadcastOps(base, theirs)) tabs = applyRoomOpToTabs(tabs, op);
-    expect(tabs[0]!.articles!.f!.blocks).toEqual([P('a', 'mine'), P('b', 'theirs')]);
-  });
-
-  it('drops writing for an article this tab no longer has, unless it is new', () => {
-    const tabs = [tab()];
-    const late: RoomOp = {
-      kind: 'article',
-      tabId: 't1',
-      flow: 'f',
-      ops: [{ kind: 'put', block: P('a') }],
-    };
-    expect(applyRoomOpToTabs(tabs, late)[0]!.articles).toBeUndefined();
-    const created: RoomOp = { ...late, created: true };
-    expect(applyRoomOpToTabs(tabs, created)[0]!.articles!.f!.blocks).toEqual([P('a')]);
-  });
-
-  it('marks an agent’s writing for growing by whoever lays it out next', () => {
-    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
-    const op: RoomOp = {
-      kind: 'article',
-      tabId: 't1',
-      flow: 'f',
-      ops: [{ kind: 'put', block: P('b') }],
-    };
-    applyRoomOpToTabs(tabs, op);
-    expect(isArticleGrowPending('t1', 'f')).toBe(false);
-    applyRoomOpToTabs(tabs, { ...op, agent: true });
-    expect(isArticleGrowPending('t1', 'f')).toBe(true);
-    clearArticleGrow('t1', 'f');
-    expect(isArticleGrowPending('t1', 'f')).toBe(false);
-  });
-
-  it('ignores a malformed article frame', () => {
-    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
-    const bad = { kind: 'article', tabId: 't1', flow: 'f', ops: 'x' } as unknown as RoomOp;
-    expect(applyRoomOpToTabs(tabs, bad)).toBe(tabs);
-  });
-
-  it('removes an article, and drops the field with the last one', () => {
-    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
-    const op: RoomOp = { kind: 'article', tabId: 't1', flow: 'f', removed: true };
-    expect(applyRoomOpToTabs(tabs, op)[0]!.articles).toBeUndefined();
   });
 });

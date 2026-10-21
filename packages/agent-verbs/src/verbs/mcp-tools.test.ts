@@ -17,8 +17,6 @@ describe('the MCP tool verbs', () => {
       'read_sheet',
       'change_sheet',
       'add_sheet',
-      'change_pages',
-      'write_article',
       'list_images',
       'read_form',
       'add_form',

@@ -104,9 +104,6 @@ export function deriveCanvasSelection(input: {
   // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
   // clear it as they clear the line.
   labelRectOf?: (id: ElementId) => Rect | null;
-  // An element that never shows quick-connect pluses, beyond the rules below: an object in an
-  // article's writing connects to nothing (docs/specs/007-editor/article-pages.md "Zones").
-  plusBlocked?: (el: Element) => boolean;
   // A Plan board or view is drawn over the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md
   // "Maximised board", "Fill Tab"). The canvas under it cannot be worked on, so no selection toolbar, popover or
   // plus floats over it, whatever is selected and however it came to be (a press before, select-all, undo, a
@@ -124,7 +121,6 @@ export function deriveCanvasSelection(input: {
     esBoard,
     elementMenuOpen,
     labelRectOf,
-    plusBlocked,
     canvasCovered: covered = false,
   } = input;
 
@@ -196,8 +192,7 @@ export function deriveCanvasSelection(input: {
     !isPaintMode &&
     !selectedLocked &&
     !tabLocked &&
-    !readOnly &&
-    !plusBlocked?.(selected)
+    !readOnly
   );
   // Resize handles and edge anchors: the per-element rule each element view also applies.
   const gripsOf = (id: string) => {

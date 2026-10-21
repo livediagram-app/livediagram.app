@@ -1,18 +1,16 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { LogoKitPanel } from './LogoKitPanel';
 import {
   isLayerVisible,
   tabLayers,
   mermaidFromTab,
-  type LaidOutPage,
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
@@ -26,14 +24,7 @@ import {
   renderTabToSvg,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
-import {
-  DEFAULT_PAGE_SCOPE,
-  exportPageLabel,
-  exportPages,
-  sanitizeFilename,
-  type PageScope,
-} from '@/lib/export-pages';
-import { ExportPagePicker } from './ExportPagePicker';
+import { sanitizeFilename } from '@/lib/sanitize-filename';
 import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
@@ -41,10 +32,6 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useTabWindowExport } from './useTabWindowExport';
 import { usePlanImageExport } from './usePlanImageExport';
 import type { ExportFormatKey } from '@liveplanner/plan-art';
-
-// The animated GIF's panel and its capture, loaded only when the GIF card opens
-// (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
-const GifExportPanel = lazy(() => import('./gif/GifExportPanel'));
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
@@ -57,8 +44,6 @@ const EXPORT_LABEL: Record<Format, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
-  gif: 'GIF',
-  'logo-kit': 'LogoKit',
 };
 
 // A text format taken (downloaded or copied): CSV counts as its board's or Sheet's own CSV download, as the tab menu's
@@ -69,29 +54,6 @@ function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
   else if (format === 'csv') track('Plan', 'Exported', 'Csv');
   else track('Document', 'Exported', EXPORT_LABEL[format]);
 }
-
-// A Pages tab's pages exported (docs/specs/007-editor/pages-mode.md "Telemetry"): one
-// page, or all of them.
-const PAGE_EXPORT_LABEL: Record<ImageFormat, string> = {
-  png: 'PagesPNG',
-  svg: 'PagesSVG',
-  pdf: 'PagesPDF',
-};
-const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
-  png: 'PagesPNGPages',
-  svg: 'PagesSVGPages',
-  pdf: 'PagesPDFPages',
-};
-
-// The formats Pages mode exports to (docs/specs/007-editor/pages-mode.md "Export"):
-// its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
-// The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
-const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
-  pdf: 'Every page in one PDF, or a single page, ready to print or share.',
-  png: 'A high-resolution image of a page, or a .zip with one per page.',
-  svg: 'A scalable vector image of a page, or a .zip with one per page.',
-};
 
 // A Board, Sheet or Dashboard tab's image: flat, no backdrop pattern, every element it draws.
 const PLAIN_IMAGE = { isometric: false, pattern: false, hiddenLayers: true } as const;
@@ -115,22 +77,16 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
-  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Export"): PDF, PNG and
-  // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
-  pages?: LaidOutPage[];
   // The document's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export") and for
   // the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
   documentTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
-  // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
-  onClearSelection?: () => void;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
-// The format keys (plan-export-formats.ts): 'logo-kit' is a logo page's kit (docs/specs/007-editor/logo-pages.md
-// "Export"), while the tab has one.
+// The format keys (plan-export-formats.ts).
 export type Format = ExportFormatKey;
 
 // The four text formats each open a view/edit/copy panel; the three image
@@ -184,17 +140,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
-  },
-  {
-    // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
-    kind: 'gif',
-    title: 'GIF',
-    description: 'An animated image of the pages, moving as they move on the canvas.',
-  },
-  {
-    kind: 'logo-kit',
-    title: 'Logo Kit',
-    description: 'An SVG, PNGs from 16 to 1024 px and a favicon.ico, in one .zip.',
   },
 ];
 
@@ -264,10 +209,8 @@ export function ExportTabDialog({
   scope = 'tab',
   imageContext,
   offerHiddenLayers = true,
-  pages,
   documentTabs,
   loadTabs,
-  onClearSelection,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
@@ -303,30 +246,11 @@ export function ExportTabDialog({
     Awaited<ReturnType<typeof loadTabImages>> | undefined
   >(undefined);
   const [previewReady, setPreviewReady] = useState(false);
-  // The page One page exports (and every preview shows), by its place in the row.
-  const [pageIndex, setPageIndex] = useState(0);
-  const page = pages?.[Math.min(pageIndex, pages.length - 1)];
-  // All pages or One page, per format: each starts where DEFAULT_PAGE_SCOPE puts it.
-  const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
-  const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
-  // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
-  const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
-  const cards = pages
-    ? [
-        // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
-        ...PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
-        ...(hasLogoPage ? (['logo-kit'] as const) : []),
-      ].map((kind) => {
-        const card = CARDS.find((c) => c.kind === kind)!;
-        return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
-      })
-    : // Off Pages there are no pages, so no logo page and no GIF: never the Logo Kit or GIF. A Plan tab offers
-      // its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an empty file.
-      CARDS.filter((c) =>
-        planImage.formats
-          ? planImage.formats.includes(c.kind)
-          : c.kind !== 'logo-kit' && c.kind !== 'gif' && c.kind !== 'csv',
-      );
+  // A Plan tab offers its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an
+  // empty file.
+  const cards = CARDS.filter((c) =>
+    planImage.formats ? planImage.formats.includes(c.kind) : c.kind !== 'csv',
+  );
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -349,7 +273,7 @@ export function ExportTabDialog({
   // When an image format is picked, load the icon catalogues + image bitmaps
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
-    if (!active || isTextFormat(active) || active === 'gif') return;
+    if (!active || isTextFormat(active)) return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
@@ -370,9 +294,6 @@ export function ExportTabDialog({
     [active, tab, planData],
   );
 
-  // A page's PNG and SVG leave a logo page's plain paper see-through (exportPages), so their
-  // preview does too, over a checkerboard; a PDF page always has its paper.
-  const seeThrough = !!page && (active === 'png' || active === 'svg');
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
@@ -403,13 +324,11 @@ export function ExportTabDialog({
       renderTabToSvg(imageTab, {
         ...(plain ? PLAIN_IMAGE : opts),
         images: previewImages,
-        page,
-        ...(seeThrough ? { transparentPaper: true } : {}),
         ...planOpts,
         ...planExtras,
         ...windowOpts,
       }),
-    [imageTab, plain, previewImages, page, seeThrough, planOpts, planExtras, windowOpts],
+    [imageTab, plain, previewImages, planOpts, planExtras, windowOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -432,34 +351,10 @@ export function ExportTabDialog({
       const renderOpts = {
         ...(plain ? PLAIN_IMAGE : opts),
         images,
-        page,
         ...planOpts,
         ...planExtras,
         ...windowOpts,
       };
-      if (pages && page) {
-        const pageScope = scopeOf(format);
-        const { blob, ext } = await exportPages({
-          tab,
-          pages,
-          page,
-          scope: pageScope,
-          format,
-          opts: renderOpts,
-        });
-        const name =
-          pageScope === 'all'
-            ? baseName
-            : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length))}`;
-        downloadBlob(blob, `${name}.${ext}`);
-        track(
-          'Document',
-          'Exported',
-          pageScope === 'all' ? PAGES_EXPORT_LABEL[format] : PAGE_EXPORT_LABEL[format],
-        );
-        onClose();
-        return;
-      }
       if (format === 'png') {
         downloadBlob(await exportTabAsPng(imageTab, renderOpts), `${baseName}.png`);
       } else if (format === 'svg') {
@@ -477,18 +372,12 @@ export function ExportTabDialog({
 
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
-    ? active === 'logo-kit'
-      ? 'Download a logo page as an SVG, PNGs and a favicon.'
-      : active === 'gif'
-        ? 'Set how the pages play, then download the GIF.'
-        : isTextFormat(active!)
-          ? `Copy this tab as ${activeCard.title}, or download a file.`
-          : `Set the image options for ${activeCard.title}, then download.`
+    ? isTextFormat(active!)
+      ? `Copy this tab as ${activeCard.title}, or download a file.`
+      : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
-      : pages
-        ? 'Pick a format to export the pages.'
-        : 'Pick a format to export the current tab.';
+      : 'Pick a format to export the current tab.';
 
   return (
     <Dialog
@@ -517,61 +406,15 @@ export function ExportTabDialog({
             onCopied={() => trackTextExport(active, tab)}
             onBack={() => setActive(null)}
           />
-        ) : active === 'logo-kit' && pages ? (
-          <LogoKitPanel
-            tab={tab}
-            pages={pages}
-            documentName={documentName}
-            images={previewImages}
-            imagesReady={previewReady}
-            imageContext={imageContext}
-            onDone={onClose}
-            onBack={() => setActive(null)}
-          />
-        ) : active === 'gif' && pages && page ? (
-          <Suspense
-            fallback={
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Preparing the GIF options…
-              </p>
-            }
-          >
-            <GifExportPanel
-              tab={tab}
-              pages={pages}
-              page={page}
-              baseName={baseName}
-              onPick={setPageIndex}
-              onDone={onClose}
-              onBack={() => setActive(null)}
-              onClearSelection={onClearSelection}
-            />
-          </Suspense>
         ) : active ? (
           <ImageExportPanel
-            pagePicker={
-              pages && page ? (
-                <ExportPagePicker
-                  pages={pages}
-                  page={page}
-                  scope={scopeOf(active as ImageFormat)}
-                  format={active as ImageFormat}
-                  onScope={(next) => setScopes((s) => ({ ...s, [active as ImageFormat]: next }))}
-                  onPick={setPageIndex}
-                />
-              ) : undefined
-            }
             label={activeCard!.title}
-            // A page, or a Plan tab as laid out: no canvas to tilt or pattern.
-            pageExport={!!pages || plain}
+            // A Plan tab as laid out: no canvas to tilt or pattern.
+            pageExport={plain}
             // Held until each tab window's tab is drawn, so a download never misses one.
             busy={busy || !windows.ready}
             error={error}
-            checkerboard={seeThrough && page?.kind === 'logo'}
-            // Pages mode has no Layers, so no "Hidden layers" option: hidden layers stay
-            // out, as they stay off its canvas.
             hasHiddenLayers={
-              !pages &&
               !plain &&
               offerHiddenLayers &&
               tabLayers(tab.layers).some((l) => !isLayerVisible(l))

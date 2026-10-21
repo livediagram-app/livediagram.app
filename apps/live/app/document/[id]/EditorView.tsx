@@ -53,7 +53,6 @@ import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
-import { focusPageAt } from '@/lib/focus-audience';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
@@ -632,13 +631,6 @@ export function EditorView() {
                                               (p) => p.id === focusInvite.invite!.from,
                                             )?.name ?? 'Someone')
                                           : null
-                                      }
-                                      toPage={
-                                        !!focusInvite.invite &&
-                                        !!focusPageAt(
-                                          tabs.find((t) => t.id === focusInvite.invite!.tabId),
-                                          focusInvite.invite.at,
-                                        )
                                       }
                                       onAccept={focusInvite.acceptFocus}
                                       onDismiss={focusInvite.dismissFocus}

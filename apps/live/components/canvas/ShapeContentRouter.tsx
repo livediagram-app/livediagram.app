@@ -1,5 +1,4 @@
 import {
-  chartTextInk,
   finishIconWeight,
   finishWobblesArt,
   isHandDrawn,
@@ -49,7 +48,7 @@ import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
-import { useChartGround, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
@@ -163,13 +162,8 @@ export function ShapeContentRouter({
 }: ShapeContentRouterProps) {
   // An icon's glyph moves aside for its caption from the moment the label is typed.
   const iconCaptioned = iconMakesRoomForLabel(element.label, !!isEditing);
-  // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md): its
-  // Page's where that page has a fill, else the canvas's.
-  const surface = useElementSurface(element.id);
-  // A chart on a filled page is drawn adapted to what it sits on (docs/specs/007-editor/
-  // pages-mode.md "Charts adapt as they are drawn"): its series in its view, its text here.
-  const chartGround = useChartGround(element.id);
-  const chartText = chartTextInk(textColor, chartGround);
+  // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md).
+  const surface = useCanvasSurface();
   // A sketched silhouette is the SketchOverlay's (docs/specs/008-canvas/finish.md); Professional thins an
   // unset border.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
@@ -257,9 +251,8 @@ export function ShapeContentRouter({
           <DataChartView
             element={el}
             fontFamily={fontFamily}
-            textColor={chartText}
+            textColor={textColor}
             palette={chartPalette}
-            ground={chartGround}
           />
         )}
       </SheetLinkedChart>
@@ -269,18 +262,16 @@ export function ShapeContentRouter({
     <PieChartView
       element={element}
       fontFamily={fontFamily}
-      textColor={chartText}
+      textColor={textColor}
       palette={chartPalette}
-      ground={chartGround}
     />
   ) : element.type === 'shape' && isBarShape(element.shape) ? (
     // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
     <BarChartView
       element={element}
       fontFamily={fontFamily}
-      textColor={chartText}
+      textColor={textColor}
       palette={chartPalette}
-      ground={chartGround}
     />
   ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
     // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
@@ -333,9 +324,8 @@ export function ShapeContentRouter({
     <SankeyView
       element={element}
       fontFamily={fontFamily}
-      textColor={chartText}
+      textColor={textColor}
       palette={chartPalette}
-      ground={chartGround}
       editable={!readOnly && !isLocked}
       onCanvas
     />
@@ -344,9 +334,8 @@ export function ShapeContentRouter({
     <LineChartView
       element={element}
       fontFamily={fontFamily}
-      textColor={chartText}
+      textColor={textColor}
       palette={chartPalette}
-      ground={chartGround}
     />
   ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
     <ShapeSvgOverlay

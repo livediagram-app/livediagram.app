@@ -13,7 +13,6 @@ import type { EditorMode } from '@liveplanner/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { openerById } from './palette-openers';
-import type { PaletteKind } from '@/lib/palette-kind';
 
 type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
@@ -231,146 +230,6 @@ const PAGES: PaletteLayout = {
   ],
 };
 
-// The Pages palette by its kind (docs/specs/007-editor/pages-mode.md "The palette's kind"): Design is PAGES; a slide,
-// a wireframe and a logo page each have their own, offering what that page is made of and nothing it has no use for.
-// Every tile is in one category (Popular aside, a pick from across them).
-
-// A slide (docs/specs/007-editor/pages-mode.md "The palette's kind"): what a talk is told with. Words, shapes, pictures
-// and the embeds a talk plays first (Common), then what explains a point (Structure: charts, concept graphics, ready-made
-// blocks and device frames for a screenshot), then the decorations; no website Header.
-const PAGES_SLIDE: PaletteLayout = {
-  landing: 'popular',
-  categories: [
-    {
-      id: 'popular',
-      description: 'What a slide is most often made of: a title, a picture, a chart and a point.',
-      tiles: [
-        'tools:text',
-        'tools:image',
-        'shapes:square',
-        'shapes:circle',
-        'shapes:speech-bubble',
-        'data:bar',
-        'data:pie',
-        'components:stat',
-        'components:process',
-        'components:callout',
-        'tools:timeline',
-        'media:embed-youtube',
-      ],
-    },
-    { id: 'write', tiles: PAGES_WRITE },
-    { id: 'shapes' },
-    // Pictures and the embeds a talk plays (a video, a prototype, a page), in Common: a slide reaches for them first.
-    { id: 'media', band: 0 },
-    { id: 'my-shapes' },
-    {
-      id: 'data',
-      tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
-    },
-    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
-    // The blocks that make a point on a slide; no website Header.
-    {
-      id: 'components',
-      tiles: PAGES_COMPONENTS.filter((id) => id !== 'components:header'),
-    },
-    { id: 'devices' },
-    { id: 'icons' },
-    { id: 'stickers' },
-  ],
-};
-
-// A wireframe (docs/specs/007-editor/wireframe-pages.md "The Elements palette"): Components and Elements first, in a
-// band of their own, then the rest. Elements holds the Card, the Badge and the Checklist, so Components does not; no
-// Concepts (a screen is built from its own parts) and no Devices (the page is its device already).
-const SCREEN_BAND = 7;
-const PAGES_WIREFRAME: PaletteLayout = {
-  landing: 'wireframe',
-  categories: [
-    { id: 'popular' },
-    {
-      id: 'components',
-      band: SCREEN_BAND,
-      tiles: PAGES_COMPONENTS.filter(
-        (id) => !['components:card', 'components:badge', 'tools:checklist'].includes(id),
-      ),
-    },
-    {
-      // A screen's own parts, with the Badge (and its presets) for a status or a count on them; Text and the Sticky
-      // Note are Write's.
-      id: 'wireframe',
-      band: SCREEN_BAND,
-      tiles: [
-        'wireframe:button',
-        'wireframe:button-outline',
-        'wireframe:field',
-        'wireframe:search',
-        'wireframe:chip',
-        'components:badge',
-        'wireframe:image',
-        'wireframe:avatar',
-        'components:card',
-        'tools:checklist',
-        'wireframe:divider',
-      ],
-    },
-    { id: 'shapes' },
-    { id: 'my-shapes' },
-    { id: 'write', tiles: PAGES_WRITE },
-    { id: 'icons' },
-    { id: 'stickers' },
-    { id: 'media' },
-    {
-      id: 'data',
-      tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
-    },
-  ],
-};
-
-// A logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): what a mark is drawn and set with. Draw (the Pen,
-// the Pencil, the Shape Pen, the Polygon, then each person's markers, useLogoMarkerTiles), Shapes, Text, glyphs to
-// start from, the Library, and a picture to trace; no charts, blocks, frames, stickers or embeds.
-const PAGES_LOGO: PaletteLayout = {
-  landing: 'draw',
-  categories: [
-    {
-      id: 'popular',
-      description: 'What a mark is most often drawn with: the pen, the pencil, text and shapes.',
-      tiles: [
-        'logo:pen',
-        'tools:pencil',
-        'tools:text',
-        'shapes:square',
-        'shapes:circle',
-        'shapes:triangle',
-        'shapes:hexagon',
-        'shapes:star',
-      ],
-    },
-    {
-      id: 'draw',
-      description: 'The pen, the pencil, the shape pen and outlines, then your markers.',
-      tiles: ['logo:pen', 'tools:pencil', 'tools:shape-pen', DIVIDE, 'tools:polygon'],
-    },
-    { id: 'shapes' },
-    // Text for a wordmark, and a sticky note for a comment on the design.
-    { id: 'write', tiles: ['tools:text', DIVIDE, 'tools:sticky'] },
-    { id: 'icons' },
-    { id: 'my-shapes' },
-    // A picture to trace or to set the mark beside.
-    { id: 'media', tiles: ['tools:image'] },
-  ],
-};
-
-const PAGES_BY_KIND: Readonly<Record<PaletteKind, PaletteLayout>> = {
-  design: PAGES,
-  slide: PAGES_SLIDE,
-  // An article's strip is its formatting (the docked page toolbar); its More and Search keep Pages'.
-  article: PAGES,
-  wireframe: PAGES_WIREFRAME,
-  logo: PAGES_LOGO,
-};
-
 // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
 // Polygon), Diagram's Layout, the Collaborate elements as six categories, one per group, ahead of the
@@ -469,8 +328,7 @@ export const PALETTE_LAYOUTS = {
 } as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
-function paletteLayoutFor(mode: EditorMode, pagesKind: PaletteKind = 'design'): PaletteLayout {
-  if (mode === 'pages') return PAGES_BY_KIND[pagesKind];
+function paletteLayoutFor(mode: EditorMode): PaletteLayout {
   return mode === 'draw' ? DIAGRAM : PALETTE_LAYOUTS[mode];
 }
 
@@ -514,12 +372,12 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
 }
 
 /** The categories a mode's palette offers, in order, with their tiles. A board-only category is
- *  left out unless the tab is an event-storming board; Pages mode offers its kind's (`pagesKind`). */
+ *  left out unless the tab is an event-storming board. */
 export function paletteCategoriesFor(
   mode: EditorMode,
-  { esBoard = false, pagesKind }: { esBoard?: boolean; pagesKind?: PaletteKind } = {},
+  { esBoard = false }: { esBoard?: boolean } = {},
 ): ResolvedPaletteCategory[] {
-  return paletteLayoutFor(mode, pagesKind)
+  return paletteLayoutFor(mode)
     .categories.filter((e) => esBoard || !e.boardOnly)
     .map(resolve);
 }

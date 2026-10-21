@@ -27,7 +27,7 @@
 // Any image that is missing, over a limit, fails to load, or isn't one of the
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
-import { pageImageIds, type Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/document';
 import { bytesToBase64 } from './bytes';
 import { imagePixelSize } from './image-size';
 import { sniffImageType } from './image-sniff';
@@ -44,13 +44,11 @@ type EmbedImageLimits = {
 };
 
 // The distinct image ids a tab references, in document order.
-export function tabImageIds(tab: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'pages'>>): string[] {
+export function tabImageIds(tab: Pick<Tab, 'elements'>): string[] {
   return [
-    ...new Set([
-      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
-      // A page's picture background (docs/specs/007-editor/pages-mode.md "Image backgrounds").
-      ...pageImageIds(tab.pages),
-    ]),
+    ...new Set(
+      tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
+    ),
   ];
 }
 
@@ -67,7 +65,7 @@ function dataUrlType(bytes: Uint8Array, declared: string | null): string | null 
 }
 
 export async function embedTabImages(
-  tab: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'pages'>>,
+  tab: Pick<Tab, 'elements'>,
   load: EmbedImageSource,
   limits: EmbedImageLimits = {},
 ): Promise<Map<string, string>> {

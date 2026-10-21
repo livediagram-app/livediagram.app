@@ -5,7 +5,7 @@ import { useCallback, useRef } from 'react';
 // tab there is no zoom of yours for that canvas yet, so the tab enters as it always does (its fit), and the
 // point is centred at the zoom that fit gave. Keeping the zoom fitted to the tab you left instead could land
 // a small diagram at the 8% a huge one needed. `land` is what arriving does once the tab is the right one:
-// centre the point, or on a Pages tab frame the page it is on ("On a page").
+// centre the point.
 export function useFocusLanding({
   activeId,
   setActiveId,

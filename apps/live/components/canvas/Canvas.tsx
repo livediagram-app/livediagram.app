@@ -29,7 +29,6 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
-import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
@@ -63,7 +62,6 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 // person rather than by whatever size of pad last set one off.
 import { useCanvasAvatar } from './useCanvasAvatar';
 import { useCanvasPointer } from './useCanvasPointer';
-import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 
 const AVATAR_BURST_PX = 120;
@@ -74,26 +72,17 @@ import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
-import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
-import {
-  loadArticleFlows,
-  loadAvatarSpeechLayer,
-  loadCanvasPages,
-} from '@/lib/editor-deferred-code';
+import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
-// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
-// (lib/editor-deferred-code.ts fetches it as the editor mounts).
-const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
-const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
 const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
@@ -167,7 +156,6 @@ function CanvasView(props: CanvasProps) {
     viewportOffset,
     viewportZoom,
     mainRef,
-    props.pagesMode?.pages,
   );
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
@@ -260,14 +248,6 @@ function CanvasView(props: CanvasProps) {
   // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
   // progress over these elements itself (useCanvasSelectionView), so a preview frame renders the
   // chrome and not this canvas (docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved").
-  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
-  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
-  // selection derivation applies, so the canvas itself still doesn't read the selection.
-  const articlePages = props.pagesMode?.pages;
-  const plusBlocked = useMemo(
-    () => articlePlusBlocked(articlePages, elements),
-    [articlePages, elements],
-  );
   const selectionInput = useMemo<CanvasSelectionInput>(
     () => ({
       elements,
@@ -278,7 +258,6 @@ function CanvasView(props: CanvasProps) {
       esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
-      plusBlocked,
     }),
     [
       elements,
@@ -290,7 +269,6 @@ function CanvasView(props: CanvasProps) {
       tabKind,
       props.elementMenuOpen,
       arrowLabels,
-      plusBlocked,
     ],
   );
   // The one selected element when it is a path: the path tool's edit gesture arms on it.
@@ -376,8 +354,6 @@ function CanvasView(props: CanvasProps) {
     polygonCursor,
     handlePolygonDoubleClick,
     pathTool,
-    formatPagePress,
-    offPage,
     beginPendingDrawOrPolygon,
   } = useCanvasDrawTools({
     props,
@@ -419,7 +395,7 @@ function CanvasView(props: CanvasProps) {
     onPushPeer: props.onAvatarPush,
     isoCamera,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
-    interceptPress: (e) => formatPagePress(e) || pathTool.beginEditPress(e),
+    interceptPress: (e) => pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
@@ -565,15 +541,13 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             <div
               ref={wrapperRef}
-              // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
+              // The elements, as against the chrome over them (useDoubleTapZoom).
               data-canvas-content=""
               onPointerDown={surface.onWrapperPointerDown}
               onDoubleClick={(e) => {
                 // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
                 // add-text double-click while the intent is armed.
                 if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-                // Off a page nothing is made, but a finger's double-tap still zooms there.
-                if (offPage(e) && !surface.pressedByFinger()) return;
                 surface.onWrapperDoubleClick(e);
               }}
               // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
@@ -638,36 +612,6 @@ function CanvasView(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
               {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-              {/* Pages mode's A4 pages, under every element (CanvasPages). */}
-              {props.pagesMode ? (
-                // The image store's access, for the pages' pictures (page-image-access).
-                <PageImageAccessProvider access={props.imageContext}>
-                  <CanvasPages
-                    // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
-                    // tab's own: page ids repeat across tabs.
-                    key={props.activeTabId}
-                    view={props.pagesMode}
-                    zoom={viewportZoom}
-                    // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
-                    // layout invites or add button.
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                    placing={!!pendingDraw}
-                    onOpenTheme={props.onOpenCanvasTheme}
-                  />
-                </PageImageAccessProvider>
-              ) : null}
-              {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
-            zone's elements sit in the room the writing leaves them. */}
-              {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
-                <ArticleFlows
-                  view={props.pagesMode}
-                  zoom={viewportZoom}
-                  interactive={
-                    !pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'
-                  }
-                  elements={elements}
-                />
-              ) : null}
               <CanvasStillProvider still={props.editorMode === 'draw'}>
                 <CanvasArrivalProvider
                   tabId={props.activeTabId ?? ''}
@@ -716,8 +660,7 @@ function CanvasView(props: CanvasProps) {
                   </CanvasZoomProvider>
                 </CanvasArrivalProvider>
               </CanvasStillProvider>
-              {/* Drafts, the logo page's guides and the avatars: editor-only, left out of an animated GIF
-            (GifOmit). */}
+              {/* Drafts and the avatars: editor-only, left out of an animated GIF (GifOmit). */}
               <GifOmit>
                 {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
@@ -732,19 +675,6 @@ function CanvasView(props: CanvasProps) {
                 ) : null}
                 {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
                 {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
-                {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
-                {props.pagesMode ? (
-                  <LogoCanvasOverlays
-                    view={props.pagesMode}
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                    pendingDraw={pendingDraw}
-                    penStroke={penStroke}
-                    pathDraft={pathTool.draftView}
-                    ink={props.whiteboardInk ?? 'currentColor'}
-                    wrapperRef={wrapperRef}
-                    zoom={viewportZoom}
-                  />
-                ) : null}
                 {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
                 {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after

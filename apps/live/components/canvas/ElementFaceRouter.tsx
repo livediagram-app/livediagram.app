@@ -31,7 +31,6 @@ import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
-import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
@@ -61,7 +60,7 @@ import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
 // as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
@@ -193,10 +192,8 @@ export function ElementFaceRouter({
   iconCaptionBand,
   labelFrame,
 }: ElementFaceRouterProps) {
-  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md):
-  // its page's when the page has a fill of its own (pages-mode.md "A dark page has
-  // light ink"), as the label's ink already is, else the canvas's.
-  const surface = useElementSurface(element.id);
+  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
+  const surface = useCanvasSurface();
   // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours
   // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsButton =
@@ -409,8 +406,6 @@ export function ElementFaceRouter({
           // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
           canChoose={!readOnly && !isLocked}
         />
-      ) : element.type === 'annotation' && element.articleNote ? (
-        <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}

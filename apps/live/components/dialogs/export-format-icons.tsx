@@ -111,25 +111,6 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
-    case 'logo-kit':
-      // A square artboard with a mark on it, and the .zip it comes in.
-      return (
-        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden>
-          <rect
-            x="1"
-            y="1"
-            width="26"
-            height="26"
-            rx="4"
-            fill="rgb(236 254 255)"
-            stroke="rgb(34 211 238)"
-            strokeWidth="1.25"
-          />
-          <circle cx="14" cy="12" r="5.5" fill="rgb(6 182 212)" />
-          <circle cx="14" cy="12" r="2.2" fill="rgb(236 254 255)" />
-          <rect x="8" y="20" width="12" height="2.5" rx="1.25" fill="rgb(14 116 144)" />
-        </svg>
-      );
     case 'pdf':
       return (
         <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>
@@ -167,33 +148,6 @@ export function FormatIcon({ kind }: { kind: Format }) {
           />
           <circle cx="9" cy="9" r="2.5" fill="rgb(251 191 36)" />
           <path d="M2 18l8-8 6 6 4-4 10 8" stroke="rgb(59 130 246)" strokeWidth="1.5" fill="none" />
-        </svg>
-      );
-    case 'gif':
-      // A picture with frames behind it: an image that moves.
-      return (
-        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
-          <rect
-            x="5"
-            y="1"
-            width="26"
-            height="16"
-            rx="2"
-            fill="rgb(237 233 254)"
-            stroke="rgb(196 181 253)"
-            strokeWidth="1"
-          />
-          <rect
-            x="1"
-            y="5"
-            width="26"
-            height="16"
-            rx="2"
-            fill="rgb(219 234 254)"
-            stroke="rgb(147 197 253)"
-            strokeWidth="1.25"
-          />
-          <path d="M11 9.5v7l6-3.5z" fill="rgb(59 130 246)" />
         </svg>
       );
     case 'svg':

@@ -7,7 +7,6 @@ import {
   formTemplateStarter,
   isFormTemplateKind,
   isPlanTemplateKind,
-  withBlankPageThemed,
   type TemplateKind,
 } from '@liveplanner/templates';
 import type { StarterId } from '@liveplanner/forms';
@@ -186,9 +185,7 @@ export function useTemplateFlow(opts: {
           ...first!.tab?.(ids),
         };
         const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
-        // A blank infographic's page starts on the theme's default background, as an added page.
-        const themed = withBlankPageThemed(landed, kind, theme);
-        return { landed: themed, followers: templateFollowerTabs(themed, followers, withMode) };
+        return { landed, followers: templateFollowerTabs(landed, followers, withMode) };
       }),
     );
     for (const f of followers) markTabLoaded(f.id);

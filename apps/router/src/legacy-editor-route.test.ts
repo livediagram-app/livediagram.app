@@ -82,11 +82,6 @@ describe('legacyHelpRedirect', () => {
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
       // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
-      // Illustrate mode became Pages mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-      ['/help/canvas/illustrate/', '/help/canvas/pages-mode/'],
-      ['/help/canvas/illustrate/illustrate-tour/', '/help/canvas/pages-mode/pages-tour/'],
-      ['/help/canvas/illustrate/slide-pages', '/help/canvas/pages-mode/slide-pages'],
-      ['/help/canvas/infographics/', '/help/canvas/pages-mode/'],
       // Facilitate mode became Workshop mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/facilitate-mode/', '/help/canvas/workshop-mode/'],
       [

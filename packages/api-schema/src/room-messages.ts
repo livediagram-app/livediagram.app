@@ -1,5 +1,5 @@
 import type { AgentPresence } from './agent-presence';
-import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@liveplanner/document';
+import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@liveplanner/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { AvatarSayOp } from './avatar-say';
@@ -135,10 +135,6 @@ export const PRESENCE_OP_KINDS = [
   // The room relays it only from an editor (receivers check too): a viewer must never make others'
   // elements appear to move.
   'drag-preview',
-  // Where someone is writing in an article (docs/specs/007-editor/article-pages.md "Collaboration"):
-  // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
-  // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
-  'article-caret',
   // Whose hands are on a Plan board's card (docs/specs/026-plan/plan-board.md "What the board shows"):
   // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
   // logged, from any session (a viewer reads items too).
@@ -171,9 +167,6 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
-  // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
-  // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
-  'article',
   'poll-start',
   'poll-end',
 ] as const;
@@ -468,22 +461,6 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
-  // An article's writing on a tab changed (docs/specs/007-editor/article-pages.md
-  // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
-  // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
-  // `created`: the article is new (its first frames): a receiver without it takes it, where puts
-  // for an article it no longer has (removed meanwhile) are dropped. `agent`: an agent wrote it (set
-  // by the api relay alone), so an editor that is not its writer still grows its pages
-  // (docs/specs/024-agents/pages-for-agents.md "Pages for the writing").
-  | {
-      kind: 'article';
-      tabId: string;
-      flow: string;
-      ops: ArticleOp[];
-      created?: true;
-      agent?: true;
-    }
-  | { kind: 'article'; tabId: string; flow: string; removed: true }
   | {
       kind: 'vote';
       tabId: string;
@@ -523,13 +500,6 @@ export type RoomOp =
   // active tab id is included so we only render cursors of
   // participants who are looking at the same tab as us.
   | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
-  // The sender's caret in an article's writing (docs/specs/007-editor/article-pages.md
-  // "Collaboration"): the top-level block it is in, by id, and how many characters into that
-  // block's text it sits, so a receiver places it in their own copy of the writing whatever they
-  // typed elsewhere. `flow: null` means the sender's writing lost the caret, so peers drop it.
-  // Throttled like the cursor; parsed with parseArticleCaret.
-  | { kind: 'article-caret'; tabId: string; flow: string; blockId: string; offset: number }
-  | { kind: 'article-caret'; tabId: string; flow: null }
   // One sample of the sender's laser-pointer trail (canvas-coords).
   // Sent on every pointer move while the sender is in laser tool
   // mode, throttled like cursor. Receivers append to a per-

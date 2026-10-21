@@ -5,7 +5,6 @@
 // Planning is Plan's. Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
-import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
@@ -76,16 +75,10 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   articles: glyph(lucideFileText),
   posters: glyph(lucideImage),
   logos: glyph(lucideShapes),
-  // A phone, the device a wireframe is most often for (docs/specs/007-editor/wireframe-pages.md).
-  wireframes: WireframesIcon,
   'visual-notes': glyph(lucidePenTool),
   prototypes: glyph(lucideLayers),
 };
 const FALLBACK_ICON = glyph(lucideLightbulb);
-
-function WireframesIcon() {
-  return <DeviceGlyph device="iphone" size={16} />;
-}
 
 const COPY: Record<
   TemplateStartMode,

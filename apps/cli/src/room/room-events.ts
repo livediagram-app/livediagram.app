@@ -117,7 +117,6 @@ export function classifyRoomOp(op: unknown): RoomEvent[] {
     }
     case 'tab':
     case 'tab-meta':
-    case 'article':
       return [{ kind: 'tab', tabId }];
     default:
       return [];

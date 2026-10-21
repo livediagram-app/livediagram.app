@@ -1,5 +1,5 @@
 /* The hero's mode windows (components/hero-diagram-board.tsx, hero-draw-board.tsx,
-   hero-mindmap-board.tsx, hero-page.tsx, hero-article-page.tsx;
+   hero-mindmap-board.tsx;
    docs/specs/019-marketing/marketing-site.md "Hero"). Every mark plays once at its own delay (--d): the
    window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
    last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced

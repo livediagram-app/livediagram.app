@@ -81,8 +81,7 @@ reads **Close Side by Side**.
 
 - **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the document's
   Plan items and the tab's photos, on the tab's own paper and pattern (in the mode it opens in
-  here), laid out in canvas space exactly as the editor lays it out. A Pages tab is its pages, each
-  as its page export draws it (its sheet, background and writing) where it lies, and a Form tab is
+  here), laid out in canvas space exactly as the editor lays it out. A Form tab is
   its form as respondents see it, as a [tab window](../009-elements/tab-window.md) draws them. On
   opening it is fitted to the pane (never enlarged past 125%) and stays fitted as the tab grows until
   the person moves it.

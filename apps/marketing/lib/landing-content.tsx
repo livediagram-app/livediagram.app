@@ -6,10 +6,6 @@ import {
   AnimatedShapesArt,
   ApiArt,
   ArrowsArt,
-  ArticleFlowArt,
-  ArticleLooksArt,
-  ArticlePagesArt,
-  ArticleWrapArt,
   AssignedActionsArt,
   AvatarModeArt,
   BoardCsvArt,
@@ -27,7 +23,6 @@ import {
   CommentsArt,
   ComponentsArt,
   ConditionalFormatArt,
-  ContentsSidebarArt,
   CustomThemesArt,
   DashboardArt,
   DragDuplicateArt,
@@ -53,12 +48,7 @@ import {
   FullScreenSlideArt,
   HiddenVotesArt,
   IconsArt,
-  PagesBackgroundsArt,
-  PagesExportArt,
-  IntoPagesArt,
-  PagesArt,
   ImagesArt,
-  InfographicLayoutArt,
   IsometricArt,
   LanesArt,
   LaserArt,
@@ -67,8 +57,6 @@ import {
   LiveImageArt,
   LivingBackgroundArt,
   LockArt,
-  LogoPageArt,
-  MarginCommentsArt,
   MarkdownImportArt,
   MarkersArt,
   MarqueeArt,
@@ -76,7 +64,6 @@ import {
   MermaidArt,
   MindMapArt,
   NotesArt,
-  PagesGifArt,
   PalmRejectionArt,
   PathToolArt,
   PencilArt,
@@ -103,20 +90,17 @@ import {
   ShortcutsArt,
   SideBySideArt,
   SlideDeckArt,
-  SlideLayoutsArt,
   SlideTimingArt,
   SpotlightArt,
   StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
-  TabWindowArt,
   TablesArt,
   TabsArt,
   TeamsArt,
   TechIconsArt,
   TemplatesArt,
   ThemesArt,
-  TidyPageArt,
   TimelineFeedArt,
   UndoRedoArt,
   UnlimitedTabsArt,
@@ -153,8 +137,8 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, Pages mode's infographics, its
- * slide decks and its documents, Plan's boards, then its sheets and forms). `page.tsx` renders one beat per entry and
+ * then each way of working on a tab (Diagram, Draw, slide decks, Plan's boards, then its sheets and
+ * forms). `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
@@ -880,111 +864,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
-    id: 'infographics',
-    label: 'Infographics',
-    scene: 'infographic',
-    cta: 'Explore infographics',
-    title: 'Posters, social posts and logos',
-    description:
-      'Switch a tab to Pages and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
-    metaDescription:
-      'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
-    highlights: [
-      'Pages for print and social',
-      'Start a page from a layout',
-      'Design a logo',
-      'Every page, print-ready',
-    ],
-    items: [
-      {
-        art: <PagesArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Pages for print and social',
-        description:
-          'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
-      },
-      {
-        art: <InfographicLayoutArt />,
-        href: '/help/canvas/pages-mode/infographic-layouts/',
-        title: 'Start a page from a layout',
-        description:
-          'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
-      },
-      {
-        art: <TidyPageArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Tidy a page in one press',
-        description:
-          'Press the broom on a page and it straightens itself: anything poking past the margins comes back inside, edges that nearly line up do, and gaps that are nearly even become even. It keeps your layout and never moves anything far.',
-      },
-      {
-        art: <PagesBackgroundsArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Backgrounds from your theme',
-        description:
-          'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
-      },
-      {
-        art: <IntoPagesArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Turn any diagram into pages',
-        description:
-          'Switch a diagram, mind map or sketch to Pages mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
-      },
-      {
-        art: <TabWindowArt />,
-        href: '/help/canvas/pages-mode/tab-windows/',
-        title: 'A live window onto another tab',
-        description:
-          'Draw the diagram on its own tab, then put a window onto it on a slide or a poster. The window follows every change you or a collaborator make, so there is never a stale copy to paste again. Open jumps straight to the tab.',
-      },
-      {
-        art: <LogoPageArt />,
-        href: '/help/canvas/pages-mode/logo-pages/',
-        title: 'Design a logo',
-        description:
-          'A logo page is a square artboard with construction guides to build on. Start from twenty-five logo layouts or a blank board, draw with Mirror for a symmetrical mark, combine shapes into one, set the name in wordmark type, then download a logo kit: SVG, PNGs from 16 to 1024 pixels and a favicon.',
-      },
-      {
-        art: <PagesExportArt />,
-        href: '/help/canvas/pages-mode/exporting-pages/',
-        title: 'Every page, print-ready',
-        description:
-          'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
-      },
-      {
-        art: <PagesGifArt />,
-        href: '/help/canvas/pages-mode/exporting-pages/',
-        title: 'Pages as an animated GIF',
-        description:
-          'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
-      },
-    ],
-  },
-  {
     id: 'slides',
     label: 'Slide decks',
     scene: 'slides',
     cta: 'Explore slide decks',
     title: 'Build the deck, then present it',
     description:
-      'Start a slide from one of 61 ready-made layouts, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
+      'Make a slide from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
     metaDescription:
-      'Slide decks from 61 ready-made layouts or from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
+      'Slide decks made from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
     highlights: [
-      'Slide pages, ready-made layouts',
       'Slides made from what you drew',
+      'One deck across every tab',
       'Notes only you open',
       'Your screen, not everyone else’s',
     ],
     items: [
-      {
-        art: <SlideLayoutsArt />,
-        href: '/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides',
-        title: 'Slide pages, ready-made layouts',
-        description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of 61 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
-      },
       {
         art: <SlideDeckArt />,
         href: '/help/selection-modes/slide-deck/',
@@ -1026,72 +921,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Zen mode for focus',
         description:
           'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
-      },
-    ],
-  },
-  {
-    id: 'documents',
-    label: 'Documents',
-    scene: 'article',
-    cta: 'Explore documents',
-    title: 'Write it up, diagram and all',
-    description:
-      'Write on pages like a doc, with the diagram right there in the text: pictures that wrap, comments in the margin, and five looks to match your house style. The write-up and the diagram stay one document.',
-    metaDescription:
-      'Write on pages like a doc, with the diagram in the text: pictures that wrap, margin comments and five looks. The write-up and diagram stay one document.',
-    highlights: [
-      'Write like a doc',
-      'Pages that grow',
-      'Pictures and drawings in the text',
-      'Comments in the margin',
-    ],
-    items: [
-      {
-        art: <ArticlePagesArt />,
-        href: '/help/canvas/pages-mode/articles/',
-        group: 'Write',
-        title: 'Write like a doc',
-        description:
-          'Type straight onto a page with Markdown shortcuts and a / menu for every block, and paste cleanly from web pages, Google Docs and Word. A formatting toolbar sits on the page for styles, colour, links and lists.',
-      },
-      {
-        art: <ArticleFlowArt />,
-        href: '/help/canvas/pages-mode/articles/#pages-that-grow',
-        group: 'Write',
-        title: 'Pages that grow',
-        description:
-          'Writing flows onto a new page as it grows, and empty pages tidy themselves away. A heading never strands alone at the foot of a page, and a page break is there when you want one.',
-      },
-      {
-        art: <ContentsSidebarArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Every page in the Contents',
-        description:
-          'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
-      },
-      {
-        art: <ArticleWrapArt />,
-        href: '/help/canvas/pages-mode/articles/',
-        group: 'Write',
-        title: 'Pictures and drawings in the text',
-        description:
-          'Pictures, charts and tables sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text.',
-      },
-      {
-        art: <MarginCommentsArt />,
-        href: '/help/canvas/pages-mode/articles/#comments-and-actions-on-words',
-        group: 'Write',
-        title: 'Comments in the margin',
-        description:
-          'Select words to comment on them or hand them to a teammate as an action. A marker in the margin keeps pace with the text as it moves.',
-      },
-      {
-        art: <ArticleLooksArt />,
-        href: '/help/canvas/pages-mode/articles/#the-article-s-style',
-        group: 'Write',
-        title: 'Five looks for an article',
-        description:
-          'Clean, Classic, Report, Notebook or Bold, then set the accent colour, margins, fonts and page numbers to match your house style.',
       },
     ],
   },

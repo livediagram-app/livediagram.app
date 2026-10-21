@@ -1,12 +1,9 @@
-// A page background's colours (docs/specs/007-editor/pages-mode.md "Backgrounds"): a solid colour or a
-// two-stop gradient (a slide's moving one included, "Animated backgrounds"), and a pattern over it. Shared by a slide
-// page (@liveplanner/document, which adds pictures) and a form's cover (@liveplanner/forms), so both read and paint
-// the same backgrounds. Pure, no dependencies.
+// A colour background (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover): a solid colour or a
+// two-stop gradient (a moving one included), and a pattern over it, as a form's cover (@liveplanner/forms) reads and
+// paints it. Pure, no dependencies.
 
-// A slide's animated background (docs/specs/007-editor/pages-mode.md "Animated backgrounds"):
-// a gradient with a motion drawn over it, moving on screen and while presenting, still in exports
-// (which draw its first frame) and under reduced motion. The first five are the animated canvas
-// styles'; the rest are the slide's own.
+// An animated background: a gradient with a motion drawn over it, moving on screen, still in exports (which draw
+// its first frame) and under reduced motion. The first five are the animated canvas styles'; the rest are its own.
 export const PAGE_MOTIONS = [
   'flow',
   'drift',

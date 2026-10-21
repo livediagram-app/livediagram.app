@@ -102,7 +102,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:sticky': 'Notes',
   'tools:pencil': 'Pens',
   // Logo's Draw (palette-layouts PAGES_LOGO): the Pen first, then each person's markers as a group.
-  'logo:pen': 'Pens',
   'draw:marker-main': 'Markers',
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',

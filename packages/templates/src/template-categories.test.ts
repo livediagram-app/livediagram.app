@@ -67,10 +67,10 @@ describe('template categories', () => {
       mindmaps: 8,
       timelines: 7,
       flowcharts: 5,
-      strategy: 15,
+      strategy: 14,
       hierarchies: 7,
-      design: 14,
-      presentations: 17,
+      design: 7,
+      presentations: 1,
       technical: 10,
       games: 5,
     });

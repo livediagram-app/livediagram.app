@@ -649,7 +649,6 @@ export * from './placement-defaults';
 // Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from './article-caret';
 export * from './avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
@@ -686,9 +685,6 @@ export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
 export * from './workbench-messages';
-export * from './pages';
-export * from './article-frames';
-export * from './pages-summary';
 export * from './mcp-origin';
 // Forms (docs/specs/030-forms/forms.md).
 export * from './forms';

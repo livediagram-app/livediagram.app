@@ -154,8 +154,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The element plane
 
 - `CanvasElementList` renders every element inside one `<div data-element-plane class="contents">`:
-  no box, so layout, hit testing, paint order and the isometric 3D stack are as before (Pages mode's
-  page clip already wraps the elements the same way).
+  no box, so layout, hit testing, paint order and the isometric 3D stack are as before.
 - `globals.css` gives `[data-element-plane]` `cursor: auto`. The canvas world's cursor (its
   `canvasCursorClass` class, or a draw tool's inline cursor) then stops there, so a change of it
   restyles the plane and not the 2,760 nodes beneath it on the reference board. Every part of an

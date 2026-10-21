@@ -59,32 +59,6 @@ describe('tabFontIds', () => {
 });
 
 describe('tabPreview', () => {
-  it('draws a Pages tab as its pages, its content and faces fetched together', async () => {
-    drawn.length = 0;
-    const tab = {
-      id: 't',
-      name: 'Deck',
-      elements: [
-        {
-          id: 'a',
-          type: 'shape',
-          shape: 'square',
-          x: 40,
-          y: 40,
-          width: 100,
-          height: 60,
-          label: 'On slide',
-        },
-      ],
-      opensIn: 'pages',
-      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
-    } as never;
-    const blocks = await tabPreview(tab);
-    expect(blocks).toMatchObject([{ type: 'image', mimeType: 'image/png' }]);
-    expect(drawn).toHaveLength(1);
-    expect(drawn[0]).toMatch(/^<svg /);
-  });
-
   it('draws pictures within the budget and says how many it left as placeholders', async () => {
     drawn.length = 0;
     fetched.length = 0;
@@ -113,29 +87,6 @@ describe('tabPreview', () => {
     ]);
     expect(drawn[0]!.match(/data:image\/png;base64/g)).toHaveLength(1);
     expect(fetched).toEqual(['/images/img-a', '/images/img-b', '/images/img-c']);
-  });
-
-  it('budgets the pictures on a Pages tab’s pages too', async () => {
-    drawn.length = 0;
-    const shot = (id: string, x: number) => ({
-      id,
-      type: 'image',
-      imageId: `img-${id}`,
-      x,
-      y: 40,
-      width: 400,
-      height: 250,
-    });
-    const tab = {
-      id: 't',
-      name: 'Deck',
-      opensIn: 'pages',
-      elements: [shot('a', 40), shot('b', 480)],
-      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
-    } as never;
-    const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
-    expect(blocks.map((b) => b.type)).toEqual(['text', 'image']);
-    expect(blocks[0]).toMatchObject({ text: expect.stringMatching(/^1 picture is drawn/) });
   });
 
   it('adds no note when every picture is drawn', async () => {

@@ -1,4 +1,3 @@
-import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES, votesSpentBy } from '@liveplanner/document';
@@ -22,7 +21,6 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import {
@@ -40,10 +38,6 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
-import { ContentsClusterSegment } from './ContentsClusterSegment';
-import { PagesClusterStrip } from './PagesClusterStrip';
-import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -272,13 +266,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    // Not in Pages mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/pages-mode.md). Not in Plan mode either: a board is worked by its
-    // columns and cards, not a stacking order (docs/specs/026-plan/plan-mode.md).
-    layers:
-      panelEnabled(settings, 'layersPanelEnabled') &&
-      !props.pagesMode &&
-      props.editorMode !== 'plan',
+    // Not in Plan mode: a board is worked by its columns and cards, not a stacking order
+    // (docs/specs/026-plan/plan-mode.md).
+    layers: panelEnabled(settings, 'layersPanelEnabled') && props.editorMode !== 'plan',
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -389,17 +379,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
     explorerEl,
     layersEl,
     collaborateEl,
-    slidesPopoverEl,
     cardTypesPopoverEl,
     trashPopoverEl,
     newCardPopoverEl,
     cardFinderPopoverEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
-    contentsPopoverEl,
-    contentsSidebarEl,
-    contentsDocked,
-    contentsSide,
     avatarPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
@@ -422,10 +407,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
-  // Beside Pages mode's Contents sidebar when it is pinned right (useContentsChrome), never under it.
-  const clusterX =
-    clusterInset.x +
-    (contentsDocked && contentsSide === 'right' ? CONTENTS_SIDEBAR_WIDTH * panelScale : 0);
+  const clusterX = clusterInset.x;
   // The dock's code loads on demand, so it is drawn a moment after the chrome: the top corners
   // measure against it from the commit it is first drawn in (its onDrawn), never before, when there
   // is nothing on the page to measure. Once drawn its code is in, so a later mount is immediate.
@@ -479,10 +461,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined),
-              // Beside Pages mode's Contents sidebar, never under it.
-              ...(contentsDocked && corner.endsWith(contentsSide)
-                ? { [contentsSide]: contentsSidebarClearancePx(panelScale) }
-                : undefined),
             }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
@@ -546,9 +524,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         pendingDraw={pendingDraw}
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
-        mirrorPages={
-          props.pagesMode ? mirroredLogoPages(props.pagesMode.pages, props.pagesMode.logo) : null
-        }
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />
@@ -571,14 +546,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
-      {zenMode ? null : slidesPopoverEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {tidyUpPopoverEl}
-      {contentsSidebarEl}
-      {contentsPopoverEl}
       {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
@@ -680,15 +652,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
-                Redo, for every role, while the tab has two pages or more; not on a phone, whose row has no room
-                for it (a swipe moves between pages there). */}
-            {!zenMode && !isMobile && props.pagesMode && props.pagesMode.pages.length > 1 ? (
-              <PageNavigatorClusterStrip
-                pageIds={props.pagesMode.pages.map((p) => p.id)}
-                onGo={props.pagesMode.focusPage}
-              />
-            ) : null}
             {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
                 is on, for every role, Zen included: it is the mode's one piece of chrome. */}
             {props.canvasTool === 'avatar' ? (
@@ -701,8 +664,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Workshop has all three, Plan its Timer and
-                Vote, Pages a running Vote or Poll only; Diagram and Draw keep their bottom bar to
-                their own tools. */}
+                Vote; Diagram and Draw keep their bottom bar to their own tools. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">
                 <SessionClusterStrip
@@ -734,35 +696,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
                 />
               </div>
-            ) : null}
-            {/* Contents and Slides (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): in Pages
-                mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a
-                desktop only, as the Slide Deck itself is, and an Editor's, since building and presenting a deck
-                runs the session (docs/specs/013-workspace/share-roles.md), once a page is a slide: before that
-                the deck has nothing to hold. */}
-            {!zenMode && props.pagesMode ? (
-              <PagesClusterStrip
-                contents={
-                  // Docked as the sidebar, Contents has no button (useContentsChrome).
-                  contentsDocked ? null : (
-                    <ContentsClusterSegment
-                      popoverOpen={activeDockPanel === 'contents'}
-                      onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
-                    />
-                  )
-                }
-                slides={
-                  !isMobile &&
-                  !readOnly &&
-                  showsSlidesButton(props.pagesMode.pages) &&
-                  props.slideDeck ? (
-                    <SlidesClusterSegment
-                      popoverOpen={activeDockPanel === 'slides'}
-                      onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
-                    />
-                  ) : null
-                }
-              />
             ) : null}
             {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan
                 mode, one strip where Layers would be, while the tab has something that shows cards ("The Plan

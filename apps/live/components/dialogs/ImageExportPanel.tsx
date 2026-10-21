@@ -1,14 +1,9 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
 import { Button, trustedHtml } from '@liveplanner/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
-
-// A checkerboard under a preview, so see-through paper reads as see-through (a logo page's PNG and
-// SVG, docs/specs/007-editor/logo-pages.md "Export").
-export const PREVIEW_CHECKER =
-  'repeating-conic-gradient(rgb(226 232 240) 0% 25%, white 0% 50%) 50% / 16px 16px';
 
 // The options-and-download second screen for an image export format
 // (PNG / SVG / PDF). The isometric + background-pattern toggles used to sit
@@ -26,8 +21,6 @@ export function ImageExportPanel({
   onExport,
   onBack,
   pageExport = false,
-  pagePicker,
-  checkerboard = false,
 }: {
   // The picked format's display name, e.g. 'PNG'.
   label: string;
@@ -46,13 +39,9 @@ export function ImageExportPanel({
   // rasteriser + telemetry; this panel just collects the options.
   onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
-  // A page export (docs/specs/007-editor/pages-mode.md "Export"): the page is
-  // its own background and is never tilted, so neither the isometric nor the pattern toggle shows.
+  // A Plan tab exported as laid out (docs/specs/026-plan/plan-tabs.md "Export"): its page is its own
+  // background and is never tilted, so neither the isometric nor the pattern toggle shows.
   pageExport?: boolean;
-  // The page choice (ExportPagePicker), under the back bar and above the preview.
-  pagePicker?: ReactNode;
-  // The preview sits on a checkerboard: its paper is see-through.
-  checkerboard?: boolean;
 }) {
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): tilt the rendered image into the editor's
   // isometric projection. Off by default — the standard export is flat top-down.
@@ -77,7 +66,6 @@ export function ImageExportPanel({
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
       <BackBar label="All formats" current={label} onClick={onBack} disabled={busy} />
-      {pagePicker ? <div className="mt-3">{pagePicker}</div> : null}
       {/* Live preview — exactly what Download produces under the current
           options. The injected SVG is our own export output (no external
           content); CSS fits it inside the frame. */}
@@ -86,7 +74,6 @@ export function ImageExportPanel({
           <div
             data-testid="export-preview"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
-            style={checkerboard ? { background: PREVIEW_CHECKER } : undefined}
             dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
           />
         ) : (

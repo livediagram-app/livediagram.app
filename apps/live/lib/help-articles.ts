@@ -114,7 +114,7 @@ export const HELP_ARTICLES = {
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
   entities: 'palette/entities',
-  tabWindows: 'canvas/pages-mode/tab-windows',
+  tabWindows: 'canvas/tab-windows',
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',

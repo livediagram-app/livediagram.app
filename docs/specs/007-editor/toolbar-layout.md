@@ -82,7 +82,7 @@ under the pointer as a category is switched.
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
   (`useBarLabels`). Measured, not estimated: the menu card is wider in a mode that shows the tab's name, and an
-  estimate let Pages mode's bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
+  estimate let the bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
   need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,

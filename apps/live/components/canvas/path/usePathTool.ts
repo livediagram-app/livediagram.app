@@ -60,7 +60,6 @@ export function usePathTool({
   onDeselect,
   onBeginEdit,
   onCancelDraw,
-  snapPoint,
 }: {
   pendingDraw: PendingDraw | null;
   canvasTool: CanvasTool;
@@ -85,8 +84,6 @@ export function usePathTool({
   onBeginEdit: (id: string) => void;
   // Puts a held tool down: opening a path's edit mode puts the Path tool down first.
   onCancelDraw: () => void;
-  // Where a click places a node instead (usePathDrawGesture).
-  snapPoint?: (p: { x: number; y: number }) => { x: number; y: number } | null;
 }) {
   const surface = useCanvasSurface();
   const toast = useToast();
@@ -99,7 +96,6 @@ export function usePathTool({
     activeTabId,
     onCommitPath,
     onStartPath: onDeselect,
-    snapPoint,
   });
   const openEdit = (id: string) => {
     if (pendingDraw) onCancelDraw();

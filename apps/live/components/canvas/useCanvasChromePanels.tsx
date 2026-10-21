@@ -17,7 +17,6 @@ import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
-import { useContentsChrome } from './useContentsChrome';
 import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
@@ -102,7 +101,6 @@ export function useCanvasChromePanels({
   // Layers, a popover over its cluster button, rendered outside the corner layer.
   layersEl: ReactNode;
   collaborateEl: ReactNode;
-  slidesPopoverEl: ReactNode;
   // The Card Types panel over its cluster button, in Plan mode (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
@@ -112,12 +110,6 @@ export function useCanvasChromePanels({
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
-  // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
-  // or docked as the sidebar (useContentsChrome).
-  contentsPopoverEl: ReactNode;
-  contentsSidebarEl: ReactNode;
-  contentsDocked: boolean;
-  contentsSide: import('@/lib/contents-placement').ContentsSide;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
   avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
@@ -255,20 +247,7 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Slides popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab
-  // switch) closes it rather than leaving it floating with no button under it.
-  const slidesOpen = activeDockPanel === 'slides' && !!props.pagesMode;
-  useEffect(() => {
-    if (activeDockPanel === 'slides' && !props.pagesMode) closeDockPanel();
-  }, [activeDockPanel, props.pagesMode, closeDockPanel]);
-  // Contents, likewise, belongs to Pages mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, contentsSide, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
-    props,
-    chromeHidden,
-    isMobile,
-    closeDockPanel,
-  });
-  // The Card Types popover, likewise, belongs to Plan mode's button.
+  // The Card Types popover belongs to Plan mode's button.
   const planMode = props.editorMode === 'plan';
   const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
   const trashOpen = activeDockPanel === 'plan-trash' && planMode;
@@ -319,9 +298,6 @@ export function useCanvasChromePanels({
     props,
     chromeHidden,
     panelWiringFor,
-    slidesPopover: slidesOpen
-      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
-      : null,
     avatarPopover: avatarOpen
       ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
       : null,
@@ -463,15 +439,12 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
-  // The Map is Diagram, Draw and Workshop's: Pages has Contents for its pages, and a Plan
-  // board is a list, not a space to find your way round.
-  const mapMode = !props.pagesMode && props.editorMode !== 'plan';
+  // The Map is Diagram, Draw and Workshop's: a Plan board is a list, not a space to find your way round.
+  const mapMode = props.editorMode !== 'plan';
   const minimapEl =
     !chromeHidden && !isMobile && mapEnabled && mapMode && elements.length >= 4 ? (
       <ViewMinimap
         elements={mapElements}
-        pages={props.pagesMode?.pages}
-        writing={props.pagesMode?.articles?.flows}
         tabFont={props.tabFont}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
@@ -563,8 +536,7 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    // Over its cluster button (Pages mode) it renders beside the corner layer, like Collaborate.
-    'slide-deck': slidesOpen ? null : slideDeckEl,
+    'slide-deck': slideDeckEl,
     format: formatEl,
   };
   return {
@@ -572,12 +544,7 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     avatarPopoverEl: avatarEl,
-    contentsPopoverEl,
-    contentsSidebarEl,
-    contentsDocked,
-    contentsSide,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
         <TidyUpPopover

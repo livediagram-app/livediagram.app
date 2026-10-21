@@ -286,7 +286,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 
 The running session tools live in **one strip in the bottom-right cluster**, the way Plan mode's
 New Card, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
-own strip: Slides in Pages mode, the Plan strip in Plan mode), right
+own strip: the Plan strip in Plan mode), right
 after Undo and Redo. **An editor always has all three buttons**, running or not, so a session tool
 is one press away. Idle, a button is just its glyph and opens that tool's set-up pane, the same form a session
 button element's menu offers; running, it opens the live tool:

@@ -186,7 +186,6 @@ const TITLE_CASE: Record<DocumentViewName | TabViewName | typeof LINT_VIEW_NAME,
   comments: 'Comments',
   show: 'Show',
   find: 'Find',
-  pages: 'Pages',
 };
 
 function countViewed(
