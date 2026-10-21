@@ -2,12 +2,9 @@
 
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
-import { BAND_BLEND, BAND_FLUSH, BAND_TINT } from './toolbar-surface';
-import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
+import { ToolbarMenuCard } from './ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -19,8 +16,7 @@ import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 // pressing this button while the Explorer is open closes it via the toggle
 // rather than closing it on pointer-down and reopening it on click.
 //
-// `inline` drops the corner positioning so the strip's row can hold it in its
-// own card at the far left, beside the strip, which is where a phone puts it.
+// `inline`: in the strip's row, as a phone puts it (ToolbarMenuCard).
 export function ToolbarExplorerButton({
   open,
   onToggle,
@@ -31,10 +27,6 @@ export function ToolbarExplorerButton({
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
-  // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from
-  // the corner. Inline it sits in the strip, which is scaled already.
-  const scale = useUiScale('toolbar');
-  const scaled = !inline && scale !== 1;
   const phone = useIsMobileViewport();
   const button = (
     <button
@@ -57,29 +49,7 @@ export function ToolbarExplorerButton({
     </button>
   );
   return (
-    <div
-      data-dock-button=""
-      // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
-      // panel. Without it, a press here with a Draw pen in hand started a stroke instead.
-      data-floating-panel=""
-      data-tour-id="dock-explorer"
-      data-toolbar-menu=""
-      style={
-        scaled
-          ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
-          : undefined
-      }
-      className={
-        inline
-          ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS}`
-      }
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-    >
+    <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
       {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
           button keeps its focus as the panel opens. */}
       <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
@@ -89,6 +59,6 @@ export function ToolbarExplorerButton({
       {phone || inline ? null : <MenuNameSlot />}
       {/* Else the open tab's name, in every mode (not on a phone). */}
       {phone || inline ? null : <TabNameInBox />}
-    </div>
+    </ToolbarMenuCard>
   );
 }

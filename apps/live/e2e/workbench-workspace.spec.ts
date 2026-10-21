@@ -96,32 +96,37 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
       documentName: 'Home screen',
       role: 'edit',
     });
-  // Back is the first thing at the frame's top left (WB59): above the canvas, outside the tab bar, and the
-  // first stop of the keyboard.
+  // Back is the first thing at the frame's top left (WB59): level with the palette strip and clear of it, outside
+  // the tab bar, and the first of the canvas's controls for the keyboard.
   const back = frame.getByRole('button', { name: /^Back to / });
   const frameBox = (await page.locator('#frame').boundingBox())!;
   const backBox = (await back.boundingBox())!;
-  const canvasBox = (await frame.locator('[data-canvas-a11y-root]').first().boundingBox())!;
+  const stripBox = (await frame.locator('[data-region="palette"] > *').first().boundingBox())!;
   expect(backBox.x - frameBox.x).toBeLessThan(32);
   expect(backBox.y - frameBox.y).toBeLessThan(32);
-  expect(backBox.y + backBox.height).toBeLessThanOrEqual(canvasBox.y);
+  expect(backBox.x + backBox.width).toBeLessThan(stripBox.x);
+  const backMiddle = backBox.y + backBox.height / 2;
+  expect(backMiddle).toBeGreaterThan(stripBox.y);
+  expect(backMiddle).toBeLessThan(stripBox.y + stripBox.height);
   await expect(
     frame.locator('[data-editor-tabbar]').getByRole('button', { name: /^Back/ }),
   ).toHaveCount(0);
-  // The first tab stop in the frame, Tab reaching it from the bar's empty end; from the canvas, Shift+F6 twice
-  // (the Palette, then the Header region it stands for).
+  // The first tab stop after the canvas itself; from the canvas, Shift+F6 twice (the Palette, then the Header
+  // region it stands for).
   const firstStop = await back.evaluate((el) => {
     const stops = el.ownerDocument.querySelectorAll<HTMLElement>(
       'button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex]',
     );
-    return [...stops].find((s) => s.tabIndex >= 0 && s.getClientRects().length > 0) === el;
+    return (
+      [...stops].find(
+        (s) =>
+          s.tabIndex >= 0 &&
+          s.getClientRects().length > 0 &&
+          s.dataset.canvasA11yRoot === undefined,
+      ) === el
+    );
   });
   expect(firstStop).toBe(true);
-  const bar = frame.locator('[data-region="header"]');
-  const barBox = (await bar.boundingBox())!;
-  await bar.click({ position: { x: barBox.width - 8, y: barBox.height / 2 } });
-  await page.keyboard.press('Tab');
-  await expect(back).toBeFocused();
   await frame.locator('[data-canvas-a11y-root]').first().focus();
   await page.keyboard.press('Shift+F6');
   await page.keyboard.press('Shift+F6');

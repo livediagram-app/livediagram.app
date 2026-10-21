@@ -22,6 +22,7 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
+import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
@@ -356,7 +357,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
-  const explorerMenuButton = props.explorerHidden ? null : (
+  // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
+  const { workbenchBack } = props;
+  const explorerMenuButton = workbenchBack ? (
+    <WorkbenchBackButton
+      onBack={workbenchBack.back}
+      backTitle={workbenchBack.backTitle}
+      inline={menuInStrip}
+    />
+  ) : props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
@@ -501,6 +510,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
   return (
     <>
+      {/* The menu button's card at the top left (or a workspace frame's Back), first of the canvas's controls in the
+          keyboard order (docs/specs/007-editor/toolbar-layout.md); on a phone it rides in the strip's row instead.
+          Zen hides it with the rest of the chrome. */}
+      {zenMode || menuInStrip ? null : explorerMenuButton}
+
       {/* The empty-canvas hint is now a dismissible bottom banner
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
           theme banners rather than a centre-of-canvas card. */}
@@ -563,7 +577,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           button. */}
       {!zenMode ? (
         <>
-          {menuInStrip ? null : explorerMenuButton}
           {explorerEl}
           {layersEl}
         </>

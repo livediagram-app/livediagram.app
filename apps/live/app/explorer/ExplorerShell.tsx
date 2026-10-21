@@ -36,7 +36,7 @@ import { teamFolderPath } from './routes';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
 import { explorerSurfaceFlags, useExplorerSurface } from './explorer-surface';
 import { explorerPathFor } from './routes';
-import { WorkbenchFrameBar, WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
+import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { assignAppLocation } from '@/lib/app-location';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
@@ -207,7 +207,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       ) : heroOnHome ? null : (
         // A workspace frame keeps the Explorer's field in a slim bar of its own (WB61): no brand, product nav or
         // account.
-        <WorkbenchFrameBar>
+        <div className="sticky top-0 z-[var(--z-chrome)] flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
           <div className="w-full sm:mx-auto sm:max-w-md">
             <LensField lens={lens} subjects={lensResult.subjects} />
             <LensAnnouncer
@@ -217,7 +217,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
               muted={lens.view === null || selected.kind === 'team'}
             />
           </div>
-        </WorkbenchFrameBar>
+        </div>
       )}
 
       {/* Home's front-page band (docs/specs/013-workspace/explorer-home.md "The hero"), above the sidebar. */}
