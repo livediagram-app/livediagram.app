@@ -164,7 +164,7 @@ The workspace scope adds or changes, by file:
 | `apps/live/app/explorer/explorer-surface.ts` (new, + test)                                                                                               | `ExplorerSurface = 'app' \| 'workbench'`, `explorerSurfaceFlags`                                                                                           |
 | `apps/live/app/document/[id]/workbench-bootstrap.ts`                                                                                                     | A workspace document: its share code, its level per the person's access                                                                                    |
 | `apps/live/app/document/[id]/useWorkbenchMessages.ts`, `useWorkbenchEnd.ts`                                                                              | The workspace frame: `place` in place of `ready`; `trashed` returns to the Explorer                                                                        |
-| `apps/live/components/chrome/WorkbenchChrome.tsx`                                                                                                        | `WorkbenchBackButton`; `WorkbenchOpenLink` takes an `href`                                                                                                 |
+| `apps/live/components/chrome/WorkbenchChrome.tsx`                                                                                                        | `WorkbenchBackButton`; `WorkbenchFrameBar`, the frame's slim top bar; `WorkbenchDocumentBar`, Back in it; `WorkbenchOpenLink` takes an `href`              |
 | `apps/live/app/workbench/pair/PairWorkbench.tsx`                                                                                                         | The workspace request's copy                                                                                                                               |
 | `apps/live/components/dialogs/settings/SettingsTokenPairings.tsx`                                                                                        | Each pairing's scope                                                                                                                                       |
 | `apps/live/src/worker.ts`, `scripts/e2e-stack.mjs`                                                                                                       | `/embed/workbench/explorer/**` and `/embed/workbench/document/**` served by the frame page                                                                 |
@@ -697,10 +697,15 @@ else (`blank`, `start`, `mode`, `q`, none) a blank document of the default mode;
 template's untitled name and `creationIntentOf`; then the document place, pushed. A refused create shows the
 Explorer's toast "Couldn’t create the document. Try again." and stays; logged `[workbench] create-failed { status }`.
 
-**Back** (`WorkbenchBackButton`, WB59): shown on a document place, at the tab bar's left end. The document entry's
-`history.state` carries `workbenchFrom` (the frame path it was pushed from); Back calls `history.back()` when the
-entry before is that path (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk
-the same entries.
+**Back** (`WorkbenchBackButton`, WB59): shown on a document place, the first thing at the frame's top left, in
+`WorkbenchDocumentBar`: the frame's slim top bar (`WorkbenchFrameBar`, the bar the Explorer's lens field sits in,
+WB61) holding Back alone, marked as the editor's Header region for F6. `EditorView` renders it in the header slot,
+which a workbench otherwise leaves empty, so it lies above the canvas (clear of the palette strip, the docked corners
+and every canvas overlay), across both panes side by side, hidden in zen as the header is, and folded with the tab bar
+on a phone held sideways, the bars handle showing them again; the tab bar holds no Back. The status screens keep
+theirs in `EmbedShell`'s top left. The document entry's `history.state` carries `workbenchFrom` (the frame path it was
+pushed from); Back calls `history.back()` when the entry before is that path (`workbenchFrom` set by `navigate`), else
+pushes Home. Browser back and forward walk the same entries.
 
 **Open in livediagram**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an
 Explorer view, the same control at the right end of the Explorer's bottom bar linking to `explorerPathFor(node)`.
@@ -1264,7 +1269,7 @@ Built on `OauthShell`, like the device page; states and copy:
 | Trashed                             | Toast "That document is in the Trash."                                                                                                  |
 
 The Explorer's own views, empty states and not-found keep their copy. The slim bar at the top holds the lens field
-only, `h-12`, the header's colours.
+only, `h-12`, the header's colours. On a document the same bar holds Back alone, at its left.
 
 ### The pairing page, a workspace request
 
@@ -1295,8 +1300,9 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
   dark) the device and consent pages share.
 - Settings rows: **Unpair** named "Unpair <name> at <origin>"; the confirm popover is the existing accessible one.
 - The workspace frame: the Explorer's own semantics and focus order; Back is a native button, at least 24 by 24 px,
-  first in the tab bar's focus order; a move inside the frame moves focus to the new view's heading (the Explorer's
-  pane heading, or the editor's canvas as on a load), and announces nothing more.
+  first in the document view's focus order, before the canvas, and the first stop of F6's regions (its bar is the
+  Header region, `data-region="header"`); a move inside the frame moves focus to the new view's heading (the
+  Explorer's pane heading, or the editor's canvas as on a load), and announces nothing more.
 - Reveal outlines honour reduced motion as changeset outlines do.
 - The contrast audit, `apps/live/e2e/clerk-stub/workbench-contrast.spec.ts` (every surface needs a signed-in person,
   which only the Clerk-enabled export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the pairing page
@@ -1419,10 +1425,11 @@ The workspace scope's tests:
 | New document in place: folder, team, template, blank, refused                                                                                                                                                                                                                                                      | `create-in-place.test.ts`                                                                               |
 | The address's scope; mismatch both ways; renewal scope check                                                                                                                                                                                                                                                       | `workbench-fragment.test.ts`, `workbench-machine.test.ts`, `useWorkbenchRenewal.test.ts`                |
 | The frame: Explorer on Home and on a folder, document with Back, trashed back to the Explorer, `place` on moves, `open`                                                                                                                                                                                            | `WorkspaceFrame.test.tsx`, `useWorkspacePlaceMessages.test.ts`                                          |
+| Back's bar: Back alone, first; the tab bar has no Back                                                                                                                                                                                                                                                             | `WorkbenchChrome.test.tsx`, `TabBar.workbench.test.tsx`                                                 |
 | Explorer surface flags and gates                                                                                                                                                                                                                                                                                   | `apps/live/app/explorer/explorer-surface.test.tsx`                                                      |
 | Pairing page workspace copy; Settings scope                                                                                                                                                                                                                                                                        | `PairWorkbench.test.tsx`, `SettingsTokenPairings.test.tsx`                                              |
 | Worker serves the frame page for frame paths, frameable                                                                                                                                                                                                                                                            | `apps/live/src/worker.test.ts`                                                                          |
-| End to end, dark: a workspace mint 428 on a document pairing; Allow the workspace request; mint; the frame shows Explorer Home with no header or account; a folder mint shows the folder's empty state; New document opens the editor in the frame; `place` arrives for each; Back returns; `open` moves the frame | `apps/live/e2e/workbench-workspace.spec.ts` (project `workbench`)                                       |
+| End to end, dark: a workspace mint 428 on a document pairing; Allow the workspace request; mint; the frame shows Explorer Home with no header or account; a folder mint shows its empty state; New document opens in the frame; `place` arrives for each; Back at top left, first, returns; `open` moves the frame | `apps/live/e2e/workbench-workspace.spec.ts` (project `workbench`)                                       |
 | CLI: `workbench open --workspace [--folder]`, `pair --workspace`, `folder ls [--json]`, `folder create [--in] --json`                                                                                                                                                                                              | `packages/agent-verbs/src/verbs/workbench.test.ts`, `folder.test.ts`, `apps/cli/src/commands/*.test.ts` |
 
 The fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) is served by `workbench-support.ts` from a Node `http`

@@ -41,7 +41,7 @@ import { useCommunityEnabled } from '@livediagram/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import {
-  WorkbenchBackButton,
+  WorkbenchDocumentBar,
   WorkbenchOpenLink,
   WorkbenchReconnectLine,
 } from '@/components/chrome/WorkbenchChrome';
@@ -305,70 +305,73 @@ export function EditorView() {
 
   // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
   // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
-  // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-  const header =
-    zenMode || !appChrome ? null : (
-      <LandscapeBarFold shown={landscapeBars.shown}>
-        <AreaErrorBoundary area="Header" fallback="panel">
-          <EditorHeader
-            documentName={documentName}
-            hideTitle={anyWelcomeOpen}
-            showShare={canShareDocument && hydrated && !anyWelcomeOpen}
-            shareable={documentShareable}
-            community={headerCommunity}
-            teamDocument={!!documentTeamId}
-            offline={isOffline}
-            // Visitors see "Make a copy" instead of "Share": same slot (a joined
-            // team member is no visitor: the team's documents are theirs to share),
-            // different action. Hidden during the welcome flow so the
-            // first-paint chrome stays minimal, and during hydration so
-            // we don't render the button before we know whether the user
-            // is the owner. A Community visitor gets it from the Community bar instead.
-            onMakeCopy={
-              !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
-                ? () => void makeCopy()
-                : undefined
-            }
-            copying={copying}
-            readOnly={isStructureReadOnly}
-            renameNonce={renameDocumentNonce}
-            // Minimal chrome moves the pill to an icon in the status bar.
-            rolePill={minimalChrome ? undefined : <RolePill {...role} />}
-            // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
-            // while the deck has a slide to show, on a desktop, once the document is up. Every role.
-            present={
-              hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
-                ? {
-                    slideCount: slideDeck.runnable.length,
-                    starting: slideDeck.startingDeck,
-                    onPresent: () => {
-                      track('UI', 'Opened', 'HeaderPresent');
-                      void slideDeck.start();
-                    },
-                  }
-                : undefined
-            }
-            brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
-            onOpenAccount={() => openSettingsOn('account')}
-            onOpenShare={() => {
-              setShareDialogOpen(true);
-              track('UI', 'Opened', 'Share');
-            }}
-            onRename={(next) => {
-              const prev = documentName.trim();
-              // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
-              // limit the auto-namer and the Explorer renames both respect.
-              const nextTrim = truncateName(next);
-              nameDocument(nextTrim);
-              if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-            }}
-          />
-        </AreaErrorBoundary>
-      </LandscapeBarFold>
-    );
-
-  // A workspace frame's hooks: its Back, in the tab bar.
+  // side (docs/specs/007-editor/split-view.md) lays it across both panes. A workspace frame's document
+  // (docs/specs/013-workspace/workbench-embeds.md, WB59) has its slim bar there instead, Back at its left.
   const workbenchFrame = workbench?.frame ?? null;
+  const header = zenMode ? null : appChrome ? (
+    <LandscapeBarFold shown={landscapeBars.shown}>
+      <AreaErrorBoundary area="Header" fallback="panel">
+        <EditorHeader
+          documentName={documentName}
+          hideTitle={anyWelcomeOpen}
+          showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+          shareable={documentShareable}
+          community={headerCommunity}
+          teamDocument={!!documentTeamId}
+          offline={isOffline}
+          // Visitors see "Make a copy" instead of "Share": same slot (a joined
+          // team member is no visitor: the team's documents are theirs to share),
+          // different action. Hidden during the welcome flow so the
+          // first-paint chrome stays minimal, and during hydration so
+          // we don't render the button before we know whether the user
+          // is the owner. A Community visitor gets it from the Community bar instead.
+          onMakeCopy={
+            !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+              ? () => void makeCopy()
+              : undefined
+          }
+          copying={copying}
+          readOnly={isStructureReadOnly}
+          renameNonce={renameDocumentNonce}
+          // Minimal chrome moves the pill to an icon in the status bar.
+          rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+          // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
+          // while the deck has a slide to show, on a desktop, once the document is up. Every role.
+          present={
+            hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
+              ? {
+                  slideCount: slideDeck.runnable.length,
+                  starting: slideDeck.startingDeck,
+                  onPresent: () => {
+                    track('UI', 'Opened', 'HeaderPresent');
+                    void slideDeck.start();
+                  },
+                }
+              : undefined
+          }
+          brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
+          onOpenAccount={() => openSettingsOn('account')}
+          onOpenShare={() => {
+            setShareDialogOpen(true);
+            track('UI', 'Opened', 'Share');
+          }}
+          onRename={(next) => {
+            const prev = documentName.trim();
+            // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
+            // limit the auto-namer and the Explorer renames both respect.
+            const nextTrim = truncateName(next);
+            nameDocument(nextTrim);
+            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
+          }}
+        />
+      </AreaErrorBoundary>
+    </LandscapeBarFold>
+  ) : workbenchFrame ? (
+    <LandscapeBarFold shown={landscapeBars.shown}>
+      <WorkbenchDocumentBar frame={workbenchFrame} />
+    </LandscapeBarFold>
+  ) : null;
+
   // The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
   // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
   const footer =
@@ -377,17 +380,6 @@ export function EditorView() {
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
             powerUser={isPowerUserMode(userPreferences)}
-            workbenchBack={
-              workbenchFrame
-                ? (labelled) => (
-                    <WorkbenchBackButton
-                      onBack={workbenchFrame.back}
-                      backTitle={workbenchFrame.backTitle}
-                      labelled={labelled}
-                    />
-                  )
-                : undefined
-            }
             workbenchLink={
               workbench && documentId
                 ? (labelled) => (
@@ -472,8 +464,8 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame, the welcome flow or a
-  // running presentation).
+  // where there are bars to fold (not in zen, an embed, a document-scope workbench frame, the welcome
+  // flow or a running presentation).
   const landscapeBarsHandle =
     header && footer && slideDeck.presentingAt === null ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />

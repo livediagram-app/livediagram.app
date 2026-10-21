@@ -96,7 +96,37 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
       documentName: 'Home screen',
       role: 'edit',
     });
-  await frame.getByRole('button', { name: /^Back to / }).click();
+  // Back is the first thing at the frame's top left (WB59): above the canvas, outside the tab bar, and the
+  // first stop of the keyboard.
+  const back = frame.getByRole('button', { name: /^Back to / });
+  const frameBox = (await page.locator('#frame').boundingBox())!;
+  const backBox = (await back.boundingBox())!;
+  const canvasBox = (await frame.locator('[data-canvas-a11y-root]').first().boundingBox())!;
+  expect(backBox.x - frameBox.x).toBeLessThan(32);
+  expect(backBox.y - frameBox.y).toBeLessThan(32);
+  expect(backBox.y + backBox.height).toBeLessThanOrEqual(canvasBox.y);
+  await expect(
+    frame.locator('[data-editor-tabbar]').getByRole('button', { name: /^Back/ }),
+  ).toHaveCount(0);
+  // The first tab stop in the frame, Tab reaching it from the bar's empty end; from the canvas, Shift+F6 twice
+  // (the Palette, then the Header region it stands for).
+  const firstStop = await back.evaluate((el) => {
+    const stops = el.ownerDocument.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex]',
+    );
+    return [...stops].find((s) => s.tabIndex >= 0 && s.getClientRects().length > 0) === el;
+  });
+  expect(firstStop).toBe(true);
+  const bar = frame.locator('[data-region="header"]');
+  const barBox = (await bar.boundingBox())!;
+  await bar.click({ position: { x: barBox.width - 8, y: barBox.height / 2 } });
+  await page.keyboard.press('Tab');
+  await expect(back).toBeFocused();
+  await frame.locator('[data-canvas-a11y-root]').first().focus();
+  await page.keyboard.press('Shift+F6');
+  await page.keyboard.press('Shift+F6');
+  await expect(back).toBeFocused();
+  await back.click();
   await expect(frame.getByRole('complementary', { name: 'Sections' })).toBeVisible();
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('all');
 

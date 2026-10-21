@@ -3,7 +3,12 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import { WorkbenchBackButton, WorkbenchOpenLink, WorkbenchReconnectLine } from './WorkbenchChrome';
+import {
+  WorkbenchBackButton,
+  WorkbenchDocumentBar,
+  WorkbenchOpenLink,
+  WorkbenchReconnectLine,
+} from './WorkbenchChrome';
 
 // The workbench's chrome (docs/specs/013-workspace/blueprints/workbench-embeds.md "Presentation and UX",
 // "Accessibility"): Open in livediagram in the tab bar, and the Reconnect line once the session ended.
@@ -39,6 +44,25 @@ describe('WorkbenchBackButton', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
     expect(back.textContent).toBe('Back');
     expect(back.className).toContain('min-w-7');
+  });
+});
+
+describe('WorkbenchDocumentBar', () => {
+  it('holds Back alone, at its left, first in the keyboard order and the Header region for F6', () => {
+    const onBack = vi.fn();
+    const { container } = render(
+      <WorkbenchDocumentBar frame={{ back: onBack, backTitle: 'Minigames' }} />,
+    );
+
+    const bar = container.firstElementChild as HTMLElement;
+    const back = screen.getByRole('button', { name: 'Back to Minigames' });
+    expect(bar.querySelectorAll('button, a, input')).toHaveLength(1);
+    expect(bar.querySelector('button')).toBe(back);
+    expect(bar.className).toContain('h-12');
+    expect(bar.dataset.region).toBe('header');
+    expect(back.textContent).toBe('Back');
+    fireEvent.click(back);
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
 

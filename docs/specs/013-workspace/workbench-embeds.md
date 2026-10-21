@@ -146,7 +146,11 @@ else the system. Presence shows the person as themselves; their agent shows as t
 A **workspace** frame renders the Explorer as it is at `/explorer`: its sidebar, its views and its empty states,
 without the app header, the account menu, Settings, or the Teams administration rows. Opening a document opens the
 editor in the same frame (`/embed/workbench/document/<id>`), with a **Back** control to where it was opened from;
-the browser's own back and forward walk the frame's history. **New document** creates the document in place and opens
+the browser's own back and forward walk the frame's history. **Back** is the first thing at the top left of the frame,
+where back controls live: alone in a slim bar across the top, above the canvas and so clear of its toolbar, as the
+Explorer's search field sits in a slim bar of its own, and first in the keyboard order. It is not in the tab bar. A
+document's status screens (deleted, load error, not found) carry Back at their top left too. The document scope has
+no Back. **New document** creates the document in place and opens
 it in the frame, never `/new`. **Open in livediagram** opens the current view or document in a full tab. A frame
 started on a folder shows that folder; its empty state is the Explorer's own, with New document and the templates.
 
