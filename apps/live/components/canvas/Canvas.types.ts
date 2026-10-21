@@ -39,6 +39,7 @@ import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
+import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -860,4 +861,7 @@ export type CanvasProps = {
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
   // has no Explorer: neither the floating panel nor the Toolbar layout's menu button.
   explorerHidden?: boolean;
+  // A workspace frame's Back (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB59), in the menu button's
+  // place at the canvas's top left.
+  workbenchBack?: Pick<WorkspaceFrameHooks, 'back' | 'backTitle'> | null;
 };

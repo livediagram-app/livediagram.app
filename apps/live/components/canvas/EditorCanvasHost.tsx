@@ -57,6 +57,7 @@ import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
 import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
 import { elementSelector } from '@/lib/canvas-selectors';
+import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -449,6 +450,8 @@ export function EditorCanvasHost() {
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   const landscapePhone = useIsLandscapePhone();
+  // A workspace frame's hooks: its Back, at the canvas's top left (WB59).
+  const workbenchFrame = useWorkbenchSession()?.frame ?? null;
   // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
   // true when the row's element is that kind of card, now centred in view.
   const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
@@ -1323,6 +1326,7 @@ export function EditorCanvasHost() {
               // A phone held sideways has no Explorer at all (docs/specs/007-editor/live-app.md "A phone
               // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
               explorerHidden={workbenchMode || landscapePhone}
+              workbenchBack={workbenchFrame}
               onToggleZen={embedMode ? undefined : toggleZenMode}
               aiPanel={
                 aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly

@@ -333,11 +333,7 @@ function EmbedShell({
 }) {
   return (
     <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">
-      {frame ? (
-        <div className="absolute top-3 left-3 z-[var(--z-chrome)]">
-          <WorkbenchBackButton onBack={frame.back} backTitle={frame.backTitle} labelled />
-        </div>
-      ) : null}
+      {frame ? <WorkbenchBackButton onBack={frame.back} backTitle={frame.backTitle} /> : null}
       {children}
     </main>
   );

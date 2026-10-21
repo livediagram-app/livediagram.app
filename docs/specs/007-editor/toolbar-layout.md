@@ -22,7 +22,9 @@ and one category's tiles:
 
 - **Top left, before the strip: the menu button**, in a card with the tab's name. No mode switch sits there: a
   tab's mode is chosen on its start while it is empty ([The mode switch](editor-modes.md#the-mode-switch)).
-  On a phone that card sits at the far left of the strip's row, the strip beside it (below).
+  On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
+  workbench frame, which has no Explorer button, the card holds **Back** instead
+  ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.

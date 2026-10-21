@@ -28,6 +28,8 @@ describe('TabBar in a workbench', () => {
     const search = screen.getByRole('button', { name: 'Search' });
     expect(search.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(appearance()).toHaveLength(0);
+    // Back sits at the frame's top left (WB59), never in the tab bar.
+    expect(screen.queryByRole('button', { name: /^Back/ })).toBeNull();
   });
 
   it('keeps the Appearance control in the app', () => {
