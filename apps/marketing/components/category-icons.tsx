@@ -26,44 +26,7 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M10.5 3.5a2.25 2.25 0 0 1 0 4.25M11.75 9.9c1.2.5 2 1.7 2.25 3.6" />
     </>,
   ),
-  // Diagrams: two boxes joined by a connector.
-  diagrams: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="5.5" height="4" rx="1" />
-      <rect x="9" y="9.5" width="5.5" height="4" rx="1" />
-      <path d="M4.25 6.5v4.75H9" />
-    </>,
-  ),
-  // Whiteboard: a freehand stroke under a pen nib.
-  whiteboard: glyph(
-    <>
-      <path d="M10.5 2.5l3 3-6 6-3.5.5.5-3.5z" />
-      <path d="M2 14c1.5-1 3-1 4.5 0s3 1 4.5 0" />
-    </>,
-  ),
-  // Infographics: a page with a title and a bar chart.
-  infographics: glyph(
-    <>
-      <rect x="3.5" y="1.5" width="9" height="13" rx="1" />
-      <path d="M5.5 4h5M6 12V9.5M8 12V8M10 12v-1.5" />
-    </>,
-  ),
-  // Slide decks: a slide on its stand, a play mark on it.
-  slides: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="13" height="8.5" rx="1" />
-      <path d="M7 5l3 1.75L7 8.5z" />
-      <path d="M8 11v2.5M5.5 14h5" />
-    </>,
-  ),
-  // Documents: a page of writing.
-  documents: glyph(
-    <>
-      <path d="M3.5 1.5h6l3 3v10h-9z" />
-      <path d="M9.5 1.5v3h3M5.5 7.5h5M5.5 9.75h5M5.5 12h3" />
-    </>,
-  ),
-  // Plans and boards: three columns of cards.
+  // Boards and dashboards: three columns of cards.
   plan: glyph(
     <>
       <rect x="1.5" y="2" width="3.5" height="5" rx=".75" />

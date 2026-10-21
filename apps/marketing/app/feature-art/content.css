@@ -1,4 +1,5 @@
-/* ── Content, structure and motion card art (components/feature-art/content.tsx, structure.tsx, motion.tsx) ──
+/* ── Accent loops for the Plan, Sheet, Form and Timeline card art (components/feature-art/plan-more.tsx,
+   sheet-more.tsx, forms-more.tsx, embeds-timeline.tsx and their kin) ──
    Each scene reads finished at rest; these move only an accent (a caret, a cursor, a packet, a
    backdrop) so any frame of the loop is a good picture. Reduced motion settles them below. */
 
@@ -96,63 +97,12 @@
   animation: fa-d-ring 6s ease-in-out infinite;
 }
 
-/* Dots travelling a connector: a round-capped dash pattern sliding toward the target. */
-@keyframes fa-d-dots {
-  to {
-    stroke-dashoffset: -12;
-  }
-}
-.fa-d-dots {
-  animation: fa-d-dots 0.9s linear infinite;
-}
-
-/* A signal packet racing along a straight connector (--dx long). */
-@keyframes fa-d-packet {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-  10%,
-  85% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(var(--dx, 40px));
-    opacity: 0;
-  }
-}
-.fa-d-packet {
-  transform-box: fill-box;
-  animation: fa-d-packet 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-}
-
-/* The aurora backdrop: soft colour fields drifting slowly. */
-@keyframes fa-d-aurora {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(var(--ax, 18px), var(--ay, -6px)) scale(1.12);
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-}
-.fa-d-aurora {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: fa-d-aurora 9s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .fa-d-blink,
   .fa-d-type,
   .fa-d-move,
   .fa-d-land,
-  .fa-d-ring,
-  .fa-d-dots,
-  .fa-d-packet,
-  .fa-d-aurora {
+  .fa-d-ring {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

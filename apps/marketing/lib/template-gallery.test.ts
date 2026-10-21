@@ -11,18 +11,24 @@ import {
 describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => {
   it('has one category card for every listed template but the blanks', () => {
     const kinds = galleryTemplates().map((t) => t.kind);
-    const expected = TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(
-      (t) => t.kind,
-    );
+    const expected = TEMPLATES.filter(
+      (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === 'plan',
+    ).map((t) => t.kind);
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'whiteboard', 'blank-illustration', 'blank-slide-deck']) {
+    for (const blank of ['blank-plan', 'blank-spreadsheet', 'blank-form']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
   });
 
-  it('carries the mode each template opens in', () => {
-    for (const t of galleryTemplates()) expect(t.mode, t.kind).toBe(templateEditorMode(t.kind));
+  it('carries the mode each template opens in, and lists only Plan templates', () => {
+    for (const t of galleryTemplates()) {
+      expect(t.mode, t.kind).toBe(templateEditorMode(t.kind));
+      expect(t.mode, t.kind).toBe('plan');
+    }
+    for (const kind of ['flowchart', 'mindmap', 'retrospective', 'slide-deck', 'whiteboard']) {
+      expect(galleryTemplates().map((t) => t.kind)).not.toContain(kind);
+    }
   });
 
   it('labels every card with its category', () => {
@@ -43,14 +49,14 @@ describe('filterGallery', () => {
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'offsite plan').map((t) => t.kind)).toContain('mindmap');
-    expect(filterGallery(all, 'technical').map((t) => t.kind)).toContain('sequence-diagram');
+    expect(filterGallery(all, 'candidates').map((t) => t.kind)).toContain('job-application-form');
+    expect(filterGallery(all, 'finance').map((t) => t.kind)).toContain('budget-planner');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'mind tree').map((t) => t.kind);
-    expect(kinds).toContain('mindmap-tree');
-    expect(kinds).not.toContain('mindmap-bubble');
+    const kinds = filterGallery(all, 'form bug').map((t) => t.kind);
+    expect(kinds).toContain('bug-report-form');
+    expect(kinds).not.toContain('bug-triage');
     expect(filterGallery(all, 'kanban zebra')).toEqual([]);
   });
 });
@@ -80,25 +86,16 @@ describe('groupGallery', () => {
     expect(filterGallery(galleryTemplates(), 'mortgage').map((t) => t.kind)).toContain(
       'loan-calculator',
     );
-    expect(filterGallery(galleryTemplates(), 'erd').map((t) => t.kind)).toContain('er-diagram');
   });
 });
 
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
 // structure, Popular first.
 describe('the shelves, as the template step lays them out', () => {
-  it('opens on Blank Slate, only the blanks in mode order, then every category in catalogue order', () => {
+  it('opens on Blank Slate, only the Plan blanks, then every category in catalogue order', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
     expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
-      'blank-illustration',
-      'blank-slide-deck',
-      'blank-article',
-      'blank-logo',
-      'blank-wireframe-phone',
       'blank-plan',
       'blank-spreadsheet',
       'blank-form',

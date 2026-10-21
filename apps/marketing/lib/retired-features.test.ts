@@ -19,6 +19,12 @@ const RETIRED = [
   'reliability',
   'connect',
   'foundations',
+  // The editor modes liveplanner does not carry (Diagram, Draw and Pages mode's three).
+  'diagrams',
+  'whiteboard',
+  'infographics',
+  'slides',
+  'documents',
 ];
 
 const rules = readFileSync(fileURLToPath(new URL('../public/_redirects', import.meta.url)), 'utf8')
@@ -39,7 +45,9 @@ describe('retired feature pages', () => {
 
   it('sends each one to a live page', () => {
     const live = new Set(['/', ...LANDING_SECTION_IDS.map((id) => `/features/${id}`)]);
-    for (const [, to] of rules) expect(live.has(to!), to).toBe(true);
+    for (const [from, to] of rules) {
+      if (from!.startsWith('/features/')) expect(live.has(to!), to).toBe(true);
+    }
   });
 
   it('never redirects a live category', () => {

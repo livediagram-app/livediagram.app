@@ -118,7 +118,7 @@ export function CardDetailArt() {
             <Avatar key="a" x={216} y={40.5} initials={SM.initials} colour={SM.colour} r={3.8} />,
           ],
           ['Priority', <Pill key="p" x={212} y={49} text="High" tone="rose" />],
-          ['Labels', <Pill key="l" x={212} y={62} text="marketing" tone="violet" />],
+          ['Labels', <Pill key="l" x={212} y={62} text="marketing" tone="amber" />],
           ['Due', null],
         ].map(([label, value], i) => (
           <g key={label as string}>
@@ -153,7 +153,7 @@ export function CardCommentsArt() {
           id="#21"
           type="idea"
           who={JR}
-          ring="#0ea5e9"
+          ring="#8b5cf6"
         />
         <g>
           <path

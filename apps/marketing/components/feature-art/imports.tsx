@@ -1,20 +1,21 @@
-// Feature illustration: bringing boards in from other tools (the Diagrams category's AI & your
-// tools group). Three sources, draw.io, Excalidraw and Microsoft Whiteboard, each landing as
-// an editable document in the Explorer. Motion reuses the canvas card timeline (fa-a-* in
-// app/feature-art/canvas.css), which settles to the finished frame under reduced motion.
+// Feature illustration: bringing work in from other tools (the Sheets category's "Paste from Sheets
+// and Excel, CSV in and out" card). Three sources, a CSV file, an Excel workbook and cells pasted
+// from Google Sheets, each landing as a Sheet or a board on a tab. Motion reuses the canvas card
+// timeline (fa-a-* in app/feature-art/canvas.css), which settles to the finished frame under
+// reduced motion.
 import { Connector, MUTED, Panel, Scene, TEXT, at } from './canvas-parts';
 
 const SOURCES = [
-  { name: 'flow.drawio', doc: 'flow', tint: 'fill-orange-500' },
-  { name: 'sketch.excalidraw', doc: 'sketch', tint: 'fill-violet-500' },
-  // A Whiteboard board arrives as an exported folder, so it reads as the board's name.
-  { name: 'Retro board', doc: 'Retro board', tint: 'fill-sky-500' },
+  { name: 'tasks.csv', doc: 'Tasks', kind: 'Board', tint: 'fill-slate-500' },
+  { name: 'budget.xlsx', doc: 'Budget', kind: 'Sheet', tint: 'fill-emerald-600' },
+  // Cells pasted from Google Sheets arrive as they were copied, so they read as the range.
+  { name: 'Pasted cells', doc: 'Q3 costs', kind: 'Sheet', tint: 'fill-emerald-500' },
 ];
 
 const ROW_H = 22;
 const Y0 = 13;
 
-/** Files from other tools on the left, arriving as documents on the right. */
+/** Files from other tools on the left, arriving as tabs of the project on the right. */
 export function BoardImportArt() {
   return (
     <Scene>
@@ -31,7 +32,7 @@ export function BoardImportArt() {
             <g className="fa-a-in" style={at(0.2 + i * 0.25)}>
               <Connector d={`M118 ${y + 8} H 170`} head={`M166 ${y + 5} l4 3 l-4 3`} />
             </g>
-            {/* The document it becomes: a mini board with editable shapes. */}
+            {/* The tab it becomes: a Board or a Sheet, ready to work on. */}
             <g className="fa-a-pop" style={at(0.4 + i * 0.25)}>
               <Panel x={176} y={y} w={104} h={16} />
               <rect
@@ -47,7 +48,7 @@ export function BoardImportArt() {
                 {s.doc}
               </text>
               <text className={MUTED} x="274" y={y + 10.6} fontSize="5.6" textAnchor="end">
-                Editable
+                {s.kind}
               </text>
             </g>
           </g>

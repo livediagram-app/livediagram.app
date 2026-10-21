@@ -1,4 +1,5 @@
-import { SITE_NAME, SITE_PITCH, renderSocialCard } from '@liveplanner/ui';
+import { SITE_NAME, renderSocialCard } from '@liveplanner/ui';
+import { MARKETING_PITCH, MARKETING_PITCH_SENTENCE } from '@/lib/site-copy';
 import { ImageResponse } from 'next/og';
 
 // Twitter Card image. Mirrors opengraph-image.tsx; the shared
@@ -9,10 +10,10 @@ import { ImageResponse } from 'next/og';
 // can't trace re-exported per-route config through a barrel.
 
 export const dynamic = 'force-static';
-export const alt = `${SITE_NAME}: ${SITE_PITCH}`;
+export const alt = `${SITE_NAME}: ${MARKETING_PITCH}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function TwitterImage() {
-  return new ImageResponse(renderSocialCard(), { ...size });
+  return new ImageResponse(renderSocialCard({ subtitle: MARKETING_PITCH_SENTENCE }), { ...size });
 }
