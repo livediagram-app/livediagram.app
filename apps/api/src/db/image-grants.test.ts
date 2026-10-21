@@ -111,7 +111,6 @@ describe('documentServesImage', () => {
         role,
         level,
         created_at: 0,
-        purpose: 'share',
       });
       insert(db.sql, 'shared_with', {
         owner_id: owner,
@@ -174,9 +173,9 @@ describe('copies', () => {
     expect(await documentServesImage(db.env, 'copy', 'planted')).toBe(false);
   });
 
-  it('carries grants through a Community copy and a copy of a copy', async () => {
+  it('carries grants through a copy and a copy of a copy', async () => {
     const db = await source();
-    await copyDocument(db.env, 'src', 'c1', 'visitor', 'Copy', null, true);
+    await copyDocument(db.env, 'src', 'c1', 'visitor', 'Copy');
     await copyDocument(db.env, 'c1', 'c2', 'someone', 'Copy of copy');
     expect(await documentServesImage(db.env, 'c1', 'alice-img')).toBe(true);
     expect(await documentServesImage(db.env, 'c2', 'alice-img')).toBe(true);

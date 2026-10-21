@@ -6,7 +6,7 @@ Status: shipped
 
 ## Entry points
 
-- **The site header's Build with AI link** (`BuildWithAiLink` in `packages/ui`, shown by `SiteHeader` when a surface passes `buildWithAi`). Every marketing page's header (`components/Header.tsx`) shows it, to the left of Start Blank. It is a quiet ghost link with a sparkles glyph, so the CTA pair stays the loudest thing in the bar. Desktop only (from `lg`): below that the bar is already full with Brand, the apps menu and the CTA pair. On `/ai` itself it carries `aria-current="page"` and a brand tint. The help centre, telemetry and Community headers do not show it.
+- **The site header's Build with AI link** (`BuildWithAiLink` in `packages/ui`, shown by `SiteHeader` when a surface passes `buildWithAi`). Every marketing page's header (`components/Header.tsx`) shows it, to the left of Start Blank. It is a quiet ghost link with a sparkles glyph, so the CTA pair stays the loudest thing in the bar. Desktop only (from `lg`): below that the bar is already full with Brand, the apps menu and the CTA pair. On `/ai` itself it carries `aria-current="page"` and a brand tint. The help centre and telemetry headers do not show it.
 - **The footer's AI & MCP link** (`SiteFooter`) opens `/ai`.
 - **The FAQ's** "Can I connect my own AI assistant" answer links to `/ai` for setup. (Feature cards stay links to their help article, as every feature card is.)
 

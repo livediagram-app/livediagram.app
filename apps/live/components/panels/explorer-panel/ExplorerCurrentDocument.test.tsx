@@ -50,9 +50,7 @@ describe('ExplorerCurrentDocument', () => {
   });
 
   it("carries the header's visibility badge at its right", () => {
-    act(() =>
-      setDocumentVisibility({ shareable: false, team: false, offline: true, community: false }),
-    );
+    act(() => setDocumentVisibility({ shareable: false, team: false, offline: true }));
     render(<ExplorerCurrentDocument item={doc} ownerId="me" onOpen={vi.fn()} />);
     expect(screen.getByLabelText('This Browser')).toBeTruthy();
   });

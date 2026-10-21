@@ -51,19 +51,6 @@ describe('SharedBadge', () => {
   });
 });
 
-// docs/specs/025-community/community.md: listed in the Community, the document is public.
-describe('SharedBadge in the Community', () => {
-  it('reads Public while listed, over Shared, and This Browser still wins', () => {
-    render(<SharedBadge shareable community />);
-    expect(screen.getByText('Public')).toBeTruthy();
-    expect(screen.queryByText('Shared')).toBeNull();
-    cleanup();
-    render(<SharedBadge shareable={false} offline community />);
-    expect(screen.getByText(THIS_BROWSER_LABEL)).toBeTruthy();
-    expect(screen.queryByText('Public')).toBeNull();
-  });
-});
-
 // docs/specs/006-document/offline-mode.md "The visibility legend": the reach scale, the hover preview and
 // Change Who Can See This.
 describe('SharedBadge legend', () => {
@@ -82,10 +69,11 @@ describe('SharedBadge legend', () => {
     fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
     const legend = document.querySelector('[data-visibility-legend]')!;
     const hero = () => legend.querySelector('[data-legend-hero]')!;
-    fireEvent.mouseEnter(screen.getByText('Everyone').closest('li')!);
-    expect(hero().getAttribute('data-legend-hero')).toBe('community');
+    const team = legend.querySelectorAll('li')[2]!;
+    fireEvent.mouseEnter(team);
+    expect(hero().getAttribute('data-legend-hero')).toBe('team');
     expect(hero().textContent).toContain('If It Were');
-    fireEvent.mouseLeave(screen.getByText('Everyone').closest('ol')!);
+    fireEvent.mouseLeave(team.closest('ol')!);
     expect(hero().getAttribute('data-legend-hero')).toBe('private');
     expect(hero().textContent).toContain('Who Can See This');
   });
@@ -95,11 +83,11 @@ describe('SharedBadge legend', () => {
     fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
     const hero = document.querySelector('[data-legend-hero]')!;
     const blocks = [...hero.querySelectorAll('[class*="grid-area"]')];
-    expect(blocks).toHaveLength(5);
+    expect(blocks).toHaveLength(4);
     const shown = blocks.filter((b) => !b.hasAttribute('aria-hidden'));
     expect(shown).toHaveLength(1);
     expect(shown[0]!.className).not.toContain('invisible');
-    fireEvent.mouseEnter(screen.getByText('Everyone').closest('li')!);
+    fireEvent.mouseEnter(document.querySelectorAll('[data-visibility-legend] li')[2]!);
     expect(blocks.filter((b) => !b.hasAttribute('aria-hidden'))[0]!.textContent).toContain(
       'If It Were',
     );

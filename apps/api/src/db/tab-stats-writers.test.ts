@@ -131,13 +131,4 @@ describe('copyDocument', () => {
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
   });
-
-  it('counts a Community copy after its redaction', async () => {
-    const db = withDocument();
-    await upsertTab(db.env, 'A', tab('t1', 'draw', 2), 0);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A', null, true);
-    const copied = copy!.tabs[0]!.id;
-    expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
-    expect(statsRow(db.sql, copied)?.comment_count).toBe(0);
-  });
 });

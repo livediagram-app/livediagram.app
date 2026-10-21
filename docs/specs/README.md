@@ -32,7 +32,6 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of My Documents
 - ./023-draw-mode/README.md - when working on Draw mode: its pens, dock, snap colours, text boxes and path tool
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
-- ./025-community/README.md - when working on Community: publishing documents to the public gallery, the Community app, likes, copies, and reports (moderation by reports alone)
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store

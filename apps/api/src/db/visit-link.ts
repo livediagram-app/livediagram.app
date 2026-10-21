@@ -8,7 +8,7 @@
  *  recorded (`share_code` NULL), the oldest live link of its role and scope. `now` is the bound parameter
  *  holding the current time. One definition, so Shared with you, Home and every access leg agree. */
 export function visitLinkSql(now: string, s = 's', d = 'd'): string {
-  const live = `sl.document_id = ${d}.id AND sl.purpose = 'share'
+  const live = `sl.document_id = ${d}.id
                 AND COALESCE(sl.level, sl.role) = COALESCE(${s}.level, ${s}.role)
                 AND sl.tab_id IS ${s}.tab_id AND (sl.expires_at IS NULL OR sl.expires_at > ${now})`;
   return `CASE WHEN ${s}.share_code IS NOT NULL

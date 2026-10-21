@@ -256,7 +256,7 @@ Top to bottom:
    a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
    document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
-   Private, Shared, Team, Public or This Browser, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
+   Private, Shared, Team or This Browser, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
    at the right of the label's row and its `⋯` (the document menu) at the right of the date's, so the name has the
    card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
    by the panel.
@@ -267,7 +267,7 @@ Top to bottom:
 3. **The rail and the pane**, side by side on a desktop: the rail on the left lists the sections, the pane on the right
    shows the picked one.
 4. **The footer**: the product's surfaces as links, one row: **Home** (the landing page), **Explorer** (the Explorer
-   page), **Community** (while the Community is on), **Help**. They are the product menu's entries but Telemetry; the editor
+   page), **Help**. They are the product menu's entries but Telemetry; the editor
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Document card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one

@@ -9,7 +9,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
 // A Plan card's comments (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "Comments"): who
-// may add, delete, resolve and reopen; author ids only to their author; the relay; restore; Community copies.
+// may add, delete, resolve and reopen; author ids only to their author; the relay; restore; copies.
 
 let sql: SqliteD1;
 type Relayed = { op?: { upserts?: Item[] } };
@@ -305,13 +305,9 @@ describe('restore and copies', () => {
     expect(bad.status).toBe(400);
   });
 
-  it('keeps comments in a copy, and leaves them out of a Community copy', async () => {
+  it('keeps comments in a copy', async () => {
     await post('keep me');
     await db.copyDocument(sql.env, 'd1', 'd2', 'owner', 'Copy');
     expect(thread((await db.listItems(sql.env, 'd2'))[0]!)!.comments).toHaveLength(1);
-    await db.copyDocument(sql.env, 'd1', 'd3', 'owner', 'Community', null, true);
-    const community = (await db.listItems(sql.env, 'd3'))[0]!;
-    expect(community.fields['comments']).toBeUndefined();
-    expect(community.fields['title']).toBe('A');
   });
 });

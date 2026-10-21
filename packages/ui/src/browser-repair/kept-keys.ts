@@ -19,12 +19,11 @@ export const GUEST_IDENTITY_KEYS = {
 export const REPAIR_KEPT_KEYS: readonly string[] = [
   // Guest identity.
   ...Object.values(GUEST_IDENTITY_KEYS),
-  // Per-browser keys that recorded answers and likes are matched against, and the collab key's
+  // Per-browser keys that recorded answers are matched against, and the collab key's
   // secret half (vote integrity, #443): a new secret under the same key would no longer prove this
   // browser's answers.
   'liveplanner:v2:collab-key',
   'liveplanner:v2:collab-secret',
-  'liveplanner:v2:community-key',
 ];
 
 /** Key prefixes a repair keeps: the Google Drive mirror's state. */

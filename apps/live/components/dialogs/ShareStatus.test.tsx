@@ -27,9 +27,4 @@ describe('ShareStatus', () => {
       'Shared: every member of the team can open it, and anyone holding the pass can get in.',
     );
   });
-
-  it('says Public while listed in the Community, the widest exposure', () => {
-    render(<ShareStatus passes={1} password={false} community team />);
-    expect(line()).toMatch(/^Public:/);
-  });
 });

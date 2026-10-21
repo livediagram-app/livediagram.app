@@ -245,15 +245,6 @@ type = "ratelimit"
 namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
-# Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md
-# §7, C7), keyed community:<network> (an IPv4 /24 or IPv6 /56, community-network.ts). These callers are anonymous, so the owner-keyed write limiter would put them all on
-# one key. 30 / 60s is far above a person liking cards. Separate namespace. Absent binding → allow (self-host).
-[[unsafe.bindings]]
-name = "COMMUNITY_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1009"
-simple = { limit = 30, period = 60 }
-
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
 # WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
 # Separate namespace. Absent binding → allow (self-host).
@@ -264,7 +255,7 @@ namespace_id = "1010"
 simple = { limit = 30, period = 60 }
 
 # Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits"),
-# keyed form:<network> and form-read:<network> (an IPv4 /24 or IPv6 /56, as Community's). Respondents are anonymous,
+# keyed form:<network> and form-read:<network> (an IPv4 /24 or IPv6 /56, client-ip.ts clientNetwork). Respondents are anonymous,
 # so the owner-keyed write limiter would put them all on one key. 60 / 60s lets a classroom behind one address
 # answer together. Separate namespace. Absent binding → allow (self-host).
 [[unsafe.bindings]]
@@ -506,12 +497,6 @@ name = "HOME_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1008"
 simple = { limit = 60, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "COMMUNITY_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1009"
-simple = { limit = 30, period = 60 }
 
 [[env.staging.unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"

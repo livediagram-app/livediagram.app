@@ -794,7 +794,7 @@ export function ExplorerPanelLayout() {
           className="stroke-slate-200"
           strokeWidth={1.5}
         />
-        {['Welcome', 'Explorer', 'Community', 'Help', 'Telemetry'].map((l, i) => (
+        {['Welcome', 'Explorer', 'Help', 'Telemetry'].map((l, i) => (
           <Label key={l} x={px + 18 + i * 78} y={344} size={10} weight={500} tone="body">
             {l}
           </Label>

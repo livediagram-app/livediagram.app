@@ -20,12 +20,8 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The Share dialog with its Community band (docs/specs/025-community/community.md "Publishing").
 const ShareDialog = dynamic(
-  () =>
-    import('@/components/dialogs/community/ShareDialogWithCommunity').then(
-      (m) => m.ShareDialogWithCommunity,
-    ),
+  () => import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
   { ssr: false },
 );
 
@@ -155,14 +151,7 @@ export function EditorTabDialogs() {
           offline={isOffline}
           onSyncToCloud={syncToCloud}
           syncReady={readerKnown}
-          documentId={documentId}
-          documentName={documentName}
-          signedIn={!!clerkUserId}
           teamDocument={!!documentTeamId}
-          // Known only for the open tab (the editor holds its elements); another first tab is left to the server.
-          firstTabEmpty={
-            !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
-          }
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

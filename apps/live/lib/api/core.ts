@@ -5,7 +5,6 @@
 // import from here; callers go through the lib/api-client.ts barrel.
 import type {
   ApiToken,
-  CommunityShareInfo,
   CustomTheme,
   LiveDoc,
   Folder,
@@ -176,13 +175,7 @@ export type ParticipantResponse = {
 // password was submitted (vs none yet), so the gate can show an error.
 export type SharedDocumentResolution =
   // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  // `community`: set only when the code is a Community post's link (docs/specs/025-community/community.md).
-  | {
-      document: LiveDoc;
-      role: ShareRole;
-      tabId: string | null;
-      community: CommunityShareInfo | null;
-    }
+  | { document: LiveDoc; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been

@@ -126,9 +126,8 @@ cache, cached share passwords, and the stale-build reload guards.
 - the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
   `name-confirmed` (all under `liveplanner:v2:`). Losing the guest id loses
   every document a guest owns;
-- `collab-key`, its secret half `collab-secret`, and `community-key`, the
-  per-browser keys that past answers, votes and
-  likes are matched against;
+- `collab-key` and its secret half `collab-secret`, the per-browser keys that
+  past answers and votes are matched against;
 - Google Drive mirror state (`liveplanner:v2:drive-*`,
   `liveplanner:drive-mirror*`);
 - the offline store (IndexedDB `liveplanner-offline`): Offline Mode documents

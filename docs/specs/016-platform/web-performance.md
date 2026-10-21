@@ -129,7 +129,7 @@ sidebar is, where a flex row let the article take the full width until the sideb
 
 ### The first images a visitor sees load first
 
-A gallery's first row (the Community gallery's first four cards) loads its images eagerly with
+A gallery's first row loads its images eagerly with
 `fetchpriority="high"`; every other card's image is lazy.
 
 ### Ask once
@@ -162,8 +162,6 @@ seen on the document).
   Inbox reads against the real migrations.
 - Cells named by key are matched as `(row_id, col_id)` pairs, so the primary key seeks each one
   (`apps/api/src/db/sheets-plans.test.ts`).
-- A public, identity-free read that every visitor makes (the Community's featured posts and facets)
-  is answered from the edge cache for its stated lifetime (`apps/api/src/edge-cache.ts`).
 - A check that needs only a document's owner and team reads that row, not the full document.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
 - The tab save reads its document in one query and fetches the room's ledger alongside its other

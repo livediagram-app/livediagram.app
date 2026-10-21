@@ -18,9 +18,7 @@ import { resolve } from 'node:path';
 import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
-  COMMUNITY_CATEGORIES,
   LEVEL_TELEMETRY_TYPE,
-  COMMUNITY_REPORT_REASONS,
   PLACEMENT_DEFAULT_KEYS,
   SHEET_CHANGE_KINDS,
   pascalToken,
@@ -375,17 +373,6 @@ const API_ERRORS = [
 ];
 const API_ERROR_WHY = 'a status or kind plus the request that failed, and the worker error token';
 
-// The Community (docs/specs/025-community/community.md "Telemetry"): a post's category and a
-// report's reason as their closed `type` tokens, and the gallery filter kinds the Community app's
-// CommunitySelection union names.
-const COMMUNITY_CATEGORY_TYPES = COMMUNITY_CATEGORIES.map((c) => c.type);
-const COMMUNITY_REASON_TYPES = COMMUNITY_REPORT_REASONS.map((r) => r.type);
-const COMMUNITY_SELECTIONS = tokensAfter(
-  read('community/lib/telemetry.ts'),
-  'export type CommunitySelection',
-  ';',
-);
-
 // Where a changeset came from, read off the front door's own type so the list cannot drift.
 const AGENT_FRONT_DOORS = tokensAfter(
   read('api/src/changesets/front-door.ts'),
@@ -436,19 +423,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/help/components/useArticleVote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'apps/help/components/useArticleVote.ts Help·Unhelpful': { values: SLUGS, open: SLUG_WHY },
 
-  // The Community app.
-  'apps/community/lib/telemetry.ts Community·Reported': { values: COMMUNITY_REASON_TYPES },
-  'apps/community/lib/telemetry.ts Community·Selected': { values: COMMUNITY_SELECTIONS },
-
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
-  },
-  // The Community's help deep links (docs/specs/018-help/contextual-help-links.md): COMMUNITY_HELP's two ids.
-  'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
-    values: ['community', 'finding-community-documents'],
-    open: SLUG_WHY,
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
     values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
@@ -601,13 +579,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/drive/DriveOpen.tsx Drive·Opened': { values: DRIVE_OPEN_WITH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
-  // Publishing to the Community: the post's category, as communityCategoryType.
-  'apps/live/components/dialogs/community/CommunityPublishDialog.tsx Community·Shared': {
-    values: COMMUNITY_CATEGORY_TYPES,
-  },
-  'apps/live/components/dialogs/community/CommunityPublishDialog.tsx Community·Changed': {
-    values: COMMUNITY_CATEGORY_TYPES,
-  },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/live/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },

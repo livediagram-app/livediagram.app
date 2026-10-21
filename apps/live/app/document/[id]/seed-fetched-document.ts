@@ -1,6 +1,5 @@
 import { readItemTypeCatalogue } from '@liveplanner/items';
 import type { SavedItemTypes } from '@/lib/api/item-types';
-import { setCommunityState } from '@/lib/community-state-store';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@liveplanner/document';
 import type { LiveDoc } from '@liveplanner/api-schema';
@@ -136,7 +135,6 @@ export function makeSeedFetchedDocument(deps: {
     }
     setLoadedExistingDocument(true);
     setDocumentShareable(fetched.shareable);
-    setCommunityState(fetched.id, fetched.communityState ?? null);
     setDocumentTeamId(fetched.teamId ?? null);
     setDocumentShareCode(fetched.shareCode);
     setDocumentOwnerId(fetched.ownerId);

@@ -4,8 +4,7 @@
 
 export type Side = 'browser' | 'server';
 
-export type AppId =
-  'live' | 'marketing' | 'help' | 'telemetry' | 'community' | 'api' | 'mcp' | 'router';
+export type AppId = 'live' | 'marketing' | 'help' | 'telemetry' | 'api' | 'mcp' | 'router';
 
 // A package from npm, a work vendored inside a package, or a work inside a
 // binary asset or our own source that the bundler cannot see.

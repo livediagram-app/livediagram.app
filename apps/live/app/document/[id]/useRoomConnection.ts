@@ -70,8 +70,7 @@ export function useRoomConnection(opts: {
   // Saved on the server, so it has a room: every such document, personal ones included, since an
   // agent writing through the api is a second writer even where nobody else can open it.
   documentServerStored: boolean;
-  // False keeps the room closed whatever else holds: a Community viewer never joins the author's room
-  // (docs/specs/025-community/community.md "Viewing a post's document"). Defaults to true.
+  // False keeps the room closed whatever else holds (an ended workbench session). Defaults to true.
   enabled?: boolean;
   // A workbench session (docs/specs/013-workspace/blueprints/workbench-embeds.md): told when the room
   // ends it (close 4006), or when an access change does (4005, WB31), instead of reloading.

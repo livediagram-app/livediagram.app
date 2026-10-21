@@ -14,13 +14,11 @@ import type { SectionKey, ViewKey } from './view-keys';
 const VIEW_LOADERS = {
   features: () => import('./FeaturesView').then((m) => m.FeaturesView),
   pages: () => import('./PagesHelpView').then((m) => m.PagesHelpView),
-  community: () => import('./CommunityView').then((m) => m.CommunityView),
   health: () => import('./HealthView').then((m) => m.HealthView),
   search: () => import('./MetricSearch').then((m) => m.MetricSearch),
 };
 const FeaturesView = dynamic(VIEW_LOADERS.features, { ssr: false });
 const PagesHelpView = dynamic(VIEW_LOADERS.pages, { ssr: false });
-const CommunityView = dynamic(VIEW_LOADERS.community, { ssr: false });
 const HealthView = dynamic(VIEW_LOADERS.health, { ssr: false });
 const MetricSearch = dynamic(VIEW_LOADERS.search, { ssr: false });
 
@@ -62,8 +60,6 @@ export const ActiveView = memo(function ActiveView({
       return <FeaturesView summary={summary} active={active} focus={focus} />;
     case 'pages':
       return <PagesHelpView summary={summary} active={active} focus={focus} />;
-    case 'community':
-      return <CommunityView summary={summary} active={active} />;
     case 'health':
       return <HealthView summary={summary} active={active} focus={focus} />;
     case 'search':

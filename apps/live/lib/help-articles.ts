@@ -14,7 +14,6 @@
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @liveplanner/help-registry.
 
-import { COMMUNITY_HELP } from '@liveplanner/help-registry/community';
 import { helpPathTelemetryId } from '@liveplanner/help-registry/telemetry';
 
 export const HELP_ARTICLES = {
@@ -22,8 +21,6 @@ export const HELP_ARTICLES = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
-  // The Community's own help map holds the path (the public sites link it too).
-  community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
@@ -215,10 +212,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
-  },
-  community: {
-    title: 'Learn about the Community',
-    description: 'Sharing a document publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',

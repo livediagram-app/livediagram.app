@@ -27,10 +27,6 @@ service = "liveplanner-telemetry"
 binding = "HELP"
 service = "liveplanner-help"
 
-[[services]]
-binding = "COMMUNITY"
-service = "liveplanner-community"
-
 # Local dev (`wrangler dev --env local --port 3100`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
@@ -44,7 +40,6 @@ LIVE_ORIGIN = "http://127.0.0.1:3102"
 API_ORIGIN = "http://127.0.0.1:8887"
 TELEMETRY_ORIGIN = "http://127.0.0.1:3103"
 HELP_ORIGIN = "http://127.0.0.1:3104"
-COMMUNITY_ORIGIN = "http://127.0.0.1:3105"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveplanner-router-staging` and fronts
@@ -85,10 +80,6 @@ service = "liveplanner-telemetry-staging"
 [[env.staging.services]]
 binding = "HELP"
 service = "liveplanner-help-staging"
-
-[[env.staging.services]]
-binding = "COMMUNITY"
-service = "liveplanner-community-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a

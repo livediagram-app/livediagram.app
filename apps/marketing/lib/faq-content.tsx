@@ -453,7 +453,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'sharing',
     title: 'Sharing and embedding',
-    blurb: 'Links, passwords, embeds and the Community.',
+    blurb: 'Links, passwords and embeds.',
     icon: lucideGlyph(lucideShare2, ICON),
     items: [
       {
@@ -491,18 +491,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. A live image is a plain image URL that follows your document, redrawn after each save, so a GitHub README or a doc always shows the current version. See live images.',
-      },
-      {
-        q: 'What is the Community?',
-        a: (
-          <>
-            A public gallery of documents people are proud of. Signed-in owners can publish a
-            document with a title, description and tags; anyone can browse it, open it read-only,
-            like it and make their own copy in one click. <a href="/community/">Take a look</a>.
-          </>
-        ),
-        aText:
-          'A public gallery of documents people are proud of. Signed-in owners can publish a document with a title, description and tags; anyone can browse it, open it read-only, like it and make their own copy in one click. Take a look.',
       },
     ],
   },

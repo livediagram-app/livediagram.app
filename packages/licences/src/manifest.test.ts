@@ -46,7 +46,7 @@ describe('buildManifest', () => {
     ]);
     expect(manifest.schemaVersion).toBe(1);
     expect(manifest.sections.map((s) => [s.side, s.apps.map((a) => a.label)])).toEqual([
-      ['browser', ['Editor', 'Website', 'Help centre', 'Telemetry', 'Community']],
+      ['browser', ['Editor', 'Website', 'Help centre', 'Telemetry']],
       ['server', ['API', 'MCP server', 'Router']],
     ]);
     expect(manifest.sections[0]!.works.map((w) => [w.name, w.apps])).toEqual([

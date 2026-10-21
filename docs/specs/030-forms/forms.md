@@ -484,8 +484,8 @@ no editor code loaded (its own small bundle).
   reduced motion.
 - **Report This Form** opens a short form in place under the footer: a reason (Spam, Phishing or Asking for
   Passwords, Offensive, Something Else) and an optional note of up to 300 characters, **Cancel** and **Send Report**;
-  "Thanks. We’ve recorded your report." after. One report per browser per form (a random id kept in the browser). Moderation follows
-  [Community](../025-community/community.md#reports-and-moderation): nobody reviews by hand. Once reports have come
+  "Thanks. We’ve recorded your report." after. One report per browser per form (a random id kept in the browser). Moderation is by reports
+  alone: nobody reviews by hand. Once reports have come
   from three distinct browsers on three distinct networks, the form link is **suspended** for good: it shows the not
   found page, its Form tab says "This form’s link was suspended after reports from respondents", and the owner is
   emailed. Publishing again makes a new link; a document whose form links have been suspended twice cannot publish
@@ -615,7 +615,7 @@ session can add content elsewhere, never to a form.
 
 ## Abuse and limits
 
-- **Rate limits**: 60 a minute from one network (an IPv4 /24 or IPv6 /56, as Community's likes), for a form's reads
+- **Rate limits**: 60 a minute from one network (an IPv4 /24 or IPv6 /56), for a form's reads
   and its responses each, enough for a classroom behind one address; and 500 responses an hour to one form from
   everyone. Past them `429 rate_limited` / `form_busy`, and the page says so (above).
 - **A hidden field** respondents never see: a response that fills it is dropped (answered as a success, so a bot

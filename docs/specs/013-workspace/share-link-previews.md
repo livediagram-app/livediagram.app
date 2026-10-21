@@ -20,7 +20,6 @@ gave nobody a reason to tell them apart or click.
 | A working share link (`/document/shared?s=<code>`), no share password | The document's name | The share pitch    | The share card (below) |
 | A share link to a document with a share password                      | liveplanner         | The editor's pitch | The brand card         |
 | An unknown, revoked or expired code; a trashed document               | liveplanner         | The editor's pitch | The brand card         |
-| A Community post's link while the post is not public                  | liveplanner         | The editor's pitch | The brand card         |
 | Any other editor address (`/document/<id>`, the Explorer, ...)        | liveplanner         | The editor's pitch | The brand card         |
 
 - **The share pitch** is `Open it in liveplanner: diagrams, whiteboards and documents, made together.`
@@ -35,22 +34,19 @@ gave nobody a reason to tell them apart or click.
 `GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width.
 
 - **The picture is the live image's.** The same tab, the same rules: a tab-scoped link's own tab, otherwise the
-  first tab; a Community link's redacted tab ([Live image share link](live-image-share.md),
-  [Community](../025-community/community.md)). The drawing is fitted inside the card with 48 px of margin, centred,
+  first tab ([Live image share link](live-image-share.md)). The drawing is fitted inside the card with 48 px of margin, centred,
   never stretched or cropped, on the drawing's own background colour. A small drawing grows to
   at most twice its size, so a single box never reads as a blown-up blob.
 - **Nothing to draw** (an empty first tab, no image store on a self-host): the request is redirected (302) to the
   brand card, so the preview still has a picture.
-- **Withheld exactly where the live image is**: a password-protected document, an unknown, revoked or expired code,
-  a trashed document and a non-public Community post answer 404, and the page names none of them.
-- **Cached in R2** beside the snapshots: `og/<documentId>` for the first tab and `og-community/<documentId>` for a
-  Community link, each stamped with the time it was drawn and redrawn when the document has been saved since. A
+- **Withheld exactly where the live image is**: a password-protected document, an unknown, revoked or expired code
+  and a trashed document answer 404, and the page names none of them.
+- **Cached in R2** beside the snapshots: `og/<documentId>` for the first tab, stamped with the time it was drawn and redrawn when the document has been saved since. A
   tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a document
-  deletes both objects with its snapshots.
+  deletes it with its snapshots.
 - **Drawn by the shared resvg renderer** (`@liveplanner/render-png/worker`, the MCP server's), with Inter as the
   one font, so a card's text matches the MCP previews.
-- **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`; a Community link's
-  `public, max-age=30`, so a hidden post's card cannot linger.
+- **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
 
 ## The share page's head
 
@@ -79,5 +75,5 @@ of that link sees, so it needs no gate beyond the link's own.
   adds no way to learn more from a guessed code.
 - The live worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
   the live worker as one caller.
-- The card is drawn at most once per save per document (first tab, Community), and the PNG's longer side is never
+- The card is drawn at most once per save per document (its first tab), and the PNG's longer side is never
   more than 1200 px, so a vast board cannot exhaust a Worker's memory.

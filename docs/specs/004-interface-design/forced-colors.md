@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-Every app (editor, help centre, telemetry dashboard, Community, marketing site) stays usable when the operating system
+Every app (editor, help centre, telemetry dashboard, marketing site) stays usable when the operating system
 forces its own colours: Windows contrast themes, and any browser setting that matches `@media (forced-colors: active)`.
 The browser repaints the chrome with a short list of system colours (Canvas, CanvasText, ButtonText, Highlight, ...),
 drops gradients and shadows, and keeps images. That repaint is the default and stays the default: the app does not

@@ -1,5 +1,5 @@
 // The look of a small choice menu (docs/specs/004-interface-design/menus.md): the floating panel, and its
-// check-marked radio rows. One source, so the editor's mode menus and the Community's search menus read as one
+// check-marked radio rows. One source, so the editor's mode menus and its other choice menus read as one
 // family. Placement (absolute, top-full, width) stays with each caller.
 
 export const MENU_PANEL =

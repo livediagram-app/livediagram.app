@@ -32,7 +32,7 @@ Each app that needs configuration ships an example file documenting which variab
 
 Authentication is provided by an optional integration with Clerk, and the app supports three modes depending on what you configure.
 
-1. **Hybrid**, the production setup: both the publishable key (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, on the live and community builds; a repository secret when you deploy through GitHub Actions) and the API's verification URL (`CLERK_JWKS_URL`) are set, so guests and signed-in users coexist.
+1. **Hybrid**, the production setup: both the publishable key (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, on the live build; a repository secret when you deploy through GitHub Actions) and the API's verification URL (`CLERK_JWKS_URL`) are set, so guests and signed-in users coexist.
 2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
 3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: people can sign in, but the API treats everyone as a guest.
 
@@ -64,8 +64,6 @@ Every other optional feature follows the same pattern: unset means off, and the 
 | Continue with Google                                                                 | `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` on the live build, with Google enabled in Clerk. The bundled deploy workflow already sets it, so enable Google in Clerk or remove that line                                                                                                                                            |
 
 The `NEXT_PUBLIC_*` values above are baked in at build time. When you deploy through the bundled GitHub Actions workflow, add them to the workflow's build step (or set `mcp_origin` in `deploy.yml`); apart from the Clerk publishable key and the Google Picker key, they are not read from repository secrets.
-
-The Community is the one feature that is on by default; set `COMMUNITY_ENABLED` to `false` on the api Worker to switch it off.
 
 <Tip>
   For every variable, where it lives and the steps around it (OAuth redirect URIs, KV namespaces,

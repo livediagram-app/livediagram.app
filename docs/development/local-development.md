@@ -44,11 +44,10 @@ Turbo spins up all eight dev servers in parallel:
 | `apps/live`      | `http://localhost:3102` (clean routes: /new, /explorer, ...)                                       |
 | `apps/telemetry` | `http://localhost:3103/telemetry`                                                                  |
 | `apps/help`      | `http://localhost:3104/help`                                                                       |
-| `apps/community` | `http://localhost:3105/community`                                                                  |
 | `apps/api`       | `http://localhost:8887/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
-The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, `/community`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
+The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help` and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
 **Use port 3100 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3102` cannot reach the api worker until you tell it where the worker is:
 
@@ -61,7 +60,7 @@ A remote api works too, and there are now two of them: `https://staging.liveplan
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
 the one to reach for; the production api reads and writes real people's documents.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry`, `apps/help` and `apps/community` read the same variable: the dashboard needs it to show anything on `:3103`, the Community needs it to list any posts on `:3105`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.liveplanner.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3103`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.liveplanner.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3100/new`. Documents persist to the local D1 file the api worker creates on first start. (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
@@ -115,9 +114,6 @@ The editor works without Clerk. To exercise the signed-in code paths:
 
    ```sh
    # apps/live/.env.local (gitignored)
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-
-   # apps/community/.env.local (gitignored), optional: turns on My Shares
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 
    # apps/api/.dev.vars (gitignored)
@@ -230,7 +226,7 @@ to the in-browser model and says so ([Event storming](../specs/021-event-stormin
 
 ## Four gotchas
 
-- **All five Next.js dev servers (`marketing`, `live`, `telemetry`, `help`, `community`) run through `scripts/next-dev.mjs`.** It frees the port and points dev at an isolated `.next-dev/` cache, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures). The cache is kept between starts: Turbopack's file-system cache reuses the last session's compilation (a warm start serves its first page in about a second) and reconciles a route restructure by itself, and `turbopackGc` keeps it from growing stale ([Next.js](../specs/016-platform/nextjs.md) "The Turbopack cache"). A cache that goes wrong is a bug to fix, not something to wipe away. All five run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. Every app's settings come from `@liveplanner/next-config` (`liveplannerNextConfig`), so a change to them lands in all five at once.
+- **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port and points dev at an isolated `.next-dev/` cache, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures). The cache is kept between starts: Turbopack's file-system cache reuses the last session's compilation (a warm start serves its first page in about a second) and reconciles a route restructure by itself, and `turbopackGc` keeps it from growing stale ([Next.js](../specs/016-platform/nextjs.md) "The Turbopack cache"). A cache that goes wrong is a bug to fix, not something to wipe away. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. Every app's settings come from `@liveplanner/next-config` (`liveplannerNextConfig`), so a change to them lands in all four at once.
 
   `help` was pinned to webpack until the Next 16 upgrade, because Turbopack's Rust MDX pipeline ignores remark/rehype plugins handed over as imported JS functions and its pipe tables rendered as literal text. `apps/help/next.config.ts` now names `remark-gfm` as a string (`remarkPlugins: [['remark-gfm', {}]]`), which Turbopack resolves itself, so the tables survive. Keep that string form: importing the plugin back fails the build outright under Turbopack with "does not have serializable options".
 

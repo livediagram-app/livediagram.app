@@ -45,14 +45,12 @@ import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
-import { clientIp, clientRateKey } from './client-ip';
-import { communityNetwork } from './community-network';
+import { clientIp, clientNetwork, clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
-import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
@@ -341,15 +339,12 @@ async function routeApiRequest(
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
-  // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
-  // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
-  const isCommunityWrite = isWrite && segments[1] === 'community';
   // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
   // responses are limited per network, each on its own key, apart from everyone's document writes.
   const isFormRequest = segments[1] === 'forms';
   if (isFormRequest && env.FORM_RATE_LIMITER) {
     const ok = await env.FORM_RATE_LIMITER.limit({
-      key: `${isWrite ? 'form' : 'form-read'}:${communityNetwork(clientIp(request))}`,
+      key: `${isWrite ? 'form' : 'form-read'}:${clientNetwork(clientIp(request))}`,
     });
     if (!ok.success) return rateLimited();
   }
@@ -358,14 +353,7 @@ async function routeApiRequest(
   const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
   if (isInviteDecline && env.TEAM_INVITE_RATE_LIMITER) {
     const ok = await env.TEAM_INVITE_RATE_LIMITER.limit({
-      key: `invite-decline:${communityNetwork(clientIp(request))}`,
-    });
-    if (!ok.success) return rateLimited();
-  }
-  if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
-    // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
-    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
-      key: `community:${communityNetwork(clientIp(request))}`,
+      key: `invite-decline:${clientNetwork(clientIp(request))}`,
     });
     if (!ok.success) return rateLimited();
   }
@@ -373,7 +361,6 @@ async function routeApiRequest(
     isWrite &&
     url.pathname !== '/api/events' &&
     !isRoomTicketMint &&
-    !isCommunityWrite &&
     !isFormRequest &&
     !isInviteDecline
   ) {
@@ -453,8 +440,6 @@ async function routeApiRequest(
         return await handleTelemetry(ctx);
       case 'share':
         return await handleShare(ctx);
-      case 'community':
-        return await handleCommunity(ctx);
       case 'shared':
         return await handleShared(ctx);
       case 'images':

@@ -179,10 +179,6 @@ export const TELEMETRY_CATEGORIES = [
   // published ('Link'), opened or closed, and a response sent ('Response', or 'Dropped' for the hidden field, written
   // server-side; 'Preview' for a builder Preview's card) or reported (its reason). Never a form's words.
   'Form',
-  // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
-  // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
-  // the Community app. Never a title, tag or id.
-  'Community',
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
   // (a document opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
   // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
@@ -284,9 +280,7 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
-  // Community (docs/specs/025-community/community.md): a post liked or unliked, and a post reported (typed by reason).
-  'Liked',
-  'Unliked',
+  // Forms (docs/specs/030-forms/forms.md "Abuse and limits"): a form link reported, typed by reason.
   'Reported',
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.

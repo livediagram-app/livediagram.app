@@ -25,7 +25,6 @@ const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   expiry: 'never',
   expiresAt: null,
   tabId: null,
-  purpose: 'share',
   ...over,
 });
 
@@ -192,14 +191,6 @@ describe('ShareDialog passes', () => {
     await vi.waitFor(() => expect(row.className).toContain('animate-row-open'));
   });
 
-  it('says the document is public while it is listed in the Community', () => {
-    renderDialog({ communityListed: true });
-    expect(screen.getByRole('status').textContent).toMatch(/^Public: in the Community/);
-    cleanup();
-    renderDialog({ links: [link()], communityListed: true });
-    expect(screen.getByRole('status').textContent).toMatch(/^Public: in the Community/);
-  });
-
   it('says the document is private until a pass is live', () => {
     renderDialog();
     expect(screen.getByRole('status').textContent).toMatch(/Private: only you can open it/);
@@ -235,28 +226,5 @@ describe('ShareDialog passes', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     await vi.waitFor(() => expect(props.onSaveName).toHaveBeenCalledWith('Grace'));
     expect(props.onClose).toHaveBeenCalled();
-  });
-});
-
-// docs/specs/025-community/community.md "Publishing": back from writing a listing, the dialog opens on Community.
-describe('the tab it opens on', () => {
-  const selected = () =>
-    screen.getAllByRole('tab').find((t) => t.getAttribute('aria-selected') === 'true')?.textContent;
-
-  it('is Passes by default', () => {
-    renderDialog({ community: <p>Post</p> });
-    expect(selected()).toBe('Passes');
-  });
-
-  it('is Community when asked, showing its section', () => {
-    renderDialog({ community: <p>Post</p>, initialTab: 'community' });
-    expect(selected()).toBe('Community');
-    expect(screen.getByText('Post')).toBeTruthy();
-  });
-
-  it('stays on Passes when there is no Community section to open', () => {
-    renderDialog({ initialTab: 'community' });
-    expect(screen.queryByRole('tab', { name: 'Community' })).toBeNull();
-    expect(screen.getByText(/Issue a pass/i)).toBeTruthy();
   });
 });

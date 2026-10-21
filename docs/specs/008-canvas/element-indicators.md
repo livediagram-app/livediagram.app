@@ -129,7 +129,7 @@ device or from the keyboard.
   whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**);
   the lock badge hides with them, so a presented slide shows only what the audience should see.
   The share view (`/document/shared`) is the editor reached by a share link, so it draws them like
-  the editor; a Community visitor sees them without the comment count, having no comments to open.
+  the editor.
 
 ## Accessibility
 

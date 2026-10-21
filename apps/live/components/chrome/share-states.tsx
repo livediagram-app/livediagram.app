@@ -8,10 +8,10 @@ import {
   THIS_BROWSER_TONE,
 } from '@/components/primitives/ThisBrowserPill';
 
-// A document's visibility states (docs/specs/006-document/offline-mode.md, 025-community/community.md): their
+// A document's visibility states (docs/specs/006-document/offline-mode.md): their
 // words and tones, shared by the pill beside the title (SharedBadge) and its legend (VisibilityLegend).
 
-export type ShareState = 'private' | 'shared' | 'team' | 'community' | 'offline';
+export type ShareState = 'private' | 'shared' | 'team' | 'offline';
 
 // Per-state pill styling, keyed by the resolved share state so the label /
 // description / badge + dot colours stay in one table rather than four
@@ -40,13 +40,6 @@ export const SHARE_STATE_META: Record<
     badge:
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-700 dark:text-brand-400',
-  },
-  community: {
-    label: 'Public',
-    description: 'In the public Community: anyone can find it, view it and make their own copy.',
-    badge:
-      'bg-pink-50 px-2 text-[10px] font-semibold text-pink-700 ring-1 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30',
-    dot: 'text-pink-500',
   },
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
   // server. The This Browser pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).

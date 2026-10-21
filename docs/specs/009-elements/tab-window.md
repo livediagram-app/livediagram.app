@@ -83,7 +83,7 @@ and the menu's Tab Window section. Opening is navigation, so it is everyone's wh
 
 ## Copying the document
 
-A copy of the whole document (Make a Copy, the Explorer's Duplicate, a copy from the Community, a Drive import) gives
+A copy of the whole document (Make a Copy, the Explorer's Duplicate, a Drive import) gives
 its tabs fresh ids and re-points each window at the copy's own tab, as tab links are (`remapTabLinks`), so the copy's
 windows show the copy rather than "This tab isn't available".
 

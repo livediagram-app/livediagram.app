@@ -6,13 +6,11 @@ describe('robots.txt', () => {
     expect(robots().sitemap).toEqual([
       'https://liveplanner.app/sitemap.xml',
       'https://liveplanner.app/help/sitemap.xml',
-      'https://liveplanner.app/community/sitemap.xml',
     ]);
   });
 
-  it('keeps the editor and the api out of the crawl, never the Community', () => {
+  it('keeps the editor and the api out of the crawl', () => {
     const rules = robots().rules as { disallow: string[] };
     expect(rules.disallow).toContain('/api/');
-    expect(rules.disallow.some((path) => path.startsWith('/community'))).toBe(false);
   });
 });

@@ -10,8 +10,7 @@ import {
 } from 'react';
 import { CloseIcon, FIELD_INVALID } from '@liveplanner/ui';
 
-// The shared chip field: chips typed into one bordered field, the Community publish dialog's tags and
-// a Plan card's labels. Enter adds the draft (the caller decides what adding means, and handles a
+// The chip field: chips typed into one bordered field, a Plan card's labels. Enter adds the draft (the caller decides what adding means, and handles a
 // comma in `onDraftChange`), Backspace in an empty field takes the last chip back, and each chip has
 // its own remove button. A remove (or the caller's `refocus()`, after a commit or a suggestion) puts
 // focus back in the field, or on the last chip's remove button while the field is disabled, rather
@@ -24,8 +23,6 @@ export type ChipFieldHandle = {
 
 type ChipFieldProps = {
   chips: readonly string[];
-  // What a chip reads (Community prefixes `#`); its text by default.
-  chipText?: (chip: string) => string;
   // A chip's own colour (Plan's label swatches); brand chips by default. The chip draws on a 12% tint of it, in ink
   // leaned 30% toward the page's ink (dark in light mode, white in dark), which reads at WCAG AA for every swatch:
   // the bare colour did not (#2563eb on its tint was 4.4:1 light, 3:1 dark).
@@ -40,8 +37,6 @@ type ChipFieldProps = {
   readOnly?: boolean;
   // Everything is shown but off (a dialog busy submitting).
   disabled?: boolean;
-  // Only the typing is off (Community's "That is all five"); chips can still be removed.
-  inputDisabled?: boolean;
   invalid?: boolean;
   // The denser form rhythm (Plan's item panel), as TextInput's `compact`.
   compact?: boolean;
@@ -59,7 +54,6 @@ type ChipFieldProps = {
 export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function ChipField(
   {
     chips,
-    chipText = (c) => c,
     chipColour,
     removeLabel,
     draft,
@@ -69,7 +63,6 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
     onBlur,
     readOnly = false,
     disabled = false,
-    inputDisabled = false,
     invalid = false,
     compact = false,
     id,
@@ -121,7 +114,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           }`}
           style={chipColour ? ({ '--chip': chipColour(chip) } as CSSProperties) : undefined}
         >
-          {chipText(chip)}
+          {chip}
           {readOnly ? null : (
             <button
               type="button"
@@ -153,7 +146,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           id={id}
           value={draft}
           list={list}
-          disabled={disabled || inputDisabled}
+          disabled={disabled}
           onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {

@@ -209,7 +209,7 @@ Explorer panel and every other page keep Steel.
   ([Usage rules](#usage-rules)).
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
-  (marketing, help, community, telemetry), the New Document wizard and the editor's small and uppercase labels follow
+  (marketing, help, telemetry), the New Document wizard and the editor's small and uppercase labels follow
   it ([#863](https://github.com/liveplanner-app/liveplanner.app/issues/863)), held by
   `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
   `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
