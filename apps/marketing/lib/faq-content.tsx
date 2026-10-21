@@ -547,19 +547,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there a command-line tool?',
         a: 'Yes. Install it from npm as @liveplanner/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents.',
       },
-      {
-        q: 'Can I keep my diagrams next to my code?',
-        a: (
-          <>
-            Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of
-            each one in the repository, so coding agents find your diagrams by name and read them as
-            text. liveplanner stays the home of every document. See{' '}
-            <a href="/help/developers/repositories/">diagrams in your repository</a>.
-          </>
-        ),
-        aText:
-          'Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. liveplanner stays the home of every document. See diagrams in your repository.',
-      },
     ],
   },
   {

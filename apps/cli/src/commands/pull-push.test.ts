@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { ChangesetRequest } from '@liveplanner/api-schema';
 import type { ShapeElement } from '@liveplanner/document';
 import { run } from '../main';
-import { mirrorFileText } from '../link/mirror-file';
 import { parsePullFile, type PullFile } from '../sync/pull-file';
 import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
 
@@ -373,28 +372,5 @@ describe('push', () => {
     const bad = await cli(['push', '/work/bad.json'], h.route, io);
     expect(bad.code).toBe(1);
     expect(bad.err).toContain('/work/bad.json: not JSON');
-  });
-});
-
-describe('a mirror file', () => {
-  it('pushes like a pull file, its pulledAt staying absent, and reads offline', async () => {
-    const h = host();
-    const { io } = await cli(['pull', DOC], h.route);
-    const { exportedAt: _e, liveplannerSync, ...rest } = pulledFile(io);
-    const { pulledAt: _p, ...sync } = liveplannerSync;
-    const path = '/work/diagrams/shop-checkout.liveplanner.json';
-    const mirror = { ...rest, liveplannerSync: sync };
-    mirror.document.tabs[0]!.elements.push(square('api', 'API', 200));
-    io.fileMap.set(path, { data: mirrorFileText(mirror), mode: 0o644 });
-    const pushed = await cli(['push', path], h.route, io);
-    expect(pushed.code).toBe(0);
-    expect(h.requests.map((r) => r.tabId)).toEqual(['main']);
-    const after = pulledFile(io, path);
-    expect(after.liveplannerSync.tabs.main!.rev).toBe(4);
-    expect('pulledAt' in after.liveplannerSync).toBe(false);
-    // Rewritten in the mirror's canonical form, byte for byte what a sync would write (RL30, RL31).
-    expect(io.fileMap.get(path)!.data).toBe(mirrorFileText(after));
-    const view = await cli(['document', 'view', path], h.route, io);
-    expect([view.code, view.out]).toEqual([0, expect.stringContaining('rev 4')]);
   });
 });

@@ -79,9 +79,6 @@ The editor is real:
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
   tools are verbs of the same catalogue. Published on npm as `@liveplanner/cli`, with provenance.
-- **Repository links** ([Repository link](../027-repositories/repository-link.md)): `liveplanner.toml` binds a
-  directory to a folder or documents; `liveplanner sync` writes an `INDEX.md` agents find with a search, plus a
-  snapshot and a text outline per document at the `files` level, and `sync --watch` keeps them in step live.
 - **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
   person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
   frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
@@ -115,7 +112,6 @@ The editor is real:
 ## Next
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
-- **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
 
 ## Later

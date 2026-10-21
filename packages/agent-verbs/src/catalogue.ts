@@ -51,7 +51,6 @@ import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
 import { pagesVerbs } from './verbs/pages';
 import { formVerbs } from './verbs/form';
-import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
@@ -110,10 +109,6 @@ export const VERBS: readonly Verb[] = [
   pull,
   push,
   exportAll,
-  linkInit,
-  linkStatus,
-  linkLs,
-  sync,
   workbenchOpen,
   workbenchPair,
   folderLs,
@@ -140,7 +135,6 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
-  { name: 'link', summary: 'Repository links: liveplanner.toml and what it covers' },
   {
     name: 'workbench',
     summary: 'Workbenches: open a document in a developer tool, pair one',
@@ -154,16 +148,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = [
-  'guide',
-  'api',
-  'wait',
-  'watch',
-  'pull',
-  'push',
-  'export',
-  'sync',
-] as const;
+export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

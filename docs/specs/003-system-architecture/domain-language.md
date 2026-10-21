@@ -143,23 +143,12 @@ The words for a grown flowchart ([The flowchart](../009-elements/flowchart.md)).
 | **lane**      | A swimlane of a flowchart: a Lane element carrying the chart's id         | swimlane (in code)  |
 | **direction** | Which way a flowchart flows: Down or Right                                | orientation, layout |
 
-## Repositories and workbenches
+## Workbenches
 
-The words for diagrams living beside code ([Repositories](../027-repositories/README.md),
-[Workbench embeds](../013-workspace/workbench-embeds.md)).
+The words for the editor framed beside code ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 | Term                    | Means                                                                                 | Never called                           |
 | ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| **repository link**     | `liveplanner.toml`: binds a directory to the documents it **covers**                  | project, workspace, scope              |
-| **mirror level**        | How much of the covered documents a link writes: `none`, `index`, `files`             | sync mode                              |
-| **snapshot**            | A tab as a repository holds it, at a recorded revision                                | copy (that is Drive's), backup, cache  |
-| **sync**                | One pass of a link: read, merge, send, write                                          | refresh, update                        |
-| **base**                | The snapshot a local change was made from; the merge's common ancestor                | original, previous                     |
-| **lost local value**    | A field both sides changed, kept in the report and as a comment, never applied        | conflict (that is a changeset's 409)   |
-| **source**              | A diagram as text in a repository (a Mermaid file or fence), bound to a tab           | diagram file, code diagram             |
-| **bridge**              | One format's parser and serialiser, with the capabilities it expresses                | adapter, converter                     |
-| **compatibility**       | Whether a bound tab may hold residue: `relaxed` (default) or `strict`                 | mode (that is the editor's)            |
-| **residue**             | What a bound tab holds that its source's format cannot express                        | extras, unsupported                    |
 | **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code) | host (that is a profile's server), IDE |
 | **selection reference** | The text naming what was selected, attached to a person's message to their agent      | context, selection payload             |
 

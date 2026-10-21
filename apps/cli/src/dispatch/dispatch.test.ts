@@ -254,12 +254,10 @@ describe('rest positionals and short flags', () => {
 
 describe('repeated flags', () => {
   it('collect a list flag’s values in order, and read it as a list field', () => {
-    const init = verb('link.init');
-    expect(fieldsOf(init.input).find((f) => f.key === 'doc')).toMatchObject({ kind: 'list' });
-    expect(parseVerbArgs(init, ['--doc', '3f9c', '--doc', '7a1b', '--level', 'files'])).toEqual({
-      doc: ['3f9c', '7a1b'],
-      level: 'files',
-    });
-    expect(parseVerbArgs(init, [])).toEqual({});
+    const set = verb('item.set');
+    expect(fieldsOf(set.input).find((f) => f.key === 'clear')).toMatchObject({ kind: 'list' });
+    expect(
+      parseVerbArgs(set, ['3f9c', '#4', '--clear', 'labels', '--clear', 'due', '--type', 'bug']),
+    ).toEqual({ doc: '3f9c', item: '#4', fields: [], clear: ['labels', 'due'], type: 'bug' });
   });
 });

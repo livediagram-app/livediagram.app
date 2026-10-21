@@ -21,7 +21,7 @@ describe('the loopback server', () => {
   });
 });
 
-// A process manager stops a long command (`sync --watch`) with SIGTERM as often as with SIGINT; both end it cleanly.
+// A process manager stops a long command (`watch`) with SIGTERM as often as with SIGINT; both end it cleanly.
 describe('interrupts', () => {
   it.each(['SIGINT', 'SIGTERM'] as const)('hears %s, once, until released', (signal) => {
     let heard = 0;

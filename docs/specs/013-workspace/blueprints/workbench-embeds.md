@@ -119,7 +119,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `packages/agent-verbs/src/verbs/workbench.ts` (new, + test), `catalogue.ts`, `index.ts`                                                                                      | `workbench.open`, `workbench.pair` (local); resource `workbench`; `workbenchOriginOf`, `workbenchNameOf`: the refusals both verbs share                                                                                   |
 | `apps/cli/src/commands/workbench-pair.ts` (new, + test)                                                                                                                      | `pairWorkbench(io, api, input, json, log)`: request, print, open, wait                                                                                                                                                    |
 | `apps/cli/src/main.ts`                                                                                                                                                       | Dispatches `workbench.pair` beside the other local verbs                                                                                                                                                                  |
-| `apps/cli/src/io.ts`                                                                                                                                                         | `CliIo.stdoutIsTTY`, shared with the repository link's picker: whether a person reads stdout (WB25)                                                                                                                       |
+| `apps/cli/src/io.ts`                                                                                                                                                         | `CliIo.stdoutIsTTY`: whether a person reads stdout (WB25)                                                                                                                                                                 |
 | `apps/cli/src/output/failure-of.ts`                                                                                                                                          | `isNetworkFailure`, shared by `failureOf`, the telemetry and the pairing wait                                                                                                                                             |
 | `apps/cli/src/commands/workbench-open.test.ts`                                                                                                                               | `workbench open` as the CLI exits                                                                                                                                                                                         |
 | `packages/agent-verbs/src/guides/index.ts`, `skill.ts`                                                                                                                       | Topic `workbench`; `GUIDE_TOPIC_MAX_TOKENS`, `SKILL_FRONTMATTER_MAX_TOKENS`, `SKILL_BODY_MAX_TOKENS`; the skill's `[liveplanner]` line                                                                                    |
@@ -202,8 +202,7 @@ The workspace scope adds or changes, by file:
 | Explorer surface    | `ExplorerSurface` `'app' \| 'workbench'`                              | Where the Explorer runs; `workbench` drops the app's surroundings          |
 
 Banned: "workspace" for a document-scope frame, and "scope" for anything but `WorkbenchScope` here (the end of
-access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing (a repository link
-is another thing); "token" for a workbench session or a ticket (`lvd_` is the token); "share", "embed code" or
+access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing; "token" for a workbench session or a ticket (`lvd_` is the token); "share", "embed code" or
 "share code" for a ticket; "iframe mode" for the surface; "authorise" for approve (the page's verbs are Allow and
 Don't allow).
 
@@ -729,8 +728,8 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 - `workbench open --workspace [--folder <f>] --origin <origin> [--json]`: `<doc>` and `--workspace` exclude each
   other, one is required (exit 2 "name a document, or --workspace"); `--tab` with `--workspace` exits 2. `--folder`
-  without `--workspace` exits 2. `<f>` resolves as `link init --folder` does (`resolveFolder` over `folderChoices`,
-  moved to `@liveplanner/agent-verbs` so `link init`, `folder` and `workbench` share it): its full id, an id prefix
+  without `--workspace` exits 2. `<f>` resolves through `resolveFolder` over `folderChoices`
+  (`@liveplanner/agent-verbs`, shared with `folder`): its full id, an id prefix
   or its name ignoring case; none 3, several 3 with the candidates. `POST /api/workbench/tickets { scope:
 'workspace', folderId?, origin }`. 201: text `url`; `--json` `{ url, scope, folderId, expiresAt }`. 428: exit 4,
   fix `liveplanner workbench pair --origin <origin> --workspace`. 404: exit 3.

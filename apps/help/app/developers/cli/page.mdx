@@ -199,7 +199,7 @@ liveplanner graph lint flow.mmd                    # check a graph or Mermaid fi
 liveplanner graph render flow.mmd --png flow.png
 ```
 
-To keep a repository's diagrams in step with liveplanner, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
 `pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on liveplanner since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
@@ -218,7 +218,7 @@ Help is kept short so an agent pays only for what it asks. `skill install` write
 
 ## Output and Exit Codes
 
-The CLI never prompts when its input or output is not a terminal, so it is safe in pipes, scripts and CI. (In a terminal, only `link init` without `--folder` or `--doc` asks you to pick a folder.) **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
+The CLI never prompts when its input or output is not a terminal, so it is safe in pipes, scripts and CI. **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
 
 | Exit code | Meaning                                                    |
 | --------- | ---------------------------------------------------------- |

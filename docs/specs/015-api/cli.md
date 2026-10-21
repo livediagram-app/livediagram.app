@@ -1,11 +1,11 @@
 # CLI
 
-**Status: published.** `@liveplanner/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
+**Status: published.** `@liveplanner/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
 `liveplanner` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
-agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).
+agent changing a diagram while a person talks to it) and second for people (scripts, pulling documents to files).
 With it an agent reads, builds, edits, comments on and reasons about documents, paying for context only when it
 asks. It sits beside the [MCP server](mcp-server.md), not in place of it: the two are front doors to one set of
 verbs, and the api owns every write ([Agents](../024-agents/README.md)). The research behind it is in
@@ -57,9 +57,6 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `graph lint\|render <file>`                                                     | Lint or preview a graph or Mermaid file locally, before writing anything                                                                                                   |
 | `pull <doc> [--to <dir>] [--force]` / `push <file>`                             | Sync one document to a file and back                                                                                                                                       |
 | `export --all --to <dir> [--format json,svg,png,mermaid,md]`                    | Every document to files                                                                                                                                                    |
-| `link init [--folder <f>] [--doc <d>] [--level <l>]`                            | Writes `liveplanner.toml`; with no folder or document, a picker of the folders                                                                                             |
-| `link status\|ls [--all]`                                                       | A [repository link](../027-repositories/repository-link.md)'s documents and states                                                                                         |
-| `sync [--watch] [--relocate] [--dry-run] [--all]`                               | Mirrors the link's documents into the repository; `--watch` keeps doing it                                                                                                 |
 | `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`                | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                                 |
 | `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]`   | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api            |
@@ -84,7 +81,7 @@ last read of that tab: the CLI keeps a local copy of each tab it reads and sends
 every element, so the api can tell whether what the changeset targets changed since. The same copies give
 `tab diff`.
 
-**Ending.** Ctrl-C and SIGTERM (what a process manager sends) end a long command (`watch`, `sync --watch`) the same way: the work under way finishes, then the process exits within `EXIT_GRACE_MS` (250 ms), whatever a closing socket still waits for.
+**Ending.** Ctrl-C and SIGTERM (what a process manager sends) end a long command (`watch`) the same way: the work under way finishes, then the process exits within `EXIT_GRACE_MS` (250 ms), whatever a closing socket still waits for.
 
 **Waiting.** `wait --for change` treats a burst of edits as one change. When `--timeout` passes, `wait` prints that
 nothing new happened and exits 0.
@@ -152,7 +149,7 @@ In order of precedence:
 - A host without sign-in has no tokens, so the CLI cannot act there and says so in one line, as the MCP is absent
   there ([Public API and API tokens](public-api-and-tokens.md) §3.7). The CLI never acts as a guest.
 - A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
-  `sync --watch` ran) is read again from the store, and the refused request is retried once with the new token.
+  `watch` ran) is read again from the store, and the refused request is retried once with the new token.
   `LIVEPLANNER_TOKEN` is never re-read.
 - `LIVEPLANNER_TOKEN` goes to whichever host is active; set `LIVEPLANNER_HOST` beside it for a self-host.
 
@@ -176,9 +173,8 @@ In order of precedence:
   are pushed: a changed tab name, theme or background, and a tab gone from the file, are named as not pushed, and
   nothing on the server is deleted.
 - `export --all` writes every document, read-only, for backups and docs.
-- A repository keeps its diagrams through a [repository link](../027-repositories/repository-link.md)
-  (`link`, `sync`), whose mirror files are pull files; a developer tool frames the editor through
-  `workbench open` ([Workbench embeds](../013-workspace/workbench-embeds.md)).
+- A developer tool frames the editor through `workbench open`
+  ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 ## Previews
 

@@ -4,12 +4,12 @@
 import { resolveDocument, tabPath, type VerbContext } from '@liveplanner/agent-verbs';
 import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@liveplanner/document';
 import type { CliIo } from '../io';
-import { isLocallyChanged } from '../link/sync-state';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import {
   fileSlug,
   idSlug,
+  isLocallyChanged,
   parsePullFile,
   PULL_FILE_SUFFIX,
   pullFileText,
@@ -40,8 +40,8 @@ async function pullPath(io: CliIo, dir: string, document: { id: string; name: st
   return { path, slug: own, there: mine };
 }
 
-// A pull never drops edits not yet pushed (CLI27a): the file there, changed since its pull, is refused as `sync`
-// refuses an ahead document, unless `--force` says to drop them.
+// A pull never drops edits not yet pushed (CLI27a): the file there, changed since its pull, is refused unless
+// `--force` says to drop them.
 async function refuseUnpushed(path: string, file: PullFile | null, input: PullInput) {
   if (!file || input.force) return;
   const hashes: Record<string, { hash: string; settingsHash: string }> = {};

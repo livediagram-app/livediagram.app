@@ -110,8 +110,8 @@ export const categories: Category[] = [
     slug: 'developers',
     title: 'Developers',
     description:
-      'Call the liveplanner REST API from your own scripts or the command line: authentication, worked examples, the CLI, repositories and developer tools, errors and limits, and the OpenAPI reference.',
-    articleCount: 9,
+      'Call the liveplanner REST API from your own scripts or the command line: authentication, worked examples, the CLI and developer tools, errors and limits, and the OpenAPI reference.',
+    articleCount: 8,
   },
   {
     slug: 'troubleshooting',
@@ -647,16 +647,6 @@ export const articles: Article[] = [
       'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
     keywords:
       'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
-    category: 'Developers',
-    categorySlug: 'developers',
-  },
-  {
-    slug: 'repositories',
-    title: 'Diagrams in Your Repository',
-    description:
-      'Link a repository with liveplanner.toml so agents find your diagrams, and keep snapshots in git.',
-    keywords:
-      'repository repo git github link liveplanner.toml sync mirror snapshot index monorepo codebase coding agent ripgrep search folder commit',
     category: 'Developers',
     categorySlug: 'developers',
   },

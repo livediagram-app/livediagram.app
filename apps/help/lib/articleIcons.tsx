@@ -62,16 +62,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 15h5" />
     </Glyph>
   ),
-  // A branch splitting from a trunk: the article is about diagrams living in a git repository.
-  repositories: (
-    <Glyph>
-      <circle cx="6" cy="5" r="2" />
-      <circle cx="6" cy="19" r="2" />
-      <circle cx="18" cy="8" r="2" />
-      <path d="M6 7v10" />
-      <path d="M18 10c0 4-6 3-12 7" />
-    </Glyph>
-  ),
   // A window with a smaller pane framed inside it: a diagram open inside another tool.
   workbenches: (
     <Glyph>
