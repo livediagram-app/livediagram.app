@@ -28,16 +28,12 @@ export type TourStep = TourStepOf<TourApi> & { touchBody?: string };
 // A touch screen (a coarse pointer, phone or tablet) reads each step's touchBody in place of its body.
 export function tourStepsFor({
   mobile,
-  esBoard,
   touch = false,
 }: {
   mobile: boolean;
-  esBoard: boolean;
   touch?: boolean;
 }): TourStep[] {
-  return TOUR_STEPS.filter(
-    (step) => !(step.mobileSkip && mobile) && !(step.boardSkip && esBoard),
-  ).map((step) => (touch && step.touchBody ? { ...step, body: step.touchBody } : step));
+  return TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile)).map((step) => (touch && step.touchBody ? { ...step, body: step.touchBody } : step));
 }
 
 // Telemetry `type` token for a step-viewed event: 'selection-modes' → 'TourStepSelectionModes'.
@@ -81,7 +77,6 @@ export const TOUR_STEPS: TourStep[] = [
     body: 'Choose what your pointer does: select, pan, erase and more.',
     target: 'canvas-tool-menu',
     alsoHighlight: 'canvas-tool',
-    boardSkip: true,
     prepare: async () => {
       await ensurePaletteOpen();
       if (!findTour('canvas-tool-menu')) clickTour('canvas-tool');
@@ -95,7 +90,6 @@ export const TOUR_STEPS: TourStep[] = [
     touchBody: 'Tap a category to see what is in it. Tap to add, or drag onto the canvas.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
-    boardSkip: true,
     prepare: async () => {
       await ensurePaletteOpen();
       closeDropdown('canvas-tool-menu', 'canvas-tool');

@@ -29,7 +29,7 @@ describe('selectedFacets', () => {
 
   it('maps every facet to a closed type', () => {
     expect(
-      facets('', 'plan kind:event-storming').map((facet) => LENS_TELEMETRY_TYPES[facet]),
-    ).toEqual(['Text', 'Kind']);
+      facets('', 'plan template:kanban').map((facet) => LENS_TELEMETRY_TYPES[facet]),
+    ).toEqual(['Text', 'Template']);
   });
 });

@@ -184,18 +184,6 @@ export function TechTabIcon() {
   );
 }
 
-/** Event Storming (docs/specs/021-event-storming/event-storming.md): three tilted sticky notes marching left to
- *  right — the workshop's opening move, matching the template's preview. */
-export function EventStormingTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="2.5" y="6" width="7" height="7" rx="0.8" transform="rotate(-4 6 9.5)" />
-      <rect x="12" y="4.5" width="7" height="7" rx="0.8" transform="rotate(3 15.5 8)" />
-      <path d="M4 19h14.5M18.5 19l-2.2-1.6M18.5 19l-2.2 1.6" />
-    </Glyph>
-  );
-}
-
 // My shapes (docs/specs/013-workspace/shape-libraries.md): a stack of cards with a shape on the top
 // one, a set of shapes that is yours, distinct from Shapes' loose cluster.
 export function MyShapesTabIcon() {

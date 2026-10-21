@@ -45,11 +45,9 @@ describe('image cap', () => {
 describe('docs/specs/007-editor/ai-assistance.md lists the AI route error tokens the route emits', () => {
   it('names each one, and invents none', () => {
     // Every file a caller of a model route can receive an envelope from: the
-    // shared admission gate and both handlers. The gate was lifted out of
-    // ai.ts when the second route arrived (docs/specs/021-event-storming/event-storming.md Phase 8) and took three of
-    // the tokens with it — reading one file would have quietly stopped
-    // checking most of them.
-    const route = ['ai.ts', 'ai-gate.ts', 'ai-read-notes.ts']
+    // shared admission gate and the handler. The gate holds three of the
+    // tokens — reading one file would have quietly stopped checking most of them.
+    const route = ['ai.ts', 'ai-gate.ts']
       .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
       .join('\n');
     const spec = readFileSync(`${ROOT}/docs/specs/007-editor/ai-assistance.md`, 'utf8');

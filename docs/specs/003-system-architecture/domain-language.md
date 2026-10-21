@@ -8,7 +8,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 | Term         | Answers                        | Values                                                      | Where it lives                                |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
 | **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Pages, Plan (`EditorMode`)         | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
+| **kind**     | What is a tab?                 | the general diagram tab, or a Plan tab (`TabKind`)          | `Tab.kind`                                    |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
@@ -30,8 +30,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
   general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. **Event Storming** is the only other kind among the canvas modes;
-  Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
+- The general diagram tab is the default kind. Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
   tab of [Forms](../030-forms/forms.md)), each always in Plan.
 - A new kind is added only when no mode can serve the use.
 - "Board type" means a kind. It never names a template or a mode.

@@ -2050,7 +2050,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'placement-defaults',
     tag: 'Folders',
     summary:
-      "The caller's default folders, one per key (mode:diagram, mode:draw, kind:event-storming, " +
+      "The caller's default folders, one per key (mode:diagram, mode:draw, " +
       'template:retrospective, template:kanban), dangling ones included.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -2573,17 +2573,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
   },
-  {
-    method: 'POST',
-    path: '/ai/read-notes',
-    segment: 'ai',
-    tag: 'AI',
-    summary: 'Read the handwriting on sticky-note crops cut from a wall photo.',
-    auth: 'guest-or-clerk',
-    requestSchema: 'ReadNotesRequest',
-    responseSchema: 'ReadNotesResponse',
-    statuses: [200, 400, 401, 403, 413, 429, 502, 503],
-  },
+
 
   // ---- Link unfurl ----
   {

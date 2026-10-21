@@ -606,38 +606,6 @@ export const KEYBOARD_SELECTIONS = chart(
   'Elements selected from the keyboard, or by selecting everything matching a filter.',
 );
 
-export const INSERTED_BETWEEN = chart(
-  'Canvas',
-  'Used',
-  'Inserted Between',
-  'A note dropped into the gap between two notes on an event-storming board, the board making room for it.',
-  { types: ['InsertBetween'] },
-);
-
-export const NEXT_NOTES_ADDED = chart(
-  'Canvas',
-  'Used',
-  'Next Notes Added',
-  'A next-note tab beside an event-storming note clicked, adding the note the notation puts there.',
-  { types: ['AddNextNote'] },
-);
-
-export const NOTE_KINDS_CHANGED = chart(
-  'Canvas',
-  'Used',
-  'Note Kinds Changed',
-  'An event-storming note turned into another kind, say a domain event into a hotspot.',
-  { types: ['ChangeNoteKind'] },
-);
-
-export const LANES_SETTLED = chart(
-  'Canvas',
-  'Used',
-  'Boards Lined Up On Lanes',
-  'An older event-storming board opened for the first time since notes always sit on a lane, its stray notes lined up in one undoable step.',
-  { types: ['LanesSettled'] },
-);
-
 export const ELEMENT_EDITING: MetricStack = {
   stack: true,
   title: 'Element Editing',
@@ -656,10 +624,6 @@ export const ELEMENT_EDITING: MetricStack = {
     IMAGE_SEARCHES,
     IMAGE_SEARCH_PICKS,
     KEYBOARD_SELECTIONS,
-    INSERTED_BETWEEN,
-    NEXT_NOTES_ADDED,
-    NOTE_KINDS_CHANGED,
-    LANES_SETTLED,
     LINKS_ADDED,
     LINKS_REMOVED,
   ],

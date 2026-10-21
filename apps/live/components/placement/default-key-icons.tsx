@@ -2,7 +2,6 @@ import type { ComponentType } from 'react';
 import {
   PLACEMENT_DEFAULT_KEYS,
   type PlacementDefaultKey,
-  type SpecificTabKind,
   type TemplateFamily,
 } from '@liveplanner/api-schema';
 import type { EditorMode } from '@liveplanner/document';
@@ -11,17 +10,12 @@ import {
   lucideFolderCheck,
   lucideHistory,
   lucideSquareKanban,
-  lucideStickyNote,
 } from '@liveplanner/icons/lucide';
 
 // Each default key's icon (docs/specs/013-workspace/default-folders.md "Entry names", blueprint D110):
-// a mode keeps the icon its mode switch shows; the kind and the families each draw what they are.
-// Typed per dimension, so a new mode, kind or family needs its icon before it compiles. Shapes
+// a mode keeps the icon its mode switch shows; the families each draw what they are.
+// Typed per dimension, so a new mode or family needs its icon before it compiles. Shapes
 // differ, so the marker never says anything by colour alone.
-
-const KIND_ICON: Record<SpecificTabKind, ComponentType<IconProps>> = {
-  'event-storming': lucideGlyph(lucideStickyNote, 14),
-};
 
 const FAMILY_ICON: Record<TemplateFamily, ComponentType<IconProps>> = {
   retrospective: lucideGlyph(lucideHistory, 14),
@@ -31,7 +25,6 @@ const FAMILY_ICON: Record<TemplateFamily, ComponentType<IconProps>> = {
 function iconOf(key: PlacementDefaultKey): ComponentType<IconProps> {
   const [dimension, value] = key.split(':') as [string, string];
   if (dimension === 'mode') return EDITOR_MODE_ICONS[value as EditorMode];
-  if (dimension === 'kind') return KIND_ICON[value as SpecificTabKind];
   return FAMILY_ICON[value as TemplateFamily];
 }
 

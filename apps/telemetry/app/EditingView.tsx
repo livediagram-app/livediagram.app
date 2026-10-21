@@ -12,7 +12,6 @@ import {
   LAYERS_FEATURE,
   NOTES,
   ORGANISATION,
-  PHOTO_IMPORT,
   SIDE_BY_SIDE,
   TABLES,
   TRASH,
@@ -60,7 +59,6 @@ export const GROUPS: MetricGroup[] = [
       EDITOR_CHROME,
       TRASH,
       AI_ASSISTANCE,
-      PHOTO_IMPORT,
     ],
   },
 ];

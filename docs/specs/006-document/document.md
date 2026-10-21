@@ -8,19 +8,18 @@ which fixes what that tab is. A general tab is worked on in one of two
 
 ## Domain language
 
-| Term                     | Means                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------ |
-| **document**             | The top-level container: its name, owner, location, share links and tabs.                        |
-| **tab**                  | One page of a document, with its own canvas, layers and elements.                                |
-| **tab kind**             | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                              |
-| **diagram**              | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
-| **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)).     |
-| **editor mode**          | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
-| **whiteboard**           | The activity of Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)); not a tab kind.          |
+| Term            | Means                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| **document**    | The top-level container: its name, owner, location, share links and tabs.                        |
+| **tab**         | One page of a document, with its own canvas, layers and elements.                                |
+| **tab kind**    | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                              |
+| **diagram**     | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
+| **editor mode** | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
+| **whiteboard**  | The activity of Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)); not a tab kind.          |
 
 - As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
   where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
-- "Board" on its own is not a term; say event-storming board or whiteboard.
+- "Board" on its own is not a term; say whiteboard, or a Plan board.
 - A tab kind is reserved for a very specific use; anything a mode can serve stays a general tab.
 - Specs, UI copy and code name the container a document.
 
@@ -35,14 +34,10 @@ Prose follows the context:
 
 - **Document** when the text is about the container: naming, filing, sharing,
   trashing, opening, or a mix of tab kinds.
-- **Diagram** is fine when the text is about a document that is, in all
-  likelihood, a diagram tab at heart, such as drawing a flowchart in it.
-  A whiteboard or an event-storming board is never called a diagram.
+- **Diagram** is fine when the text is about a document that is, in all likelihood, a diagram tab at heart, such as drawing a flowchart in it.
 - **Diagram types** keep their names: a sequence diagram, an ER diagram,
   an architecture diagram.
-- **Diagramming** and **diagram tool** describe the product and the activity;
-  liveplanner is built for every kind of diagram, and also does
-  whiteboarding, event storming and slideshows well.
+- **Diagramming** and **diagram tool** describe the product and the activity; liveplanner is built for every kind of diagram, and also does whiteboarding and slideshows well.
 - A new tab kind joins the table above; the container keeps its name.
 
 ## What keeps its name

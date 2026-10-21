@@ -23,18 +23,6 @@ pointer exactly and can be placed or sized off-grid.
   guides draw. (A multi-selection or rotated resize never snaps anyway.) A dragged arrow endpoint over a shape's body
   stays free there instead of pinning to the shape's facing anchor ([Canvas and palette](canvas-and-palette.md)
   "Dropped on a shape"); an end on an anchor itself still pins.
-- **Insert between wins over it.** On an event-storming board, Alt opens an
-  insertion slot ([Event storming](../021-event-storming/event-storming.md)); while one is open the
-  slot IS the placement, so holding Cmd/Ctrl as well changes nothing — free
-  placement is meaningless against a gap the board has already opened, and
-  two placement rules at once would put the note, the insertion marker and
-  the drop in three different places. Release Alt and this override applies
-  again for the rest of the drag, as usual.
-- **It is the one way off a lane.** On an event-storming board a workshop note
-  always lands on a lane ([Event storming](../021-event-storming/event-storming.md#always-on-a-lane));
-  Cmd/Ctrl skips the lanes with every other snap, and the note stays exactly
-  where it was put: no later load, settle or nudge re-snaps it on its own
-  (an up / down arrow key does move it, to the next lane on that side).
 
 ## Implementation
 

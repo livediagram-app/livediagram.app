@@ -85,8 +85,6 @@ export const HELP_ARTICLES = {
   planForms: 'canvas/plan-mode/forms',
   planTour: 'canvas/plan-mode/plan-tour',
   workshopTour: 'canvas/workshop-mode/workshop-tour',
-  // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
-  eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   pagesTour: 'canvas/pages-mode/pages-tour',
@@ -180,10 +178,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about forms',
     description: 'Questions, where answers go, publishing and responses.',
   },
-  eventStormingBoards: {
-    title: 'Learn about event-storming boards',
-    description: 'Lanes, next-note buttons, and importing a photo of the wall.',
-  },
+
   planTour: {
     title: 'Learn about the Plan Tour',
     description: 'What the tour shows you and how replaying works.',

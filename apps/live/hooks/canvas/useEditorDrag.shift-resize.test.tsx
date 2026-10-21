@@ -110,7 +110,6 @@ function harness(element: Element, kind: TabKind = 'diagram') {
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
-    insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
   // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
   const shown = () => {
@@ -190,7 +189,7 @@ describe('Shift resize, every boxed kind', () => {
 });
 
 describe('Shift resize, every tab kind', () => {
-  it.each(['diagram', 'event-storming'] as const)('keeps the ratio on a %s tab', (kind) => {
+  it.each(['diagram', 'board'] as const)('keeps the ratio on a %s tab', (kind) => {
     syncFrames();
     const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
     const h = harness(el, kind);

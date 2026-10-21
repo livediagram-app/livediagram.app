@@ -32,11 +32,8 @@ describe('tabStatsOf', () => {
     expect(tabStatsOf({ elements: [] }, data).dataBytes).toBe(data.length + 2);
   });
 
-  it('reads Diagram for a tab with no mode, an event-storming board and a legacy mode as today', () => {
+  it('reads Diagram for a tab with no mode, and a legacy mode as today', () => {
     expect(tabStatsOf({ elements: [] }, '{}').mode).toBe('diagram');
-    expect(tabStatsOf({ kind: 'event-storming', opensIn: 'draw', elements: [] }, '{}').mode).toBe(
-      'diagram',
-    );
     expect(tabStatsOf({ opensIn: 'infographic', elements: [] }, '{}').mode).toBe('pages');
   });
 

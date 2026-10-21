@@ -34,7 +34,7 @@ function recorder(): CanvasRenderingContext2D {
 
 beforeEach(() => {
   calls = [];
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => recorder() as never);
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => recorder());
   vi.stubGlobal(
     'Path2D',
     class {

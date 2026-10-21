@@ -55,7 +55,7 @@ a drag's cost to what it moves, whatever the size of the board
 
 ## What does not change
 
-- Snapping, alignment guides, the Shift constraints, lanes, the insert-between preview,
+- Snapping, alignment guides, the Shift constraints,
   Shift-duplicate and the aspect lock behave as they do; they work from the preview instead of a
   written document.
 - Keyboard nudges are not gestures: each writes the document at once, as today.

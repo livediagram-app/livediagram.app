@@ -30,7 +30,7 @@
 // internal.
 
 import type { Selection } from '@/lib/selection-store';
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   duplicateElements,
   sheetDrawnChartIds,
@@ -54,7 +54,7 @@ import {
   takeSheetSeeds,
   stripIdentity,
 } from '@/lib/clipboard-payload';
-import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
+import { pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDocument } from '@/lib/upload-image';
 import {
   DROP_NOT_A_SCENE,
@@ -121,15 +121,6 @@ type ClipboardDeps = {
   // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
   documentId: string | null;
   toast: ReturnType<typeof useToast>;
-  // Read a pasted PHOTO as a piece of wall instead of placing it as an image
-  // (docs/specs/021-event-storming/event-storming.md Phase 8). Supplied only on an event-storming board with the
-  // reader available; absent everywhere else, where paste is untouched.
-  onPastePhoto?: (file: File) => void;
-  // Where the pointer is on the canvas, in canvas coords; null while it is
-  // off the canvas (over a panel, outside the window). On an event-storming
-  // board a paste holding a workshop note lands there
-  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-  canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
   getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
@@ -156,8 +147,6 @@ export function useClipboard(deps: ClipboardDeps) {
     ownerId,
     documentId,
     toast,
-    onPastePhoto,
-    canvasPointerRef,
     getViewportCanvasRect,
     insertBoardScene,
   } = deps;
@@ -259,22 +248,15 @@ export function useClipboard(deps: ClipboardDeps) {
 
   // `source` is what the OS clipboard carried, when it carried ours. Absent
   // for a paste that found nothing on the system clipboard, which falls back
-  // to the in-app buffer. `at` is where the paste was asked for (the canvas
-  // menu's right-click point); absent, the live canvas pointer decides.
-  const pasteFromClipboard = (source?: Element[], at?: { x: number; y: number } | null) => {
+  // to the in-app buffer.
+  const pasteFromClipboard = (source?: Element[]) => {
     if (isReadOnly) return;
     const copied = source && source.length > 0 ? source : clipboard;
     if (!copied || copied.length === 0) return;
     if (refuseCreate()) return;
     const pasting = onlyWhatTheTabTakes(copied);
     if (pasting.length === 0) return;
-    const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
-    const { dx, dy, atPointer } = pasteTranslation(
-      pasting,
-      activeTab,
-      pointer,
-      getViewportCanvasRect?.() ?? null,
-    );
+    const { dx, dy } = pasteTranslation(pasting, getViewportCanvasRect?.() ?? null);
     const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).
@@ -287,8 +269,7 @@ export function useClipboard(deps: ClipboardDeps) {
     const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...pasting];
     const { newElements } = duplicateElements(merged, clipIds, dx, dy);
     if (newElements.length === 0) return;
-    const copyIds = new Set(newElements.map((el) => el.id));
-    commit((els) => landPastedCopies([...els, ...newElements], copyIds, atPointer));
+    commit((els) => [...els, ...newElements]);
     // The charts a pasted Sheet draws are its, not the canvas's to select.
     const drawn = sheetDrawnChartIds(newElements);
     const selectable = newElements.filter((el) => !drawn.has(el.id));
@@ -406,12 +387,6 @@ export function useClipboard(deps: ClipboardDeps) {
     pasteFromClipboard,
     pasteInAppCopy,
     pasteImageFile,
-    // A photo read onto the board adds notes, so the creation guard applies.
-    onPastePhoto:
-      onPastePhoto &&
-      ((file: File) => {
-        if (!refuseCreate()) onPastePhoto(file);
-      }),
     pasteExcalidrawText,
     pasteExcalidrawFile,
     canPasteScene: !!insertBoardScene,
@@ -497,18 +472,8 @@ export function useClipboard(deps: ClipboardDeps) {
         if (!chosen) chosen = files[0] ?? null;
         if (chosen) {
           e.preventDefault();
-          // On an event-storming board a pasted PHOTO is far more likely a
-          // piece of wall than a picture element (docs/specs/021-event-storming/event-storming.md Phase 8), so it
-          // goes to the reader instead. Only for a declared image, only on
-          // that board, only when the reader is available: everything else
-          // pastes exactly as it always has.
           const file = chosen;
           const asImage = () => {
-            const readPhoto = pasteRef.current.onPastePhoto;
-            if (readPhoto && file.type.startsWith('image/')) {
-              readPhoto(file);
-              return;
-            }
             void pasteRef.current.pasteImageFile(file);
           };
           // An Excalidraw file, or a PNG / SVG export holding a scene, lands as that scene;
@@ -533,11 +498,6 @@ export function useClipboard(deps: ClipboardDeps) {
             const file = item.getAsFile();
             if (file) {
               e.preventDefault();
-              const readPhoto = pasteRef.current.onPastePhoto;
-              if (readPhoto) {
-                readPhoto(file);
-                return;
-              }
               void pasteRef.current.pasteImageFile(file);
               return;
             }

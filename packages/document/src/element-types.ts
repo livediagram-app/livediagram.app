@@ -6,7 +6,6 @@
 import type { RoomDoor } from './office';
 import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@liveplanner/items';
-import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { CellCommentThreads } from './cell-comments';
@@ -219,11 +218,9 @@ export type ShapeElement = {
   // Stroke + text still theme normally.
   themeLockFill?: boolean;
   // The element is one size for life: no resize handles, union-scales move
-  // it without scaling it, and the menu's Size category stays away. Set at
-  // creation on event-storming notes (docs/specs/021-event-storming/event-storming.md — the workshop stationery
-  // has fixed silhouettes); the fixed-size SHAPE kinds (mode-button /
-  // session-button, docs/specs/009-elements/mode-button.md) get the same treatment from their kind
-  // instead. See isFixedSizeElement.
+  // it without scaling it, and the menu's Size category stays away. The fixed-size SHAPE kinds
+  // (mode-button / session-button, docs/specs/009-elements/mode-button.md) get the same treatment
+  // from their kind. See isFixedSizeElement.
   fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
   // saved documents round-trip without carrying arbitrary numeric
@@ -851,23 +848,8 @@ export type StickyElement = {
   height: number;
   label?: string;
   locked?: boolean;
-  // One size for life (docs/specs/021-event-storming/event-storming.md event-storming notes) — see
-  // ShapeElement.fixedSize / isFixedSizeElement.
+  // One size for life — see ShapeElement.fixedSize / isFixedSizeElement.
   fixedSize?: boolean;
-  // Which event-storming note this IS (docs/specs/021-event-storming/event-storming.md). The colour carries the
-  // same meaning visually, but the kind is real domain data: it names the
-  // selection ("Selected Domain Event"), and anything later that reasons
-  // about the notation (filters, legends, exports) reads it rather than
-  // matching hexes. Absent on an ordinary sticky.
-  esKind?: EventStormingNoteKind;
-  // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): this note landed from a photograph of a
-  // wall and has not been accepted yet. It is an ORDINARY note in every other
-  // respect — that is the point, because the author reviews the import by
-  // typing into it, dragging it and deleting it with the machinery they
-  // already know. It lives on the ELEMENT rather than in a preview store so a
-  // draft survives a reload and a peer sees it for what it is; `acceptDraft`
-  // strips the flag, `discardDraft` removes the notes.
-  esDraft?: true;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;

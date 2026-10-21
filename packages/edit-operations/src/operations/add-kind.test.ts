@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   createShape,
-  eventStormingNote,
-  eventStormingNoteSize,
   getBuiltInTheme,
   type Element,
   type Tab,
@@ -25,25 +23,6 @@ const added = (text: string, tab?: Tab) => {
 };
 
 describe('add <kind>', () => {
-  it("makes a sticky given a workshop kind that kind's note, keeping what the call named itself", () => {
-    const note = eventStormingNote('actor');
-    expect(added('add sticky label=Courier esKind=actor below:n3')).toMatchObject({
-      type: 'sticky',
-      esKind: 'actor',
-      fillColor: note.fill,
-      ...eventStormingNoteSize('actor'),
-      fixedSize: true,
-      textSize: 'scale',
-      textAlignX: 'center',
-      textAlignY: 'middle',
-    });
-    expect(added('add sticky label=Courier esKind=actor text=lg below:n3')).toMatchObject({
-      textSize: 'lg',
-    });
-    // A plain sticky stays the plain amber note.
-    expect(added('add sticky label=Idea below:n3')).not.toHaveProperty('esKind');
-  });
-
   it('sizes a shape like its siblings, gives it a slug id, places it and lists it', () => {
     const outcome = run('add square label="Verify email" below:n3');
     const { tab, createdIds, targets } = applied(outcome);

@@ -14,14 +14,11 @@ import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type {
   CommentMention,
   EmbedProvider,
-  EsSide,
-  EventStormingNoteKind,
   Finish,
   FrameHandle,
 } from '@liveplanner/document';
 import type {
   BackgroundPattern,
-  TabKind,
   EditorMode,
   Element,
   Layer,
@@ -38,7 +35,6 @@ import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client'
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -89,9 +85,6 @@ export type CanvasProps = {
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
-  // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
-  // presents as an event-storming board.
-  tabKind?: TabKind;
   // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
@@ -102,9 +95,6 @@ export type CanvasProps = {
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
   whiteboardInk?: string;
-  // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
-  // undefined: a note dragged in from the palette snaps onto it, and the
-  // overlay lights the lane it is landing on.
   // Element ids on a hidden or locked layer (docs/specs/006-document/layers.md) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
@@ -343,31 +333,13 @@ export type CanvasProps = {
   onAddFlowchart: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
-  // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
-  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
-  // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md) — the
-  // palette opens on the Event Storming category instead of Favourites, and
-  // a palette drag can offer to insert BETWEEN two notes.
-  esBoard?: boolean;
-  // Board-level switches for the palette's Event Storming category
-  // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Supplied only on such a board.
-  esBoardControls?: EsBoardControls;
-  // Add the next note beside a note (docs/specs/021-event-storming/event-storming.md Phase 7), from its next-note
-  // button. Absent when the session cannot create.
-  onAddNextNote?: (fromId: string, side: EsSide) => void;
-  // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
-  // Present only on an event-storming board with the model configured.
-  onDropPhoto?: (file: File) => void;
+  onAddSticky: () => void;
   // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
   // Absent where nothing can be placed.
   onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
-  // True when a new element cannot land at all: a locked tab, a view-only
-  // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
-  // preview reads it so it never offers a slot the drop would refuse.
-  createBlocked?: boolean;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).

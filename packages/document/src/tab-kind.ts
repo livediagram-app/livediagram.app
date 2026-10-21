@@ -1,17 +1,15 @@
-// What KIND a tab is (docs/specs/021-event-storming/event-storming.md). A leaf module: the Tab type
+// What KIND a tab is (docs/specs/003-system-architecture/domain-language.md). A leaf module: the Tab type
 // imports the union, and the editor's commit choke point stamps it.
 //
 // The set is TOTAL — 'diagram' is a real member, not an absence — so code
-// switches over a complete union and a future third kind can't be quietly
+// switches over a complete union and a new kind can't be quietly
 // forgotten in a branch. "Ordinary tab" is a thing the model can say.
-import type { Layer } from './layers';
-import { isEventStormingTab } from './event-storming';
 
 // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
 // 'whiteboard' is migrated on read into a general tab that opens in Draw (./legacy-whiteboard-tab).
 // Board, Sheet and Dashboard are the Plan tab kinds (docs/specs/026-plan/plan-tabs.md), and Form
 // (docs/specs/030-forms/forms.md).
-export type TabKind = 'diagram' | 'event-storming' | 'board' | 'sheet' | 'dashboard' | 'form';
+export type TabKind = 'diagram' | 'board' | 'sheet' | 'dashboard' | 'form';
 
 export const PLAN_TAB_KINDS = ['board', 'sheet', 'dashboard', 'form'] as const;
 export type PlanTabKind = (typeof PLAN_TAB_KINDS)[number];
@@ -27,10 +25,10 @@ export const DEFAULT_TAB_KIND: TabKind = 'diagram';
 // IndexedDB record, every exported JSON) carry no `kind`, and that will be
 // true forever — no migration reaches an exported file or someone else's
 // offline copy. So absence MUST keep reading as the default, whatever new
-// tabs store.
+// tabs store, and so does a kind this build no longer has (a stored
+// 'event-storming' board reads as an ordinary tab).
 export function tabKindOf(tab: { kind?: string } | undefined): TabKind {
   switch (tab?.kind) {
-    case 'event-storming':
     case 'board':
     case 'sheet':
     case 'dashboard':
@@ -44,18 +42,11 @@ export function tabKindOf(tab: { kind?: string } | undefined): TabKind {
 // Write the resolved kind onto a tab, so a saved tab says what it is rather
 // than leaving the reader to know the convention.
 //
-// The stamp is a ONE-WAY write — whatever it puts on a tab is what that tab
-// is from then on — so it resolves the kind exactly as a READER would,
-// legacy signals included. A board authored before the field is recognised
-// by the layer its template shipped; branding it 'diagram' would take its
-// palette, stationery and note menu away permanently, and no later load
-// could tell that had happened.
-//
 // Returns the SAME object when nothing needs stamping: this runs at the
 // editor's commit choke point over every tab of every commit, and minting a
 // fresh object for an unchanged tab would ripple through the memoised views
 // downstream for no reason.
-export function stampTabKind<T extends { kind?: string; layers?: Layer[] }>(tab: T): T {
+export function stampTabKind<T extends { kind?: string }>(tab: T): T {
   if (tab.kind !== undefined) return tab;
-  return { ...tab, kind: isEventStormingTab(tab) ? 'event-storming' : DEFAULT_TAB_KIND };
+  return { ...tab, kind: DEFAULT_TAB_KIND };
 }

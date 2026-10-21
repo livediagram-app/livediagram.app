@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { ES_NOTE_FONT } from './event-storming';
 import { FONTS, googleFontsHref, resolveFontStack } from './fonts';
 
 // The generic CSS families a stack is allowed to terminate in. docs/specs/004-interface-design/fonts.md:
@@ -8,14 +7,6 @@ import { FONTS, googleFontsHref, resolveFontStack } from './fonts';
 const GENERIC_FALLBACKS = ['sans-serif', 'serif', 'monospace', 'cursive'];
 
 describe('FONTS catalogue invariants', () => {
-  // The event-storming notation names its face by id (docs/specs/021-event-storming/event-storming.md). Drop or
-  // rename that entry and every workshop note silently falls back to the
-  // tab's font, with nothing at runtime to notice.
-  it('carries the face the event-storming notation asks for', () => {
-    expect(FONTS.map((f) => f.id)).toContain(ES_NOTE_FONT);
-    expect(resolveFontStack(ES_NOTE_FONT)).toBeTruthy();
-  });
-
   it('has unique, non-empty ids', () => {
     const ids = FONTS.map((f) => f.id);
     expect(new Set(ids).size).toBe(ids.length);

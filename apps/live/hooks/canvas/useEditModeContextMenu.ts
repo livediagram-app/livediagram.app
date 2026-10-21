@@ -41,8 +41,7 @@ export function useEditModeContextMenu({
       if (isMobile) return;
       const el = elements.find((e) => e.id === editingId);
       if (!el || !isBoxed(el)) return;
-      // Sticky notes opt out (docs/specs/021-event-storming/event-storming.md boards live and die by quick note
-      // capture, and it reads wrong everywhere): double-click means "type",
+      // Sticky notes opt out: double-click means "type",
       // and a menu popping open beside every note is noise — right-click /
       // long-press still opens the element menu deliberately.
       if (el.type === 'sticky') return;

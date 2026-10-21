@@ -1,20 +1,12 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import {
-  ES_LANE_PITCH,
-  laneCentre,
-  type Element,
-  type EsTimeline,
-  type EventStormingNoteKind,
-} from '@liveplanner/document';
+import type { Element } from '@liveplanner/document';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,
   setPaletteDragSnap,
 } from '@/lib/palette-drag-preview';
-import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
-import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
 import { usePaletteDragGuides } from './usePaletteDragGuides';
 
 // A row of three 200x200 notes with 72 gaps: 0..200, 272..472, 544..744.
@@ -34,270 +26,49 @@ function wrapper() {
   return { current: el };
 }
 
-function dragOver(target: HTMLElement, clientX: number, clientY: number, altKey = false) {
+function dragOver(target: HTMLElement, clientX: number, clientY: number) {
   const event = new Event('dragover', { bubbles: true }) as DragEvent & {
     clientX: number;
     clientY: number;
   };
   Object.defineProperty(event, 'clientX', { value: clientX });
   Object.defineProperty(event, 'clientY', { value: clientY });
-  Object.defineProperty(event, 'altKey', { value: altKey });
   act(() => {
     target.dispatchEvent(event);
   });
 }
 
-// The gesture as the author performs it: Alt held while the drag passes over
-// the gap. Every slot-opening assertion below goes through this — without the
-// modifier there is no slot to assert.
-function altDragOver(target: HTMLElement, clientX: number, clientY: number) {
-  dragOver(target, clientX, clientY, true);
-}
-
-function render(opts: {
-  esBoard: boolean;
-  elements?: Element[];
-  zoom?: number;
-  note?: boolean;
-  timeline?: EsTimeline | null;
-  esKind?: EventStormingNoteKind;
-}) {
+function render() {
   const wrapperRef = wrapper();
-  setPaletteDragPreview({
-    kind: 'square',
-    width: 200,
-    height: 200,
-    note: opts.note !== false,
-    ...(opts.esKind ? { esKind: opts.esKind } : {}),
-  });
+  setPaletteDragPreview({ kind: 'square', width: 200, height: 200 });
   const view = renderHook(() =>
-    usePaletteDragGuides({
-      elements: opts.elements ?? ROW,
-      readZoom: () => opts.zoom ?? 1,
-      wrapperRef,
-      insertGate: {
-        esBoard: opts.esBoard,
-        readOnly: false,
-        tabLocked: false,
-        createBlocked: false,
-      },
-      inertIds: new Set<string>(),
-      timeline: opts.timeline ?? null,
-    }),
+    usePaletteDragGuides({ elements: ROW, readZoom: () => 1, wrapperRef }),
   );
   return { ...view, wrapperRef };
 }
 
 afterEach(() => {
   setPaletteDragPreview(null);
-  setInsertionSlot(null);
   setPaletteDragSnap(null);
-  setLanePreview(null);
   document.body.innerHTML = '';
 });
 
-// Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) on the palette path. The ghost, the lit
-// lane and the drop all read ONE snap, so these assert the published offset —
-// which is exactly what the drop consumes.
-describe('usePaletteDragGuides — timeline lanes (docs/specs/021-event-storming/event-storming.md)', () => {
-  const TIMELINE: EsTimeline = { originY: 0 };
-  // A cursor a few px off lane 1, in note-centre coords. x has nothing to
-  // line up with on an empty board, so it stays where the cursor is.
-  const CX = 309 + 100;
-  const CY = ES_LANE_PITCH + 7 + 100;
-
-  it('lights the lane and carries the note onto it', () => {
-    const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE, elements: [] });
-    dragOver(wrapperRef.current, CX, CY);
-    expect(getLanePreview()).toMatchObject({ laneIndex: 1 });
-    const snap = getPaletteDragSnap();
-    expect(CX + snap!.dx - 100).toBe(309);
-    expect(CY + snap!.dy).toBe(laneCentre(1, TIMELINE));
+// docs/specs/010-palette/palette-drag-ghost.md: the drag's one snap, published for the ghost and the drop.
+describe('usePaletteDragGuides', () => {
+  it('publishes the alignment snap and its guide while the ghost is near a neighbour', () => {
+    const { result, wrapperRef } = render();
+    // The footprint is centred on the cursor: 3px right of note a's column.
+    dragOver(wrapperRef.current, 103, 400);
+    expect(getPaletteDragSnap()).toMatchObject({ dx: -3 });
+    expect(result.current.guides.some((g) => g.axis === 'x')).toBe(true);
   });
 
-  it('does nothing while lanes are off', () => {
-    const { wrapperRef } = render({ esBoard: true, timeline: null, elements: [] });
-    dragOver(wrapperRef.current, CX, CY);
-    expect(getLanePreview()).toBeNull();
-    expect(getPaletteDragSnap()).toEqual({ dx: 0, dy: 0 });
-  });
-
-  it('never snaps a SHAPE dragged in from the palette', () => {
-    const { wrapperRef } = render({
-      esBoard: true,
-      timeline: TIMELINE,
-      elements: [],
-      note: false,
-    });
-    dragOver(wrapperRef.current, CX, CY);
-    expect(getLanePreview()).toBeNull();
-  });
-
-  it('stands down for an open insertion slot', () => {
-    const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE });
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).not.toBeNull();
-    expect(getLanePreview()).toBeNull();
-  });
-
-  it('clears the lit lane when the drag leaves the window', () => {
-    const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE, elements: [] });
-    dragOver(wrapperRef.current, CX, CY);
+  it('clears the snap when the drag leaves the window', () => {
+    const { wrapperRef } = render();
+    dragOver(wrapperRef.current, 103, 400);
     act(() => {
       document.dispatchEvent(new Event('dragleave', { bubbles: true }));
     });
-    expect(getLanePreview()).toBeNull();
-  });
-});
-
-describe('usePaletteDragGuides — insert between (docs/specs/021-event-storming/event-storming.md)', () => {
-  it('offers a slot while Alt is held over a gap on an event-storming board', () => {
-    const { wrapperRef, result } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    const slot = getInsertionSlot();
-    expect(slot?.leftId).toBe('a');
-    expect(slot?.rightId).toBe('b');
-    // The marker is an alignment guide at the insertion point, drawn in the
-    // overlay's existing visual language.
-    expect(result.current.guides).toEqual([
-      { axis: 'x', position: slot!.atX, start: slot!.spanTop, end: slot!.spanBottom },
-    ]);
-  });
-
-  it('puts the ghost in the slot, so the preview and the drop agree', () => {
-    const { wrapperRef } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    // Ghost centre = slot left edge + half the incoming note; the snap is the
-    // offset from the cursor to that centre.
-    expect(getPaletteDragSnap()).toEqual({ dx: 372 - 236, dy: 100 - 100 });
-  });
-
-  it('yields the alignment snap while a slot is open — one placement rule at a time', () => {
-    const { wrapperRef, result } = render({ esBoard: true });
-    // 236 is the gap's midpoint; the alignment snap would otherwise latch the
-    // dragged footprint onto its neighbours' edges and fight the slot.
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(result.current.distGuides).toEqual([]);
-    expect(result.current.guides).toHaveLength(1);
-    expect(getPaletteDragSnap()?.dx).toBe(136);
-  });
-
-  // THE regression guard: this is what the whole Alt gesture exists to
-  // protect. An author dragging a note near a row must not have the board
-  // rearrange under them.
-  it('offers nothing without Alt, however inviting the gap', () => {
-    const { wrapperRef, result } = render({ esBoard: true });
-    dragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).toBeNull();
-    // ...and the drag resolves exactly the alignment snap it always did.
-    expect(result.current.guides.length).toBeGreaterThan(0);
-    expect(getPaletteDragSnap()?.dx).not.toBe(136);
-  });
-
-  it('opens the slot the moment Alt goes down mid-drag', () => {
-    const { wrapperRef } = render({ esBoard: true });
-    dragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).toBeNull();
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()?.rightId).toBe('b');
-  });
-
-  it('unwinds the moment Alt comes up, handing placement back to the snap', () => {
-    const { wrapperRef, result } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).not.toBeNull();
-    dragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).toBeNull();
-    // The ordinary alignment snap is live again for the rest of the drag.
-    expect(result.current.guides.length).toBeGreaterThan(0);
-  });
-
-  // Q2: the gesture is about the note grammar. A shape dragged in from the
-  // palette lands where it is dropped, exactly as on any other tab — the
-  // same rule the existing-element path follows.
-  it('never offers a slot for something that will not be a note', () => {
-    const { wrapperRef, result } = render({ esBoard: true, note: false });
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).toBeNull();
-    expect(result.current.guides.length).toBeGreaterThan(0);
-  });
-
-  it('never offers a slot on an ordinary tab, Alt or no Alt', () => {
-    const { wrapperRef, result } = render({ esBoard: false });
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).toBeNull();
-    // ...and the ordinary alignment behaviour is untouched.
-    expect(result.current.guides.length).toBeGreaterThan(0);
-  });
-
-  it('closes the slot when the drag moves off the gap', () => {
-    const { wrapperRef } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).not.toBeNull();
-    altDragOver(wrapperRef.current, 236, 900);
-    expect(getInsertionSlot()).toBeNull();
-  });
-
-  it('closes the slot when the drag goes back over a floating panel', () => {
-    const { wrapperRef } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    const panel = document.createElement('div');
-    panel.setAttribute('data-floating-panel', '');
-    document.body.querySelector('main')!.appendChild(panel);
-    altDragOver(panel, 236, 100);
-    expect(getInsertionSlot()).toBeNull();
     expect(getPaletteDragSnap()).toBeNull();
-  });
-
-  it('closes the slot when the drag leaves the window', () => {
-    const { wrapperRef } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    act(() => {
-      document.dispatchEvent(new Event('dragleave', { bubbles: true }));
-    });
-    expect(getInsertionSlot()).toBeNull();
-  });
-
-  it('closes the slot on Escape, leaving the board exactly as it was', () => {
-    const { wrapperRef } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    });
-    expect(getInsertionSlot()).toBeNull();
-    expect(getPaletteDragSnap()).toBeNull();
-  });
-
-  it('clears the slot when the drag ends', () => {
-    const { wrapperRef, unmount } = render({ esBoard: true });
-    altDragOver(wrapperRef.current, 236, 100);
-    unmount();
-    expect(getInsertionSlot()).toBeNull();
-  });
-
-  // The cursor→canvas inversion through the transformed wrapper is the trap:
-  // resolve the gap in SCREEN pixels and the slot lands somewhere else at any
-  // zoom but 100%.
-  it.each([0.25, 4])('resolves the same gap at %sx zoom', (zoom) => {
-    const { wrapperRef } = render({ esBoard: true, zoom });
-    // Canvas x 236 in the gap, expressed in client pixels at this zoom.
-    altDragOver(wrapperRef.current, 236 * zoom, 100 * zoom);
-    const slot = getInsertionSlot();
-    expect(slot?.atX).toBe(272);
-    expect(slot?.rightId).toBe('b');
-    // The snap is canvas units — the ghost multiplies it by the zoom itself.
-    expect(getPaletteDragSnap()).toEqual({ dx: 136, dy: 0 });
-  });
-
-  it('does not inherit the previous drag\u2019s slot', () => {
-    const first = render({ esBoard: true });
-    altDragOver(first.wrapperRef.current, 236, 100);
-    expect(getInsertionSlot()).not.toBeNull();
-    first.unmount();
-    const second = render({ esBoard: true });
-    expect(getInsertionSlot()).toBeNull();
-    // A fresh drag that never hovers a gap keeps it that way.
-    altDragOver(second.wrapperRef.current, 100, 100);
-    expect(getInsertionSlot()).toBeNull();
   });
 });

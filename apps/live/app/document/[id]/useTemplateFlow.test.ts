@@ -12,8 +12,4 @@ describe('templateOpensIn', () => {
   it('opens the Whiteboard in Draw', () => {
     expect(templateOpensIn(templateCanvasOverrides('whiteboard'))).toBe('draw');
   });
-
-  it('gives an event-storming board no mode (it is always Diagram)', () => {
-    expect(templateOpensIn(templateCanvasOverrides('event-storming'))).toBeUndefined();
-  });
 });

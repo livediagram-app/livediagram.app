@@ -24,15 +24,6 @@ describe('resolveEditorMode', () => {
     ).toEqual({ mode: 'plan', canSwitch: false });
   });
 
-  it('keeps an event-storming board in Diagram mode with no switch', () => {
-    expect(
-      resolveEditorMode({
-        tab: { id: 't', kind: 'event-storming', opensIn: 'draw' },
-        canEdit: true,
-      }),
-    ).toEqual({ mode: 'diagram', canSwitch: false });
-  });
-
   it('reads Diagram with no switch while there is no tab', () => {
     expect(resolveEditorMode({ tab: undefined, canEdit: true })).toEqual({
       mode: 'diagram',

@@ -161,7 +161,7 @@ export type ResultLine =
       mark: '»';
       refs: string[];
       delta?: [number, number];
-      reason: 'make room' | 'carried' | 'laid out' | 'landed on a lane';
+      reason: 'make room' | 'carried' | 'laid out';
       // How `layout` laid them out; a direction only for the flow style.
       layout?: { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
     }

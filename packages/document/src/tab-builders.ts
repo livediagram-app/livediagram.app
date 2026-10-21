@@ -1,13 +1,10 @@
 // Pure tab builders (docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
-// validated elements or a node/edge graph turned into a finished, themed, persistable Tab, and the
-// event-storming landing every authoring path shares. Render-free, so the MCP, the api and the CLI
+// validated elements or a node/edge graph turned into a finished, themed, persistable Tab. Render-free, so the MCP, the api and the CLI
 // all build tabs the same way. Template tabs are `buildTemplateTab` in @liveplanner/templates.
 
 import { withFacingBends } from './arrow-orthogonal';
 import { settleDiagramKeys } from './diagram-key';
 import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
-import { eventStormingLayers, isEventStormingNote, isEventStormingTab } from './event-storming';
-import { landArrivals } from './event-storming-lane-landing';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { agendaFitHeight } from './svg-render-agenda';
 import { recolourElementsForTheme } from './theme-graph';
@@ -73,34 +70,5 @@ export function buildGraphTab(
   graph: GraphInput,
   themeId: string | undefined,
 ): Tab {
-  const tab = buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
-  // A storm is an event-storming board, born settled on its lanes as the template's is
-  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-  return graph.style === 'storm'
-    ? { ...tab, kind: 'event-storming', esLanesSettled: true, layers: eventStormingLayers() }
-    : tab;
-}
-
-// Workshop notes a call adds or moves on an event-storming tab land on lanes
-// (docs/specs/021-event-storming/event-storming.md "Always on a lane"), exactly as a paste does: a lane per row,
-// and a lone arrival on an occupied spot takes the nearest free slot. In ops
-// mode the arrivals are the workshop notes that are new or whose x / y an op
-// changed; in replace mode every workshop note arrives. Nothing else moves,
-// and an ordinary tab comes back exactly as the call wrote it.
-export function landWorkshopArrivals(
-  before: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'kind' | 'layers'>>,
-  next: Element[],
-  mode: 'ops' | 'replace',
-): Element[] {
-  if (!isEventStormingTab(before)) return next;
-  const previous = new Map(before.elements.map((el) => [el.id, el] as const));
-  const arrivals = new Set<string>();
-  for (const el of next) {
-    if (!isEventStormingNote(el) || !('x' in el)) continue;
-    const was = previous.get(el.id);
-    const moved = !was || !('x' in was) || was.x !== el.x || was.y !== el.y;
-    if (mode === 'replace' || moved) arrivals.add(el.id);
-  }
-  if (arrivals.size === 0) return next;
-  return landArrivals(next, arrivals, { x: arrivals.size === 1 ? 'free-slot' : 'keep' });
+  return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
 }

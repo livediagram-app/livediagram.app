@@ -338,6 +338,6 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 
 When an exported tab lands in a receiving tab (`mergeImportedTab`), the **tab kind** and the **layers** travel with the elements and styling.
 
-Without the kind, an exported event-storming board came back as an ordinary diagram: every note present, but the palette, the stationery and the note menu gone, with nothing on screen to explain why ([Event storming](../021-event-storming/event-storming.md)). Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
+Without the kind, an exported Plan tab came back as an ordinary diagram. Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
 
 The merge rule lives in its own module so it is testable as a rule: what the import brings, what the receiving tab keeps (its id and name), and what must travel or the round trip loses meaning.

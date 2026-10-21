@@ -1,12 +1,6 @@
 # Plan tabs
 
-Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab**
-(one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the
-document's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a
-canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form,
-whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind**
-([Domain language](../003-system-architecture/domain-language.md)), as Event Storming is: it is what the tab is, and
-it brings its own behaviour.
+Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the document's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
 
 ## Domain language
 
@@ -22,9 +16,7 @@ it brings its own behaviour.
 
 ## The kinds
 
-- A Board, Sheet or Dashboard tab is always in **Plan** mode, whatever a stored or stale `opensIn` says (as an Event
-  Storming tab is always Diagram). Its start's mode switch still shows, reading Plan, with no line under the modes. Picking another mode asks
-  **Open a New <Mode> Tab?** ("A Dashboard is always in Plan. Its mode can’t change, but you can carry on in a new
+- A Board, Sheet or Dashboard tab is always in **Plan** mode, whatever a stored or stale `opensIn` says. Its start's mode switch still shows, reading Plan, with no line under the modes. Picking another mode asks **Open a New <Mode> Tab?** ("A Dashboard is always in Plan. Its mode can’t change, but you can carry on in a new
   <Mode> tab.", or "A Board tab ...", "A Sheet tab ...") and **New <Mode> Tab** opens a new tab in that mode
   after the others; Shift+D does nothing there. No tab menu lists modes.
 - The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), four tiles two by two:
@@ -553,11 +545,7 @@ has nothing to offer a dashboard (zoom is off), is not shown on a touch screen, 
 
 ## Showing a tab
 
-Add to Slot's **This Document’s Tabs** offers each of the document's tabs but a Dashboard, in tab-bar order, as a
-card named for the tab: a **Board** or **Sheet** tab, worked on in place in the slot, and any other tab as a
-**Diagram** (a diagram or an Event Storming board). Picked, it shows that tab in the slot. The list follows the tab
-bar live (a tab added, renamed or deleted) and is left out while the document has no other tab. A tab may show in several slots and
-on several dashboards.
+Add to Slot's **This Document’s Tabs** offers each of the document's tabs but a Dashboard, in tab-bar order, as a card named for the tab: a **Board** or **Sheet** tab, worked on in place in the slot, and any other tab as a **Diagram**. Picked, it shows that tab in the slot. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the document has no other tab. A tab may show in several slots and on several dashboards.
 
 A **Diagram** slot is a card with the tab's mode icon and name over its drawing, live (each edit, a collaborator's
 too, at a deferred priority) and still: drawn as the split view's other pane draws a tab, in this person's

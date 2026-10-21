@@ -1,6 +1,5 @@
 import { memo, useRef, useState } from 'react';
 import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
-import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
@@ -110,9 +109,6 @@ function BoxedElementViewImpl({
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
-  photoDraft = false,
-  photoMatched = false,
-  photoReadAs,
   votableInVote,
   onBeginEdit,
   onCommitLabel,
@@ -128,8 +124,6 @@ function BoxedElementViewImpl({
   onSetPointerTip,
   onSetHeroCaptionLine,
   isoDepth,
-  insertShiftX,
-  insertShiftAnimates,
   stackGlide,
   chartPalette,
   onCancelEdit,
@@ -451,19 +445,10 @@ function BoxedElementViewImpl({
   const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
     useIconDropTarget(element, onDropIcon);
 
-  // Insert-between preview (docs/specs/021-event-storming/event-storming.md). A CSS translate rather than a moved
-  // `x`: it is GPU-composited, it cannot desync from the model because the
-  // model never changed, and it unwinds by dropping a style. It composes
-  // ahead of the tilt below so the note slides and stays hand-placed.
-  const insertShift = insertShiftX ? `translateX(${insertShiftX}px) ` : '';
-
   return (
     <div
       ref={wrapperRef}
       data-element-id={element.id}
-      // Carries the slot's easing (globals.css) for as long as a slot COULD
-      // be open, so the board eases shut as well as open.
-      data-insert-shift={insertShiftAnimates ? '' : undefined}
       data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
@@ -564,12 +549,10 @@ function BoxedElementViewImpl({
         // sticker) popped in flat and then snapped to its angle at the end.
         ...(isRotated
           ? ({
-              transform: `${insertShift}rotate(${rotation}deg)`,
+              transform: `rotate(${rotation}deg)`,
               '--lvd-enter-rot': `${rotation}deg`,
             } as React.CSSProperties)
-          : insertShift
-            ? { transform: insertShift.trim() }
-            : {}),
+          : {}),
         // Deliberately do NOT raise z-index on plain selection. Keeping
         // the element at its natural paint order means selecting a
         // container doesn't jump it above the content layered on top of
@@ -880,9 +863,6 @@ function BoxedElementViewImpl({
         onCastVote={onCastVote}
       />
 
-      {/* The photo import's marks (photo-badges.tsx). */}
-      {photoDraft ? <PhotoDraftRing /> : null}
-      {photoMatched ? <PhotoMatchedBadge readAs={photoReadAs} /> : null}
 
       {/* Selection chrome (resize / edge-grip handles), portalled into the
           grips layer above every element — see SelectionChromeLayer for the
@@ -891,7 +871,6 @@ function BoxedElementViewImpl({
         elementId={element.id}
         box={element}
         rotation={rotation}
-        shiftX={insertShiftX}
         showHandles={showHandles}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}

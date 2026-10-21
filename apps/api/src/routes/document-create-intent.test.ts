@@ -52,11 +52,6 @@ describe('recorded creation intent', () => {
     expect(await summary('d1')).toMatchObject(RETRO);
   });
 
-  it('records an event-storming board', async () => {
-    await create('d1', { intent: { mode: 'diagram', tabKind: 'event-storming' } });
-    expect(await summary('d1')).toMatchObject({ tabKind: 'event-storming', templateFamily: null });
-  });
-
   it('records a known intent with no family as made from none', async () => {
     await create('d1', { intent: { mode: 'draw' } });
     expect(await summary('d1')).toMatchObject({

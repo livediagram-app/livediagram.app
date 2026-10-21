@@ -1,6 +1,6 @@
 // The attributes of one element's line, in order (docs/specs/024-agents/blueprints/document-views.md
 // "Attributes", VW14): draft, icon, link, alt, locked, action or actions, note, comments, then style.
-import { isEventStormingNote, type Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/document';
 import { ACTION_CUT_CHARS, ALT_CUT_CHARS, NOTE_CUT_CHARS } from './constants';
 import {
   arrayField,
@@ -80,7 +80,6 @@ function commentsAttribute(el: Element): ViewAttribute[] {
 export function attributesOf(el: Element, context: AttributeContext): ViewAttribute[] {
   const iconId = textField(el, 'iconId');
   return [
-    ...(isEventStormingNote(el) && flagField(el, 'esDraft') ? [flagAttribute('draft')] : []),
     ...(iconId === null ? [] : [{ key: 'icon', value: iconId, text: `icon=${attrValue(iconId)}` }]),
     ...linkAttribute(el, context.tabRefOf),
     ...(el.type === 'image' ? cutAttribute('alt', textField(el, 'alt'), ALT_CUT_CHARS) : []),

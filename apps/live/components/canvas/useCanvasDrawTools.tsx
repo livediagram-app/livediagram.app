@@ -2,7 +2,6 @@
 
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
-import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/page-guard';
@@ -27,7 +26,7 @@ type CanvasDrawToolsInput = {
 
 // The canvas's drawing gestures, composed in their order of precedence: the Path tool
 // (docs/specs/023-draw-mode/path-tool.md), then a polygon's click-to-place (docs/specs/008-canvas/polygon-tool.md), then
-// the draw-to-size or stamp of an armed tile (docs/specs/021-event-storming/event-storming.md Phase 4), with
+// the draw-to-size of an armed tile, with
 // Pages mode's off-page presses and the Format tool's page press ahead of them all.
 export function useCanvasDrawTools({
   props,
@@ -44,17 +43,6 @@ export function useCanvasDrawTools({
   soleSelectedPathId,
   onDeselect,
 }: CanvasDrawToolsInput) {
-  // An armed workshop-note tile is a STAMP, not a draw-to-size (docs/specs/021-event-storming/event-storming.md
-  // Phase 4): its ghost follows the pointer, and the draw gesture places by the
-  // same rule.
-  const { stamp, stampAt, showStamp } = useStampGhost({
-    pendingDraw,
-    elements,
-    tabKind: props.tabKind,
-    tabLayers: props.tabLayers,
-    viewportZoom,
-    wrapperRef,
-  });
   const { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture } =
     useCanvasDrawGesture({
       pendingDraw,
@@ -64,8 +52,6 @@ export function useCanvasDrawTools({
       isPinchingRef,
       onCommitDraw,
       onCommitFreehand,
-      stampAt,
-      showStamp,
       whiteboard: props.editorMode === 'draw',
     });
 
@@ -118,7 +104,6 @@ export function useCanvasDrawTools({
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
   return {
-    stamp,
     drawDrag,
     penPoints,
     penStroke,

@@ -1,9 +1,4 @@
-import {
-  isEventStormingTab,
-  migrateStoredTab,
-  settleNotesOnLanes,
-  type Tab,
-} from '@liveplanner/document';
+import { migrateStoredTab, type Tab } from '@liveplanner/document';
 
 // How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/markdown-import.md).
 //
@@ -11,24 +6,13 @@ import {
 // the import brings, what the receiving tab keeps, and — the part that was
 // silently wrong — what must travel or the round trip loses meaning.
 //
-// `kind` and `layers` are in that last group. An exported workshop board
-// re-imported without its kind came back as an ordinary diagram: the notes
-// were all there, but the palette, the stationery and the note menu were
-// gone, with nothing to say why (docs/specs/021-event-storming/event-storming.md). Without `layers`, every imported
+// `kind` and `layers` are in that last group. An exported Plan tab re-imported without its kind came back
+// as an ordinary diagram (docs/specs/026-plan/plan-tabs.md). Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
 // A file is a stored tab like any other, so it takes the same migrations on
 // the way in (retired schemes, retired groups and docks).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
-  const merged = mergeFields(receiving, migrateStoredTab(imported));
-  // An event-storming board's workshop notes always sit on a lane
-  // (docs/specs/021-event-storming/event-storming.md "Always on a lane"): an import lands every one on its
-  // nearest lane, x untouched, and the board is settled.
-  if (!isEventStormingTab(merged)) return merged;
-  return {
-    ...merged,
-    elements: settleNotesOnLanes(merged.elements).elements,
-    esLanesSettled: true,
-  };
+  return mergeFields(receiving, migrateStoredTab(imported));
 }
 
 function mergeFields(receiving: Tab, imported: Tab): Tab {

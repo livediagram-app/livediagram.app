@@ -192,7 +192,6 @@ describe('nudging a Sheet', () => {
         get activeTab() {
           return { id: 't', name: 'T', elements } as Tab;
         },
-        laneBoard: false,
         markCheckpoint: () => {},
         tick: (m) => {
           elements = m(elements);

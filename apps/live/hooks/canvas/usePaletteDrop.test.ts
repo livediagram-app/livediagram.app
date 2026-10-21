@@ -6,23 +6,20 @@ import { LIBRARY_SHAPE_DND_MIME } from '@/lib/shape-library-dnd';
 import { usePaletteDrop } from './usePaletteDrop';
 
 // A file dropped on the canvas (docs/specs/020-import-export/excalidraw-import-export.md "Paste"):
-// handed over with the canvas point it was released at; a photo on an event-storming board still
-// goes to the wall reader first.
+// handed over with the canvas point it was released at.
 
-function setup(deps: { onDropFile?: boolean; onDropPhoto?: boolean } = {}) {
+function setup(deps: { onDropFile?: boolean } = {}) {
   const wrapper = document.createElement('div');
   wrapper.getBoundingClientRect = () => ({ left: 100, top: 50 }) as DOMRect;
   const onDropFile = vi.fn();
-  const onDropPhoto = vi.fn();
   const { result } = renderHook(() =>
     usePaletteDrop({
       viewportZoom: 2,
       wrapperRef: { current: wrapper },
       ...(deps.onDropFile === false ? {} : { onDropFile }),
-      ...(deps.onDropPhoto ? { onDropPhoto } : {}),
     }),
   );
-  return { ...result.current, onDropFile, onDropPhoto };
+  return { ...result.current, onDropFile };
 }
 
 function dragEvent(files: File[]) {
@@ -65,14 +62,6 @@ describe('dropping a file on the canvas', () => {
     h.onDragOver(event);
     h.onDrop(event);
     expect(event.preventDefault).not.toHaveBeenCalled();
-  });
-
-  it('still reads a photo on an event-storming board first', () => {
-    const h = setup({ onDropPhoto: true });
-    const photo = new File(['x'], 'wall.jpg', { type: 'image/jpeg' });
-    h.onDrop(dragEvent([photo]));
-    expect(h.onDropPhoto).toHaveBeenCalledWith(photo);
-    expect(h.onDropFile).not.toHaveBeenCalled();
   });
 });
 

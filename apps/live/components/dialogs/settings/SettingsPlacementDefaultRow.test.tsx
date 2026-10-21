@@ -63,7 +63,6 @@ describe('SettingsPlacementDefaultRow', () => {
       'Sessions',
       'Pages Documents',
       'Plan Boards',
-      'Event Storming Boards',
       'Retrospectives',
       'Kanban Boards',
     ]);

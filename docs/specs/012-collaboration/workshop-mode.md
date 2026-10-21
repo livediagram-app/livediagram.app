@@ -126,14 +126,12 @@ stop to draw):
   click in front of each, with a group browser one level down. Six categories put every group one
   pick away in the category picker and let the toolbar strip show each group's tiles directly.
 
-- Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
-  and pages, not sessions.
 - A **Participant** gets the participant palette Workshop's landing category gives
   ([Participant share role](#share-roles)): sticky notes and text, and an image.
 
 ## The Session strip per mode
 
-`sessionStripTools(mode, esBoard)`:
+`sessionStripTools`:
 
 | Mode     | Strip tools              |
 | -------- | ------------------------ |
@@ -142,9 +140,6 @@ stop to draw):
 | Diagram  | none                     |
 | Draw     | none (as today)          |
 | Pages    | Vote, Poll while running |
-
-- **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
-  switch, so it could never reach Workshop's strip; the tab kind brings the strip itself.
 
 - **Diagram has no strip, running or not.** A timer, vote or poll started on a Diagram tab (by a
   session button on it, or before the tab was switched out of Workshop) runs as before and shows

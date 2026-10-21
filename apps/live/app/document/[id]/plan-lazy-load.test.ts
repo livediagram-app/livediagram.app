@@ -76,7 +76,7 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@/components/sheets/sheet-csv');
   });
 
-  // The page layouts, the template builders and the sticky-photo detector loaded with every editor until 2026-10-13
+  // The page layouts and the template builders loaded with every editor until 2026-10-13
   // (about 130 KiB compressed of the document page's first load): each came in through one small import.
   it('loads the page layout builders only when a layout is applied', () => {
     expect(staticImports(read('hooks/editor/page-edits.ts'))).not.toContain(
@@ -93,9 +93,5 @@ describe('the editor’s first load', () => {
       expect(catalogue).not.toContain(heavy);
     // The untitled name is read on every load: it lives in its own leaf module.
     expect(staticImports(read('../../packages/templates/src/legacy-untitled.ts'))).toEqual([]);
-  });
-
-  it('reads a detected sticky’s place without the photo detector', () => {
-    expect(staticImports(read('../../packages/sticky-vision/src/normalised.ts'))).toEqual([]);
   });
 });

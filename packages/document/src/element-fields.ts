@@ -276,8 +276,6 @@ export const ELEMENT_FIELD_NAMES = {
     'label',
     'locked',
     'fixedSize',
-    'esKind',
-    'esDraft',
     'textSize',
     'textAlignX',
     'textAlignY',

@@ -81,7 +81,6 @@ describe('create_document intent', () => {
     ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
-    ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],

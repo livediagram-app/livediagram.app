@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES, ES_BOARD_LAYER_ID } from '@liveplanner/document';
+import { EDITOR_MODES } from '@liveplanner/document';
 import {
   PLACEMENT_DEFAULT_KEYS,
-  SPECIFIC_TAB_KINDS,
   TEMPLATE_FAMILIES,
   candidateKeysFor,
   creationIntentOf,
@@ -14,18 +13,17 @@ import {
   readCreationIntent,
 } from './placement-defaults';
 
-// Default folders (docs/specs/013-workspace/default-folders.md): the keys, generated from three closed
+// Default folders (docs/specs/013-workspace/default-folders.md): the keys, generated from two closed
 // lists, the creation intent a create carries, and the order a create's keys are tried in.
 
 describe('PLACEMENT_DEFAULT_KEYS', () => {
-  it('holds the eight keys in the order the list shows them', () => {
+  it('holds the seven keys in the order the list shows them', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
       'mode:draw',
       'mode:workshop',
       'mode:pages',
       'mode:plan',
-      'kind:event-storming',
       'template:retrospective',
       'template:kanban',
     ]);
@@ -37,23 +35,20 @@ describe('PLACEMENT_DEFAULT_KEYS', () => {
     );
   });
 
-  it('has one kind key per specific tab kind, the general tab having none', () => {
-    expect(SPECIFIC_TAB_KINDS).toEqual(['event-storming']);
-  });
-
   it('has one template key per template family', () => {
     expect(TEMPLATE_FAMILIES).toEqual(['retrospective', 'kanban']);
   });
 });
 
 describe('isPlacementDefaultKey', () => {
-  it.each([['mode:draw'], ['kind:event-storming'], ['template:kanban']])('accepts %s', (key) => {
+  it.each([['mode:draw'], ['template:kanban']])('accepts %s', (key) => {
     expect(isPlacementDefaultKey(key)).toBe(true);
   });
 
   it.each([
     ['board:kanban'],
     ['kind:diagram'],
+    ['kind:event-storming'],
     ['kind:whiteboard'],
     ['template:mindmap'],
     ['mode:'],
@@ -86,16 +81,11 @@ describe('creationIntentOf', () => {
     expect(creationIntentOf({ kind: 'whiteboard' })).toEqual({ mode: 'draw', tabKind: 'diagram' });
   });
 
-  it('reads an event-storming tab as its kind, opening in Diagram mode', () => {
+  it('reads a retired event-storming tab as the general tab', () => {
     expect(creationIntentOf({ kind: 'event-storming' })).toEqual({
       mode: 'diagram',
-      tabKind: 'event-storming',
+      tabKind: 'diagram',
     });
-  });
-
-  it('reads a legacy event-storming board by its layer, as the document model does', () => {
-    const layers = [{ id: ES_BOARD_LAYER_ID, name: 'Event Storming' }];
-    expect(creationIntentOf({ layers }).tabKind).toBe('event-storming');
   });
 
   it('carries the template family it was made from', () => {
@@ -147,10 +137,10 @@ describe('readCreationIntent', () => {
 
   it('reads every field', () => {
     expect(
-      readCreationIntent({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' }),
+      readCreationIntent({ mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' }),
     ).toEqual({
       ok: true,
-      intent: { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' },
+      intent: { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' },
     });
   });
 
@@ -167,6 +157,7 @@ describe('readCreationIntent', () => {
     ['a missing mode', { templateFamily: 'kanban' }],
     ['an unknown mode', { mode: 'pixel' }],
     ['the legacy whiteboard kind', { mode: 'draw', tabKind: 'whiteboard' }],
+    ['the retired event-storming kind', { mode: 'diagram', tabKind: 'event-storming' }],
     ['an unknown template family', { mode: 'diagram', templateFamily: 'mindmap' }],
     ['a template family that is not a string', { mode: 'diagram', templateFamily: 3 }],
   ])('refuses %s', (_label, value) => {
@@ -197,13 +188,13 @@ describe('parsePlacementDefaultKey', () => {
 });
 
 describe('candidateKeysFor', () => {
-  it('names the kind, then the template, then the mode', () => {
+  it('names the template, then the mode', () => {
     expect(
-      candidateKeysFor({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' }),
-    ).toEqual(['kind:event-storming', 'template:kanban', 'mode:diagram']);
+      candidateKeysFor({ mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' }),
+    ).toEqual(['template:kanban', 'mode:diagram']);
   });
 
-  it('names no kind key for the general tab', () => {
+  it('names the mode alone without a template', () => {
     expect(candidateKeysFor({ mode: 'draw', tabKind: 'diagram' })).toEqual(['mode:draw']);
   });
 });
@@ -218,13 +209,6 @@ describe('defaultKeysFor', () => {
       defaultKeysFor({ mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }),
     ).toEqual(['template:retrospective', 'mode:diagram']);
   });
-
-  it('tries the kind key, then the mode key, of an event-storming board', () => {
-    expect(defaultKeysFor({ mode: 'diagram', tabKind: 'event-storming' })).toEqual([
-      'kind:event-storming',
-      'mode:diagram',
-    ]);
-  });
 });
 
 describe('placementDefaultTelemetryType', () => {
@@ -235,7 +219,6 @@ describe('placementDefaultTelemetryType', () => {
       'DefaultModeWorkshop',
       'DefaultModePages',
       'DefaultModePlan',
-      'DefaultKindEventStorming',
       'DefaultTemplateRetrospective',
       'DefaultTemplateKanban',
     ]);

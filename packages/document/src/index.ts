@@ -326,17 +326,9 @@ export type BoxedElement =
   | VideoElement;
 export type Element = BoxedElement | ArrowElement;
 
-// What KIND of board this tab is, when it is a specialised one. A board
-// kind changes how the editor presents the same underlying tab: an
-// 'event-storming' board opens the palette on its notation, fixes the note
-// silhouettes, blocks resize and swaps the element menu for verbs
-// (docs/specs/021-event-storming/event-storming.md). Absent = an ordinary tab, which is every tab by default.
-//
-// This is deliberately a FIRST-CLASS field rather than something inferred
-// from the tab's contents or its layer ids: identity by proxy broke twice
-// (a three-layer checklist, then a single layer a facilitator can delete),
-// each time stripping a board of its own tooling with nothing on screen to
-// explain why. The editor stays one editor — a kind tunes presentation, it
+// What KIND a tab is (./tab-kind): an ordinary diagram tab, or one of Plan's Board, Sheet,
+// Dashboard and Form tabs. This is deliberately a FIRST-CLASS field rather than something
+// inferred from the tab's contents. The editor stays one editor — a kind tunes presentation, it
 // does not fork persistence, realtime, comments or export.
 //
 // 'diagram' is an ordinary tab and is written explicitly onto tabs the
@@ -366,10 +358,6 @@ export type Tab = {
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
-  // An event-storming board whose workshop notes have been settled onto the
-  // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
-  // template, or by a file import; never cleared, and grafted across undo.
-  esLanesSettled?: boolean;
   // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
@@ -709,11 +697,6 @@ export * from './rich-text';
 export * from './person-card';
 
 export * from './factories';
-export * from './event-storming';
-export * from './event-storming-lanes';
-export * from './event-storming-lane-landing';
-export * from './event-storming-next';
-export * from './event-storming-photo';
 export * from './whiteboard';
 export * from './whiteboard-stroke';
 export * from './graph-authoring';

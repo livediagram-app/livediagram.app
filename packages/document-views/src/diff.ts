@@ -143,7 +143,7 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
 
   const [kindA, kindB] = [before.kindOf(a), after.kindOf(b)];
   if (kindA !== kindB)
-    add('kind', `kind ${kindA} → ${kindB}`, kindA, kindB, ['type', 'shape', 'esKind']);
+    add('kind', `kind ${kindA} → ${kindB}`, kindA, kindB, ['type', 'shape']);
   if (textField(a, 'label') !== textField(b, 'label')) {
     add(
       'label',

@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ES_LANES,
-  laneIndexAt,
-  laneCentre,
-  layOutPages,
-  type Element,
-} from '@liveplanner/document';
+import { layOutPages, type Element } from '@liveplanner/document';
 import { templateCanvasOverrides, type TemplateKind } from '@liveplanner/templates';
 import { primsBounds } from '@liveplanner/icons';
 import { ICON_CATALOG_1 } from '@liveplanner/icons/icon-catalog-1';
@@ -98,7 +92,6 @@ const ALL_KINDS = [
   'uml-class',
   'state-machine',
   'floor-plan',
-  'event-storming',
   'start-stop-continue',
   'mad-sad-glad',
   'four-ls',
@@ -324,28 +317,6 @@ describe('the whiteboard template', () => {
   });
 });
 
-describe('the event-storming template', () => {
-  it('seeds one domain event reading Board Created, and no text element', () => {
-    const els = buildTemplate('event-storming', 0, 0);
-    expect(els).toHaveLength(1);
-    expect(els[0]).toMatchObject({
-      type: 'sticky',
-      esKind: 'domain-event',
-      label: 'Board Created',
-    });
-    expect(els.some((el) => el.type === 'text')).toBe(false);
-  });
-
-  it.each([0, 137, -421, 1000])('lays its row on a lane when built at y %i', (cy) => {
-    const notes = buildTemplate('event-storming', 0, cy).filter((el) => el.type === 'sticky');
-    expect(notes.length).toBeGreaterThan(0);
-    for (const n of notes) {
-      const centre = n.y + n.height / 2;
-      expect(centre).toBe(laneCentre(laneIndexAt(cy, ES_LANES), ES_LANES));
-    }
-  });
-});
-
 describe('buildTemplate translation invariance', () => {
   // For each kind, building at (Δx, Δy) must produce the same
   // element shapes as building at (0, 0) and shifting every
@@ -407,9 +378,7 @@ describe('buildTemplate translation invariance', () => {
         // by exactly (cx, cy) bit-for-bit". Five-decimal precision
         // is well below sub-pixel and well above floating drift.
         expect(cb[j]!.x - ca[j]!.x).toBeCloseTo(DX, 5);
-        // The event-storming row lands on a lane (docs/specs/021-event-storming/event-storming.md Phase 6), so it
-        // moves on y by whole lane pitches rather than by exactly DY.
-        if (kind !== 'event-storming') expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
+        expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
       }
     }
   });

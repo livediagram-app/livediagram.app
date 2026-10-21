@@ -9,7 +9,6 @@ import type {
   LaidOutPage,
 } from '@liveplanner/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
-import type { InsertionGate } from '@/lib/insert-between';
 import type { SnapGuideStore } from './useSnapGuideState';
 
 // External state + callbacks the drag machine reads on every move.
@@ -109,10 +108,6 @@ export type EditorDragDeps = {
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.
   isPinchingRef?: React.RefObject<boolean>;
-  // Insert between (docs/specs/021-event-storming/event-storming.md): what the board and session allow. The
-  // other half of the gate — a held Alt — is read off each pointer
-  // event, so an ordinary move never offers a slot.
-  insertGate: InsertionGate;
 };
 
 export type EditorDragApi = {

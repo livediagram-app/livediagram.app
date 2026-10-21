@@ -1,6 +1,0 @@
-# Event storming
-
-Follow the references below only as needed; never upfront.
-
-- ./event-storming.md - when working on Event storming: the workshop tab kind, its note notation, stationery, Alt insertion, timeline lanes (every workshop note always on a lane), next-note buttons and the photo import (sticky-vision detector, sticky-model boundary model, handwriting readers)
-- ./blueprints/README.md - when implementing an event-storming spec that has a blueprint (always on a lane)

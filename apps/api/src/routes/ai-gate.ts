@@ -7,26 +7,24 @@ import {
   signInRequired,
 } from '../responses';
 import { clientRateKey } from '../client-ip';
-import { resolveAiProvider, type AiFeature } from '../ai-provider';
+import { resolveAiProvider } from '../ai-provider';
 import type { RouteContext } from './context';
 
 // May this caller use the model at all? (docs/specs/007-editor/ai-assistance.md.)
 //
-// Lifted out of `handleAi` verbatim when a SECOND model route arrived (the
-// event-storming photo reader, docs/specs/021-event-storming/event-storming.md Phase 8). One answer to "who may spend
-// the operator's model budget", not two that drift — and the order matters as
+// One answer to "who may spend the operator's model budget" — and the order matters as
 // much as the checks: the origin allow-list runs BEFORE auth so a third-party
 // site cannot even probe the endpoint for state, and the rate limiter runs
 // last so a refused caller never consumes anyone's budget.
 //
 // Returns the Response to send, or null when the caller is admitted.
-export async function aiGate(ctx: RouteContext, feature: AiFeature): Promise<Response | null> {
+export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   const { request, env } = ctx;
 
-  // No usable provider for this feature: no key, or a half-configured generic
+  // No usable provider: no key, or a half-configured generic
   // (ai-provider.ts logs which). Same answer either way: this deployment does
   // not do AI.
-  if (!resolveAiProvider(env, feature))
+  if (!resolveAiProvider(env))
     return json({ error: 'ai_not_configured' }, { status: 503 });
 
   // Origin allow-list (docs/specs/007-editor/ai-assistance.md). Optional: unset accepts any Origin, matching
