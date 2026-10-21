@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AddingElements } from '@/components/illustrations/canvas';
+
+export const metadata = helpMetadata({
+  title: 'Adding Elements',
+  description:
+    'Add shapes, text, arrows and more from the palette strip or a single key, dropping them with a tap or drawing them to size.',
+  path: '/help/canvas/the-canvas/adding-elements/',
+});
+
+<ArticleLayout
+  title="Adding Elements"
+  description="Drop elements from the palette with a tap, drag to draw them at the size you want, or add them with a single key."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: "The Canvas", slug: "the-canvas" }}
+  subArticles={getSubArticles("the-canvas").filter((a) => a.slug !== "adding-elements")}
+>
+
+Every element on the canvas starts from the palette. The palette organises its contents into categories so it stays compact however much it holds, and adding an element is usually a single tap.
+
+## Picking a Category
+
+The palette is the strip across the top of the canvas. Its categories sit along it by name: rest the pointer on one, or click it, and its elements open in a panel underneath, in named groups, with a line on what each one does. In Diagram mode the categories are:
+
+- **Shapes**: the common nodes, such as square, circle, diamond, cylinder, parallelogram, hexagon, document and stadium.
+- **Write**: the words, text, sticky notes, pages, annotations and pointer notes, then comments and action cards.
+- **Draw**: what you make with a stroke or a drag, the pencil, shape pen, highlighter, polygon, arrows and lines.
+- **Diagrams**: the structures that grow as you type, such as mind nodes, org charts, flowcharts, sequence diagrams, tables and entities.
+- **Layout**: what a diagram is arranged in and labelled with, such as lanes, frames, stacks, boundaries, timelines, keys, cards and badges.
+- **Concepts**: ideas laid out as one element, such as a pyramid, a funnel, a cycle and the Sankey.
+- **Icons**: a searchable set of single-colour icons, its groups down the side, that you can drop on the canvas or onto a shape.
+- **Tech**: full-colour cloud and infrastructure marks for system-architecture diagrams.
+- **Media**: an uploaded image, or a circular avatar.
+
+Other modes arrange their own set. [Pages mode](/help/canvas/pages-mode/) adds **Components** (themed composites such as Banner, Hero and Header), **Devices** (browser, laptop, phone and other frames for wireframing), **Stickers** and **Data** (charts), and its **Media** adds embeds and a **Tab Window** that shows another tab live; [Workshop mode](/help/canvas/workshop-mode/) adds **Stickers**, **Data**, **Ask** and **Session**; and [Plan mode](/help/canvas/plan-mode/) has no palette, since its boards, sheets and dashboards carry their own tools. If you have imported a [shape library](/help/explorer/shape-libraries/), its shapes appear under **Library**. A Participant on a shared link gets one category instead, **Participate**, with sticky notes, text and an image to add to the board.
+
+## Dropping or Drawing an Element
+
+Almost every tile arms a combined gesture when you click it.
+
+<Step n={1}>
+  Click a tile in the palette. It stays pressed to show it is armed, and a banner along the top of
+  the canvas says what comes next (for a shape, "Tap to drop or drag to draw" and the shape's name),
+  with a Cancel button.
+</Step>
+<Step n={2}>
+  Tap an empty spot on the canvas to drop the element at its natural size on that point.
+</Step>
+<Step n={3}>
+  Or, instead of a single tap, drag out a box and release to create the element at that size. Both
+  corners snap to nearby shapes as you drag.
+</Step>
+
+While a tile is armed you can even start the drag on top of another element: the new one is drawn over it rather than selecting it. Press Escape (or Cancel on the banner) to disarm a tile without adding anything. Text lands ready for typing; everything else lands selected, ready to move or restyle. An **Image** lands as an empty placeholder: press its **Select Image** button when you are ready to add the picture.
+
+If a boxed element is already selected when you tap a tile, the new one inherits its width and height (a drag sets its own size, and a selected frame or lane never passes its size on), so you can chain together similarly sized nodes quickly. Circles and diamonds are an exception: they are inherently square, so they snap back to a square using the larger inherited dimension.
+
+You can also **drag a tile straight from the palette onto the canvas** instead of tapping. As you drag, a translucent preview of the element follows your cursor at its real size, so you can see exactly where, and how big, it will land before you let go.
+
+<Figure caption="Click a shape tile, then drop it on the canvas; it lands selected, ready to move or resize.">
+  <AddingElements />
+</Figure>
+
+## Adding from the Keyboard
+
+Single keys arm the most common elements without opening the palette: `R` for a rectangle, `O` for an oval, `D` for a diamond, `C` for a cylinder, `G` for a parallelogram, `T` for text, `N` for a sticky note, `A` for an arrow, `F` for a frame and `9` for an image. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) for the full list. With one labelled element selected, a letter key types into its label instead. The keys add nothing for a Participant or a Viewer, and [Draw mode](/help/canvas/draw-mode/) has keys of its own. You can also **double-click empty canvas** to drop a text element and start typing straight away.
+
+## Annotations Land in the Middle
+
+An [annotation](/help/canvas/annotations/) is the one element without the draw gesture. It is a fixed-size marker, so there is no size to choose: it lands at the centre of the visible canvas, already selected, so you can drag it where you want.
+
+<Tip>
+  Icons can be added to a shape rather than as standalone elements: drag an icon tile onto a shape,
+  or click an icon while a shape is selected, and it attaches beside that shape's label.
+</Tip>
+
+</ArticleLayout>

@@ -1,0 +1,113 @@
+'use client';
+
+import { useEffect, useState, type RefObject } from 'react';
+import type { MovablePanelProps } from './MovablePanel.types';
+
+// How high a bottom-anchored panel may grow: to the canvas's top edge (below the header), and below the palette strip
+// or the Draw dock where they overlap it across, so its header never slides under them on a short window (a laptop
+// zoomed to 200%, docs/specs/007-editor/panel-docking.md "Default layout").
+export function bottomPanelTopLimit(panelRect: Pick<DOMRect, 'left' | 'right'>): number {
+  const canvas = document.querySelector('main[data-region="canvas"], main[aria-label="Canvas"]');
+  let top = canvas ? canvas.getBoundingClientRect().top : 0;
+  for (const el of document.querySelectorAll(
+    '[data-toolbar-palette] [data-tour-id="palette"], [data-whiteboard-dock]',
+  )) {
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && panelRect.right > r.left && panelRect.left < r.right)
+      top = Math.max(top, r.bottom);
+  }
+  return top;
+}
+
+// The panel's geometry measurement, lifted out of MovablePanel: the body
+// max-height cap, so the scrollable body never runs under the tab bar /
+// zoom controls. Returns the computed cap.
+export function useMovablePanelMeasure({
+  ref,
+  headerRef,
+  position,
+  defaultCorner,
+  docked,
+  dockedCorner,
+}: {
+  ref: RefObject<HTMLDivElement | null>;
+  headerRef: RefObject<HTMLDivElement | null>;
+  position: MovablePanelProps['position'];
+  defaultCorner: MovablePanelProps['defaultCorner'];
+  docked: boolean;
+  dockedCorner: MovablePanelProps['dockedCorner'];
+}): number | null {
+  // Max height for the panel body so it never extends below the viewport.
+  // Recomputed on mount, on resize, and whenever the panel's position
+  // changes (drag end updates `position`).
+  const [bodyMaxH, setBodyMaxH] = useState<number | null>(null);
+
+  // Constrain panel body to the remaining viewport space below its header.
+  // Uses rAF so the panel has painted at its new position before we measure.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const compute = () => {
+      const panel = ref.current;
+      if (!panel) return;
+      const panelRect = panel.getBoundingClientRect();
+      const headerH = headerRef.current?.getBoundingClientRect().height ?? 36;
+      // Grow the scrollable body to the most space actually available,
+      // rather than a fixed reserve. The hard bottom edge is the top of
+      // the TabBar (the canvas's real bottom; falls back to the viewport
+      // bottom on routes without one). If the panel overlaps the floating
+      // zoom controls' column, stop above those too so its last rows stay
+      // clickable. Previously a fixed 16px reserve let long panels (Theme /
+      // Canvas accordions on a laptop) run under the tab bar / behind the
+      // zoom bar.
+      const GAP = 12;
+      // A panel anchored at a BOTTOM corner grows UPWARD, so its top edge
+      // moves with its own body content. Measuring the body cap from
+      // panelRect.top there would feed back through the ResizeObserver
+      // below (taller body -> higher top -> bigger cap -> ...) AND, because
+      // the downward space to the tab bar gets clamped against the zoom
+      // controls in the bottom-right, would shrink the panel to almost
+      // nothing. Its bottom edge is stable, so measure the space up from
+      // there instead. This covers both the legacy CSS bottom corner
+      // (position null + a bottom defaultCorner) and a panel DOCKED into a
+      // bottom corner (docs/specs/007-editor/panel-docking.md), whose live corner is dockedCorner.
+      const bottomAnchored = docked
+        ? dockedCorner === 'bottom-left' || dockedCorner === 'bottom-right'
+        : position === null && defaultCorner.startsWith('bottom');
+      if (bottomAnchored) {
+        setBodyMaxH(
+          Math.max(panelRect.bottom - bottomPanelTopLimit(panelRect) - headerH - GAP * 2, 80),
+        );
+        return;
+      }
+      const tabbar = document.querySelector('[data-editor-tabbar]');
+      let bottomLimit = tabbar ? tabbar.getBoundingClientRect().top : window.innerHeight;
+      const zoom = document.querySelector('[data-zoom-controls]');
+      if (zoom) {
+        const z = zoom.getBoundingClientRect();
+        const overlapsX = panelRect.right > z.left && panelRect.left < z.right;
+        if (overlapsX) bottomLimit = Math.min(bottomLimit, z.top);
+      }
+      setBodyMaxH(Math.max(bottomLimit - panelRect.top - headerH - GAP, 80));
+    };
+    const raf = requestAnimationFrame(compute);
+    window.addEventListener('resize', compute);
+    // Re-measure on any layout shift of the panel itself — accordions
+    // expanding/collapsing, the panel settling into its stacked position,
+    // or the zoom bar / tab bar mounting after first paint. Safe from a
+    // feedback loop: bodyMaxH is derived from the panel's TOP and the
+    // chrome below it, never from the body content, so once the layout
+    // settles compute returns the same value and React bails on the set.
+    const panel = ref.current;
+    const ro = panel ? new ResizeObserver(() => compute()) : null;
+    ro?.observe(panel!);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', compute);
+      ro?.disconnect();
+    };
+    // Re-measure after drag (position changes). The two refs are stable;
+    // listed to satisfy exhaustive-deps now they're props of this hook.
+  }, [position, defaultCorner, docked, dockedCorner, ref, headerRef]);
+
+  return bodyMaxH;
+}

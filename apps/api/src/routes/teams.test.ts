@@ -1,0 +1,1111 @@
+import { makeTestRouteContext } from './test-route-context';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { TeamMember } from '@livediagram/api-schema';
+import type { Env } from '../types';
+
+const { db } = vi.hoisted(() => ({
+  db: {
+    acceptTeamMember: vi.fn(),
+    addTeamMember: vi.fn(),
+    getDocumentMeta: vi.fn(),
+    readItem: vi.fn(),
+    getParticipant: vi.fn(),
+    hasSharedAccess: vi.fn(),
+    listInvitesByUser: vi.fn(),
+    connectInvitesByEmail: vi.fn(),
+    countJoinedMembers: vi.fn(),
+    countTeamAdmins: vi.fn(),
+    createTeam: vi.fn(),
+    deleteTeam: vi.fn(),
+    getMembership: vi.fn(),
+    getTeam: vi.fn(),
+    getTeamByInviteToken: vi.fn(),
+    getTeamInviteLink: vi.fn(),
+    getTeamMember: vi.fn(),
+    joinTeamByInviteToken: vi.fn(),
+    listDocumentsByTeam: vi.fn(),
+    listFoldersByTeam: vi.fn(),
+    listTeamMembers: vi.fn(),
+    listTeamsByUser: vi.fn(),
+    removeTeamMemberKeepingAdmin: vi.fn(async () => true),
+    handTeamWorkToHeir: vi.fn(),
+    setTeamInviteLink: vi.fn(),
+    teamHasEmail: vi.fn(),
+    updateTeam: vi.fn(),
+    updateTeamMemberRoleKeepingAdmin: vi.fn(async () => true),
+    // The route imports this constant from '../db'; the mock replaces
+    // the whole module, so provide it as a value (one week in ms).
+    TEAM_INVITE_LINK_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+  },
+}));
+vi.mock('../db', () => db);
+// The in-app decline marks the row 'declined' (docs/specs/013-workspace/teams.md); the write has its own suite.
+const { decline } = vi.hoisted(() => ({
+  decline: { declineTeamInvite: vi.fn(async () => true) },
+}));
+vi.mock('../db/team-invite-decline', () => decline);
+// The room fan-out has its own suite (room-access-client.test.ts); here, only whether it is asked.
+const { roomAccess } = vi.hoisted(() => ({
+  roomAccess: {
+    closeMemberTeamSessions: vi.fn(async () => ({ rooms: 0, unreached: 0, truncated: false })),
+  },
+}));
+vi.mock('../room-access-client', () => roomAccess);
+// Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
+vi.mock('../email/notifications', () => ({
+  notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
+  notifyMentioned: vi.fn().mockResolvedValue(undefined),
+  notifyInviteResponse: vi.fn().mockResolvedValue(undefined),
+  NOTIFY_EMAIL_DEDUPE_MS: 24 * 60 * 60 * 1000,
+}));
+
+import type { RouteContext } from './context';
+import {
+  notifyActionAssigned,
+  notifyInviteResponse,
+  notifyMentioned,
+} from '../email/notifications';
+import { handleTeams } from './teams';
+
+// Clerk-session context ('user-1'); verifiedUserId may diverge for the
+// token-caller shape (docs/specs/015-api/public-api-and-tokens.md). resolveOwner falls back to 'guest-1'.
+const makeCtx = (
+  method: string,
+  path: string,
+  opts: {
+    clerkUserId?: string | null;
+    clerkEmail?: string | null;
+    // A token caller (docs/specs/015-api/public-api-and-tokens.md): verified account id with NO Clerk session.
+    verifiedUserId?: string | null;
+    body?: unknown;
+  } = {},
+): RouteContext => {
+  const clerkUserId = opts.clerkUserId === undefined ? 'user-1' : opts.clerkUserId;
+  const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;
+  return makeTestRouteContext(method, path, {
+    body: opts.body,
+    clerkUserId,
+    verifiedUserId,
+    clerkEmail: opts.clerkEmail ?? null,
+    owner: verifiedUserId ?? 'guest-1',
+    // Evaluate the deferred work inline so tests can observe the dispatch
+    // (`ctx.waitUntil?.(...)` skips its argument entirely when absent).
+    waitUntil: (p: Promise<unknown>) => void p.catch(() => {}),
+  });
+};
+
+const team = { id: 't1', name: 'Crew', organisation: null, createdAt: 1, updatedAt: 1 };
+
+function member(overrides: Partial<TeamMember> = {}): TeamMember {
+  return {
+    id: 'm1',
+    teamId: 't1',
+    userId: 'user-1',
+    email: 'me@example.com',
+    role: 'admin',
+    status: 'joined',
+    name: null,
+    pictureUrl: null,
+    createdAt: 1,
+    updatedAt: 1,
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  // `db` also holds a non-fn constant (TEAM_INVITE_LINK_TTL_MS) now.
+  for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
+  // The guarded writes land unless a case says another admin changed first.
+  db.removeTeamMemberKeepingAdmin.mockResolvedValue(true);
+  db.updateTeamMemberRoleKeepingAdmin.mockResolvedValue(true);
+});
+
+describe('handleTeams Clerk-only gate (docs/specs/013-workspace/teams.md)', () => {
+  it('401 sign_in_required for the guest path, even with an X-Owner-Id-style owner', async () => {
+    const res = await handleTeams(makeCtx('GET', '/api/teams', { clerkUserId: null }));
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: 'sign_in_required' });
+  });
+});
+
+describe('API-token callers (docs/specs/015-api/public-api-and-tokens.md §3.4: read yes, manage no)', () => {
+  // A token request verifies to the Clerk account (verifiedUserId) but
+  // carries no interactive session (clerkUserId null).
+  const asToken = { clerkUserId: null, verifiedUserId: 'user-1' };
+
+  it('lists the caller’s teams', async () => {
+    db.listTeamsByUser.mockResolvedValue([{ ...team, myRole: 'member', memberCount: 2 }]);
+    const res = await handleTeams(makeCtx('GET', '/api/teams', asToken));
+    expect(res.status).toBe(200);
+    expect(db.listTeamsByUser).toHaveBeenCalledWith({}, 'user-1');
+  });
+
+  it('reads a joined team’s shared library', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    db.listFoldersByTeam.mockResolvedValue([]);
+    db.listDocumentsByTeam.mockResolvedValue([{ id: 'd1', name: 'Team doc' }]);
+    const res = await handleTeams(makeCtx('GET', '/api/teams/t1/library', asToken));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ folders: [], documents: [{ id: 'd1', name: 'Team doc' }] });
+  });
+
+  it('401s every mutation — token holders cannot manage teams', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    for (const [method, path, body] of [
+      ['POST', '/api/teams', { id: 't9', name: 'New' }],
+      ['PUT', '/api/teams/t1', { name: 'Renamed' }],
+      ['DELETE', '/api/teams/t1', undefined],
+      ['POST', '/api/teams/t1/members', { email: 'x@example.com' }],
+      ['POST', '/api/teams/t1/invite-link', undefined],
+    ] as const) {
+      const res = await handleTeams(makeCtx(method, path, { ...asToken, body }));
+      expect(res.status, `${method} ${path}`).toBe(401);
+    }
+    expect(db.createTeam).not.toHaveBeenCalled();
+    expect(db.updateTeam).not.toHaveBeenCalled();
+    expect(db.deleteTeam).not.toHaveBeenCalled();
+    expect(db.addTeamMember).not.toHaveBeenCalled();
+    expect(db.setTeamInviteLink).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/teams (list + lazy invite claim)', () => {
+  it('lists the teams the caller belongs to', async () => {
+    db.listTeamsByUser.mockResolvedValue([{ ...team, myRole: 'admin', memberCount: 2 }]);
+    const res = await handleTeams(makeCtx('GET', '/api/teams'));
+    expect(res.status).toBe(200);
+    expect(db.listTeamsByUser).toHaveBeenCalledWith({}, 'user-1');
+    expect(db.connectInvitesByEmail).not.toHaveBeenCalled();
+  });
+
+  it('claims pending invites first when the JWT carries an email claim', async () => {
+    db.listTeamsByUser.mockResolvedValue([]);
+    await handleTeams(makeCtx('GET', '/api/teams', { clerkEmail: 'me@example.com' }));
+    expect(db.connectInvitesByEmail).toHaveBeenCalledWith({}, 'user-1', 'me@example.com');
+  });
+});
+
+describe('GET /api/teams/invites (docs/specs/013-workspace/teams.md accept/decline)', () => {
+  it('lazy-claims then lists the pending invites', async () => {
+    db.listInvitesByUser.mockResolvedValue([
+      { memberId: 'm2', team, memberCount: 3, invitedAt: 5 },
+    ]);
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/invites', { clerkEmail: 'me@example.com' }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.connectInvitesByEmail).toHaveBeenCalledWith({}, 'user-1', 'me@example.com');
+    expect(db.listInvitesByUser).toHaveBeenCalledWith({}, 'user-1');
+  });
+
+  it('401 for the guest path', async () => {
+    const res = await handleTeams(makeCtx('GET', '/api/teams/invites', { clerkUserId: null }));
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/teams/:id/members/:memberId/accept', () => {
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+  });
+
+  it("flips the caller's own invited row to joined", async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    db.getTeamMember.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
+    expect(res.status).toBe(200);
+    expect(db.acceptTeamMember).toHaveBeenCalledWith({}, 'm1');
+  });
+
+  it('tells the admins only when this accept is the one that flipped the row', async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    db.getTeamMember.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    vi.mocked(notifyInviteResponse).mockClear();
+    db.acceptTeamMember.mockResolvedValueOnce(true);
+    await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+    // A concurrent accept read 'invited' too, but lost the guarded write.
+    db.acceptTeamMember.mockResolvedValueOnce(false);
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
+    expect(res.status).toBe(200);
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+  });
+
+  it("403 not_your_invite on someone else's row", async () => {
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm2', userId: 'user-2', role: 'member', status: 'invited' }),
+    );
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m2/accept'));
+    expect(res.status).toBe(403);
+    expect(db.acceptTeamMember).not.toHaveBeenCalled();
+  });
+
+  it('is idempotent on an already-joined row (no rewrite)', async () => {
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member());
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
+    expect(res.status).toBe(200);
+    expect(db.acceptTeamMember).not.toHaveBeenCalled();
+  });
+});
+
+describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+  });
+
+  it('admin turns the link on: mints a token + 1-week expiry, 201', async () => {
+    db.getMembership.mockResolvedValue(member()); // admin, joined
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/invite-link'));
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { inviteLink: { token: string; expiresAt: number } };
+    expect(body.inviteLink.token).toBeTruthy();
+    expect(body.inviteLink.expiresAt).toBeGreaterThan(Date.now());
+    expect(db.setTeamInviteLink).toHaveBeenCalledWith(
+      {},
+      't1',
+      body.inviteLink.token,
+      body.inviteLink.expiresAt,
+    );
+  });
+
+  it('a member cannot turn the link on (403)', async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/invite-link'));
+    expect(res.status).toBe(403);
+    expect(db.setTeamInviteLink).not.toHaveBeenCalled();
+  });
+
+  it('admin turns the link off (DELETE clears the token, 204)', async () => {
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/invite-link'));
+    expect(res.status).toBe(204);
+    expect(db.setTeamInviteLink).toHaveBeenCalledWith({}, 't1', null, null);
+  });
+
+  it('resolves a valid token to its team — guest-accessible (above the sign-in gate)', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(team);
+    db.countJoinedMembers.mockResolvedValue(3);
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/invite-link/tok-123', { clerkUserId: null }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ team, memberCount: 3, alreadyMember: false });
+    expect(db.getTeamByInviteToken).toHaveBeenCalledWith({}, 'tok-123');
+  });
+
+  it('resolve reports alreadyMember for a signed-in member', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(team);
+    db.countJoinedMembers.mockResolvedValue(2);
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(makeCtx('GET', '/api/teams/invite-link/tok-123'));
+    expect(await res.json()).toMatchObject({ alreadyMember: true });
+  });
+
+  it('resolve offers Join to someone whose email invite is still pending', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(team);
+    db.countJoinedMembers.mockResolvedValue(2);
+    db.getMembership.mockResolvedValue({ ...member(), status: 'invited' });
+    const res = await handleTeams(makeCtx('GET', '/api/teams/invite-link/tok-123'));
+    expect(await res.json()).toMatchObject({ alreadyMember: false });
+  });
+
+  it('404 on an unknown / expired token', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(null);
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/invite-link/nope', { clerkUserId: null }),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('join: a signed-in caller joins via the token', async () => {
+    db.joinTeamByInviteToken.mockResolvedValue({ teamId: 't1', alreadyMember: false });
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { clerkEmail: 'me@example.com' }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ teamId: 't1', alreadyMember: false });
+    expect(db.joinTeamByInviteToken).toHaveBeenCalledWith(
+      {},
+      'tok-123',
+      'user-1',
+      'me@example.com',
+    );
+  });
+
+  it('join requires sign-in (guest 401, no db write)', async () => {
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { clerkUserId: null }),
+    );
+    expect(res.status).toBe(401);
+    expect(db.joinTeamByInviteToken).not.toHaveBeenCalled();
+  });
+
+  it('join 404s an invalid / expired token', async () => {
+    db.joinTeamByInviteToken.mockResolvedValue(null);
+    const res = await handleTeams(makeCtx('POST', '/api/teams/invite-link/bad/join'));
+    expect(res.status).toBe(404);
+  });
+
+  it('team detail carries inviteLink for an admin, null for a member', async () => {
+    db.listTeamMembers.mockResolvedValue([member()]);
+    db.getTeamInviteLink.mockResolvedValue({ token: 'tok-1', expiresAt: 999 });
+
+    db.getMembership.mockResolvedValue(member()); // admin
+    const adminRes = await handleTeams(makeCtx('GET', '/api/teams/t1'));
+    expect(await adminRes.json()).toMatchObject({ inviteLink: { token: 'tok-1' } });
+
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    const memberRes = await handleTeams(makeCtx('GET', '/api/teams/t1'));
+    expect(await memberRes.json()).toMatchObject({ inviteLink: null });
+  });
+
+  it("leaves inviteLink out for an API token, even an admin's", async () => {
+    // The token is a credential for joining the team and editing its library;
+    // team administration is session-only (§3.4), so a token never reads it.
+    db.listTeamMembers.mockResolvedValue([member()]);
+    db.getTeamInviteLink.mockResolvedValue({ token: 'tok-1', expiresAt: 999 });
+    db.getMembership.mockResolvedValue(member()); // admin
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/t1', { clerkUserId: null, verifiedUserId: 'user-1' }),
+    );
+    expect(await res.json()).toMatchObject({ inviteLink: null });
+    expect(db.getTeamInviteLink).not.toHaveBeenCalled();
+  });
+});
+
+describe('invited rows grant no admin powers', () => {
+  it('an invited admin row cannot use admin verbs', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ status: 'invited' }));
+    const res = await handleTeams(makeCtx('PUT', '/api/teams/t1', { body: { name: 'X' } }));
+    expect(res.status).toBe(403);
+  });
+
+  it('declining an invited admin row bypasses the last-admin guard', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ status: 'invited' }));
+    db.getTeamMember.mockResolvedValue(member({ status: 'invited' }));
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'));
+    expect(res.status).toBe(204);
+    expect(db.countTeamAdmins).not.toHaveBeenCalled();
+  });
+
+  it('declining your own invite marks it declined instead of deleting it, and tells the admins once', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    db.getTeamMember.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    vi.mocked(notifyInviteResponse).mockClear();
+    db.removeTeamMemberKeepingAdmin.mockClear();
+    decline.declineTeamInvite.mockResolvedValueOnce(true);
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'));
+    expect(res.status).toBe(204);
+    expect(decline.declineTeamInvite).toHaveBeenCalledWith({}, 'm1');
+    expect(db.removeTeamMemberKeepingAdmin).not.toHaveBeenCalled();
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+    // A double-click finds it already declined: no second email.
+    decline.declineTeamInvite.mockResolvedValueOnce(false);
+    expect((await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'))).status).toBe(204);
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+  });
+
+  it('an admin clears a rejected row with the ordinary remove, telling no one', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm2', userId: null, role: 'member', status: 'declined' }),
+    );
+    vi.mocked(notifyInviteResponse).mockClear();
+    db.removeTeamMemberKeepingAdmin.mockClear();
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(res.status).toBe(204);
+    expect(db.removeTeamMemberKeepingAdmin).toHaveBeenCalledOnce();
+    expect(db.handTeamWorkToHeir).not.toHaveBeenCalledWith(expect.anything(), 't1', null);
+    expect(notifyInviteResponse).not.toHaveBeenCalled();
+  });
+
+  it('409 invite_rejected on a role change for a rejected row', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm2', userId: null, role: 'member', status: 'expired' }),
+    );
+    const res = await handleTeams(
+      makeCtx('PUT', '/api/teams/t1/members/m2', { body: { role: 'admin' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'invite_rejected' });
+  });
+});
+
+describe('POST /api/teams (create)', () => {
+  it('creates the team with the caller as Admin', async () => {
+    db.createTeam.mockResolvedValue(team);
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams', {
+        clerkEmail: 'me@example.com',
+        body: { id: 't1', name: 'Crew', organisation: ' ACME ' },
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.createTeam).toHaveBeenCalledWith(
+      {},
+      { id: 't1', name: 'Crew', organisation: 'ACME' },
+      { userId: 'user-1', email: 'me@example.com' },
+    );
+  });
+
+  it('400 when name is missing', async () => {
+    const res = await handleTeams(makeCtx('POST', '/api/teams', { body: { id: 't1' } }));
+    expect(res.status).toBe(400);
+  });
+
+  it('400 for an id, name or organisation that is not a string, never a 500', async () => {
+    for (const body of [
+      { id: {}, name: 'Crew' },
+      { id: 't1', name: 123 },
+      { id: 't1', name: 'Crew', organisation: [] },
+      { id: 'x'.repeat(65), name: 'Crew' },
+    ]) {
+      const res = await handleTeams(makeCtx('POST', '/api/teams', { body }));
+      expect(res.status).toBe(400);
+    }
+    expect(db.createTeam).not.toHaveBeenCalled();
+  });
+
+  it('409 when the id is already a team', async () => {
+    db.getTeam.mockResolvedValue(team);
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams', { body: { id: 't1', name: 'Crew' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(db.createTeam).not.toHaveBeenCalled();
+  });
+});
+
+describe('team-scoped access', () => {
+  it('404 for a non-member (no existence probing)', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(null);
+    const res = await handleTeams(makeCtx('GET', '/api/teams/t1'));
+    expect(res.status).toBe(404);
+  });
+
+  it('GET returns team + members + myRole for a member', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    db.listTeamMembers.mockResolvedValue([member()]);
+    const res = await handleTeams(makeCtx('GET', '/api/teams/t1'));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { myRole: string };
+    expect(body.myRole).toBe('member');
+  });
+
+  it('PUT (edit) is admin-only: member gets 403', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    const res = await handleTeams(makeCtx('PUT', '/api/teams/t1', { body: { name: 'New name' } }));
+    expect(res.status).toBe(403);
+    expect(db.updateTeam).not.toHaveBeenCalled();
+  });
+
+  it('PUT 400 for a name or organisation that is not a string, never a 500', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    for (const body of [{ name: 5 }, { name: null }, { organisation: {} }]) {
+      const res = await handleTeams(makeCtx('PUT', '/api/teams/t1', { body }));
+      expect(res.status).toBe(400);
+    }
+    expect(db.updateTeam).not.toHaveBeenCalled();
+  });
+
+  it('invite 400 for an email that is not a string', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/t1/members', { body: { email: ['a@b.co'] } }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('DELETE removes the team for an admin', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1'));
+    expect(res.status).toBe(204);
+    expect(db.deleteTeam).toHaveBeenCalledWith({}, 't1');
+  });
+});
+
+describe('POST /api/teams/:id/members (invite)', () => {
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+  });
+
+  it('creates a pending member row with the lowercased email', async () => {
+    db.teamHasEmail.mockResolvedValue(false);
+    db.addTeamMember.mockResolvedValue({
+      member: member({ id: 'm2', userId: null, role: 'member' }),
+      declineToken: 'm2.secret',
+    });
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/t1/members', { body: { email: ' New@Example.COM ' } }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.addTeamMember).toHaveBeenCalledWith({}, { teamId: 't1', email: 'new@example.com' });
+  });
+
+  it('409 already_member on a duplicate address', async () => {
+    db.teamHasEmail.mockResolvedValue(true);
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/t1/members', { body: { email: 'me@example.com' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'already_member' });
+  });
+
+  it('400 on a malformed address', async () => {
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/t1/members', { body: { email: 'not-an-email' } }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('403 for a plain member', async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    const res = await handleTeams(
+      makeCtx('POST', '/api/teams/t1/members', { body: { email: 'x@example.com' } }),
+    );
+    expect(res.status).toBe(403);
+  });
+});
+
+describe('PUT /api/teams/:id/members/:memberId (role change)', () => {
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+  });
+
+  it('promotes a member to admin', async () => {
+    const target = member({ id: 'm2', userId: 'user-2', role: 'member' });
+    db.getTeamMember.mockResolvedValue(target);
+    const res = await handleTeams(
+      makeCtx('PUT', '/api/teams/t1/members/m2', { body: { role: 'admin' } }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.updateTeamMemberRoleKeepingAdmin).toHaveBeenCalledWith({}, 'm2', 'admin');
+  });
+
+  it('409 last_admin when demoting the only admin', async () => {
+    db.getTeamMember.mockResolvedValue(member());
+    db.countTeamAdmins.mockResolvedValue(1);
+    const res = await handleTeams(
+      makeCtx('PUT', '/api/teams/t1/members/m1', { body: { role: 'member' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'last_admin' });
+    expect(db.updateTeamMemberRoleKeepingAdmin).not.toHaveBeenCalled();
+  });
+
+  it('404 when the member row belongs to a different team', async () => {
+    db.getTeamMember.mockResolvedValue(member({ teamId: 'other-team' }));
+    const res = await handleTeams(
+      makeCtx('PUT', '/api/teams/t1/members/m1', { body: { role: 'member' } }),
+    );
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+  });
+
+  it('is a 409 last_admin when another admin changed first and the guarded write refuses', async () => {
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'admin' }));
+    db.countTeamAdmins.mockResolvedValue(2);
+    db.removeTeamMemberKeepingAdmin.mockResolvedValue(false);
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'last_admin' });
+  });
+
+  it('admin removes another member', async () => {
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(res.status).toBe(204);
+    expect(db.removeTeamMemberKeepingAdmin).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ id: 'm2' }),
+    );
+  });
+
+  it("hands a removed member's team work to the team before the row goes", async () => {
+    // Every access gate honours owner_id before membership, so documents left
+    // owned by the removed member would stay open to them (docs/specs/013-workspace/team-shared-documents.md).
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
+    await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(db.handTeamWorkToHeir).toHaveBeenCalledWith({}, 't1', 'user-2');
+    expect(db.handTeamWorkToHeir.mock.invocationCallOrder[0]!).toBeLessThan(
+      db.removeTeamMemberKeepingAdmin.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  // docs/specs/013-workspace/team-shared-documents.md: a member who leaves or is removed loses their
+  // open realtime sessions on the team's documents too.
+  it("ends a departing member's realtime sessions on the team's documents", async () => {
+    roomAccess.closeMemberTeamSessions.mockClear();
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
+    await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(roomAccess.closeMemberTeamSessions).toHaveBeenCalledWith({}, 't1', 'user-2');
+  });
+
+  it('asks no room to close anything when an invite is withdrawn', async () => {
+    roomAccess.closeMemberTeamSessions.mockClear();
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm3', userId: null, role: 'member', status: 'invited' }),
+    );
+    await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m3'));
+    expect(roomAccess.closeMemberTeamSessions).not.toHaveBeenCalled();
+  });
+
+  it('a member may remove their own row (leave)', async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    db.getTeamMember.mockResolvedValue(member({ role: 'member' }));
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'));
+    expect(res.status).toBe(204);
+  });
+
+  it("403 when a member tries to remove someone else's row", async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member' }));
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(res.status).toBe(403);
+    expect(db.removeTeamMemberKeepingAdmin).not.toHaveBeenCalled();
+  });
+
+  it('409 last_admin when the only admin tries to leave', async () => {
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member());
+    db.countTeamAdmins.mockResolvedValue(1);
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'));
+    expect(res.status).toBe(409);
+  });
+});
+
+describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned-actions.md)', () => {
+  const get = (qs: string, opts: Parameters<typeof makeCtx>[2] = {}) =>
+    handleTeams(makeCtx('GET', `/api/teams/t1/access-check?${qs}`, opts));
+  const QS = 'assigneeUserId=user-2&documentId=d1';
+
+  const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
+    db.getMembership.mockImplementation(async (_env: Env, teamId: string, userId: string) => {
+      const key = `${teamId}:${userId}`;
+      if (key in overrides) return overrides[key];
+      if (userId === 'user-1') return member();
+      if (userId === 'user-2' && teamId === 't1')
+        return member({ id: 'm2', userId: 'user-2', role: 'member' });
+      return null;
+    });
+  };
+
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    membershipByUser();
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    db.hasSharedAccess.mockResolvedValue(false);
+  });
+
+  it('false for a personal document the assignee has never opened', async () => {
+    const res = await get(QS);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ canAccess: false });
+  });
+
+  it('true when the assignee has opened it through a share link', async () => {
+    db.hasSharedAccess.mockImplementation(
+      async (_env: Env, ownerId: string) => ownerId === 'user-2',
+    );
+    expect(await (await get(QS)).json()).toEqual({ canAccess: true });
+  });
+
+  it('true when the assignee is a joined member of the document-library team', async () => {
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: 't9', name: 'Q3' });
+    membershipByUser({
+      't9:user-1': member({ role: 'member' }),
+      't9:user-2': member({ id: 'm2', userId: 'user-2', role: 'member' }),
+    });
+    expect(await (await get(QS)).json()).toEqual({ canAccess: true });
+  });
+
+  it('true when the assignee owns the document', async () => {
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-2', teamId: null, name: 'Q3' });
+    db.hasSharedAccess.mockImplementation(
+      async (_env: Env, ownerId: string) => ownerId === 'user-1',
+    );
+    expect(await (await get(QS)).json()).toEqual({ canAccess: true });
+  });
+
+  it('400 on missing params, 404 on a non-member assignee or unreachable document', async () => {
+    expect((await get('assigneeUserId=user-2')).status).toBe(400);
+    membershipByUser({ 't1:user-2': null });
+    expect((await get(QS)).status).toBe(404);
+    membershipByUser();
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: null, name: 'Q3' });
+    expect((await get(QS)).status).toBe(404);
+  });
+
+  it('allows an API-token caller (read surface)', async () => {
+    const res = await get(QS, { clerkUserId: null, verifiedUserId: 'user-1' });
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assigned-actions.md)', () => {
+  const body = { assigneeUserId: 'user-2', documentId: 'd1', actionName: 'Review the copy' };
+  const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>
+    handleTeams(makeCtx('POST', '/api/teams/t1/notify-action', { body: b, ...opts }));
+
+  // Caller (user-1) and assignee (user-2) both joined members by default.
+  const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
+    db.getMembership.mockImplementation(async (_env: Env, _teamId: string, userId: string) => {
+      if (userId in overrides) return overrides[userId];
+      if (userId === 'user-1') return member();
+      if (userId === 'user-2') return member({ id: 'm2', userId: 'user-2', role: 'member' });
+      return null;
+    });
+  };
+
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    membershipByUser();
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
+  });
+
+  it('202 + dispatches the email with server-derived names for the document owner', async () => {
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        assigneeUserId: 'user-2',
+        assigneeFallbackEmail: 'me@example.com',
+        assignerName: 'Sam',
+        document: { id: 'd1', name: 'Q3' },
+        actionName: 'Review the copy',
+      }),
+    );
+  });
+
+  it('ignores a body-supplied document name (name comes from D1)', async () => {
+    await post({ ...body, documentName: 'Spoofed' });
+    const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
+    expect(input.document.name).toBe('Q3');
+  });
+
+  it('401 for a token caller (mutations need the interactive session)', async () => {
+    const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
+    expect(res.status).toBe(401);
+    expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('404 when the caller is not a member of the team', async () => {
+    membershipByUser({ 'user-1': null });
+    const res = await post();
+    expect(res.status).toBe(404);
+  });
+
+  it('403 when the caller is still only invited', async () => {
+    membershipByUser({ 'user-1': member({ status: 'invited' }) });
+    const res = await post();
+    expect(res.status).toBe(403);
+  });
+
+  it('400 on a missing action name', async () => {
+    const res = await post({ assigneeUserId: 'user-2', documentId: 'd1' });
+    expect(res.status).toBe(400);
+  });
+
+  it('404 when the assignee is not a member of this team (no user probing)', async () => {
+    membershipByUser({ 'user-2': null });
+    expect((await post()).status).toBe(404);
+    expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('202 for an INVITED assignee — by userId when claimed, by memberId otherwise (docs/specs/012-collaboration/assigned-actions.md)', async () => {
+    // Claimed invitee: has a userId despite the pending status.
+    membershipByUser({
+      'user-2': member({ id: 'm2', userId: 'user-2', status: 'invited', email: 'b@x.com' }),
+    });
+    expect((await post()).status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ assigneeUserId: 'user-2', assigneeFallbackEmail: 'b@x.com' }),
+    );
+    vi.mocked(notifyActionAssigned).mockClear();
+    // Unclaimed invitee: no account yet, keyed by the membership row id.
+    db.listTeamMembers.mockResolvedValue([
+      member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
+    ]);
+    const res = await post({
+      assigneeMemberId: 'm3',
+      documentId: 'd1',
+      actionName: 'Review the copy',
+    });
+    expect(res.status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ assigneeUserId: null, assigneeFallbackEmail: 'c@x.com' }),
+    );
+  });
+
+  it('404 when the document does not exist', async () => {
+    db.getDocumentMeta.mockResolvedValue(null);
+    const res = await post();
+    expect(res.status).toBe(404);
+  });
+
+  it('404 when the caller cannot access the document', async () => {
+    db.getDocumentMeta.mockResolvedValue({
+      id: 'd1',
+      ownerId: 'someone-else',
+      teamId: null,
+      name: 'Q3',
+    });
+    db.hasSharedAccess.mockResolvedValue(false);
+    const res = await post();
+    expect(res.status).toBe(404);
+    expect(notifyActionAssigned).not.toHaveBeenCalled();
+  });
+
+  it('allows a joined member of the document’s team-library team', async () => {
+    db.getDocumentMeta.mockResolvedValue({
+      id: 'd1',
+      ownerId: 'someone-else',
+      teamId: 't1',
+      name: 'Q3',
+    });
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(notifyActionAssigned).toHaveBeenCalled();
+  });
+
+  it('allows a caller who reached the document through a share link (shared_with)', async () => {
+    db.getDocumentMeta.mockResolvedValue({
+      id: 'd1',
+      ownerId: 'someone-else',
+      teamId: null,
+      name: 'Q3',
+    });
+    db.hasSharedAccess.mockResolvedValue(true);
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(db.hasSharedAccess).toHaveBeenCalledWith({}, 'user-1', 'd1');
+  });
+
+  it('falls back to the caller’s email claim when they have no participant profile', async () => {
+    db.getParticipant.mockResolvedValue(null);
+    await post(body, { clerkEmail: 'sam@x.com' });
+    const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
+    expect(input.assignerName).toBe('sam@x.com');
+  });
+
+  it('passes the verified caller as the assigner the email is claimed against', async () => {
+    await post();
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assignerUserId).toBe('user-1');
+  });
+
+  // docs/specs/012-collaboration/assigned-actions.md §4: the email names the document only to an
+  // assignee who can open it.
+  it('marks a document the assignee cannot open, so the email leaves its name out', async () => {
+    // The caller's own personal document; the assignee never opened it.
+    db.hasSharedAccess.mockResolvedValue(false);
+    await post();
+    const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
+    expect(input.assigneeCanOpen).toBe(false);
+    expect(db.hasSharedAccess).toHaveBeenCalledWith({}, 'user-2', 'd1');
+  });
+
+  it('lets the email name the document for an assignee who reached it through a share link', async () => {
+    db.hasSharedAccess.mockImplementation(async (_env: Env, who: string) => who === 'user-2');
+    await post();
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(true);
+  });
+
+  it('counts the document in this team’s library as open to an invited assignee too', async () => {
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
+    db.listTeamMembers.mockResolvedValue([
+      member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
+    ]);
+    await post({ assigneeMemberId: 'm3', documentId: 'd1', actionName: 'Review the copy' });
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(true);
+  });
+
+  it('names no document to an invited assignee outside its library', async () => {
+    db.listTeamMembers.mockResolvedValue([
+      member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
+    ]);
+    await post({ assigneeMemberId: 'm3', documentId: 'd1', actionName: 'Review the copy' });
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(false);
+  });
+});
+
+describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  const body = {
+    documentId: 'd1',
+    commentText: 'Can you look, @priya?',
+    mentions: [{ userId: 'user-2', memberId: 'm2' }],
+  };
+  const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>
+    handleTeams(makeCtx('POST', '/api/teams/t1/notify-mention', { body: b, ...opts }));
+  const members = [
+    member(),
+    member({ id: 'm2', userId: 'user-2', role: 'member', email: 'priya@x.com' }),
+    member({ id: 'm3', userId: null, role: 'member', status: 'invited', email: 'inv@x.com' }),
+  ];
+
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockImplementation(async (_env: Env, _t: string, userId: string) =>
+      userId === 'user-1' ? member() : null,
+    );
+    db.listTeamMembers.mockResolvedValue(members);
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
+    db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
+  });
+
+  it('passes the verified author as the sender the email is claimed against', async () => {
+    await post();
+    expect(vi.mocked(notifyMentioned).mock.calls[0]![1].authorUserId).toBe('user-1');
+  });
+
+  it('202 + emails each mentioned member with server-derived names', async () => {
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(notifyMentioned).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        recipientUserId: 'user-2',
+        recipientFallbackEmail: 'priya@x.com',
+        authorName: 'Sam',
+        document: { id: 'd1', name: 'Q3' },
+        commentText: 'Can you look, @priya?',
+      }),
+    );
+  });
+
+  it('reaches an invited member by their membership row', async () => {
+    await post({ ...body, mentions: [{ memberId: 'm3' }] });
+    expect(vi.mocked(notifyMentioned).mock.calls[0]![1].recipientFallbackEmail).toBe('inv@x.com');
+  });
+
+  it('skips the caller, strangers and duplicates silently', async () => {
+    const res = await post({
+      ...body,
+      mentions: [
+        { userId: 'user-1' },
+        { userId: 'nobody' },
+        { memberId: 'm2' },
+        { userId: 'user-2' },
+      ],
+    });
+    expect(res.status).toBe(202);
+    expect(notifyMentioned).toHaveBeenCalledOnce();
+  });
+
+  it('404 when the document is not in this team’s library', async () => {
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    const res = await post();
+    expect(res.status).toBe(404);
+    expect(notifyMentioned).not.toHaveBeenCalled();
+  });
+
+  it('403 when the caller is still only invited', async () => {
+    db.getMembership.mockResolvedValue(member({ status: 'invited' }));
+    expect((await post()).status).toBe(403);
+  });
+
+  it('401 for a token caller (mutations need the interactive session)', async () => {
+    const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
+    expect(res.status).toBe(401);
+  });
+
+  // A card's comment is read from the card by id: its stored text and mentions, never the body's.
+  const cardComment = (over: Record<string, unknown> = {}) => ({
+    id: 'item0001',
+    fields: {
+      comments: {
+        resolved: false,
+        comments: [
+          {
+            id: 'c1',
+            text: 'Stored words, @priya',
+            createdAt: Date.now(),
+            authorName: 'Sam',
+            authorColor: '#f00',
+            authorId: 'user-1',
+            mentions: [{ userId: 'user-2', memberId: 'm2', name: 'Priya', handle: 'priya' }],
+            ...over,
+          },
+        ],
+      },
+    },
+  });
+  const cardBody = { documentId: 'd1', itemId: 'item0001', commentId: 'c1' };
+
+  it("emails a card's stored comment, so the email opens the card", async () => {
+    db.readItem.mockResolvedValue(cardComment());
+    const res = await post({
+      ...cardBody,
+      commentText: 'Reworded',
+      mentions: [{ memberId: 'm3' }],
+    });
+    expect(res.status).toBe(202);
+    expect(db.readItem).toHaveBeenCalledWith({}, 'd1', 'item0001');
+    expect(notifyMentioned).toHaveBeenCalledOnce();
+    const sent = vi.mocked(notifyMentioned).mock.calls[0]![1];
+    expect(sent).toMatchObject({
+      itemId: 'item0001',
+      commentId: 'c1',
+      commentText: 'Stored words, @priya',
+      recipientUserId: 'user-2',
+    });
+  });
+
+  it("404 for someone else's card comment, a missing one, or one past the dedupe window", async () => {
+    db.readItem.mockResolvedValue(cardComment({ authorId: 'user-2' }));
+    expect((await post(cardBody)).status).toBe(404);
+    expect((await post({ ...cardBody, commentId: 'c9' })).status).toBe(404);
+    db.readItem.mockResolvedValue(cardComment({ createdAt: Date.now() - 25 * 60 * 60 * 1000 }));
+    expect((await post(cardBody)).status).toBe(404);
+    expect(notifyMentioned).not.toHaveBeenCalled();
+  });
+
+  it('404 for a card that is not in the document, 400 for a malformed card or missing comment id', async () => {
+    db.readItem.mockResolvedValue(null);
+    expect((await post(cardBody)).status).toBe(404);
+    expect(notifyMentioned).not.toHaveBeenCalled();
+    expect((await post({ ...cardBody, itemId: 'no' })).status).toBe(400);
+    expect((await post({ ...cardBody, itemId: 7 })).status).toBe(400);
+    expect((await post({ ...body, itemId: 'item0001' })).status).toBe(400);
+  });
+
+  it('400 on a missing or oversized body', async () => {
+    expect((await post({ documentId: 'd1', mentions: [] })).status).toBe(400);
+    expect((await post({ ...body, commentText: 'x'.repeat(5001) })).status).toBe(400);
+    expect(
+      (await post({ ...body, mentions: Array.from({ length: 21 }, () => ({ userId: 'user-2' })) }))
+        .status,
+    ).toBe(400);
+  });
+});

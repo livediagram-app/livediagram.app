@@ -1,0 +1,304 @@
+'use client';
+
+// The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
+// menu's Assign Action tile so the two surfaces can't drift.
+import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
+import {
+  CloseIcon,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+  SOLID_BRAND_DARK,
+  Glyph,
+  GlyphDisc,
+  Portal,
+  Tooltip,
+} from '@livediagram/ui';
+import { useRef, useState, useCallback } from 'react';
+import type { ElementAction } from '@livediagram/document';
+import { useReposition } from '@/hooks/canvas/useReposition';
+import { initialsOf } from '@/lib/identity';
+import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { elementSelector } from '@/lib/canvas-selectors';
+
+// Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), anchored to the right
+// edge of the element like CommentThreadPopover. Name + description up
+// top, one calm assignee/assigner meta row, and an icon-button footer:
+// Complete (check) / Reopen (undo), Edit (pencil), Delete (bin, two-step
+// confirm). Read-only sessions see the card without the footer — an
+// assignee following a share link should still find their action.
+
+type ActionPopoverProps = {
+  elementId: string;
+  action: ElementAction;
+  onComplete: () => void;
+  onReopen: () => void;
+  // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closes it without it being done.
+  onWontDo?: () => void;
+  // Present when the document has an Actions board: opens it on this action's card ("Where it went").
+  onOpenBoard?: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onClose: () => void;
+  readOnly?: boolean;
+  // The current user's identity (Clerk id or guest participant id), for
+  // the "Assigned to you" line.
+  selfUserId: string | null;
+};
+
+const WIDTH = 288;
+const GAP = 12;
+
+export function ActionPopover({
+  elementId,
+  action,
+  onComplete,
+  onReopen,
+  onWontDo,
+  onOpenBoard,
+  onEdit,
+  onDelete,
+  onClose,
+  readOnly = false,
+  selfUserId,
+}: ActionPopoverProps) {
+  const now = useRelativeNow();
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  // Two-step delete: the first click arms, the second confirms. Kept
+  // inline (no nested dialog over a popover) and disarmed on reopen.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  // Anchor to the element's live rect, flipping left when there's no
+  // room on the right — the CommentThreadPopover placement.
+  const reposition = useCallback(() => {
+    const node = document.querySelector(elementSelector(elementId));
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
+    let left = rect.right + GAP;
+    let top = rect.top;
+    if (left + WIDTH > window.innerWidth - EDGE_MARGIN) {
+      left = rect.left - GAP - WIDTH;
+    }
+    left = Math.max(EDGE_MARGIN, Math.min(left, window.innerWidth - WIDTH - EDGE_MARGIN));
+    top = Math.max(EDGE_MARGIN, top);
+    setPos({ left, top });
+  }, [elementId]);
+  useReposition(reposition);
+
+  // Don't close on a click landing on the element's action badge — that
+  // is this popover's own toggle (parent state handles the flip-flop).
+  useClickOutside(ref, onClose, true, '[data-action-trigger]');
+  useEscape(onClose);
+
+  if (!pos) return null;
+
+  const done = action.status === 'done';
+  const wontDo = action.status === 'wont-do';
+  const closed = done || wontDo;
+  const assigneeName = action.assignee.name?.trim() || 'Teammate';
+  const assignerName = action.assignerName?.trim() || null;
+  const mine = selfUserId !== null && action.assignee.userId === selfUserId;
+
+  return (
+    <Portal>
+      <div
+        ref={ref}
+        role="dialog"
+        onPointerDown={(e) => e.stopPropagation()}
+        className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        style={{ left: pos.left, top: pos.top, width: WIDTH }}
+      >
+        <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100">
+            <span className="text-slate-400">
+              <ClipboardIcon />
+            </span>
+            Action
+          </h3>
+          <div className="flex items-center gap-1">
+            {done ? (
+              <span className="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+                <CheckIcon size={9} />
+                Done
+              </span>
+            ) : wontDo ? (
+              <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700/60 dark:text-slate-300">
+                Won’t Do
+              </span>
+            ) : null}
+            <button
+              type="button"
+              aria-label="Close action"
+              onClick={onClose}
+              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <CloseIcon size={12} />
+            </button>
+          </div>
+        </header>
+
+        <div className={`flex flex-col gap-2.5 px-3 py-3 ${closed ? 'opacity-70' : ''}`}>
+          <div>
+            <p className="text-sm font-semibold leading-snug text-slate-800 dark:text-slate-100">
+              {action.name}
+            </p>
+            {action.description ? (
+              <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {action.description}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60">
+            <GlyphDisc
+              size={28}
+              aria-hidden
+              className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+            >
+              {initialsOf(assigneeName)}
+            </GlyphDisc>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+                {mine ? 'Assigned to you' : `Assigned to ${assigneeName}`}
+              </span>
+              <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">
+                {assignerName ? `by ${assignerName} · ` : ''}
+                {formatRelativeTimeCompact(now - action.createdAt)}
+              </span>
+            </span>
+          </div>
+          {onOpenBoard ? (
+            <button
+              type="button"
+              onClick={onOpenBoard}
+              className="inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md px-1.5 py-1 text-[11px] font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+            >
+              <BoardIcon />
+              View on Board
+            </button>
+          ) : null}
+        </div>
+
+        {!readOnly ? (
+          <footer className="flex items-center gap-1.5 border-t border-slate-100 px-3 py-2 dark:border-slate-800">
+            {closed ? (
+              <FooterButton onClick={onReopen} icon={<ReopenIcon />} label="Reopen" />
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onComplete}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-emerald-700"
+                >
+                  <CheckIcon size={11} />
+                  Complete
+                </button>
+                {onWontDo ? (
+                  <FooterButton onClick={onWontDo} icon={<WontDoIcon />} label="Won’t Do" />
+                ) : null}
+              </>
+            )}
+            {/* Icon only, so Won't Do fits beside Complete. */}
+            <Tooltip label="Edit">
+              <button
+                type="button"
+                aria-label="Edit action"
+                onClick={onEdit}
+                className="inline-flex items-center rounded-md border border-slate-200 px-2 py-1.5 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <PencilIcon />
+              </button>
+            </Tooltip>
+            <span className="flex-1" />
+            {confirmingDelete ? (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <TrashIcon size={11} />
+                Confirm
+              </button>
+            ) : (
+              <button
+                type="button"
+                aria-label="Delete action"
+                onClick={() => setConfirmingDelete(true)}
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <TrashIcon size={11} />
+              </button>
+            )}
+          </footer>
+        ) : null}
+      </div>
+    </Portal>
+  );
+}
+
+function FooterButton({
+  onClick,
+  icon,
+  label,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function CheckIcon({ size = 11 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={16}>
+      <path d="M2.5 8.5 6.5 12.5 13.5 4" />
+    </Glyph>
+  );
+}
+
+function ReopenIcon() {
+  return (
+    <Glyph size={11} units={16}>
+      <path d="M2.5 6.5A6 6 0 1 1 2 9.5" />
+      <path d="M2.5 2.5v4h4" />
+    </Glyph>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <Glyph size={11} units={16}>
+      <path d="M11.5 2.5a1.4 1.4 0 0 1 2 2L5 13l-2.75.75L3 11z" />
+    </Glyph>
+  );
+}
+
+// A circle struck through: closed without being done.
+function WontDoIcon() {
+  return (
+    <Glyph size={11} units={16}>
+      <circle cx="8" cy="8" r="5.5" />
+      <path d="M4.2 11.8 11.8 4.2" />
+    </Glyph>
+  );
+}
+
+// Three columns: the Actions board.
+function BoardIcon() {
+  return (
+    <Glyph size={11} units={16}>
+      <rect x="2" y="2.5" width="12" height="11" rx="2" />
+      <path d="M6 2.5v11M10 2.5v11" />
+    </Glyph>
+  );
+}

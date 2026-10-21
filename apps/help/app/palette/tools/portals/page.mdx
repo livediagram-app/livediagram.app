@@ -1,0 +1,81 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PortalMenu } from '@/components/illustrations/tools-menus';
+
+export const metadata = helpMetadata({
+  title: 'Portals',
+  description:
+    'Link two portals and jump between them in one click, or walk an Avatar-mode character through, to travel across a big canvas or over to another tab.',
+  path: '/help/palette/tools/portals/',
+});
+
+<ArticleLayout
+  title="Portals"
+  description="A ring of energy you link to another one, for jumping across a big canvas in one click."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'portals')}
+>
+
+A portal is a tall ring of energy you drop on the canvas and link to another one. Click it and the canvas jumps to its partner. It is the quickest way to move around a canvas that has outgrown one screen, and in [Avatar mode](/help/selection-modes/avatar-mode/) you can simply walk your character into it.
+
+## Take the tour
+
+The first time you select a portal, a small **Show Me** toolbar appears beside its toolbar. Press **Play** for a short walkthrough on your own portal: stepping through it (or why an unlinked one is dim), linking it from its menu, and walking an Avatar-mode character in. Press the cross if you would rather not; either way it is not offered again. To be offered it again, open **Settings**, then **Tours**, open **Show Me** and switch **Portal** back on.
+
+## Adding a pair
+
+<Step n={1}>
+  In [Workshop mode](/help/canvas/workshop-mode/), open **Session** on the palette strip and choose
+  **Navigate** down its side.
+</Step>
+<Step n={2}>Pick **Portal**, then tap the canvas to drop one.</Step>
+<Step n={3}>
+  Right-click it, open **Tools**, then **Portal**, and choose **Create Portal**. A second portal
+  appears beside the first, already linked to it and selected, so you can drag it wherever it
+  belongs.
+</Step>
+
+To link portals that already exist, pick one from the **Leads to** grid instead. Clicking the currently linked portal again unlinks the pair.
+
+<Figure caption="Two linked portals, and the Portal section of the menu: Name, the Leads to grid with a portal on another tab, and Create Portal.">
+  <PortalMenu />
+</Figure>
+
+## Links go both ways
+
+Linking A to B links B back to A: whatever you can step into, you can step back out of. A portal leads to exactly one place, so pointing one at a new partner releases the old link at both ends.
+
+## Travelling
+
+Clicking a linked portal centres the canvas on its partner. Dragging a portal never travels, so you can still move one around without being whisked away. If you are in Avatar mode, your character steps out of the far portal at the same moment, and **walking into a portal** does exactly what clicking it does, with no click needed. The portal you arrive in is ignored until you walk off it, so a pair never bounces you back and forth.
+
+## Across tabs
+
+A portal can lead to a portal on **another tab**. Off-tab options in the **Leads to** grid are labelled with their tab name (for example "Portal 2 · Detail"), and travelling switches tab for you before landing you at the far side. It is the tidiest way to build a walkthrough that spans several tabs.
+
+## Naming them
+
+Unnamed portals are numbered by their order on their tab (Portal 1, Portal 2, and so on; each tab counts from 1), so you can tell them apart in the **Leads to** grid without doing anything. Give one a proper name ("Back to overview") in the **Name** field of the same menu section; press Enter or click away to keep it. Names live in the menu and in hover cards: nothing is drawn over the ring itself.
+
+<Tip>
+  An unlinked portal is dimmed and does not respond to clicks; its hover card says it is not linked.
+  That is how you spot the half of a pair you have not wired up yet.
+</Tip>
+
+## Recolouring
+
+The ring takes its colour from the element's **stroke** colour, so the **Border** swatch under **Style → Colours** in the context menu recolours the whole effect. A classic pairing is one blue portal and one orange. A portal keeps its tall shape as you resize it; turn off **Lock Aspect Ratio** (see [Size](/help/canvas/size/)) if you really want to stretch it.
+
+<FeatureGrid>
+  <Feature slug="avatar-mode" title="Avatar Mode">
+    Walk a little character around the canvas, and straight through your portals.
+  </Feature>
+  <Feature slug="tools" title="Tools">
+    Where every palette element lives, including the rest of the Collaborate elements.
+  </Feature>
+</FeatureGrid>
+
+</ArticleLayout>

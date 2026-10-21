@@ -1,0 +1,45 @@
+name = "livediagram-live"
+main = "src/worker.ts"
+compatibility_date = "2026-05-29"
+
+# The worker fronts the static-export `./out` directory via an assets
+# binding so it can rewrite `/document/<id>` paths onto the single
+# placeholder build artefact (docs/specs/007-editor/new-document-route.md). Static export can't enumerate
+# user-minted document ids at build time, so one HTML file backs every
+# `/document/*` URL and the client reads the id from the pathname.
+[assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+# Assets are served BEFORE the worker by default, so without this the
+# security headers in src/worker.ts (X-Frame-Options DENY et al.) only
+# reached paths that matched no file: every real page, including the
+# MCP OAuth consent screen, shipped frameable. Run the worker first for
+# everything but the hashed /_next/ bundles, which need no page headers.
+run_worker_first = ["/*", "!/_next/*"]
+
+# The api, for the name a share link's preview shows (docs/specs/013-workspace/share-link-previews.md). Optional:
+# without it the share page is served as built and previews show the brand card.
+[[services]]
+binding = "API"
+service = "livediagram-api"
+
+# Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
+# as `livediagram-live-staging`. `main` is inheritable; the assets binding is
+# restated so this block describes the staging worker in full.
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-live-staging"
+
+[env.staging.assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/*", "!/_next/*"]
+
+# Service bindings are not inherited: staging reads the staging api.
+[[env.staging.services]]
+binding = "API"
+service = "livediagram-api-staging"

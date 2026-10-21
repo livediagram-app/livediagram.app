@@ -1,0 +1,136 @@
+import { describe, expect, it } from 'vitest';
+
+import { SHAPE_KINDS } from '@livediagram/document';
+
+import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { buildPaletteSearchItems } from '@/lib/palette-search';
+import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
+
+// Drift guard. The "Add to canvas" catalogue used to be a hand-written list of
+// shapes, and it had fallen 22 kinds behind the palette without anything
+// failing: every Devices, Data, Media and Behaviour element was unfindable
+// from the search panel. It now derives from PALETTE_TILES, and these tests
+// exist so that stays true.
+
+const shapeTiles = PALETTE_TILES.filter(
+  (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
+);
+
+describe('buildPaletteSearchItems', () => {
+  it('offers every shape-placing palette tile', () => {
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
+    const missing = shapeTiles
+      .map((t) => {
+        // Tiles that differ only by their creation-time choice (the five
+        // reactions, the three session tools) each get their own id, or the
+        // panel would show one of them and silently drop the rest.
+        const a = t.action as {
+          kind: string;
+          session?: string;
+          reaction?: string;
+          mode?: string;
+          estimateScale?: string;
+          plan?: string;
+        };
+        const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan;
+        return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
+      })
+      .filter((id) => !ids.has(id));
+    expect(missing).toEqual([]);
+  });
+
+  it('offers every non-shape palette tile too (text, arrow, table, embeds, ...)', () => {
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
+    const missing = PALETTE_TILES.filter(
+      (t) => !['shape', 'icon', 'tech-icon', 'sticker'].includes(t.action.type),
+    )
+      .map((t) => `tile:${t.id}`)
+      .filter((id) => !ids.has(id));
+    expect(missing).toEqual([]);
+    for (const id of [
+      'tile:tools:text',
+      'tile:tools:arrow',
+      'tile:tools:table',
+      'tile:tools:sticky',
+    ])
+      expect(ids).toContain(id);
+  });
+
+  it('hides the image-upload tiles when the editor has no image support', () => {
+    const ids = new Set(buildPaletteSearchItems({ hasImage: false }).map((i) => i.id));
+    const imageTiles = PALETTE_TILES.filter((t) => t.needsImage && t.action.type !== 'shape');
+    expect(imageTiles.length).toBeGreaterThan(0);
+    for (const t of imageTiles) expect(ids).not.toContain(`tile:${t.id}`);
+  });
+
+  it('covers the element types the palette added most recently', () => {
+    // Named explicitly rather than left to the derivation above, so a
+    // regression that dropped these from the PALETTE_TILES filter still fails
+    // rather than agreeing with itself.
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
+    for (const kind of ['lane', 'entity', 'mind-node', 'page', 'phone', 'bar-chart', 'portal']) {
+      expect(ids.has(`shape:${kind}`)).toBe(true);
+    }
+    // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
+    for (const id of [
+      'shape:session-button:timer',
+      'shape:session-button:vote',
+      'shape:session-button:poll',
+      'shape:reaction-pad:confetti',
+      'shape:reaction-pad:fireworks',
+    ]) {
+      expect(ids.has(id)).toBe(true);
+    }
+  });
+
+  it('names each entry from the tile, not from its id', () => {
+    const lane = buildPaletteSearchItems().find((i) => i.id === 'shape:lane');
+    expect(lane?.name).toBe('Lane');
+    // The tile's description feeds the keywords, so the sentence the palette
+    // already writes about an element is searchable without being restated.
+    expect(lane?.keywords).toContain('swimlane');
+  });
+
+  it('emits no duplicate ids', () => {
+    const ids = buildPaletteSearchItems().map((i) => i.id);
+    expect(ids.length).toBe(new Set(ids).size);
+  });
+
+  it('keys its synonym map on real shape kinds only', () => {
+    for (const item of buildPaletteSearchItems()) {
+      if (!item.id.startsWith('shape:')) continue;
+      expect(SHAPE_KINDS.has(item.id.split(':')[1]!)).toBe(true);
+    }
+  });
+  it('gives every searchable shape tile its own synonyms', () => {
+    // The help registry makes keywords mandatory for an article (AGENTS.md)
+    // because a reader who does not know the title cannot find it otherwise.
+    // The palette search has the same problem and no such rule: SHAPE_KEYWORDS
+    // is Partial, so a new element joins the panel matching only its own name
+    // and description. `?? ''` then hides the omission — nothing renders
+    // wrong, the element is just harder to find than its neighbours.
+    //
+    // The comment pin, done check and reaction pad had all shipped that way.
+    // Someone typing "emoji", "tick" or "annotate" found nothing.
+    //
+    // Derived from the tiles, not from SHAPE_KINDS: `icon` and `sticker` are
+    // real kinds whose catalogues are enumerated separately, so they have no
+    // shape tile and correctly have no synonyms.
+    const missing = buildPaletteSearchItems()
+      .filter((i) => i.id.startsWith('shape:'))
+      // Strip any creation-time choice suffix back to the kind, which is what
+      // the synonym map is keyed on.
+      .map((i) => i.id.split(':')[1]!)
+      .filter((kind) => !(SHAPE_KEYWORDS as Record<string, string | undefined>)[kind]?.trim());
+    expect(missing).toEqual([]);
+  });
+
+  // Before the icon chunk lands the catalogues hold nothing; a caller passes the subscription's value so the
+  // React Compiler rebuilds the list when it does (useIconCatalogs.guard.test.ts).
+  it('lists no catalogue entries until the catalogues have loaded, and every tile either way', () => {
+    const before = buildPaletteSearchItems({ catalogues: false });
+    expect(before.some((i) => /^(icon|sticker|tech):/.test(i.id))).toBe(false);
+    const after = buildPaletteSearchItems();
+    expect(after.filter((i) => /^(shape|tile):/.test(i.id))).toEqual(before);
+  });
+});

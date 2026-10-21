@@ -1,0 +1,51 @@
+'use client';
+
+import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
+
+// What the IMPORTING session sees around a photo draft (docs/specs/021-event-storming/event-storming.md Phase 8), and
+// only that session: which notes on the board the photo matched, and what the
+// photo read them as when it differed.
+//
+// Local on purpose. The draft NOTES are in the document (a peer should see the
+// notes arriving, and a reload should not lose them), but the fade of
+// everything else and the "already here" badges are a reading aid for the
+// person holding the photo — a peer who happens to be editing the same board
+// should not have their canvas dim because somebody else is importing.
+//
+// Module-level and framework-shaped, like every other transient canvas fact
+// here: one draft at a time, global to the session, gone on accept or discard.
+
+export type PhotoDraftView = {
+  // Ids of notes ALREADY on the board that the photo matched.
+  matchedIds: ReadonlySet<string>;
+  // For a matched note whose photo text differed: what the photo read.
+  differences: ReadonlyMap<string, string>;
+  // Counts for the draft bar's one line.
+  read: number;
+  // The failure token when the DETECTOR succeeded but the READER failed
+  // (quota, a spike, the model gone): the notes still landed, just without
+  // their words. The bar says WHY, not just that it failed.
+  readError?: string;
+};
+
+let view: PhotoDraftView | null = null;
+const listeners = createListeners();
+
+export function setPhotoDraftView(next: PhotoDraftView | null): void {
+  if (view === next) return;
+  view = next;
+  listeners.notify();
+}
+
+export function getPhotoDraftView(): PhotoDraftView | null {
+  return view;
+}
+
+export function usePhotoDraftView(): PhotoDraftView | null {
+  return useSyncExternalStore(
+    listeners.subscribe,
+    () => view,
+    () => null,
+  );
+}

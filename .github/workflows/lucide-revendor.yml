@@ -1,0 +1,85 @@
+name: Lucide re-vendor
+
+# A Dependabot bump of lucide-static leaves the vendored glyphs and the manifest's pin behind, which
+# packages/icons' tests fail on (docs/specs/004-interface-design/iconography.md). This regenerates
+# them and commits to the pull request. GitHub holds the pull_request runs a bot's push starts
+# (action_required), and only pull_request runs count as the PR's required checks, so it approves them.
+on:
+  pull_request:
+    paths:
+      - packages/icons/package.json
+
+permissions:
+  contents: write # push the regenerated files to the Dependabot branch
+  actions: write # approve the pull_request runs that commit starts
+
+concurrency:
+  group: lucide-revendor-${{ github.head_ref }}
+  # Queued, not cancelled: this workflow approves its own held run, which must not cancel the approver.
+  cancel-in-progress: false
+
+jobs:
+  revendor:
+    name: Re-vendor Lucide
+    # Dependabot's own branches only; never a fork, never a person's branch.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the pull request branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Re-vendor
+        run: pnpm --filter @livediagram/icons vendor:lucide --adopt-installed
+
+      - name: Commit and approve the checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- packages/icons; then
+            echo "lucide-revendor: the vendored glyphs already match the installed lucide-static"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts
+          git commit -m 'Re-vendor Lucide for the bumped lucide-static'
+          git push origin "HEAD:${BRANCH}"
+          echo "lucide-revendor: pushed $(git rev-parse --short HEAD) to ${BRANCH}"
+          sha="$(git rev-parse HEAD)"
+          # The held runs appear within seconds of the push; CI, E2E Smoke and CodeQL are required.
+          approved=''
+          for attempt in $(seq 1 24); do
+            for id in $(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${sha}&status=action_required" -q '.workflow_runs[].id'); do
+              gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/approve" > /dev/null
+              name="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}" -q .name)"
+              echo "lucide-revendor: approved ${name} (run ${id})"
+              approved="${approved}|${name}|"
+            done
+            missing=''
+            for required in 'CI' 'E2E Smoke' 'CodeQL'; do
+              case "${approved}" in *"|${required}|"*) ;; *) missing="${missing} ${required};" ;; esac
+            done
+            [ -z "${missing}" ] && exit 0
+            sleep 5
+          done
+          echo "::error::lucide-revendor: no held run to approve for${missing} on ${sha}; approve it in the Actions tab"
+          exit 1
