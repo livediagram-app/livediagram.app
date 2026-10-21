@@ -42,7 +42,6 @@ export function liveplannerNextConfig({
       ...(turbopack
         ? {
             turbopackGc: true,
-            turbopackLazyDynamicImports: true,
           }
         : {}),
     },
