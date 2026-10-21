@@ -68,6 +68,10 @@ describe('hosted profile', () => {
     // unguarded while this file looked right.
     expect(parsePositiveCap(vars.IMAGE_MAX_PER_OWNER)).toBe(100);
     expect(parsePositiveCap(vars.IMAGE_MAX_BYTES_PER_OWNER)).toBe(100 * 1024 * 1024);
+    // And per network per day, which rotating guest identities can't sidestep
+    // (docs/specs/009-elements/images.md "Per-network daily budget").
+    expect(parsePositiveCap(vars.IMAGE_MAX_PER_NETWORK_DAY)).toBe(2000);
+    expect(parsePositiveCap(vars.IMAGE_MAX_BYTES_PER_NETWORK_DAY)).toBe(1024 * 1024 * 1024);
   });
 
   it('names only vars the worker reads', async () => {

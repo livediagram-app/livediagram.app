@@ -24,6 +24,7 @@ import {
   json,
   notFound,
 } from '../responses';
+import { checkNetworkBudget } from '../image-network-budget';
 import { MAX_IMAGE_BYTES } from '../limits';
 import { recordImageUploaded } from '../timeline';
 import { COMMUNITY_CONTENT, gateGrant, requireOwner, type RouteContext } from './context';
@@ -142,6 +143,18 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       const full = galleryFull(caps, await imageTotalsByOwner(env, owner), declaredLen);
       if (full) return full;
     }
+    // The same budget per caller network per UTC day, which identity rotation
+    // can't sidestep (docs/specs/009-elements/images.md "Per-network daily budget").
+    const networkBudget = await checkNetworkBudget(
+      env,
+      request,
+      {
+        maxImages: parsePositiveCap(env.IMAGE_MAX_PER_NETWORK_DAY),
+        maxBytes: parsePositiveCap(env.IMAGE_MAX_BYTES_PER_NETWORK_DAY),
+      },
+      declaredLen,
+    );
+    if (networkBudget.refused) return networkBudget.refused;
     const width = Number(request.headers.get('X-Image-Width') ?? '0');
     const height = Number(request.headers.get('X-Image-Height') ?? '0');
     if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
@@ -244,6 +257,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload. The dedupe branches
     // above return early, so pasting the same screenshot twice is one
     // event, and the day's uploads coalesce into one counted bubble.
+    ctx.waitUntil?.(networkBudget.record(storedBytes.byteLength));
     ctx.waitUntil?.(recordImageUploaded(env, owner));
     return json({ image, deduped: false });
   }
