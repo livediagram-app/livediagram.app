@@ -61,8 +61,6 @@ import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
-import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
-import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits, type BackgroundCopyEdits } from './pages-background-copy-edits';
 
 export type PageEdits = BackgroundCopyEdits & {
@@ -476,11 +474,9 @@ export function pageEdits({
     if (!target) return;
     track('Tab', 'Changed', 'PageRemoved');
     // The last page (or the last article) goes with everything on the tab, leaving it empty: no pages, no writing,
-    // no elements, so Start Making Pages opens again, brought back if it was closed
-    // (docs/specs/007-editor/start-diagramming.md "Start Making Pages"). Undo puts it all back.
+    // no elements. Undo puts it all back.
     if (units.length <= 1) {
       commitTab((t) => ({ ...t, elements: [], pages: [], articles: {} }));
-      restoreEmptyCard(startClosedKey(tabId, 'pages'));
       debugLog('[page] last page removed', { tabId, pageId });
       return;
     }

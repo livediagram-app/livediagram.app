@@ -1,4 +1,3 @@
-import type { PaletteTileDef } from './palette-tile-defs';
 import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

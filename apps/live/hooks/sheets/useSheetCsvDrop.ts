@@ -30,20 +30,18 @@ type AddBoxedAt = <T extends BoxedElement>(
 ) => void;
 
 export function useSheetCsvDrop({
-  planMode,
   blocked,
   addBoxedAt,
   dropOther,
   toast,
 }: {
-  planMode: boolean;
   blocked: boolean;
   addBoxedAt: AddBoxedAt;
   dropOther: (file: File, at: { x: number; y: number }) => void;
   toast: (message: string) => void;
 }): (file: File, at: { x: number; y: number }) => void {
   return (file, at) => {
-    if (!planMode || !isSheetCsvFile(file)) return dropOther(file, at);
+    if (!isSheetCsvFile(file)) return dropOther(file, at);
     if (blocked) return;
     if (file.size > SHEET_CSV_DROP_BYTES_MAX) return toast('That file is too large for a sheet');
     void file.text().then((csv) => {

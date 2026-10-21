@@ -81,12 +81,6 @@ export type CommandContext = {
   // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
-  // search does not offer it either.
-  whiteboard?: boolean;
-  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
-  // does too.
-  planMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
   tabLocked?: boolean;
@@ -156,7 +150,7 @@ export const CANVAS_TOOLS: {
   needsContent?: boolean;
   // Changes the document, so a view-only visitor never sees it.
   mutates?: boolean;
-  // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
+  // Edits the tab's elements: Plan leaves it out (docs/specs/026-plan/plan-mode.md "The tools"), as the dropdown does.
   editsElements?: boolean;
   desktopOnly?: boolean;
 }[] = [
@@ -217,8 +211,6 @@ export const CANVAS_TOOLS: {
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
-
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
@@ -226,8 +218,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
-      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
+      !t.editsElements,
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,

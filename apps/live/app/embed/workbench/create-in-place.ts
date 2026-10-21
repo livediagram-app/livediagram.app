@@ -10,7 +10,7 @@ import {
 } from '@liveplanner/templates';
 import { apiCreateDocument } from '@/lib/api-client';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
-import { wizardBypassKind } from '@/lib/new-document-params';
+import { newDocumentKind } from '@/lib/new-document-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 
 export type CreateInPlace = {
@@ -27,7 +27,7 @@ export function createInPlaceOf(
   place: WorkspacePlace,
 ): CreateInPlace {
   const search = new URL(href, origin).searchParams;
-  const templateKind = wizardBypassKind(search.toString());
+  const templateKind = newDocumentKind(search.toString());
   const folder = search.get('folder');
   const team = search.get('team');
   if (folder || team) return { folderId: folder ?? undefined, teamId: team, templateKind };

@@ -17,7 +17,6 @@ import {
 import {
   articleMarginPx,
   articlesOf,
-  hasPageLook,
   pageFitBox,
   pagesOf,
   layOutPages,
@@ -25,7 +24,6 @@ import {
   withContentOnAPage,
   tabWireframeFrameTheme,
   type WireframeFrameTheme,
-  type EditorMode,
   type Element,
   type LaidOutPage,
   type Tab,
@@ -109,7 +107,6 @@ export type PageDeckControls = {
 
 export function usePagesMode(deps: {
   activeTab: Tab;
-  mode: EditorMode;
   canEdit: boolean;
   tabLoaded: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -136,8 +133,8 @@ export function usePagesMode(deps: {
   // The view is not this person's to snap onto a page: following someone, or presenting.
   snapSuspended?: () => boolean;
 }): PagesModeView | null {
-  const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
-  const on = hasPageLook(mode);
+  const { activeTab, canEdit, tabLoaded, commitTabs } = deps;
+  const on = Array.isArray(activeTab.pages);
   const tabId = activeTab.id;
 
   // Frames a page (the first by default) below a top strip, seen whole, whatever its kind: the page
