@@ -46,7 +46,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Re-vendor
-        run: pnpm --filter @livediagram/icons vendor:lucide --adopt-installed
+        run: pnpm --filter @liveplanner/icons vendor:lucide --adopt-installed
 
       - name: Commit and approve the checks
         env:

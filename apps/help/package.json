@@ -1,10 +1,10 @@
 {
-  "name": "@livediagram/help",
+  "name": "@liveplanner/help",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3004",
+    "dev": "node ../../scripts/next-dev.mjs --port 3104",
     "build": "next build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
@@ -13,11 +13,11 @@
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/help-registry": "workspace:*",
-    "@livediagram/icons": "workspace:^",
-    "@livediagram/sheets": "workspace:*",
-    "@livediagram/telemetry-client": "workspace:*",
-    "@livediagram/ui": "workspace:*",
+    "@liveplanner/help-registry": "workspace:*",
+    "@liveplanner/icons": "workspace:^",
+    "@liveplanner/sheets": "workspace:*",
+    "@liveplanner/telemetry-client": "workspace:*",
+    "@liveplanner/ui": "workspace:*",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^16.4.1",
@@ -27,11 +27,11 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@livediagram/next-config": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/tailwind-config": "workspace:*",
-    "@livediagram/templates": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveplanner/next-config": "workspace:*",
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/tailwind-config": "workspace:*",
+    "@liveplanner/templates": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.13",
     "@types/node": "^26.6.4",

@@ -1,4 +1,4 @@
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@liveplanner/vitest-config';
 
 // The rasteriser is small and shared by two front doors: every line and branch is covered.
 export default defineProject({

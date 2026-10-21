@@ -3,7 +3,7 @@ import {
   type ChangesetCounts,
   type ChangesetWritten,
   type ResultLine,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   diffToElementOps,
   elementFingerprint,
@@ -11,7 +11,7 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   insertChangesetPartStatement,
   insertChangesetStatement,

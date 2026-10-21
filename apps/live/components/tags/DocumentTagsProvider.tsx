@@ -7,7 +7,7 @@
 import dynamic from 'next/dynamic';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Tag } from '@livediagram/api-schema';
+import type { Tag } from '@liveplanner/api-schema';
 import { useDocumentTagsState, type DocumentTagsState } from './useDocumentTagsState';
 
 // The picker loads on first open, so no surface pays for it up front.

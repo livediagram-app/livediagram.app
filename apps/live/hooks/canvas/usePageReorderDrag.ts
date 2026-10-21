@@ -6,7 +6,7 @@
 // An article page drags its whole article: the row is moved in units (a page, or an article), so
 // no slot falls inside an article.
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
-import { pageUnits, unionRects, type LaidOutPage, type PageRect } from '@livediagram/document';
+import { pageUnits, unionRects, type LaidOutPage, type PageRect } from '@liveplanner/document';
 
 // Screen px a press must travel before it is a drag rather than a click.
 const DRAG_THRESHOLD = 6;

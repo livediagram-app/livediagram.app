@@ -14,7 +14,7 @@ import {
   type ShapeElement,
   stampTabKind,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   METRIC_KINDS,
   PLAN_VISUALISATIONS,
@@ -23,7 +23,7 @@ import {
   type MetricKind,
   type PlanViewId,
   type PlanVisualisation,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 // What a Dashboard can hold: every metric, and every chart a person can add (Status Breakdown is no longer offered).
 export const DASHBOARD_METRIC_KINDS: readonly MetricKind[] = METRIC_KINDS;

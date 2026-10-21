@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { CardFinderPanel } from './CardFinderPanel';
 
 // docs/specs/026-plan/items.md "Finding a card": cards of every type, custom ones included, and the card type chips.

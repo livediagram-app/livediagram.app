@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetRequest } from '@livediagram/api-schema';
-import { HELD_RETRY_INTERVAL_MS } from '@livediagram/agent-verbs';
+import type { ChangesetRequest } from '@liveplanner/api-schema';
+import { HELD_RETRY_INTERVAL_MS } from '@liveplanner/agent-verbs';
 import { run } from './main';
 import { capabilities, fakeIo, NOW, TOKEN, type Route } from './testing/fake-io';
 
@@ -68,7 +68,7 @@ function host(options: { refuse?: () => Response | undefined } = {}) {
         results: [],
         text: dryRun
           ? 'dry run · rev 5 · lint clean · nothing written'
-          : `+ n2  square "B"\nrev ${previousRev}→${state.current.rev} · cs_1 · lint clean · revert: livediagram changeset revert ${DOC} cs_1`,
+          : `+ n2  square "B"\nrev ${previousRev}→${state.current.rev} · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC} cs_1`,
         warnings: state.requests.at(-1)!.base ? [] : ['no_base'],
         lint: null,
       });
@@ -79,7 +79,7 @@ function host(options: { refuse?: () => Response | undefined } = {}) {
 }
 
 const session = (route: Route, more: Parameters<typeof fakeIo>[0] = {}) =>
-  fakeIo({ env: { LIVEDIAGRAM_TOKEN: TOKEN }, routes: [capabilities, route], ...more });
+  fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes: [capabilities, route], ...more });
 
 async function cli(io: ReturnType<typeof fakeIo>, argv: string[]) {
   const before = { out: io.out().length, err: io.err().length };
@@ -95,7 +95,7 @@ describe('writing from the CLI', () => {
     const edit = await cli(io, ['edit', 'Auth flow', '-f', 'ops.txt', '--summary', 'Add B']);
     expect(edit).toEqual({
       code: 0,
-      out: `+ n2  square "B"\nrev 5→6 · cs_1 · lint clean · revert: livediagram changeset revert ${DOC} cs_1\n`,
+      out: `+ n2  square "B"\nrev 5→6 · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC} cs_1\n`,
       err: '',
     });
     expect(state.requests[0]).toMatchObject({
@@ -134,7 +134,7 @@ describe('writing from the CLI', () => {
     expect(await cli(io, ['element', 'set', 'Auth flow', 'n1', 'label=Z'])).toEqual({
       code: 5,
       out: '',
-      err: 'error: 1 element changed since rev 5 (now 7):\n  n1 (changed)\nhint: re-read: livediagram tab view "Auth flow" --tab "Main"\n',
+      err: 'error: 1 element changed since rev 5 (now 7):\n  n1 (changed)\nhint: re-read: liveplanner tab view "Auth flow" --tab "Main"\n',
     });
   });
 
@@ -207,7 +207,7 @@ describe('creating from the CLI', () => {
       tabs: [{ name: 'Shop', mermaid: 'flowchart LR\n  a --> b\n' }],
     });
     expect(result.out).toBe(
-      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://livediagram.app/document/${body!.id}\n`,
+      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://liveplanner.app/document/${body!.id}\n`,
     );
   });
 });

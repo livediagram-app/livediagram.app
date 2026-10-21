@@ -2,8 +2,8 @@ import { isDeprecatedDescription, successorToolName } from './legacy-tool-names'
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
-import { ITEM_TYPES } from '@livediagram/items';
-import { emptySheet, sheetToJson } from '@livediagram/sheets';
+import { ITEM_TYPES } from '@liveplanner/items';
+import { emptySheet, sheetToJson } from '@liveplanner/sheets';
 // `./image-result` reaches the resvg WASM renderer, which cannot load in the
 // plain-node test environment — the reason that file exists as its own module in
 // the first place (see its header). Stubbing it is what makes tools.ts
@@ -13,7 +13,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDocumentShape } from '@livediagram/agent-verbs/mcp';
+import { deleteDocumentShape } from '@liveplanner/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
@@ -629,7 +629,7 @@ describe('the Trash tools', () => {
       restored: 'document',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://livediagram.app/document/d_1',
+      url: 'https://liveplanner.app/document/d_1',
     });
   });
 

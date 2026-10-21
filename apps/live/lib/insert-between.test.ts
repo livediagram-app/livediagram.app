@@ -4,7 +4,7 @@ import {
   type ArrowElement,
   type Element,
   type StickyElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,

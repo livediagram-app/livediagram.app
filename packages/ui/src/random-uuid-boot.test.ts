@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livediagram/vitest-config/inline-script';
+import { runInlineScript } from '@liveplanner/vitest-config/inline-script';
 import { RANDOM_UUID_BOOT_SCRIPT } from './random-uuid-boot';
 
 // docs/specs/016-platform/secure-context.md, run as the browser runs it.

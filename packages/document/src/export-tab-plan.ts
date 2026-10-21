@@ -9,7 +9,7 @@ import {
   type Item,
   type ItemTypeCatalogue,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import type { ShapeElement, Tab } from './index';
 import { planBoardLayout } from './plan-board-layout';
 

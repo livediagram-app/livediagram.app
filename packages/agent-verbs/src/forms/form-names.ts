@@ -8,7 +8,7 @@ import {
   type FormDefinition,
   type FormQuestion,
   type FormSection,
-} from '@livediagram/forms';
+} from '@liveplanner/forms';
 import type { BoardRef, SheetRef, TabRef } from './form-world';
 
 export type FormRefusal = { ok: false; code: string; message: string };

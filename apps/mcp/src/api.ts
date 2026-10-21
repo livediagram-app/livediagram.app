@@ -1,9 +1,9 @@
 // Thin client for the api worker over the service binding (docs/specs/015-api/mcp-server.md §2), over the
-// shared `@livediagram/api-client`. Every call forwards the caller's Bearer lvd_ token; the api resolves it
+// shared `@liveplanner/api-client`. Every call forwards the caller's Bearer lvd_ token; the api resolves it
 // to the owning account and applies the SAME authorization every route already enforces, so the MCP needs
 // no special privilege and adds no business logic.
-import { ApiError, createApiClient, postEvents, type ApiClient } from '@livediagram/api-client';
-import { errorTypeToken } from '@livediagram/api-schema';
+import { ApiError, createApiClient, postEvents, type ApiClient } from '@liveplanner/api-client';
+import { errorTypeToken } from '@liveplanner/api-schema';
 import type { Env } from './env';
 import { keepAlive } from './request-scope';
 import { currentTool } from './tool-scope';
@@ -12,7 +12,7 @@ export { ApiError };
 
 // Service-binding requests ignore the host; the path is what the api routes on (it dispatches on the
 // segment after `/api`). A stable internal host keeps logs readable.
-const API_BASE = 'https://livediagram-api/api';
+const API_BASE = 'https://liveplanner-api/api';
 
 // The client for one caller: their token, and failures reported as the running tool's (docs/specs/015-api/mcp-server.md §4.12).
 export function clientFor(env: Env, token: string): ApiClient {

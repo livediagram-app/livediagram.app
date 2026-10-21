@@ -1,13 +1,13 @@
 import type { Server } from 'node:http';
-import type { FakeGoogle } from '@livediagram/fake-google';
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import type { FakeGoogle } from '@liveplanner/fake-google';
+import { DRIVE_FILE_MIME } from '@liveplanner/api-schema';
 import { enableDebugLogs, test, expect, expectNoPageErrors } from './fixtures';
 import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 
 // The Google Drive mirror end to end (docs/specs/022-drive-mirror/drive-mirror.md):
 // the real build and api worker, a signed-in session from the test's own
 // JWKS, and the fake Google standing in for accounts.google.com and the Drive
-// API. Opt-in: `pnpm --filter @livediagram/live test:e2e:drive`.
+// API. Opt-in: `pnpm --filter @liveplanner/live test:e2e:drive`.
 
 test.describe.configure({ mode: 'serial' });
 
@@ -21,8 +21,8 @@ const EMAIL = 'drive-e2e@example.com';
 const apiBase = '/api';
 // The e2e runs on a loopback host, which names the root like staging
 // (docs/specs/022-drive-mirror/drive-mirror.md, "The root folder's name").
-const ROOT_NAME = 'livediagram (staging)';
-const SHOTS = process.env.E2E_DRIVE_SHOTS ?? '/tmp/livediagram-drive-e2e';
+const ROOT_NAME = 'liveplanner (staging)';
+const SHOTS = process.env.E2E_DRIVE_SHOTS ?? '/tmp/liveplanner-drive-e2e';
 
 let identity: TestIdentity;
 let jwks: Server;
@@ -59,7 +59,7 @@ async function api(
 
 async function signIn(page: import('@playwright/test').Page, user = USER) {
   await page.addInitScript(
-    (session: string) => localStorage.setItem('livediagram:e2e:session', session),
+    (session: string) => localStorage.setItem('liveplanner:e2e:session', session),
     JSON.stringify({
       token: user === USER ? token : identity.token(user, EMAIL),
       userId: user,
@@ -96,7 +96,7 @@ const pillOf = (panel: import('@playwright/test').Locator) =>
 // the row has no Sync now, so the test uses the app's tab channel.
 async function syncNow(page: import('@playwright/test').Page) {
   await page.evaluate(() => {
-    const channel = new BroadcastChannel('livediagram:drive-mirror');
+    const channel = new BroadcastChannel('liveplanner:drive-mirror');
     channel.postMessage({ type: 'sync-now' });
     channel.close();
   });
@@ -289,15 +289,15 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await closeSettings(page);
   await expect.poll(() => fileNamed(ROOT_NAME)?.appProperties.ldRoot).toBeTruthy();
   await expect
-    .poll(() => fileNamed('Quarterly plan.livediagram')?.parents[0])
+    .poll(() => fileNamed('Quarterly plan.liveplanner')?.parents[0])
     .toBe(fileNamed('Work')?.id);
   // The first mirror uploads one file at a time, oldest first.
-  await expect.poll(() => fileNamed('Meeting notes.livediagram')?.mimeType).toBe(DRIVE_FILE_MIME);
-  expect(fileNamed('Meeting notes.livediagram')).toMatchObject({
+  await expect.poll(() => fileNamed('Meeting notes.liveplanner')?.mimeType).toBe(DRIVE_FILE_MIME);
+  expect(fileNamed('Meeting notes.liveplanner')).toMatchObject({
     mimeType: DRIVE_FILE_MIME,
     trashed: false,
   });
-  expect(fileNamed('Quarterly plan.livediagram')?.thumbnail).toMatchObject({
+  expect(fileNamed('Quarterly plan.liveplanner')?.thumbnail).toMatchObject({
     mimeType: 'image/png',
   });
 
@@ -339,14 +339,14 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(pillOf(panel)).toHaveText(/^Last synced /, { timeout: 15_000 });
   expect(await boxes()).toEqual(synced);
 
-  // A rename made in Drive reaches livediagram on the next pass.
-  google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
-  // Into a folder livediagram cannot see: the root of My Documents, and a notice.
+  // A rename made in Drive reaches liveplanner on the next pass.
+  google.fake.userRename(fileNamed('Meeting notes.liveplanner')!.id, 'Standup notes.liveplanner');
+  // Into a folder liveplanner cannot see: the root of My Documents, and a notice.
   const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed(ROOT_NAME)!.id);
-  google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
+  google.fake.userMove(fileNamed('Quarterly plan.liveplanner')!.id, hidden);
   await syncNow(page);
   await expect(problemOf(panel)).toContainText(
-    "Quarterly plan: Moved to a Drive folder livediagram can't see.",
+    "Quarterly plan: Moved to a Drive folder liveplanner can't see.",
   );
   await expect(pillOf(panel)).toHaveText('Needs attention');
   await expectStable(panel);
@@ -366,7 +366,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
     ).document.folderId,
   ).toBeNull();
 
-  // Show the folder to livediagram (the Picker picks it): adopted, and the
+  // Show the folder to liveplanner (the Picker picks it): adopted, and the
   // document moves into the new folder in My Documents.
   google.fake.grantAccess(USER, hidden);
   await page.evaluate(
@@ -386,7 +386,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   ).toBe(clients.id);
 
   // Binned in Drive: the document goes to the Trash.
-  google.fake.userTrash(fileNamed('Standup notes.livediagram')!.id);
+  google.fake.userTrash(fileNamed('Standup notes.liveplanner')!.id);
   await syncNow(page);
   await expect
     .poll(async () =>
@@ -402,7 +402,7 @@ test('Open with: your document opens; a file shared with you offers a copy', asy
   pageErrors,
 }) => {
   await signIn(page);
-  const mine = fileNamed('Quarterly plan.livediagram')!;
+  const mine = fileNamed('Quarterly plan.liveplanner')!;
   await page.goto(
     `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, mine.id))}`,
   );
@@ -410,10 +410,10 @@ test('Open with: your document opens; a file shared with you offers a copy', asy
 
   const theirs = google.fake.otherUserFile({
     owner: 'someone-else',
-    name: 'Their roadmap.livediagram',
+    name: 'Their roadmap.liveplanner',
     mimeType: DRIVE_FILE_MIME,
     content: JSON.stringify({
-      kind: 'livediagram.document',
+      kind: 'liveplanner.document',
       schemaVersion: 1,
       exportedAt: 1,
       document: {
@@ -443,7 +443,7 @@ test('Open with on a copy made in Drive imports it as a new document', async ({
 }) => {
   // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive".
   await signIn(page);
-  const original = fileNamed('Quarterly plan.livediagram')!;
+  const original = fileNamed('Quarterly plan.liveplanner')!;
   const copyId = google.fake.userCopy(original.id);
   await page.goto(
     `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, copyId))}`,
@@ -477,7 +477,7 @@ test('a change made in Drive reaches the open Explorer within two minutes, no re
   await page.goto('/explorer/recent');
   await arrived;
   const plan = google.fake.appFiles(USER).find((f) => f.appProperties.ldDocumentId === PLAN)!;
-  google.fake.userRename(plan.id, 'Renamed in Drive.livediagram');
+  google.fake.userRename(plan.id, 'Renamed in Drive.liveplanner');
   await expect(page.getByText('Renamed in Drive', { exact: true })).toHaveCount(0);
   await page.clock.fastForward('02:05');
   await expect(page.getByText('Renamed in Drive', { exact: true }).first()).toBeVisible({
@@ -617,7 +617,7 @@ test('a connection made in one tab starts syncing at once while another tab runs
     .toBe(true);
   expect(sawNotConnected).toBe(false);
   await expect
-    .poll(() => google.fake.appFiles(user).some((f) => f.name === 'Tabs plan.livediagram'), {
+    .poll(() => google.fake.appFiles(user).some((f) => f.name === 'Tabs plan.liveplanner'), {
       timeout: 10_000,
     })
     .toBe(true);
@@ -729,9 +729,9 @@ test('a document row lines up its visibility badge, its time and its sync mark o
   ] as const) {
     await page.addInitScript(
       ([m, min]) => {
-        localStorage.setItem('livediagram:explorer-view', m as string);
+        localStorage.setItem('liveplanner:explorer-view', m as string);
         localStorage.setItem(
-          'livediagram:user-preferences:v1',
+          'liveplanner:user-preferences:v1',
           JSON.stringify(min ? { powerUserMode: true } : {}),
         );
       },

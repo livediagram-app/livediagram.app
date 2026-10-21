@@ -3,7 +3,7 @@
 // lines and lines starting with `#` are skipped and not counted. Every malformed line is reported, up
 // to EDIT_MAX_ERRORS, so a batch of typos is fixed in one round.
 
-import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@liveplanner/api-schema';
 import { validateEditOperation } from './parse-json';
 import { isOperationName, parseOperationWords } from './parse-line';
 import { lineParseError, tooLarge, unknownOperation } from './rejections';

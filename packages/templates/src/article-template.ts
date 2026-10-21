@@ -2,7 +2,7 @@
 // Pages mode on one article page, written as a short project brief so the page shows what
 // the writing does (a title and subtitle, headings, lists, a quote) rather than an empty sheet.
 // Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
-import type { ArticleBlock, ArticleFlow, ArticleStyle, Page, Tab } from '@livediagram/document';
+import type { ArticleBlock, ArticleFlow, ArticleStyle, Page, Tab } from '@liveplanner/document';
 
 const PAGE_ID = 'page-1';
 const FLOW_ID = 'art-brief';

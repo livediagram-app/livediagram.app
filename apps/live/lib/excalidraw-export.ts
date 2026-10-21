@@ -24,7 +24,7 @@ import {
   type Tab,
   type TabPlanData,
   type TextSize,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { planBoardParts, planCardLabel, type PlanPart } from './excalidraw-export-plan';
 
 // The common Excalidraw element chassis. Excalidraw's restore() fills in
@@ -379,7 +379,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
     {
       type: 'excalidraw',
       version: 2,
-      source: 'https://livediagram.app',
+      source: 'https://liveplanner.app',
       elements: out,
       appState: {
         gridSize: null,

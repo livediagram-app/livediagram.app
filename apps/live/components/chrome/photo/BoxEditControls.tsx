@@ -1,8 +1,8 @@
 'use client';
 
 import type { PointerEvent } from 'react';
-import { EVENT_STORMING_NOTES } from '@livediagram/document';
-import { HoverCard, Tooltip, GlyphDisc, withArticle } from '@livediagram/ui';
+import { EVENT_STORMING_NOTES } from '@liveplanner/document';
+import { HoverCard, Tooltip, GlyphDisc, withArticle } from '@liveplanner/ui';
 import type { Corner } from '@/lib/photo-boxes';
 
 // What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each

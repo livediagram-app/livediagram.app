@@ -13,7 +13,7 @@
 // ordering rules can be tested directly rather than through a hook that
 // would need a DOM to run.
 
-import type { TimelineEvent } from '@livediagram/ui';
+import type { TimelineEvent } from '@liveplanner/ui';
 
 export function mergeEvents(prev: TimelineEvent[], incoming: TimelineEvent[]): TimelineEvent[] {
   const known = new Set(prev.map((e) => e.id));

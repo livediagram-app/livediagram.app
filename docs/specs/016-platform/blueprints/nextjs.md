@@ -6,7 +6,7 @@ Derived from [Next.js](../nextjs.md).
 
 | Term            | Identifier                               | Meaning                                                        |
 | --------------- | ---------------------------------------- | -------------------------------------------------------------- |
-| Shared config   | `livediagramNextConfig(options)`         | The settings every app shares, from `@livediagram/next-config` |
+| Shared config   | `liveplannerNextConfig(options)`         | The settings every app shares, from `@liveplanner/next-config` |
 | App config      | each app's `next.config.ts`              | The shared config spread, plus the app's own settings          |
 | Turbopack build | `isTurbopack(env)` (`env.TURBOPACK` set) | Next sets `TURBOPACK` before it loads the config               |
 | Static export   | `output: 'export'`                       | Always, except the editor's dev server (`exportInDev: false`)  |
@@ -15,11 +15,11 @@ Derived from [Next.js](../nextjs.md).
 
 ## Behaviour and state
 
-### `livediagramNextConfig`
+### `liveplannerNextConfig`
 
 ```js
 // packages/next-config/index.js
-export function livediagramNextConfig({
+export function liveplannerNextConfig({
   env = process.env,
   exportInDev = true,
   reactCompiler = false,
@@ -52,8 +52,8 @@ export function livediagramNextConfig({
 
 - It logs one line when it builds: `[next-config] turbopack=<bool> export=<bool> compiler=<bool>`, so a build log shows
   what ran.
-- **App configs**: `marketing`, `help`, `community`, `telemetry` spread `livediagramNextConfig()`; `live` spreads
-  `livediagramNextConfig({ exportInDev: false, reactCompiler: true })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
+- **App configs**: `marketing`, `help`, `community`, `telemetry` spread `liveplannerNextConfig()`; `live` spreads
+  `liveplannerNextConfig({ exportInDev: false, reactCompiler: true })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
   `pageExtensions`, `transpilePackages` and (help) the MDX wrapper.
 - `experimental.reactBrowserBailout` (Next's client-rendering bailouts through `browser()`) is on by default in 16.4.1, so
   it is not set.
@@ -74,7 +74,7 @@ on the 19.3 line; `packages/ui` and `packages/template-previews` peer on `^19.3.
 export const SKIP_TYPECHECK_ENV: 'BUILD_SKIP_TYPECHECK';
 export function typescriptConfig(env?: NodeJS.ProcessEnv): { ignoreBuildErrors: boolean };
 export function isTurbopack(env?: NodeJS.ProcessEnv): boolean;
-export function livediagramNextConfig(options?: {
+export function liveplannerNextConfig(options?: {
   env?: NodeJS.ProcessEnv;
   exportInDev?: boolean;
   reactCompiler?: boolean;

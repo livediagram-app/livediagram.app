@@ -31,10 +31,10 @@ async function guestWithFolder(page: Page, baseURL: string, name: string) {
   const owner = await mintSignedGuest(page.request);
   await page.addInitScript(
     ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:ui-mode', 'dark');
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      localStorage.setItem('liveplanner:v2:ui-mode', 'dark');
+      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
+      localStorage.setItem('liveplanner:v2:self-id', id);
+      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
     },
     { id: owner, sig: guestSigFor(owner) },
   );

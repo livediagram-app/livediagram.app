@@ -19,7 +19,7 @@ import {
   moveDashboardDivider,
   setDashboardRowHeight,
   type DashboardRow,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useDashboard } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';
 import { useBoxSize } from './DashboardSlotContent';

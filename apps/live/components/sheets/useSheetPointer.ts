@@ -19,7 +19,7 @@ import {
   type GridRange,
   SHEET_FREEZE_COLS_MAX,
   SHEET_FREEZE_ROWS_MAX,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import { pointingTargetFor } from './sheet-pointing';
 import { useSheetController } from './sheet-controller';

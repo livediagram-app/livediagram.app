@@ -2,7 +2,7 @@
 // Settings > API tokens' paired workbenches (docs/specs/013-workspace/blueprints/workbench-embeds.md
 // "Settings > API tokens", WB46): one list read, grouped by token, and Unpair removing the row once it lands.
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
-import type { WorkbenchPairing } from '@livediagram/api-schema';
+import type { WorkbenchPairing } from '@liveplanner/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const api = vi.hoisted(() => ({

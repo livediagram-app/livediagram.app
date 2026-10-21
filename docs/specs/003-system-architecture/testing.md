@@ -1,6 +1,6 @@
 # Testing
 
-How livediagram is tested below the browser: unit tests, and hook and component tests in jsdom. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
+How liveplanner is tested below the browser: unit tests, and hook and component tests in jsdom. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
 
 The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it is a per-PR merge gate of its own.
 
@@ -13,7 +13,7 @@ step, and has a Jest-compatible API so tests read conventionally.
 There is **no per-app runner divergence** — every workspace that has tests uses
 Vitest with the same shared config.
 
-## Shared config: `@livediagram/vitest-config`
+## Shared config: `@liveplanner/vitest-config`
 
 Per the repo's reuse-over-duplication rule, test configuration lives in one
 place: `packages/vitest-config`. It sits alongside the other shared configs
@@ -28,7 +28,7 @@ It exports:
 A workspace's `vitest.config.ts` is therefore one line in the common case:
 
 ```ts
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@liveplanner/vitest-config';
 export default defineProject();
 ```
 
@@ -36,7 +36,7 @@ export default defineProject();
 React component tests):
 
 ```ts
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@liveplanner/vitest-config';
 export default defineProject({ test: { environment: 'jsdom' } });
 ```
 
@@ -54,7 +54,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter, the sticky detector) measures it with
-  `cpuMsOf` (or `cpuMsOfAsync`) from `@livediagram/vitest-config/cpu-time`, never
+  `cpuMsOf` (or `cpuMsOfAsync`) from `@liveplanner/vitest-config/cpu-time`, never
   `performance.now()`. Turbo runs every package's suite at once, and a
   wall-clock budget also counts the time a test waits for a core, which made
   those tests flake on a busy machine. CPU time still catches the regression
@@ -63,10 +63,10 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **An inline script is tested as the browser runs it.** A boot script ships as a string the page
   inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
   very string with `runInlineScript(source, globals)` from
-  `@livediagram/vitest-config/inline-script`: a classic script in its own realm whose globals are
+  `@liveplanner/vitest-config/inline-script`: a classic script in its own realm whose globals are
   the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
   never through `new Function`.
-- **A stubbed fetch reads what it was sent** through `@livediagram/vitest-config/sent-request`:
+- **A stubbed fetch reads what it was sent** through `@liveplanner/vitest-config/sent-request`:
   `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
   `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
   test rather than read as `[object Blob]`.
@@ -78,7 +78,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
   run, `ms x CI_CPU_HEADROOM` (3) when `CI` is `true` or `1` (`CI=false` or
   `CI=0` is a developer's machine) or the run collects coverage (the shared
-  Vitest config passes `LIVEDIAGRAM_COVERAGE` to its workers). Three is enough
+  Vitest config passes `LIVEPLANNER_COVERAGE` to its workers). Three is enough
   beside a 4x slower runner because each budget keeps its own room over the
   local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
   work measures) needs neither.
@@ -121,8 +121,8 @@ Run from the repo root:
 - `pnpm test` → `turbo run test` across all workspaces.
 - `pnpm test:coverage` → `turbo run test:coverage`.
 
-A single workspace: `pnpm --filter @livediagram/<name> test`.
-Watch mode while developing: `pnpm --filter @livediagram/<name> exec vitest`.
+A single workspace: `pnpm --filter @liveplanner/<name> test`.
+Watch mode while developing: `pnpm --filter @liveplanner/<name> exec vitest`.
 
 ## Coverage
 
@@ -135,7 +135,7 @@ workspaces never collide. Only first-party TypeScript source under `src/` and
 and `hooks/`, where most of its source lives. Fixtures beside the code
 (`.drawio`, goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
-package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
+package's `index.ts` is its implementation (e.g. `@liveplanner/document`), not
 a barrel of re-exports.
 
 There is no repo-wide percentage gate: the bar for most code is "logic has
@@ -194,7 +194,7 @@ setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke
 ### Coverage report
 
 Tests and each Editor unit tests job upload their `lcov` reports to
-[Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the four uploads
+[Codecov](https://app.codecov.io/gh/liveplanner-app/liveplanner.app), which merges the four uploads
 of a commit into one report (`codecov.yml`). It informs; it never gates: its statuses are
 informational, and the enforced bar stays the thresholds above. The upload authenticates with
 GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull request from a fork
@@ -210,7 +210,7 @@ cause), reads its numbers from Codecov's public API and writes the report into t
 description, never a comment: a comment emails every watcher, a description edit notifies no one.
 
 The report sits at the bottom of the description, below a `---` separator, between two hidden
-markers (`<!-- livediagram:coverage-report:start -->` and `…:end -->`). Each run reads the
+markers (`<!-- liveplanner:coverage-report:start -->` and `…:end -->`). Each run reads the
 description just before writing and replaces only that section, so the author's text around it is
 kept; an unchanged report writes nothing. A description without the section gets it appended; one
 whose closing marker was edited away has everything from the opening marker replaced. The report holds:
@@ -372,7 +372,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   fix is reverted.
 
   Both workspaces load the same setup file — `react-cleanup` out of
-  `@livediagram/vitest-config`, one copy for the repo rather than one per
+  `@liveplanner/vitest-config`, one copy for the repo rather than one per
   workspace — which calls Testing Library's `cleanup` in an `afterEach`,
   guarded on `typeof document` so the DOM-less majority is untouched. Testing Library registers that itself only under
   `globals: true`, which this repo does not use, so a file that rendered
@@ -388,7 +388,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 
   One resolver note, in `apps/live/vitest.config.ts`: `resolve.dedupe` lists
   `react` and `react-dom`. `packages/ui` peers React but carries its own copy
-  for its own tests, so a hook test that renders a `@livediagram/ui` hook
+  for its own tests, so a hook test that renders a `@liveplanner/ui` hook
   otherwise loads TWO Reacts and every `useState` throws "Cannot read
   properties of null". Next's bundler dedupes for real builds; the test
   resolver has to be told.

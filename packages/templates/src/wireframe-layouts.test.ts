@@ -6,7 +6,7 @@ import {
   newWireframePage,
   pageContentBox,
   pageScreenRect,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { buildPageLayout } from './page-layout-build';
 import { WIREFRAME_LAYOUTS, wireframeLayoutsFor } from './wireframe-layouts';
 import {

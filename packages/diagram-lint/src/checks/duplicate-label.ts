@@ -3,7 +3,7 @@
 // mirrored cards (an AZ A and an AZ B service with one body) differ; and an event-storming note other than a domain
 // event repeats by design (an actor at every command it issues), so it never counts.
 
-import type { BoxedElement } from '@livediagram/document';
+import type { BoxedElement } from '@liveplanner/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import { quoteLabel } from '../quote';

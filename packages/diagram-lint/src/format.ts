@@ -1,9 +1,9 @@
 // The lint as text (blueprint "Presentation and UX", LN19 to LN22): one summary line, then one finding a
 // line, refs first and the fix last; the verdict a changeset's footer carries.
 
-import type { LintCode, LintFinding, LintReport, LintSeverity } from '@livediagram/api-schema';
+import type { LintCode, LintFinding, LintReport, LintSeverity } from '@liveplanner/api-schema';
 import { LINT_MAX_LINES_PER_CODE, LINT_MESSAGE_COLUMN_MAX } from './constants';
-import { plural } from '@livediagram/document';
+import { plural } from '@liveplanner/document';
 
 const LETTER: Readonly<Record<LintSeverity, string>> = { error: 'E', warning: 'W', info: 'I' };
 // The longest code.

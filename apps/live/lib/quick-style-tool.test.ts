@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultScheme } from '@livediagram/document';
+import { defaultScheme } from '@liveplanner/document';
 import { toolCaption, toolPhantom } from './quick-style-tool';
 import { whiteboardShapeIntent } from './whiteboard-tool';
 

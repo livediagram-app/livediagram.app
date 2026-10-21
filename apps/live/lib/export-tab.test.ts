@@ -8,10 +8,10 @@ import {
   tabToJsonText,
   tabToMarkdownText,
   type ExportedTabEnvelope,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
-import { encodeStrokePoints, layOutPages } from '@livediagram/document';
+import { encodeStrokePoints, layOutPages } from '@liveplanner/document';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -75,7 +75,7 @@ describe('exportTabAsJson', () => {
     const blob = exportTabAsJson(tab());
     expect(blob.type).toBe('application/json');
     const env = JSON.parse(await text(blob)) as ExportedTabEnvelope;
-    expect(env.kind).toBe('livediagram.tab');
+    expect(env.kind).toBe('liveplanner.tab');
     expect(env.schemaVersion).toBe(TAB_SCHEMA_VERSION);
     expect(typeof env.exportedAt).toBe('number');
     expect(env.tab.id).toBe('tab-1');

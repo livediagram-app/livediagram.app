@@ -3,7 +3,7 @@ import {
   CHANGESET_RETENTION_MS,
   EMPTY_DOCUMENT_STALE_MS,
   TRASH_RETENTION_MS,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { sqliteD1 } from './test-sqlite-d1';
 import worker from './index';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';

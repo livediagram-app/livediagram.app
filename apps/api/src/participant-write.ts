@@ -14,7 +14,7 @@ import {
   type ParticipantOpResult,
   type Tab,
   type TabLedger,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { getTabData, swapTabData } from './db';
 import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';

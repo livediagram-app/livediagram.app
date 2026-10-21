@@ -1,8 +1,8 @@
 // `unwrap <frame>` (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO36): the frame or
 // lane goes; what it held stays where it is; arrows pinned to it go with it, as `rm` removes them.
 
-import type { EditRejection } from '@livediagram/api-schema';
-import { isContainer } from '@livediagram/document';
+import type { EditRejection } from '@liveplanner/api-schema';
+import { isContainer } from '@liveplanner/document';
 import { resolveOne } from '../selectors';
 import { refsOf, type EditState } from '../state';
 import type { UnwrapOperation } from '../types';

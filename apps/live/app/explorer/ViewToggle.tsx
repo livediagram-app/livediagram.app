@@ -2,7 +2,7 @@
 
 import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@liveplanner/ui';
 
 // The List / Card / Details segmented toggle in the Explorer header
 // (docs/specs/006-document/document-snapshots.md, docs/specs/013-workspace/explorer-details-view.md).

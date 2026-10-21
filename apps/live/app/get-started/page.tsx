@@ -1,7 +1,7 @@
 'use client';
 
 // Sign-up page. Simplified port of MT's apps/dashboard/app/get-started
-// page: livediagram has no teams and no paid tier, so the MT phase
+// page: liveplanner has no teams and no paid tier, so the MT phase
 // model collapses to two:
 //
 //   Phase 1 — register: first name + last name + email (or Google OAuth)
@@ -36,7 +36,7 @@ import {
   resolvePostAuthDestination,
   ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, TextInput } from '@liveplanner/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 
 type Phase = 1 | 2;

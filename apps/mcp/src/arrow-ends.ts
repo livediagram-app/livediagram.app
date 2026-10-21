@@ -3,7 +3,7 @@
 // resolved to the element's id among the ids the result will hold (the tab's, plus this call's new elements); an end
 // that names nothing there is refused, never stored as an arrow to nowhere.
 
-import { computeRefs, resolveRef } from '@livediagram/document';
+import { computeRefs, resolveRef } from '@liveplanner/document';
 
 type Rec = Record<string, unknown>;
 

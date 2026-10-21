@@ -4,7 +4,7 @@
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor } from './office';
-import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
+import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@liveplanner/items';
 import { isPlanSheetRef } from './element-types';
 import { isFlowchartDirection } from './flowchart';
 import { isChartSource, isSheetAnchor } from './chart-source';
@@ -82,7 +82,7 @@ import {
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
-// A Plan card's sizes (PlanCardRef.size): the same three as @livediagram/items' CARD_SIZES, written out because
+// A Plan card's sizes (PlanCardRef.size): the same three as @liveplanner/items' CARD_SIZES, written out because
 // that package imports this one and its binding may be uninitialised at module load; plan-shapes.test.ts keeps
 // the two equal.
 export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'compact', 'detailed'];
@@ -516,7 +516,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   {
     field: 'planView',
-    // Called, not referenced: @livediagram/items imports this package too, so at module load the binding
+    // Called, not referenced: @liveplanner/items imports this package too, so at module load the binding
     // may not be initialised yet (a ReferenceError in the browser).
     valid: (v: unknown) => isPlanViewSettings(v),
     rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids) and title (up to 80 characters)',

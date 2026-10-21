@@ -2,8 +2,8 @@
 
 import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { useMemo } from 'react';
-import type { Deck, Tab } from '@livediagram/document';
-import type { Item, ItemTypeDef } from '@livediagram/items';
+import type { Deck, Tab } from '@liveplanner/document';
+import type { Item, ItemTypeDef } from '@liveplanner/items';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { slideThumbFor, type SlideThumb } from '@/lib/slide-thumb';

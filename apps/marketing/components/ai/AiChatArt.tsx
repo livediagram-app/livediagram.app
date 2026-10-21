@@ -1,18 +1,18 @@
-import { lucideCircleCheck, lucideSparkles } from '@livediagram/icons/lucide';
-import { DiagramBuildAnimation, lucideGlyph } from '@livediagram/ui';
+import { lucideCircleCheck, lucideSparkles } from '@liveplanner/icons/lucide';
+import { DiagramBuildAnimation, lucideGlyph } from '@liveplanner/ui';
 
 const CheckIcon = lucideGlyph(lucideCircleCheck, 14);
 const SparklesIcon = lucideGlyph(lucideSparkles, 14);
 
 // The Build with AI hero's picture (docs/specs/019-marketing/build-with-ai.md "The page" 1): an AI chat asking for
-// a diagram, the livediagram tool call it makes, and the shared DiagramBuildAnimation drawing the result with
+// a diagram, the liveplanner tool call it makes, and the shared DiagramBuildAnimation drawing the result with
 // its cursor labelled "AI". Decorative: one accessible name on the frame, the parts hidden. The animation is
 // CSS keyframes only, and reduced motion shows the finished picture.
 export function AiChatArt() {
   return (
     <div
       role="img"
-      aria-label="An AI chat asks livediagram for a diagram, and the diagram draws itself"
+      aria-label="An AI chat asks liveplanner for a diagram, and the diagram draws itself"
       className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white/90 shadow-xl shadow-brand-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-black/30"
     >
       <div
@@ -32,7 +32,7 @@ export function AiChatArt() {
         </p>
         <p className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           <CheckIcon className="text-emerald-600 dark:text-emerald-400" />
-          livediagram · create_document
+          liveplanner · create_document
         </p>
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 [background-image:radial-gradient(rgb(148_163_184/0.35)_1px,transparent_1px)] [background-size:14px_14px] px-4 py-5 dark:border-slate-800 dark:bg-slate-950 dark:[background-image:radial-gradient(rgb(71_85_105/0.5)_1px,transparent_1px)]">
           <DiagramBuildAnimation className="max-w-[300px]" cursorLabel="AI" label="" />
@@ -40,7 +40,7 @@ export function AiChatArt() {
         <p className="flex items-start gap-2 text-slate-700 dark:text-slate-200">
           <SparklesIcon className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-400" />
           <span>
-            Done. <span className="font-semibold">Order flow</span> is in your livediagram account,
+            Done. <span className="font-semibold">Order flow</span> is in your liveplanner account,
             ready to edit together.
           </span>
         </p>

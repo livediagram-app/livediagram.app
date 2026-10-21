@@ -77,9 +77,9 @@ export function ShareLinksArt() {
       <g className="fa-a-late" style={at(0.9)}>
         <Pill x={210} y={12} w={40} label="Copied" tone="green" />
       </g>
-      {row(28, 'Editors', 'livediagram.app/d/9fk2', 'Can edit', 'sky')}
-      {row(48, 'Participants', 'livediagram.app/d/m3wd', 'Can add', 'amber')}
-      {row(68, 'Viewers', 'livediagram.app/d/qp7x', 'Can view', 'slate')}
+      {row(28, 'Editors', 'liveplanner.app/d/9fk2', 'Can edit', 'sky')}
+      {row(48, 'Participants', 'liveplanner.app/d/m3wd', 'Can add', 'amber')}
+      {row(68, 'Viewers', 'liveplanner.app/d/qp7x', 'Can view', 'slate')}
       <Pointer x={232} y={19} color={YOU} className="fa-a-move" style={from(24, 46, 0)} />
     </Scene>
   );
@@ -269,7 +269,7 @@ export function RevokeArt() {
       />
       <g className="fa-a-out" style={at(0.6)}>
         <text className={TEXT} x="68" y="53.6" fontSize="7" fontFamily="ui-monospace, monospace">
-          livediagram.app/d/9fk2
+          liveplanner.app/d/9fk2
         </text>
         <Pill x={60} y={67} w={38} label="Shared" tone="green" />
       </g>
@@ -282,7 +282,7 @@ export function RevokeArt() {
           fontFamily="ui-monospace, monospace"
           textDecoration="line-through"
         >
-          livediagram.app/d/9fk2
+          liveplanner.app/d/9fk2
         </text>
         <rect
           className="fill-slate-100 dark:fill-slate-700"

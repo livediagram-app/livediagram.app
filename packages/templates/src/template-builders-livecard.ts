@@ -12,7 +12,7 @@
 //
 // Pure: () -> Element[], placed on the card's pages (liveCardPages) whatever centre is passed.
 
-import { createSticky, type Element, type Page } from '@livediagram/document';
+import { createSticky, type Element, type Page } from '@liveplanner/document';
 import { heading, type Kit } from './page-layout-kit';
 import { pageKits, templatePage } from './template-page-kit';
 

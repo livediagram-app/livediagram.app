@@ -3,7 +3,7 @@
 // a copy not yet made (`copyOf`). A deleted copy not yet made has no sheet of its own, so it takes nothing. The api
 // keeps the same index (apps/api/src/db/sheet-refs.ts) and never deletes a sheet still referenced, so this decides
 // only whether to ask.
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 
 type SheetRef = { sheetId: string; copyOf?: string };
 

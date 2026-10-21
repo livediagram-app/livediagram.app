@@ -10,29 +10,29 @@ const TICKET = 'A'.repeat(21) + '_';
 describe('WORKBENCH_MESSAGE_TYPES', () => {
   it('holds the twelve types of the spec', () => {
     expect(WORKBENCH_MESSAGE_TYPES).toEqual([
-      'livediagram:hello',
-      'livediagram:hello-ack',
-      'livediagram:ready',
-      'livediagram:tab',
-      'livediagram:selection',
-      'livediagram:renew',
-      'livediagram:ticket',
-      'livediagram:reveal',
-      'livediagram:theme',
-      'livediagram:ended',
-      'livediagram:place',
-      'livediagram:open',
+      'liveplanner:hello',
+      'liveplanner:hello-ack',
+      'liveplanner:ready',
+      'liveplanner:tab',
+      'liveplanner:selection',
+      'liveplanner:renew',
+      'liveplanner:ticket',
+      'liveplanner:reveal',
+      'liveplanner:theme',
+      'liveplanner:ended',
+      'liveplanner:place',
+      'liveplanner:open',
     ]);
   });
 });
 
 describe('parseWorkbenchMessage', () => {
   const valid: [WorkbenchMessageDirection, Record<string, unknown>][] = [
-    ['to-workbench', { type: 'livediagram:hello', v: 1 }],
+    ['to-workbench', { type: 'liveplanner:hello', v: 1 }],
     [
       'to-workbench',
       {
-        type: 'livediagram:ready',
+        type: 'liveplanner:ready',
         v: 1,
         documentId: 'doc-1',
         documentName: 'Home screen',
@@ -41,25 +41,25 @@ describe('parseWorkbenchMessage', () => {
         role: 'edit',
       },
     ],
-    ['to-workbench', { type: 'livediagram:tab', v: 1, tabId: 't1', tabName: 'Wireframe' }],
+    ['to-workbench', { type: 'liveplanner:tab', v: 1, tabId: 't1', tabName: 'Wireframe' }],
     [
       'to-workbench',
       {
-        type: 'livediagram:selection',
+        type: 'liveplanner:selection',
         v: 1,
         documentId: 'doc-1',
         documentName: 'Home screen',
         tabId: 't1',
         rev: 41,
         count: 0,
-        reference: '[livediagram] "Home screen"',
+        reference: '[liveplanner] "Home screen"',
       },
     ],
-    ['to-workbench', { type: 'livediagram:renew', v: 1 }],
-    ['to-workbench', { type: 'livediagram:ended', v: 1, reason: 'revoked' }],
-    ['to-page', { type: 'livediagram:ticket', v: 1, ticket: TICKET }],
-    ['to-page', { type: 'livediagram:reveal', v: 1, refs: ['146b', 'e4a8'] }],
-    ['to-page', { type: 'livediagram:theme', v: 1, colourScheme: 'dark' }],
+    ['to-workbench', { type: 'liveplanner:renew', v: 1 }],
+    ['to-workbench', { type: 'liveplanner:ended', v: 1, reason: 'revoked' }],
+    ['to-page', { type: 'liveplanner:ticket', v: 1, ticket: TICKET }],
+    ['to-page', { type: 'liveplanner:reveal', v: 1, refs: ['146b', 'e4a8'] }],
+    ['to-page', { type: 'liveplanner:theme', v: 1, colourScheme: 'dark' }],
   ];
 
   it.each(valid)('accepts a valid message travelling %s: %o', (direction, data) => {
@@ -69,20 +69,20 @@ describe('parseWorkbenchMessage', () => {
   it('accepts a hello-ack and trims its name', () => {
     expect(
       parseWorkbenchMessage(
-        { type: 'livediagram:hello-ack', v: 1, name: '  Acme Editor ' },
+        { type: 'liveplanner:hello-ack', v: 1, name: '  Acme Editor ' },
         'to-page',
       ),
-    ).toEqual({ type: 'livediagram:hello-ack', v: 1, name: 'Acme Editor' });
+    ).toEqual({ type: 'liveplanner:hello-ack', v: 1, name: 'Acme Editor' });
   });
 
   it.each([
-    ['an unknown type', { type: 'livediagram:dance', v: 1 }, 'livediagram:dance'],
+    ['an unknown type', { type: 'liveplanner:dance', v: 1 }, 'liveplanner:dance'],
     [
       'another version',
-      { type: 'livediagram:theme', v: 2, colourScheme: 'dark' },
-      'livediagram:theme',
+      { type: 'liveplanner:theme', v: 2, colourScheme: 'dark' },
+      'liveplanner:theme',
     ],
-    ['a page message sent to the page', { type: 'livediagram:renew', v: 1 }, 'livediagram:renew'],
+    ['a page message sent to the page', { type: 'liveplanner:renew', v: 1 }, 'liveplanner:renew'],
     ['a message with no type', { v: 1 }, 'undefined'],
     ['a string', 'hello', 'undefined'],
     ['null', null, 'undefined'],
@@ -96,24 +96,24 @@ describe('parseWorkbenchMessage', () => {
   });
 
   it.each([
-    ['a hello-ack with no name', { type: 'livediagram:hello-ack', v: 1 }],
-    ['a hello-ack with a blank name', { type: 'livediagram:hello-ack', v: 1, name: '   ' }],
+    ['a hello-ack with no name', { type: 'liveplanner:hello-ack', v: 1 }],
+    ['a hello-ack with a blank name', { type: 'liveplanner:hello-ack', v: 1, name: '   ' }],
     [
       'a hello-ack with an overlong name',
-      { type: 'livediagram:hello-ack', v: 1, name: 'x'.repeat(41) },
+      { type: 'liveplanner:hello-ack', v: 1, name: 'x'.repeat(41) },
     ],
-    ['a ticket of the wrong shape', { type: 'livediagram:ticket', v: 1, ticket: 'short' }],
-    ['a ticket that is not a string', { type: 'livediagram:ticket', v: 1, ticket: 42 }],
-    ['a reveal with no refs', { type: 'livediagram:reveal', v: 1, refs: [] }],
+    ['a ticket of the wrong shape', { type: 'liveplanner:ticket', v: 1, ticket: 'short' }],
+    ['a ticket that is not a string', { type: 'liveplanner:ticket', v: 1, ticket: 42 }],
+    ['a reveal with no refs', { type: 'liveplanner:reveal', v: 1, refs: [] }],
     [
       'a reveal with too many refs',
-      { type: 'livediagram:reveal', v: 1, refs: Array(21).fill('a') },
+      { type: 'liveplanner:reveal', v: 1, refs: Array(21).fill('a') },
     ],
-    ['a reveal with an empty ref', { type: 'livediagram:reveal', v: 1, refs: [''] }],
-    ['a reveal with an overlong ref', { type: 'livediagram:reveal', v: 1, refs: ['x'.repeat(65)] }],
-    ['a reveal whose refs are not a list', { type: 'livediagram:reveal', v: 1, refs: 'a' }],
-    ['a reveal with a ref that is not a string', { type: 'livediagram:reveal', v: 1, refs: [1] }],
-    ['a theme of another scheme', { type: 'livediagram:theme', v: 1, colourScheme: 'sepia' }],
+    ['a reveal with an empty ref', { type: 'liveplanner:reveal', v: 1, refs: [''] }],
+    ['a reveal with an overlong ref', { type: 'liveplanner:reveal', v: 1, refs: ['x'.repeat(65)] }],
+    ['a reveal whose refs are not a list', { type: 'liveplanner:reveal', v: 1, refs: 'a' }],
+    ['a reveal with a ref that is not a string', { type: 'liveplanner:reveal', v: 1, refs: [1] }],
+    ['a theme of another scheme', { type: 'liveplanner:theme', v: 1, colourScheme: 'sepia' }],
   ])('names %s invalid', (_label, data) => {
     expect(parseWorkbenchMessage(data, 'to-page')).toEqual({ invalid: data.type });
   });
@@ -122,7 +122,7 @@ describe('parseWorkbenchMessage', () => {
     [
       'a ready with an unknown role',
       {
-        type: 'livediagram:ready',
+        type: 'liveplanner:ready',
         v: 1,
         documentId: 'd',
         documentName: 'n',
@@ -133,13 +133,13 @@ describe('parseWorkbenchMessage', () => {
     ],
     [
       'a ready missing its tab',
-      { type: 'livediagram:ready', v: 1, documentId: 'd', documentName: 'n', role: 'view' },
+      { type: 'liveplanner:ready', v: 1, documentId: 'd', documentName: 'n', role: 'view' },
     ],
-    ['a tab missing its name', { type: 'livediagram:tab', v: 1, tabId: 't' }],
+    ['a tab missing its name', { type: 'liveplanner:tab', v: 1, tabId: 't' }],
     [
       'a selection with a fractional rev',
       {
-        type: 'livediagram:selection',
+        type: 'liveplanner:selection',
         v: 1,
         documentId: 'd',
         documentName: 'n',
@@ -152,7 +152,7 @@ describe('parseWorkbenchMessage', () => {
     [
       'a selection with a negative count',
       {
-        type: 'livediagram:selection',
+        type: 'liveplanner:selection',
         v: 1,
         documentId: 'd',
         documentName: 'n',
@@ -165,7 +165,7 @@ describe('parseWorkbenchMessage', () => {
     [
       'a selection with no reference',
       {
-        type: 'livediagram:selection',
+        type: 'liveplanner:selection',
         v: 1,
         documentId: 'd',
         documentName: 'n',
@@ -174,7 +174,7 @@ describe('parseWorkbenchMessage', () => {
         count: 0,
       },
     ],
-    ['an ended with another reason', { type: 'livediagram:ended', v: 1, reason: 'bored' }],
+    ['an ended with another reason', { type: 'liveplanner:ended', v: 1, reason: 'bored' }],
   ])('names %s invalid at the workbench', (_label, data) => {
     expect(parseWorkbenchMessage(data, 'to-workbench')).toEqual({ invalid: data.type });
   });
@@ -182,7 +182,7 @@ describe('parseWorkbenchMessage', () => {
 
 describe('parseWorkbenchMessage, workspace scope', () => {
   const place = {
-    type: 'livediagram:place',
+    type: 'liveplanner:place',
     v: 1,
     view: 'folder',
     folderId: 'f1',
@@ -196,7 +196,7 @@ describe('parseWorkbenchMessage, workspace scope', () => {
   };
 
   it.each([
-    ['to-workbench', { type: 'livediagram:ready', v: 1, scope: 'workspace', role: 'view' }],
+    ['to-workbench', { type: 'liveplanner:ready', v: 1, scope: 'workspace', role: 'view' }],
     ['to-workbench', place],
     [
       'to-workbench',
@@ -210,10 +210,10 @@ describe('parseWorkbenchMessage, workspace scope', () => {
         tabName: 'Wireframe',
       },
     ],
-    ['to-page', { type: 'livediagram:open', v: 1, to: { view: 'home' } }],
-    ['to-page', { type: 'livediagram:open', v: 1, to: { folderId: 'f1' } }],
-    ['to-page', { type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } }],
-    ['to-page', { type: 'livediagram:open', v: 1, to: { documentId: 'doc-1', tabId: 't1' } }],
+    ['to-page', { type: 'liveplanner:open', v: 1, to: { view: 'home' } }],
+    ['to-page', { type: 'liveplanner:open', v: 1, to: { folderId: 'f1' } }],
+    ['to-page', { type: 'liveplanner:open', v: 1, to: { documentId: 'doc-1' } }],
+    ['to-page', { type: 'liveplanner:open', v: 1, to: { documentId: 'doc-1', tabId: 't1' } }],
   ] as const)('accepts a valid message travelling %s: %o', (direction, data) => {
     expect(parseWorkbenchMessage(data, direction)).toEqual(data);
   });
@@ -221,11 +221,11 @@ describe('parseWorkbenchMessage, workspace scope', () => {
   it.each([
     [
       'a workspace ready with an unknown role',
-      { type: 'livediagram:ready', v: 1, scope: 'workspace', role: 'admin' },
+      { type: 'liveplanner:ready', v: 1, scope: 'workspace', role: 'admin' },
     ],
     [
       'a ready of another scope',
-      { type: 'livediagram:ready', v: 1, scope: 'galaxy', role: 'edit' },
+      { type: 'liveplanner:ready', v: 1, scope: 'galaxy', role: 'edit' },
     ],
     ['a place with no view', { ...place, view: '' }],
     ['a place with a fractional count', { ...place, documentCount: 1.5 }],
@@ -236,16 +236,16 @@ describe('parseWorkbenchMessage, workspace scope', () => {
   });
 
   it.each([
-    ['an open with no target', { type: 'livediagram:open', v: 1 }],
-    ['an open to another view', { type: 'livediagram:open', v: 1, to: { view: 'recent' } }],
-    ['an open to an empty folder id', { type: 'livediagram:open', v: 1, to: { folderId: '' } }],
+    ['an open with no target', { type: 'liveplanner:open', v: 1 }],
+    ['an open to another view', { type: 'liveplanner:open', v: 1, to: { view: 'recent' } }],
+    ['an open to an empty folder id', { type: 'liveplanner:open', v: 1, to: { folderId: '' } }],
     [
       'an open to an overlong document id',
-      { type: 'livediagram:open', v: 1, to: { documentId: 'x'.repeat(65) } },
+      { type: 'liveplanner:open', v: 1, to: { documentId: 'x'.repeat(65) } },
     ],
     [
       'an open to a tab that is not a string',
-      { type: 'livediagram:open', v: 1, to: { documentId: 'd', tabId: 4 } },
+      { type: 'liveplanner:open', v: 1, to: { documentId: 'd', tabId: 4 } },
     ],
   ])('names %s invalid at the page', (_label, data) => {
     expect(parseWorkbenchMessage(data, 'to-page')).toEqual({ invalid: data.type });

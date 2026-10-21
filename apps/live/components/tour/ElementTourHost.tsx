@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';

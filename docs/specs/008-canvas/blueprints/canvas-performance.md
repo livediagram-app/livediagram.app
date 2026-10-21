@@ -280,7 +280,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The reference board
 
 - `buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COUNT)`: a `mulberry32` PRNG;
-  elements by the spec's mix, made with the `@livediagram/document` factories, placed over
+  elements by the spec's mix, made with the `@liveplanner/document` factories, placed over
   `REFERENCE_AREA`; every element but the arrows is placed first, then each arrow is a
   `createPinnedArrow` from a random shape to one of its `ARROW_NEIGHBOURS` (3) nearest shapes by
   centre, as real diagrams join neighbours; paths are closed
@@ -349,7 +349,7 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
   workflow on `main` (the REST API, `GITHUB_API_URL`). On a scheduled run that SHA equals
   `github.sha` → the summary says nothing is new and every later step is skipped.
 - Otherwise: the e2e image and install as `e2e.yml` (with its image check), `next build` of
-  `apps/live`, `pnpm --filter @livediagram/live perf:canvas`, then `nightly.mjs report`, and the
+  `apps/live`, `pnpm --filter @liveplanner/live perf:canvas`, then `nightly.mjs report`, and the
   `test-results/perf` folder (report, gzipped traces, screenshots) uploaded as `canvas-perf` with
   `retention-days: 14`.
 - `nightly.mjs report` writes the table to `$GITHUB_STEP_SUMMARY`, finds the open issue titled

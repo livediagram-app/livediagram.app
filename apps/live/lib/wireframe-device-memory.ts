@@ -5,9 +5,9 @@ import {
   DEFAULT_WIREFRAME_DEVICE,
   isWireframeDeviceId,
   type WireframeDeviceId,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
-const KEY = 'livediagram:v2:wireframe-device';
+const KEY = 'liveplanner:v2:wireframe-device';
 
 export function lastWireframeDevice(): WireframeDeviceId {
   try {

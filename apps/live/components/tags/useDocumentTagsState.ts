@@ -15,7 +15,7 @@ import {
   sortTags,
   tagNameKey,
   type Tag,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   apiCreateTag,
   apiDeleteTag,

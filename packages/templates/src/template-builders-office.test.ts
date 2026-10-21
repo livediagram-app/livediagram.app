@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { roomDoorSpan, roomWalls, type Element } from '@livediagram/document';
+import { roomDoorSpan, roomWalls, type Element } from '@liveplanner/document';
 import { buildTemplate } from './build-template';
 import { furnishRooms } from './template-office-parts';
 

@@ -3,7 +3,7 @@
 // colour normalised; preset inks carry their colour stops; an arrowhead is its own small stroke.
 import type { SceneAppearance, SceneColour, SceneInk, ScenePoint } from '@/lib/board-scene/scene';
 import { lineColour } from './colours';
-import { penColourHex } from '@livediagram/document';
+import { penColourHex } from '@liveplanner/document';
 import type { WbInk, WbStroke } from './elements';
 import type { PenStroke } from './pen-stroke';
 import { simplifyStroke } from './simplify';

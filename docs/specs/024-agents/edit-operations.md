@@ -1,6 +1,6 @@
 # Edit operations
 
-**Status: built.** `@livediagram/edit-operations` reads both forms and applies every operation below, by ref or
+**Status: built.** `@liveplanner/edit-operations` reads both forms and applies every operation below, by ref or
 selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the [lint](diagram-lint.md)
 verdict, and the [CLI](../015-api/cli.md) is not built.
 
@@ -50,7 +50,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, `iconWeight`, `font` (the editor's
   faces: a family name such as "serif" drew in the tab's font in silence), and the diagram-building kinds'
   `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `boundaryStyle`, `pyramidVariant`;
-  `ELEMENT_FIELD_VALUES` in `@livediagram/document`) refuses a value off it as `invalid_value`, naming the values it
+  `ELEMENT_FIELD_VALUES` in `@liveplanner/document`) refuses a value off it as `invalid_value`, naming the values it
   takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
@@ -153,7 +153,7 @@ A changeset answers with what it did, one line per element, the same text for a 
 + arrow  verify→n4 (style of a3)
 » n4 n5 n6 n7 n8  +0,+100 (make room)
 f2  +verify
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
 
 `+` added, `~` changed (before→after), `-` removed, `»` moved without being named, a container ref followed by its
@@ -200,12 +200,12 @@ there are, in its expectation and its hint, rather than the hint for quoting a v
 
 ## Where the engine lives
 
-One pure engine, `@livediagram/edit-operations`, on top of `@livediagram/document`:
+One pure engine, `@liveplanner/edit-operations`, on top of `@liveplanner/document`:
 
 - `applyEditOperations(tab, operations, options) → { tab, results, elementOps, inverse, warnings, targets, createdIds } | { errors }`,
   and `applyReplace` beside it for a `replace` body, with the same answer. `targets` are the existing elements the
   operations resolved, which the changeset fingerprints and checks for holds; `createdIds` are the elements it
   created.
-- Refs, slug ids, kind words, membership and the content origin come from `@livediagram/document`, shared with the
+- Refs, slug ids, kind words, membership and the content origin come from `@liveplanner/document`, shared with the
   views and the lint, as do graph input's label cap and the MCP's normalisation.
 - The api runs it for every changeset; the CLI runs it only to parse and to print.

@@ -2,7 +2,7 @@
 //
 // It was written three times before this module existed: once here in
 // markup.ts (text nodes only, & < >), once in sticker-markup.ts (& < > " '),
-// and once in @livediagram/document's svg-render-primitives (& < > ", for both
+// and once in @liveplanner/document's svg-render-primitives (& < > ", for both
 // text and attributes). Three subtly different answers to one question is how
 // an escaping bug gets fixed in one exporter and not the others.
 //
@@ -12,8 +12,8 @@
 // wrong, and paying those few bytes is worth not having to ask, at each call
 // site, which of two escapers this one needs.
 //
-// Lives in @livediagram/icons because it is a leaf package with no
-// dependencies of its own, and @livediagram/document already depends on it. The
+// Lives in @liveplanner/icons because it is a leaf package with no
+// dependencies of its own, and @liveplanner/document already depends on it. The
 // reverse home would invert that edge.
 export function xmlEscape(s: string): string {
   return s

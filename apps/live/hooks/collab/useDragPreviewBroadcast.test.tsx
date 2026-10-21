@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
-import { DRAG_PREVIEW_MAX_ELEMENTS } from '@livediagram/api-schema';
+import { createPinnedArrow, createShape, type Element } from '@liveplanner/document';
+import { DRAG_PREVIEW_MAX_ELEMENTS } from '@liveplanner/api-schema';
 import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { DRAG_PREVIEW_SEND_MS, useDragPreviewBroadcast } from './useDragPreviewBroadcast';
 

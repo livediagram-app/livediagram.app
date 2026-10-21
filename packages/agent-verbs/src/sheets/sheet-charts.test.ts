@@ -9,7 +9,7 @@ import {
   posRangeOf,
   templateTints,
   type Sheet,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import {
   anchorAt,
   buildChartChange,

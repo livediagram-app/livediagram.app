@@ -130,7 +130,7 @@ function bundleWorker(app: LicenceApp, workDir: string): AppBundle {
 
 function main() {
   const out = argument('--out');
-  const workDir = mkdtempSync(join(tmpdir(), 'livediagram-licences-'));
+  const workDir = mkdtempSync(join(tmpdir(), 'liveplanner-licences-'));
   const collected: Collected[] = [];
   try {
     for (const app of LICENCE_APPS) {

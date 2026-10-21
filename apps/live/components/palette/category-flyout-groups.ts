@@ -4,7 +4,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // the bar, whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
 // the names of its groups. Pure, so the rules are testable without rendering the strip.
 
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@liveplanner/document';
 
 /** The modes whose strip is a category bar: Diagram, Workshop and Pages. Plan keeps the category picker and
  *  its tiles (its boards and cards are a different palette). */

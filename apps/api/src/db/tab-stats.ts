@@ -1,8 +1,8 @@
 // Tab stats storage (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
 // from"): per tab, what the Explorer's Details view sums over a document, kept in `tab_stats`
 // (migration 0084) beside each tab so a document list reads them without reading any tab body.
-import type { DocumentStats } from '@livediagram/api-schema';
-import { parseEditorMode, tabStatsOf, type TabStats } from '@livediagram/document';
+import type { DocumentStats } from '@liveplanner/api-schema';
+import { parseEditorMode, tabStatsOf, type TabStats } from '@liveplanner/document';
 import type { Env } from '../types';
 
 // The counting itself is the document model's, shared with the browser's own documents.

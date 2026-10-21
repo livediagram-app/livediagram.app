@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, ElementAction, Tab } from '@livediagram/document';
+import type { Element, ElementAction, Tab } from '@liveplanner/document';
 import {
   EMPTY_ITEM_STORE,
   LINKED_AT_FIELD,
@@ -12,7 +12,7 @@ import {
   type Item,
   type ItemStoreState,
   type ItemWrite,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { actionsBoardIn } from './linked-actions';
 import { LINKED_HEAL_DEBOUNCE_MS, useLinkedActionCards } from './useLinkedActionCards';
 

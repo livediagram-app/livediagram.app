@@ -3,7 +3,7 @@
 // edit naming a node no longer there is skipped and counted, never thrown.
 import { MSWB_COMMAND, MSWB_COMMAND_TRAIT, MSWB_TRAIT, MSWB_TYPE } from './format';
 import { buildNode, children, createIndex, unindex, type TreeIndex, type WbNode } from './tree';
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@liveplanner/document';
 
 export type ReplayStats = {
   changes: number;

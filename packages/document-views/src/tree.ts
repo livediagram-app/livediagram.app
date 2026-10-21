@@ -1,6 +1,6 @@
 // The outline's tree (docs/specs/024-agents/blueprints/document-views.md "The view model"): each printed
 // non-arrow element under its derived container, siblings in reading order, bare strokes folded.
-import { deriveContainers, type Element } from '@livediagram/document';
+import { deriveContainers, type Element } from '@liveplanner/document';
 import { freehandRuns, type FreehandRun } from './freehand-runs';
 import { readingOrder, type Placed } from './reading-order';
 

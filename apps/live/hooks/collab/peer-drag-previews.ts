@@ -3,8 +3,8 @@
 // ends on their end message, when their real change arrives, when they leave, or after
 // PEER_PREVIEW_EXPIRY_MS without a message. Only an editor's preview is drawn.
 
-import type { RoomOp } from '@livediagram/api-schema';
-import { parseDragPreviewPatches } from '@livediagram/api-schema';
+import type { RoomOp } from '@liveplanner/api-schema';
+import { parseDragPreviewPatches } from '@liveplanner/api-schema';
 import { debugLog } from '@/lib/debug-log';
 import { clearPeerPreview, peerPreviewIds, setPeerPreview } from '@/lib/drag-preview';
 

@@ -1,4 +1,4 @@
-import { Button, EmptyState } from '@livediagram/ui';
+import { Button, EmptyState } from '@liveplanner/ui';
 import { AlertIcon } from './icons';
 
 // A load that failed (docs/specs/025-community/community.md "Gallery", "Post"): says what could not load, and

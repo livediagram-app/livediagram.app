@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_TOAST_COALESCE_MS, type ChangesetRoomOp } from '@livediagram/api-schema';
+import { CHANGESET_TOAST_COALESCE_MS, type ChangesetRoomOp } from '@liveplanner/api-schema';
 import {
   changesetToastCopy,
   coalesceChangesetToast,

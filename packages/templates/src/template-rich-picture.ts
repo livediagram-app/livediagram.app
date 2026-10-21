@@ -7,7 +7,7 @@
 // teaches the symbols, so a group can carry on drawing in the same language. Pure:
 // (cx, cy) -> Element[].
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { crossedSwords, eye, stickFigure, type FigureOpts } from './template-sketch-figures';
 import {
   FINE,

@@ -1,4 +1,4 @@
-import type { ModelCues } from '@livediagram/sticky-vision';
+import type { ModelCues } from '@liveplanner/sticky-vision';
 
 // What the page and the boundary-model worker say to each other (docs/specs/021-event-storming/event-storming.md
 // Phase 9). Closed vocabularies throughout: the backend and the failure reason

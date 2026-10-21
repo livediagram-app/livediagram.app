@@ -1,8 +1,8 @@
 // Any thrown thing as the failure the CLI reports (docs/specs/015-api/cli.md "Exit codes", blueprint CLI14-16):
 // its exit code, a stable code, one line, candidates and a runnable fix. Never a stack trace.
 
-import { AddressError, VerbRefusal } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
+import { AddressError, VerbRefusal } from '@liveplanner/agent-verbs';
+import { ApiError } from '@liveplanner/api-client';
 import { CliError, type CliFailure } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
 
@@ -10,7 +10,7 @@ import { EXIT, exitCodeForStatus } from './exit-codes';
 export const isNetworkFailure = (err: unknown): err is Error =>
   err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name);
 
-export const ISSUES_URL = 'https://github.com/livediagram-app/livediagram.app/issues';
+export const ISSUES_URL = 'https://github.com/liveplanner-app/liveplanner.app/issues';
 
 function addressFailure(err: AddressError): CliFailure {
   const { kind, candidates, message, hint } = err.failure;
@@ -50,8 +50,8 @@ function apiFailure(err: ApiError, host: string): CliFailure {
             : `refused: ${code}`,
         hint:
           err.status === 401
-            ? 'livediagram auth login --with-token, or set LIVEDIAGRAM_TOKEN'
-            : 'livediagram auth status',
+            ? 'liveplanner auth login --with-token, or set LIVEPLANNER_TOKEN'
+            : 'liveplanner auth status',
       };
     case EXIT.rateLimited:
       return {
@@ -91,6 +91,6 @@ export function failureOf(err: unknown, host: string): CliFailure {
     exit: EXIT.failure,
     code: 'internal',
     message: `internal error (${err instanceof Error ? err.name : typeof err})`,
-    hint: `run again with LIVEDIAGRAM_DEBUG=1 and report it at ${ISSUES_URL}`,
+    hint: `run again with LIVEPLANNER_DEBUG=1 and report it at ${ISSUES_URL}`,
   };
 }

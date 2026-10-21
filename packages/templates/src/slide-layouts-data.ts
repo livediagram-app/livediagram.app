@@ -2,7 +2,7 @@
 // a room, besides Big Number, Key Stats, Chart Story, Comparison, KPI Dashboard and Market Share.
 // Every one owes its source a line at the foot. Pure builders on the slide kit, in units of the
 // slide's height.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 import { card, columns, numberDisc, over, rule, slideHeading, slideType } from './slide-layout-kit';
 

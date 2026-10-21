@@ -1,6 +1,6 @@
 'use client';
 
-import { COMMUNITY_DOT_GRID } from '@livediagram/ui';
+import { COMMUNITY_DOT_GRID } from '@liveplanner/ui';
 import { useEffect, useState } from 'react';
 import { postImageUrl } from '@/lib/api';
 import { embedHref, openDocumentHref } from '@/lib/links';

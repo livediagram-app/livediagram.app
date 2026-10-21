@@ -1,6 +1,6 @@
 // Image gallery calls (docs/specs/009-elements/images.md): list, upload, delete, usage index, and
 // the authenticated blob-URL fetch for rendering.
-import type { ImageSummary } from '@livediagram/api-schema';
+import type { ImageSummary } from '@liveplanner/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
   API_BASE,

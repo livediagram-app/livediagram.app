@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Privacy and Security',
   description:
-    'How your data is handled, what livediagram collects, and how share links are protected.',
+    'How your data is handled, what liveplanner collects, and how share links are protected.',
   path: '/help/privacy-and-security/',
 });
 

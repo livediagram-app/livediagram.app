@@ -1,8 +1,8 @@
 // `graph lint --compare` (blueprint "Compare", LN26, LN27): a graph source laid out in each variant of the
 // named dimensions, measured, and the best marked.
 
-import type { LintMeasures, LintReport, LintSeverity } from '@livediagram/api-schema';
-import type { ArrowStyle, GraphInput } from '@livediagram/document';
+import type { LintMeasures, LintReport, LintSeverity } from '@liveplanner/api-schema';
+import type { ArrowStyle, GraphInput } from '@liveplanner/document';
 import { lintGraph } from './lint';
 import { lintVerdict } from './format';
 import type { LintLogger } from './log';

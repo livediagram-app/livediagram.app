@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import { buildDefaultFolderIndex } from './default-destination';
 import { rememberDefaultFolders, rememberedDefaultFolder } from './default-folder-names';
 
@@ -47,7 +47,7 @@ describe('default folder names', () => {
 
   it('reads unreadable storage as nothing remembered', () => {
     const store = memoryStore();
-    store.setItem('livediagram:v2:default-folder-names:owner', '{not json');
+    store.setItem('liveplanner:v2:default-folder-names:owner', '{not json');
     expect(rememberedDefaultFolder('owner', 'w', store)).toBeNull();
   });
 });

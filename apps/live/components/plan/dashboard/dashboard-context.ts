@@ -3,7 +3,7 @@
 // What a Dashboard's rows and slots read (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), handed down once by
 // DashboardPage rather than through every row.
 import { createContext, useContext } from 'react';
-import type { DashboardLayout, Element, Tab } from '@livediagram/document';
+import type { DashboardLayout, Element, Tab } from '@liveplanner/document';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import type { FitGuard } from './useFitGuard';
 

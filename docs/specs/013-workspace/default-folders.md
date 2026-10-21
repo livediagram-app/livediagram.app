@@ -52,7 +52,7 @@ order:
   `template` (the template family) and `mode` (opens in).
 - The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`), generated from three closed lists. A key
   outside it is refused when set and ignored when read.
-  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@livediagram/document`), one
+  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@liveplanner/document`), one
     `mode:<mode>` per mode in the modes' order: a new editor mode gains its key, and its entry in
     the list, with no other change.
   - **Kind keys** come from the specific tab kinds a document can be created with: every creatable
@@ -72,7 +72,7 @@ order:
     reads a tab's kind; `diagram` otherwise (a legacy whiteboard tab included). Absent on the wire
     reads as `diagram`.
   - `templateFamily`: by the **template** the document is made from. One exhaustive map from every
-    template to its family, or none, decides it (`templateFamilyOf` in `@livediagram/templates`):
+    template to its family, or none, decides it (`templateFamilyOf` in `@liveplanner/templates`):
     every retrospective format (Retrospective, Start / Stop / Continue, Mad / Sad / Glad, 4Ls,
     Sailboat) is `retrospective`, the Kanban template `kanban`, every other template none, the
     Incident postmortem and Lean coffee included. A new template is not complete until it is
@@ -284,7 +284,7 @@ it has no Location step and shows no folder browser.
   placement, only its intent, so the server's [precedence](#precedence) files it: the default for its kind, template
   or mode, else the root of My Documents. A default the browser has not loaded yet is still honoured, as the server
   resolves it.
-- **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in livediagram, ahead of
+- **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in liveplanner, ahead of
   any default.
 - **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
   Default for** and My Documents' own menu. The wizard itself sets nothing.

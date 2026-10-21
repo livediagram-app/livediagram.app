@@ -11,7 +11,7 @@ import {
   type ArticleBlock,
   type ArticleFlow,
   type LaidOutPage,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { docToBlocks } from '@/lib/article/article-convert';
 import { insertBlocksAfterCaret, selectionStateOf } from '@/lib/article/article-commands';
 import type { ArticleEditorHandle } from '@/lib/article/article-editor-store';

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { clampIntoRange, Portal } from '@livediagram/ui';
-import type { TextRun } from '@livediagram/document';
+import { clampIntoRange, Portal } from '@liveplanner/ui';
+import type { TextRun } from '@liveplanner/document';
 import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';

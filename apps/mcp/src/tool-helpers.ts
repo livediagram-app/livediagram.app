@@ -2,11 +2,11 @@
 // error result shapes, the deep links, the bearer-token guard every tool
 // uses, and the load-a-tab sequence the read and edit tools share.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
-// result lives in image-result.ts and the pure tab builders in @livediagram/document
-// and @livediagram/templates. tools.ts keeps the registrations.
+// result lives in image-result.ts and the pure tab builders in @liveplanner/document
+// and @liveplanner/templates. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
+import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@liveplanner/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -24,9 +24,9 @@ export type ToolResult = {
 };
 
 // The live app this MCP server belongs to: its own host on staging and on a self-host
-// (CONSENT_BASE_URL, as the consent and device pages use), livediagram.app otherwise.
+// (CONSENT_BASE_URL, as the consent and device pages use), liveplanner.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
-  env.CONSENT_BASE_URL ?? 'https://livediagram.app';
+  env.CONSENT_BASE_URL ?? 'https://liveplanner.app';
 
 export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
   `${appBase(env)}/document/${id}`;

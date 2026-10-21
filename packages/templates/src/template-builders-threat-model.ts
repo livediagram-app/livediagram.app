@@ -1,6 +1,6 @@
 // The Threat model template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a STRIDE threat model of
 // Plateful's checkout. This builds its first tab, the drawing; the second, the Threat Register, is the companion
-// Sheet (template-companions.ts) made from the same threats (@livediagram/sheets THREAT_EXAMPLES), so every marker
+// Sheet (template-companions.ts) made from the same threats (@liveplanner/sheets THREAT_EXAMPLES), so every marker
 // here names a row there with the same element and rating.
 //
 // The drawing is a data-flow diagram inside its trust boundaries (Internet, Plateful VPC and the PCI zone nested in
@@ -18,14 +18,14 @@ import {
   createText,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   STRIDE_CATEGORIES,
   THREAT_EXAMPLES,
   threatRating,
   type StrideCategory,
   type ThreatRating,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {
   CONTENT,

@@ -11,7 +11,7 @@
 // dropped on the wire.
 
 import { useEffect, useRef, useState } from 'react';
-import type { AvatarPresence, RoomOutgoing } from '@livediagram/api-schema';
+import type { AvatarPresence, RoomOutgoing } from '@liveplanner/api-schema';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';

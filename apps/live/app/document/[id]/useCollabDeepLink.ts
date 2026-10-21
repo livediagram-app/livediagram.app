@@ -8,7 +8,7 @@ import {
   type MutableRefObject,
   useEffectEvent,
 } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
 

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ANIMATION_SET_VALUES, SHAPE_ANIMATIONS, type AnimationSetId } from '@livediagram/document';
+import { ANIMATION_SET_VALUES, SHAPE_ANIMATIONS, type AnimationSetId } from '@liveplanner/document';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 
 // An animation is applied by building a class name from its stored value. Nothing checks that the

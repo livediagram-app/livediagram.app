@@ -3,7 +3,7 @@
 // than loading for ever; so does one no arrived tab places once the rest have failed.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { tabsStateOf } from './dashboard-context';
 import { useSheetRead } from './useSheetReader';
 

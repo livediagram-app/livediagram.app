@@ -34,7 +34,7 @@ While the tool is active with a size above Point, a ring follows the cursor at t
 
 ## Persistence
 
-Device-local, in `localStorage` (`livediagram:v2:eraser-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`liveplanner:v2:eraser-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 The **Erases** filter is the one setting with a real "wrong at the wrong moment" risk — someone leaves it on Drawings only, comes back tomorrow, and wonders why the eraser is ignoring a shape. The panel keeps the filter visible in its collapsed header for exactly that reason, and the ring turns amber whenever a filter is on, so a restricted eraser never looks like a broken one.
 

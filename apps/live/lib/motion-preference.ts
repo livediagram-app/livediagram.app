@@ -1,4 +1,4 @@
-import { PREFERS_REDUCED_MOTION } from '@livediagram/ui';
+import { PREFERS_REDUCED_MOTION } from '@liveplanner/ui';
 
 // Whether motion should be cut right now: the in-app "Reduce motion" preference (the `.reduce-motion`
 // class useReduceMotion keeps on <html>) or the OS `prefers-reduced-motion` setting. For script-driven

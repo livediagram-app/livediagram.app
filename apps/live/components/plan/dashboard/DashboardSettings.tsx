@@ -16,15 +16,15 @@ import {
   setDashboardBackground,
   type DashboardBackground,
   type DashboardLayout,
-} from '@livediagram/document';
-import { TextInput, lucideGlyph } from '@livediagram/ui';
+} from '@liveplanner/document';
+import { TextInput, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideEraser,
   lucideLayoutGrid,
   lucidePanelsTopLeft,
   lucidePaintbrush,
   lucideBetweenHorizontalEnd,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';

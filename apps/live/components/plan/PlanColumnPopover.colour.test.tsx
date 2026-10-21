@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { penColourHex } from '@livediagram/document';
-import { presetSetup, statusColumn } from '@livediagram/items';
+import { penColourHex } from '@liveplanner/document';
+import { presetSetup, statusColumn } from '@liveplanner/items';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import type { ComponentProps } from 'react';
 import { PlanColumnPopover } from './PlanColumnPopover';

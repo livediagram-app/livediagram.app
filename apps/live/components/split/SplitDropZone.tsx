@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
-import type { Tab } from '@livediagram/document';
-import { SideBySideIcon } from '@livediagram/ui';
+import type { Tab } from '@liveplanner/document';
+import { SideBySideIcon } from '@liveplanner/ui';
 import {
   SPLIT_TAB_BAR_CLEARANCE_PX,
   approachProgress,

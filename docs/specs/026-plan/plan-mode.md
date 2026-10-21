@@ -245,7 +245,7 @@ with a Board**.
 
 ### Nothing attached to Plan items
 
-A Plan item (a board, a Plan card element, a visualisation or a Sheet; `takesAttachments` in `@livediagram/document`)
+A Plan item (a board, a Plan card element, a visualisation or a Sheet; `takesAttachments` in `@liveplanner/document`)
 takes **no comment, action, link or note** of its own: the conversation lives on its cards, each with its comments
 and fields. So, for everyone whatever their share role:
 

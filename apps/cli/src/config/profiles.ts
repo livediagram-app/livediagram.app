@@ -1,6 +1,6 @@
 // Which host a command talks to (docs/specs/015-api/cli.md "Profiles and self-hosting", blueprint CLI7):
-// --host, else --profile, else LIVEDIAGRAM_HOST, else LIVEDIAGRAM_PROFILE, else the config's default profile,
-// else https://livediagram.app. --host and --profile together are a usage error.
+// --host, else --profile, else LIVEPLANNER_HOST, else LIVEPLANNER_PROFILE, else the config's default profile,
+// else https://liveplanner.app. --host and --profile together are a usage error.
 
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -8,7 +8,7 @@ import { EXIT } from '../output/exit-codes';
 import { parseConfig, type ConfigFile } from './config-file';
 import { configDir } from './paths';
 
-export const DEFAULT_HOST = 'https://livediagram.app';
+export const DEFAULT_HOST = 'https://liveplanner.app';
 export const DEFAULT_PROFILE = 'default';
 
 export type ProfileSource = 'flag' | 'env' | 'config' | 'default';
@@ -44,15 +44,15 @@ export function resolveProfile(
     const host = normaliseHost(flags.host);
     return { name: host, host, source: 'flag' };
   }
-  if (!flags.profile && io.env.LIVEDIAGRAM_HOST) {
-    const host = normaliseHost(io.env.LIVEDIAGRAM_HOST);
+  if (!flags.profile && io.env.LIVEPLANNER_HOST) {
+    const host = normaliseHost(io.env.LIVEPLANNER_HOST);
     return { name: host, host, source: 'env' };
   }
-  const named = flags.profile ?? io.env.LIVEDIAGRAM_PROFILE;
+  const named = flags.profile ?? io.env.LIVEPLANNER_PROFILE;
   const name = named ?? config.defaultProfile ?? DEFAULT_PROFILE;
   const source: ProfileSource = flags.profile
     ? 'flag'
-    : io.env.LIVEDIAGRAM_PROFILE
+    : io.env.LIVEPLANNER_PROFILE
       ? 'env'
       : config.defaultProfile
         ? 'config'

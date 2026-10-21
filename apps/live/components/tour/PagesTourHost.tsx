@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { pageKindOf, pagesOf, type PageKind } from '@livediagram/document';
+import { pageKindOf, pagesOf, type PageKind } from '@liveplanner/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';

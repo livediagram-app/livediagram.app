@@ -6,7 +6,7 @@ import {
   isSystemOpKind,
   parseAvatarSay,
   parseStoredLevel,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { answersAsSelf } from './document-room-rules';
 import { scopedSenderMayRelay } from './room-scope';
 

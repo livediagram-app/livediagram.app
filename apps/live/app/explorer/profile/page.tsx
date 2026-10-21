@@ -11,7 +11,7 @@ import { ProfileRedirect } from './ProfileRedirect';
 // forever, and an unsubscribe link that 404s is the one dead link a product
 // really cannot ship.
 export const metadata: Metadata = {
-  title: 'Notification Settings | livediagram',
+  title: 'Notification Settings | liveplanner',
   robots: { index: false, follow: false },
 };
 

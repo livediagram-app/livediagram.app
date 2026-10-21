@@ -1,4 +1,4 @@
-import { SITE_DESCRIPTION } from '@livediagram/ui';
+import { SITE_DESCRIPTION } from '@liveplanner/ui';
 import type { MetadataRoute } from 'next';
 
 // Required for `output: 'export'`: route handlers must declare
@@ -18,7 +18,7 @@ export const dynamic = 'force-static';
 //
 // Icons, in increasing specificity. /icon.svg is the scalable master
 // (Next.js also auto-emits a <link> for app/icon.svg). The raster
-// PNGs from public/ (livediagram-icon-{256,512}.png) are listed at
+// PNGs from public/ (liveplanner-icon-{256,512}.png) are listed at
 // explicit sizes because some Android installers + the Lighthouse PWA
 // audit prefer a concrete PNG over an SVG. All are purpose: 'any':
 // the Living Prism's corners reach outside the maskable safe zone
@@ -33,8 +33,8 @@ export const dynamic = 'force-static';
 // splash screen behind the icon at launch.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'livediagram',
-    short_name: 'livediagram',
+    name: 'liveplanner',
+    short_name: 'liveplanner',
     description: SITE_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
@@ -48,13 +48,13 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'any',
       },
       {
-        src: '/livediagram-icon-256.png',
+        src: '/liveplanner-icon-256.png',
         sizes: '256x256',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/livediagram-icon-512.png',
+        src: '/liveplanner-icon-512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',

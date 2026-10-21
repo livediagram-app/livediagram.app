@@ -2,7 +2,7 @@
 // document and tab name the worker stores passes through here, so API-token
 // callers, MCP tools and copies meet the same NAME_MAX_LENGTH the editor applies.
 
-import { NAME_MAX_LENGTH, truncateName } from '@livediagram/document';
+import { NAME_MAX_LENGTH, truncateName } from '@liveplanner/document';
 
 type CappedNameKind = 'document' | 'tab';
 

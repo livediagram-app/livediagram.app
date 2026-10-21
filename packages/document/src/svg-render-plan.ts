@@ -13,7 +13,7 @@ import {
   type PlanVisualisation,
   type Item,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';

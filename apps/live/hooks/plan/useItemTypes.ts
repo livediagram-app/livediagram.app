@@ -18,7 +18,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import type { ItemTypesRoomOp } from '@livediagram/api-schema';
+import type { ItemTypesRoomOp } from '@liveplanner/api-schema';
 import {
   inverseCatalogueChange,
   readItemTypeCatalogue,
@@ -30,7 +30,7 @@ import {
   type ItemTypeDef,
   defaultTypesToAdd,
   ITEM_TYPES_MAX,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { ItemTypesStaleError, saveItemTypes, type SavedItemTypes } from '@/lib/api/item-types';
 import { debugLog } from '@/lib/debug-log';
 import { useLatest } from '@/hooks/ui/useLatest';

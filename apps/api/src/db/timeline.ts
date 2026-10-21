@@ -2,7 +2,7 @@
 //
 // Every event is written inline on the write path that caused it.
 // There are no scanners and no scan cron: unlike the system this shape
-// was borrowed from, livediagram has no entities whose state drifts
+// was borrowed from, liveplanner has no entities whose state drifts
 // silently behind the API, so a "rescan for what I missed" pass would
 // find nothing. The only non-inline writers are the daily crons that
 // already compute the future-dated expiry warnings.
@@ -10,8 +10,8 @@
 // Emit is fire-and-forget from every call site (wrapped in waitUntil):
 // a missing timeline row is cosmetic, a failed document save is not.
 
-import { HOME_OPENED_EVENT_TYPE } from '@livediagram/api-schema';
-import type { TimelineEvent, TimelineScopeRef } from '@livediagram/api-schema';
+import { HOME_OPENED_EVENT_TYPE } from '@liveplanner/api-schema';
+import type { TimelineEvent, TimelineScopeRef } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 

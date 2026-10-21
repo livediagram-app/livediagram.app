@@ -3,8 +3,8 @@
 // The status bar's red Not Taking Responses (docs/specs/030-forms/forms.md "Hearing about responses"): an Editor's
 // warning, right after the response count, that a published form takes no responses now. Its tooltip says why; a
 // press opens where that is fixed. Red (danger), unlike Problems with this Form's amber: responses are being lost.
-import { Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideTriangleAlert } from '@livediagram/icons/lucide';
+import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideTriangleAlert } from '@liveplanner/icons/lucide';
 import { track } from '@/lib/telemetry';
 import {
   FORM_NOT_TAKING,

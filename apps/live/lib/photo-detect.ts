@@ -4,7 +4,7 @@ import {
   PHOTO_MAX_EDGE_PX,
   PHOTO_MAX_NOTES,
   type NoteCrop,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   cropRects,
   detectStickies,
@@ -12,8 +12,8 @@ import {
   workingSizeOf,
   type DetectedSticky,
   type ModelCues,
-} from '@livediagram/sticky-vision';
-import { isFlatImage } from '@livediagram/sticky-model';
+} from '@liveplanner/sticky-vision';
+import { isFlatImage } from '@liveplanner/sticky-model';
 import { boundaryCuesFor } from './photo-model/client';
 import type { BoundaryBackend, BoundaryOutcome, ClassicalReason } from './photo-model/protocol';
 import { debugLog } from '@/lib/debug-log';

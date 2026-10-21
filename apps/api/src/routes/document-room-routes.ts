@@ -9,7 +9,7 @@ import {
   isClerkIdShape,
   type AccessLevel,
   type RoomTicketResponse,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { adderKeyFor } from '../adder-key';
 import { guestSignatureEnforced } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';

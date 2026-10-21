@@ -1,4 +1,4 @@
-import { classMaskOf, detectStickies, holdsPoint } from '@livediagram/sticky-vision';
+import { classMaskOf, detectStickies, holdsPoint } from '@liveplanner/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';

@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button, trustedHtml } from '@livediagram/ui';
+import { Button, trustedHtml } from '@liveplanner/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';

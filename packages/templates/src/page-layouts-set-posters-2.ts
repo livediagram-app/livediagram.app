@@ -2,7 +2,7 @@
 // film's coming soon and an exhibition. Pure builders on the shared kit: the page's content box in,
 // uncoloured elements out. A page taller than SPLIT_RATIO times its width stacks; a squarer or wide
 // one sets the words beside the image.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import {
   accentRule,

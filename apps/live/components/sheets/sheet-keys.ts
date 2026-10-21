@@ -1,6 +1,6 @@
 // The grid's keys when no cell is being edited (docs/specs/029-sheets/sheet.md "Keyboard"), as a pure map from a key
 // to a command, so every row of the spec's table is tested without a DOM. Undo and redo are left to the canvas.
-import type { Dir } from '@livediagram/sheets';
+import type { Dir } from '@liveplanner/sheets';
 import { altGraphHeld, composedWithAlt } from '@/lib/composed-key';
 
 export type KeyLike = {

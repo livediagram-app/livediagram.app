@@ -5,7 +5,7 @@
 // Palette's first five colours drawn with the one swatch, the cell's own picked, and More colours (Quick Style's
 // four-dot glyph) that opens the full picker.
 // One Tab stop, the arrows move through the row (the picker's keyboard).
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@liveplanner/ui';
 import { ColourSwatch } from '@/components/colour/ColourSwatch';
 import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';
 import { optionMatches, themeOptions } from '@/components/colour/colour-options';

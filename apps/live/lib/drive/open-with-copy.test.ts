@@ -1,6 +1,6 @@
-import { documentToEnvelopeText } from '@livediagram/document';
+import { documentToEnvelopeText } from '@liveplanner/document';
 import { describe, expect, it, vi } from 'vitest';
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import { DRIVE_FILE_MIME } from '@liveplanner/api-schema';
 import { DRIVE_WRITE_IDLE_MS, DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
 import { createDriveRestClient } from './drive-rest-client';
 import {
@@ -14,7 +14,7 @@ import { fileOf, HOST, makeEngine, OWNER, world } from './test-support';
 
 // "Open with" on a copy of a mirrored file (docs/specs/022-drive-mirror/drive-mirror.md,
 // "Copies made in Drive"; blueprint "Open with"). The copy is made in Drive's own UI, so
-// the app only sees it once the user opens it with livediagram.
+// the app only sees it once the user opens it with liveplanner.
 
 const COPY_CONTENT = documentToEnvelopeText(
   { id: 'd1', name: 'Plan', presentation: null },
@@ -110,7 +110,7 @@ describe('Open with on a copy of a mirrored file', () => {
     });
   });
 
-  it('still opens the original when the original is opened with livediagram', async () => {
+  it('still opens the original when the original is opened with liveplanner', async () => {
     const w = await mirrored();
     w.copy();
     expect(await resolveOpenWith(w.deps, w.openWith(w.original().id))).toEqual({
@@ -123,7 +123,7 @@ describe('Open with on a copy of a mirrored file', () => {
     const w = await mirrored();
     const copyId = w.copy();
     w.openWith(copyId);
-    w.google.userRename(copyId, 'Copy of Plan 2.livediagram');
+    w.google.userRename(copyId, 'Copy of Plan 2.liveplanner');
     await w.engine.syncNow();
     expect(w.google.get(copyId)!.appProperties.ldDocumentId).toBe('d1');
     expect(w.ld.item('document', 'd1')!.driveFileId).toBe(w.original().id);
@@ -137,7 +137,7 @@ describe('Open with on a copy of a mirrored file', () => {
     expect(w.ld.document(newId)!.folderId).toBe('f1');
   });
 
-  it('puts it at the root with the unseen-folder notice when its folder is one livediagram cannot see', async () => {
+  it('puts it at the root with the unseen-folder notice when its folder is one liveplanner cannot see', async () => {
     const w = await mirrored();
     const copyId = w.copy();
     const hidden = w.google.userCreateFolder(OWNER, 'Private');
@@ -159,7 +159,7 @@ describe('Open with on a copy of a mirrored file', () => {
     const w = await mirrored();
     const theirs = w.google.otherUserFile({
       owner: 'someone-else',
-      name: 'Their copy.livediagram',
+      name: 'Their copy.liveplanner',
       mimeType: DRIVE_FILE_MIME,
       content: COPY_CONTENT,
       appProperties: { ldDocumentId: 'd1', ldOrigin: HOST },

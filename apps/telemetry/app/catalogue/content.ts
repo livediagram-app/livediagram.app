@@ -1,8 +1,8 @@
 // What gets made: documents, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livediagram/api-schema';
-import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
+import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@liveplanner/api-schema';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
@@ -800,7 +800,7 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving livediagram as files and text, and tabs and drawings coming in from other tools.',
+    'Diagrams leaving liveplanner as files and text, and tabs and drawings coming in from other tools.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };

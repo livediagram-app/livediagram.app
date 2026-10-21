@@ -8,7 +8,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
 // A mind node's lines measure this tall (jsdom lays nothing out).

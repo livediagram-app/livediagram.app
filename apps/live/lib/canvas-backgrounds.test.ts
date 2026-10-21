@@ -3,7 +3,7 @@ import {
   ANIMATED_BACKGROUND_PATTERNS,
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   backgroundPatternTile,
   safeCssColor,

@@ -1,11 +1,11 @@
 // Pieces of the hero's editor-window mock drawn from the editor's own glyphs
-// (@livediagram/ui, @livediagram/icons), so they cannot drift from the editor they depict
+// (@liveplanner/ui, @liveplanner/icons), so they cannot drift from the editor they depict
 // (docs/specs/019-marketing/marketing-site.md): the canvas cluster, the tab bar's toolbelt, the
 // Toolbar panel layout's strip and its menu card (docs/specs/007-editor/toolbar-layout.md); a Plan
 // tab's own bar is in hero-plan-bars.tsx.
 // Everything is at the mock's scale, about five eighths of the editor's.
 
-import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@liveplanner/icons/mode-glyphs';
 import {
   lucideChartColumn,
   lucideCircleCheck,
@@ -14,7 +14,7 @@ import {
   lucideSettings,
   lucideTimer,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
@@ -27,7 +27,7 @@ import {
   SettingsIcon,
   ThemeLookIcon,
   UndoIcon,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { DRAW_DOCK, HERO_MODE, MODE_BAR, type HeroMode, type Tile } from './hero-mode-palette';
 import { PlanTabBar, type PlanTab } from './hero-plan-bars';
 

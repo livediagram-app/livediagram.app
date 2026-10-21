@@ -18,7 +18,7 @@ import { ExplorerProvider } from '../ExplorerContext';
 import type { ExplorerStateValue } from '../useExplorerState';
 import { useFirstRun } from './useFirstRun';
 
-const KEY = 'livediagram:v2:home-has-documents';
+const KEY = 'liveplanner:v2:home-has-documents';
 
 function wrap(over: Partial<Record<string, unknown>> = {}) {
   const value = {

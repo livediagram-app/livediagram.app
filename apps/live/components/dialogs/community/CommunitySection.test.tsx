@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@liveplanner/api-schema/testing';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { CommunityOwnPost } from '@livediagram/api-schema';
+import type { CommunityOwnPost } from '@liveplanner/api-schema';
 import { CommunitySection } from './CommunitySection';
 
 afterEach(cleanup);

@@ -16,7 +16,7 @@
 // and the card still opens its subject on click.
 
 import { useCallback, useMemo, useState } from 'react';
-import type { TimelineCardSlotsFor, TimelineEvent } from '@livediagram/ui';
+import type { TimelineCardSlotsFor, TimelineEvent } from '@liveplanner/ui';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';

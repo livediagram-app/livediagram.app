@@ -1,4 +1,4 @@
-import { truthFrom, type Truth } from '@livediagram/sticky-vision';
+import { truthFrom, type Truth } from '@liveplanner/sticky-vision';
 
 // EXPORTING GROUND TRUTH from the review surface (docs/research/vision/sticky-detection.md).
 //
@@ -21,7 +21,7 @@ import { truthFrom, type Truth } from '@livediagram/sticky-vision';
 // it. A rule that depends on remembering to re-type a parameter is a rule that
 // is off when you need it.
 
-export const TRUTH_ARMED_KEY = 'livediagram:truth';
+export const TRUTH_ARMED_KEY = 'liveplanner:truth';
 
 // Served from this machine or its own network: a development build, where the
 // photographs and the sweep are. By ANY name the machine answers to: reached

@@ -7,10 +7,10 @@
 // the very tiles being pointed at. Hide puts the card away for the page; the host takes it away
 // once anything lands there. Where the card has no room, the page shows EmptyPageInvite instead.
 // The card keeps to its layouts: Change Theme is the Layout popover's alone.
-import { lucideSparkles } from '@livediagram/icons/lucide';
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livediagram/document';
-import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
-import { CloseIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
+import { lucideSparkles } from '@liveplanner/icons/lucide';
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@liveplanner/document';
+import { layoutCatalogueFor, type PageLayoutId } from '@liveplanner/templates';
+import { CloseIcon, lucideGlyph, Tooltip } from '@liveplanner/ui';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { layoutCardSize } from './page-layout-card';

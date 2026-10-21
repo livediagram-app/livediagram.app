@@ -8,7 +8,7 @@ import {
   parsePlacementDefaultKey,
   type PlacementDefault,
   type PlacementDefaultKey,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import type { Env } from '../types';
 
 /** This owner's defaults for the keys in force, in key order. A row under a retired name reads as

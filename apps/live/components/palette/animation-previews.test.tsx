@@ -9,7 +9,7 @@ import {
   PROGRESS_ANIMS,
   RATING_ANIMS,
   type AnimationSetId,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 import { AnimationSetPreview, previewFrame } from './animation-set-previews';
 import {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { penColourHex, standardColours } from '@livediagram/document';
+import { penColourHex, standardColours } from '@liveplanner/document';
 import { ColourDot, TypeColourButton, planColourName } from './ColourSwatches';
 
 afterEach(cleanup);

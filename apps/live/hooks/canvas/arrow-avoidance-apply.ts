@@ -7,7 +7,7 @@ import {
   resolveFinish,
   type AvoidanceObstacle,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // Apply the collision-avoiding curve (docs/specs/008-canvas/arrow-collision-avoidance.md) to a JUST-DRAWN arrow: if
 // its straight chord would cross an unrelated element's clearance ring, or

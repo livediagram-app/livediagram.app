@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_TRASHED_CLOSE, type DocumentCommentThread } from '@livediagram/api-schema';
+import { DOCUMENT_TRASHED_CLOSE, type DocumentCommentThread } from '@liveplanner/api-schema';
 import { run } from '../main';
 import { capabilities, fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
 import { DEFAULT_PROFILE } from '../config/profiles';
@@ -67,7 +67,7 @@ async function start(
   route: Route = host(),
   before?: (io: FakeIo) => Promise<void>,
 ) {
-  const io = fakeIo({ env: { LIVEDIAGRAM_TOKEN: TOKEN }, routes: [capabilities, route] });
+  const io = fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes: [capabilities, route] });
   await before?.(io);
   const exit = run(argv, io);
   for (let i = 0; i < 20 && io.sockets.length === 0; i++) await tick();
@@ -138,7 +138,7 @@ describe('wait --for change', () => {
     await behind.io.advance(WAIT_SETTLE_MS);
     expect(await behind.exit).toBe(0);
     expect(behind.io.out()).toBe(
-      `tab "Main" changed · rev 7→9 · diff: livediagram tab diff "${DOC}" --tab "Main" --since 7\n`,
+      `tab "Main" changed · rev 7→9 · diff: liveplanner tab diff "${DOC}" --tab "Main" --since 7\n`,
     );
     const level = await start(['wait', DOC, '--for', 'change'], host({ rev: 9 }), seed(9));
     op(level.io, changed());
@@ -193,13 +193,13 @@ describe('wait endings', () => {
     op(io, commented());
     expect(await exit).toBe(0);
     expect(io.err()).toContain(
-      `reconnected; what changed meanwhile: livediagram tab diff "${DOC}"`,
+      `reconnected; what changed meanwhile: liveplanner tab diff "${DOC}"`,
     );
   });
 
   it('exits as the api refused the ticket', async () => {
     const io = fakeIo({
-      env: { LIVEDIAGRAM_TOKEN: TOKEN },
+      env: { LIVEPLANNER_TOKEN: TOKEN },
       routes: [
         capabilities,
         (request, url) =>
@@ -267,7 +267,7 @@ describe('watch', () => {
     io.sockets[0]!.drop(DOCUMENT_TRASHED_CLOSE);
     expect(await exit).toBe(3);
     const refused = fakeIo({
-      env: { LIVEDIAGRAM_TOKEN: TOKEN },
+      env: { LIVEPLANNER_TOKEN: TOKEN },
       routes: [
         capabilities,
         (request, url) =>
@@ -288,7 +288,7 @@ describe('watch', () => {
     io.interrupt();
     expect(await exit).toBe(0);
     expect(io.err()).toContain(
-      `reconnected; what changed meanwhile: livediagram tab diff "${DOC}"`,
+      `reconnected; what changed meanwhile: liveplanner tab diff "${DOC}"`,
     );
   });
 });

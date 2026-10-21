@@ -17,7 +17,7 @@ import { expect, test, pageOwnerHeaders } from './fixtures';
 async function seedDocument(page: Page, name: string): Promise<string> {
   // The guest's signed id is minted asynchronously; seed under the final one.
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
+    .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
     .toBeTruthy();
   const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
   return page.evaluate(

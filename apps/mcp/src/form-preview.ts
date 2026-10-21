@@ -1,8 +1,8 @@
 // A Form tab's preview (docs/specs/030-forms/forms.md "Agents"; docs/specs/015-api/mcp-server.md §4.9e): the form as
-// respondents see it on its tab's look (@livediagram/plan-art formArt), for read_form's image and read_document's.
-import { formLook, resolveFontStack, tabKindOf, type Tab } from '@livediagram/document';
-import { readForm } from '@livediagram/forms';
-import { formArt } from '@livediagram/plan-art';
+// respondents see it on its tab's look (@liveplanner/plan-art formArt), for read_form's image and read_document's.
+import { formLook, resolveFontStack, tabKindOf, type Tab } from '@liveplanner/document';
+import { readForm } from '@liveplanner/forms';
+import { formArt } from '@liveplanner/plan-art';
 import { previewFonts } from './preview-fonts';
 import { svgToPngBase64 } from './render';
 

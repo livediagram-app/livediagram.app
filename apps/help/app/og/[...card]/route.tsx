@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { renderSocialCard } from '@livediagram/ui';
+import { renderSocialCard } from '@liveplanner/ui';
 import { HELP_CARDS, helpCardParams, routeFromParams } from '@/lib/help-cards';
 
 // One PNG per help article and category landing, at /help/og/<route>.png (lib/help-cards.ts,

@@ -2,8 +2,8 @@
 // "Search: every element type"): Icons, Stickers and Technology, each entry a dynamic tile
 // (palette-dynamic-tiles) so it places as its category's own tile does. Split like the element
 // tiles: a catalogue the mode's palette offers is this mode's, the rest another mode's.
-import type { EditorMode, Element } from '@livediagram/document';
-import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@livediagram/icons';
+import type { EditorMode, Element } from '@liveplanner/document';
+import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@liveplanner/icons';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { getStickerCatalog } from '@/lib/stickers';
 import { getLoadedTechIconCatalog } from '@/lib/icon-registry';

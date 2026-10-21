@@ -17,9 +17,9 @@ import {
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
-} from '@livediagram/icons/lucide';
-import { lucideGlyph, Tooltip, TrashIcon } from '@livediagram/ui';
-import type { ArticleZoneAlign, ArticleZoneWrap, PageRect } from '@livediagram/document';
+} from '@liveplanner/icons/lucide';
+import { lucideGlyph, Tooltip, TrashIcon } from '@liveplanner/ui';
+import type { ArticleZoneAlign, ArticleZoneWrap, PageRect } from '@liveplanner/document';
 
 const I = (g: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(g, 16);
 // A grip's keyboard step, canvas px, and its focus ring.

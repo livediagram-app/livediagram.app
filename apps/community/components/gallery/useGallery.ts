@@ -9,7 +9,7 @@ import {
   type CommunityListQuery,
   type CommunityMineTotals,
   isAbortError,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { fetchFacets, fetchMine, fetchPosts } from '@/lib/api';
 import type { GalleryPost } from '@/lib/gallery-post';
 import type { CommunitySession } from '@/lib/session';

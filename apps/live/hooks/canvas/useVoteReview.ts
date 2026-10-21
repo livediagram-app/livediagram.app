@@ -6,7 +6,7 @@ import {
   voteKeyOf,
   voteResultsOf,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 
 // Vote-results review (docs/specs/012-collaboration/session-tools.md). Once a vote's results are revealed, the

@@ -12,9 +12,9 @@ import {
   FLOWCHART_STEP_TYPES,
   type FlowchartDirection,
   type FlowchartStepType,
-} from '@livediagram/document';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
-import { lucideRoute, lucideShapes, lucideWorkflow } from '@livediagram/icons/lucide';
+} from '@liveplanner/document';
+import { Glyph, lucideGlyph } from '@liveplanner/ui';
+import { lucideRoute, lucideShapes, lucideWorkflow } from '@liveplanner/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

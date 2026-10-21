@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useRef } from 'react';
-import { useRowPreview } from '@livediagram/ui';
+import { useRowPreview } from '@liveplanner/ui';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';

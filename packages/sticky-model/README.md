@@ -1,9 +1,9 @@
-# @livediagram/sticky-model
+# @liveplanner/sticky-model
 
 An EXPERIMENT ([Event storming](../../docs/specs/021-event-storming/event-storming.md) Phase 9, group E of
 plans/0006-event-storming-photo-95-experiments.md):
 can a tiny learned boundary model find the sticky notes on a wall better than
-the classical pipeline in `@livediagram/sticky-vision`, above all where notes
+the classical pipeline in `@liveplanner/sticky-vision`, above all where notes
 touch? Results and verdicts:
 [docs/research/vision/experiments/e-model.md](../../docs/research/vision/experiments/e-model.md).
 
@@ -43,7 +43,7 @@ Web Worker (`apps/live/lib/photo-model/`), on the uint8 weights shipped there
 ## Running it
 
 Everything the scripts write (synthetic shards, weights, overlays) goes to
-`$STICKY_MODEL_DIR` (default `/tmp/livediagram-sticky-model`), never into the
+`$STICKY_MODEL_DIR` (default `/tmp/liveplanner-sticky-model`), never into the
 repo: weights fine-tuned on the private walls are derived from them.
 
 ```bash

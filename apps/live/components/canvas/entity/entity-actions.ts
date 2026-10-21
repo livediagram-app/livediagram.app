@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { EntityField, FieldRemap } from '@livediagram/document';
+import type { EntityField, FieldRemap } from '@liveplanner/document';
 
 // What a selected, editable entity can do from the canvas (docs/specs/009-elements/entity.md): save its
 // fields (refitting the box and keeping field-pinned ends on their fields) and start a relationship from

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_COLUMNS_MAX, presetSetup, type PlanBoardSetup } from '@livediagram/items';
+import { PLAN_COLUMNS_MAX, presetSetup, type PlanBoardSetup } from '@liveplanner/items';
 import {
   columnFromName,
   setUpBoard,

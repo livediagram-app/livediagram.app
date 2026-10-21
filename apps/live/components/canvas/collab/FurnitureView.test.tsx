@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { ChairFacing, ShapeElement } from '@livediagram/document';
+import type { ChairFacing, ShapeElement } from '@liveplanner/document';
 import { FurnitureView } from './FurnitureView';
 
 afterEach(cleanup);

@@ -7,7 +7,7 @@ import type {
   CommunityOwnPost,
   CommunityOwnPostResponse,
   CommunityPostInput,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 function documentCommunityUrl(documentId: string): string {

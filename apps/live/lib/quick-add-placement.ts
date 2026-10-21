@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type Rect } from '@livediagram/document';
+import { isBoxed, type Element, type Rect } from '@liveplanner/document';
 import type { QuickConnectDirection } from '@/lib/canvas';
 
 // Placement math for quick add (docs/specs/008-canvas/canvas-and-palette.md), lifted out of

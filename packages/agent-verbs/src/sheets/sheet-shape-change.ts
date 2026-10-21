@@ -20,8 +20,8 @@ import {
   type CellChange,
   type SheetWrite,
   type Workbook,
-} from '@livediagram/sheets';
-import { plural } from '@livediagram/document';
+} from '@liveplanner/sheets';
+import { plural } from '@liveplanner/document';
 import type { SheetRefusal } from './sheet-state';
 
 export type SheetShapeChange =

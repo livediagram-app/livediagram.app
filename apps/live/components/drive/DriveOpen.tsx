@@ -7,13 +7,13 @@
 // file cannot be opened.
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@liveplanner/ui';
 import { ApiError, apiDriveToken } from '@/lib/api-client';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { googleClientId } from '@/lib/drive/config';
 import { createDriveRestClient } from '@/lib/drive/drive-rest-client';
 import { requestBrowserAccessToken } from '@/lib/drive/google-scripts';
-import { createApiLivediagramPort } from '@/lib/drive/livediagram-port';
+import { createApiLiveplannerPort } from '@/lib/drive/liveplanner-port';
 import { driveWarn } from '@/lib/drive/log';
 import {
   importOpenWithCopy,
@@ -91,7 +91,7 @@ export function DriveOpen() {
     void resolveOpenWith(
       {
         drive: client(token),
-        port: createApiLivediagramPort(clerkUserId),
+        port: createApiLiveplannerPort(clerkUserId),
         host: window.location.host,
       },
       state,
@@ -127,7 +127,7 @@ export function DriveOpen() {
       const id = await importOpenWithCopy(
         {
           drive: client(token),
-          port: createApiLivediagramPort(clerkUserId),
+          port: createApiLiveplannerPort(clerkUserId),
           host: window.location.host,
         },
         state,
@@ -148,7 +148,7 @@ export function DriveOpen() {
       <LandingCard>
         <Heading>Sign in to open this document</Heading>
         <Body>
-          Files from Google Drive open in your livediagram account. We&apos;ll bring you right back.
+          Files from Google Drive open in your liveplanner account. We&apos;ll bring you right back.
         </Body>
         <PrimaryLink href={`/sign-in/?redirect_url=${back}`}>Sign in</PrimaryLink>
       </LandingCard>
@@ -163,7 +163,7 @@ export function DriveOpen() {
   if (phase.kind === 'needs-access') {
     return (
       <LandingCard>
-        <Heading>Allow livediagram to read this file</Heading>
+        <Heading>Allow liveplanner to read this file</Heading>
         <Body>Connect Google Drive once, and files open straight from Drive.</Body>
         <div className="mt-5 flex justify-center">
           <Button size="md" onClick={() => void allowAccess()}>
@@ -185,7 +185,7 @@ export function DriveOpen() {
         <Body>
           {copy
             ? 'This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is.'
-            : "This document isn't in your livediagram. Import a copy to open it here."}
+            : "This document isn't in your liveplanner. Import a copy to open it here."}
         </Body>
         <div className="mt-5 flex justify-center">
           <Button size="md" onClick={() => void importCopy(reason)}>
@@ -199,7 +199,7 @@ export function DriveOpen() {
     return (
       <LandingCard>
         <Heading>The copy couldn&apos;t be made</Heading>
-        <Body>The file isn&apos;t a readable livediagram document.</Body>
+        <Body>The file isn&apos;t a readable liveplanner document.</Body>
         <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
       </LandingCard>
     );
@@ -214,8 +214,8 @@ export function DriveOpen() {
 function CannotOpen() {
   return (
     <LandingCard>
-      <Heading>This file can&apos;t be opened in livediagram</Heading>
-      <Body>It isn&apos;t a livediagram file, or livediagram can&apos;t read it.</Body>
+      <Heading>This file can&apos;t be opened in liveplanner</Heading>
+      <Body>It isn&apos;t a liveplanner file, or liveplanner can&apos;t read it.</Body>
       <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
     </LandingCard>
   );

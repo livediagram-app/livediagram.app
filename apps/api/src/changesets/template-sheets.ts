@@ -2,7 +2,7 @@
 // "Template starts"; the MCP's add_tab, the CLI's replace --template): made before the tab is written, so an agent
 // reading the sheet right after finds it. A sheet that cannot be made (the document's sheet cap) leaves its Sheet
 // marked, for the editor to try when it is drawn; it never refuses the changeset.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import {
   DOCUMENT_CELLS_MAX,
   DOCUMENT_SHEETS_MAX,
@@ -11,9 +11,9 @@ import {
   validateSheetCreate,
   type SheetJson,
   type SheetPerson,
-} from '@livediagram/sheets';
-import { hasTemplateSheets } from '@livediagram/templates';
-import { materialiseTemplateSheets } from '@livediagram/templates/template-sheets';
+} from '@liveplanner/sheets';
+import { hasTemplateSheets } from '@liveplanner/templates';
+import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheets';
 import type { Env } from '../types';
 import {
   documentSheetTotals,

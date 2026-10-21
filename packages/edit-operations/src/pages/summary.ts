@@ -2,10 +2,10 @@
 // "Naming a page", "change_pages"): a page found by id, place or name, its label and its size in
 // words. The page and article summaries themselves are api-schema's (pages-summary), shared
 // with the pages view.
-import type { PageRef, PageSummary } from '@livediagram/api-schema';
-import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@livediagram/document';
+import type { PageRef, PageSummary } from '@liveplanner/api-schema';
+import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@liveplanner/document';
 
-export { articleSummaries, describeBackground, pageSummaries } from '@livediagram/api-schema';
+export { articleSummaries, describeBackground, pageSummaries } from '@liveplanner/api-schema';
 
 /** A page's label in lines and lists: `2 Cover (slide)`, `3 (article)`. */
 export function pageLabel(page: PageSummary): string {

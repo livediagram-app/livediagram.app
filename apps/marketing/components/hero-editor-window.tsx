@@ -10,7 +10,7 @@ import {
   PrivateDotIcon,
   SharedDotIcon,
   TabsLabelIcon,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { ShareGlyph, TabAvatar } from './hero-illustration-glyphs';
 import { HERO_MODE, type HeroMode } from './hero-mode-palette';
 import type { PlanTab } from './hero-plan-bars';

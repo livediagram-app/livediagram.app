@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { TimelineEvent } from '@livediagram/ui';
+import type { TimelineEvent } from '@liveplanner/ui';
 import { TIMELINE_PERIOD_PAGES_MAX, fetchPeriod } from './fetch-period';
 
 // The calendar's period fetch follows a busy month's cursor to its end

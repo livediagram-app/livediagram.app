@@ -6,7 +6,7 @@ import {
   PLAN_BOARD_PRESETS,
   type ItemTypeDef,
   type PlanBoardPresetId,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { PlanBoardTileArt, PlanCardTileArt } from '@/components/plan/plan-tile-art';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { PLAN_VIEW_TILES } from './palette-plan-view-tiles';

@@ -16,7 +16,7 @@ import { decodePng } from './png';
 // will reproduce.
 
 // The editor scales to this before detecting (`PHOTO_MAX_EDGE_PX` in
-// `@livediagram/api-schema`). Calibrating at any other size measures a
+// `@liveplanner/api-schema`). Calibrating at any other size measures a
 // detector nobody runs.
 export const WORKING_EDGE_PX = 1000;
 
@@ -44,7 +44,7 @@ const PHOTO_EXTENSIONS = /\.(jpe?g|png)$/i;
 export function workDirFor(photoDir: string): string {
   const abs = resolve(photoDir);
   const key = createHash('sha1').update(abs).digest('hex').slice(0, 10);
-  const dir = `${tmpdir()}/livediagram-sticky-vision/${key}`;
+  const dir = `${tmpdir()}/liveplanner-sticky-vision/${key}`;
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   return dir;
 }

@@ -6,7 +6,7 @@
 
 import { cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ElementAction } from '@livediagram/document';
+import type { ElementAction } from '@liveplanner/document';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { AssignActionDialog } from './AssignActionDialog';
 

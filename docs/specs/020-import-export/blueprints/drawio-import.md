@@ -77,7 +77,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | Image request | `ImportImageRequest`   | The import image pipeline's `{ elementId, key, source, hint }`                           |
 | Byte budget   | `ByteBudget`           | Remaining inflate allowance for one import                                               |
 
-Banned synonyms: "diagram" for a page (a livediagram diagram is the whole document; say page), "shape"
+Banned synonyms: "diagram" for a page (a liveplanner diagram is the whole document; say page), "shape"
 for an edge, "warning" for a note, "stencil" for a named style (`ellipse` is a named style,
 `mxgraph.aws4.s3` is a stencil).
 
@@ -401,7 +401,7 @@ terminal state`). `DrawioGraph.gridSize` (the model's `gridSize`, else
     `arrowEnds` from which ends carry a head; `arrowheadShape` = the end's shape, else the start's;
     omitted when `triangle`. `arrowheadSize`: draw.io's head length `L = (endSize ?? startSize ??
 DRAWIO_DEFAULT_MARKER_SIZE) + strokeWidth`; the preset whose `arrowheadLengthPx(preset,
-strokeWidth)` (`@livediagram/document`, the canvas marker's own size) is nearest `L`, omitted at
+strokeWidth)` (`@liveplanner/document`, the canvas marker's own size) is nearest `L`, omitted at
     `medium`. `arrowhead-approximated` += 1 when either head is not exact, or both ends carry heads
     of different shapes.
 12. **Stroke.** `strokeColor` hex → `paperColour(hex, 'ink')` (`none` → `opacity: 0`, D19);
@@ -418,7 +418,7 @@ strokeWidth)` (`@livediagram/document`, the canvas marker's own size) is nearest
     origin plus its `x`, `y` for an absolute one; the centre of that box). `labelOffset =
 projectToArrow(style, from, to, …, point, curvePoints)` on the arrow as built, always set when
     there is a label. `labelMaxWidth = ceil(widest line's labelTextWidth(chars,
-arrowLabelFontSize(textSize)) × DRAWIO_CAPTION_WIDTH_SLACK)`, in livediagram px.
+arrowLabelFontSize(textSize)) × DRAWIO_CAPTION_WIDTH_SLACK)`, in liveplanner px.
 14. A child vertex of an edge that is not a label is built as its own element with its box's corner
     at `pointAlong(state, x, y, offset)` (`mxGraphView.getPoint`), right after the arrow.
 
@@ -512,7 +512,7 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
    Any other holder with a hex fill gives a text without `textColor` `inkOnFill(fill)`.
 9. **Scale** (`scalePage(elements, scale)`): about the page origin, multiply boxed `x`, `y`, `width`,
    `height`, lane `headerSize`, table `rowHeights` / `colWidths`, arrow `curvePoints`, `curveOffset`, free
-   endpoints and `labelOffset.offset`; `labelMaxWidth` is already in livediagram px. Stroke widths,
+   endpoints and `labelOffset.offset`; `labelMaxWidth` is already in liveplanner px. Stroke widths,
    presets and font sizes are untouched. Skipped at scale 1.
 10. Result `{ elements, layers?, backgroundColor? }`: `backgroundColor` is the page background unless
     white (`#fff`, `#ffffff`, `#ffffffff`), which stays unset. Pending images carry `ctx.tabId`.
@@ -1006,7 +1006,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_MAX_INFLATED_BYTES`                     | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                                                                                                 |
 | `DRAWIO_MAX_PAGES`                              | 100                                                                                                                                                         | Spec; 1 to 500                                                                                                                                |
 | `IMPORT_COORD_MAX`                              | 1e7 px either side of zero, `apps/live/lib/import-coords.ts`; a geometry number past it reads as 0                                                          | Shared with the board scene landing; 1e6 to 1e12. A finite 1e308 plus a parent offset overflowed to Infinity                                  |
-| `MAX_ELEMENTS_PER_TAB`                          | 10 000                                                                                                                                                      | `@livediagram/document` validate.ts                                                                                                           |
+| `MAX_ELEMENTS_PER_TAB`                          | 10 000                                                                                                                                                      | `@liveplanner/document` validate.ts                                                                                                           |
 | `DRAWIO_DEFAULT_ARC_SIZE`                       | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`                                                                                             |
 | `DRAWIO_SHADOW`                                 | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                                                                                               |
 | `DRAWIO_CAPTION_LINE_PX`                        | 18                                                                                                                                                          | One `sm` caption line with leading, D23; 14 to 24                                                                                             |
@@ -1021,7 +1021,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_MAX_LIBRARY_ITEMS`                      | 1 000                                                                                                                                                       | Spec "Shape Libraries" (the shape library item cap); 100 to 10 000                                                                            |
 | `DRAWIO_JSON_LOOSE_EDGE_PX`                     | 80                                                                                                                                                          | About half a default box's width (D34); 40 to 160                                                                                             |
 | `DRAWIO_XS_BELOW_PX`                            | 12                                                                                                                                                          | Text under it reads closer to `xs` (10) than `sm`; draw.io's 12 px body stays `sm` (D37); 11 to 12                                            |
-| `RUN_XS_PX`                                     | 10                                                                                                                                                          | `@livediagram/document` label-font.ts: the extra-small run size                                                                               |
+| `RUN_XS_PX`                                     | 10                                                                                                                                                          | `@liveplanner/document` label-font.ts: the extra-small run size                                                                               |
 | `DRAWIO_SNIFF_CHARS`                            | 4096                                                                                                                                                        | Room for a BOM, an XML declaration and the root element                                                                                       |
 | `DRAWIO_TAB_FILE_ACCEPT`                        | `.drawio,.xml,.json,.svg,.png` and their MIME types                                                                                                         | The spec (the Import dialog card); the Explorer picker sets no filter, Drive saves have no extension                                          |
 | `DRAWIO_MARKERS`                                | the table in step 12.4                                                                                                                                      | draw.io's marker names                                                                                                                        |
@@ -1053,7 +1053,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
   generator derives from them (compressed `.drawio`, `.drawio.svg`, `.drawio.png` with `tEXt` and
   `zTXt`, a `stress` page). `generate.ts` rebuilds them deterministically
   (`node lib/drawio/__fixtures__/generate.ts`); `README.md` there records provenance and licence.
-- No vendor artwork is copied: stencil names are identifiers, and icons render from livediagram's
+- No vendor artwork is copied: stencil names are identifiers, and icons render from liveplanner's
   own catalogues.
 - `lib/drawio/route/` ports draw.io's view geometry (jgraph/drawio v31.7.0, `mxGraphView`,
   `mxEdgeStyle`, `mxPerimeter`, `mxUtils`, `mxShape.getWaypoints`, parts of Graph.js and
@@ -1065,7 +1065,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 - `lib/drawio/__fixtures__/routes.drawio` (hand-written, MIT) holds the route cases (trunks,
   floating ends, waypoints and routers, curves, edges on edges); `__fixtures__/routes/*.json` are
   draw.io's own paths for every fixture edge, regenerated with
-  `pnpm --filter @livediagram/live exec tsx scripts/drawio-route-goldens.mts --drawio <bin>` (draw.io
+  `pnpm --filter @liveplanner/live exec tsx scripts/drawio-route-goldens.mts --drawio <bin>` (draw.io
   desktop's CLI under `xvfb-run`).
 - New Technology icons for vendor stencils met in real diagrams (`aws-lake-formation`, `aws-msk`) are
   authored in-repo as the catalogue's tile + white glyph (Technology icons spec), not copied.

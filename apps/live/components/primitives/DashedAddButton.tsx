@@ -5,7 +5,7 @@
 // when it takes the brand colour. Add New Card Type and Start From Scratch both wear it. Its border and text
 // default to the chrome's; a host may pass its own (`tone`) through CSS variables.
 import type { ButtonHTMLAttributes, CSSProperties } from 'react';
-import { PlusIcon } from '@livediagram/ui';
+import { PlusIcon } from '@liveplanner/ui';
 
 const BASE =
   'flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-3 py-2 text-[13px] font-medium transition hover:border-brand-400 hover:bg-brand-50/60 hover:text-brand-700 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-300';

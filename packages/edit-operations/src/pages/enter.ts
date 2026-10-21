@@ -1,8 +1,8 @@
 // Before an agent's Pages edit (docs/specs/024-agents/pages-for-agents.md "Which tab"): a
 // locked tab or an Event Storming board is refused; a tab in another mode is switched into
 // Pages by the same edit, as the editor's mode switch does.
-import type { PagesRefusal } from '@livediagram/api-schema';
-import { opensInOf, tabKindOf, withEditorModeSwitched, type Tab } from '@livediagram/document';
+import type { PagesRefusal } from '@liveplanner/api-schema';
+import { opensInOf, tabKindOf, withEditorModeSwitched, type Tab } from '@liveplanner/document';
 
 // Fresh ids, injectable so tests are deterministic.
 export type PagesIds = { page?: () => string; flow?: () => string };

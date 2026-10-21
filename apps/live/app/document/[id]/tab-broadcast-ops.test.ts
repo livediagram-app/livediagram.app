@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { opForTheWire } from '@livediagram/document';
-import type { Element, Tab, TabVote } from '@livediagram/document';
+import { opForTheWire } from '@liveplanner/document';
+import type { Element, Tab, TabVote } from '@liveplanner/document';
 import { EL_OP_BROADCAST_LIMIT, mergeRemoteTab, tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { PublicForm } from '@livediagram/forms';
+import type { PublicForm } from '@liveplanner/forms';
 import { useFormFill } from './useFormFill';
 
 // A number answer in the respondent's own locale (docs/specs/030-forms/forms.md "Number"): a German 3,5 was refused

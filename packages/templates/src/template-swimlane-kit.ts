@@ -2,7 +2,7 @@
 // approval workflow, docs/specs/008-canvas/canvas-and-palette.md "Templates"): the
 // per-lane hue and the muted key that names each step shape. Pure.
 
-import { createShape, createText, type Element, type ShapeKind } from '@livediagram/document';
+import { createShape, createText, type Element, type ShapeKind } from '@liveplanner/document';
 
 const MUTED = '#64748b';
 const SAMPLE_STROKE = '#94a3b8';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { itemPersonId } from '@livediagram/items';
+import { itemPersonId } from '@liveplanner/items';
 import { seedAuthor } from './seed-author';
 
 // docs/specs/026-plan/plan-templates.md "Example cards": an offline document's example cards are made by the person

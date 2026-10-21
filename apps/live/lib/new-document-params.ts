@@ -1,5 +1,5 @@
-import { parseEditorMode, type EditorMode } from '@livediagram/document';
-import { templateKindOf, type TemplateKind } from '@livediagram/templates';
+import { parseEditorMode, type EditorMode } from '@liveplanner/document';
+import { templateKindOf, type TemplateKind } from '@liveplanner/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
 // a blank document, `?template=<kind>` (built by the templates package's

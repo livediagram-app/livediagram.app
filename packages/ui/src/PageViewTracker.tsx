@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { pageViewPath } from '@livediagram/api-schema';
+import { pageViewPath } from '@liveplanner/api-schema';
 
 // Page view telemetry (docs/specs/017-telemetry/page-view-telemetry.md): one `Page·View·<path>` per path change,
 // shared by every frontend. Mounted once in each app's root layout through a

@@ -6,7 +6,7 @@ import {
   REACTION_HUES,
   REACTION_LABEL,
   type Reaction,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '@/lib/element-tint';

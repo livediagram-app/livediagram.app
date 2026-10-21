@@ -9,7 +9,7 @@ import {
   type DriveItem,
   type DriveItemKind,
   type DriveLease,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import type { Env } from '../types';
 
 type ConnectionRow = {

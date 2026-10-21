@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { ITEM_TYPES } from '@livediagram/items';
-import type { Element, Tab } from '@livediagram/document';
+import { ITEM_TYPES } from '@liveplanner/items';
+import type { Element, Tab } from '@liveplanner/document';
 import { usePlanSlice } from './usePlanSlice';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
 

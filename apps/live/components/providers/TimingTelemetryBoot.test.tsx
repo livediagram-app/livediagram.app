@@ -12,7 +12,7 @@ const { setTimingTrack, track, vitals } = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/timing', () => ({ setTimingTrack }));
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('@livediagram/ui', () => ({
+vi.mock('@liveplanner/ui', () => ({
   WebVitalsTracker: (props: { track: unknown }) => {
     vitals(props.track);
     return null;

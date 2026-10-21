@@ -5,8 +5,8 @@
 // swatch. Every tick applies at once; there is no Save.
 
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { CheckIcon, CompactEmptyState } from '@livediagram/ui';
-import { TAG_LIMIT, nextTagColour, normaliseTagName, tagNameKey } from '@livediagram/api-schema';
+import { CheckIcon, CompactEmptyState } from '@liveplanner/ui';
+import { TAG_LIMIT, nextTagColour, normaliseTagName, tagNameKey } from '@liveplanner/api-schema';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { TagIcon } from '@/components/primitives/explorer-icons';
 import { useOptionalExplorer } from '@/app/explorer/ExplorerContext';

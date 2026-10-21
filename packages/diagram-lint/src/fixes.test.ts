@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { LINT_CODES } from '@livediagram/api-schema';
-import type { Element, Tab } from '@livediagram/document';
-import { applyEditOperations, parseEditOperations } from '@livediagram/edit-operations';
+import { LINT_CODES } from '@liveplanner/api-schema';
+import type { Element, Tab } from '@liveplanner/document';
+import { applyEditOperations, parseEditOperations } from '@liveplanner/edit-operations';
 import { arrow, box, frame, lint } from './fixtures/build';
 
 // One drawing per code, each drawing that code's fault.

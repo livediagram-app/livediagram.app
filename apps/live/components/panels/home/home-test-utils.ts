@@ -6,7 +6,7 @@ import type {
   HomeGroup,
   HomePerson,
   HomeVerb,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 
 export const fixtureDoc: HomeDocument = {

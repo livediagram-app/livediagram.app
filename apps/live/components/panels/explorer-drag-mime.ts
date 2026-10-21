@@ -4,13 +4,13 @@
 // navigation to "the dragged URL". Every drag source and drop target, in the
 // editor's Explorer and on the Explorer page, goes through the helpers below so
 // they agree.
-export const DOCUMENT_DRAG_MIME = 'application/x-livediagram-id';
+export const DOCUMENT_DRAG_MIME = 'application/x-liveplanner-id';
 
 // Present (empty) when the dragged document lives only in this browser
 // (docs/specs/006-document/offline-mode.md). A drop target can only read a
 // drag's TYPES while it is over it, never its data, so a team target that can't
 // take the document learns it from this type and shows no drop.
-export const DOCUMENT_LOCAL_ONLY_DRAG_MIME = 'application/x-livediagram-local-only';
+export const DOCUMENT_LOCAL_ONLY_DRAG_MIME = 'application/x-liveplanner-local-only';
 
 // The drag source's half: what a dragged document row or card carries.
 export function startDocumentDrag(
@@ -24,7 +24,7 @@ export function startDocumentDrag(
 
 // A dragged folder (docs/specs/013-workspace/explorer-structure.md "Dragging to the Trash"): its own type, so the
 // document drop targets (folders, My Documents) never take it; only the sidebar's Trash does.
-export const FOLDER_DRAG_MIME = 'application/x-livediagram-folder-id';
+export const FOLDER_DRAG_MIME = 'application/x-liveplanner-folder-id';
 
 /** What a dragged folder card or row carries: one of the reader's own folders, never one being renamed. */
 export function folderDragProps(

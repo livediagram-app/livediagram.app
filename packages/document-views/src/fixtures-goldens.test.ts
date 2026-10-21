@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab } from '@livediagram/document';
+import { isValidTab } from '@liveplanner/document';
 import { agentBuiltTab } from './__fixtures__/agent-built-tab';
 import { edgeCasesTab } from './__fixtures__/edge-cases-tab';
 import { golden } from './__fixtures__/golden-path';

@@ -2,7 +2,7 @@
 // "Boards and Sheets only in Plan"): a changeset that would leave a new board or Sheet on a tab not in Plan is refused,
 // whatever way it arrives; a tab in Plan takes one, and one a tab already holds is left alone.
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { applyEditOperations } from './apply';
 import { applyReplace } from './replace';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';

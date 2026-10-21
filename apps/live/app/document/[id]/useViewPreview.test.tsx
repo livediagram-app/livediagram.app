@@ -34,7 +34,7 @@ describe('useViewPreview', () => {
 
   it('gives the Participant preview a key of its own, shaped so the Participant rule takes its adds', async () => {
     const { previewAdderKey } = await import('./useViewPreview');
-    const { applyParticipantOp, createSticky } = await import('@livediagram/document');
+    const { applyParticipantOp, createSticky } = await import('@liveplanner/document');
     const key = previewAdderKey();
     // A random key of the room's shape, the same for the whole visit, and nothing of the person's id in it.
     expect(key).toMatch(/^[0-9a-f]{32}$/);

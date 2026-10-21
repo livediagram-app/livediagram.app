@@ -3,29 +3,29 @@
 // "Open with"). The copy carries the original's ldDocumentId, but it is another
 // Drive file, so it never opens, re-tags or adopts the original.
 
-import { type DocumentEnvelope } from '@livediagram/document';
+import { type DocumentEnvelope } from '@liveplanner/document';
 import {
   DRIVE_PROP_DOCUMENT_ID,
   DRIVE_PROP_ORIGIN,
   stripDriveName,
   type DriveItem,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { DriveApiError, type DriveClient, type DriveFile } from './drive-client';
-import type { LivediagramPort } from './livediagram-port';
+import type { LiveplannerPort } from './liveplanner-port';
 import { driveLog, driveWarn } from './log';
 import { LD_NAME_MAX } from './plan-inbound';
 import { fileState } from './snapshot';
 
 export type CopyPort = Pick<
-  LivediagramPort,
+  LiveplannerPort,
   'importDocumentCopy' | 'getConnection' | 'listItems' | 'listPersonalFolders' | 'putItems'
 >;
 
 type Placement = { folderId: string | null; unseen: boolean };
 
-// Where the new document goes: the livediagram folder the copy's Drive folder
+// Where the new document goes: the liveplanner folder the copy's Drive folder
 // mirrors; the root of My Documents for the root; that root with the unseen-folder notice for a
-// folder livediagram cannot see.
+// folder liveplanner cannot see.
 async function placeCopy(port: CopyPort, parentId: string | null): Promise<Placement> {
   const [connection, items, folders] = await Promise.all([
     port.getConnection(),

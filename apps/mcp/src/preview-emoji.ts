@@ -9,8 +9,8 @@ import {
   stickerEmojiGlyph,
   twemojiFileName,
   type EmojiArt,
-} from '@livediagram/icons/resolve';
-import { REACTION_DEFAULT, REACTION_EMOJI, type Element } from '@livediagram/document';
+} from '@liveplanner/icons/resolve';
+import { REACTION_DEFAULT, REACTION_EMOJI, type Element } from '@liveplanner/document';
 import { cached, type Fetcher } from './preview-fonts';
 
 export const TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/';

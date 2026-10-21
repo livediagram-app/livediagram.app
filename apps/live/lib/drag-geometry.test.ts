@@ -1,4 +1,4 @@
-import type { AlignmentGuide, DistributionGuide, Element } from '@livediagram/document';
+import type { AlignmentGuide, DistributionGuide, Element } from '@liveplanner/document';
 import { describe, expect, it } from 'vitest';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import { computeSnapTargets, sameDistGuides, sameGuides, sameTargets } from './drag-geometry';

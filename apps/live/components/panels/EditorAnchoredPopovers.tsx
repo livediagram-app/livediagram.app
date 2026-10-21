@@ -3,7 +3,7 @@
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
 import { apiSetDocumentFolder } from '@/lib/api-client';
-import { elementActions, isBoxed, threadAt } from '@livediagram/document';
+import { elementActions, isBoxed, threadAt } from '@liveplanner/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';

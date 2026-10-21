@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import {
   AVATAR_PAD_ARRIVAL_MS,
   avatarPads,

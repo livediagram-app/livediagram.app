@@ -20,7 +20,7 @@ import {
   useMenu,
   Portal,
   useClickOutside,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const WIDTH = 236;

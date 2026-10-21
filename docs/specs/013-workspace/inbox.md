@@ -149,7 +149,7 @@ States:
 **rows in This Browser.** A row from a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md))
 carries the [This Browser pill](../006-document/offline-mode.md#this-browser-pill) in its "where" line, after the document
 chip, as a label (the row is already a link): the same amber words and glyph, and on hover "Lives only in this browser.
-Clearing this browser's site data deletes it." Nobody reads such a row as saved on livediagram or visible to anyone
+Clearing this browser's site data deletes it." Nobody reads such a row as saved on liveplanner or visible to anyone
 else. Its rows are found in the browser (§2.6) and listed among the server's, in the same sections and the same
 order; the badge counts them.
 
@@ -398,7 +398,7 @@ Hybrid identity (Clerk user or `X-Owner-Id`); guests get their own
 page, keyed to their participant id. Read-only: nothing on the page is
 mutated from the page in v1, so there is no other verb.
 
-Wire types in `@livediagram/api-schema` (`activity.ts`), registered in
+Wire types in `@liveplanner/api-schema` (`activity.ts`), registered in
 the OpenAPI manifest + schema roots ([API documentation (OpenAPI)](../015-api/api-documentation.md)):
 
 ```ts

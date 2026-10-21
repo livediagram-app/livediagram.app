@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { PADDING_PX, labelFontPx } from '@livediagram/document';
+import { PADDING_PX, labelFontPx } from '@liveplanner/document';
 import { ReportTally } from './notes';
 import { LABEL_LINE_HEIGHT } from './text-size';
 import { readGraph } from './cells';

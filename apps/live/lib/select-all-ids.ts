@@ -8,7 +8,7 @@ import {
   pagesOf,
   type EditorMode,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 export function selectAllIds(
   tab: Pick<Tab, 'elements' | 'pages'> & { pageOrientation?: unknown },

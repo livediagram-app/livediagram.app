@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button, SOLID_BRAND_DARK, PictureDisc } from '@livediagram/ui';
+import { Button, SOLID_BRAND_DARK, PictureDisc } from '@liveplanner/ui';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';

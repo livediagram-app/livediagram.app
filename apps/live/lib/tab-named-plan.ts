@@ -7,8 +7,8 @@ import {
   type DashboardLayout,
   type Element,
   type PlanViewRef,
-} from '@livediagram/document';
-import { PLAN_TITLE_MAX, PLAN_VIEW_TITLE_MAX } from '@livediagram/items';
+} from '@liveplanner/document';
+import { PLAN_TITLE_MAX, PLAN_VIEW_TITLE_MAX } from '@liveplanner/items';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
 
 // The title a board placed on a tab takes: the tab's name, else (no name, or still a default one such as "Tab 2", which

@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';

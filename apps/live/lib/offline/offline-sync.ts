@@ -9,8 +9,8 @@
 // And the cloud copy must hold every card and sheet before the local one goes: a create that
 // resolves to an existing row (a retry after a half-finished sync) never re-seeds those stores.
 
-import { storeAsCreates } from '@livediagram/items';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { storeAsCreates } from '@liveplanner/items';
+import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { apiCreateDocument, apiSetFavourite } from '@/lib/api-client';
 import { apiSetDocumentTag } from '@/lib/api/tags';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';

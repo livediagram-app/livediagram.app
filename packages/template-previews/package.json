@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/template-previews",
+  "name": "@liveplanner/template-previews",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,16 +22,16 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livediagram/document": "workspace:*",
-    "@livediagram/forms": "workspace:*",
-    "@livediagram/icons": "workspace:*",
-    "@livediagram/templates": "workspace:*",
-    "@livediagram/ui": "workspace:*"
+    "@liveplanner/document": "workspace:*",
+    "@liveplanner/forms": "workspace:*",
+    "@liveplanner/icons": "workspace:*",
+    "@liveplanner/templates": "workspace:*",
+    "@liveplanner/ui": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/tailwind-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/tailwind-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

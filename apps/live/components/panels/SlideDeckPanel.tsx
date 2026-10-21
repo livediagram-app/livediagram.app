@@ -18,13 +18,13 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
-import { ITEM_TYPES, itemTitle, typeIn } from '@livediagram/items';
+import { ITEM_TYPES, itemTitle, typeIn } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { useMemo, useRef, useState } from 'react';
 
-import { slideName, type Slide } from '@livediagram/document';
+import { slideName, type Slide } from '@liveplanner/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
@@ -37,7 +37,7 @@ import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@/components/primitives/DropCaret';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL } from '@liveplanner/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);

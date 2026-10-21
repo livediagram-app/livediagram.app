@@ -32,7 +32,7 @@ import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 // fit and at 100%, every gesture traced with the CPU slowed to the reference speed (calibrate.ts),
 // judged against the budget. It reports and never
 // fails on a budget miss; a harness error (seeding, the stack, a missing element) does fail it.
-// Run with `pnpm --filter @livediagram/live perf:canvas`.
+// Run with `pnpm --filter @liveplanner/live perf:canvas`.
 
 const OUT = 'test-results/perf';
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
@@ -93,9 +93,9 @@ async function openBoard(browser: Browser, owner: string, id: string, throttle: 
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark' });
   await ctx.addInitScript(
     ({ o, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem('liveplanner:v2:self-id', o);
+      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
+      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       // The gesture rows read long tasks (`timed`); the open row reads long tasks and long animation
       // frames together, from the very start, since long tasks alone miss a frame that only renders.
       const w = window as unknown as {

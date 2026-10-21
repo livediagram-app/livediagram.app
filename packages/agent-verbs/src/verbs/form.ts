@@ -2,7 +2,7 @@
 // change` (change_form, its changes from a JSON file or stdin), `form share` (share_form) and `form try` (try_form, its
 // answers from a JSON file or stdin), over the calls the MCP's tools share. A Form tab is named by name or id; questions by id or prompt.
 import { z } from 'zod';
-import { STARTER_IDS, type StarterId } from '@livediagram/forms';
+import { STARTER_IDS, type StarterId } from '@liveplanner/forms';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { addForm, changeForm, readForm, shareForm, type FormCallResult } from '../forms/form-calls';
 import type { FormChange } from '../forms/form-changes';
@@ -11,14 +11,14 @@ import type { FormReading } from '../forms/form-read';
 import type { QuestionInput } from '../forms/form-question';
 import { documentOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or liveplanner URL');
 const tabFlag = z
   .string()
   .optional()
   .describe('The Form tab, by name or id; the first when omitted');
-const HINT = 'read the form with: livediagram form get <doc>';
+const HINT = 'read the form with: liveplanner form get <doc>';
 // A document with no Form tab has no form to read: the hint makes one instead.
-const NO_FORM_HINT = 'make one with: livediagram form add <doc> --starter contact';
+const NO_FORM_HINT = 'make one with: liveplanner form add <doc> --starter contact';
 
 const readingOutput = z.object({
   documentId: z.string(),
@@ -89,7 +89,7 @@ async function jsonFrom<T>(ctx: VerbContext, path: string, what: string): Promis
       status: 400,
       code: 'usage',
       message: `${what} is not JSON`,
-      hint: 'see: livediagram help form',
+      hint: 'see: liveplanner help form',
     });
   }
 }
@@ -110,7 +110,7 @@ export const formGet = defineVerb({
   quiet: (o) => (o.link ? [o.link] : []),
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram form get "Team offsite"', 'livediagram form get 3f9c --tab RSVP'],
+    examples: ['liveplanner form get "Team offsite"', 'liveplanner form get 3f9c --tab RSVP'],
     prints:
       'the form: state and link, where responses go, each question with its id, then any problems',
   },
@@ -160,8 +160,8 @@ export const formAdd = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram form add --starter rsvp --name "Summer Party"',
-      'livediagram form add "Ops" --from survey.json',
+      'liveplanner form add --starter rsvp --name "Summer Party"',
+      'liveplanner form add "Ops" --from survey.json',
     ],
     prints: 'what was made, then the form as form get prints it',
   },
@@ -189,8 +189,8 @@ export const formChange = defineVerb({
   cli: {
     positionals: ['doc', 'changes'],
     examples: [
-      'livediagram form change "Team offsite" changes.json',
-      'cat changes.json | livediagram form change 3f9c -',
+      'liveplanner form change "Team offsite" changes.json',
+      'cat changes.json | liveplanner form change 3f9c -',
     ],
     prints: 'what changed, then the form as form get prints it',
   },
@@ -217,8 +217,8 @@ export const formShare = defineVerb({
   cli: {
     positionals: ['doc', 'action'],
     examples: [
-      'livediagram form share "Team offsite" publish',
-      'livediagram form share 3f9c close',
+      'liveplanner form share "Team offsite" publish',
+      'liveplanner form share 3f9c close',
     ],
     prints: 'the form as form get prints it, its link when published',
   },
@@ -269,8 +269,8 @@ export const formTry = defineVerb({
   cli: {
     positionals: ['doc', 'answers'],
     examples: [
-      'livediagram form try "Team offsite" answers.json',
-      'echo \'{"Your name": "Ada"}\' | livediagram form try 3f9c -',
+      'liveplanner form try "Team offsite" answers.json',
+      'echo \'{"Your name": "Ada"}\' | liveplanner form try 3f9c -',
     ],
     prints: 'the card or row it made and where, and whether it counted',
   },

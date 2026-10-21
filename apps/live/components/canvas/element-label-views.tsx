@@ -14,7 +14,7 @@ import {
   type TextRun,
   labelFontPx,
   type TextSize,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
+import { MAX_SELECTION_IDS } from '@liveplanner/api-schema';
 import { createSelectionStore } from '@/lib/selection-store';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 

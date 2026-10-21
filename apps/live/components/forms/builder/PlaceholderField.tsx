@@ -3,8 +3,8 @@
 // A text question's answer box in its selected card (docs/specs/030-forms/forms.md "Question types"): the box as
 // respondents see it, its placeholder typed straight into it (grey, as it will show), so the field and its placeholder
 // are one thing. Emptied, it shows the type's own hint, which is what respondents then see.
-import { PLACEHOLDER_MAX, type FormQuestion } from '@livediagram/forms';
-import { updateQuestion } from '@livediagram/forms';
+import { PLACEHOLDER_MAX, type FormQuestion } from '@liveplanner/forms';
+import { updateQuestion } from '@liveplanner/forms';
 import { ANSWER_FIELD, placeholderHint } from '../QuestionControl';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';

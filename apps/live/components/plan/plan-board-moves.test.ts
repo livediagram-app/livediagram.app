@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, projectBoard, type Item } from '@livediagram/items';
+import { presetSetup, projectBoard, type Item } from '@liveplanner/items';
 import { boardMoveFor } from './plan-board-moves';
 
 let n = 0;

@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { HelpView } from './HelpView';
 import {
   AVATAR_TOUR,

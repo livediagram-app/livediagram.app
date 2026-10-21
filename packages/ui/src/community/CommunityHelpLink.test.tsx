@@ -2,8 +2,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const siteTrack = vi.fn<typeof import('@livediagram/telemetry-client').siteTrack>();
-vi.mock('@livediagram/telemetry-client', () => ({
+const siteTrack = vi.fn<typeof import('@liveplanner/telemetry-client').siteTrack>();
+vi.mock('@liveplanner/telemetry-client', () => ({
   siteTrack: (...a: Parameters<typeof siteTrack>) => siteTrack(...a),
 }));
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PageChange } from '@livediagram/api-schema';
+import type { PageChange } from '@liveplanner/api-schema';
 import {
   articlesOf,
   pagesOf,
@@ -8,9 +8,9 @@ import {
   type Element,
   type Page,
   type Tab,
-} from '@livediagram/document';
-import { getBuiltInTheme } from '@livediagram/document';
-import { layoutCatalogueFor } from '@livediagram/templates';
+} from '@liveplanner/document';
+import { getBuiltInTheme } from '@liveplanner/document';
+import { layoutCatalogueFor } from '@liveplanner/templates';
 import { applyPageChanges, backgroundPatch } from './page-changes';
 import { pageSummaries } from './summary';
 

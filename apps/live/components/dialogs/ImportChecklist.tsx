@@ -1,4 +1,4 @@
-import { Button } from '@livediagram/ui';
+import { Button } from '@liveplanner/ui';
 
 /** One thing an import found, ticked to import it. */
 export type ImportChecklistRow = { key: string; name: string; detail: string };

@@ -1,4 +1,4 @@
-import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT } from '@liveplanner/api-schema';
 import { aiConfigured } from '../ai-provider';
 import { communityEnabled } from '../community-enabled';
 import { emailEnabled } from '../email/client';

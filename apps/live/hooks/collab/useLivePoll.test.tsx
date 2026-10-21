@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { LivePoll, RoomOutgoing } from '@livediagram/api-schema';
+import type { LivePoll, RoomOutgoing } from '@liveplanner/api-schema';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
@@ -173,7 +173,7 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     expect(first?.length).toBeGreaterThan(20);
     expect(second).toBe(first);
     expect(first).not.toBe('me');
-    expect(localStorage.getItem('livediagram:v2:collab-secret')).toBe(first);
+    expect(localStorage.getItem('liveplanner:v2:collab-secret')).toBe(first);
   });
 
   it('hosts the poll it starts, until it ends or a peer poll replaces it', () => {

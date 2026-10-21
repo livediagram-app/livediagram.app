@@ -4,7 +4,7 @@ import {
   type ChangesetBase,
   type EditRejection,
   type EditRejectionCode,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   formatRejections,
   parseEditOperations,
@@ -12,14 +12,14 @@ import {
   type EditLog,
   type EditOperation,
   type ReplaceBody,
-} from '@livediagram/edit-operations';
+} from '@liveplanner/edit-operations';
 import {
   isFinish,
   isRecord,
   ELEMENT_FINGERPRINT_LENGTH,
   type Finish,
   type GraphInput,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.

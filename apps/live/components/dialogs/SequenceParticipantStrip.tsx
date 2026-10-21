@@ -11,14 +11,14 @@ import {
   SEQ_PARTICIPANTS_MIN,
   SEQ_PARTICIPANT_LABEL_MAX,
   type SequenceElementParticipant,
-} from '@livediagram/document';
-import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livediagram/ui';
+} from '@liveplanner/document';
+import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@liveplanner/ui';
 import {
   lucideChevronLeft,
   lucideChevronRight,
   lucidePlus,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 
 const LeftIcon = lucideGlyph(lucideChevronLeft, 15);
 const RightIcon = lucideGlyph(lucideChevronRight, 15);

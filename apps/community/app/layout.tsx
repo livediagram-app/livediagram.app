@@ -16,14 +16,14 @@ import {
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 
-// The livediagram Community (docs/specs/025-community/community.md): an indexable static site served
+// The liveplanner Community (docs/specs/025-community/community.md): an indexable static site served
 // under /community by the router. No third-party scripts, and sign-in (Clerk) loads only for My Shares; it stays self-host-clean
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
-const COMMUNITY_SITE_NAME = 'livediagram Community';
+const COMMUNITY_SITE_NAME = 'liveplanner Community';
 const COMMUNITY_DESCRIPTION =
-  'Documents people are proud of. Browse diagrams, plans and drawings made with livediagram, then make your own copy.';
+  'Documents people are proud of. Browse diagrams, plans and drawings made with liveplanner, then make your own copy.';
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
@@ -40,15 +40,15 @@ export const metadata: Metadata = {
   // Canonical, Open Graph and Twitter card (with the brand card image) from the
   // shared factory; the title below replaces its plain one with the template.
   ...pageMetadata({
-    title: 'Community | livediagram',
+    title: 'Community | liveplanner',
     description: COMMUNITY_DESCRIPTION,
     path: '/community/',
     siteName: COMMUNITY_SITE_NAME,
     type: 'website',
   }),
   title: {
-    default: 'Community | livediagram',
-    template: '%s | livediagram',
+    default: 'Community | liveplanner',
+    template: '%s | liveplanner',
   },
   robots: { index: true, follow: true },
   other: DARK_READER_LOCK,

@@ -9,7 +9,7 @@ import {
   resolveGraphInput,
   type ArrowElement,
   type BoxedElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // How far a plate keeps off a border across it: at least this, in px (the look keeps 6; a pixel's rounding aside).
 const MIN_CLEAR = 5;

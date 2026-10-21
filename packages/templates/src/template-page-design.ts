@@ -4,7 +4,7 @@
 // from the same few pieces: a locked fill, a plain panel, a tinted glyph, a glyph on a disc and a
 // soft card shadow. Every fill that carries a design sets `themeLockFill`, so a theme switch
 // cannot flatten it into the theme's single element fill.
-import type { Element, ElementShadow, ShapeElement } from '@livediagram/document';
+import type { Element, ElementShadow, ShapeElement } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 
 /** A fill that carries the design, locked against the theme; the stroke defaults to the fill. */

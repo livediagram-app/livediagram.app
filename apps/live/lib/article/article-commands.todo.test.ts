@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EditorState, TextSelection } from 'prosemirror-state';
-import type { ArticleBlock } from '@livediagram/document';
+import type { ArticleBlock } from '@liveplanner/document';
 import { blocksToDoc, docToBlocks } from './article-convert';
 import { toggleTodoChecked } from './article-commands';
 

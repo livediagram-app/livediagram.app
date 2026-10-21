@@ -7,7 +7,7 @@ import type {
   Tab,
   FrameHandle,
   LaidOutPage,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
 import type { SnapGuideStore } from './useSnapGuideState';

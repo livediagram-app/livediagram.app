@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabVote } from '@livediagram/document';
+import type { TabVote } from '@liveplanner/document';
 import { VotePanel } from './VotePanel';
 
 // docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": the results name a card by its number and

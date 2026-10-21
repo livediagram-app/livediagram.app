@@ -5,7 +5,7 @@
 // in its row; Above and Below put a row of one slot above or below its row. A side is shown but not offered (dashed and dimmed,
 // its tooltip saying why) when the row is full or the new slot would squeeze something below what it needs (useFitGuard).
 import { useState } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@liveplanner/ui';
 import { DirArrow } from '@/components/palette/context-menu-icons';
 import {
   DASHBOARD_ROW_H_DEFAULT,
@@ -13,7 +13,7 @@ import {
   DASHBOARD_SLOTS_MAX,
   insertDashboardRow,
   insertDashboardSlot,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useDashboard } from './dashboard-context';
 
 type Side = 'left' | 'right' | 'above' | 'below';

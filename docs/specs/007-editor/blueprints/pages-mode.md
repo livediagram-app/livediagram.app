@@ -223,7 +223,7 @@ page; "template" stays the whole-tab starting point.
 - No migration: every new field is optional and absent on old data; old pages parse unchanged (as
   unchosen infographic pages, their row on the origin).
 - The page you were last on, per person (`lib/last-page.ts`, local storage key
-  `livediagram:v2:last-illustrate-page`, `{ [lastPageKey(documentId, tabId)]: pageId }`,
+  `liveplanner:v2:last-illustrate-page`, `{ [lastPageKey(documentId, tabId)]: pageId }`,
   the key `<documentId>:<tabId>` so a tab id repeated across documents never borrows another's
   page, the latest `LAST_PAGE_MAX` = 200 entries, a re-recorded entry moved to the most
   recent, an unchanged write skipped). Read through `safeJson`; a malformed value or a non-string
@@ -718,7 +718,7 @@ next), ownerId)`; the editor follows the cache (`useEditorPreferences`). Setting
 - **Find**: `filterContents(rows, query, texts)` folds case and width (NFKC, lower case) and needs
   every word in the number, name, kind line or the page's words; `usePageContents` computes `texts`
   with `pageTexts` (`apps/live/lib/page-texts.ts`: one walk, each element to the page its anchor
-  lies on via `rowPageAt`, its `elementFindTexts` from `@livediagram/document-views`, plus an
+  lies on via `rowPageAt`, its `elementFindTexts` from `@liveplanner/document-views`, plus an
   article page's runs and code) only while the query is not blank.
 - **Add Page**: `ContentsAddPage` is two buttons in a row: the wide one (`data-contents-add`,
   **Add Page** with `lucidePlus`, its tooltip `addAnotherLabel(lastPage)`) calls `addLike()` (`edit.addPageLike(lastPage.id)`); the

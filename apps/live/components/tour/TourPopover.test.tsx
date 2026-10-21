@@ -2,7 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { planPalette } from '@livediagram/document';
+import { planPalette } from '@liveplanner/document';
 import { TourPopover } from './TourPopover';
 
 // docs/specs/007-editor/editor-tour.md: a step card leaves focus on the control it points at.

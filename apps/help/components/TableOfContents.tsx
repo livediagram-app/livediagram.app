@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useSyncExternalStore } from 'react';
-import { GlyphDisc } from '@livediagram/ui';
+import { GlyphDisc } from '@liveplanner/ui';
 import { slugOf } from '@/lib/heading-id';
 
 interface TocItem {

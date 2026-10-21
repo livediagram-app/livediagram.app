@@ -5,8 +5,8 @@
 // infographic ones) in the layout gallery. A press places the layout at once, over anything on the
 // page (one undo step brings it back). Hovering a tile previews it on the page
 // (InfographicLayoutPreview).
-import type { LaidOutPage } from '@livediagram/document';
-import type { PageLayoutId } from '@livediagram/templates';
+import type { LaidOutPage } from '@liveplanner/document';
+import type { PageLayoutId } from '@liveplanner/templates';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { PanelSection } from './page-panel-sections';
 

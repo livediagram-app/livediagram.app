@@ -330,7 +330,7 @@ in Plan, so one on a Diagram, Draw, Workshop or Pages tab could never be worked 
   the tab names the copy of that Sheet made with it (as a chart from it does), and a layout read with a repeated row or
   slot id gives the repeat a fresh one.
 - Anything else is refused in the dialog, the dashboard left as it was: text that is not JSON (**File isn't valid
-  JSON.**), JSON that is not a livediagram tab, and a tab that is not a Dashboard (**This file isn't a Dashboard.
+  JSON.**), JSON that is not a liveplanner tab, and a tab that is not a Dashboard (**This file isn't a Dashboard.
   Export a Dashboard tab as JSON, then import that.**).
 - A slot showing another tab keeps naming it by id: in another document it reads as deleted until cleared.
 - Import is an Editor's, as the tab menu is (a Viewer or Participant has no tab menu); a locked tab refuses it.
@@ -407,7 +407,7 @@ read for an export). Anyone may read it; only an Editor changes its form or copi
 Add to Slot's **From a Sheet** fills a slot with a figure (or a chart: [Sheet Chart](#sheet-chart)) read live from one
 of the document's Sheets: the same value
 the Sheet shows, in its own number format, following every edit (a collaborator's too), and following its cells as
-rows and columns are inserted, deleted or moved (they are named by stable row and column ids, `@livediagram/sheets`
+rows and columns are inserted, deleted or moved (they are named by stable row and column ids, `@liveplanner/sheets`
 `sheet-metrics.ts`). Each fits any slot.
 
 - **Sheet Figure**: one cell's value, large, named by the text to its left (else its column's header, else its

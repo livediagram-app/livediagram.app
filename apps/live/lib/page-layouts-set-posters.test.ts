@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
-import { PAGE_LAYOUTS } from '@livediagram/templates';
+import type { Element } from '@liveplanner/document';
+import { PAGE_LAYOUTS } from '@liveplanner/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the Posters category's layouts.
 const POSTER_IDS = [

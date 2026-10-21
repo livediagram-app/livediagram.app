@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { CloseIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
+import { CloseIcon, useClickOutside, useEscape, Portal } from '@liveplanner/ui';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import type { CommentMention, CommentThread } from '@livediagram/document';
+import type { CommentMention, CommentThread } from '@liveplanner/document';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';

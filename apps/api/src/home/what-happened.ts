@@ -9,7 +9,7 @@ import {
   type HomeGroup,
   type HomePerson,
   type HomeVerb,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { localDay } from './local-day';
 
 /** One event of another person, as the read returns it. */

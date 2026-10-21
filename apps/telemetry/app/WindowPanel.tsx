@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetryDaily, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetryDaily, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { TrendChart } from './TrendChart';
 import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
 

@@ -1,5 +1,5 @@
 // The pull file (docs/specs/015-api/blueprints/cli.md "The pull file", CLI27, CLI28): the editor's
-// `livediagram.document` envelope, so "Import a copy" reads it, plus `livediagramSync`, which the envelope parser
+// `liveplanner.document` envelope, so "Import a copy" reads it, plus `liveplannerSync`, which the envelope parser
 // ignores: the host it came from and each tab's revision and hashes. `hash` covers a tab's elements, which push sends;
 // `settingsHash` covers everything else, which push names as not pushed.
 
@@ -10,15 +10,15 @@ import {
   parseDocumentEnvelope,
   type DocumentEnvelope,
   type Tab,
-} from '@livediagram/document';
-import { sha256Hex } from '@livediagram/api-schema';
+} from '@liveplanner/document';
+import { sha256Hex } from '@liveplanner/api-schema';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
 // `pulledAt` is absent from a mirror file, which holds no time (repository-link blueprint "The mirror file").
 export type PullSync = { host: string; pulledAt?: number; tabs: Record<string, PulledTab> };
-export type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
+export type PullFile = DocumentEnvelope & { liveplannerSync: PullSync };
 
-export const PULL_FILE_SUFFIX = '.livediagram.json';
+export const PULL_FILE_SUFFIX = '.liveplanner.json';
 const SLUG_MAX = 60;
 const ID_SLUG_LENGTH = 8;
 
@@ -73,8 +73,8 @@ function syncOf(value: unknown): PullSync | null {
 
 const FAILURES = {
   not_json: 'not JSON',
-  wrong_kind: 'not a livediagram document',
-  unsupported_version: 'written by a newer livediagram',
+  wrong_kind: 'not a liveplanner document',
+  unsupported_version: 'written by a newer liveplanner',
   malformed: 'its document is malformed',
 } as const;
 
@@ -85,11 +85,11 @@ export function parsePullFile(
   const parsed = parseDocumentEnvelope(text);
   if (!parsed.ok) return { ok: false, message: FAILURES[parsed.failure] };
   // The envelope parse has already proved the text is a JSON object.
-  const sync = syncOf(Reflect.get(Object(JSON.parse(text)), 'livediagramSync'));
-  if (!sync) return { ok: false, message: 'not pulled by the CLI (no livediagramSync)' };
+  const sync = syncOf(Reflect.get(Object(JSON.parse(text)), 'liveplannerSync'));
+  if (!sync) return { ok: false, message: 'not pulled by the CLI (no liveplannerSync)' };
   const { tabs } = parsed.envelope.document;
   const invalid = tabs.findIndex((tab: unknown) => !isValidTab(tab));
   if (invalid >= 0)
     return { ok: false, message: `tab ${JSON.stringify(tabs[invalid]!.name)} is not a valid tab` };
-  return { ok: true, file: { ...parsed.envelope, livediagramSync: sync } };
+  return { ok: true, file: { ...parsed.envelope, liveplannerSync: sync } };
 }

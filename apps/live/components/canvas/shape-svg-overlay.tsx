@@ -7,7 +7,7 @@ import {
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useRef, type CSSProperties, type SVGAttributes } from 'react';
 import { useTraceDashes } from './useTraceDashes';
 import {
@@ -146,14 +146,14 @@ export function ShapeSvgOverlay({
   // copies of the outline (useShapeSvgAnimation). Other motions are shape-agnostic and stay on the
   // wrapper. Undefined for the draw preview and unanimated elements.
   animation?: ShapeSvgAnimation;
-  // An actor's figure rect in element px (actor-figure.ts in @livediagram/document), clear of its
+  // An actor's figure rect in element px (actor-figure.ts in @liveplanner/document), clear of its
   // name; absent fills the box.
   figure?: { x: number; y: number; width: number; height: number };
 }) {
   // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
   // useShapeSvgAnimation.
   const { effectiveFill, gradientDefs, effect } = useShapeSvgAnimation(animation, fill);
-  // The geometry lives in the shared table (@livediagram/document
+  // The geometry lives in the shared table (@liveplanner/document
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
   // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see

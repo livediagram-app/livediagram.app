@@ -1,4 +1,4 @@
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement, Tab } from '@liveplanner/document';
 import { describe, expect, it } from 'vitest';
 import {
   mayShareDocument,

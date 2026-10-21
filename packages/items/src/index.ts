@@ -1,4 +1,4 @@
-// @livediagram/items: items, their types and fields, ranks, writes and the
+// @liveplanner/items: items, their types and fields, ranks, writes and the
 // Plan board projection (docs/specs/026-plan/). Pure: no DOM, no dependencies.
 
 export * from './item';

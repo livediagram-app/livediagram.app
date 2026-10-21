@@ -31,7 +31,7 @@ import {
   type ArticleZoneBlock,
   type LaidOutPage,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   articleHandleOf,
   forgetZonesReleased,

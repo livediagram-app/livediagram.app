@@ -56,12 +56,12 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   in production for an unknown period, so the endpoint served any origin while this spec
   described it as locked down; a probe (`POST /api/ai` with no `Origin` answering
   `400 invalid mode` instead of `403 origin_not_allowed`) is how to tell.
-  The value is **`https://www.livediagram.app,https://livediagram.app`**, and the `www`
+  The value is **`https://www.liveplanner.app,https://liveplanner.app`**, and the `www`
   entry is the load-bearing one: the apex 301-redirects to `www`, so `www` is the origin a
   real browser sends. The apex-only value this spec used to recommend would have returned
   403 for every genuine request from the editor. Self-hosters set their own hostname —
   whichever one the browser actually lands on after redirects — plus dev origins like
-  `http://localhost:3002`.
+  `http://localhost:3102`.
 - Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
   any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for
@@ -70,7 +70,7 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   this is the spend-DoS defence on a public deployment: a third-party site can no longer
   drain the operator's OpenAI budget by minting fresh `X-Owner-Id` UUIDs.
 - Prompt capped at 1 000 characters server-side; element payload capped at 200 elements
-  (`AI_MAX_PROMPT_CHARS` / `AI_MAX_ELEMENTS` in `@livediagram/api-schema`, shared with the panel). The
+  (`AI_MAX_PROMPT_CHARS` / `AI_MAX_ELEMENTS` in `@liveplanner/api-schema`, shared with the panel). The
   prompt box holds no more than the cap. The panel sends the whole tab as context while it is within the
   element cap; past it, the selection alone (`aiContextElements`), and with no selection, or one itself
   over the cap, it says so ("Select up to 200 and try again") rather than sending a request the api refuses.
@@ -113,7 +113,7 @@ Request body:
 }
 ```
 
-`elements` is the full active-tab `Element[]` from `@livediagram/document`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
+`elements` is the full active-tab `Element[]` from `@liveplanner/document`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
 
 Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE format piped through with CORS headers added. The JSON-mode payload (Clean) is collected by the client into a single `{ elements: [...] }` block on stream completion:
 
@@ -152,7 +152,7 @@ what drifted: `checklist` was requested by name, with its `checklistItems` schem
 squared on arrival.
 
 Past that normalisation (kind coerced, a missing size defaulted), a streamed element is held
-to the same structural guard every save is: `isValidElement` from `@livediagram/document`,
+to the same structural guard every save is: `isValidElement` from `@liveplanner/document`,
 limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
 check used to live in the client and let through what the api then refused on save (an
 arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every
@@ -304,7 +304,7 @@ fires it, because the route cannot know whether the author kept the result).
 | `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                      |
 | `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                            |
 | `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults as in "Which model": `AI_MODEL` only when the reader shares the assistant's provider. |
-| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim.   |
+| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://liveplanner.app,http://localhost:3102`. Entries are matched case-sensitive against the request's `Origin` header verbatim.   |
 | `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                    |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPath, type PathAnchor, type PathElement } from '@livediagram/document';
+import { createPath, type PathAnchor, type PathElement } from '@liveplanner/document';
 import {
   PATH_CLOSE_PX,
   PATH_DOUBLE_PRESS_MS,

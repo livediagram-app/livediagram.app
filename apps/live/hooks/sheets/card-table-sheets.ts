@@ -5,7 +5,7 @@
 // bottom-right strip (docs/specs/026-plan/items.md "The Plan strip"), which shows only while the tab has something that
 // shows cards. A module store; listeners hear only a real change.
 import { useMemo, useSyncExternalStore } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { createListeners } from '@/lib/listeners';
 
 let held: ReadonlySet<string> = new Set();

@@ -8,7 +8,7 @@
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
-import type { PlanCardRef, PlanViewRef } from '@livediagram/document';
+import type { PlanCardRef, PlanViewRef } from '@liveplanner/document';
 import type {
   BoardStatusTypes,
   Item,
@@ -20,7 +20,7 @@ import type {
   ItemTypeDef,
   PlanBoardSetup,
   StatusPhase,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';

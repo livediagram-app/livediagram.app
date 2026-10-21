@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultIconAnimation } from '@livediagram/document';
+import { defaultIconAnimation } from '@liveplanner/document';
 import { ICON_CATEGORIES } from './icons';
 
 // The palette has a category called Animated, and its icons are the ones drawn

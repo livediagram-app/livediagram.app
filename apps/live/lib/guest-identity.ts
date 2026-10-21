@@ -52,7 +52,7 @@ export function ensureSignedGuestIdentity(): Promise<GuestIdentity> {
 // `resolveSignedGuestIdentity` reads storage only once it holds the lock, so the second tab adopts
 // the signed identity the first one wrote. Browsers without `navigator.locks` keep the old
 // unserialised behaviour.
-export const GUEST_UPGRADE_LOCK_NAME = 'livediagram-guest-upgrade';
+export const GUEST_UPGRADE_LOCK_NAME = 'liveplanner-guest-upgrade';
 
 function withGuestUpgradeLock<T>(run: () => Promise<T>): Promise<T> {
   const locks = typeof navigator === 'undefined' ? undefined : navigator.locks;

@@ -9,7 +9,7 @@ import {
   type ItemFields,
   type ItemFieldValue,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import type { AnswerValue } from './answers';
 import { effectiveTarget } from './mapping';
 import { promptOf, questionsOf, type FormDefinition, type FormQuestion } from './model';

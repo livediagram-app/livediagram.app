@@ -1,7 +1,7 @@
 // A Plan board's keyboard (docs/specs/026-plan/plan-board.md "Keyboard"), as a pure function of the
 // board as drawn: arrow keys move focus between cards, Shift+Left/Right moves the card a column,
 // Shift+Up/Down moves it within its column, Enter opens, Delete moves it to the Trash, N adds to the column.
-import { itemTitle, type BoardProjection, type ItemMove } from '@livediagram/items';
+import { itemTitle, type BoardProjection, type ItemMove } from '@liveplanner/items';
 
 type PlanKeyAction =
   | { kind: 'focus'; itemId: string }

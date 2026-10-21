@@ -3,8 +3,8 @@
 // only when it is in its list, so a retired value never reaches a client as a live option. The
 // opens-in decides whether anything was recorded: when it reads null, so does everything else.
 
-import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@livediagram/api-schema';
-import { parseEditorMode } from '@livediagram/document';
+import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@liveplanner/api-schema';
+import { parseEditorMode } from '@liveplanner/document';
 
 export type RecordedIntentRow = {
   opens_in: string | null;

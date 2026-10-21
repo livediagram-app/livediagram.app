@@ -2,8 +2,8 @@
 // frown (1) to a beam (5). Eyes and outline are shared; only the mouth moves,
 // so the five read as one face changing its mind.
 
-import { TEMPERATURE_FACE_MOUTHS } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import { TEMPERATURE_FACE_MOUTHS } from '@liveplanner/document';
+import { Glyph } from '@liveplanner/ui';
 
 export function MoodGlyph({ value, size = 20 }: { value: number; size?: number }) {
   // The shared shapes, so the export draws the same five faces.

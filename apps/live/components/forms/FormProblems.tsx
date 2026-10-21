@@ -8,7 +8,7 @@ import {
   PUBLISH_PROBLEM_TEXT,
   type DestinationProblem,
   type PublishProblem,
-} from '@livediagram/forms';
+} from '@liveplanner/forms';
 
 /** How many problems a form has: its destination's, and each failing publish check. */
 export const formProblemCount = (

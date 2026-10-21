@@ -1,4 +1,4 @@
-import type { CodeLanguage } from '@livediagram/document';
+import type { CodeLanguage } from '@liveplanner/document';
 
 // Hand-rolled tokenizer for the code block's syntax highlighting (docs/specs/009-elements/code-block.md).
 // One generic scanner driven by a per-language config: comments, strings,

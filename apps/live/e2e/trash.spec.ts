@@ -33,9 +33,9 @@ async function seed(
 async function asOwner(page: import('@playwright/test').Page, owner: string) {
   await page.addInitScript(
     ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem('liveplanner:v2:self-id', id);
+      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
+      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
     },
     { id: owner, sig: guestSigFor(owner) },
   );

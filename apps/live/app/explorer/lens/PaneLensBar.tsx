@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { lensChips } from '@livediagram/explorer-lens';
+import { lensChips } from '@liveplanner/explorer-lens';
 import { useExplorer } from '../ExplorerContext';
 import { chooseChipValue } from './field-model';
 import { LensChips } from './LensChips';

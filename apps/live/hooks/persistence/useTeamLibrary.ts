@@ -1,8 +1,8 @@
 'use client';
 
-import { truncateName } from '@livediagram/document';
+import { truncateName } from '@liveplanner/document';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { DocumentSummary, Folder } from '@livediagram/api-schema';
+import type { DocumentSummary, Folder } from '@liveplanner/api-schema';
 import {
   apiCreateFolder,
   apiDeleteDocument,

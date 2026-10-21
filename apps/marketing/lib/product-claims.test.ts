@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@livediagram/document';
+import { EDITOR_MODES, editorModeLabel } from '@liveplanner/document';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 

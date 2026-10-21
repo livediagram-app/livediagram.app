@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { DialogCloseButton, NoMatches } from '@livediagram/ui';
+import { DialogCloseButton, NoMatches } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
   SettingsCategoryList,

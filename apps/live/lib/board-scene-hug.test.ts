@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, TextElement } from '@livediagram/document';
+import type { Element, TextElement } from '@liveplanner/document';
 import { hugLandedText, landedTextFonts } from './board-scene-hug';
 
 // docs/specs/020-import-export/board-scene.md "In the editor": landed text boxes hug in our fonts.

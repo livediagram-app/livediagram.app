@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { DatabaseSync } from 'node:sqlite';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { upsertTab } from '../db/tabs';

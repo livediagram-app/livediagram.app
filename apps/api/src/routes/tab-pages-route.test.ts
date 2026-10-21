@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
-import type { PagesAnswer } from '@livediagram/api-schema';
+import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import type { PagesAnswer } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { pagesRoomOps } from '../changesets/pages';
-import { layoutCatalogueFor } from '@livediagram/templates';
+import { layoutCatalogueFor } from '@liveplanner/templates';
 
 // POST /api/documents/:id/tabs/:tabId/pages (docs/specs/024-agents/pages-for-agents.md
 // "The route"): page changes or an article write, at the tab's revision, relayed to the room as an

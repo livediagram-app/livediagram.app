@@ -45,6 +45,6 @@ describe('claimReload', () => {
 
   it('is one minute, under the key the chunk recovery has always used', () => {
     expect(RELOAD_GUARD_WINDOW_MS).toBe(60_000);
-    expect(RELOAD_GUARD_KEY).toBe('livediagram:stale-chunk-reloads');
+    expect(RELOAD_GUARD_KEY).toBe('liveplanner:stale-chunk-reloads');
   });
 });

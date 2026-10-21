@@ -1,4 +1,4 @@
-# @livediagram/next-config
+# @liveplanner/next-config
 
 Shared [Next.js](https://nextjs.org) settings for the monorepo's Next apps (live, help, telemetry,
 community, marketing). See [`docs/specs/003-system-architecture/e2e-smoke.md`](../../docs/specs/003-system-architecture/e2e-smoke.md).
@@ -7,7 +7,7 @@ community, marketing). See [`docs/specs/003-system-architecture/e2e-smoke.md`](.
 
 ```ts
 // next.config.ts
-import { typescriptConfig } from '@livediagram/next-config';
+import { typescriptConfig } from '@liveplanner/next-config';
 
 const nextConfig: NextConfig = {
   typescript: typescriptConfig(),

@@ -4,7 +4,7 @@
 // template makes a tab of its own kind, read from the tab, so it has no family here. A Record over
 // TemplateKind, so a new template kind does not compile until it is mapped.
 
-import type { TemplateFamily } from '@livediagram/api-schema';
+import type { TemplateFamily } from '@liveplanner/api-schema';
 import type { TemplateKind } from './templates';
 
 const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {

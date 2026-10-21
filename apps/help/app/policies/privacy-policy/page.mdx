@@ -4,27 +4,27 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Privacy Policy',
   description:
-    'The privacy policy for the hosted livediagram service: what it does, and does not do, with your data.',
+    'The privacy policy for the hosted liveplanner service: what it does, and does not do, with your data.',
   path: '/help/policies/privacy-policy/',
 });
 
-<ArticleLayout title="Privacy Policy" description="What the hosted livediagram service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
+<ArticleLayout title="Privacy Policy" description="What the hosted liveplanner service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
 
 _Last updated: 18 October 2026._
 
-livediagram is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **livediagram.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/). If you self-host livediagram, you are responsible for your own deployment and this policy does not apply to it.
+liveplanner is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **liveplanner.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/). If you self-host liveplanner, you are responsible for your own deployment and this policy does not apply to it.
 
 ## What we store
 
 - **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you ask the AI assistant about it, read sticky notes from a photo (see **AI features**), or add a web link to it (our server fetches the link's preview).
 - **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
-- **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
+- **A browser id.** If you use liveplanner without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
 - **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your browser id or account.
 - **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
 - **Your profile picture's address, if you sign in.** Your profile picture is a picture you uploaded to your account, or your Google picture. We store only its web address (hosted by Clerk), never the image, so we can show it to the people you collaborate with who are signed in: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials. Turn it off in **Settings > Account > Show My Profile Picture**; it is removed when you delete your account.
 - **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
 - **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we store the app's registration (its name and redirect address, kept for 30 days), short-lived authorization sessions and codes that expire within minutes, and, for an hour, a count of registrations from your IP address to stop abuse. The connection itself is an API token, covered above, and you can revoke it any time.
-- **Google Drive, if you connect it.** If you [mirror your documents to Google Drive](/help/account-and-data/google-drive/), we store an encrypted refresh token from Google, the id of the Google account you connected, the ids of the files and folders livediagram created in your Drive, and the state livediagram last wrote to them. See **Google user data** below.
+- **Google Drive, if you connect it.** If you [mirror your documents to Google Drive](/help/account-and-data/google-drive/), we store an encrypted refresh token from Google, the id of the Google account you connected, the ids of the files and folders liveplanner created in your Drive, and the state liveplanner last wrote to them. See **Google user data** below.
 - **Community posts, if you share to the Community.** A post holds the title, description, category and tags you write, which document it shows, when you shared it, and its like and copy counts. Your account id is stored with it so you can manage it, but it is never shown: the post appears as Anonymous, or, if you turn that off, with your display name and profile picture. Removing the post, or deleting the document or your account, deletes it.
 - **Community likes and reports.** A like is stored against a random key your browser keeps for the Community, not against you, together with a one-way hash of your network (your address range combined with the post's id), so one network can add only a few likes or copies. When someone copies a Community post we record that their account or browser id copied it, with the same kind of network hash, so each person counts once; this is deleted with their account. A report stores its reason, the optional note, the same random key, and a one-way hash of the reporter's internet address combined with the post's id, so that reports from one network can't hide a post on their own. These hashes are used only to cap counts and reports, and a post's reports are deleted when the post is removed or its document is deleted. Reports are counted automatically; nobody reads them by hand.
 - **Team invitations.** If a teammate invites you by email, we store that address with the team, send you the invitation (and up to three reminders while nobody has answered it, each with a link to decline it), and may send you action and mention emails at that address before you create an account.
@@ -35,14 +35,14 @@ livediagram is built to need as little of your data as possible, and the whole c
 
 ## Google user data
 
-If you connect Google Drive, livediagram asks Google for access to **only the files it creates, or that you open with it** (the `drive.file` scope), and to appear in Drive's **Open with** menu (`drive.install`). It cannot see any other file in your Drive.
+If you connect Google Drive, liveplanner asks Google for access to **only the files it creates, or that you open with it** (the `drive.file` scope), and to appear in Drive's **Open with** menu (`drive.install`). It cannot see any other file in your Drive.
 
-- **What we read and write.** Your browser writes your documents to the `.livediagram` files in your Drive, reads the names, folders and bin state of those files to keep livediagram in step, and reads a file you choose to open or import with livediagram. The traffic goes straight from your browser to Google; the contents of your Drive never pass through our servers.
-- **What we store.** An encrypted refresh token (so the mirror keeps working without asking you every hour), the id of the Google account you connected, the ids of the files and folders livediagram created, and the state it last wrote to them. The refresh token is never shown to anyone, including you.
-- **What we never do.** We use Google user data only to provide the mirror you asked for. We do not use it for advertising, we do not sell it, we do not use it to train AI models, and nobody at livediagram reads it unless you ask us to for support, it is needed for security, or the law requires it.
-- **Disconnecting.** Disconnecting, or deleting your account, revokes livediagram's access at Google and deletes the token and the file ids we stored. Your files stay in your Drive. You can also remove livediagram's access at any time from your Google account's security settings.
+- **What we read and write.** Your browser writes your documents to the `.liveplanner` files in your Drive, reads the names, folders and bin state of those files to keep liveplanner in step, and reads a file you choose to open or import with liveplanner. The traffic goes straight from your browser to Google; the contents of your Drive never pass through our servers.
+- **What we store.** An encrypted refresh token (so the mirror keeps working without asking you every hour), the id of the Google account you connected, the ids of the files and folders liveplanner created, and the state it last wrote to them. The refresh token is never shown to anyone, including you.
+- **What we never do.** We use Google user data only to provide the mirror you asked for. We do not use it for advertising, we do not sell it, we do not use it to train AI models, and nobody at liveplanner reads it unless you ask us to for support, it is needed for security, or the law requires it.
+- **Disconnecting.** Disconnecting, or deleting your account, revokes liveplanner's access at Google and deletes the token and the file ids we stored. Your files stay in your Drive. You can also remove liveplanner's access at any time from your Google account's security settings.
 
-livediagram's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
+liveplanner's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
 ## AI features
 
@@ -78,7 +78,7 @@ If you have an account, we use your email address to send you a small number of 
 - **Notifications about your work**: when someone opens a document you shared for the first time, comments on a document you own, fills in one of your forms, responds to a team invite you sent, assigns you an action, or mentions you in a comment. A mention email quotes the comment (up to about 280 characters) and an assigned-action email includes the action's name and the start of its description; the others name the document but not its contents.
 - **A short onboarding series**: a welcome message, a few tips during your first two weeks, a nudge if you have not made a document after a few days or have been away for about four weeks, and the occasional milestone.
 
-You can turn off every notification, tip and milestone email in **Settings**, under **Account**, then **Notifications**, or from the link at the bottom of each one (see [Email Notifications](/help/account-and-data/email-notifications/)). We do not send advertising or marketing beyond these, and we never share your address other than with our email provider for the sole purpose of delivering them. Apart from team invitations and the emails that follow from them, people who use livediagram without an account are never emailed.
+You can turn off every notification, tip and milestone email in **Settings**, under **Account**, then **Notifications**, or from the link at the bottom of each one (see [Email Notifications](/help/account-and-data/email-notifications/)). We do not send advertising or marketing beyond these, and we never share your address other than with our email provider for the sole purpose of delivering them. Apart from team invitations and the emails that follow from them, people who use liveplanner without an account are never emailed.
 
 ## Service providers
 
@@ -116,7 +116,7 @@ We protect your data with authentication and access controls on every request, a
 
 ## Children
 
-livediagram is not directed at children, and we do not knowingly collect data from children.
+liveplanner is not directed at children, and we do not knowingly collect data from children.
 
 ## Changes
 
@@ -124,6 +124,6 @@ We may update this policy from time to time. The date at the top of this article
 
 ## Contact
 
-For privacy questions or requests, reach us through our [contact form](https://www.livediagram.app/form/90Bgj5sY9eTpVrjhx9tTZj).
+For privacy questions or requests, reach us through our [contact form](https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj).
 
 </ArticleLayout>

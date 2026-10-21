@@ -1,10 +1,10 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
-import { SideBySideIcon } from '@livediagram/ui';
+import { SideBySideIcon } from '@liveplanner/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { TabModeIcon } from './editor-mode/TabModeIcon';
@@ -12,7 +12,7 @@ import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from './useTabReorderDrag';
 import type { CanvasMenuActions } from './TabBar';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@liveplanner/api-schema';
 
 // One tab pill, lifted out of TabBar's renderTabPill closure. Loose
 // tabs and folder members (rendered inside TabFolderChip via the

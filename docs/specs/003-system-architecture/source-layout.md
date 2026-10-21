@@ -39,7 +39,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `chrome/` — header, toolbars, docks, tab bar.
 - `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
 - `primitives/` — local leaves (`CloseIcon`, `Portal`, chart leaves) not
-  promoted to `@livediagram/ui`.
+  promoted to `@liveplanner/ui`.
 
 `apps/live/hooks/`
 
@@ -55,7 +55,7 @@ Rules:
   imports).
 - A file belongs to the domain of its concern, not the screen that happens
   to render it first.
-- Cross-app primitives keep migrating to `@livediagram/ui` (see review #4/#5:
+- Cross-app primitives keep migrating to `@liveplanner/ui` (see review #4/#5:
   `Button`, `TextInput`); domain folders are for app-local code.
 
 ## Execution

@@ -16,7 +16,7 @@ function stubCaches() {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('edgeCached', () => {
-  const url = new URL('https://livediagram.app/api/community/featured');
+  const url = new URL('https://liveplanner.app/api/community/featured');
 
   it('runs the query once, then answers from the edge', async () => {
     stubCaches();
@@ -38,8 +38,8 @@ describe('edgeCached', () => {
   it('skips the cache on localhost and where there is no Cache API', async () => {
     const store = stubCaches();
     const produce = vi.fn(async () => Response.json({}));
-    await edgeCached(new URL('http://localhost:8787/api/community/featured'), 60, produce);
-    await edgeCached(new URL('http://localhost:8787/api/community/featured'), 60, produce);
+    await edgeCached(new URL('http://localhost:8887/api/community/featured'), 60, produce);
+    await edgeCached(new URL('http://localhost:8887/api/community/featured'), 60, produce);
     expect(produce).toHaveBeenCalledTimes(2);
     expect(store.size).toBe(0);
     vi.unstubAllGlobals();

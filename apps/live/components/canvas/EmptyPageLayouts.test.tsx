@@ -4,7 +4,7 @@
 // adds Start From Scratch (docs/specs/007-editor/logo-pages.md "Logo layouts").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, newLogoPage } from '@livediagram/document';
+import { layOutPages, newLogoPage } from '@liveplanner/document';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
 
 afterEach(() => cleanup());

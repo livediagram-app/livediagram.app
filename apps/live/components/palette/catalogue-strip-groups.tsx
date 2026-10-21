@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
+import { ChevronDownIcon, HoverCard } from '@liveplanner/ui';
 import { isIconCatalogsLoaded } from '@/lib/icon-registry';
 import { iconBrowseGroups } from './IconPickerTab';
 import { stickerBrowseGroups } from './StickerPickerTab';

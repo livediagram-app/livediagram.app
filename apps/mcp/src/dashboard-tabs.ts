@@ -1,14 +1,14 @@
 // The tabs a Dashboard can show (docs/specs/026-plan/plan-agents.md "Making a dashboard"): what a tab holds, and every
 // tab of a document read for add_tab, up to PLAN_PREVIEW_TABS_MAX.
-import type { DocumentResponse, TabResponse } from '@livediagram/api-schema';
+import type { DocumentResponse, TabResponse } from '@liveplanner/api-schema';
 import {
   readPlanState,
   resolveDashboardInput,
   type DashboardInput,
   type DashboardTabRef,
-} from '@livediagram/agent-verbs';
-import { ITEM_TYPES } from '@livediagram/items';
-import { tabKindOf, type Tab } from '@livediagram/document';
+} from '@liveplanner/agent-verbs';
+import { ITEM_TYPES } from '@liveplanner/items';
+import { tabKindOf, type Tab } from '@liveplanner/document';
 import { apiJson, clientFor } from './api';
 import type { Env } from './env';
 import { PLAN_PREVIEW_TABS_MAX } from './plan-preview';

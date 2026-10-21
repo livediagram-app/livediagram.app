@@ -1,7 +1,7 @@
 // Charts read live for a picture (docs/specs/029-sheets/sheet.md "Charts"): a linked chart draws what its cells hold now.
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
-import { sheetFromJson } from '@livediagram/sheets';
+import { createShape, type Element } from '@liveplanner/document';
+import { sheetFromJson } from '@liveplanner/sheets';
 import { sheetJson } from '../testing/sheets';
 import { chartsReadLive } from './live-charts';
 

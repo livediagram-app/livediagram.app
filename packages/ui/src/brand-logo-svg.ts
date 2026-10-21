@@ -1,7 +1,7 @@
 import { BRAND_MARK_VIEWBOX, brandMarkSvg } from './brand-mark-geometry';
 import type { PrismScheme } from './brand-prism';
 
-// The horizontal lockup (mark + "livediagram" wordmark) as a standalone SVG,
+// The horizontal lockup (mark + "liveplanner" wordmark) as a standalone SVG,
 // for marketing/media/logo/. The wordmark follows the spec's split: "live" in
 // the accent (brand-600 light, sky-400 dark), "diagram" in ink. It is set as
 // live text in the system UI stack the apps use, so it renders in the viewer's

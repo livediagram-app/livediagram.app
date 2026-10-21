@@ -5,7 +5,7 @@
 // beside it a pitch. Dark mode wears Midnight, the marketing site's night section; light mode is the same layout on a
 // pale dotted ground. Below lg the card comes first and the pitch stacks under it; the card is first in the DOM at
 // every width, so the form is what the Tab key and a screen reader reach first.
-import { Brand } from '@livediagram/ui';
+import { Brand } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
 import { AuthLines } from './AuthLines';

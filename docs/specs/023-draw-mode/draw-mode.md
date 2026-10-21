@@ -426,7 +426,7 @@ Explorer Home's Jump Back In.
   closed and filled, as a pencil sketch in Diagram mode is: an "o" written on
   a board is ink, not a shape.
 - Pens are the user's, not the board's: they persist **device-locally** in
-  `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
+  `localStorage` (`liveplanner:v2:whiteboard-pens`), like the other tool
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
   drawn, with its raw samples, a pressure per sample when a pen drew it (both

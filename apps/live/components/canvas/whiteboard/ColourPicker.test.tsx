@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours, type PenColour } from '@livediagram/document';
+import { penColourHex, standardColours, type PenColour } from '@liveplanner/document';
 import { ColourPicker } from './ColourPicker';
 
 // docs/specs/023-draw-mode/draw-mode.md "The colour picker", on the one colour picker

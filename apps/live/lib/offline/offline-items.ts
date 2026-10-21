@@ -1,6 +1,6 @@
 // An offline document's item store (docs/specs/026-plan/items.md "Offline documents"): the items
 // live in the document's own record, and every write is the same pure transition the api applies
-// (@livediagram/items applyItemWrite), serialised with the record's other writes. A write passes the
+// (@liveplanner/items applyItemWrite), serialised with the record's other writes. A write passes the
 // api's own checks first (readItemWrite, writtenItemsRefusal) and is refused as the api refuses it, so
 // the record never holds what Sync to Cloud would refuse.
 
@@ -15,8 +15,8 @@ import {
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
-} from '@livediagram/items';
-import { applyItemComment, type ItemCommentChange } from '@livediagram/document';
+} from '@liveplanner/items';
+import { applyItemComment, type ItemCommentChange } from '@liveplanner/document';
 import { ApiError } from '../api/core';
 import {
   offlineGetRecord,

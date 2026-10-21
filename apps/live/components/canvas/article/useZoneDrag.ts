@@ -5,7 +5,7 @@
 // it would land at; release moves it there (one edit, its elements with it); Escape, or a release
 // where it already sits, leaves it be.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@livediagram/document';
+import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@liveplanner/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { debugLog } from '@/lib/debug-log';
 

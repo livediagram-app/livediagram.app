@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { fieldsFromPairs, itemAdd, itemLs, itemMove, itemRm, itemSet } from './item';

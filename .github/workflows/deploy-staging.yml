@@ -1,7 +1,7 @@
 name: Deploy Staging
 
 # Staging deploy (docs/specs/016-platform/staging-environment.md). Automatic: every merge to `main` that passes CI
-# lands on https://staging.livediagram.app within a few minutes.
+# lands on https://staging.liveplanner.app within a few minutes.
 #
 # Triggered by CI FINISHING, not by the push. Two reasons:
 #
@@ -16,10 +16,8 @@ name: Deploy Staging
 # default rather than the commit CI actually verified, so the exact SHA is
 # passed down and every checkout in the reusable workflow pins to it.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
+  # Automatic staging deploys are off until liveplanner has its own Cloudflare
+  # account and secrets. Restore the workflow_run trigger (CI completed on main) then.
   # Also dispatchable by hand, for redeploying staging after changing a
   # staging-only secret or filling in a resource id — neither of which is a
   # commit, so neither triggers CI.
@@ -79,13 +77,13 @@ jobs:
       # stamps every response noindex.
       wrangler_env: staging
       environment_name: staging
-      environment_url: https://staging.livediagram.app
+      environment_url: https://staging.liveplanner.app
       # Empty on a manual dispatch, which checks out the default branch —
       # that IS `main`, so staging still tracks the right thing.
       ref: ${{ github.event.workflow_run.head_sha }}
       # Keeps a staging OAuth flow inside staging instead of bouncing the
       # user through the production MCP host.
-      mcp_origin: https://mcp-staging.livediagram.app
+      mcp_origin: https://mcp-staging.liveplanner.app
     secrets:
       # Same Cloudflare account as production — the isolation is drawn at the
       # resource (own D1 / R2 / KV), not the account (docs/specs/016-platform/staging-environment.md).

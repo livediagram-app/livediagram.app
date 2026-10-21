@@ -10,7 +10,7 @@
 // holding the package's public surface.
 //
 // Pure types; re-exported through index.ts so the public
-// `@livediagram/document` surface is unchanged.
+// `@liveplanner/document` surface is unchanged.
 
 export type ShapeKind =
   | 'square'

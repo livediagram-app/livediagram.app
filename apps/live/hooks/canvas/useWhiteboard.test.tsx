@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { useWhiteboard } from './useWhiteboard';
@@ -189,7 +189,7 @@ describe('useWhiteboard', () => {
     act(() => hook.result.current.setEraserMode('partial'));
     expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'RecognitionOn');
     expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'EraserPartial');
-    const stored: unknown = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);
+    const stored: unknown = JSON.parse(localStorage.getItem('liveplanner:v2:whiteboard-pens')!);
     expect(stored).toMatchObject({ recognise: true, eraserMode: 'partial' });
   });
 

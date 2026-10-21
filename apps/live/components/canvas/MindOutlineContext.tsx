@@ -8,7 +8,7 @@
 //
 // Undefined outside the editor canvas (the share view, embeds, exports): no badge there.
 import { createContext, useContext, useLayoutEffect, useMemo, useRef } from 'react';
-import { isMindNode, mindRootOf, type Element } from '@livediagram/document';
+import { isMindNode, mindRootOf, type Element } from '@liveplanner/document';
 
 type MindOutlineBadges = {
   roots: ReadonlySet<string>;

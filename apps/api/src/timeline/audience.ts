@@ -9,7 +9,7 @@
 // tables — documents, team_members — and that dependency shouldn't leak
 // into the storage layer.
 
-import type { TimelineScopeRef } from '@livediagram/api-schema';
+import type { TimelineScopeRef } from '@liveplanner/api-schema';
 import type { DocumentDTO, Env } from '../types';
 
 export function userScope(ownerId: string): TimelineScopeRef {

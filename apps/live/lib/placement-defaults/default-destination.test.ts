@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import {
   buildDefaultFolderIndex,
   destinationOf,

@@ -14,7 +14,7 @@ import { track } from '@/lib/telemetry';
 // lives in the new keyboard-shortcuts modal so it's discoverable
 // alongside the list it disables.
 
-const STORAGE_KEY = 'livediagram:v2:shortcuts-enabled';
+const STORAGE_KEY = 'liveplanner:v2:shortcuts-enabled';
 
 export function useShortcutsEnabled(): { enabled: boolean; setEnabled: (next: boolean) => void } {
   // Stored as the literal string 'false' when disabled; absent or any other

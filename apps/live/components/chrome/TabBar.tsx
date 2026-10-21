@@ -10,10 +10,10 @@ import {
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
-import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livediagram/ui';
+import { TabsLabelIcon, safeInlinePadding, safeInset } from '@liveplanner/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -25,7 +25,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@liveplanner/api-schema';
 import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
@@ -65,7 +65,7 @@ type TabBarProps = {
   // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
   powerUser?: boolean;
   // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
-  // livediagram link at the bar's right end, and no Appearance control (the workbench sets the scheme).
+  // liveplanner link at the bar's right end, and no Appearance control (the workbench sets the scheme).
   workbenchLink?: (labelled: boolean) => ReactNode;
   // A workspace frame's Back (WB59), first in the bar.
   workbenchBack?: (labelled: boolean) => ReactNode;

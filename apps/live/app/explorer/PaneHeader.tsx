@@ -6,7 +6,7 @@
 // so that barrel holds the list/row primitives while the header chrome (and
 // its private hamburger / caret icons) stands on its own.
 import { DocumentIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
-import { Button, Glyph } from '@livediagram/ui';
+import { Button, Glyph } from '@liveplanner/ui';
 import { useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';

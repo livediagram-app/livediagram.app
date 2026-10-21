@@ -10,7 +10,7 @@ import {
   type Element,
   type LaidOutPage,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';

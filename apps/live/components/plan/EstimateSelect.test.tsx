@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ESTIMATE_POINTS } from '@livediagram/items';
+import { ESTIMATE_POINTS } from '@liveplanner/items';
 import { EstimateSelect } from './item-field-editors';
 
 // docs/specs/026-plan/items.md "Fields": an Estimate is picked from the story-point sizes, or None.

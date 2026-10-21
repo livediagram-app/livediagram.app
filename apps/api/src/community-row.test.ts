@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COMMUNITY_ANONYMOUS_AUTHOR } from '@livediagram/api-schema';
+import { COMMUNITY_ANONYMOUS_AUTHOR } from '@liveplanner/api-schema';
 import {
   communitySearchText,
   likePattern,

@@ -140,7 +140,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
-  { name: 'link', summary: 'Repository links: livediagram.toml and what it covers' },
+  { name: 'link', summary: 'Repository links: liveplanner.toml and what it covers' },
   {
     name: 'workbench',
     summary: 'Workbenches: open a document in a developer tool, pair one',

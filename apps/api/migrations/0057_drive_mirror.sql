@@ -19,7 +19,7 @@ CREATE TABLE drive_connections (
 );
 
 -- drive_items: one row per mirrored document or folder, holding the Drive state
--- livediagram last wrote (or accepted), so a change read back from Drive is
+-- liveplanner last wrote (or accepted), so a change read back from Drive is
 -- recognised as an echo of our own write. Removed with the document (in
 -- documentRemovalStatements), the folder (deleteFolder) or the account.
 CREATE TABLE drive_items (

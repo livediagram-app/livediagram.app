@@ -1,4 +1,4 @@
-import { CHANGESET_TOAST_COALESCE_MS, type ChangesetRoomOp } from '@livediagram/api-schema';
+import { CHANGESET_TOAST_COALESCE_MS, type ChangesetRoomOp } from '@liveplanner/api-schema';
 
 // The toast one person's (or one agent's) burst of changesets raises
 // (docs/specs/024-agents/blueprints/agent-changesets.md "The editor", "Presentation and UX"). Pure:

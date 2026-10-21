@@ -14,14 +14,14 @@ import {
 // The local sync state (docs/specs/027-repositories/blueprints/repository-link.md "Data and persistence"): per link
 // and work tree, under the git directory, else the cache; never committed.
 
-const link = parseLinkFile('[covers]\nfolder = "f"\n', '/repo/livediagram.toml');
+const link = parseLinkFile('[covers]\nfolder = "f"\n', '/repo/liveplanner.toml');
 
 describe('linkIdOf', () => {
   it('is the first 16 hex of SHA-256 of the link file’s real path', async () => {
-    const id = await linkIdOf('/repo/livediagram.toml');
+    const id = await linkIdOf('/repo/liveplanner.toml');
     expect(id).toMatch(/^[0-9a-f]{16}$/);
-    expect(await linkIdOf('/repo/livediagram.toml')).toBe(id);
-    expect(await linkIdOf('/other/livediagram.toml')).not.toBe(id);
+    expect(await linkIdOf('/repo/liveplanner.toml')).toBe(id);
+    expect(await linkIdOf('/other/liveplanner.toml')).not.toBe(id);
   });
 });
 
@@ -34,13 +34,13 @@ describe('linkStateDir', () => {
           ? { code: 0, stdout: '/repo/.git\n' }
           : null,
     });
-    expect(await linkStateDir(inGit, link)).toBe(`/repo/.git/livediagram/${id}`);
-    expect(await linkStateDir(fakeIo(), link)).toBe(`/home/agent/.cache/livediagram/links/${id}`);
+    expect(await linkStateDir(inGit, link)).toBe(`/repo/.git/liveplanner/${id}`);
+    expect(await linkStateDir(fakeIo(), link)).toBe(`/home/agent/.cache/liveplanner/links/${id}`);
     const notATree = fakeIo({
       env: { XDG_CACHE_HOME: '/xdg' },
       tool: () => ({ code: 128, stdout: '' }),
     });
-    expect(await linkStateDir(notATree, link)).toBe(`/xdg/livediagram/links/${id}`);
+    expect(await linkStateDir(notATree, link)).toBe(`/xdg/liveplanner/links/${id}`);
   });
 });
 

@@ -2,7 +2,7 @@
 
 import { useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
-import type { Rect } from '@livediagram/document';
+import type { Rect } from '@liveplanner/document';
 
 type XY = { x: number; y: number };
 

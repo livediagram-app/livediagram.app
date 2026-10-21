@@ -1,7 +1,7 @@
 // The direction a tab flows (blueprint "The checks", LN15): the larger-axis class of most connecting
 // directed arrows, or none.
 
-import type { ArrowElement } from '@livediagram/document';
+import type { ArrowElement } from '@liveplanner/document';
 import { centreOf } from './boxes';
 import { LINT_FLOW_MIN_ARROWS, LINT_FLOW_MIN_SHARE } from './constants';
 import type { DrawableArrow, LintContext } from './context';

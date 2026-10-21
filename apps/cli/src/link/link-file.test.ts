@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { linkFileText, parseLinkFile } from './link-file';
 
-// livediagram.toml (docs/specs/027-repositories/blueprints/repository-link.md "The link file"): every key, its
+// liveplanner.toml (docs/specs/027-repositories/blueprints/repository-link.md "The link file"): every key, its
 // defaults and every rejection, with its exit and final copy.
 
-const PATH = '/repo/livediagram.toml';
+const PATH = '/repo/liveplanner.toml';
 
 function failureOf(text: string): CliFailure {
   try {
@@ -65,7 +65,7 @@ describe('parseLinkFile', () => {
       exit: 2,
       code: 'link_syntax',
       message: `${PATH} line 2, column 10: invalid value`,
-      hint: 'fix the line; livediagram.toml is TOML',
+      hint: 'fix the line; liveplanner.toml is TOML',
     });
   });
 
@@ -100,7 +100,7 @@ describe('parseLinkFile', () => {
         exit: 2,
         code: 'wrong_type',
         message: `${PATH}: ${what}`,
-        hint: 'livediagram link init --help',
+        hint: 'liveplanner link init --help',
       });
     wrong('host = 1\n[covers]\nfolder = "f"\n', 'host must be a string');
     wrong('covers = "f"\n', 'covers must be a table');
@@ -123,29 +123,29 @@ describe('parseLinkFile', () => {
       expect(failureOf(text)).toEqual({ exit: 1, ...failure });
     refused('host = "ftp://x.org"\n[covers]\nfolder = "f"\n', {
       code: 'invalid_host',
-      message: `${PATH}: host must be an origin such as https://livediagram.app, not ftp://x.org`,
+      message: `${PATH}: host must be an origin such as https://liveplanner.app, not ftp://x.org`,
     });
     for (const host of ['https://x.org/app', 'https://x.org/?a=1', 'https://x.org/#a', 'nope'])
       expect(failureOf(`host = "${host}"\n[covers]\nfolder = "f"\n`).code).toBe('invalid_host');
     refused('host = "https://x.org"\n', {
       code: 'no_coverage',
       message: `${PATH}: [covers] needs a folder, documents, or both`,
-      hint: 'livediagram link init --folder <folder>',
+      hint: 'liveplanner link init --folder <folder>',
     });
     refused('[covers]\ndocuments = []\n', {
       code: 'no_coverage',
       message: `${PATH}: [covers] needs a folder, documents, or both`,
-      hint: 'livediagram link init --folder <folder>',
+      hint: 'liveplanner link init --folder <folder>',
     });
     refused('[covers]\nfolder = ""\n', {
       code: 'empty_id',
       message: `${PATH}: covers.folder holds an empty or spaced id`,
-      hint: 'livediagram link ls',
+      hint: 'liveplanner link ls',
     });
     refused('[covers]\ndocuments = ["a b"]\n', {
       code: 'empty_id',
       message: `${PATH}: covers.documents holds an empty or spaced id`,
-      hint: 'livediagram link ls',
+      hint: 'liveplanner link ls',
     });
     expect(failureOf(`[covers]\nfolder = "${'x'.repeat(129)}"\n`).code).toBe('empty_id');
     expect(
@@ -172,15 +172,15 @@ describe('linkFileText', () => {
   it('writes the keys in order, host always, the rest only when given', () => {
     expect(
       linkFileText({
-        host: 'https://livediagram.app',
+        host: 'https://liveplanner.app',
         folder: 'fld_1',
         documents: ['d1', 'd"2'],
         level: 'files',
       }),
     ).toBe(
       [
-        "# This repository's diagrams live in livediagram; see https://livediagram.app/help/developers/repositories/",
-        'host = "https://livediagram.app"',
+        "# This repository's diagrams live in liveplanner; see https://liveplanner.app/help/developers/repositories/",
+        'host = "https://liveplanner.app"',
         '',
         '[covers]',
         'folder = "fld_1"',
@@ -193,7 +193,7 @@ describe('linkFileText', () => {
     );
     const bare = linkFileText({ host: 'https://self.example', folder: 'f', documents: [] });
     expect(bare).toBe(
-      '# This repository\'s diagrams live in livediagram; see https://self.example/help/developers/repositories/\nhost = "https://self.example"\n\n[covers]\nfolder = "f"\n',
+      '# This repository\'s diagrams live in liveplanner; see https://self.example/help/developers/repositories/\nhost = "https://self.example"\n\n[covers]\nfolder = "f"\n',
     );
     expect(parseLinkFile(bare, PATH).covers).toEqual({ folder: 'f', documents: [] });
   });

@@ -17,7 +17,7 @@ two-column field grid on an iPad) the field ran past the panel's edge and pushed
 
 ## The rule
 
-- **Default, everywhere.** The shared theme (`@livediagram/tailwind-config`) gives every date and
+- **Default, everywhere.** The shared theme (`@liveplanner/tailwind-config`) gives every date and
   time field no minimum width and a maximum of its container, so a field does nothing to fit.
 - **On touch WebKit** (iOS and iPadOS) the native pill is dropped: the field draws with its own
   border, padding and type like any text field, the value sits left-aligned, and an empty field keeps
@@ -27,7 +27,7 @@ two-column field grid on an iPad) the field ran past the panel's edge and pushed
 
 ## Typing and saving
 
-A date field (`DateInput` in `@livediagram/ui`) saves a date only once it is whole, so typing one
+A date field (`DateInput` in `@liveplanner/ui`) saves a date only once it is whole, so typing one
 in a segment at a time never loses what is already there.
 
 - **A whole date saves at once.** Picking a day from the calendar, or typing the last digit of a

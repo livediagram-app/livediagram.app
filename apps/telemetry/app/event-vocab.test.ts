@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TELEMETRY_CATEGORIES } from '@livediagram/api-schema';
+import { TELEMETRY_CATEGORIES } from '@liveplanner/api-schema';
 import { categoryColor, eventLabel, typeLabel } from './event-vocab';
 
 // The dashboard's vocabulary layer (docs/specs/017-telemetry/telemetry.md): pure labelling helpers behind

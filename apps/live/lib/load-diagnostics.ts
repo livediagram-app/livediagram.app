@@ -1,9 +1,9 @@
 // The diagnostics report a person copies from the load-error screen (docs/specs/007-editor/load-recovery.md
 // "Diagnostics"). Identifiers and states only, never document content. Two credentials are kept out on
 // purpose: a share code (the path's `?s=` is reported as "share link: yes") and a full guest id (an
-// `X-Owner-Id` credential; @livediagram/ui's identity lines carry only its first 8 characters).
+// `X-Owner-Id` credential; @liveplanner/ui's identity lines carry only its first 8 characters).
 
-import { isClerkIdShape } from '@livediagram/api-schema';
+import { isClerkIdShape } from '@liveplanner/api-schema';
 import {
   formatBrowserChecks,
   formatBrowserIdentity,
@@ -11,7 +11,7 @@ import {
   runBrowserChecks,
   type BrowserChecks,
   type BrowserIdentity,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { getLoadProgress, type LoadProgress } from './load-progress';
 import { EDITOR_BUILD_ID } from './server-release';
 
@@ -47,7 +47,7 @@ function loadLines(p: LoadProgress, now: Date): string[] {
 export function formatDiagnostics(input: DiagnosticsInput): string {
   const share = new URLSearchParams(input.location.search).has('s');
   return [
-    'livediagram diagnostics',
+    'liveplanner diagnostics',
     `Time: ${input.now.toISOString()}`,
     `Page: ${input.location.pathname}${share ? ' (share link: yes)' : ''}`,
     `Build: ${input.buildId ?? 'unknown'}`,

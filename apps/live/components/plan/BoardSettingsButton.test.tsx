@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livediagram/document';
-import { presetSetup } from '@livediagram/items';
+import { createShape, type ShapeElement } from '@liveplanner/document';
+import { presetSetup } from '@liveplanner/items';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { BoardSettingsButton } from './BoardSettingsButton';

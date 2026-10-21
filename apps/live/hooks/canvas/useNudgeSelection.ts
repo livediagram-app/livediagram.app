@@ -35,7 +35,7 @@ import {
   withAttached,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {

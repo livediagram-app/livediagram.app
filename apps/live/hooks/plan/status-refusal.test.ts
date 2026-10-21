@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import {
   cardsMovingRefused,
   cardsStayedMessage,

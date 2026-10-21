@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
-import { NoMatches } from '@livediagram/ui';
+import { NoMatches } from '@liveplanner/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
 import { track } from '@/lib/telemetry';

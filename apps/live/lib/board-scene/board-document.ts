@@ -1,6 +1,6 @@
 // An imported board as its own document (docs/specs/020-import-export/board-import.md "new-document"):
 // named after the board, dated as the board. Pure; the import hook creates the document.
-import { documentDates } from '@livediagram/api-schema';
+import { documentDates } from '@liveplanner/api-schema';
 import type { BoardScene } from './scene';
 
 // What an untitled board's document is called, its created date after it.

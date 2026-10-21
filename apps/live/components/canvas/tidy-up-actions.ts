@@ -1,4 +1,4 @@
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@liveplanner/document';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 

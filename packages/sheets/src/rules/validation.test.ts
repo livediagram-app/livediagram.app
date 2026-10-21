@@ -117,8 +117,8 @@ describe('what each rule allows', () => {
     expect(scalarAllowed(rule({ is: 'text', op: 'contains', a: 'T' }), true, x)).toBe(false);
     expect(scalarAllowed(rule({ is: 'text', op: 'email' }), 'a@b.co', x)).toBe(true);
     expect(isEmail('a b@c.d')).toBe(false);
-    expect(isUrl('https://livediagram.app/help')).toBe(true);
-    expect(isUrl('livediagram.app')).toBe(true);
+    expect(isUrl('https://liveplanner.app/help')).toBe(true);
+    expect(isUrl('liveplanner.app')).toBe(true);
     expect(isUrl('not a url')).toBe(false);
     expect(scalarAllowed(rule({ is: 'text', op: 'url' }), 'nope', x)).toBe(false);
   });

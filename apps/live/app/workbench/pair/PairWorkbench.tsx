@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import {
   WORKBENCH_HANDLE_PATTERN,
   type WorkbenchPairingRequestView,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   apiAnswerPairingRequest,
   apiReadPairingRequest,
@@ -42,7 +42,7 @@ const HEADING = `${AUTH_TITLE} focus:outline-none`;
 const BODY = 'mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400';
 const STRONG = 'font-medium text-slate-700 dark:text-slate-200';
 const MONO = 'font-mono text-[0.8125rem] break-all text-slate-700 dark:text-slate-200';
-const PAIR_COMMAND = 'livediagram workbench pair';
+const PAIR_COMMAND = 'liveplanner workbench pair';
 
 function stepFromView(request: WorkbenchPairingRequestView): Step {
   if (request.status === 'pending')

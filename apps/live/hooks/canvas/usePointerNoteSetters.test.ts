@@ -3,7 +3,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@livediagram/document';
+import { createShape, type Element, type ShapeElement } from '@liveplanner/document';
 
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));

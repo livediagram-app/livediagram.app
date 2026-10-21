@@ -8,7 +8,7 @@ import {
   scalableSnapshotSvg,
   svgBackgroundColor,
   type RecentDiagram,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { useEffect, useState } from 'react';
 
 // The landing page's half of the returning visitor (docs/specs/019-marketing/returning-visitor.md): the

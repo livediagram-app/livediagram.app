@@ -170,7 +170,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'draw.io (mxGraph view geometry)',
     version: '31.7.0',
     licence: 'Apache-2.0',
-    carrier: 'livediagram source (draw.io import)',
+    carrier: 'liveplanner source (draw.io import)',
     homepage: 'https://github.com/jgraph/drawio',
     trigger: {
       sources: [
@@ -193,7 +193,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Lucide',
     version: '1.48.0',
     licence: 'ISC AND MIT',
-    carrier: 'livediagram source (icons)',
+    carrier: 'liveplanner source (icons)',
     homepage: 'https://lucide.dev',
     trigger: { sources: ['packages/icons/src/lucide.generated.ts'] },
     texts: text('lucide-1.48.0-LICENSE.txt'),
@@ -203,7 +203,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Feather',
     version: '4.29.2',
     licence: 'MIT',
-    carrier: 'livediagram source (icons)',
+    carrier: 'liveplanner source (icons)',
     homepage: 'https://feathericons.com',
     trigger: {
       sources: [

@@ -103,7 +103,7 @@ const EMBEDDED: EmbeddedWork[] = [
     name: 'Lucide',
     version: '1.48.0',
     licence: 'ISC',
-    carrier: 'livediagram source',
+    carrier: 'liveplanner source',
     homepage: 'https://lucide.dev',
     trigger: { sources: ['packages/icons/src/lucide.generated.ts'] },
     texts: [{ label: 'LICENSE', file: 'xnn.txt' }],

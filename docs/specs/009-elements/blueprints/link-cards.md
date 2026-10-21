@@ -282,7 +282,7 @@ LinkUnfurled` exist.
 | --------------------- | --------------------------------------------------- | -------------------------------------------------- |
 | `FETCH_TIMEOUT_MS`    | `8000`                                              | Spec 8 s; 3 000 to 10 000 within the Worker budget |
 | `MAX_HTML_BYTES`      | `512 * 1024`                                        | Spec ~512 KB; the head is rarely past 100 KiB      |
-| `USER_AGENT`          | `livediagram-unfurl/1.0 (+https://livediagram.app)` | Spec "descriptive"; keep a contact URL             |
+| `USER_AGENT`          | `liveplanner-unfurl/1.0 (+https://liveplanner.app)` | Spec "descriptive"; keep a contact URL             |
 | `UNFURL_RATE_LIMITER` | 60 per 60 s, namespace `1005`                       | Spec; production and staging                       |
 | `createLinkCard` size | 280 × 120                                           | Spec                                               |
 | Card radius           | 10 px canvas, 6 px export                           | `element-variant.ts`, `svg-render.ts` (D56)        |

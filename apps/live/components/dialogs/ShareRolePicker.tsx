@@ -1,8 +1,8 @@
 'use client';
 
 import { useId, useState, type KeyboardEvent } from 'react';
-import { CheckIcon, ChevronDownIcon } from '@livediagram/ui';
-import { LEVEL_ORDER } from '@livediagram/api-schema';
+import { CheckIcon, ChevronDownIcon } from '@liveplanner/ui';
+import { LEVEL_ORDER } from '@liveplanner/api-schema';
 import type { ShareRole } from '@/lib/api-client';
 import { ROLE_PASS } from './share-dialog-parts';
 

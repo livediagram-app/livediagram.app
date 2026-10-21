@@ -7,7 +7,7 @@
 // someone else's Google access. Stored as `v1.<iv>.<ciphertext>`, both
 // base64url, so a later key or algorithm change has a version to key on.
 
-import { base64ToBytes, bytesToBase64Url } from '@livediagram/api-schema';
+import { base64ToBytes, bytesToBase64Url } from '@liveplanner/api-schema';
 
 const VERSION = 'v1';
 const IV_BYTES = 12;

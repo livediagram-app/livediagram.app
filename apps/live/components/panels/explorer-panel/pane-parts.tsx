@@ -4,7 +4,7 @@
 // section heading, one thumbnail size, one icon tile, one skeleton and one empty state, so every section reads as the
 // same surface whatever it lists.
 import type { KeyboardEvent, ReactNode } from 'react';
-import { EmptyState, Tooltip } from '@livediagram/ui';
+import { EmptyState, Tooltip } from '@liveplanner/ui';
 
 // A row's thumbnail box: the document's snapshot at the pane's size, framed like a little page.
 export const PANE_THUMB_BOX =

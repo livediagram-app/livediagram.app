@@ -1,9 +1,9 @@
-// Credentials (docs/specs/015-api/cli.md "Authentication"): LIVEDIAGRAM_TOKEN first, else the profile's stored
+// Credentials (docs/specs/015-api/cli.md "Authentication"): LIVEPLANNER_TOKEN first, else the profile's stored
 // token. credentials.json (0600 in a 0700 directory, by temporary file and rename) keeps each profile's account,
 // role and expiry, and where its token is: the platform's keychain, a DPAPI blob, or, where neither works, the token
 // itself (keychain.ts). A file others can read is tightened with a warning (E14).
 
-import { isApiTokenFormat } from '@livediagram/api-schema';
+import { isApiTokenFormat } from '@liveplanner/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -47,8 +47,8 @@ async function readFile(io: CliIo): Promise<CredentialsFile> {
   throw new CliError({
     exit: EXIT.usage,
     code: 'usage',
-    message: `${path} does not read as livediagram credentials`,
-    hint: `remove it, then livediagram auth login`,
+    message: `${path} does not read as liveplanner credentials`,
+    hint: `remove it, then liveplanner auth login`,
   });
 }
 
@@ -79,7 +79,7 @@ export async function forgetCredential(io: CliIo, profile: string): Promise<void
   await writeFile(io, file);
 }
 
-// What this profile stored, ignoring LIVEDIAGRAM_TOKEN.
+// What this profile stored, ignoring LIVEPLANNER_TOKEN.
 export async function storedCredential(
   io: CliIo,
   profile: string,
@@ -99,19 +99,19 @@ export async function tokenOf(
       exit: EXIT.auth,
       code: 'auth',
       message: `the token for profile ${profile} is no longer in this system's keychain`,
-      hint: 'livediagram auth login',
+      hint: 'liveplanner auth login',
     });
   return { token, source: 'token' in stored ? 'file' : 'keychain' };
 }
 
 export async function resolveCredential(io: CliIo, profile: string): Promise<Credential | null> {
-  const env = io.env.LIVEDIAGRAM_TOKEN?.trim();
+  const env = io.env.LIVEPLANNER_TOKEN?.trim();
   if (env) {
     if (!isApiTokenFormat(env))
       throw new CliError({
         exit: EXIT.auth,
         code: 'auth',
-        message: 'LIVEDIAGRAM_TOKEN is not an API token',
+        message: 'LIVEPLANNER_TOKEN is not an API token',
         hint: 'create one in Settings › API Tokens',
       });
     return { token: env, source: 'env' };

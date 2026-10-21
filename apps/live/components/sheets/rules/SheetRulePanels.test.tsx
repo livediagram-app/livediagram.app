@@ -4,7 +4,7 @@
 // the Conditional Formatting popover, the Custom Number Format popover, the Sheet Settings sections, and who may.
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { posRangeOf, formatRange } from '@livediagram/sheets';
+import { posRangeOf, formatRange } from '@liveplanner/sheets';
 import { SheetRuleLayer } from './SheetRuleLayer';
 import {
   NO_FORMAT_RULES,

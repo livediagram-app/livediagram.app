@@ -5,7 +5,7 @@
 // trashDocument / restoreDocument / purgeDocuments are plain calls with no HTTP
 // concerns, so a later mirror (Drive's bin) can drive them directly.
 
-import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';

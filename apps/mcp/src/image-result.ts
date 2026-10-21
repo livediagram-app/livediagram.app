@@ -4,8 +4,8 @@
 // shapes down with it. They are render-free and unit-tested now; everything
 // that genuinely needs a rasteriser lives here.
 
-import type { ItemsResponse, SheetsResponse } from '@livediagram/api-schema';
-import { renderModelsForTab, sheetFramesOf } from '@livediagram/sheets';
+import type { ItemsResponse, SheetsResponse } from '@liveplanner/api-schema';
+import { renderModelsForTab, sheetFramesOf } from '@liveplanner/sheets';
 import {
   cardSourceOf,
   readItemTypeCatalogue,
@@ -13,8 +13,8 @@ import {
   type Item,
   type ItemTypeCatalogue,
   type ItemTypeDef,
-} from '@livediagram/items';
-import { embedTabImages } from '@livediagram/api-schema';
+} from '@liveplanner/items';
+import { embedTabImages } from '@liveplanner/api-schema';
 import {
   canvasSurface,
   articlesOf,
@@ -28,15 +28,15 @@ import {
   type LaidOutPage,
   type SheetRenderModel,
   type Tab,
-} from '@livediagram/document';
-import { planTabKindOf } from '@livediagram/plan-art';
+} from '@liveplanner/document';
+import { planTabKindOf } from '@liveplanner/plan-art';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 // The preview resolvers: an emoji (no emoji font in a Worker) draws from its fetched art, else as a labelled disc,
 // never as missing-glyph boxes.
-import { previewResolvers } from '@livediagram/icons/resolve';
+import { previewResolvers } from '@liveplanner/icons/resolve';
 import { emojiGlyphsOf, previewEmoji } from './preview-emoji';
-import { chartsReadLive } from '@livediagram/agent-verbs';
+import { chartsReadLive } from '@liveplanner/agent-verbs';
 import { svgToPngBase64 } from './render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';

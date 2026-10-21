@@ -4,7 +4,7 @@
 // status, its middle the total, beside a legend of each status's name, colour and count. The donut is a
 // conic gradient, so it needs no SVG.
 import { useMemo } from 'react';
-import { statusMixModel } from '@livediagram/items';
+import { statusMixModel } from '@liveplanner/items';
 import { ViewFrame, viewState } from './view-frame';
 import type { PlanViewProps } from './PlanViewView';
 

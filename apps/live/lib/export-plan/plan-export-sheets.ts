@@ -8,11 +8,11 @@ import {
   type Element,
   type SheetRenderModel,
   type Tab,
-} from '@livediagram/document';
-import { renderFrameWindow, sheetContentSize, sheetFramesOf } from '@livediagram/sheets';
+} from '@liveplanner/document';
+import { renderFrameWindow, sheetContentSize, sheetFramesOf } from '@liveplanner/sheets';
 import type { SheetStore } from '@/components/sheets/sheet-store-client';
 import { sheetMetricShown } from '@/components/plan/dashboard/sheet-metric-shown';
-import type { SheetMetricArt } from '@livediagram/plan-art';
+import type { SheetMetricArt } from '@liveplanner/plan-art';
 
 // The cells each Sheet element shows, by sheet id: the window its frame has room for. A sheet the store has not
 // loaded is left out (it draws its frame and headers).

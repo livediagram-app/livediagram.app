@@ -1,7 +1,7 @@
 // The document at a glance (docs/specs/024-agents/blueprints/document-views.md "overview", VW37): one
 // line per tab, built from each tab's header facts so the caller never holds every tab body at once.
-import type { OverviewView, ViewDoor } from '@livediagram/api-schema';
-import { computeRefs } from '@livediagram/document';
+import type { OverviewView, ViewDoor } from '@liveplanner/api-schema';
+import { computeRefs } from '@liveplanner/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerSegments, type HeaderFacts } from './header';
 import { jsonString, plural } from './text';

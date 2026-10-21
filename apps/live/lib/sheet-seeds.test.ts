@@ -2,7 +2,7 @@
 // element"): the source the sheet chunk registers, the clipboard's size limit, the placed mark taken once, and the
 // seeds a paste stashes.
 import { afterEach, describe, expect, it } from 'vitest';
-import type { SheetJson } from '@livediagram/sheets';
+import type { SheetJson } from '@liveplanner/sheets';
 import {
   forgetSetupStart,
   isPlacedSheetStart,

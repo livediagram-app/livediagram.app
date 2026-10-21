@@ -1,11 +1,11 @@
 'use client';
 
 // Where a workspace frame is, told to its workbench (docs/specs/013-workspace/workbench-embeds.md "Workbench
-// messages", blueprint "Workspace messages", WB63): `livediagram:place` after every move and whenever a field of the
+// messages", blueprint "Workspace messages", WB63): `liveplanner:place` after every move and whenever a field of the
 // place changes, never twice with the same fields. The Explorer reports its views, the editor its document; this is
 // the one sender. Logged by view only, never a name.
 import { useCallback, useRef } from 'react';
-import type { PlaceMessage } from '@livediagram/api-schema';
+import type { PlaceMessage } from '@liveplanner/api-schema';
 import { debugLog } from '@/lib/debug-log';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 
@@ -15,7 +15,7 @@ export function useWorkspacePlaceMessages(port: WorkbenchPort): (fields: PlaceFi
   const lastSent = useRef<string | null>(null);
   return useCallback(
     (fields: PlaceFields) => {
-      const message: PlaceMessage = { type: 'livediagram:place', v: 1, ...fields };
+      const message: PlaceMessage = { type: 'liveplanner:place', v: 1, ...fields };
       const key = JSON.stringify(message);
       if (key === lastSent.current) return;
       lastSent.current = key;

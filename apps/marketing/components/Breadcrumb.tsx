@@ -1,12 +1,12 @@
 // Marketing breadcrumb bar. The trail itself — home-icon root, chevron
-// separators, truncating labels — is BreadcrumbTrail in @livediagram/ui, shared
+// separators, truncating labels — is BreadcrumbTrail in @liveplanner/ui, shared
 // with the help centre so the two surfaces read consistently. This file owns
 // the bar around it: a subtle full-width bar at marketing's own width, not
 // sticky. Structured data is emitted separately via BreadcrumbJsonLd, so this
 // component is presentation only. The root links to the marketing home; pass
 // the trail after it.
 
-import { BreadcrumbTrail, type BreadcrumbItem } from '@livediagram/ui';
+import { BreadcrumbTrail, type BreadcrumbItem } from '@liveplanner/ui';
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (

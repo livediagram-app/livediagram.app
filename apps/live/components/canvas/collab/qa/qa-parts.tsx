@@ -3,10 +3,10 @@
 // rows and the Discussed drawer so the three read as one object.
 
 import { useEffect, useRef, useState } from 'react';
-import type { QaNote } from '@livediagram/document';
+import type { QaNote } from '@liveplanner/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { HoverCard, Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { HoverCard, Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab

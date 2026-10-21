@@ -4,11 +4,11 @@
 // diff and `rg` lands on the element's line.
 
 import type { PullFile, PullSync } from '../sync/pull-file';
-import { canonicalJson } from '@livediagram/document';
-import { isRecord } from '@livediagram/document';
+import { canonicalJson } from '@liveplanner/document';
+import { isRecord } from '@liveplanner/document';
 
-export type MirrorFile = Omit<PullFile, 'exportedAt' | 'livediagramSync'> & {
-  livediagramSync: Omit<PullSync, 'pulledAt'>;
+export type MirrorFile = Omit<PullFile, 'exportedAt' | 'liveplannerSync'> & {
+  liveplannerSync: Omit<PullSync, 'pulledAt'>;
 };
 
 // As `JSON.stringify(value, null, 2)` prints, keys sorted; an array at `document.tabs[i].elements` prints each
@@ -36,8 +36,8 @@ function print(value: unknown, indent: string, path: string): string {
 }
 
 export function mirrorFileText(file: MirrorFile): string {
-  const { kind, schemaVersion, document, livediagramSync } = file;
-  return `${print({ kind, schemaVersion, document, livediagramSync }, '', '')}\n`;
+  const { kind, schemaVersion, document, liveplannerSync } = file;
+  return `${print({ kind, schemaVersion, document, liveplannerSync }, '', '')}\n`;
 }
 
 // A line git writes around a conflict: `<<<<<<< `, `=======` alone, or `>>>>>>> `.

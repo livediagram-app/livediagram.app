@@ -14,7 +14,7 @@ import {
   type PanelSectionGroup,
 } from './panel-sections';
 
-export const PANEL_SECTION_STORAGE_KEY = 'livediagram:explorer-panel-section:v1';
+export const PANEL_SECTION_STORAGE_KEY = 'liveplanner:explorer-panel-section:v1';
 
 function readRemembered(): PanelSection | null {
   try {

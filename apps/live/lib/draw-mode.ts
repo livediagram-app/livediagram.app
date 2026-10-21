@@ -11,14 +11,14 @@ import type {
   SelectionMode,
   SessionTool,
   ShapeKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   EMBED_PROVIDER_LABEL,
   eventStormingNote,
   penColourCss,
   type PenColour,
   withArticle,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas

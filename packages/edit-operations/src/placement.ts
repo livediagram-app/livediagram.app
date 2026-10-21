@@ -3,7 +3,7 @@
 // point from the content origin, or, for a new element, beside the last one added. Side, `after` and
 // default spots move along their axis past whatever already sits there; `at:` and `align:` are exact.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@liveplanner/api-schema';
 import {
   ELEMENT_GRID_CELL,
   ELEMENT_GRID_MAX_CELLS,
@@ -13,7 +13,7 @@ import {
   type Element,
   type Endpoint,
   type ElementId,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { resolveOne } from './selectors';
 import { currentElements, holdersOf, refsOf, type EditState } from './state';
 import type { Placement } from './types';

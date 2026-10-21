@@ -1,4 +1,4 @@
-import type { LineSeries } from '@livediagram/document';
+import type { LineSeries } from '@liveplanner/document';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TileLabel } from '@/components/palette/context-menu-tiles';
 import { SizeButton } from '@/components/palette/palette-controls';

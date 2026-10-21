@@ -1,4 +1,4 @@
-import { editorModeLabel, type EditorMode } from '@livediagram/document';
+import { editorModeLabel, type EditorMode } from '@liveplanner/document';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 
 // A mode the tab cannot switch to (across Plan's line, or on a tab that keeps its mode) is a new tab in it, asked

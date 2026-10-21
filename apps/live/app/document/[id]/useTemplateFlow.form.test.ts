@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { useTemplateFlow } from './useTemplateFlow';
 
 // A form template picked in the editor (docs/specs/030-forms/forms.md "Starting a form") starts its form on the tab, as

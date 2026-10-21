@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 
 // Process-style template builders (swimlane, decision tree, approval
 // workflow), each pure (cx, cy) -> Element[] in its own file and

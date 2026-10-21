@@ -4,7 +4,7 @@
 // AvatarSpeechLayer.
 
 import { useEffect, useEffectEvent, useState } from 'react';
-import { clampSayText } from '@livediagram/api-schema';
+import { clampSayText } from '@liveplanner/api-schema';
 import { addOwnBubble } from '@/lib/avatar-speech-store';
 import { headPoint, SPEECH_COOLDOWN_MS } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';

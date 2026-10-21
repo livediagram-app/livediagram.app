@@ -2,7 +2,7 @@
 // action here, view links included: the server owns the board's state, so it
 // is what stamps the author, derives the voter id and sequences the result
 // out through the room.
-import type { QaAction, QaNote } from '@livediagram/document';
+import type { QaAction, QaNote } from '@liveplanner/document';
 import { isOfflineId } from '../offline/offline-store';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 

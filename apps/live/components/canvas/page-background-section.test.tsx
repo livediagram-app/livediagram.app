@@ -3,7 +3,7 @@
 // The Background section (docs/specs/007-editor/pages-mode.md "Backgrounds").
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours, type Page, type PageFill } from '@livediagram/document';
+import { penColourHex, standardColours, type Page, type PageFill } from '@liveplanner/document';
 import {
   backgroundCategoryOf,
   customGradientSeed,

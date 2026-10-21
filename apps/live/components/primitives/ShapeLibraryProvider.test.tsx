@@ -6,7 +6,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeLibrary } from '@livediagram/api-schema';
+import type { ShapeLibrary } from '@liveplanner/api-schema';
 import { ShapeLibraryProvider, useShapeLibraries } from './ShapeLibraryProvider';
 
 type ShapeLibraryApi = typeof import('@/lib/api/shape-libraries');

@@ -1,7 +1,7 @@
 'use client';
 
-import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
-import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { PALETTE_TELEMETRY_TYPES } from '@liveplanner/api-schema';
+import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
 import { PALETTE_TYPE_ALIASES } from './palette-types';
@@ -14,7 +14,7 @@ import { rankTrend, windowLabel } from './windows';
 // have their own tab (ModesView). Only items with events in the selected
 // window appear.
 
-// The palette tabs come from the SHARED catalogue in @livediagram/api-schema
+// The palette tabs come from the SHARED catalogue in @liveplanner/api-schema
 // (docs/specs/017-telemetry/telemetry.md), not a local copy. They used to be hand-mirrored here with a
 // "keep in sync" comment, and they didn't stay in sync: this file still
 // expected `Code-block` long after the editor settled on `CodeBlock`, so

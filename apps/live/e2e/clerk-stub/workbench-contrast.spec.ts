@@ -17,7 +17,7 @@ const DAY = 86_400_000;
 const NOW = Date.now();
 const TOKEN = {
   id: 'tok_contrast',
-  name: 'livediagram CLI',
+  name: 'liveplanner CLI',
   createdAt: NOW - 10 * DAY,
   expiresAt: NOW + 170 * DAY,
   lastUsedAt: NOW - DAY,
@@ -46,10 +46,10 @@ function expectAA(report: ContrastReport, screen: string): void {
 
 async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   await installClerkStub(page, { ...WEBBER, id: freshUserId('webber') });
-  await page.addInitScript((mode) => localStorage.setItem('livediagram:v2:ui-mode', mode), scheme);
+  await page.addInitScript((mode) => localStorage.setItem('liveplanner:v2:ui-mode', mode), scheme);
 }
 
-const MCP = 'https://mcp.livediagram.app';
+const MCP = 'https://mcp.liveplanner.app';
 
 async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);
@@ -86,7 +86,7 @@ for (const scheme of ['dark', 'light'] as const) {
     test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
       await signedIn(page, scheme);
       await page.route(`${MCP}/oauth/device/session/*`, (route) =>
-        route.fulfill({ json: { clientName: 'livediagram CLI' } }),
+        route.fulfill({ json: { clientName: 'liveplanner CLI' } }),
       );
       await page.goto('/oauth/device?code=bcdf-ghjk');
       await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
@@ -94,7 +94,7 @@ for (const scheme of ['dark', 'light'] as const) {
       expectAA(await auditContrast(page), `device page, code entry, ${scheme}`);
 
       await page.getByRole('button', { name: 'Continue' }).click();
-      await expect(page.getByRole('heading', { name: 'Connect livediagram CLI' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Connect liveplanner CLI' })).toBeVisible();
       await page.screenshot({ path: test.info().outputPath(`device-consent-${scheme}.png`) });
       expectAA(await auditContrast(page), `device page, consent, ${scheme}`);
       expectNoPageErrors(pageErrors);

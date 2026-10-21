@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS, CHANGESET_SUMMARY_MAX } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS, CHANGESET_SUMMARY_MAX } from '@liveplanner/api-schema';
 import { parseChangesetRequest, rejectionStatus } from './request';
 
 // docs/specs/024-agents/blueprints/agent-changesets.md "Interfaces and contracts", CS8 to CS10.

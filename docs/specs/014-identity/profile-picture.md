@@ -11,7 +11,7 @@ the avatar is the initial on its disc, exactly as before. Builds on [Auth + gues
 
 ## 1. Where the picture comes from
 
-Clerk is the only source. livediagram never talks to Google for it, never
+Clerk is the only source. liveplanner never talks to Google for it, never
 stores the image and never proxies it: the browser reads a URL off the
 signed-in Clerk user and loads the image straight from Clerk's image host.
 Only the URL travels to collaborators (§6).
@@ -99,7 +99,7 @@ matches Google's rendering (RMSE 0.004). Each disc offers a 96px and a 192px
 source (`srcset` with `sizes` set to the disc's size), so a 44px disc is
 crisp at 2x and 3x and the smaller discs reuse the 96px download.
 
-livediagram offers no upload of its own; an upload made through Clerk (its
+liveplanner offers no upload of its own; an upload made through Clerk (its
 account portal, or an app on the same Clerk instance) is honoured.
 
 ## 3. What "automatically" means
@@ -245,7 +245,7 @@ page has not seen appears), made only for signed-in readers, reading at most
 
 ## 12. Out of scope
 
-- Uploading or changing the picture inside livediagram; it is managed at
+- Uploading or changing the picture inside liveplanner; it is managed at
   Google (or in Clerk).
 - Refreshing a Google picture between sign-ins (it would need a server call
   to Google with the person's OAuth token, and a Clerk secret key the api

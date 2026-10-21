@@ -3,14 +3,14 @@
 // have no theme fields; a colour stored by name (a marker colour) is a binding. A custom theme is not
 // known here: the check is skipped and logged (N15).
 
-import { endpointPosition, themeColourFields, type Element } from '@livediagram/document';
+import { endpointPosition, themeColourFields, type Element } from '@liveplanner/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import { themeColourSet, type ColourField } from '../theme-colours';
 import type { Check } from './types';
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
-// The layer a layered template's scaffold sits on (@livediagram/templates template-layers.ts).
+// The layer a layered template's scaffold sits on (@liveplanner/templates template-layers.ts).
 const TEMPLATE_SCAFFOLD_LAYER = 'layer:template:scaffold';
 
 const FIELDS: readonly { field: ColourField; alias: 'fill' | 'stroke'; swatch: string }[] = [

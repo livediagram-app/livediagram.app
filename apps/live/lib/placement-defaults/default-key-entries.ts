@@ -6,8 +6,8 @@ import {
   type PlacementDefaultKey,
   type SpecificTabKind,
   type TemplateFamily,
-} from '@livediagram/api-schema';
-import type { EditorMode } from '@livediagram/document';
+} from '@liveplanner/api-schema';
+import type { EditorMode } from '@liveplanner/document';
 
 type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
 

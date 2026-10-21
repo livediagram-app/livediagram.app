@@ -1,7 +1,7 @@
-import { DOCUMENT_ENVELOPE_KIND, type DocumentEnvelope } from '@livediagram/document';
+import { DOCUMENT_ENVELOPE_KIND, type DocumentEnvelope } from '@liveplanner/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
-import { createApiLivediagramPort } from './livediagram-port';
+import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { createApiLiveplannerPort } from './liveplanner-port';
 
 // The Drive port's copy into the account (docs/specs/013-workspace/default-folders.md "Creation
 // intent"): Import a copy is an import, so it carries the first tab's intent and lands in the
@@ -35,13 +35,13 @@ const envelope = (kind?: string): DocumentEnvelope => ({
 
 describe('importDocumentCopy', () => {
   it("sends Import a copy with its first tab's intent", async () => {
-    await createApiLivediagramPort('owner-1').importDocumentCopy(envelope('whiteboard'));
+    await createApiLiveplannerPort('owner-1').importDocumentCopy(envelope('whiteboard'));
     expect(createBodies[0]).toMatchObject({ intent: { mode: 'draw', tabKind: 'diagram' } });
     expect(createBodies[0]).not.toHaveProperty('folderId');
   });
 
   it("sends a mirror-placed copy with no intent, keeping the mirror's place", async () => {
-    await createApiLivediagramPort('owner-1').importDocumentCopy(envelope(), {
+    await createApiLiveplannerPort('owner-1').importDocumentCopy(envelope(), {
       id: 'copy',
       name: 'Board',
       folderId: null,

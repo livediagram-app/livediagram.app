@@ -13,7 +13,7 @@ import {
   DOCUMENT_FORMAT_HEADER,
   DOCUMENT_OPEN_HEADER,
   DOCUMENT_TRASHED_ERROR,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
@@ -26,8 +26,8 @@ export const CORS_HEADERS = {
   // auth, docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). Without it in the allow-list every
   // signed-in cross-origin request fails the preflight and surfaces
   // to JS as "Failed to fetch", which was hiding behind DELETE
-  // /api/account and any other authed call from localhost:3002 to
-  // localhost:8787 in dev.
+  // /api/account and any other authed call from localhost:3102 to
+  // localhost:8887 in dev.
   // Image upload uses custom X-Image-* headers (docs/specs/009-elements/images.md). The browser
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other

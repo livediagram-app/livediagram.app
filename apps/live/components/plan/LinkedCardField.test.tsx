@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { LINK_FILTER_FROM, LinkedCardField } from './LinkedCardField';
 
 // docs/specs/026-plan/item-types.md "Card fields": Parent and every Card field use one control.

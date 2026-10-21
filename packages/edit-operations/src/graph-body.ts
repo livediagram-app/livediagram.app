@@ -10,8 +10,8 @@ import {
   isRecord,
   MAX_ELEMENTS_PER_TAB,
   type GraphInput,
-} from '@livediagram/document';
-import { iconsLike, isIconId } from '@livediagram/icons/search';
+} from '@liveplanner/document';
+import { iconsLike, isIconId } from '@liveplanner/icons/search';
 
 const isId = (v: unknown) => typeof v === 'string' && v !== '';
 const optional =

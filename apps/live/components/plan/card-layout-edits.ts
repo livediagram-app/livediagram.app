@@ -8,7 +8,7 @@ import {
   type CardLayout,
   type CardSize,
   type CardSlot,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 const without = (layout: CardLayout, field: CardField): CardLayout => {
   const out: CardLayout = {};

@@ -1,4 +1,4 @@
-import { SHARE_LINK_EXPIRY_MS } from '@livediagram/api-schema';
+import { SHARE_LINK_EXPIRY_MS } from '@liveplanner/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fakeD1 } from '../test-d1';
 import {

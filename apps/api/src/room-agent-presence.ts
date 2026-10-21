@@ -3,7 +3,7 @@ import {
   AGENT_PRESENCE_ROOM_MAX,
   type AgentPresence,
   type ShareRole,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 // The room's agent presence (docs/specs/024-agents/blueprints/agent-presence.md "Room"): one entry per token and tab,
 // one Durable Object storage key each (PR3, PR13), restored by prefix on wake, swept on its expiry by the alarm or by

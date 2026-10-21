@@ -5,7 +5,7 @@
 // through the controller's write. One place, so a toolbar button and its shortcut can never differ.
 import { chartRangeOf, chartSizeOf, newChartAnchor, NOTHING_TO_CHART } from './sheet-charts';
 import { useMemo } from 'react';
-import type { ChartType } from '@livediagram/document';
+import type { ChartType } from '@liveplanner/document';
 import {
   PARSE_FAILURE_COPY,
   appendAxis,
@@ -61,7 +61,7 @@ import {
   validateWrite,
   writeForRules,
   type SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { fontPx, roughWidth } from './SheetCells';

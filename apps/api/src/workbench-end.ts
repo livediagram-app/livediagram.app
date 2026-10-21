@@ -4,7 +4,7 @@
 // every later request of a removed session already fails. A document session's room is its document; a
 // workspace session's rooms are the ones it joined (`workbench_session_rooms`, WB55).
 
-import type { WorkbenchScope } from '@livediagram/api-schema';
+import type { WorkbenchScope } from '@liveplanner/api-schema';
 import { sessionPrefixOf } from './auth/workbench-session';
 import { closeWorkbenchSessions, TEAM_ROOM_CLOSE_CONCURRENCY } from './room-access-client';
 import type { Env } from './types';

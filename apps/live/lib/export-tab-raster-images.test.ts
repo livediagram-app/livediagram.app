@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ImageElement, Tab } from '@livediagram/document';
+import type { ImageElement, Tab } from '@liveplanner/document';
 import { renderTabToCanvas } from './export-tab';
 import type { ExportImageMap } from './export-tab-images';
 

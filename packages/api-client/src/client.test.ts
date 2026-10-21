@@ -10,7 +10,7 @@ function recorder(answer: (request: Request) => Response | Promise<Response>) {
   return { seen, fetch };
 }
 
-const base = 'https://livediagram-api/api';
+const base = 'https://liveplanner-api/api';
 
 // The requests a never-answering test fetch holds, as a real fetch holds its request while in flight. A
 // Request's signal hears its caller's abort only through a weak reference, so a request nothing holds can

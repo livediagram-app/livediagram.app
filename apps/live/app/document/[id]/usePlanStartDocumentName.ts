@@ -7,7 +7,7 @@
 // Plan tab, becoming one in this session. A start that named the document itself (a template, through
 // useTemplateFlow) is left alone, and a name someone gave the document is kept.
 import { useEffect, useRef } from 'react';
-import { isDefaultTabName, isPlanTabKind, type Tab } from '@livediagram/document';
+import { isDefaultTabName, isPlanTabKind, type Tab } from '@liveplanner/document';
 
 /** The document's name after a Plan start that gave its first tab `tabName`. */
 export function untitledNameForPlanStart(tabName: string): string {

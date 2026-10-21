@@ -2,12 +2,12 @@
 
 import { DocumentIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import { Button, Glyph } from '@livediagram/ui';
+import { Button, Glyph } from '@liveplanner/ui';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
-import type { Folder } from '@livediagram/api-schema';
+import type { Folder } from '@liveplanner/api-schema';
 import { assignAppLocation } from '@/lib/app-location';
 
 // The bar above the team library (docs/specs/013-workspace/team-shared-documents.md): where you are, and the two things

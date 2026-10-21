@@ -108,7 +108,7 @@ export function ZenBefore() {
         strokeWidth={1.5}
       />
       <Label x={14} y={14} size={11} weight={700} tone="strong">
-        livediagram
+        liveplanner
       </Label>
       {/* Canvas */}
       <rect x={0} y={26} width={420} height={192} fill={`url(#${grid})`} />

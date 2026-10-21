@@ -2,8 +2,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type PlanViewRef, type ShapeElement } from '@livediagram/document';
-import { ITEM_TYPES } from '@livediagram/items';
+import { createShape, type PlanViewRef, type ShapeElement } from '@liveplanner/document';
+import { ITEM_TYPES } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import { PlanViewMenuSection } from './PlanViewMenuSection';
 

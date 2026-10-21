@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type ItemTypeDef } from '@livediagram/items';
+import { ITEM_TYPES, type ItemTypeDef } from '@liveplanner/items';
 import { swimlanesNamed } from './change-board';
 
 // change_board's swimlanes by name (docs/specs/026-plan/plan-agents.md "Changing a board").

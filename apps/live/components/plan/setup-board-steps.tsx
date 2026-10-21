@@ -3,8 +3,8 @@
 // Setup Board's two steps (docs/specs/026-plan/plan-board.md "Setup Board"): the card types the board is for, then
 // its columns (existing statuses to pick, new ones to name, in order). Drawn in the board's own colours.
 import { useId, useState } from 'react';
-import { missingBoardStatuses, type ItemTypeDef } from '@livediagram/items';
-import { CountBadge, PlusIcon } from '@livediagram/ui';
+import { missingBoardStatuses, type ItemTypeDef } from '@liveplanner/items';
+import { CountBadge, PlusIcon } from '@liveplanner/ui';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 import { matchStatus } from './column-status-picks';
 import { PlanTypeGlyph } from './plan-type-glyph';

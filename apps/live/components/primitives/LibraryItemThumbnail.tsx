@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 import { libraryItemThumbnail } from '@/lib/shape-library-thumbnail';
 
 // A shape library item drawn small (docs/specs/013-workspace/shape-libraries.md): the palette's My

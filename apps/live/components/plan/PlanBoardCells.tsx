@@ -3,7 +3,7 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
-import { itemVoteKey } from '@livediagram/document';
+import { itemVoteKey } from '@liveplanner/document';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import type { CardVote } from './CardVoteContext';
 import { useLongPress } from '@/hooks/ui/useLongPress';
@@ -15,7 +15,7 @@ import {
   itemTitle,
   type Item,
   type LaneHead,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';

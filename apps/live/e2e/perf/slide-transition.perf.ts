@@ -10,7 +10,7 @@ import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 // canvas probe's reference speed. Per move it reads the main thread (trace), the frame gaps (rAF), the
 // key's input-to-paint (Event Timing) and what the move leaves behind (stray snapshots, DOM, heap).
 // It reports and never judges; SLIDE_VARIANT names the build under test in the report.
-// Run with `E2E_PERF=1 pnpm --filter @livediagram/live exec playwright test --project=perf slide-transition`.
+// Run with `E2E_PERF=1 pnpm --filter @liveplanner/live exec playwright test --project=perf slide-transition`.
 
 const OUT = 'test-results/perf';
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
@@ -90,11 +90,11 @@ async function openDeck(
   });
   await ctx.addInitScript(
     ({ o, sig, transition }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem('liveplanner:v2:self-id', o);
+      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
+      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       localStorage.setItem(
-        'livediagram:v2:presentation-config',
+        'liveplanner:v2:presentation-config',
         JSON.stringify({ transition, speed: 'normal', hidePointer: false, advanceOnClick: false }),
       );
       const w = window as unknown as { __keys: number[]; __errors: string[] };
@@ -333,9 +333,9 @@ test('editing starts no view transitions', async ({ page, browser, baseURL }) =>
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark', baseURL });
   await ctx.addInitScript(
     ({ o, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem('liveplanner:v2:self-id', o);
+      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
+      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       const w = window as unknown as { __vt: number };
       w.__vt = 0;
       const start = Document.prototype.startViewTransition;

@@ -10,8 +10,8 @@ import {
   parseRecentDiagrams,
   recentThumbPath,
   type DocumentSummary,
-} from '@livediagram/api-schema';
-import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
+} from '@liveplanner/api-schema';
+import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Cache Storage stand-in: jsdom has none. One map of url → Response per named cache.
@@ -194,7 +194,7 @@ describe('hiding from Recent', () => {
       USER_PREFERENCES_STORAGE_KEY,
       JSON.stringify({ recentExcludedIds: ['a'] }),
     );
-    window.dispatchEvent(new Event('livediagram:preferences-changed'));
+    window.dispatchEvent(new Event('liveplanner:preferences-changed'));
     expect(note().map((d) => d.id)).toEqual(['b']);
 
     localStorage.setItem(

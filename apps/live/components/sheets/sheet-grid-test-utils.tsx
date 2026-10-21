@@ -12,7 +12,7 @@ import {
   type Sheet,
   type SheetLayout,
   type SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { planPalette } from '@/components/plan/plan-palette';
 import {
   SheetsBridgeContext,

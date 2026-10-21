@@ -5,7 +5,7 @@ import {
   CUSTOM_CHOICE_OPTION_MAX,
   ITEMS_MAX,
   ITEM_TITLE_MAX,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 export const FORM_HEADING_MAX = 80;
 export const FORM_DESCRIPTION_MAX = 1000;

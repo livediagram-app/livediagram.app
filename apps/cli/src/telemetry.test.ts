@@ -4,8 +4,8 @@ import { run } from './main';
 import { telemetryNotice, telemetryOffReason } from './telemetry';
 import { capabilities, fakeIo, NOW, TOKEN, type Route } from './testing/fake-io';
 
-const CONFIG = '/home/agent/.config/livediagram/config.toml';
-const STATE = '/home/agent/.cache/livediagram/state.json';
+const CONFIG = '/home/agent/.config/liveplanner/config.toml';
+const STATE = '/home/agent/.cache/liveplanner/state.json';
 
 // A host with one document; `/api/events` records what is counted.
 function host(answer: (url: URL) => Response | undefined = () => undefined) {
@@ -27,8 +27,8 @@ function host(answer: (url: URL) => Response | undefined = () => undefined) {
 }
 
 const on = (more: Record<string, string> = {}) => ({
-  LIVEDIAGRAM_TOKEN: TOKEN,
-  LIVEDIAGRAM_TELEMETRY: '1',
+  LIVEPLANNER_TOKEN: TOKEN,
+  LIVEPLANNER_TELEMETRY: '1',
   ...more,
 });
 
@@ -42,7 +42,7 @@ describe('the usage count', () => {
       { category: 'Cli', action: 'Used', type: 'DocumentLs' },
       { category: 'Cli', action: 'Used', type: 'DocumentLs' },
     ]);
-    expect(io.err()).toBe(`${telemetryNotice('https://livediagram.app')}\n`);
+    expect(io.err()).toBe(`${telemetryNotice('https://liveplanner.app')}\n`);
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 
@@ -102,10 +102,10 @@ describe('the usage count', () => {
     expect(missing.events).toEqual([]);
   });
 
-  it('is off by LIVEDIAGRAM_TELEMETRY=0, DO_NOT_TRACK, or the config', async () => {
+  it('is off by LIVEPLANNER_TELEMETRY=0, DO_NOT_TRACK, or the config', async () => {
     const io = (env: Record<string, string>) =>
-      fakeIo({ env: { LIVEDIAGRAM_TELEMETRY: '', ...env } });
-    expect(telemetryOffReason(io({ LIVEDIAGRAM_TELEMETRY: '0' }), { profiles: {} })).toBe('env');
+      fakeIo({ env: { LIVEPLANNER_TELEMETRY: '', ...env } });
+    expect(telemetryOffReason(io({ LIVEPLANNER_TELEMETRY: '0' }), { profiles: {} })).toBe('env');
     expect(telemetryOffReason(io({ DO_NOT_TRACK: '1' }), { profiles: {} })).toBe('do-not-track');
     expect(telemetryOffReason(io({ DO_NOT_TRACK: '0' }), { profiles: {} })).toBeNull();
     expect(telemetryOffReason(io({ DO_NOT_TRACK: '' }), { profiles: {} })).toBeNull();
@@ -114,7 +114,7 @@ describe('the usage count', () => {
       url.pathname === '/api/documents' ? new Response('', { status: 500 }) : undefined,
     );
     const quiet = fakeIo({
-      env: { LIVEDIAGRAM_TOKEN: TOKEN, DO_NOT_TRACK: '1' },
+      env: { LIVEPLANNER_TOKEN: TOKEN, DO_NOT_TRACK: '1' },
       routes: [capabilities, route],
     });
     await run(['document', 'ls'], quiet);
@@ -124,7 +124,7 @@ describe('the usage count', () => {
   it('turns off after telling the host, and on before telling it, neither counted as a command', async () => {
     const { events, route } = host();
     const io = fakeIo({
-      env: { LIVEDIAGRAM_TELEMETRY: '' },
+      env: { LIVEPLANNER_TELEMETRY: '' },
       routes: [capabilities, route],
       files: { [CONFIG]: '# mine\n[profiles.work]\nhost = "https://w.example"' },
     });
@@ -140,7 +140,7 @@ describe('the usage count', () => {
       { category: 'UI', action: 'Toggled', type: 'TelemetryOff' },
       { category: 'UI', action: 'Toggled', type: 'TelemetryOn' },
     ]);
-    const fresh = fakeIo({ env: { LIVEDIAGRAM_TELEMETRY: '' }, routes: [capabilities, route] });
+    const fresh = fakeIo({ env: { LIVEPLANNER_TELEMETRY: '' }, routes: [capabilities, route] });
     await run(['telemetry', 'off'], fresh);
     expect(fresh.fileMap.get(CONFIG)?.data).toBe('telemetry = false\n');
   });

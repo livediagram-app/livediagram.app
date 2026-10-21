@@ -1,11 +1,11 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/document';
-import { COMPONENT_SIZE } from '@livediagram/document';
+import type { ArrowElement, Element, Tab, ThemeDefinition } from '@liveplanner/document';
+import { COMPONENT_SIZE } from '@liveplanner/document';
 import { describe, expect, it } from 'vitest';
 import {
   ES_BOARD_LAYER_ID,
   PLAN_SHEET_ID_PATTERN,
   eventStormingLayers,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { takePlacedSheet } from './sheet-seeds';
 import {
   buildDrawnArrow,

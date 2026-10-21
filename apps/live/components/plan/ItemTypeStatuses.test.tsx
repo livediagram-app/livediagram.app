@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ITEM_TYPES, ITEM_TYPE_EXCLUDED_STATUSES_MAX, type Item } from '@livediagram/items';
+import { ITEM_TYPES, ITEM_TYPE_EXCLUDED_STATUSES_MAX, type Item } from '@liveplanner/items';
 import { ItemTypeStatuses, deselectAllStates, selectAllStates } from './ItemTypeStatuses';
 import { ItemFieldEditor, type ItemFieldContext } from './ItemFieldEditor';
 

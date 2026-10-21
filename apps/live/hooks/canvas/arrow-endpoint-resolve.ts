@@ -15,7 +15,7 @@ import {
   type Element,
   type Endpoint,
   type LaidOutPage,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   ALIGN_SNAP_THRESHOLD,
   ARROW_SNAP_REVEAL_PX,

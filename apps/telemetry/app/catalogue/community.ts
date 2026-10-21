@@ -1,7 +1,7 @@
 // The Community (docs/specs/025-community/community.md "Telemetry"; docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { COMMUNITY_CATEGORY_TYPES } from '@livediagram/api-schema';
+import { COMMUNITY_CATEGORY_TYPES } from '@liveplanner/api-schema';
 import type { MetricStack } from '../metric-series';
 import { chart } from './helpers';
 

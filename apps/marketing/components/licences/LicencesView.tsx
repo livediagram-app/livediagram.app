@@ -1,4 +1,4 @@
-import type { LicencesManifest, LicencesSection, WorkEntry } from '@livediagram/licences';
+import type { LicencesManifest, LicencesSection, WorkEntry } from '@liveplanner/licences';
 
 import { LicenceTexts } from './LicenceTexts';
 
@@ -26,7 +26,7 @@ export function LicencesView({ manifest }: { manifest: LicencesManifest }) {
         Open-source licences
       </h1>
       <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
-        livediagram is MIT licensed and built on the work of many open-source projects. These are
+        liveplanner is MIT licensed and built on the work of many open-source projects. These are
         the ones our apps ship, generated from what each app actually bundles every time the site is
         built.
       </p>

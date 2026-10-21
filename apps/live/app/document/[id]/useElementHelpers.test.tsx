@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createArrow, type Element, type StickyElement, type Tab } from '@livediagram/document';
+import { createArrow, type Element, type StickyElement, type Tab } from '@liveplanner/document';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@/lib/format-config';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { useElementHelpers } from './useElementHelpers';

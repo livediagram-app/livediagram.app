@@ -19,7 +19,7 @@ import {
   type ShapeColorPreset,
   type ShapeElement,
   type ShapeKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
 import {
   ArrowPresets,

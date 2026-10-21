@@ -31,7 +31,7 @@ import {
   type DistributionGuide,
   type Element,
   type LaidOutPage,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { repinnedArrow } from './arrow-repin';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';

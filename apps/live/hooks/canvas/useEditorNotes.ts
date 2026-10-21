@@ -10,7 +10,7 @@
 // element field.
 
 import { useState } from 'react';
-import { isBoxed, type Element, type TextRun } from '@livediagram/document';
+import { isBoxed, type Element, type TextRun } from '@liveplanner/document';
 import { canonicalNote } from '@/lib/note-value';
 import { track } from '@/lib/telemetry';
 

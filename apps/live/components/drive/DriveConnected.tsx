@@ -97,7 +97,7 @@ export function DriveConnected() {
     return (
       <LandingCard>
         <Heading>Sign in to connect Google Drive</Heading>
-        <Body>Google Drive connects to your livediagram account.</Body>
+        <Body>Google Drive connects to your liveplanner account.</Body>
         <PrimaryLink href="/sign-in/">Sign in</PrimaryLink>
       </LandingCard>
     );

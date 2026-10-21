@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { Tab } from '@livediagram/document';
-import { Button, DialogHeader, DialogCloseButton } from '@livediagram/ui';
+import type { Tab } from '@liveplanner/document';
+import { Button, DialogHeader, DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FacilitatorButton } from '@/components/dialogs/CollaboratorFacilitatorButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -17,7 +17,7 @@ import {
 import type { Participant } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@liveplanner/api-schema';
 
 // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document, grouped by
 // the tab they are on, opened by clicking any avatar in a tab's presence

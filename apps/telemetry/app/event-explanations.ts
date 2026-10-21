@@ -13,7 +13,7 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
-import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livediagram/api-schema';
+import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@liveplanner/api-schema';
 
 // One sentence per Community category or report reason, read off the closed lists so a new one
 // reads by its own label the day it ships.
@@ -612,7 +612,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Email|Sent|Week2': 'The two-week onboarding email went out.',
   'Email|Sent|Welcome': 'The welcome email went out just after someone signed up.',
   'Error|Api|Internal':
-    'A livediagram server crashed while handling a request. No longer recorded in this bare form; a crash like this now also records which endpoint or tool broke.',
+    'A liveplanner server crashed while handling a request. No longer recorded in this bare form; a crash like this now also records which endpoint or tool broke.',
   'Error|Api|Network.SendEmail':
     "An email (a welcome message, an invite, a notification) couldn't be sent, because the email provider couldn't be reached at all.",
   'Error|Client|RealtimeResync':
@@ -634,7 +634,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Error|Warning|SessionToken.TimedOut':
     "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
   'Error|Warning|AiQuota.BrowserReader':
-    "Someone imported sticky notes from a photo of a wall, and livediagram's free hosted quota for reading the handwriting had run out, so it fell back to the slower job of reading it in the visitor's own browser.",
+    "Someone imported sticky notes from a photo of a wall, and liveplanner's free hosted quota for reading the handwriting had run out, so it fell back to the slower job of reading it in the visitor's own browser.",
   'Facilitator|Changed|Granted':
     'The facilitator of a live session handed the role to someone else.',
   'Facilitator|Changed|Unlocked':
@@ -779,7 +779,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone was redirected through the sign-in callback page after completing Google sign-in.',
   'Page|View|/telemetry': 'Someone opened the public telemetry dashboard.',
   'Participant|Created|':
-    'Someone visited livediagram for the first time in this browser, and a new anonymous guest identity was created for them. Counted once per browser, ever.',
+    'Someone visited liveplanner for the first time in this browser, and a new anonymous guest identity was created for them. Counted once per browser, ever.',
   'Participant|Returned|Anonymous':
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
@@ -1272,9 +1272,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
-    "Someone used Repair This Browser on a failed document load: livediagram's settings and caches in that browser were cleared and the page reloaded.",
+    "Someone used Repair This Browser on a failed document load: liveplanner's settings and caches in that browser were cleared and the page reloaded.",
   'UI|Cleared|BrowserRepair.Help':
-    "Someone used Repair This Browser from the help centre's Repair page, clearing livediagram's settings and caches in that browser.",
+    "Someone used Repair This Browser from the help centre's Repair page, clearing liveplanner's settings and caches in that browser.",
   'UI|Copied|Diagnostics':
     'Someone copied the diagnostics report from a failed document load, to send to support.',
   'UI|Copied|Diagnostics.Help':
@@ -1511,7 +1511,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Declined|PowerUserOffer':
     'Someone said no thanks to the power user mode offer, or closed it.',
   'UI|Opened|NewVersionPrompt':
-    'An open editor learned the server now serves a newer document format and offered "A new version of livediagram is ready".',
+    'An open editor learned the server now serves a newer document format and offered "A new version of liveplanner is ready".',
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
@@ -2513,7 +2513,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Email|Sent':
     'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',
   'Error|Api':
-    "A request to livediagram's servers failed, or a server itself hit an error while handling one. The type says what kind of failure it was and which operation was being attempted; see the accompanying pattern for how to read it.",
+    "A request to liveplanner's servers failed, or a server itself hit an error while handling one. The type says what kind of failure it was and which operation was being attempted; see the accompanying pattern for how to read it.",
   'Error|Client':
     "Something failed in a visitor's browser: a part of the editor or help centre crashed, or recovered on its own from a hiccup in live sync. The type says what happened and where; see the accompanying pattern for how to read it.",
   'Error|Warning':
@@ -2567,9 +2567,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
   'Community|Selected':
     'Someone picked a filter in the Community gallery: a category, a tag, a sort order or My Shares.',
-  'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
+  'Mcp|Used': 'An AI tool connected to liveplanner over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
-  'Cli|Used': 'Someone ran a livediagram command from the command line, and it succeeded.',
+  'Cli|Used': 'Someone ran a liveplanner command from the command line, and it succeeded.',
   'Note|Changed': "An existing note's text was edited.",
   'Note|Deleted': 'A note was cleared from an element.',
   'Note|Opened': 'Someone opened the note popover on an element.',
@@ -2578,7 +2578,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Page|View':
     'Someone loaded or navigated to a page on the site. Counted once per distinct page, not on every scroll or in-page action.',
   'Participant|Created':
-    'Someone visited livediagram for the first time in this browser, and a new anonymous guest identity was created for them. Counted once per browser, ever.',
+    'Someone visited liveplanner for the first time in this browser, and a new anonymous guest identity was created for them. Counted once per browser, ever.',
   'Participant|Returned':
     'A returning visitor reopened the app on a later day than their first visit, counted once per day.',
   'Search|Opened': 'The global search panel was opened.',
@@ -2586,7 +2586,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'A query was typed into search. Counted once per session, not on every keystroke.',
   'Search|Selected': "Someone picked a result from the editor's search.",
   'Session|Deleted': "Someone permanently deleted part of their account's data.",
-  'Session|Opened': 'Someone opened a session-related surface in livediagram.',
+  'Session|Opened': 'Someone opened a session-related surface in liveplanner.',
   'Session|SignedIn': 'A visitor just signed in to their account.',
   'Session|SignedOut': 'A visitor just signed out.',
   'Session|SignedUp': 'A visitor just created an account.',
@@ -2644,15 +2644,15 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Drive|Linked':
     'Someone connected Google Drive, so My Documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
   'Drive|Unlinked':
-    'Someone disconnected Google Drive. livediagram stops updating it, and the files stay in their Drive.',
+    'Someone disconnected Google Drive. liveplanner stops updating it, and the files stay in their Drive.',
   'Drive|Changed':
     "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
   'Drive|Created':
     'A newly connected mirror finished copying every document in My Documents into Google Drive for the first time.',
   'Drive|Applied':
-    'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
+    'A change someone made in Google Drive reached liveplanner: a rename, a move (or a move into a folder liveplanner cannot see), a bin, a restore, or a permanent delete.',
   'Drive|Opened':
-    'Someone opened a livediagram file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
+    'Someone opened a liveplanner file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
   'Folder|Changed':
     'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
@@ -2711,7 +2711,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|Changed':
     "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Cleared':
-    "Someone cleared livediagram's saved settings and caches in their browser (Repair This Browser); the value says where from.",
+    "Someone cleared liveplanner's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':
     'Someone closed or dismissed a banner, card, or presentation somewhere in the editor.',
   'UI|Copied':

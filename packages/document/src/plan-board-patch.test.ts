@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, type PlanBoardSetup } from '@livediagram/items';
+import { presetSetup, type PlanBoardSetup } from '@liveplanner/items';
 import { applyPlanBoardPatch, isPlanBoardPatch, planBoardPatch } from './plan-board-patch';
 
 // docs/specs/012-collaboration/collab-race-hardening.md, phase 6: a board's set-up change as only what changed.

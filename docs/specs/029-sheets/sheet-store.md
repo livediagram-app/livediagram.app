@@ -168,7 +168,7 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
 - **Duplicate** copies the sheet store with the document (same ids).
 - **Duplicate Tab** copies the tab's sheets as new sheets on the new tab (new ids, `(copy)` titles kept unique
   per tab), and the new tab's Sheet elements frame the copies.
-- **The `.livediagram` file** (the Google Drive mirror's document file) carries the sheets; the field is additive,
+- **The `.liveplanner` file** (the Google Drive mirror's document file) carries the sheets; the field is additive,
   so the file stays version 1.
 - A **Community** copy carries the sheets.
 - Images, thumbnails, PDFs and api or MCP renders draw Sheet elements from the store.

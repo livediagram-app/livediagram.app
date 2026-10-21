@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TAG_LIMIT } from '@livediagram/api-schema';
+import { TAG_LIMIT } from '@liveplanner/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { migrateOwnerId } from './account';
 import {

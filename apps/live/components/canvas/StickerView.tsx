@@ -1,9 +1,9 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@liveplanner/ui';
 // A sticker on the canvas (docs/specs/010-palette/stickers.md): the die-cut plate, its shadow, and the
 // emoji or badge on top, filling the element box.
 //
 // Deliberately thin. Every pixel comes from `stickerArt` in
-// @livediagram/icons, the same builder the palette tile, the SVG / PNG / PDF
+// @liveplanner/icons, the same builder the palette tile, the SVG / PNG / PDF
 // export, the share thumbnail and the MCP render all call — a sticker that
 // looked one way in the editor and another in the export would defeat the
 // point of it being a sticker.
@@ -12,7 +12,7 @@ import { trustedHtml } from '@livediagram/ui';
 // its own (`supportsColours` returns false for the kind), so nothing here
 // takes an element colour.
 
-import { stickerArt, type StickerDef } from '@livediagram/icons';
+import { stickerArt, type StickerDef } from '@liveplanner/icons';
 import { getSticker } from '@/lib/stickers';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 

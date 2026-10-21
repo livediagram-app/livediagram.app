@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { penColourHex, WHITEBOARD_INK } from '@livediagram/document';
+import { penColourHex, WHITEBOARD_INK } from '@liveplanner/document';
 import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
 
 // The quick style panel on a mixed whiteboard selection (docs/specs/008-canvas/quick-style-panel.md

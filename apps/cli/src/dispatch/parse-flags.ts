@@ -3,7 +3,7 @@
 // argument is a usage error (exit 2).
 
 import { parseArgs } from 'node:util';
-import type { Verb } from '@livediagram/agent-verbs';
+import type { Verb } from '@liveplanner/agent-verbs';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { fieldsOf, flagOf, keyOf, restName, type Field } from './fields';
@@ -13,7 +13,7 @@ const usage = (verb: Verb, message: string) =>
     exit: EXIT.usage,
     code: 'usage',
     message,
-    hint: `livediagram ${verb.id.replace('.', ' ')} --help`,
+    hint: `liveplanner ${verb.id.replace('.', ' ')} --help`,
   });
 
 // node:util parseArgs names the offending flag in quotes ('-f, --file <value>' for a short one): one the verb does

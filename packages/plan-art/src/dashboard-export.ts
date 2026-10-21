@@ -22,7 +22,7 @@ import {
   type Element,
   type Tab,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { box, inPlanFont, r2, type Rect } from './plan-art-kit';
 import { cardArt, slotMessageArt, type SheetMetricArt } from './dashboard-card-art';
 

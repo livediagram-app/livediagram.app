@@ -11,7 +11,7 @@ import {
   type BoxedElement,
   type Element,
   type Endpoint,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { lineColourFields, textColourFields, type ResolvedColour } from './colour';
 import { commonFields, turnPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';

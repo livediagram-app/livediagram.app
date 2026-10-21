@@ -1,7 +1,7 @@
 # Diagram lint
 
 **Status: built**, with the [CLI](../015-api/cli.md)'s `tab lint` and `graph lint` (`--compare`).
-`@livediagram/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
+`@liveplanner/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
 the verdict, and the MCP's write tools carry the summary line.
 
 The **diagram lint** reports what is wrong with how a tab is drawn, as text an agent can act on without looking at
@@ -56,7 +56,7 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
 
 ## Where it runs
 
-- One pure package, `@livediagram/diagram-lint`, using the geometry `@livediagram/document` already has
+- One pure package, `@liveplanner/diagram-lint`, using the geometry `@liveplanner/document` already has
   (`arrowRoutePoints`, `pathsCross`, `pathPassesThrough`, the element grid, refs and containment). It reads each line
   as drawn: ends sharing an anchor fanned apart as the renderers and the label pass place them, so a label sitting
   between two fanned lines is never called struck, and a spot it names for a struck label is clear on the drawing.

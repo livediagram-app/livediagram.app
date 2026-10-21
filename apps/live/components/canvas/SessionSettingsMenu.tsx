@@ -13,7 +13,7 @@
 // `…` renders the very same body.
 
 import dynamic from 'next/dynamic';
-import type { SessionButtonConfig } from '@livediagram/document';
+import type { SessionButtonConfig } from '@liveplanner/document';
 import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,

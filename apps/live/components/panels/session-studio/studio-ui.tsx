@@ -6,7 +6,7 @@
 // class strings the old per-tool sections each carried.
 
 import type { ReactNode } from 'react';
-import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL, Glyph } from '@liveplanner/ui';
 
 type ButtonVariant = 'primary' | 'secondary';
 

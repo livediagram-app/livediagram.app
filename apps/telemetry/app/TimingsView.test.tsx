@@ -2,7 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';
-import { metricKey, type TelemetrySummary } from '@livediagram/api-schema';
+import { metricKey, type TelemetrySummary } from '@liveplanner/api-schema';
 import { TimingsView } from './TimingsView';
 
 // The Timings tab (docs/specs/017-telemetry/timing-telemetry.md): editor timings as percentiles, Web

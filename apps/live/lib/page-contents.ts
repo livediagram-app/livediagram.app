@@ -11,7 +11,7 @@ import {
   type Page,
   type LaidOutPage,
   type PageKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { rowDropIndex, type RowDrop } from '@/hooks/ui/useRowReorderDrag';
 
 export type ContentsRow = {

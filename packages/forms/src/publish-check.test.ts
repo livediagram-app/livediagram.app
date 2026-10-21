@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ItemTypeDef } from '@livediagram/items';
+import type { ItemTypeDef } from '@liveplanner/items';
 import { PUBLISH_PROBLEM_TEXT, publishProblems } from './publish-check';
 import type { FormDefinition } from './model';
 

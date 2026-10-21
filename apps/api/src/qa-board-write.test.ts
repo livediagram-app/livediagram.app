@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { QaNote } from '@livediagram/document';
+import type { QaNote } from '@liveplanner/document';
 
 // One board write (docs/specs/012-collaboration/qa-board.md): the reducer applied to what D1 holds, the rev
 // bumped, and a compare-and-swap that re-reads when another writer (an

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // A workbench frame's tab bar (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34, WB15):
-// Open in livediagram at its right end, and no Appearance control, since the workbench sets the scheme.
+// Open in liveplanner at its right end, and no Appearance control, since the workbench sets the scheme.
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';

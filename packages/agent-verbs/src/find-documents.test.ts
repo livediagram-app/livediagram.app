@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { DocumentSummary } from '@livediagram/api-schema';
+import type { DocumentSummary } from '@liveplanner/api-schema';
 import {
   fetchTeamLibraries,
   listAllDocuments,
   matchDocuments,
   readLibraries,
 } from './find-documents';
-import { createApiClient, type ApiClient } from '@livediagram/api-client';
+import { createApiClient, type ApiClient } from '@liveplanner/api-client';
 
 function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
   return {

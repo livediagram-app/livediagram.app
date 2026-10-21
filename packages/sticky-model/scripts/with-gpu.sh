@@ -5,7 +5,7 @@
 # redistributable archives, unpacked). Memory growth stays on so the GPU is
 # shared politely with whatever else is running on it.
 set -euo pipefail
-export LD_LIBRARY_PATH="${STICKY_MODEL_CUDA_LIBS:-/tmp/livediagram-sticky-model/cuda11/lib}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${STICKY_MODEL_CUDA_LIBS:-/tmp/liveplanner-sticky-model/cuda11/lib}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export STICKY_MODEL_GPU=1
 export TF_FORCE_GPU_ALLOW_GROWTH=true
 export TF_CPP_MIN_LOG_LEVEL="${TF_CPP_MIN_LOG_LEVEL:-2}"

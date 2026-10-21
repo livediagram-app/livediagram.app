@@ -10,9 +10,9 @@ import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceB
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
-import { googleFontsHref } from '@livediagram/document';
-import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livediagram/ui/seo';
-import { SITE_NAME } from '@livediagram/ui/site';
+import { googleFontsHref } from '@liveplanner/document';
+import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@liveplanner/ui/seo';
+import { SITE_NAME } from '@liveplanner/ui/site';
 import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
@@ -21,7 +21,7 @@ import {
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
@@ -48,7 +48,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
   }),
 );
 
-const TITLE = 'livediagram';
+const TITLE = 'liveplanner';
 const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
 
 export const metadata: Metadata = {
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   },
   // PWA install affordances. The editor is what users add to their home
   // screen, but only its app/icon.svg favicon was linked, so an installed
-  // editor PWA showed no icon. livediagram.app is one origin (the router
+  // editor PWA showed no icon. liveplanner.app is one origin (the router
   // stitches the apps by path), and the marketing worker already serves the
   // origin's web manifest at /manifest.webmanifest and the opaque iOS tile at
   // /apple-icon (both carrying the brand icon, see docs/specs/019-marketing/marketing-site.md). Reference those
@@ -132,7 +132,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         {/* The build this export was made from (docs/specs/016-platform/stale-builds.md), for
             developers, support and the e2e suite; the app itself compares EDITOR_BUILD_ID. */}
-        {EDITOR_BUILD_ID ? <meta name="livediagram-build" content={EDITOR_BUILD_ID} /> : null}
+        {EDITOR_BUILD_ID ? <meta name="liveplanner-build" content={EDITOR_BUILD_ID} /> : null}
         {/* Text fonts (docs/specs/004-interface-design/fonts.md). One stylesheet defines every option's
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
@@ -158,7 +158,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             honours it — including /live/new and the welcome / template-picker
             flow, which never mount the TabBar that's the only caller of
             useAppearance. Without this they'd render light over the dark body.
-            The appearance snippet is shared by every app (@livediagram/ui);
+            The appearance snippet is shared by every app (@liveplanner/ui);
             both are executed by tests against stub globals. */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(REDUCE_MOTION_BOOT_SCRIPT) }} />

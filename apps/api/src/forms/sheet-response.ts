@@ -1,9 +1,9 @@
 // A response as a Sheet row (docs/specs/030-forms/forms.md "Responses to a Sheet"): the sheet's header row and the rows
-// in use read, the row planned by @livediagram/forms (responseRowWrite), and stored through the sheet store's own
+// in use read, the row planned by @liveplanner/forms (responseRowWrite), and stored through the sheet store's own
 // checks, caps and relay (storeSheetWrite), unchecked against the sheet's validation rules so a response always lands.
-import type { AnswerValue, FormSheetDestination } from '@livediagram/forms';
-import { responseRowWrite, type FormDefinition } from '@livediagram/forms';
-import { cellKey, type SheetPerson } from '@livediagram/sheets';
+import type { AnswerValue, FormSheetDestination } from '@liveplanner/forms';
+import { responseRowWrite, type FormDefinition } from '@liveplanner/forms';
+import { cellKey, type SheetPerson } from '@liveplanner/sheets';
 import { documentLinksTab, readCells, readSheetHead, usedSheetRows } from '../db';
 import type { RouteContext } from '../routes/context';
 import { storeSheetWrite } from '../routes/sheet-write-route';

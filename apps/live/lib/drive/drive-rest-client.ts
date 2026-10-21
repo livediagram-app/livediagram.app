@@ -2,7 +2,7 @@
 // (CORS verified, research A7 / E-1). Every call names its `fields`, since
 // Drive's default subset omits parents, md5Checksum and appProperties.
 
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import { DRIVE_FILE_MIME } from '@liveplanner/api-schema';
 import { DRIVE_CHANGES_PAGE_SIZE, DRIVE_MULTIPART_MAX_BYTES } from './cadence';
 import {
   DriveApiError,

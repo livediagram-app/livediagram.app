@@ -12,7 +12,7 @@ const FAKE_WORKBENCH_HTML = readFileSync(
   new URL('./fixtures/fake-workbench.html', import.meta.url),
   'utf8',
 );
-const E2E_SESSION_KEY = 'livediagram:e2e:session';
+const E2E_SESSION_KEY = 'liveplanner:e2e:session';
 
 export type FakeWorkbench = {
   origin: string;
@@ -134,13 +134,13 @@ export async function seedDocumentAndToken(
   });
   if (created.status >= 300) throw new Error(`creating the document failed: ${created.status}`);
   const token = await apiJson<{ token: string }>(request, 'POST', '/tokens', person.jwt, {
-    name: 'livediagram CLI',
+    name: 'liveplanner CLI',
   });
   if (token.status >= 300) throw new Error(`creating the token failed: ${token.status}`);
   return { documentId, tabId, token: token.body.token };
 }
 
-// `livediagram workbench open`: POST /api/workbench/tickets with the token.
+// `liveplanner workbench open`: POST /api/workbench/tickets with the token.
 export function mintTicket(
   request: APIRequestContext,
   seeded: Seeded,
@@ -161,7 +161,7 @@ export function received(page: Page): Promise<{ type: string; [k: string]: unkno
   return page.evaluate(() => (window as unknown as { received: never[] }).received);
 }
 
-// `livediagram workbench open --workspace [--folder <f>]`: a workspace ticket, on Home or a folder.
+// `liveplanner workbench open --workspace [--folder <f>]`: a workspace ticket, on Home or a folder.
 export function mintWorkspaceTicket(
   request: APIRequestContext,
   seeded: Seeded,
@@ -178,7 +178,7 @@ export function mintWorkspaceTicket(
   });
 }
 
-// A folder of the person's, at the top of My Documents, as `livediagram folder create` makes it.
+// A folder of the person's, at the top of My Documents, as `liveplanner folder create` makes it.
 export async function createFolder(
   request: APIRequestContext,
   person: Person,

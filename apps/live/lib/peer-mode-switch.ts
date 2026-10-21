@@ -7,8 +7,8 @@ import {
   editorModeLabel,
   parseEditorMode,
   type EditorMode,
-} from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+} from '@liveplanner/document';
+import type { RoomOp } from '@liveplanner/api-schema';
 
 /** The tab and mode a peer's op switched to, or null when the op leaves the mode alone. */
 export function peerModeSwitchOf(op: RoomOp): { tabId: string; mode: EditorMode } | null {

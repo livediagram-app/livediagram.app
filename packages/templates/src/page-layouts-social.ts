@@ -2,7 +2,7 @@
 // "Did you know?" fact and a save the date. Same contract as page-layouts.ts: the page's content box
 // in, uncoloured elements out, a tall page stacking and a wide one setting side by side. Each is a
 // single block, centred down the page so nothing floats in empty space.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc, SOURCE_H, sourceLine } from './page-layout-parts';
 

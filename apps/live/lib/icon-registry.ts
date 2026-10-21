@@ -1,6 +1,6 @@
 // Async loader + tiny subscription store for the two icon catalogues: the
 // line-art glyphs (docs/specs/008-canvas/canvas-and-palette.md "Icons") and the Technology brand marks (docs/specs/010-palette/technology-icons.md),
-// both living as data modules in @livediagram/icons (shared with the Workers'
+// both living as data modules in @liveplanner/icons (shared with the Workers'
 // headless renders). Together they are ~60 kB of pure data that almost no
 // first paint needs — a document with no icon elements never touches them — so
 // they are dynamic-imported here into an async chunk instead of riding the
@@ -27,7 +27,7 @@ import {
   type StickerArt,
   type StickerDef,
   type TechIconDef,
-} from '@livediagram/icons';
+} from '@liveplanner/icons';
 import { createListeners } from '@/lib/listeners';
 
 // Everything derived from the loaded chunks, assembled once. Kept in one
@@ -61,11 +61,11 @@ const listeners = createListeners();
 export function ensureIconCatalogs(): Promise<void> {
   if (!loadPromise) {
     loadPromise = Promise.all([
-      import('@livediagram/icons/icon-catalog-1'),
-      import('@livediagram/icons/icon-catalog-2'),
-      import('@livediagram/icons/icon-catalog-3'),
-      import('@livediagram/icons/tech-icon-catalog'),
-      import('@livediagram/icons/sticker-catalog'),
+      import('@liveplanner/icons/icon-catalog-1'),
+      import('@liveplanner/icons/icon-catalog-2'),
+      import('@liveplanner/icons/icon-catalog-3'),
+      import('@liveplanner/icons/tech-icon-catalog'),
+      import('@liveplanner/icons/sticker-catalog'),
     ])
       .then(([part1, part2, part3, tech, stickers]) => {
         // Order matters for the line-art catalogue: part 1, part 2, then part 3, so
@@ -85,7 +85,7 @@ export function ensureIconCatalogs(): Promise<void> {
         listeners.notify();
       })
       .catch((err) => {
-        console.error('livediagram: failed to load the icon catalogues', err);
+        console.error('liveplanner: failed to load the icon catalogues', err);
         loadPromise = null;
       });
   }
@@ -137,7 +137,7 @@ export function getStickerLoaded(id: string | undefined): StickerDef | undefined
 }
 
 // Export-art resolver over the loaded catalogues (the editor-side
-// counterpart of @livediagram/icons/resolve, which static-imports the data
+// counterpart of @liveplanner/icons/resolve, which static-imports the data
 // for the Workers). Passed to the shared SVG renderer / export pipeline so
 // icon elements export their real glyph. Undefined until the chunk lands
 // (or for an unknown id) — the renderer then falls back to its historical

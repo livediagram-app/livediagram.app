@@ -6,7 +6,7 @@
 // the page (or, with no `on`, tinted while its popover is open), named beside its icon on a
 // desktop, the popover anchored under it; on a phone it opens as a bottom sheet instead.
 import { useRef, useState, type ReactNode } from 'react';
-import { Tooltip, useClickOutside, useEscape } from '@livediagram/ui';
+import { Tooltip, useClickOutside, useEscape } from '@liveplanner/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

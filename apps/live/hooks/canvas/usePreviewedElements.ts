@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { applyOverlay, useDragPreview } from '@/lib/drag-preview';
 
 // The tab's elements as a drag in progress shows them (docs/specs/008-canvas/drag-preview.md): the

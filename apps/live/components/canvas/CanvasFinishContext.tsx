@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import { finishFaceShadows, resolveFinish, type Finish } from '@livediagram/document';
+import { finishFaceShadows, resolveFinish, type Finish } from '@liveplanner/document';
 
 // The tab's finish (docs/specs/008-canvas/finish.md): the drawing style every element without its own is
 // drawn in. A context for the same reasons as CanvasSurfaceContext: the element views are React.memo'd, and

@@ -41,7 +41,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Canvas surface     | `CanvasSurface` (`'light' \| 'dark'`)                 | The paper a canvas colour amounts to, from `canvasSurface(bg)` |
 | Dark Reader lock   | `<meta name="darkreader-lock">`                       | The extension's opt-out, declared through `metadata.other`     |
 
-Banned synonyms: "UI mode" and "dark mode toggle" in code and copy (the stored key `livediagram:v2:ui-mode` keeps its
+Banned synonyms: "UI mode" and "dark mode toggle" in code and copy (the stored key `liveplanner:v2:ui-mode` keeps its
 name as data on the wire); "theme" for the appearance, since a theme is the document's.
 
 ## Behaviour and state
@@ -102,7 +102,7 @@ editor.
 
 | Field                    | Store                             | Class             | Notes                                    |
 | ------------------------ | --------------------------------- | ----------------- | ---------------------------------------- |
-| `livediagram:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'` |
+| `liveplanner:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'` |
 
 Nothing is synced to the api or written into a document. Migration: none; older builds wrote `'light'` / `'dark'`, which
 read back unchanged, and anything older reads as the default.
@@ -146,7 +146,7 @@ layout inlines the real string rather than a client-reference stub.
 - The control is a real `<button>` with an `aria-label` that states current and next setting.
 - Dark tokens, the Steel ramp and the solid-fill rule are the [dark palette blueprint](../../004-interface-design/blueprints/dark-palette.md);
   its contrast audit covers dark mode.
-- Light mode's brand ramp is settled ([#74](https://github.com/livediagram-app/livediagram.app/issues/74)): solid
+- Light mode's brand ramp is settled ([#74](https://github.com/liveplanner-app/liveplanner.app/issues/74)): solid
   brand fills under white text and brand ink on white are both `brand-700` (5.9:1), guarded by
   `apps/live/app/light-palette.test.ts`. Light muted text in the editor's chrome (`slate-400`) is not yet in line,
   so this category is not yet fully covered.
@@ -188,7 +188,7 @@ layout inlines the real string rather than a client-reference stub.
 
 | Constant                       | Value                            | Provenance                              | Safe range                            |
 | ------------------------------ | -------------------------------- | --------------------------------------- | ------------------------------------- |
-| `APPEARANCE_STORAGE_KEY`       | `'livediagram:v2:ui-mode'`       | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
+| `APPEARANCE_STORAGE_KEY`       | `'liveplanner:v2:ui-mode'`       | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
 | `DARK_MEDIA_QUERY`             | `'(prefers-color-scheme: dark)'` | CSS Media Queries Level 5               | Fixed                                 |
 | `DEFAULT_APPEARANCE_SETTING`   | `'system'`                       | Spec: System is the default             | One of the three literals             |
 | `DEFAULT_BACKGROUND_COLOR`     | `#ffffff`                        | Colour scheme: canvas is pure white     | Light (`isLightColor` true)           |

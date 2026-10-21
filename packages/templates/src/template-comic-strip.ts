@@ -5,7 +5,7 @@
 // moment it shows. The story has a shape: a strange Monday, the customer's complaint, the hunt,
 // the bug, the fix and a calm Friday. Pure: (cx, cy) -> Element[].
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { bug, laptop, stickFigure } from './template-sketch-figures';
 import {
   FINE,

@@ -63,7 +63,7 @@ describe('readLabel, html', () => {
     expect(r.runs).toContainEqual({ text: 'the plan', link: 'https://example.com/plan' });
   });
 
-  it('drops links with schemes livediagram does not follow', () => {
+  it('drops links with schemes liveplanner does not follow', () => {
     expect(readLabel('<a href="javascript:alert(1)">x</a>', true)).toEqual({ plain: 'x' });
     expect(readLabel('<a href="mailto:a@b.test">m</a>', true).runs).toEqual([
       { text: 'm', link: 'mailto:a@b.test' },

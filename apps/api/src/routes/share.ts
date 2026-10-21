@@ -1,6 +1,6 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
-import { LEVEL_TELEMETRY_TYPE } from '@livediagram/api-schema';
+import { LEVEL_TELEMETRY_TYPE } from '@liveplanner/api-schema';
 import { documentImageSvg } from '../document-image';
 import { rowAuthor } from '../community-row';
 import {

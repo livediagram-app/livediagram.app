@@ -16,7 +16,7 @@ export {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
   VIEW_BUDGET_MAX,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 // `show`'s ref for the owner's live selection, the edit operations' selector word (VW65).
 export const SELECTED_REF = 'selected';
 // About 15 MB of tab bodies at the tab cap (VW47).

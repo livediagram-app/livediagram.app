@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
-import { PlusIcon } from '@livediagram/ui';
-import { eventStormingNote, type EventStormingNoteKind } from '@livediagram/document';
+import { PlusIcon } from '@liveplanner/ui';
+import { eventStormingNote, type EventStormingNoteKind } from '@liveplanner/document';
 
 // A note that is about to be added (docs/specs/021-event-storming/event-storming.md): a dashed outline in the note's
 // own colour, its kind named inside. Drawn by the next-note tabs' hover

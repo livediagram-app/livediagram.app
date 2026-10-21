@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livediagram/document';
+import { createShape, type BoxedElement } from '@liveplanner/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import type { RemoteSelector } from '@/lib/presence-rows';
 

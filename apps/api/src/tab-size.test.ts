@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
+import type { Tab } from '@liveplanner/document';
+import { MAX_TAB_BYTES, tabDataBytes } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from './test-sqlite-d1';
 import { seedTabs, swapTabData, upsertTab } from './db/tabs';
 import { TabTooLargeError } from './limits';

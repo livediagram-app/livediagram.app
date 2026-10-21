@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyCardTypeChanges, defaultCatalogue, ITEM_TYPES } from '@livediagram/items';
+import { applyCardTypeChanges, defaultCatalogue, ITEM_TYPES } from '@liveplanner/items';
 import { listedType, listedTypes } from './plan-listing';
 
 // A card type as list_items lists it (docs/specs/026-plan/plan-agents.md "What a card type is made of, as facts"):

@@ -13,7 +13,7 @@ import type {
   RatingAnim,
   SankeyAnim,
   ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ArrowFlowOverlays, FLOW_PATH_CLASS, FLOW_PATH_DASH } from '@/components/canvas/arrow-flow';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { ProgressView } from '@/components/canvas/ProgressView';

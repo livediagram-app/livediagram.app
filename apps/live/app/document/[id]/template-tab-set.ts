@@ -3,7 +3,7 @@
 // others go straight after it, in order, each with that tab's look and the template's canvas overrides.
 // Pure, so the placement rule is testable without the hook.
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { newTabSeed } from '@/lib/new-tab-seed';
 
 type TemplateTabContent = {

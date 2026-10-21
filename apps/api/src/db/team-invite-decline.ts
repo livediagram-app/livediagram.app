@@ -3,7 +3,7 @@
 // row's space-separated `decline_token_hashes` (migration 0095). A token is single-purpose: it reads that one
 // invite's team name and state, and declines it. Nothing else accepts it.
 
-import type { TeamMemberStatus } from '@livediagram/api-schema';
+import type { TeamMemberStatus } from '@liveplanner/api-schema';
 import { timingSafeEqual } from '../auth/timing-safe';
 import type { Env } from '../types';
 import { memberStatus } from './teams';

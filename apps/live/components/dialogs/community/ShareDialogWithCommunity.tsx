@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCommunityEnabled } from '@livediagram/ui';
+import { useCommunityEnabled } from '@liveplanner/ui';
 import { API_BASE } from '@/lib/api-client';
 import { ShareDialog } from '@/components/dialogs/ShareDialog';
 import type { ShareDialogProps } from '@/components/dialogs/ShareDialog.types';

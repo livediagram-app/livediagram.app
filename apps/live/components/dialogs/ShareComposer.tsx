@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, type KeyboardEvent } from 'react';
-import { Button, Select } from '@livediagram/ui';
+import { Button, Select } from '@liveplanner/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
-import { DEFAULT_LINK_LEVEL } from '@livediagram/api-schema';
+import { DEFAULT_LINK_LEVEL } from '@liveplanner/api-schema';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { LIFETIMES, ROLE_PASS, SECTION_LABEL, ScopeOptions } from './share-dialog-parts';
 import { ShareRolePicker } from './ShareRolePicker';

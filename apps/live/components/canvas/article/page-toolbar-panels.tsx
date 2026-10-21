@@ -29,9 +29,9 @@ import {
   lucideTextAlignJustify,
   lucideTextAlignStart,
   lucideTextQuote,
-} from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
-import type { ArticleAlign, ArticleListKind, ArticleParagraphStyle } from '@livediagram/document';
+} from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
+import type { ArticleAlign, ArticleListKind, ArticleParagraphStyle } from '@liveplanner/document';
 import type { ArticleSelectionState } from '@/lib/article/article-commands';
 import { MenuRow } from './page-toolbar-menus';
 import { ColourPicker } from '@/components/colour/ColourPicker';

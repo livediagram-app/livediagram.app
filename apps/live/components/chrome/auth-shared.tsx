@@ -8,11 +8,11 @@
 // non-negotiable; both auth pages stay in sync as Clerk's API evolves.
 //
 // Lives in `components/` (not `packages/`) because the styling is
-// app-specific (livediagram brand colours, livediagram Brand wordmark);
+// app-specific (liveplanner brand colours, liveplanner Brand wordmark);
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { Button, buttonClassName, TextInput, ButtonContent } from '@livediagram/ui';
+import { Button, buttonClassName, TextInput, ButtonContent } from '@liveplanner/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { sameOriginPath } from '@/lib/same-origin-path';
@@ -117,7 +117,7 @@ export function AuthDisabledNotice() {
       pitch={false}
     >
       <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        This livediagram instance is running in <strong>guest-only</strong> mode: the canvas works
+        This liveplanner instance is running in <strong>guest-only</strong> mode: the canvas works
         without an account. To enable sign-in, set{' '}
         <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-900 dark:text-slate-200">
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY

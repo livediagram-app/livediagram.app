@@ -11,7 +11,7 @@ import {
   type ArrowStyle,
   type BoxedElement,
   type Side,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { Pt } from './cells';
 
 /** How far a segment may lean and still read as horizontal or vertical: draw.io paints a corner

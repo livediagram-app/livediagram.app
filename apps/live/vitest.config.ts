@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { configDefaults } from 'vitest/config';
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@liveplanner/vitest-config';
 
 // Node stays the DEFAULT environment: the ~1,645 tests here are pure logic
 // (canvas geometry, parsers, config tables) and run faster without a DOM.
@@ -32,7 +32,7 @@ export default defineProject({
     // Testing Library registering its own cleanup, and a tree left mounted
     // when jsdom is torn down crashes a later file in the same worker with
     // `window is not defined`. The shared setup file says why in full.
-    setupFiles: ['@livediagram/vitest-config/react-cleanup'],
+    setupFiles: ['@liveplanner/vitest-config/react-cleanup'],
     // The editor's source spans app/, components/ and hooks/ beside lib/ and src/: the report counts
     // all of it, so untested components show as such rather than vanishing from the total.
     coverage: {
@@ -43,7 +43,7 @@ export default defineProject({
   resolve: {
     // One React, shared with the workspace packages. `packages/ui` peers
     // react (correctly) but carries its own copy for its own tests, so a
-    // hook test here that renders a `@livediagram/ui` hook resolved TWO
+    // hook test here that renders a `@liveplanner/ui` hook resolved TWO
     // Reacts — the renderer's and the package's — and every useState threw
     // "Cannot read properties of null". Next's bundler dedupes for real
     // builds; the test resolver has to be told.

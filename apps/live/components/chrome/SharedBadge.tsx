@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { Chip } from '@livediagram/ui';
+import { Chip } from '@liveplanner/ui';
 import { SHARE_STATE_META, STATE_CHIP_HEIGHT_PX, StateDot, type ShareState } from './share-states';
 import { VisibilityLegend } from './VisibilityLegend';
 

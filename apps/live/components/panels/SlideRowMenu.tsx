@@ -16,10 +16,10 @@
 import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { lucideGlyph, PlusIcon } from '@livediagram/ui';
-import { lucideGroup, lucideMinus } from '@livediagram/icons/lucide';
+import { lucideGlyph, PlusIcon } from '@liveplanner/ui';
+import { lucideGroup, lucideMinus } from '@liveplanner/icons/lucide';
 
-import { slideName, type Slide } from '@livediagram/document';
+import { slideName, type Slide } from '@liveplanner/document';
 
 import { MenuAccordionSection, PortalMenu } from '@/components/primitives/PortalMenu';
 import {

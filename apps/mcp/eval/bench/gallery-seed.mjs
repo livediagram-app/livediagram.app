@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const BUCKET = 'livediagram-images';
+const BUCKET = 'liveplanner-images';
 
 // A PNG's size, from its IHDR chunk (bytes 16 to 23, big-endian).
 export function pngSize(bytes) {

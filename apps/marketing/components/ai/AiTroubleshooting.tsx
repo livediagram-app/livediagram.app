@@ -14,8 +14,8 @@ const ISSUES = [
     a: 'The token it held may have expired (they last six months) or been revoked. Remove the connection in your tool and add it again.',
   },
   {
-    q: 'I run my own livediagram',
-    a: 'Use your own MCP host in place of mcp.livediagram.app, still ending in /mcp. The MCP server is optional and needs accounts set up on your deployment.',
+    q: 'I run my own liveplanner',
+    a: 'Use your own MCP host in place of mcp.liveplanner.app, still ending in /mcp. The MCP server is optional and needs accounts set up on your deployment.',
   },
 ];
 

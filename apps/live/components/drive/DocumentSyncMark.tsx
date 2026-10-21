@@ -11,9 +11,9 @@ import {
   lucideCloudCheck,
   lucideCloudSync,
   lucideCloudUpload,
-} from '@livediagram/icons/lucide';
-import type { IconPrim } from '@livediagram/icons';
-import { Glyph, Tooltip, type IconProps } from '@livediagram/ui';
+} from '@liveplanner/icons/lucide';
+import type { IconPrim } from '@liveplanner/icons';
+import { Glyph, Tooltip, type IconProps } from '@liveplanner/ui';
 import { useDocumentSync, type DocumentSyncState } from './drive-mirror-context';
 
 const DOCUMENT_SYNC_LABEL: Record<DocumentSyncState, string> = {

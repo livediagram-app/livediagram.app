@@ -1,6 +1,6 @@
 'use client';
 
-import { COMMUNITY_SORTS, type CommunitySort } from '@livediagram/api-schema';
+import { COMMUNITY_SORTS, type CommunitySort } from '@liveplanner/api-schema';
 import { SortIcon } from '../shared/icons';
 import { SearchControlMenu } from './SearchControlMenu';
 

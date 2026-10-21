@@ -2,8 +2,8 @@
 // (4.5:1) as drawn: made on a light or a dark canvas, then shown on a light, dark or other themed Sheet. Its own
 // colours read on the canvas it was made for without any rescue.
 import { describe, expect, it } from 'vitest';
-import { cellColours, contrastRatio, type CellSurface } from '@livediagram/document';
-import { SHEET_TEMPLATE_IDS, sheetFromTemplate } from '@livediagram/sheets';
+import { cellColours, contrastRatio, type CellSurface } from '@liveplanner/document';
+import { SHEET_TEMPLATE_IDS, sheetFromTemplate } from '@liveplanner/sheets';
 
 const NOW = Date.UTC(2026, 9, 8, 15);
 const SURFACES: Record<string, CellSurface> = {

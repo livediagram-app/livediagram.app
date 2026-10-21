@@ -11,7 +11,7 @@ import {
   type Sheet,
   type SheetWrite,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
 import { downloadBlob } from '@/lib/download-blob';
 import type { SheetController } from './sheet-controller';

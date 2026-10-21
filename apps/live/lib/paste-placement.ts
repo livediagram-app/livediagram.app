@@ -10,7 +10,7 @@ import {
   type Endpoint,
   type Tab,
   type Rect,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // Where a paste lands (docs/specs/021-event-storming/event-storming.md "Always on a lane", docs/specs/008-canvas/canvas-and-palette.md
 // Clipboard). Pure, so the rule is one testable answer rather than a pile of

@@ -1,7 +1,7 @@
 // People and Ideas layouts, part two (docs/specs/007-editor/pages-mode.md "Layouts"): values,
 // an idea board, a user persona and shout-outs. Pure builders on the shared kit, laid out in
 // proportions of the page's content box so each fits every size and orientation.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { CROSS_ROSE, iconDisc, iconRow, TICK_GREEN } from './page-layout-parts';
 import { avatar, card, clamp, eyebrow, rule, sticky } from './page-layouts-set-people-parts';

@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HomeJumpBackInItem, HomeResponse } from '@livediagram/api-schema';
+import type { HomeJumpBackInItem, HomeResponse } from '@liveplanner/api-schema';
 
 // Home's data (docs/specs/013-workspace/blueprints/explorer-home-view.md "useHome"): one read draws
 // the page, a failure is not an empty Home, and the read clears the unread badge.

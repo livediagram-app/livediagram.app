@@ -5,8 +5,8 @@ A **board scene** is the one source-neutral picture of a board that every
 clipboard ([Excalidraw import & export](excalidraw-import-export.md)), an
 Excalidraw file, and a Microsoft Whiteboard board
 ([Microsoft Whiteboard import](whiteboard-import.md)). A parser turns its
-source into a scene; **one landing** turns the scene into livediagram
-elements. No parser emits livediagram elements itself, so the rules below hold
+source into a scene; **one landing** turns the scene into liveplanner
+elements. No parser emits liveplanner elements itself, so the rules below hold
 for every source alike, and anything a source needs that the whiteboard lacks
 is a change here, never a parser-local workaround.
 
@@ -289,6 +289,6 @@ Import`; the open document is not touched.
 
 ## Non-goals
 
-- Groups (livediagram has none; a parser drops them and says so).
+- Groups (liveplanner has none; a parser drops them and says so).
 - Rough (sketchy) rendering and hatched or cross-hatched fills.
 - Keeping a landed board in sync with its source.

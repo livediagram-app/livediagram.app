@@ -3,9 +3,9 @@
 // The small parts a card face is built from (docs/specs/026-plan/plan-board.md "What the board shows"): the type
 // chip, the number on its type's colour, the priority's signal bars, the footer's pills (due, start, estimate, checklist, comments, votes),
 // label chips, the flag and the vote control. PlanCardFace lays them out per card size.
-import { PRIORITY_LABELS, itemCommentCount, type Item, type Priority } from '@livediagram/items';
-import { contrastRatio } from '@livediagram/document';
-import { CommentIcon } from '@livediagram/ui';
+import { PRIORITY_LABELS, itemCommentCount, type Item, type Priority } from '@liveplanner/items';
+import { contrastRatio } from '@liveplanner/document';
+import { CommentIcon } from '@liveplanner/ui';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { FLAG_COLOUR } from './item-flag';
@@ -21,8 +21,8 @@ export const DUE_SOON_DAYS = 2;
 export const tint = (colour: string, pct = 14) =>
   `color-mix(in srgb, ${colour} ${pct}%, transparent)`;
 
-// A card's checklist as done of total (shared with every export, @livediagram/items card-text.ts).
-export { checklistProgress } from '@livediagram/items';
+// A card's checklist as done of total (shared with every export, @liveplanner/items card-text.ts).
+export { checklistProgress } from '@liveplanner/items';
 
 // Where a due date stands: past (and not done), within DUE_SOON_DAYS, or neither.
 export function dueState(due: string, done: boolean): 'late' | 'soon' | 'later' {

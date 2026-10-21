@@ -17,10 +17,10 @@ describe('the totals pick', () => {
   });
 
   it('reads past a broken or empty stored pick', () => {
-    localStorage.setItem('livediagram:sheet-status-stats', '{oops');
+    localStorage.setItem('liveplanner:sheet-status-stats', '{oops');
     expect(statusPick()).toEqual(['Sum', 'Average', 'Count']);
     resetStatusPick();
-    localStorage.setItem('livediagram:sheet-status-stats', '[]');
+    localStorage.setItem('liveplanner:sheet-status-stats', '[]');
     expect(statusPick()).toEqual(['Sum', 'Average', 'Count']);
   });
 });

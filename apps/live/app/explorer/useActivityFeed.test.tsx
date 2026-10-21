@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
+import type { ActivityAction, ActivityCard, ActivityThread } from '@liveplanner/api-schema';
 
 // The Inbox's one read, split three ways (docs/specs/013-workspace/inbox.md §1), and the
 // error-vs-empty distinction the inbox depends on.

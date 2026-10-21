@@ -13,7 +13,7 @@ import {
   type Item,
   type ItemPerson,
   type PlanBoardSetup,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 // Days ahead that count as "due soon".
 export const DUE_SOON_DAYS = 7;

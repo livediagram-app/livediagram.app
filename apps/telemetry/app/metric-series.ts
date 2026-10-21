@@ -1,4 +1,4 @@
-import type { TelemetryDaily, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetryDaily, TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import type { SectionKey } from './view-keys';
 
 // The curated-metric model shared by every MetricGroups view (docs/specs/017-telemetry/telemetry.md), plus

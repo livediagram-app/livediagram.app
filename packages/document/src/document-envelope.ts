@@ -1,14 +1,14 @@
 // The whole-document envelope (docs/specs/022-drive-mirror/drive-mirror.md, "The file"):
-// the contents of a `.livediagram` file in Google Drive, and what "Import a
-// copy" reads back. The sibling of the per-tab `livediagram.tab` envelope in
+// the contents of a `.liveplanner` file in Google Drive, and what "Import a
+// copy" reads back. The sibling of the per-tab `liveplanner.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
 // document with every tab, each tab's per-document folder, and the slide deck.
-// Images stay references to livediagram's image store; no bytes are embedded.
+// Images stay references to liveplanner's image store; no bytes are embedded.
 
 import type { Tab } from './index';
-import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
+import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@liveplanner/items';
 
-export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
+export const DOCUMENT_ENVELOPE_KIND = 'liveplanner.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
 
 export type EnvelopeTab = Tab & { folder?: string };

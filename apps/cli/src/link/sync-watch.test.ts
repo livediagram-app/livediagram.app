@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
+import { DOCUMENT_TRASHED_CLOSE } from '@liveplanner/api-schema';
 import { WAIT_SETTLE_MS } from '../commands/wait';
 import { run } from '../main';
 import { fakeIo, TOKEN, type FakeIo } from '../testing/fake-io';
@@ -13,15 +13,15 @@ const folders = [
   { id: 'games', name: 'Minigames', parentId: null, teamId: null },
   { id: 'other', name: 'Other', parentId: null, teamId: null },
 ];
-const MIRROR = '/work/diagrams/home.livediagram.json';
+const MIRROR = '/work/diagrams/home.liveplanner.json';
 
 function setup(docs: HostDoc[], level = 'files') {
   const host = linkHost(docs, folders);
   const io = fakeIo({
-    env: { LIVEDIAGRAM_TOKEN: TOKEN },
+    env: { LIVEPLANNER_TOKEN: TOKEN },
     routes: [host.route],
     files: {
-      '/work/livediagram.toml': `[covers]\nfolder = "games"\n[mirror]\nlevel = "${level}"\n`,
+      '/work/liveplanner.toml': `[covers]\nfolder = "games"\n[mirror]\nlevel = "${level}"\n`,
     },
   });
   return { host, io };
@@ -50,7 +50,7 @@ describe('sync --watch', () => {
     const done = run(['sync', '--watch'], io);
     await until(() => io.sockets.length === 1);
     expect(lines(io)).toEqual([
-      '08:00:00 + diagrams/home.livediagram.json  "Home" · 1 tab · rev 1 · ~ diagrams/INDEX.md',
+      '08:00:00 + diagrams/home.liveplanner.json  "Home" · 1 tab · rev 1 · ~ diagrams/INDEX.md',
     ]);
     socketOf(io, 'd-home').open();
     // The file system tells of each write as it lands, before the pass has said what it wrote.
@@ -67,7 +67,7 @@ describe('sync --watch', () => {
     await io.advance(WAIT_SETTLE_MS);
     await until(() => lines(io).length === 2);
     expect(lines(io)[1]).toBe(
-      '08:00:03 ~ diagrams/home.livediagram.json  "Home" · Main · rev 1→2 · ~ diagrams/INDEX.md',
+      '08:00:03 ~ diagrams/home.liveplanner.json  "Home" · Main · rev 1→2 · ~ diagrams/INDEX.md',
     );
     expect(io.fileMap.get(MIRROR)!.data).toContain('"label":"Play"');
     await io.advance(SYNC_LOCAL_SETTLE_MS);
@@ -96,7 +96,7 @@ describe('sync --watch', () => {
     await io.advance(SYNC_LOCAL_SETTLE_MS);
     await until(() => lines(io).length === 2);
     expect(lines(io)[1]).toBe(
-      '08:00:03 ! diagrams/home.livediagram.json: changed here; send it: livediagram push diagrams/home.livediagram.json',
+      '08:00:03 ! diagrams/home.liveplanner.json: changed here; send it: liveplanner push diagrams/home.liveplanner.json',
     );
     io.touch(MIRROR);
     await flush();
@@ -108,7 +108,7 @@ describe('sync --watch', () => {
     await flush();
     await io.advance(SYNC_LOCAL_SETTLE_MS);
     await until(() => lines(io).length === 4);
-    expect(lines(io)[3]).toBe('08:00:06 + diagrams/home.livediagram.json  "Home" · 1 tab · rev 1');
+    expect(lines(io)[3]).toBe('08:00:06 + diagrams/home.liveplanner.json  "Home" · 1 tab · rev 1');
     io.interrupt();
     expect(await done).toBe(0);
   });
@@ -127,17 +127,17 @@ describe('sync --watch', () => {
     host.edit('d-home');
     io.sockets.at(-1)!.open();
     await until(() => lines(io).length === 2);
-    expect(lines(io)[1]).toContain('~ diagrams/home.livediagram.json  "Home" · Main · rev 1→2');
+    expect(lines(io)[1]).toContain('~ diagrams/home.liveplanner.json  "Home" · Main · rev 1→2');
     host.doc('d-home').state = 'trashed';
     io.sockets.at(-1)!.drop(DOCUMENT_TRASHED_CLOSE);
     await until(() => lines(io).length === 3);
-    expect(lines(io)[2]).toContain('- diagrams/home.livediagram.json  "Home" · in the Trash');
+    expect(lines(io)[2]).toContain('- diagrams/home.liveplanner.json  "Home" · in the Trash');
     host.doc('d-menu').state = 'purged';
     socketOf(io, 'd-menu').drop(1006);
     await io.advance(1_000);
     await until(() => lines(io).length === 4);
     expect(lines(io)[3]).toContain(
-      '? diagrams/menu.livediagram.json: no document this account can open',
+      '? diagrams/menu.liveplanner.json: no document this account can open',
     );
     io.interrupt();
     expect(await done).toBe(0);
@@ -152,7 +152,7 @@ describe('sync --watch', () => {
     await io.advance(SYNC_WATCH_COVERAGE_MS);
     await until(() => lines(io).length === 2);
     expect(lines(io)[1]).toBe(
-      '08:01:00 - diagrams/home.livediagram.json  "Home" · outside the link · + diagrams/new.livediagram.json  "New" · 1 tab · rev 1 · ~ diagrams/INDEX.md',
+      '08:01:00 - diagrams/home.liveplanner.json  "Home" · outside the link · + diagrams/new.liveplanner.json  "New" · 1 tab · rev 1 · ~ diagrams/INDEX.md',
     );
     expect(socketOf(io, 'd-home').closedWith).toBe(1000);
     expect(socketOf(io, 'd-new')).toBeDefined();
@@ -170,7 +170,7 @@ describe('sync --watch', () => {
     let gate: Promise<void> | null = null;
     let release = () => {};
     const io = fakeIo({
-      env: { LIVEDIAGRAM_TOKEN: TOKEN },
+      env: { LIVEPLANNER_TOKEN: TOKEN },
       routes: [
         async (_request, url) => {
           if (gate && url.pathname.endsWith('/documents/d-home')) await gate;
@@ -179,7 +179,7 @@ describe('sync --watch', () => {
         host.route,
       ],
       files: {
-        '/work/livediagram.toml': '[covers]\nfolder = "games"\n[mirror]\nlevel = "files"\n',
+        '/work/liveplanner.toml': '[covers]\nfolder = "games"\n[mirror]\nlevel = "files"\n',
       },
     });
     const done = run(['sync', '--watch'], io);
@@ -195,7 +195,7 @@ describe('sync --watch', () => {
     await until(() => io.sockets.length === 2);
     gate = null;
     release();
-    await until(() => io.fileMap.has('/work/diagrams/new.livediagram.json'));
+    await until(() => io.fileMap.has('/work/diagrams/new.liveplanner.json'));
     await io.advance(SYNC_WATCH_COVERAGE_MS);
     await flush();
     expect(io.sockets.filter((s) => s.url.includes('/documents/d-new/'))).toHaveLength(1);
@@ -278,13 +278,13 @@ describe('sync --watch, stopping', () => {
     expect(await done).toBe(0);
     expect(lines(early.io)).toHaveLength(1);
     expect(early.io.sockets).toEqual([]);
-    expect(early.io.fileMap.has('/home/agent/.cache/livediagram/links')).toBe(false);
+    expect(early.io.fileMap.has('/home/agent/.cache/liveplanner/links')).toBe(false);
 
     const { io } = setup([hostDoc('d-home', 'Home', { folderId: 'games' })]);
     const watching = run(['sync', '--watch'], io);
     await until(() => io.sockets.length === 1);
     socketOf(io, 'd-home').send(changed('d-home-t1'));
-    io.touch('/work/diagrams/ghost.livediagram.json');
+    io.touch('/work/diagrams/ghost.liveplanner.json');
     await flush();
     await io.advance(SYNC_LOCAL_SETTLE_MS);
     await until(() => lines(io).length === 2);

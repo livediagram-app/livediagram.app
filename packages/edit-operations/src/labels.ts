@@ -3,7 +3,7 @@
 // graph input does; an arrow's is cut; any other element's label is its content and stays whole. A
 // shape whose label no longer fits grows around its centre, never shrinking.
 
-import { capLabel, labelBoxSize, type Element } from '@livediagram/document';
+import { capLabel, labelBoxSize, type Element } from '@liveplanner/document';
 
 type LabelWrite = { label: string; note?: string; capped: boolean };
 

@@ -36,7 +36,7 @@ import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard } from './explorer-folder-cards';
-import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
+import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@liveplanner/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { DocumentRowTags } from '@/components/tags/DocumentRowTags';

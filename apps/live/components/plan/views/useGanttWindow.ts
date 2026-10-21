@@ -14,7 +14,7 @@ import {
   ganttWindow,
   type GanttModel,
   type GanttScale,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { swallowNextClick } from './gantt-drag';
 
 // How far a press on the timeline travels before it pans (below it, the press still opens the card).

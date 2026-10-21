@@ -4,7 +4,7 @@ import { SITE_NAME, SITE_PITCH, SITE_URL } from './site';
 // Per-page SEO for the public sites: the metadata block (canonical + Open
 // Graph + Twitter card) and the BreadcrumbList structured data. Marketing and
 // the help centre each built their own and had drifted: help sent a `summary`
-// Twitter card with no image and suffixed every title with " | livediagram",
+// Twitter card with no image and suffixed every title with " | liveplanner",
 // marketing a `summary_large_image` with the brand card and the title as
 // given. One rule now (docs/specs/019-marketing/marketing-site.md "SEO and metadata", docs/specs/018-help/help-app.md): the title passes
 // through verbatim, and every page carries the large brand card unless it
@@ -36,7 +36,7 @@ export type PageMetadataInput = {
   title: string;
   description: string;
   // Canonical path, resolved against the app's metadataBase (SITE_URL), so
-  // `/faq` becomes `https://livediagram.app/faq`. A basePath app includes its
+  // `/faq` becomes `https://liveplanner.app/faq`. A basePath app includes its
   // prefix (help passes `/help/canvas/themes/`).
   path: `/${string}`;
   // The OG siteName. Defaults to SITE_NAME; the help centre names itself.

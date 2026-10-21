@@ -1,6 +1,6 @@
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
+import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@liveplanner/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock

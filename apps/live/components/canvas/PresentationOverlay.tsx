@@ -18,12 +18,12 @@
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
-import { isPressableControl } from '@livediagram/ui';
-import { itemTitle } from '@livediagram/items';
+import { isPressableControl } from '@liveplanner/ui';
+import { itemTitle } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { presentedSlideName } from '@/lib/slide-headline';
 
-import { type BoxedElement, type Slide, type Tab } from '@livediagram/document';
+import { type BoxedElement, type Slide, type Tab } from '@liveplanner/document';
 
 import {
   PresentationElementPopover,

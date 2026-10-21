@@ -34,7 +34,7 @@ relays them; it does not merge them.
 - Wire (`packages/api-schema/src/room-messages.ts`): `{ kind: 'el'; tabId;
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   `tab` op (back-compat fallback). `ElementOp` (add / update / remove / reorder)
-  lives in `@livediagram/document` so it's shared and unit-tested off-socket.
+  lives in `@liveplanner/document` so it's shared and unit-tested off-socket.
 - Derivation is free: `diffToElementOps(before, after)` diffs the tab's
   elements before and after each commit. Apply
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
@@ -85,7 +85,7 @@ DO that assigns a total order, all peers converge. Ephemeral presence ops
 (cursor / select / laser / tab-focus) stay unordered.
 
 **Which an op is has one definition.** `PRESENCE_OP_KINDS`,
-`MUTATION_OP_KINDS` and `SYSTEM_OP_KINDS` live in `@livediagram/api-schema`
+`MUTATION_OP_KINDS` and `SYSTEM_OP_KINDS` live in `@liveplanner/api-schema`
 beside the room message types, because the classification decides three things
 at once — an op's ordering, its role gate ([API app](../015-api/api.md) drops non-presence ops from a
 view-role sender), and whether a client may originate it at all. The wire payload

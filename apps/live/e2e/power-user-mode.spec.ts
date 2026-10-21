@@ -6,7 +6,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, test, paletteTile } from 
 test.use({ colorScheme: 'dark' });
 
 const TOOLTIP = '[role="tooltip"][data-hint="tooltip"]';
-const PREFS_KEY = 'livediagram:user-preferences:v1';
+const PREFS_KEY = 'liveplanner:user-preferences:v1';
 
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 const tabBar = (page: Page) => page.locator('[data-editor-tabbar]');
@@ -243,7 +243,7 @@ test.describe('Power user mode', () => {
     await appearance.click({ button: 'right' });
     await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
     expect(await painted()).toBe('dark');
-    expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:ui-mode'))).toBe(
+    expect(await page.evaluate(() => localStorage.getItem('liveplanner:v2:ui-mode'))).toBe(
       'system',
     );
     await expect(page.getByRole('menu')).toHaveCount(0);

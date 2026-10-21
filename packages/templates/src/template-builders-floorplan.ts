@@ -25,7 +25,7 @@
 // Pure like every other builder: takes a centre (cx, cy), returns a
 // fresh Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@liveplanner/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import {
   NORTH_ARROW_H,

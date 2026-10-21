@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TITLE_MAX } from '@livediagram/items';
+import { ITEM_TITLE_MAX } from '@liveplanner/items';
 import { refusalMessage } from './usePlanItems';
 
 // docs/specs/026-plan/items.md "Limits": a refused change names what was wrong.

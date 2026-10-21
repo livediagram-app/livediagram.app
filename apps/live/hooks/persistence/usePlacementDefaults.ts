@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useSyncExternalStore } from 'react';
-import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
 import {
   loadPlacementDefaults,

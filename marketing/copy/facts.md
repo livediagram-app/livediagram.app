@@ -56,7 +56,7 @@ is the team, not the individual.
 ## Open source and price
 
 - MIT-licensed, publicly viewable, self-hostable end to end.
-- Hosted free at livediagram.app. No paid tier and no plan to introduce one.
+- Hosted free at liveplanner.app. No paid tier and no plan to introduce one.
 - The OSS core never calls home and never gates features behind a license
   check. Clerk auth is the one optional SaaS dependency; without it the app
   degrades to full-featured guest mode.
@@ -75,5 +75,5 @@ Node-hosted backend, no SSR.
 
 ## Links
 
-- Hosted: https://livediagram.app
-- Editor: https://livediagram.app/live
+- Hosted: https://liveplanner.app
+- Editor: https://liveplanner.app/live

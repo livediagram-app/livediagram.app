@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, type Element, type Tab } from '@livediagram/document';
+import { pagesOf, type Element, type Tab } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 import { clearLocalPreview, localPreview } from '@/lib/drag-preview';
 import { pageEdits } from './page-edits';

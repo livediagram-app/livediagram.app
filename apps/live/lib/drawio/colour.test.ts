@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
 import { hexFill, hexInk, readColour, readFill, readInk } from './colour';
 
 describe('readColour', () => {

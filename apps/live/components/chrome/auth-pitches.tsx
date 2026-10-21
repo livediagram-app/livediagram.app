@@ -1,7 +1,7 @@
 // The two pitches the Night Band frame shows beside its card (docs/specs/014-identity/auth-and-guest-access.md "The
 // look: Night Band"): what an account adds, on the account pages, and what connecting means, on the connect pages.
 // Copy only; no controls.
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 import { AuthPitch, type PitchRow } from './AuthStage';
 

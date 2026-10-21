@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { type Element, type Layer } from '@livediagram/document';
+import { type Element, type Layer } from '@liveplanner/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
@@ -16,7 +16,7 @@ import {
   PlusIcon,
 } from '@/components/panels/layers-panel-icons';
 import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@liveplanner/ui';
 
 // Under a lone layer, so a first visit learns what the panel is for.
 export const SINGLE_LAYER_HINT =

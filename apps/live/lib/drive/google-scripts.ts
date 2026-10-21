@@ -1,9 +1,9 @@
 // Google's browser libraries, loaded on demand and only where they are used
 // (blueprint "Assets and external resources"): Identity Services for the
-// browser-only token model, and the Picker for adopting a folder livediagram
+// browser-only token model, and the Picker for adopting a folder liveplanner
 // cannot see. Neither loads for a deployment without a client id.
 
-import { DRIVE_FOLDER_MIME, DRIVE_SCOPES, type DriveAccessToken } from '@livediagram/api-schema';
+import { DRIVE_FOLDER_MIME, DRIVE_SCOPES, type DriveAccessToken } from '@liveplanner/api-schema';
 import { googleProjectNumber } from './config';
 
 const GIS_SRC = 'https://accounts.google.com/gsi/client';
@@ -105,7 +105,7 @@ type FolderPicker = (input: {
   parentId: string | null;
 }) => Promise<string | null>;
 
-// Pick one folder. Picking is what grants livediagram access to it under
+// Pick one folder. Picking is what grants liveplanner access to it under
 // drive.file; that is why the Picker needs the project number as its app id.
 export function googleFolderPicker(apiKey: string, clientId: string): FolderPicker {
   return async ({ accessToken, parentId }) => {
@@ -123,7 +123,7 @@ export function googleFolderPicker(apiKey: string, clientId: string): FolderPick
         .addView(view)
         .setOAuthToken(accessToken)
         .setDeveloperKey(apiKey)
-        .setTitle('Show a folder to livediagram')
+        .setTitle('Show a folder to liveplanner')
         .setCallback((data) => {
           if (data.action === picker.Action.PICKED) resolve(data.docs?.[0]?.id ?? null);
           else if (data.action === picker.Action.CANCEL) resolve(null);

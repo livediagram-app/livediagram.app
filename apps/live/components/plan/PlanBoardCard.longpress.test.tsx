@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Item } from '@livediagram/items';
+import type { Item } from '@liveplanner/items';
 import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
 import { PlanBoardCard } from './PlanBoardCells';
 import { planPalette } from './plan-palette';

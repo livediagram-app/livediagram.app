@@ -8,7 +8,7 @@ import { HYPERLINK_URL_MAX, safeHyperlink } from './hyperlink';
 
 describe('safeHyperlink', () => {
   it('keeps http, https and mailto targets', () => {
-    expect(safeHyperlink('https://livediagram.app')).toBe('https://livediagram.app/');
+    expect(safeHyperlink('https://liveplanner.app')).toBe('https://liveplanner.app/');
     expect(safeHyperlink(' http://example.com/a?b=1 ')).toBe('http://example.com/a?b=1');
     expect(safeHyperlink('mailto:team@example.com')).toBe('mailto:team@example.com');
   });
@@ -21,7 +21,7 @@ describe('safeHyperlink', () => {
       'file:///etc/passwd',
       'ftp://example.com',
       '/relative/path',
-      'livediagram.app',
+      'liveplanner.app',
       '',
       'https://' + 'a'.repeat(HYPERLINK_URL_MAX),
     ])
@@ -40,9 +40,9 @@ describe('Workbook.hyperlinkOf', () => {
   };
 
   it('reads the target of a HYPERLINK formula, while the value stays the label', () => {
-    const b = book({ A1: '=HYPERLINK("https://livediagram.app", "livediagram")' });
-    expect(b.v('A1')).toBe('livediagram');
-    expect(at(b, 'A1')).toBe('https://livediagram.app/');
+    const b = book({ A1: '=HYPERLINK("https://liveplanner.app", "liveplanner")' });
+    expect(b.v('A1')).toBe('liveplanner');
+    expect(at(b, 'A1')).toBe('https://liveplanner.app/');
   });
 
   it('works the target out in the cell, references included, and follows a change', () => {
@@ -70,11 +70,11 @@ describe('Workbook.hyperlinkOf', () => {
 
 describe('the render model', () => {
   it('carries a HYPERLINK cell as a link, underlined, and no other', () => {
-    const b = book({ A1: '=HYPERLINK("https://livediagram.app", "livediagram")', A2: 'plain' });
+    const b = book({ A1: '=HYPERLINK("https://liveplanner.app", "liveplanner")', A2: 'plain' });
     const model = renderWindow(b.wb, b.sheets[0]!.id, { width: 600, height: 200 }, 'en-GB')!;
     const cell = (text: string) => model.cells.find((x) => x.text === text)!;
-    expect(cell('livediagram')).toMatchObject({
-      link: 'https://livediagram.app/',
+    expect(cell('liveplanner')).toMatchObject({
+      link: 'https://liveplanner.app/',
       underline: true,
     });
     expect(cell('plain').link).toBeUndefined();

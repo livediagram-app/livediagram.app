@@ -140,7 +140,7 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
   (whiteboard pen, pencil, highlighter) before it packs, so release never throws
   `stroke-too-many-points`.
 - **Base64:** the module's own table codec (the document package cannot depend on
-  `@livediagram/api-schema`, which depends on it): standard alphabet, `=` padding, canonical only
+  `@liveplanner/api-schema`, which depends on it): standard alphabet, `=` padding, canonical only
   (a non-zero pad remainder is `not-base64`), no whitespace.
 - **Decode** reads with a `DataView`, little-endian; record `i` at `2 + i * stride`.
 - **Validation:** `isValidElement` for `freehand` requires `parseStrokePoints(el.packedPoints).ok`
@@ -220,7 +220,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                                         |
 | Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                                        |
 | MCP server          | `packages/document/src/element-normalise.ts`, `tools.ts`                             | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
-| Drive mirror        | `apps/live/lib/drive/livediagram-port.ts`                                            | unchanged: copies create through the api                                            |
+| Drive mirror        | `apps/live/lib/drive/liveplanner-port.ts`                                            | unchanged: copies create through the api                                            |
 | Templates           | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                                         |
 | Shape recognition   | `apps/live/lib/recognition-preview.ts`, `recogniseBoardStroke`                       | unchanged: reads the live stroke, not an element                                    |
 | Polygon tool        | `useCanvasPolygonGesture.ts`                                                         | unchanged: `createFreehand`                                                         |

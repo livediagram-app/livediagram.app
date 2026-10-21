@@ -7,7 +7,7 @@ import {
   emptyLayout,
   type CardTable,
   type Sheet,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { controlsColumnWrite } from './useCardTableSync';
 
 let seq = 9;

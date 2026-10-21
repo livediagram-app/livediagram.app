@@ -8,8 +8,8 @@ import {
   createShape,
   penColourHex,
   type Tab,
-} from '@livediagram/document';
-import { canvasSurface } from '@livediagram/document';
+} from '@liveplanner/document';
+import { canvasSurface } from '@liveplanner/document';
 import { tabAsSeen } from './export-as-seen';
 import { renderTabToSvg } from './export-tab';
 

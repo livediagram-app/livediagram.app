@@ -8,7 +8,7 @@ import {
   type HelpArticleKey,
 } from '@/lib/help-articles';
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@liveplanner/ui';
 
 type HelpArticleLinkProps = {
   /** Which help article to deep-link (key in HELP_ARTICLES). */

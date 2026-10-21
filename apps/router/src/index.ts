@@ -5,7 +5,7 @@
 
 import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
-import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
+import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).

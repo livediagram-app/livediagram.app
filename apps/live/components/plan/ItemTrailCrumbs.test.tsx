@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 
 // docs/specs/026-plan/plan-board.md "Open an item", Breadcrumb.

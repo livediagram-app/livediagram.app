@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@liveplanner/sticky-vision';
 import type { CropReader, ReadOptions, ReadText } from '@/lib/reading/types';
 import { debugLog } from '@/lib/debug-log';
 

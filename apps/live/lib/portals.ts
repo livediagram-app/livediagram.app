@@ -12,7 +12,7 @@
 // than throwing — because a document is edited in any order and a half-wired
 // portal is a normal intermediate state, not corrupt data.
 
-import type { Element, ShapeElement, Tab } from '@livediagram/document';
+import type { Element, ShapeElement, Tab } from '@liveplanner/document';
 
 type PortalBox = { x: number; y: number; width: number; height: number; label?: string };
 

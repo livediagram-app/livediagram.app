@@ -9,7 +9,7 @@ import {
   documentRestoredMessage,
 } from '@/lib/document-toast-copy';
 import type { useToast } from '@/hooks/ui/useToast';
-import type { LiveDoc } from '@livediagram/api-schema';
+import type { LiveDoc } from '@liveplanner/api-schema';
 
 /** Which Trash a deleted document went to, as the Trash's own telemetry types it. */
 export type DeletedTrash = 'Personal' | 'Team' | 'Local';
@@ -54,7 +54,7 @@ export function offerDeleteUndo(
 
 // The open document's delete leaves the editor for the Explorer, so its Undo is handed over: the Explorer offers it
 // on arrival. Held for one page load in sessionStorage, and only for a moment, so a later visit offers nothing.
-const HANDOFF_KEY = 'livediagram:deleted-document';
+const HANDOFF_KEY = 'liveplanner:deleted-document';
 const HANDOFF_MAX_AGE_MS = 30_000;
 
 type Handoff = { id: string; name?: string; trash: DeletedTrash; at: number };

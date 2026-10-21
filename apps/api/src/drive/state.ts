@@ -12,7 +12,7 @@ import {
   randomBase64Url,
   DRIVE_STATE_TTL_MS,
   oauthRedirectUrl,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { timingSafeEqual } from '../auth/timing-safe';
 import { driveKeyBytes } from './crypto';
 
@@ -31,7 +31,7 @@ async function signingKey(secret: string): Promise<CryptoKey | null> {
       name: 'HKDF',
       hash: 'SHA-256',
       salt: new Uint8Array(0),
-      info: enc.encode('livediagram drive state'),
+      info: enc.encode('liveplanner drive state'),
     },
     base,
     { name: 'HMAC', hash: 'SHA-256', length: 256 },

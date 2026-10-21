@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@liveplanner/vitest-config';
 
 // resolve.alias mirrors tsconfig.json's `"@/*": ["./*"]` so test files can
 // import lib modules whose own import chain reaches a `@/components/...`
@@ -11,7 +11,7 @@ import { defineProject } from '@livediagram/vitest-config';
 export default defineProject({
   esbuild: { jsx: 'automatic' },
   // A component test opts into jsdom per file; unmount after each, as packages/ui does.
-  test: { setupFiles: ['@livediagram/vitest-config/react-cleanup'] },
+  test: { setupFiles: ['@liveplanner/vitest-config/react-cleanup'] },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./', import.meta.url)),

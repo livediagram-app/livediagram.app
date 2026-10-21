@@ -13,10 +13,10 @@ import {
 export type WorkbenchEndReason = 'expired' | 'revoked' | 'trashed' | 'refused';
 type WorkbenchColourScheme = 'light' | 'dark';
 
-export type HelloMessage = { type: 'livediagram:hello'; v: 1 };
-export type HelloAckMessage = { type: 'livediagram:hello-ack'; v: 1; name: string };
+export type HelloMessage = { type: 'liveplanner:hello'; v: 1 };
+export type HelloAckMessage = { type: 'liveplanner:hello-ack'; v: 1; name: string };
 export type DocumentReadyMessage = {
-  type: 'livediagram:ready';
+  type: 'liveplanner:ready';
   v: 1;
   documentId: string;
   documentName: string;
@@ -26,15 +26,15 @@ export type DocumentReadyMessage = {
 };
 // A workspace frame is ready once its Explorer mounts: no document yet.
 export type WorkspaceReadyMessage = {
-  type: 'livediagram:ready';
+  type: 'liveplanner:ready';
   v: 1;
   scope: 'workspace';
   role: WorkbenchRole;
 };
 export type ReadyMessage = DocumentReadyMessage | WorkspaceReadyMessage;
-export type TabMessage = { type: 'livediagram:tab'; v: 1; tabId: string; tabName: string };
+export type TabMessage = { type: 'liveplanner:tab'; v: 1; tabId: string; tabName: string };
 export type SelectionMessage = {
-  type: 'livediagram:selection';
+  type: 'liveplanner:selection';
   v: 1;
   documentId: string;
   documentName: string;
@@ -44,18 +44,18 @@ export type SelectionMessage = {
   count: number;
   reference: string;
 };
-export type RenewMessage = { type: 'livediagram:renew'; v: 1 };
-export type TicketMessage = { type: 'livediagram:ticket'; v: 1; ticket: string };
-export type RevealMessage = { type: 'livediagram:reveal'; v: 1; refs: string[] };
+export type RenewMessage = { type: 'liveplanner:renew'; v: 1 };
+export type TicketMessage = { type: 'liveplanner:ticket'; v: 1; ticket: string };
+export type RevealMessage = { type: 'liveplanner:reveal'; v: 1; refs: string[] };
 export type ThemeMessage = {
-  type: 'livediagram:theme';
+  type: 'liveplanner:theme';
   v: 1;
   colourScheme: WorkbenchColourScheme;
 };
-export type EndedMessage = { type: 'livediagram:ended'; v: 1; reason: WorkbenchEndReason };
+export type EndedMessage = { type: 'liveplanner:ended'; v: 1; reason: WorkbenchEndReason };
 // Where a workspace frame is, sent on every move. `view` is the Explorer view's name, or `document`.
 export type PlaceMessage = {
-  type: 'livediagram:place';
+  type: 'liveplanner:place';
   v: 1;
   view: string;
   folderId: string | null;
@@ -71,7 +71,7 @@ export type PlaceMessage = {
 export type WorkbenchOpenTarget =
   { view: 'home' } | { folderId: string } | { documentId: string; tabId?: string };
 // The workbench moves a workspace frame.
-export type OpenMessage = { type: 'livediagram:open'; v: 1; to: WorkbenchOpenTarget };
+export type OpenMessage = { type: 'liveplanner:open'; v: 1; to: WorkbenchOpenTarget };
 
 // What the page sends its workbench, and what the workbench sends the page.
 export type PageToWorkbenchMessage =
@@ -87,18 +87,18 @@ export type WorkbenchToPageMessage =
 type WorkbenchMessage = PageToWorkbenchMessage | WorkbenchToPageMessage;
 
 export const WORKBENCH_MESSAGE_TYPES = [
-  'livediagram:hello',
-  'livediagram:hello-ack',
-  'livediagram:ready',
-  'livediagram:tab',
-  'livediagram:selection',
-  'livediagram:renew',
-  'livediagram:ticket',
-  'livediagram:reveal',
-  'livediagram:theme',
-  'livediagram:ended',
-  'livediagram:place',
-  'livediagram:open',
+  'liveplanner:hello',
+  'liveplanner:hello-ack',
+  'liveplanner:ready',
+  'liveplanner:tab',
+  'liveplanner:selection',
+  'liveplanner:renew',
+  'liveplanner:ticket',
+  'liveplanner:reveal',
+  'liveplanner:theme',
+  'liveplanner:ended',
+  'liveplanner:place',
+  'liveplanner:open',
 ] as const;
 
 // Which side is parsing: the page reads `to-page` messages, a workbench `to-workbench` ones. A known
@@ -133,11 +133,11 @@ const isRefList = (v: unknown): v is string[] =>
   v.every((r) => isString(r) && r.length >= 1 && r.length <= REF_MAX_LENGTH);
 
 const TO_WORKBENCH: Record<string, Parser> = {
-  'livediagram:hello': () => ({ type: 'livediagram:hello', v: 1 }),
-  'livediagram:ready': (m) => {
+  'liveplanner:hello': () => ({ type: 'liveplanner:hello', v: 1 }),
+  'liveplanner:ready': (m) => {
     if (m.scope !== undefined) {
       return m.scope === 'workspace' && ROLES.includes(m.role)
-        ? { type: 'livediagram:ready', v: 1, scope: 'workspace', role: m.role as WorkbenchRole }
+        ? { type: 'liveplanner:ready', v: 1, scope: 'workspace', role: m.role as WorkbenchRole }
         : null;
     }
     return isString(m.documentId) &&
@@ -146,7 +146,7 @@ const TO_WORKBENCH: Record<string, Parser> = {
       isString(m.tabName) &&
       ROLES.includes(m.role)
       ? {
-          type: 'livediagram:ready',
+          type: 'liveplanner:ready',
           v: 1,
           documentId: m.documentId,
           documentName: m.documentName,
@@ -156,7 +156,7 @@ const TO_WORKBENCH: Record<string, Parser> = {
         }
       : null;
   },
-  'livediagram:place': (m) =>
+  'liveplanner:place': (m) =>
     isString(m.view) &&
     m.view.length >= 1 &&
     m.view.length <= REF_MAX_LENGTH &&
@@ -169,7 +169,7 @@ const TO_WORKBENCH: Record<string, Parser> = {
     isStringOrNull(m.tabName) &&
     ROLES.includes(m.role)
       ? {
-          type: 'livediagram:place',
+          type: 'liveplanner:place',
           v: 1,
           view: m.view,
           folderId: m.folderId,
@@ -182,11 +182,11 @@ const TO_WORKBENCH: Record<string, Parser> = {
           role: m.role as WorkbenchRole,
         }
       : null,
-  'livediagram:tab': (m) =>
+  'liveplanner:tab': (m) =>
     isString(m.tabId) && isString(m.tabName)
-      ? { type: 'livediagram:tab', v: 1, tabId: m.tabId, tabName: m.tabName }
+      ? { type: 'liveplanner:tab', v: 1, tabId: m.tabId, tabName: m.tabName }
       : null,
-  'livediagram:selection': (m) =>
+  'liveplanner:selection': (m) =>
     isString(m.documentId) &&
     isString(m.documentName) &&
     isString(m.tabId) &&
@@ -194,7 +194,7 @@ const TO_WORKBENCH: Record<string, Parser> = {
     isCount(m.count) &&
     isString(m.reference)
       ? {
-          type: 'livediagram:selection',
+          type: 'liveplanner:selection',
           v: 1,
           documentId: m.documentId,
           documentName: m.documentName,
@@ -204,10 +204,10 @@ const TO_WORKBENCH: Record<string, Parser> = {
           reference: m.reference,
         }
       : null,
-  'livediagram:renew': () => ({ type: 'livediagram:renew', v: 1 }),
-  'livediagram:ended': (m) =>
+  'liveplanner:renew': () => ({ type: 'liveplanner:renew', v: 1 }),
+  'liveplanner:ended': (m) =>
     REASONS.includes(m.reason)
-      ? { type: 'livediagram:ended', v: 1, reason: m.reason as WorkbenchEndReason }
+      ? { type: 'liveplanner:ended', v: 1, reason: m.reason as WorkbenchEndReason }
       : null,
 };
 
@@ -222,24 +222,24 @@ function openTargetOf(to: unknown): WorkbenchOpenTarget | null {
 }
 
 const TO_PAGE: Record<string, Parser> = {
-  'livediagram:open': (m) => {
+  'liveplanner:open': (m) => {
     const to = openTargetOf(m.to);
-    return to === null ? null : { type: 'livediagram:open', v: 1, to };
+    return to === null ? null : { type: 'liveplanner:open', v: 1, to };
   },
-  'livediagram:hello-ack': (m) => {
+  'liveplanner:hello-ack': (m) => {
     const name = normaliseWorkbenchName(m.name);
-    return name === null ? null : { type: 'livediagram:hello-ack', v: 1, name };
+    return name === null ? null : { type: 'liveplanner:hello-ack', v: 1, name };
   },
-  'livediagram:ticket': (m) =>
+  'liveplanner:ticket': (m) =>
     isString(m.ticket) && WORKBENCH_HANDLE_PATTERN.test(m.ticket)
-      ? { type: 'livediagram:ticket', v: 1, ticket: m.ticket }
+      ? { type: 'liveplanner:ticket', v: 1, ticket: m.ticket }
       : null,
-  'livediagram:reveal': (m) =>
-    isRefList(m.refs) ? { type: 'livediagram:reveal', v: 1, refs: [...m.refs] } : null,
-  'livediagram:theme': (m) =>
+  'liveplanner:reveal': (m) =>
+    isRefList(m.refs) ? { type: 'liveplanner:reveal', v: 1, refs: [...m.refs] } : null,
+  'liveplanner:theme': (m) =>
     SCHEMES.includes(m.colourScheme)
       ? {
-          type: 'livediagram:theme',
+          type: 'liveplanner:theme',
           v: 1,
           colourScheme: m.colourScheme as WorkbenchColourScheme,
         }

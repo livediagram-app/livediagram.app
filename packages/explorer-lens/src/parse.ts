@@ -16,7 +16,7 @@ import {
   isLensDimension,
   type LensDimension,
 } from './dimensions';
-import { parseEditorMode } from '@livediagram/document';
+import { parseEditorMode } from '@liveplanner/document';
 import type {
   Lens,
   LensContext,

@@ -50,9 +50,9 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   // The owner scopes a new link to Roadmap.
   await page.addInitScript(
     ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem('liveplanner:v2:self-id', id);
+      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
+      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
     },
     { id: owner, sig: guestSigFor(owner) },
   );
@@ -70,7 +70,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   // A visitor opens it, with every response and frame watched.
   const visitorContext = await browser.newContext();
   await visitorContext.addInitScript(() =>
-    localStorage.setItem('livediagram:v2:name-confirmed', '1'),
+    localStorage.setItem('liveplanner:v2:name-confirmed', '1'),
   );
   const visitor = await visitorContext.newPage();
   const leaks: string[] = [];

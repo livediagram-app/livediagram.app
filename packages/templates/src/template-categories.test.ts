@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livediagram/document';
+import { EDITOR_MODES } from '@liveplanner/document';
 import {
   TEMPLATE_ALSO_IN,
   TEMPLATE_CATEGORIES,

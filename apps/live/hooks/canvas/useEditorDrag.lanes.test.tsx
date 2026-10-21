@@ -11,7 +11,7 @@ import {
   type EsTimeline,
   type StickyElement,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
 import { setInsertionSlot } from '@/lib/insertion-preview';
 import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';

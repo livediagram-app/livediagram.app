@@ -1,4 +1,4 @@
-name = "livediagram-community"
+name = "liveplanner-community"
 compatibility_date = "2026-05-29"
 
 # Cloudflare Workers serves the Next.js static export from `./out`; the router worker forwards
@@ -19,16 +19,16 @@ run_worker_first = ["/post", "/post/", "/sitemap.xml"]
 # the assets unchanged.
 [[services]]
 binding = "API"
-service = "livediagram-api"
+service = "liveplanner-api"
 
 # Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys
-# the same static `./out` as `livediagram-community-staging`. The build that fills `out/` is a
+# the same static `./out` as `liveplanner-community-staging`. The build that fills `out/` is a
 # different one (staging bakes its own NEXT_PUBLIC_* values), so the two never share an artifact.
 #
 # `[assets]` is restated so this block reads as the complete description of the staging worker. The
 # name is explicit because the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-community-staging"
+name = "liveplanner-community-staging"
 
 [env.staging.assets]
 directory = "./out"
@@ -39,4 +39,4 @@ run_worker_first = ["/post", "/post/", "/sitemap.xml"]
 # Service bindings are not inherited: staging reads the staging api.
 [[env.staging.services]]
 binding = "API"
-service = "livediagram-api-staging"
+service = "liveplanner-api-staging"

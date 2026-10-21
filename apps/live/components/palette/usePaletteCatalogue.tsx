@@ -4,7 +4,7 @@ import {
   DEFAULT_EDITOR_MODE,
   type EmbedProvider,
   type EventStormingNoteKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -128,7 +128,7 @@ export function usePaletteCatalogue({
     fn();
     onTileUsed?.();
   };
-  const addShape = (kind: import('@livediagram/document').ShapeKind, opts?: AddShapeOptions) =>
+  const addShape = (kind: import('@liveplanner/document').ShapeKind, opts?: AddShapeOptions) =>
     armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the
   // shape intent carrying the glyph id).
@@ -146,7 +146,7 @@ export function usePaletteCatalogue({
   const addVideo = (provider?: EmbedProvider) => armed(() => onAddVideo(provider))();
   // Components arm the draw gesture (tap-or-drag) and close a popover
   // palette so the canvas is clear to draw on.
-  const addArrow = (ends?: import('@livediagram/document').ArrowEnds) =>
+  const addArrow = (ends?: import('@liveplanner/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
@@ -158,7 +158,7 @@ export function usePaletteCatalogue({
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
-  const addComponent = (kind: import('@livediagram/document').ComponentKind) => {
+  const addComponent = (kind: import('@liveplanner/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
       banner: onAddBanner,

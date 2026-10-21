@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import { pageImageIds, type Tab } from '@livediagram/document';
+import { pageImageIds, type Tab } from '@liveplanner/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {

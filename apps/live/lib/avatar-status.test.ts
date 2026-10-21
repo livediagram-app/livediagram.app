@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AVATAR_STATUS_IDS } from '@livediagram/api-schema';
+import { AVATAR_STATUS_IDS } from '@liveplanner/api-schema';
 import { AVATAR_STATUSES, avatarStatusLabel, parseAvatarStatus } from './avatar-status';
 
 // docs/specs/008-canvas/avatar-mode.md "Status"

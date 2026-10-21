@@ -14,7 +14,7 @@ import {
   chartValueFontPx,
   legendFontPx,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ChartValues } from '@/components/primitives/ChartValues';
 import { BarChartAxis } from './ChartAxis';
 import { useChartAnim, chartFrame } from '@/lib/chart';

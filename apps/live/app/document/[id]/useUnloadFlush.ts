@@ -8,7 +8,7 @@
 // events can fire in pairs on the way out.
 import { useEffect, useRef, type MutableRefObject, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { flushDocumentSavesBeacon, type connectRoom } from '@/lib/api-client';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 import { commitOpenEdit } from '@/lib/open-edit';

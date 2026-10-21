@@ -19,7 +19,7 @@ import {
   COMMUNITY_SITEMAP_MAX,
   type CommunityListQuery,
   type CommunityPostInput,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { communityEnabled } from '../community-enabled';
 import {
   COMMUNITY_POST_COLS,

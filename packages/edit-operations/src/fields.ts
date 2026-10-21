@@ -3,7 +3,7 @@
 // `null` unsets. Identity, live fields and prototype keys are refused. A shape's long label is capped
 // into its note once every field is written, so it moves into the note the element ends with.
 
-import type { EditRejection, EditWarning } from '@livediagram/api-schema';
+import type { EditRejection, EditWarning } from '@liveplanner/api-schema';
 import {
   BORDER_DASH_ARRAY,
   isTextSize,
@@ -21,14 +21,14 @@ import {
   type ThemeDefinition,
   rederiveColorPresetForTheme,
   shapeColorPresets,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
 import { applyLabel } from './labels';
 import { invalidValue, unknownField } from './rejections';
 import type { FieldValue, Fields } from './types';
 import { PROTOTYPE_KEYS } from './vocabulary';
-import { iconsLike, isIconId } from '@livediagram/icons/search';
+import { iconsLike, isIconId } from '@liveplanner/icons/search';
 
 // The spec's names, then the style keys the views print (`STYLE_KEYS`), so a printed `key=value` writes back
 // unchanged; `font` is a stored field name already.

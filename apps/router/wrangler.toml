@@ -1,4 +1,4 @@
-name = "livediagram-router"
+name = "liveplanner-router"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
@@ -9,29 +9,29 @@ compatibility_date = "2026-05-01"
 
 [[services]]
 binding = "MARKETING"
-service = "livediagram-marketing"
+service = "liveplanner-marketing"
 
 [[services]]
 binding = "LIVE"
-service = "livediagram-live"
+service = "liveplanner-live"
 
 [[services]]
 binding = "API"
-service = "livediagram-api"
+service = "liveplanner-api"
 
 [[services]]
 binding = "TELEMETRY"
-service = "livediagram-telemetry"
+service = "liveplanner-telemetry"
 
 [[services]]
 binding = "HELP"
-service = "livediagram-help"
+service = "liveplanner-help"
 
 [[services]]
 binding = "COMMUNITY"
-service = "livediagram-community"
+service = "liveplanner-community"
 
-# Local dev (`wrangler dev --env local --port 3000`, the workspace `dev`
+# Local dev (`wrangler dev --env local --port 3100`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
@@ -39,16 +39,16 @@ service = "livediagram-community"
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
-MARKETING_ORIGIN = "http://127.0.0.1:3001"
-LIVE_ORIGIN = "http://127.0.0.1:3002"
-API_ORIGIN = "http://127.0.0.1:8787"
-TELEMETRY_ORIGIN = "http://127.0.0.1:3003"
-HELP_ORIGIN = "http://127.0.0.1:3004"
-COMMUNITY_ORIGIN = "http://127.0.0.1:3005"
+MARKETING_ORIGIN = "http://127.0.0.1:3101"
+LIVE_ORIGIN = "http://127.0.0.1:3102"
+API_ORIGIN = "http://127.0.0.1:8887"
+TELEMETRY_ORIGIN = "http://127.0.0.1:3103"
+HELP_ORIGIN = "http://127.0.0.1:3104"
+COMMUNITY_ORIGIN = "http://127.0.0.1:3105"
 
 # ---------------------------------------------------------------------------
-# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-router-staging` and fronts
-# https://staging.livediagram.app (the custom domain is attached in the
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveplanner-router-staging` and fronts
+# https://staging.liveplanner.app (the custom domain is attached in the
 # Cloudflare dashboard — the deploy token has no zone scope, same as
 # production).
 #
@@ -64,31 +64,31 @@ COMMUNITY_ORIGIN = "http://127.0.0.1:3005"
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-router-staging"
+name = "liveplanner-router-staging"
 
 [[env.staging.services]]
 binding = "MARKETING"
-service = "livediagram-marketing-staging"
+service = "liveplanner-marketing-staging"
 
 [[env.staging.services]]
 binding = "LIVE"
-service = "livediagram-live-staging"
+service = "liveplanner-live-staging"
 
 [[env.staging.services]]
 binding = "API"
-service = "livediagram-api-staging"
+service = "liveplanner-api-staging"
 
 [[env.staging.services]]
 binding = "TELEMETRY"
-service = "livediagram-telemetry-staging"
+service = "liveplanner-telemetry-staging"
 
 [[env.staging.services]]
 binding = "HELP"
-service = "livediagram-help-staging"
+service = "liveplanner-help-staging"
 
 [[env.staging.services]]
 binding = "COMMUNITY"
-service = "livediagram-community-staging"
+service = "liveplanner-community-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a

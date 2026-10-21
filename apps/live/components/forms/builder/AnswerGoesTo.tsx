@@ -11,10 +11,10 @@ import {
   titleTakenBy,
   type AnswerTarget,
   type FormQuestion,
-} from '@livediagram/forms';
+} from '@liveplanner/forms';
 import { CUSTOM_KIND_LABELS } from '@/components/plan/ItemTypeFieldForms';
-import { PlusIcon } from '@livediagram/ui';
-import { setTarget } from '@livediagram/forms';
+import { PlusIcon } from '@liveplanner/ui';
+import { setTarget } from '@liveplanner/forms';
 import { useFormBuilder } from './form-builder-context';
 
 export function AnswerGoesTo({

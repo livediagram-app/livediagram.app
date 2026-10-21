@@ -58,7 +58,7 @@ apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widg
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
   carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
   Completion off any preset or template board without `doneColumnId` and WIP Alerts off any without a `wipLimit`.
-- Counts render through `CountBadge` from `@livediagram/ui` at `size="md"` (an 18 px pill with
+- Counts render through `CountBadge` from `@liveplanner/ui` at `size="md"` (an 18 px pill with
   `text-optical-centre`) painted with the board's `background`/`color`, shared with column heads.
 
 ## Interfaces and contracts

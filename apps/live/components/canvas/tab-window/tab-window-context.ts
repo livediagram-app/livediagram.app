@@ -4,7 +4,7 @@
 // one's content is, and the few things a window does (ask for its tab, open it, show another). Provided once by the
 // canvas host rather than threaded through every element.
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 
 export type TabWindowStatus = 'loaded' | 'loading' | 'failed';

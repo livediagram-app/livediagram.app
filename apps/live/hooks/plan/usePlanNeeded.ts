@@ -5,7 +5,7 @@
 // pays nothing for Plan. Once needed it stays needed for the session (latched), so moving to a tab
 // without Plan content keeps the items it already holds.
 import { useState } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 
 export function hasPlanContent(
   elements: readonly Element[],

@@ -8,7 +8,7 @@
 // serve) turns CI red.
 //
 // `requestSchema` / `responseSchema` are either a component name (a key of the
-// generated COMPONENT_SCHEMAS, itself derived from @livediagram/api-schema) or
+// generated COMPONENT_SCHEMAS, itself derived from @liveplanner/api-schema) or
 // an inline JSON Schema for the small envelopes that wrap a payload. Path
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
@@ -18,9 +18,9 @@ import {
   TAB_VIEW_NAMES,
   TEAM_RECENT_INCLUDE,
   TEAM_RECENT_LIMIT,
-} from '@livediagram/api-schema';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
-import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
+} from '@liveplanner/api-schema';
+import { NAME_MAX_LENGTH } from '@liveplanner/document';
+import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@liveplanner/document-views';
 import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):

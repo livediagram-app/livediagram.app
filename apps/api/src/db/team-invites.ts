@@ -4,7 +4,7 @@
 // shareable one-week invite link with its token join. Core team /
 // member CRUD stays in teams.ts.
 
-import type { Team, TeamInvite, TeamMember } from '@livediagram/api-schema';
+import type { Team, TeamInvite, TeamMember } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { mintDeclineToken } from './team-invite-decline';
 import {

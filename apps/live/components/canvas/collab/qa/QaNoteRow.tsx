@@ -4,7 +4,7 @@
 // actions surface on hover.
 
 import { forwardRef } from 'react';
-import type { QaNote } from '@livediagram/document';
+import type { QaNote } from '@liveplanner/document';
 import { tint } from '../collab-chrome';
 import {
   AuthorChip,

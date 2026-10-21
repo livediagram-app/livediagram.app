@@ -8,10 +8,10 @@ const isCI = !!process.env.CI;
 const CI_WORKERS = 4;
 // The signed-in specs (e2e/clerk-stub/, docs/specs/014-identity/blueprints/profile-picture.md) need
 // the Clerk-enabled export (`pnpm build:clerk-stub`). They run as their own invocation
-// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3002 is never
+// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3102 is never
 // mistaken for it.
 const clerkStub = process.env.E2E_CLERK_STUB === '1';
-const STUB_PORTS = { live: '3015', api: '8788', marketing: '3016' };
+const STUB_PORTS = { live: '3115', api: '8888', marketing: '3116' };
 // The armed specs (e2e/armed/, docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
 // signatures") need guest signature enforcement on, so they run as their own invocation
 // (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
@@ -30,7 +30,7 @@ const BASE_URL =
       ? `http://localhost:${ARMED_PORTS.live}`
       : workbench
         ? `http://localhost:${WORKBENCH_PORTS.live}`
-        : 'http://localhost:3002');
+        : 'http://localhost:3102');
 const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : workbench ? '-workbench' : '';
 
 export default defineConfig({
@@ -91,7 +91,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: /optical-audit-sites\.spec\.ts/,
     },
-    // Opt-in (pnpm --filter @livediagram/live test:e2e:drive): the Google Drive
+    // Opt-in (pnpm --filter @liveplanner/live test:e2e:drive): the Google Drive
     // mirror against the fake Google, signed in through the test-only auth
     // bridge (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing").
     // Kept out of CI's default run: it needs a build with NEXT_PUBLIC_E2E_AUTH.

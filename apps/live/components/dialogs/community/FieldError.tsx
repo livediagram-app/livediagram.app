@@ -1,5 +1,5 @@
-import { lucideCircleAlert } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideCircleAlert } from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 
 const AlertIcon = lucideGlyph(lucideCircleAlert, 14);
 

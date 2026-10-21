@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { CheckIcon } from '@livediagram/ui';
+import { CheckIcon } from '@liveplanner/ui';
 import { useMenuItemProps } from './menu-item-props';
 
 // A checkable menu row (`menuitemcheckbox`): a fixed check slot (empty when unchecked, so labels

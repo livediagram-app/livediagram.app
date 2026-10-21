@@ -16,7 +16,7 @@ import {
   roomWalls,
   type Element,
   type FencePoint,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // How close a character's feet may come to a fence's line, in canvas px: about the feet's own
 // half-width, so a character stops AT a fence rather than standing in it. Measured on the Regular

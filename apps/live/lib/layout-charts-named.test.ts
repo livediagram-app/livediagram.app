@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newSlidePage, newWireframePage, type Element } from '@livediagram/document';
+import { layOutPages, newSlidePage, newWireframePage, type Element } from '@liveplanner/document';
 import {
   buildPageLayout,
   layoutCatalogueFor,
   PAGE_LAYOUTS,
   SLIDE_LAYOUTS,
-} from '@livediagram/templates';
+} from '@liveplanner/templates';
 
 // docs/specs/009-elements/pie-chart.md "Show Values": a column chart names its columns under its baseline only
 // with its values on, so one whose legend is off and values are not draws columns nobody can name (the Chart

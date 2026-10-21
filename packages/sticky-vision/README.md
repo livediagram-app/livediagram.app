@@ -1,4 +1,4 @@
-# @livediagram/sticky-vision
+# @liveplanner/sticky-vision
 
 Finds the sticky notes in a photograph of an event-storming wall ([Event storming](../../docs/specs/021-event-storming/event-storming.md)
 Phase 8), with classical computer vision. Pure TypeScript over an RGBA buffer:
@@ -72,7 +72,7 @@ repository):
 | detector                                                      | precision | recall | F1       | merged boxes           |
 | ------------------------------------------------------------- | --------- | ------ | -------- | ---------------------- |
 | this package alone (the classical pipeline)                   | 96%       | 92%    | 94.1     | 20                     |
-| with the learned boundary model (`@livediagram/sticky-model`) | 97%       | 95%    | **95.8** | 16, all of them labels |
+| with the learned boundary model (`@liveplanner/sticky-model`) | 97%       | 95%    | **95.8** | 16, all of them labels |
 
 The editor runs the second, and falls back to the first whenever the model
 cannot load. Counting detections is not a score — a detector that boxes the

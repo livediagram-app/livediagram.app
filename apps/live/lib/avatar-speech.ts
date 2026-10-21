@@ -3,7 +3,7 @@
 // at a moment of its flight, which bubbles stay on screen, and where above a character one starts. No React, no
 // DOM, so every rule here is unit-tested.
 
-import { clampSayText, countWords, sayOneLine, withinSayLimits } from '@livediagram/api-schema';
+import { clampSayText, countWords, sayOneLine, withinSayLimits } from '@liveplanner/api-schema';
 import { AVATAR_HEIGHT, type AvatarPoint } from '@/lib/avatar-walk';
 
 // Flight time: 4 s up to two words, 0.15 s more for each further word, at most 10 s.

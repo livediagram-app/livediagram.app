@@ -29,14 +29,14 @@ const blocked = (): Storage => {
 };
 
 describe('isRepairClearable', () => {
-  it('clears livediagram settings and caches', () => {
+  it('clears liveplanner settings and caches', () => {
     for (const k of [
-      'livediagram:user-preferences:v2',
-      'livediagram:recent-diagrams:v1',
-      'livediagram:share-password:abc',
-      'livediagram:v2:ui-mode',
-      'livediagram:stale-chunk-reloads',
-      'livediagram-build',
+      'liveplanner:user-preferences:v2',
+      'liveplanner:recent-diagrams:v1',
+      'liveplanner:share-password:abc',
+      'liveplanner:v2:ui-mode',
+      'liveplanner:stale-chunk-reloads',
+      'liveplanner-build',
     ]) {
       expect(isRepairClearable(k), k).toBe(true);
     }
@@ -45,9 +45,9 @@ describe('isRepairClearable', () => {
   it('keeps identity, per-browser keys and Drive state', () => {
     for (const k of [
       ...REPAIR_KEPT_KEYS,
-      'livediagram:v2:drive-state',
-      'livediagram:v2:drive-seen:user_a',
-      'livediagram:drive-mirror',
+      'liveplanner:v2:drive-state',
+      'liveplanner:v2:drive-seen:user_a',
+      'liveplanner:drive-mirror',
     ]) {
       expect(isRepairClearable(k), k).toBe(false);
     }
@@ -63,46 +63,46 @@ describe('repairBrowserStorage', () => {
   it('removes clearable keys from both storages and keeps the rest', () => {
     const localStorage = new MemoryStorage();
     const sessionStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:v2:self-id', 'guest');
-    localStorage.setItem('livediagram:user-preferences:v2', '{}');
-    localStorage.setItem('livediagram:panel-layout:v1', '{}');
+    localStorage.setItem('liveplanner:v2:self-id', 'guest');
+    localStorage.setItem('liveplanner:user-preferences:v2', '{}');
+    localStorage.setItem('liveplanner:panel-layout:v1', '{}');
     localStorage.setItem('__clerk_x', '1');
-    sessionStorage.setItem('livediagram:stale-chunk-reloads', '{}');
+    sessionStorage.setItem('liveplanner:stale-chunk-reloads', '{}');
 
     const { cleared } = repairBrowserStorage({ localStorage, sessionStorage });
 
     expect(cleared.sort()).toEqual([
-      'livediagram:panel-layout:v1',
-      'livediagram:stale-chunk-reloads',
-      'livediagram:user-preferences:v2',
+      'liveplanner:panel-layout:v1',
+      'liveplanner:stale-chunk-reloads',
+      'liveplanner:user-preferences:v2',
     ]);
-    expect(localStorage.getItem('livediagram:v2:self-id')).toBe('guest');
+    expect(localStorage.getItem('liveplanner:v2:self-id')).toBe('guest');
     expect(localStorage.getItem('__clerk_x')).toBe('1');
     expect(sessionStorage.length).toBe(0);
   });
 
   it('repairs what it can when a storage is blocked', () => {
     const localStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:v2:ui-mode', 'x');
+    localStorage.setItem('liveplanner:v2:ui-mode', 'x');
     const win = {
       localStorage,
       get sessionStorage() {
         return blocked();
       },
     };
-    expect(repairBrowserStorage(win).cleared).toEqual(['livediagram:v2:ui-mode']);
+    expect(repairBrowserStorage(win).cleared).toEqual(['liveplanner:v2:ui-mode']);
   });
 
   it('keeps going when one key will not remove', () => {
     const localStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:a', '1');
-    localStorage.setItem('livediagram:b', '1');
+    localStorage.setItem('liveplanner:a', '1');
+    localStorage.setItem('liveplanner:b', '1');
     const remove = localStorage.removeItem.bind(localStorage);
     localStorage.removeItem = (k: string) => {
-      if (k === 'livediagram:a') throw new Error('nope');
+      if (k === 'liveplanner:a') throw new Error('nope');
       remove(k);
     };
     const { cleared } = repairBrowserStorage({ localStorage, sessionStorage: new MemoryStorage() });
-    expect(cleared).toEqual(['livediagram:b']);
+    expect(cleared).toEqual(['liveplanner:b']);
   });
 });

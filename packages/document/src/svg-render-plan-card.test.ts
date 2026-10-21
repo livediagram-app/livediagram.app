@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, presetSetup, type Item, type ItemTypeDef } from '@livediagram/items';
+import { ITEM_TYPES, presetSetup, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { planPalette } from './plan-palette';
 import { planCardFace } from './svg-render-plan-card';
 import { PLAN_LANE_HEAD_H, planBoardLayout } from './plan-board-layout';

@@ -5,7 +5,7 @@
 // panel's actions. Every tab has it; only the elected tab runs the engine.
 
 import { createContext, useContext } from 'react';
-import type { DriveMode } from '@livediagram/api-schema';
+import type { DriveMode } from '@liveplanner/api-schema';
 import type { DriveMirrorNotice, DriveMirrorStatus } from '@/lib/drive/engine';
 
 export type DriveMirrorContextValue = {
@@ -14,7 +14,7 @@ export type DriveMirrorContextValue = {
   // Whether `mode` is settled (auth and the capabilities answer are in).
   resolved: boolean;
   status: DriveMirrorStatus;
-  // Whether "Show this folder to livediagram" can be offered (a Picker key).
+  // Whether "Show this folder to liveplanner" can be offered (a Picker key).
   canAdopt: boolean;
   // Connect pressed and the page not yet gone to Google; and why the last
   // attempt could not start, if it could not.

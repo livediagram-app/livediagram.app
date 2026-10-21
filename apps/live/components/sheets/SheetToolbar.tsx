@@ -4,7 +4,7 @@
 // dropdown, in its toolbar style), then the chosen category's buttons, each with the shared Tooltip. Buttons that do
 // not fit fold from the right into More (⋯), so it never wraps. For someone who may edit, in Plan mode.
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@liveplanner/ui';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useSheetController } from './sheet-controller';

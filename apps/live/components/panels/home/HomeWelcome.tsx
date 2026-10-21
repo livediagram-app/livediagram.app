@@ -8,8 +8,8 @@
 
 import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
-import { BrandMark } from '@livediagram/ui';
-import type { TemplateKind } from '@livediagram/templates';
+import { BrandMark } from '@liveplanner/ui';
+import type { TemplateKind } from '@liveplanner/templates';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { TemplatePicture } from '@/components/start/template-card';

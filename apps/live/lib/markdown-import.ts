@@ -27,7 +27,7 @@ import {
   type ShapeElement,
   type TableElement,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { ImportOutcome } from './import-tab';
 import { getTheme, recolourElementsForTheme } from './themes';
 

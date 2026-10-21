@@ -10,8 +10,8 @@ import type {
   TeamLibraryResponse,
   TeamListItem,
   TeamsResponse,
-} from '@livediagram/api-schema';
-import type { ApiClient } from '@livediagram/api-client';
+} from '@liveplanner/api-schema';
+import type { ApiClient } from '@liveplanner/api-client';
 
 type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
 

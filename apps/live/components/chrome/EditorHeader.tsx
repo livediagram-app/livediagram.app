@@ -7,7 +7,7 @@ import {
   Glyph,
   safeInlinePadding,
   safeInset,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';

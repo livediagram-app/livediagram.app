@@ -9,7 +9,7 @@ import {
   type SankeyLeftover,
   type SankeyLinkColor,
   type SankeyValueLabel,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 export function BandGlyph({ mode, from, to }: { mode: SankeyLinkColor; from: string; to: string }) {
   const id = `sk-band-glyph-${mode}`;

@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useDeferredValue, useEffect, useRef, useState, type ReactNode } from 'react';
-import { EmptyState, SiteFooter, SiteHeader } from '@livediagram/ui';
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { EmptyState, SiteFooter, SiteHeader } from '@liveplanner/ui';
+import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import {
   ActivityGlyph,
   AlertGlyph,
@@ -20,7 +20,7 @@ import { SECTION_TAB, type SectionKey, type ViewKey } from './view-keys';
 import type { SectionFocus } from './SectionedView';
 import { dropRetiredEvents } from './retired-events';
 
-// Same origin as the editor + api under the router (livediagram.app).
+// Same origin as the editor + api under the router (liveplanner.app).
 // An origin-relative '/api' is correct even though this app is served
 // under '/telemetry' (basePath doesn't rewrite absolute fetch paths).
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';

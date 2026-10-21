@@ -25,7 +25,7 @@ import {
   type QaNote,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { apiQaAction } from '@/lib/api-client';
 import { isVoteLimitError, VOTE_LIMIT_MESSAGE } from '@/lib/vote-limit';
 import type { Participant } from '@/lib/identity';

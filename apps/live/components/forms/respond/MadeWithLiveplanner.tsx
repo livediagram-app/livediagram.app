@@ -1,14 +1,14 @@
 'use client';
 
-// "Made with livediagram" under a form on its page (docs/specs/030-forms/forms.md "Filling in a form"): the words and
+// "Made with liveplanner" under a form on its page (docs/specs/030-forms/forms.md "Filling in a form"): the words and
 // the real logo, its mark and wordmark (the shared Brand), linking to the marketing site.
-import { Brand } from '@livediagram/ui';
+import { Brand } from '@liveplanner/ui';
 
-export function MadeWithLivediagram() {
+export function MadeWithLiveplanner() {
   return (
     <a
       href="/"
-      aria-label="Made with livediagram"
+      aria-label="Made with liveplanner"
       className="inline-flex items-center gap-1.5 rounded-md text-[13px] text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
     >
       <span>Made with</span>

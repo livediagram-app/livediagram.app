@@ -4,7 +4,7 @@
 // caller's to handle, never reported.
 
 type ApiClientOptions = {
-  // Where the api answers: `https://livediagram-api/api` over the MCP's binding, the host's api base for the CLI.
+  // Where the api answers: `https://liveplanner-api/api` over the MCP's binding, the host's api base for the CLI.
   baseUrl: string;
   fetch: (request: Request) => Promise<Response>;
   // Authorization, the client header, a share code when addressed by a link.

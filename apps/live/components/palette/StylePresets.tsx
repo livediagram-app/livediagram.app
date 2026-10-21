@@ -34,7 +34,7 @@ import {
   type BorderStyle,
   type BorderStroke,
   type ShapeKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';

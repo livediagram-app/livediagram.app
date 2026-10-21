@@ -14,7 +14,7 @@ describe('the share-password cache', () => {
     writeCachedSharePassword('CODE2', 'badger');
     expect(readCachedSharePassword('CODE1')).toBe('otter');
     expect(readCachedSharePassword('CODE2')).toBe('badger');
-    expect(window.localStorage.getItem('livediagram:share-password:CODE1')).toBe('otter');
+    expect(window.localStorage.getItem('liveplanner:share-password:CODE1')).toBe('otter');
   });
 
   it('reads nothing for a code it has never seen', () => {

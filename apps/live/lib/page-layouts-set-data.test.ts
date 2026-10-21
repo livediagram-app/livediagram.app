@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livediagram/document';
-import { PAGE_LAYOUTS } from '@livediagram/templates';
+import type { Element, ShapeElement } from '@liveplanner/document';
+import { PAGE_LAYOUTS } from '@liveplanner/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the further Data layouts, each a real
 // chart or table with the source line its numbers owe, arranged side by side on a wide page.

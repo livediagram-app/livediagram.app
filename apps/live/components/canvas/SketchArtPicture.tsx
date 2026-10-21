@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
-import { SKETCH_ART_FILTER_ID, svgSketchArtFilter } from '@livediagram/document';
+import { SKETCH_ART_FILTER_ID, svgSketchArtFilter } from '@liveplanner/document';
 import { watchUntilSettled } from '@/components/canvas/settle-watch';
 
 // An icon or sticker under Sketch in WebKit (docs/specs/008-canvas/finish.md "In WebKit"). WebKit runs a live

@@ -1,6 +1,6 @@
 # Staging environment
 
-A second, complete copy of the platform at **https://staging.livediagram.app**, deployed
+A second, complete copy of the platform at **https://staging.liveplanner.app**, deployed
 **automatically on every merge to `main`** once CI is green. Production stays exactly
 as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
 
@@ -12,19 +12,19 @@ runs against the one holding people's documents.
 
 |              | Production                           | Staging                                    |
 | ------------ | ------------------------------------ | ------------------------------------------ |
-| Hostname     | `livediagram.app`                    | `staging.livediagram.app`                  |
-| MCP host     | `mcp.livediagram.app`                | `mcp-staging.livediagram.app`              |
+| Hostname     | `liveplanner.app`                    | `staging.liveplanner.app`                  |
+| MCP host     | `mcp.liveplanner.app`                | `mcp-staging.liveplanner.app`              |
 | Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names | `livediagram-<app>`                  | `livediagram-<app>-staging`                |
-| D1           | `livediagram`                        | `livediagram-staging`                      |
-| R2           | `livediagram-images`                 | `livediagram-images-staging`               |
+| Worker names | `liveplanner-<app>`                  | `liveplanner-<app>-staging`                |
+| D1           | `liveplanner`                        | `liveplanner-staging`                      |
+| R2           | `liveplanner-images`                 | `liveplanner-images-staging`               |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
 
 Worth stating once, because the two readings collide constantly in this repo: **`live`
-is the name of the editor app** — `apps/live`, the `livediagram-live` worker, the
+is the name of the editor app** — `apps/live`, the `liveplanner-live` worker, the
 `LIVE` service binding, the `deploy-live` job. It is a proper noun. The environments
 are **production** and **staging**, and nothing else.
 
@@ -42,7 +42,7 @@ the account.
 ## Wrangler environments, not a second config file
 
 Each app's `wrangler.toml` grows an `[env.staging]` block naming its worker
-explicitly — `name = "livediagram-api-staging"` and so on. Wrangler would append the
+explicitly — `name = "liveplanner-api-staging"` and so on. Wrangler would append the
 suffix on its own, but nothing in `wrangler deploy --dry-run` prints the name it
 resolved, and the router's six service bindings depend on those strings being exactly
 right. A name you can read beats a name you have to infer.
@@ -113,7 +113,7 @@ Two deliberate non-changes:
   emitting production's `robots.txt`, sitemaps and canonical URLs. `robots.txt` governs
   _crawling_, not _indexing_; `X-Robots-Tag` governs indexing and is the header a
   crawler must obey whatever `robots.txt` said. Canonical tags pointing at
-  `livediagram.app` are, for a staging mirror, the correct answer rather than a bug:
+  `liveplanner.app` are, for a staging mirror, the correct answer rather than a bug:
   they name production as the real home of the page.
 - **The 101 WebSocket upgrade is passed through untouched.** A `Response` carrying a
   `webSocket` cannot be reconstructed to add a header — doing so kills realtime collab
@@ -129,7 +129,7 @@ from production's in exactly two values:
 | Variable                            | Production                                        | Staging                               |
 | ----------------------------------- | ------------------------------------------------- | ------------------------------------- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)                   | `pk_test_*` (test tenant)             |
-| `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
+| `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.liveplanner.app`) | `https://mcp-staging.liveplanner.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
@@ -147,7 +147,7 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.livediagram.app` would need adding under Domains. |
+| **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.liveplanner.app` would need adding under Domains. |
 | **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
 | **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
@@ -212,8 +212,8 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 | Resource | Name                         | Where the id lives       |
 | -------- | ---------------------------- | ------------------------ |
-| D1       | `livediagram-staging`        | `apps/api/wrangler.toml` |
-| R2       | `livediagram-images-staging` | bound by name, no id     |
+| D1       | `liveplanner-staging`        | `apps/api/wrangler.toml` |
+| R2       | `liveplanner-images-staging` | bound by name, no id     |
 | KV       | `mcp-oauth-kv-staging`       | `apps/mcp/wrangler.toml` |
 
 Both were created in `ENAM`, Cloudflare's default for the account rather than a
@@ -223,10 +223,10 @@ staging ever needs to reproduce production's read latency, that is the knob.
 Note the KV **title** is `mcp-oauth-kv-staging`, matching production's `mcp-oauth-kv`.
 It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a different
 thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
-`livediagram-mcp-staging-OAUTH_KV` instead.
+`liveplanner-mcp-staging-OAUTH_KV` instead.
 
 The **workers** are not on this list: a worker is its uploaded script, so all eight
-`livediagram-*-staging` workers come into existence on the first staging deploy. The
+`liveplanner-*-staging` workers come into existence on the first staging deploy. The
 job graph bootstraps them in the right order — the six path-routed workers first,
 then mcp (service binding to api), then router (service bindings to the six) — exactly
 as production's first deploy did ([Deployment](deployment.md) "First deploy").
@@ -247,8 +247,8 @@ cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the
 token is scoped to upload worker scripts, not to manage DNS, so this step can never be
 automated from the workflow — same as production, [Deployment](deployment.md)):
 
-- `staging.livediagram.app` → `livediagram-router-staging`
-- `mcp-staging.livediagram.app` → `livediagram-mcp-staging`
+- `staging.liveplanner.app` → `liveplanner-router-staging`
+- `mcp-staging.liveplanner.app` → `liveplanner-mcp-staging`
 
 Only those two workers get hostnames. The other six are reached exclusively over the
 router's service bindings and never touch DNS, exactly as in production.

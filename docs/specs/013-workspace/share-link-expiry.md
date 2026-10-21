@@ -17,7 +17,7 @@ At link creation the owner picks one of four lifetimes. **Never is the default**
 | 1 Month  | `month`         | 30 days          |
 | 6 Months | `sixMonths`     | 183 days         |
 
-Lifetimes are fixed ms constants (`SHARE_LINK_EXPIRY_MS` in `@livediagram/api-schema`) shared by the worker (computing `expires_at`) and the editor (rendering countdowns), so the two can't disagree.
+Lifetimes are fixed ms constants (`SHARE_LINK_EXPIRY_MS` in `@liveplanner/api-schema`) shared by the worker (computing `expires_at`) and the editor (rendering countdowns), so the two can't disagree.
 
 ## Data model
 

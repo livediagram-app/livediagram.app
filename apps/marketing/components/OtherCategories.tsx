@@ -12,7 +12,7 @@ export function OtherCategories({ currentId }: { currentId: string }) {
     <section className="border-t border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-16">
         <h2 className="text-center text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          Explore more of livediagram
+          Explore more of liveplanner
         </h2>
         <ul className="mt-8 flex flex-wrap justify-center gap-3">
           {others.map((section) => (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { arrow, box, lint, of, tabOf } from '../fixtures/build';
 
 const themed = (theme: string | undefined, ...elements: Element[]) => ({
@@ -52,7 +52,7 @@ describe('colour-on-themed', () => {
   });
 
   it('accepts the colours a multi-colour, per-shape and Default theme paint, as well as type defaults', async () => {
-    const { THEMES } = await import('@livediagram/document');
+    const { THEMES } = await import('@liveplanner/document');
     for (const theme of THEMES) {
       const colours = [
         theme.elementFill,
@@ -67,7 +67,7 @@ describe('colour-on-themed', () => {
   });
 
   it('accepts the type default the Default theme leaves an element, on either surface', async () => {
-    const { defaultFillColor, defaultStrokeColor } = await import('@livediagram/document');
+    const { defaultFillColor, defaultStrokeColor } = await import('@liveplanner/document');
     const plain = box('a', 0, 0) as never;
     const els = [
       box('a', 0, 0, {

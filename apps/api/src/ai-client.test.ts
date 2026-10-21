@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
 import {
   AI_PROVIDER_TIMEOUT_MS,
   chatCompletions,

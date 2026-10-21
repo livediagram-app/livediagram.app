@@ -17,7 +17,7 @@ import dynamic from 'next/dynamic';
 import { PaletteLogoTab } from './PaletteLogoTab';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { PaletteMyShapesTab } from './PaletteMyShapesTab';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';

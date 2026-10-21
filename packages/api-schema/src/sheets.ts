@@ -1,5 +1,5 @@
 // The sheet store on the wire (docs/specs/029-sheets/sheet-store.md, blueprint sheet-store.md "Interfaces and
-// contracts"). Sheet shapes come from @livediagram/sheets; these are the request and response bodies. A sheet's
+// contracts"). Sheet shapes come from @liveplanner/sheets; these are the request and response bodies. A sheet's
 // cells travel as a list (a Map is not JSON).
 
 import type {
@@ -8,7 +8,7 @@ import type {
   SheetLayout,
   SheetPerson,
   SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 
 export type {
   CellFormat,
@@ -16,7 +16,7 @@ export type {
   SheetLayout,
   SheetPerson,
   SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 
 // One stored cell (its row id, column id, input and format; neither means "nothing") and a whole sheet, as JSON.
 export type SheetCellDto = SheetCellJson;

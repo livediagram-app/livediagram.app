@@ -1,4 +1,4 @@
-import type { NoteCrop } from '@livediagram/api-schema';
+import type { NoteCrop } from '@liveplanner/api-schema';
 import { toRead } from './answer';
 import type {
   ProcessorReason,

@@ -109,7 +109,7 @@ describe('armLoadWatchdog', () => {
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS + AUTO_RELOAD_DELAY_MS);
     expect(onTimedOut).toHaveBeenCalledTimes(1);
     expect(reload).not.toHaveBeenCalled();
-    expect(storage.getItem('livediagram:load-auto-reloads')).toBeNull();
+    expect(storage.getItem('liveplanner:load-auto-reloads')).toBeNull();
   });
 
   it('shows the error when session storage is unavailable, rather than risking a loop', () => {
@@ -122,7 +122,7 @@ describe('armLoadWatchdog', () => {
   it('reports a late load so the caller can replace the error screen', () => {
     // Second timeout in the tab: the error shows, no reload pending.
     storage.setItem(
-      'livediagram:load-auto-reloads',
+      'liveplanner:load-auto-reloads',
       JSON.stringify({ 'https://x.test/document/d1': now }),
     );
     const warn = vi.fn();

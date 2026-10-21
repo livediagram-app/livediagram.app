@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@liveplanner/ui';
 import { CameraIcon, type EsBoardControls } from './EventStormingBoardRows';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 

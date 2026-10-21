@@ -20,8 +20,8 @@ import {
   type SwimlaneBy,
   namedStatus,
   phaseOf,
-} from '@livediagram/items';
-import { CloseIcon, CompactEmptyState, NoMatches, PlanCardsIcon } from '@livediagram/ui';
+} from '@liveplanner/items';
+import { CloseIcon, CompactEmptyState, NoMatches, PlanCardsIcon } from '@liveplanner/ui';
 import { AddFilterPicker } from '../AddFilterPicker';
 import { track } from '@/lib/telemetry';
 import { PlanCardFace } from '../PlanCardFace';

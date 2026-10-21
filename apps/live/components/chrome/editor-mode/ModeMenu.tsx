@@ -1,12 +1,12 @@
 import { useId, useState } from 'react';
-import { crossesPlan, editorModeDescription, editorModeLabel } from '@livediagram/document';
+import { crossesPlan, editorModeDescription, editorModeLabel } from '@liveplanner/document';
 import {
   CheckIcon,
   EDITOR_MODE_ICONS,
   MENU_PANEL,
   useMenu,
   type MenuInitialFocus,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { MODE_SWITCH_FOCUS, type EditorModeSwitchProps } from './editor-mode-copy';
 import { MODE_TINT, MODE_TOOLS, type ModeMenuAction } from './mode-menu-copy';
 import { ModeKeyHint } from './ModeKeyHint';

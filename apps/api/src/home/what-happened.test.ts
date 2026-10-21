@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HomeDocument } from '@livediagram/api-schema';
+import type { HomeDocument } from '@liveplanner/api-schema';
 import { groupWhatHappened, verbOf, type WhatHappenedRow } from './what-happened';
 
 // What happened (docs/specs/013-workspace/explorer-home.md; blueprint "Verbs", "Grouping").

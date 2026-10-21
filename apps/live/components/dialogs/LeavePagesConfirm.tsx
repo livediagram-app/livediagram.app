@@ -7,8 +7,8 @@
 // mode's glyph on it). Escape or an outside press stays. With no switch on screen (zen, a
 // Shift+D press), the same card sits centred near the top of the screen.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { editorModeLabel, type EditorMode } from '@livediagram/document';
-import { lucideTriangleAlert } from '@livediagram/icons/lucide';
+import { editorModeLabel, type EditorMode } from '@liveplanner/document';
+import { lucideTriangleAlert } from '@liveplanner/icons/lucide';
 import {
   Button,
   lucideGlyph,
@@ -16,7 +16,7 @@ import {
   useEscape,
   EDITOR_MODE_ICONS,
   Portal,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { LeavePages } from '@/hooks/editor/useLeavePages';
 

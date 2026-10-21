@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { lint, of, tabOf } from '../fixtures/build';
 
 // LN text-overflow: on a Pages tab a text element's words fit its box; on any tab no two texts print over each

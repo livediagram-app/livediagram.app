@@ -10,7 +10,7 @@ import {
   SelectIcon,
   ShapePenIcon,
 } from '@/components/palette/palette-icons';
-import { penColourCss } from '@livediagram/document';
+import { penColourCss } from '@liveplanner/document';
 import { penLabel } from '@/lib/whiteboard-prefs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';

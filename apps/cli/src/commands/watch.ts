@@ -2,8 +2,8 @@
 // relays, as it happens, until Ctrl-C (exit 0); the document moved to the Trash ends it with exit 3. Element refs are
 // the views' refs: a tab's ids are read once, on its first event, and kept current from the events.
 
-import { documentOf, resolveTab, tabPath, type VerbContext } from '@livediagram/agent-verbs';
-import { computeRefs, type Tab } from '@livediagram/document';
+import { documentOf, resolveTab, tabPath, type VerbContext } from '@liveplanner/agent-verbs';
+import { computeRefs, type Tab } from '@liveplanner/document';
 import type { CliIo } from '../io';
 import { EXIT } from '../output/exit-codes';
 import { classifyRoomOp, onTab, watchLines, type Names, type RoomEvent } from '../room/room-events';
@@ -84,7 +84,7 @@ export async function watch(
       },
       onReconnected: () =>
         ctx.notice(
-          `reconnected; what changed meanwhile: livediagram tab diff ${JSON.stringify(input.doc)}`,
+          `reconnected; what changed meanwhile: liveplanner tab diff ${JSON.stringify(input.doc)}`,
         ),
     });
     const stopInterrupt = io.onInterrupt(() => {

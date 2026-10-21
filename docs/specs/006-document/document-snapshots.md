@@ -34,15 +34,15 @@ On a read of either delivery path:
   bytes. No render, no element load.
 - **Stale** (or never rendered, or the object is missing): render the
   first tab (a Form tab as its form, the picture respondents see on its
-  tab's look: `formArt` from `@livediagram/plan-art`, as the MCP preview
-  draws it, since a form is not an element) with `renderElementsToSvg` (`@livediagram/document`, the same
+  tab's look: `formArt` from `@liveplanner/plan-art`, as the MCP preview
+  draws it, since a form is not an element) with `renderElementsToSvg` (`@liveplanner/document`, the same
   DOM-free renderer the MCP worker uses), write it to R2, stamp
   `thumb_rendered_at`, and return it. Icon elements render their real
   glyph (line art + Technology brand tiles) via the
-  `@livediagram/icons/resolve` resolver the worker passes in — see
+  `@liveplanner/icons/resolve` resolver the worker passes in — see
   [Technology icons](../010-palette/technology-icons.md) "Rendering". Image elements render their real picture: the
   worker reads each upload from R2 and inlines it as a base64 data URL
-  through `embedTabImages` (`@livediagram/api-schema`, shared with the
+  through `embedTabImages` (`@liveplanner/api-schema`, shared with the
   MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
   so a tab of large photos can't produce a multi-megabyte snapshot. An
   image past the budget, missing from R2, or not a recognised raster
@@ -133,7 +133,7 @@ document renders lazily.
 - **An empty document is never asked for.** Every document list carries
   `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
   first tab has nothing to draw (no element and no form: `drawnCount` in
-  `@livediagram/document`), or it has no tab. Such a row shows the still,
+  `@liveplanner/document`), or it has no tab. Such a row shows the still,
   dashed sketch at once, captioned "Nothing drawn yet" where there is room,
   and makes no request, so an Explorer of new or blank documents fires no
   404s. The list knows without reading any tab body: each tab row keeps its
@@ -230,7 +230,7 @@ of those gets a 404 and the row falls back to its icon.
 The browse views (Recent / My Documents / folders / Search results / This Browser)
 have a **List / Card / Details** toggle in the header's actions, left of Help and
 Create, which always sit further right (device-local preference,
-`livediagram:explorer-view`). **Card is the default**:
+`liveplanner:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read
 every line to find the one you would have recognised on sight. Somebody who
 prefers the density of rows knows where the toggle is; somebody opening the
@@ -283,7 +283,7 @@ rather than rasterising at its intrinsic size and upscaling.
 
 The same toggle is on the **team library** ([Team shared documents](../013-workspace/team-shared-documents.md)) — its shared
 documents + folders reuse the same `CardView`, sharing the
-`livediagram:explorer-view` preference so a card-view user gets cards
+`liveplanner:explorer-view` preference so a card-view user gets cards
 there too. Team cards hide the visibility badge (every card is a team
 document, so a per-card badge is noise — the team list omits it as well).
 

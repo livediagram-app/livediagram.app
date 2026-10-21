@@ -1,7 +1,7 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump Back In and What
 // happened), the Timeline feed and its stacking, the Inbox, Recent, Shared With Me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
-// (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @livediagram/ui timeline).
+// (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @liveplanner/ui timeline).
 // Composed from the shared primitives plus the Explorer parts, so the house style holds.
 
 import type { ReactNode } from 'react';

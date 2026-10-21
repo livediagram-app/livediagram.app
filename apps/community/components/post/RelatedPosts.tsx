@@ -1,4 +1,4 @@
-import type { CommunityPost } from '@livediagram/api-schema';
+import type { CommunityPost } from '@liveplanner/api-schema';
 import { PostGrid } from '../shared/PostGrid';
 
 // More Like This (docs/specs/025-community/community.md "Post"): up to six other posts in the same

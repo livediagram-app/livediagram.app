@@ -1,9 +1,9 @@
 // /api/documents/:id/tabs/:tabId/form-link and .../form-seen (docs/specs/030-forms/forms.md "Publishing and the form
 // link", "Who may do what"): a Form tab's link, as its document's people see and change it. Anyone who may read the
 // tab sees the response count; only an Editor sees the code and publishes, opens, closes or deletes the link.
-import type { FormLinkResponse } from '@livediagram/api-schema';
-import { FORM_SUSPENSIONS_MAX, destinationType, publishProblems } from '@livediagram/forms';
-import { typesOf } from '@livediagram/items';
+import type { FormLinkResponse } from '@liveplanner/api-schema';
+import { FORM_SUSPENSIONS_MAX, destinationType, publishProblems } from '@liveplanner/forms';
+import { typesOf } from '@liveplanner/items';
 import {
   countSuspendedFormLinks,
   createFormLink,

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { communityPostPath } from '@livediagram/api-schema';
+import { communityPostPath } from '@liveplanner/api-schema';
 import { BackIcon } from '../shared/icons';
 import { EmbedFrame } from './EmbedFrame';
 import { PostActions } from './PostActions';
@@ -24,7 +24,7 @@ export function PostView() {
   // The tab names the document once it is known (the static shell carries a generic title), and the page names its
   // own address as canonical (the shell carries none, since one shell serves every post).
   useEffect(() => {
-    if (title) document.title = `${title} | livediagram Community`;
+    if (title) document.title = `${title} | liveplanner Community`;
   }, [title]);
   useEffect(() => {
     if (load.status !== 'ready' || !id) return;

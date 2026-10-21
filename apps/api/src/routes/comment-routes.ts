@@ -9,7 +9,7 @@ import {
   isCommentListStatus,
   type DocumentCommentThread,
   type DocumentCommentsResponse,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   applyElementDelta,
   isCellKey,
@@ -19,8 +19,8 @@ import {
   type Comment,
   type Element,
   type ElementDelta,
-} from '@livediagram/document';
-import { formatA1, layoutIndex } from '@livediagram/sheets';
+} from '@liveplanner/document';
+import { formatA1, layoutIndex } from '@liveplanner/sheets';
 import { findCommentHost, removeComment, threadsOfTab } from '../comments';
 import {
   getDocument,

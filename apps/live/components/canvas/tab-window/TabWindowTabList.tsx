@@ -3,9 +3,9 @@
 // The tabs a window may show (docs/specs/009-elements/tab-window.md "Choosing the tab"): every tab of the document but
 // the window's own, Plan tabs included, in tab-bar order, each its mode icon and name, the shown one marked. Shared by the
 // empty window's Choose a Tab and the menu's Tab Window section.
-import { tabWindowOffers, type Tab } from '@livediagram/document';
-import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
-import { lucideAppWindow } from '@livediagram/icons/lucide';
+import { tabWindowOffers, type Tab } from '@liveplanner/document';
+import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
+import { lucideAppWindow } from '@liveplanner/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 

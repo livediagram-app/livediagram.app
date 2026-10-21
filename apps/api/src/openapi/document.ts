@@ -1,6 +1,6 @@
 // Assembles the OpenAPI 3.1 document served at GET /api/openapi.json (docs/specs/015-api/api-documentation.md)
 // from three runtime-safe inputs: the route manifest (the declared surface),
-// the generated component schemas (derived from @livediagram/api-schema), and
+// the generated component schemas (derived from @liveplanner/api-schema), and
 // the static auth-scheme / info metadata below. Pure and deterministic — the
 // worker memoises the result once per isolate (see routes/openapi.ts). No part
 // of the heavy schema GENERATOR is imported here; this file only consumes its
@@ -229,17 +229,17 @@ export function buildOpenApiDocument(): OpenApiDocument {
   return {
     openapi: '3.1.0',
     info: {
-      title: 'livediagram API',
+      title: 'liveplanner API',
       version: '1.0.0',
       description:
-        'The REST API behind livediagram. The same surface the web editor uses, callable ' +
+        'The REST API behind liveplanner. The same surface the web editor uses, callable ' +
         'programmatically. External callers authenticate with an API token ' +
         '(`Authorization: Bearer lvd_…`); see the "API tokens" help article to create one. ' +
         'Endpoints an external token can use are marked `x-token-usable`. The realtime ' +
         'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
       license: { name: 'MIT' },
     },
-    servers: [{ url: '/api', description: 'Same-origin API (e.g. https://livediagram.app/api).' }],
+    servers: [{ url: '/api', description: 'Same-origin API (e.g. https://liveplanner.app/api).' }],
     tags: TAGS,
     paths,
     components: {

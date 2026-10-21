@@ -4,9 +4,9 @@
 // it sends its responses nowhere (no board, no sheet), drawn as the form's own cards are, so an Editor connects it
 // before anything else. Two choices side by side, each making its tab in one press: Cards on a Board (New Board) and
 // Rows in a Sheet (New Sheet); Choose Existing (when the document has a board or sheet) opens Responses Go To.
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
-import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
+import { lucideGlyph } from '@liveplanner/ui';
+import { lucideSquareKanban, lucideTable } from '@liveplanner/icons/lucide';
+import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@liveplanner/forms';
 import { track } from '@/lib/telemetry';
 import { useFormBuilder } from './form-builder-context';
 

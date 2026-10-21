@@ -5,8 +5,8 @@ import {
   DOCUMENT_OPEN_HEADER,
   type TabResponse,
   type TabSummary,
-} from '@livediagram/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
+} from '@liveplanner/api-schema';
+import { normalizeTable, type CommentMention, type Tab } from '@liveplanner/document';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,

@@ -25,7 +25,7 @@
 // the direct setters in useElementStyle use).
 
 import { useRef, type MutableRefObject } from 'react';
-import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@livediagram/document';
+import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@liveplanner/document';
 import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
   ArrowFlow,
@@ -51,7 +51,7 @@ import type {
   TextAlignY,
   TextSize,
   TextSizePreset,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   applyArrowPresetToEl,
   applyBorderRadiusToEl,

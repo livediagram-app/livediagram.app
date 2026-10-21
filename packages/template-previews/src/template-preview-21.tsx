@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@liveplanner/templates';
 import { pv } from './motion';
 
 // Group 21: the slide decks built from slide layouts (docs/specs/007-editor/templates-by-mode.md "Slide deck

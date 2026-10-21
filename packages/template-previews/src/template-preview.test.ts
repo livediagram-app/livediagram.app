@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES } from '@livediagram/templates';
+import { TEMPLATES } from '@liveplanner/templates';
 import { TemplatePreview } from './template-preview';
 
 // Every catalogue entry must render a preview illustration. The

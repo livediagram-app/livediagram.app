@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { presetSetup, type PlanBoardSetup } from '@livediagram/items';
+import { presetSetup, type PlanBoardSetup } from '@liveplanner/items';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { planPalette } from './plan-palette';

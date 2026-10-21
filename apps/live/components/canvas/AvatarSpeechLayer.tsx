@@ -10,7 +10,7 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import { bubbleMotion, type SpeechBubble } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';
 import { AVATAR_FALLBACK_COLOUR } from '@/lib/avatar-config';

@@ -6,7 +6,7 @@ import {
   DASHBOARD_NOTE_MAX,
   DASHBOARD_NOTE_TITLE_MAX,
   type DashboardCardStyle,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';
 

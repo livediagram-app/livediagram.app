@@ -10,8 +10,8 @@ import {
   normaliseBoardSetup,
   typeIn,
   type CardTypesTaken,
-} from '@livediagram/items';
-import type { Element } from '@livediagram/document';
+} from '@liveplanner/items';
+import type { Element } from '@liveplanner/document';
 import { usePlan } from '@/components/plan/PlanContext';
 import { createListeners } from '@/lib/listeners';
 

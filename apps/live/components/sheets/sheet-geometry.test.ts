@@ -2,7 +2,7 @@
 // lines, the frozen panes, merges, the window in view, the cell under a point, the scroll that reveals a cell and
 // how many rows a page is.
 import { describe, expect, it } from 'vitest';
-import type { SheetLayout } from '@livediagram/sheets';
+import type { SheetLayout } from '@liveplanner/sheets';
 import {
   COL_HEADER_PX,
   ROW_HEADER_PX,

@@ -5,14 +5,14 @@
 // matched against. apps/live's local-identity test fails if one of its identity keys is not listed here.
 
 /** The prefixes a repair considers at all. Anything else (the sign-in provider's own keys) is never touched. */
-export const REPAIR_SCOPE_PREFIXES = ['livediagram:', 'livediagram-'] as const;
+export const REPAIR_SCOPE_PREFIXES = ['liveplanner:', 'liveplanner-'] as const;
 
 /** The guest identity's keys (apps/live/lib/local-identity.ts, which a test holds to these names). */
 export const GUEST_IDENTITY_KEYS = {
-  selfId: 'livediagram:v2:self-id',
-  selfSig: 'livediagram:v2:self-sig',
-  pendingUpgrade: 'livediagram:v2:pending-signed-id',
-  nameConfirmed: 'livediagram:v2:name-confirmed',
+  selfId: 'liveplanner:v2:self-id',
+  selfSig: 'liveplanner:v2:self-sig',
+  pendingUpgrade: 'liveplanner:v2:pending-signed-id',
+  nameConfirmed: 'liveplanner:v2:name-confirmed',
 } as const;
 
 /** Exact keys a repair keeps. */
@@ -22,15 +22,15 @@ export const REPAIR_KEPT_KEYS: readonly string[] = [
   // Per-browser keys that recorded answers and likes are matched against, and the collab key's
   // secret half (vote integrity, #443): a new secret under the same key would no longer prove this
   // browser's answers.
-  'livediagram:v2:collab-key',
-  'livediagram:v2:collab-secret',
-  'livediagram:v2:community-key',
+  'liveplanner:v2:collab-key',
+  'liveplanner:v2:collab-secret',
+  'liveplanner:v2:community-key',
 ];
 
 /** Key prefixes a repair keeps: the Google Drive mirror's state. */
 export const REPAIR_KEPT_PREFIXES: readonly string[] = [
-  'livediagram:v2:drive-',
-  'livediagram:drive-mirror',
+  'liveplanner:v2:drive-',
+  'liveplanner:drive-mirror',
 ];
 
 /** True when a repair clears this storage key. */

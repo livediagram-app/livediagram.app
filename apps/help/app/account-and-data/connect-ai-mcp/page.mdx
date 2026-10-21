@@ -6,7 +6,7 @@ import { McpConsent } from '@/components/illustrations/account-settings';
 export const metadata = helpMetadata({
   title: 'Connect an AI Tool (MCP)',
   description:
-    'Connect livediagram to Claude or any MCP client to find, view, create, and edit your documents from inside your AI tool. A signed-in-only feature.',
+    'Connect liveplanner to Claude or any MCP client to find, view, create, and edit your documents from inside your AI tool. A signed-in-only feature.',
   path: '/help/account-and-data/connect-ai-mcp/',
 });
 
@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("connect-ai-mcp")}
 >
 
-livediagram has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your documents from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
+liveplanner has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your documents from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
 
 ## You need an account
 
@@ -26,7 +26,7 @@ Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](
 
 ## Connecting
 
-In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.livediagram.app/mcp`**. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. The first time, your tool opens a livediagram page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It says which site the access will be sent to: only continue if you recognise it. Choose **Connect** to approve, or **Cancel**.
+In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.liveplanner.app/mcp`**. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. The first time, your tool opens a liveplanner page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It says which site the access will be sent to: only continue if you recognise it. Choose **Connect** to approve, or **Cancel**.
 
 <Figure
   caption="The approval page: an optional Read-only access switch, where the access goes, then Connect."
@@ -50,7 +50,7 @@ The connection gives your AI tool these tools:
 - **Share a document**: turn a document into a [share link](/help/collaboration/sharing/) to hand to someone. Unless you ask for another level, the AI makes a **Participant** link: people can add stickies, write and vote, but not reshape the board.
 - **Rename a document** and **Delete a document**: tidy your library from the AI tool, a whole document or a single tab. Deleting a document moves it to the [Trash](/help/account-and-data/trash/); deleting a tab removes it for good.
 - **List the Trash** and **Restore a document**: bring back something deleted by mistake, by you or by the AI.
-- **List items** and **Change items**: read and update the cards on a document's [Plan](/help/canvas/plan-mode/) boards (add a task, move it to another column, change its fields). The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and livediagram refuses a column, card type or field the document doesn't have instead of filing a card where no board shows it.
+- **List items** and **Change items**: read and update the cards on a document's [Plan](/help/canvas/plan-mode/) boards (add a task, move it to another column, change its fields). The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and liveplanner refuses a column, card type or field the document doesn't have instead of filing a card where no board shows it.
 - **Add a board** and **Change a board**: put a Plan board on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns or choose which card types it shows.
 - **List sheets**, **Read a sheet**, **Change a sheet** and **Add a sheet**: work with the [Sheets](/help/canvas/plan-mode/sheets/) on a document's tabs, reading cells by A1 address, setting values and formulas, formatting, sorting, and adding a new sheet from rows or CSV.
 - **Change pages** and **Write an article**: make [Pages](/help/canvas/pages-mode/) pages. Ask for a deck and the AI adds slides, from the same slide layouts the page panel offers, then fills in their text; ask for a logo and it adds a logo artboard; ask for an infographic and it lays one out. Ask it to write something up and it writes an [article](/help/canvas/pages-mode/articles/), in Markdown, which flows onto as many pages as it needs when you open it. It can also read an article back, edit it and write it again.
@@ -59,13 +59,13 @@ The connection gives your AI tool these tools:
 - **Share a form** and **Try a form**: publish a form's link, close it or delete the link, and fill the form in once as a test, the way the builder's Preview does, to see the card or row a response makes.
 - **Search icons** and **List images**: find an [icon](/help/palette/icons/) by what it shows, and find a picture you uploaded to your [image gallery](/help/explorer/image-gallery/), so the AI can put them on the canvas.
 
-For building the picture, the AI can just describe the **graph** (the nodes and what connects to what) and livediagram lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what, or hand over the same thing as **Mermaid** text (a flowchart, state diagram, or ER diagram). It can group related boxes into labelled sections and choose a flow, a tree (an org chart), or a mind map. Box labels are kept to short headings: when the AI writes a long sentence, the box shows the heading and the full text goes into the box's note, so a chatty AI doesn't fill your diagram with paragraphs.
+For building the picture, the AI can just describe the **graph** (the nodes and what connects to what) and liveplanner lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what, or hand over the same thing as **Mermaid** text (a flowchart, state diagram, or ER diagram). It can group related boxes into labelled sections and choose a flow, a tree (an org chart), or a mind map. Box labels are kept to short headings: when the AI writes a long sentence, the box shows the heading and the full text goes into the box's note, so a chatty AI doesn't fill your diagram with paragraphs.
 
 Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, **bar, line, and pie charts**, and **Sankey diagrams** (from a list of flows: what moves from where to where, and how much). Your AI tool may also surface a few ready-made **prompts** ("Diagram this", "Flowchart from steps" and "Show my document") as quick actions, so you don't have to know the tool names.
 
 When the AI changes a document you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). An element someone else in the document has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
-The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New documents an AI creates land at the root of **My Documents** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
+The AI does the thinking; liveplanner validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New documents an AI creates land at the root of **My Documents** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 
 ## What a connection can and can't touch
 

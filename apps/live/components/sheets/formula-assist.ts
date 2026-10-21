@@ -2,7 +2,7 @@
 // the draft and its colour, whether the caret is where a clicked cell would go, putting a reference there, F4's
 // absolute cycle, the function names matching the word being typed, and the argument the caret is in. Pure: the
 // editor and the formula bar share it.
-import { FUNCTION_NAMES, FUNCTION_DOCS, parseA1, tokenize, type Token } from '@livediagram/sheets';
+import { FUNCTION_NAMES, FUNCTION_DOCS, parseA1, tokenize, type Token } from '@liveplanner/sheets';
 
 const REF_COLOURS = [
   '#2563eb',

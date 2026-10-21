@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TabLedger } from '@livediagram/document';
+import type { TabLedger } from '@liveplanner/document';
 
 // A Participant's writes (docs/specs/013-workspace/share-roles.md "Integrity"): the participant content rule
 // applied to what D1 holds, and a compare-and-swap that re-reads when another writer got to the row first.

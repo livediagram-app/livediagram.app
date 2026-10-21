@@ -61,7 +61,7 @@ Derived from [Plan templates](../plan-templates.md).
   are separate data: `PLAN_TEMPLATE_SEEDS` (`plan-template-seed-data.ts`, `SeedCard` per card: `ref`, `type`,
   `status`, `title`, optional fields, `start` / `due` as day offsets, `parent` / `links` by `ref`, `votes` as a count,
   `archived`), resolved by `planTemplateSeedItems(kind, today, newId?)` (`plan-template-seeds.ts`, the
-  `@livediagram/templates/plan-template-seeds` subpath) into `ItemCreate[]`: fresh ids, refs swapped for ids, dates
+  `@liveplanner/templates/plan-template-seeds` subpath) into `ItemCreate[]`: fresh ids, refs swapped for ids, dates
   from `seedDate(today, days)` (UTC), assignees `seedPerson(who)` (`example-<who>` ids), votes one dot each from
   `example-voter-<n>`, and `example: true` on every card. `seedToday()` is the local calendar day.
 - Seeded by `/new` (cloud: `items` on `apiCreateDocument`; Offline Mode: one `offlineWriteItem` create after

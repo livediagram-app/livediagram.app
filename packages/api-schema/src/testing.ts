@@ -1,6 +1,6 @@
 import type { CommunityPost } from './community';
 
-// Test-only fixtures (`@livediagram/api-schema/testing`), shared by every suite that draws a Community post, so
+// Test-only fixtures (`@liveplanner/api-schema/testing`), shared by every suite that draws a Community post, so
 // each test states only the fields it relies on. Never imported by app code.
 
 // A listed, named post with plausible values; `patch` sets what the test asserts on.

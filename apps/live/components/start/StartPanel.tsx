@@ -23,10 +23,10 @@ import {
   safeInset,
   SheetHandle,
   useSheetDrag,
-} from '@livediagram/ui';
-import { lucideSearch, lucideX } from '@livediagram/icons/lucide';
+} from '@liveplanner/ui';
+import { lucideSearch, lucideX } from '@liveplanner/icons/lucide';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@liveplanner/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { PlanPalette } from '@/components/plan/plan-palette';

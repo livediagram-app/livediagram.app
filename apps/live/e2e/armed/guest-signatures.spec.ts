@@ -21,7 +21,7 @@ async function expectSignedGuestCreated(page: Page, api: string[]): Promise<void
   await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached();
   expect(api).toContain('POST 201 /api/documents');
   expect(api.filter((line) => / 401 /.test(line))).toEqual([]);
-  expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig'))).toBeTruthy();
+  expect(await page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig'))).toBeTruthy();
 }
 
 test.describe('a first-time guest with signatures enforced', () => {
@@ -39,7 +39,7 @@ test.describe('a first-time guest with signatures enforced', () => {
     await page.getByText('New Document', { exact: false }).waitFor();
     // Landing signs the guest before anything else; the wizard then starts from that page's identity.
     await expect
-      .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
+      .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
       .toBeTruthy();
     await startBlankDocument(page);
     await expectSignedGuestCreated(page, api);
@@ -58,7 +58,7 @@ test.describe('a first-time guest with signatures enforced', () => {
     const api = recordApi(page);
     await page.goto('/explorer');
     await expect
-      .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
+      .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
       .toBeTruthy();
     await startBlankDocument(page);
     await expectSignedGuestCreated(page, api);
@@ -74,9 +74,9 @@ test.describe('a first-time guest with signatures enforced', () => {
     });
     await page.goto('/new?blank=1');
     await expect
-      .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-id')))
+      .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-id')))
       .toBeTruthy();
-    expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig'))).toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig'))).toBeNull();
     // That page is unsigned under enforcement, so its create is refused; it settles on the failure
     // card before the next load, so none of its answers land in the next load's record.
     await page.getByText('Couldn’t create the document').waitFor();

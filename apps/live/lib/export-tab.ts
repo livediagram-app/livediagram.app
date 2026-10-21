@@ -9,7 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { Item, ItemTypeDef } from '@livediagram/items';
+import type { Item, ItemTypeDef } from '@liveplanner/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -34,7 +34,7 @@ import {
   type ResolveTabWindow,
   type SheetRenderModel,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
@@ -56,7 +56,7 @@ import {
   svgShadowDefs,
   xmlEscape,
   type ExportShape,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
 import {
@@ -69,7 +69,7 @@ import {
 } from './isometric';
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
-import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@livediagram/document';
+import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@liveplanner/document';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';

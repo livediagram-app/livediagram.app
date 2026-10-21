@@ -14,8 +14,8 @@ import {
   type CommunityCategory,
   type CommunityFacetsResponse,
   type CommunitySort,
-} from '@livediagram/api-schema';
-import { CloseIcon, SearchIcon } from '@livediagram/ui';
+} from '@liveplanner/api-schema';
+import { CloseIcon, SearchIcon } from '@liveplanner/ui';
 import { SEARCH_DEBOUNCE_MS } from '@/lib/config';
 import { searchEcho } from '@/lib/query-state';
 import { MineIcon } from '../shared/icons';

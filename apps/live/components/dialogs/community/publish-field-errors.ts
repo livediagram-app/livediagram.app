@@ -6,7 +6,7 @@ import {
   communityInputErrorField,
   communityPostInputErrors,
   type CommunityInputField,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { communityCodeMessage } from '@/lib/community-errors';
 
 // The publish dialog's per-field messages (docs/specs/025-community/blueprints/community.md §9): what is

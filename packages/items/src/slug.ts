@@ -1,6 +1,6 @@
 // Slug ids: a name folded to lowercase letters and digits joined by single hyphens, cut to a
 // length, with `-2`, `-3` … on a clash. Shared by item type, field and tab ids here and by the
-// element ids agents add (@livediagram/document element-refs), so both mint ids the same way.
+// element ids agents add (@liveplanner/document element-refs), so both mint ids the same way.
 
 // A name's slug: accents folded away, every other run of non-alphanumerics one hyphen, none at
 // either end. Uncut.

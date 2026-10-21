@@ -9,7 +9,7 @@ import type {
   DriveItem,
   DriveItemKind,
   DriveLease,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 const base = `${API_BASE}/drive`;

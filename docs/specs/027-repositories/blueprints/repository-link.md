@@ -31,7 +31,7 @@ every other file and symbol exists today.
 | `apps/cli/src/link/find-links.ts`                                                     | `nearestLink(io, cwd)`, `linksBelow(io, cwd)`                                                                                                                                                         |
 | `apps/cli/src/link/coverage.ts`                                                       | `readCoverage(ctx, link)`: the covered documents with their folder paths, from `readLibraries` and the listed ids                                                                                     |
 | `apps/cli/src/link/mirror-file.ts`                                                    | `mirrorFileText`, `hasConflictMarkers`, `MirrorFile`                                                                                                                                                  |
-| `apps/cli/src/link/mirror-scan.ts`                                                    | `scanMirrorDir(io, link)`: every `*.livediagram.json` under `dir`, classified                                                                                                                         |
+| `apps/cli/src/link/mirror-scan.ts`                                                    | `scanMirrorDir(io, link)`: every `*.liveplanner.json` under `dir`, classified                                                                                                                         |
 | `apps/cli/src/link/mirror-paths.ts`                                                   | `folderPathSegments`, `mirrorPathFor`, `outlinePathOf`                                                                                                                                                |
 | `apps/cli/src/link/sync-state.ts`                                                     | `SyncState`, `syncStateOf` (pure)                                                                                                                                                                     |
 | `apps/cli/src/link/sync-plan.ts`                                                      | `planSync` (pure): scan, coverage and remote facts to `SyncAction[]`                                                                                                                                  |
@@ -73,14 +73,14 @@ every other file and symbol exists today.
 
 | Term              | Identifier                                             | Meaning                                                                                    |
 | ----------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| Repository link   | `LinkFile`, file `livediagram.toml` (`LINK_FILE_NAME`) | A directory bound to documents in livediagram                                              |
-| Link root         | `LinkFile.root`                                        | The directory holding `livediagram.toml`                                                   |
+| Repository link   | `LinkFile`, file `liveplanner.toml` (`LINK_FILE_NAME`) | A directory bound to documents in liveplanner                                              |
+| Link root         | `LinkFile.root`                                        | The directory holding `liveplanner.toml`                                                   |
 | Link id           | `linkIdOf(path)`                                       | First 16 hex of SHA-256 of the link file's real path (RL8)                                 |
 | Coverage          | `Coverage`, `readCoverage`                             | The documents a link covers: its folder's subtree and its listed documents                 |
 | Covered document  | `CoveredDocument`                                      | One document in coverage, with its folder path                                             |
 | Mirror level      | `MirrorLevel`: `none`, `index`, `files`                | How much a sync writes                                                                     |
 | Mirror directory  | `LinkFile.mirror.dir`                                  | Where a sync writes, relative to the link root                                             |
-| Mirror file       | `MirrorFile`, `<folder path>/<slug>.livediagram.json`  | A committed snapshot: a pull file with no time                                             |
+| Mirror file       | `MirrorFile`, `<folder path>/<slug>.liveplanner.json`  | A committed snapshot: a pull file with no time                                             |
 | Outline file      | `<slug>.md`                                            | The snapshot's outline views, generated                                                    |
 | Index file        | `INDEX.md`                                             | The covered documents and their tabs, generated                                            |
 | Snapshot          | (the spec's word)                                      | What the mirror holds of a document at recorded revisions                                  |
@@ -107,18 +107,18 @@ or a changeset's), "cache" for the local sync state in output (it is state, not 
 
 ### Finding the link
 
-- **Nearest.** `nearestLink(io, cwd)` checks `<dir>/livediagram.toml` for `dir` = the working directory, then each
+- **Nearest.** `nearestLink(io, cwd)` checks `<dir>/liveplanner.toml` for `dir` = the working directory, then each
   parent up to the filesystem root; the first that exists is parsed. None exits 3 (`no_link`).
 - **`--all`.** `linksBelow(io, cwd)` walks the working directory and its subdirectories, depth first in byte order
   of names, skipping `.git`, `node_modules` and every directory whose name starts with `.` (RL4), and returns every
-  `livediagram.toml` found, the working directory's own included. None exits 3 (`no_link`). `--all` applies to
+  `liveplanner.toml` found, the working directory's own included. None exits 3 (`no_link`). `--all` applies to
   `sync`, `link status` and `link ls` (the spec's "a command acts on the nearest … `--all` on every link below it");
   `link init` takes no `--all`.
 - **Host.** After the profile is resolved (CLI blueprint step 3), a link whose `host` is not the profile's host
   (compared as origins, a leading `www.` ignored, as `parseDocumentUrl` compares) exits 2 (`host_mismatch`) naming
   the first profile in `config.toml` whose host is the link's, else `--host <link host>` (RL5). A link with no
   `host` uses the profile's. No request is sent before this check, so a self-host link never reaches
-  livediagram.app (CLI blueprint I5).
+  liveplanner.app (CLI blueprint I5).
 
 ### One sync pass (`runSyncPass`)
 
@@ -127,7 +127,7 @@ or a changeset's), "cache" for the local sync state in output (it is state, not 
    nothing at all, the local sync state included (RL13).
 2. **Local sync state.** `readLinkState`: the recorded documents (`state.json`).
 3. **Coverage.** `readCoverage(ctx, link)` (below).
-4. **Scan.** At every level, `scanMirrorDir(io, link)` classifies every `*.livediagram.json` under `dir` (below):
+4. **Scan.** At every level, `scanMirrorDir(io, link)` classifies every `*.liveplanner.json` under `dir` (below):
    at `files` they are the snapshots, at `index` and `none` they are lowered files (spec "Lowering the mirror
    level"). Each scanned file carries `bytes`, the SHA-256 of what the scan read.
 5. **Remote facts.** For each covered document, each recorded document and each `tracked` file's document:
@@ -176,17 +176,17 @@ read or an `401` stops the whole pass before anything is written.
 
 ### Scanning the mirror directory (`scanMirrorDir`)
 
-Every regular file under `<root>/<dir>` whose name ends in `.livediagram.json`, walked as `linksBelow` walks,
-skipping any subdirectory that holds its own `livediagram.toml` (that link's files are its own, RL4). Each is
+Every regular file under `<root>/<dir>` whose name ends in `.liveplanner.json`, walked as `linksBelow` walks,
+skipping any subdirectory that holds its own `liveplanner.toml` (that link's files are its own, RL4). Each is
 classified, in this order:
 
 | Classification | Test                                                                                                                                                             |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `conflicted`   | `hasConflictMarkers(text)`: a line starting `<<<<<<< `, `=======` alone, or `>>>>>>> `                                                                           |
-| `invalid`      | `parseDocumentEnvelope` fails, or `livediagramSync` is present and not a valid `PullSync`, or its `host` is not a URL (`livediagramSync.host is not a URL`, E5a) |
-| `local-new`    | A valid envelope with no `livediagramSync` key                                                                                                                   |
-| `foreign-host` | `livediagramSync.host` is not the link's host (as origins, `www.` ignored)                                                                                       |
-| `tracked`      | A valid envelope with a valid `livediagramSync`, naming `document.id`                                                                                            |
+| `invalid`      | `parseDocumentEnvelope` fails, or `liveplannerSync` is present and not a valid `PullSync`, or its `host` is not a URL (`liveplannerSync.host is not a URL`, E5a) |
+| `local-new`    | A valid envelope with no `liveplannerSync` key                                                                                                                   |
+| `foreign-host` | `liveplannerSync.host` is not the link's host (as origins, `www.` ignored)                                                                                       |
+| `tracked`      | A valid envelope with a valid `liveplannerSync`, naming `document.id`                                                                                            |
 
 Two `tracked` files naming one document id are both `duplicate` and refused (RL11). At `index` and `none` every
 `tracked` file is a lowered file, unchanged when its tabs hash to its recorded hashes and locally changed
@@ -195,7 +195,7 @@ at every level, as no level wrote them.
 
 ### Sync states (`syncStateOf`)
 
-For one `tracked` file of a document, with its recorded tabs `R` (`livediagramSync.tabs`), the file's tabs `F` and
+For one `tracked` file of a document, with its recorded tabs `R` (`liveplannerSync.tabs`), the file's tabs `F` and
 the remote facts:
 
 - **Local changed** when any tab in `F` has no entry in `R`, any entry in `R` has no tab in `F`, or any tab's
@@ -248,20 +248,20 @@ there; at `index` its `INDEX.md` section renders the same bytes, so nothing chan
 | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | `in-step`                | `none`      | Nothing; the outline file is rewritten only when missing (RL12)                                                                                                                                                                                                                                         | 0    |
 | `behind`, `new`          | `write`     | `readDocumentSnapshot`; the mirror file at its path (below) and its outline file                                                                                                                                                                                                                        | 0    |
-| `ahead`                  | `refuse`    | Nothing written; `! <path>: changed here; send it: livediagram push <path>`                                                                                                                                                                                                                             | 1    |
-| `diverged`               | `refuse`    | Nothing written; `! <path>: changed here and in livediagram; send it: livediagram push <path>`                                                                                                                                                                                                          | 1    |
+| `ahead`                  | `refuse`    | Nothing written; `! <path>: changed here; send it: liveplanner push <path>`                                                                                                                                                                                                                             | 1    |
+| `diverged`               | `refuse`    | Nothing written; `! <path>: changed here and in liveplanner; send it: liveplanner push <path>`                                                                                                                                                                                                          | 1    |
 | `gone`                   | `remove`    | The mirror file and its outline file removed; at `index` the section dropped; the record dropped                                                                                                                                                                                                        | 0    |
-| `gone`, locally changed  | `refuse`    | Nothing; `! <path>: gone from the link, but changed here and not sent; kept. Send it: livediagram push <path>, or delete it`                                                                                                                                                                            | 1    |
+| `gone`, locally changed  | `refuse`    | Nothing; `! <path>: gone from the link, but changed here and not sent; kept. Send it: liveplanner push <path>, or delete it`                                                                                                                                                                            | 1    |
 | lowered, unchanged       | `lower`     | The mirror file and its outline file removed, as `gone` removes them                                                                                                                                                                                                                                    | 0    |
-| lowered, locally changed | `refuse`    | Nothing; `! <path>: level <level> keeps no mirror files, but this one changed here and is not sent; kept. Send it: livediagram push <path>, or delete it`                                                                                                                                               | 1    |
+| lowered, locally changed | `refuse`    | Nothing; `! <path>: level <level> keeps no mirror files, but this one changed here and is not sent; kept. Send it: liveplanner push <path>, or delete it`                                                                                                                                               | 1    |
 | `unreadable`             | `report`    | Nothing; one line per file, once per pass                                                                                                                                                                                                                                                               | 0    |
-| `local-new`              | `report`    | Nothing; `? <path>: a document written by hand; this version of livediagram does not create it`                                                                                                                                                                                                         | 0    |
-| `conflicted`             | `refuse`    | Nothing; `! <path>: holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`                                                                                                                                                                         | 1    |
+| `local-new`              | `report`    | Nothing; `? <path>: a document written by hand; this version of liveplanner does not create it`                                                                                                                                                                                                         | 0    |
+| `conflicted`             | `refuse`    | Nothing; `! <path>: holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then liveplanner sync`                                                                                                                                                                         | 1    |
 | `invalid`                | `refuse`    | Nothing; `! <path>: <parsePullFile message>`                                                                                                                                                                                                                                                            | 1    |
 | `foreign-host`           | `refuse`    | Nothing; `! <path>: synced from <host>, not this link's <link host>`                                                                                                                                                                                                                                    | 1    |
-| `new`, its path held     | `refuse`    | Nothing; `! "<name>": not written while <path> holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`, or for an invalid file `! "<name>": not written while <path> is invalid (<parsePullFile message>); fix or delete it, then livediagram sync` | 1    |
+| `new`, its path held     | `refuse`    | Nothing; `! "<name>": not written while <path> holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then liveplanner sync`, or for an invalid file `! "<name>": not written while <path> is invalid (<parsePullFile message>); fix or delete it, then liveplanner sync` | 1    |
 | `duplicate`              | `refuse`    | Nothing; `! <path>: names the same document as <other path>`                                                                                                                                                                                                                                            | 1    |
-| relocation target held   | `refuse`    | Nothing moves; the document is written at its path; `! <path>: not moved, <target> is already there and livediagram did not write it; kept. Move or rename that file, then livediagram sync --relocate` (E16a)                                                                                          | 1    |
+| relocation target held   | `refuse`    | Nothing moves; the document is written at its path; `! <path>: not moved, <target> is already there and liveplanner did not write it; kept. Move or rename that file, then liveplanner sync --relocate` (E16a)                                                                                          | 1    |
 | transient                | `transient` | Nothing; `! "<name>": <failure>; files kept`                                                                                                                                                                                                                                                            | 6, 7 |
 | a path that would differ | `relocate`  | Without `--relocate`: the line only; with it: moved before the pass writes                                                                                                                                                                                                                              | 0    |
 
@@ -270,7 +270,7 @@ rewritten.
 
 ### Paths
 
-- **New file.** `mirrorPathFor(document, folderPath, taken)`: `<dir>/<folder path>/<slug>.livediagram.json` with
+- **New file.** `mirrorPathFor(document, folderPath, taken)`: `<dir>/<folder path>/<slug>.liveplanner.json` with
   `slug = fileSlug(document.name, document.id)`; when that path is held by a file naming another document (or a
   `local-new` file), `<slug>-<idSlug(id)>`, then the whole id (CLI27, CLI85).
 - **Held back.** Walking those candidates in order, one held by a `conflicted` or `invalid` file is the document's
@@ -287,7 +287,7 @@ rewritten.
   first line is not the generated line, answers `{ occupied: <target> }` and nothing moves (a case-only rename,
   which reads its own file on a case-insensitive disk, is not occupied). The act becomes `refuse` with reason
   `occupied` (E16a).
-- **Outline file.** `outlinePathOf(mirrorPath)`: the mirror path with `.livediagram.json` replaced by `.md`.
+- **Outline file.** `outlinePathOf(mirrorPath)`: the mirror path with `.liveplanner.json` replaced by `.md`.
 - **Index file.** `<root>/<dir>/INDEX.md`.
 
 ### The lock (`acquireLinkLock`)
@@ -313,7 +313,7 @@ rewritten.
 | start    | invoked                                                                      | passing  | One full pass; then one room stream per covered document (`openRoomStream`)                                                                                                                                                                                                                   |
 | idle     | a room op on a covered document (`classifyRoomOp`, any event)                | settling | That document's settle timer reset to `WAIT_SETTLE_MS` (RL20)                                                                                                                                                                                                                                 |
 | settling | the timer fires                                                              | passing  | A pass narrowed to that document, then `INDEX.md`                                                                                                                                                                                                                                             |
-| idle     | a local change under `dir` to a `*.livediagram.json` (`watchTree`)           | settling | That path's timer reset to `SYNC_LOCAL_SETTLE_MS`                                                                                                                                                                                                                                             |
+| idle     | a local change under `dir` to a `*.liveplanner.json` (`watchTree`)           | settling | That path's timer reset to `SYNC_LOCAL_SETTLE_MS`                                                                                                                                                                                                                                             |
 | settling | the local timer fires                                                        | passing  | A pass narrowed to that file; `ahead` or `diverged` refused as in a pass                                                                                                                                                                                                                      |
 | idle     | `SYNC_WATCH_COVERAGE_MS` passes                                              | passing  | Coverage re-read; documents that entered get a stream and a pass; documents that left are passed (they become `gone`) and their stream stopped (RL21); every covered document without a stream (one ended trashed then restored, refused, dropped) gets one again, debug `watch relisten <n>` |
 | any      | a room stream reconnects                                                     | settling | A pass of that document is due, as for an op (RL22)                                                                                                                                                                                                                                           |
@@ -341,7 +341,7 @@ rewritten.
 
 ### `link init`
 
-1. A `livediagram.toml` in the working directory exits 1 (`link_exists`).
+1. A `liveplanner.toml` in the working directory exits 1 (`link_exists`).
 2. `--folder <f>` resolves as a folder: a full id, an id prefix of at least `REF_MIN_PREFIX` characters, or a name
    equal ignoring case, across personal and team folders; none exits 3 with the nearest names, several exit 3
    with the candidates (`<ref>  "<path>"  <library>`) (RL26).
@@ -352,7 +352,7 @@ rewritten.
 5. `--level` is one of `none`, `index`, `files`; absent writes no `[mirror]` table (the defaults apply).
 6. `linkFileText(...)` is written atomically (CLI blueprint, temporary file then rename); stdout prints the path.
 7. The remote line: when `git -C <cwd> remote` exits 0 with any output, stderr gets `this repository has a git
-remote: its mirror files and INDEX.md are as public as the repository; the ids in livediagram.toml grant
+remote: its mirror files and INDEX.md are as public as the repository; the ids in liveplanner.toml grant
 nothing`. No forge is asked (RL40).
 
 ### The folder picker (`pickFolder`)
@@ -364,13 +364,13 @@ nothing`. No forge is asked (RL40).
   one library the tree depth first, siblings by name (code units). Each choice: its id, its path (folder names
   from the library root joined with `/`) and its library (`personal` or the team's name).
 - **Empty.** No folder in any library: exit 3 (`no_folders`), `error: there are no folders in <host> to link`,
-  `hint: create a folder in livediagram, or link documents: livediagram link init --doc <doc>`; the same on a
+  `hint: create a folder in liveplanner, or link documents: liveplanner link init --doc <doc>`; the same on a
   terminal or not.
 - **The list** (stderr; stdout stays for the path written), at most `PICKER_PAGE` choices, numbered from 1 with the
   numbers right-aligned, aligned with `columns`:
 
 ```text
-Folders in https://livediagram.app
+Folders in https://liveplanner.app
    1  Minigames                personal
    2  Minigames/Screens        personal
    3  Architecture             Platform
@@ -392,10 +392,10 @@ folder>
 
 ```text
 error: link init needs --folder or --doc when it is not run in a terminal
-  livediagram link init --folder 6d1f0c2a-4b1e-4f7a-9c3d-2b8e5a1f0e77  # Minigames (personal)
-  livediagram link init --folder 9a7e44b1-0c2d-4e8f-b1a3-5d6c7e8f9a0b  # Minigames/Screens (personal)
-  … 37 more: livediagram link init --folder <name> takes a folder's name too
-hint: livediagram link init --folder 6d1f0c2a-4b1e-4f7a-9c3d-2b8e5a1f0e77
+  liveplanner link init --folder 6d1f0c2a-4b1e-4f7a-9c3d-2b8e5a1f0e77  # Minigames (personal)
+  liveplanner link init --folder 9a7e44b1-0c2d-4e8f-b1a3-5d6c7e8f9a0b  # Minigames/Screens (personal)
+  … 37 more: liveplanner link init --folder <name> takes a folder's name too
+hint: liveplanner link init --folder 6d1f0c2a-4b1e-4f7a-9c3d-2b8e5a1f0e77
 ```
 
 ### `link status` and `link ls`
@@ -420,7 +420,7 @@ Parsed with `smol-toml`'s `parse` (RL1); then validated by `parseLinkFile(text, 
 ```ts
 type MirrorLevel = 'none' | 'index' | 'files';
 type LinkFile = {
-  path: string; // the real path of livediagram.toml
+  path: string; // the real path of liveplanner.toml
   root: string; // its directory
   host: string | null; // an origin; null: the active profile's
   covers: { folder: string | null; documents: string[] };
@@ -447,17 +447,17 @@ Rejections (`error:` lines are final copy; each ends with its `hint:`):
 
 | Code                 | Exit | `error:`                                                                                                | `hint:`                                                   |
 | -------------------- | ---- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `no_link`            | 3    | `no livediagram.toml in <cwd> or above` (`below` with `--all`)                                          | `livediagram link init --folder <folder>`                 |
-| `link_syntax`        | 2    | `<path> line <l>, column <c>: <smol-toml message>`                                                      | `fix the line; livediagram.toml is TOML`                  |
+| `no_link`            | 3    | `no liveplanner.toml in <cwd> or above` (`below` with `--all`)                                          | `liveplanner link init --folder <folder>`                 |
+| `link_syntax`        | 2    | `<path> line <l>, column <c>: <smol-toml message>`                                                      | `fix the line; liveplanner.toml is TOML`                  |
 | `unknown_key`        | 2    | `<path>: unknown key "<table>.<key>"`, then `did you mean: <x>` (CLI51) when near                       | `the keys of [<table>]: <keys>`                           |
-| `wrong_type`         | 2    | `<path>: <table>.<key> must be <a string\|an array of strings\|a boolean\|a table\|an array of tables>` | `livediagram link init --help`                            |
-| `invalid_host`       | 1    | `<path>: host must be an origin such as https://livediagram.app, not <value>`                           | none                                                      |
-| `no_coverage`        | 1    | `<path>: [covers] needs a folder, documents, or both`                                                   | `livediagram link init --folder <folder>`                 |
-| `empty_id`           | 1    | `<path>: <key> holds an empty or spaced id`                                                             | `livediagram link ls`                                     |
+| `wrong_type`         | 2    | `<path>: <table>.<key> must be <a string\|an array of strings\|a boolean\|a table\|an array of tables>` | `liveplanner link init --help`                            |
+| `invalid_host`       | 1    | `<path>: host must be an origin such as https://liveplanner.app, not <value>`                           | none                                                      |
+| `no_coverage`        | 1    | `<path>: [covers] needs a folder, documents, or both`                                                   | `liveplanner link init --folder <folder>`                 |
+| `empty_id`           | 1    | `<path>: <key> holds an empty or spaced id`                                                             | `liveplanner link ls`                                     |
 | `duplicate_document` | 1    | `<path>: covers.documents lists <id> twice`                                                             | none                                                      |
 | `invalid_level`      | 1    | `<path>: mirror.level must be none, index or files, not "<value>"`                                      | none                                                      |
 | `invalid_dir`        | 1    | `<path>: mirror.dir must stay inside <root>, not "<value>"`                                             | none                                                      |
-| `host_mismatch`      | 2    | `<path> links <link host>; this profile is <profile host>`                                              | `livediagram --profile <name> …`, or `--host <link host>` |
+| `host_mismatch`      | 2    | `<path> links <link host>; this profile is <profile host>`                                              | `liveplanner --profile <name> …`, or `--host <link host>` |
 | `link_exists`        | 1    | `<path> already exists`                                                                                 | `edit it, or run link init in another directory`          |
 | `lock_held`          | 5    | `another sync of <path> is running (process <pid>)`                                                     | `wait for it, or stop process <pid>`                      |
 
@@ -467,7 +467,7 @@ inside a `[[sources]]` table is diagram-sources' to judge (RL2).
 `linkFileText({ host, folder, documents, level })`, final copy, keys in this order, LF endings:
 
 ```toml
-# This repository's diagrams live in livediagram; see <host>/help/developers/repositories/
+# This repository's diagrams live in liveplanner; see <host>/help/developers/repositories/
 host = "<host>"
 
 [covers]
@@ -496,16 +496,16 @@ newer document format refuses them, CLI blueprint step 6).
 watch`) (RL29).
 - `sync.telemetryType = (input) => (input.watch ? 'SyncWatch' : 'Sync')` (RL24).
 - Descriptions (final copy):
-  - `link.init`: `Writes livediagram.toml in the current directory, linking it to a folder, documents, or both.`
+  - `link.init`: `Writes liveplanner.toml in the current directory, linking it to a folder, documents, or both.`
   - `link.status`: `Prints every document the link covers with its sync state, and every mirror file a sync would refuse.`
   - `link.ls`: `Lists the documents the link covers, as document ls lists them.`
   - `sync`: `Writes the link's documents into the repository at its mirror level: INDEX.md, and at files a mirror file and an outline file per document. --watch keeps syncing until Ctrl-C.`
-- Examples: `livediagram link init --folder "Minigames" --level files`, `livediagram link init --doc 3f9c`;
-  `livediagram link status`, `livediagram link status --all`; `livediagram link ls`, `livediagram link ls --json`;
-  `livediagram sync`, `livediagram sync --watch`.
-- Summaries: `link.init` `Write livediagram.toml for this directory`; `link.status` `Each covered document's sync
+- Examples: `liveplanner link init --folder "Minigames" --level files`, `liveplanner link init --doc 3f9c`;
+  `liveplanner link status`, `liveplanner link status --all`; `liveplanner link ls`, `liveplanner link ls --json`;
+  `liveplanner sync`, `liveplanner sync --watch`.
+- Summaries: `link.init` `Write liveplanner.toml for this directory`; `link.status` `Each covered document's sync
 state`; `link.ls` `The documents the link covers`; `sync` `Mirror the link's documents into the repository`.
-- `RESOURCES` gains `{ name: 'link', summary: 'Repository links: livediagram.toml and what it covers' }` after
+- `RESOURCES` gains `{ name: 'link', summary: 'Repository links: liveplanner.toml and what it covers' }` after
   `graph`; `TOP_LEVEL` gains `sync`; `GROUPED_ROWS` gains `{ words: ['sync'], after: 'link', summary: 'mirror a
 link's documents into the repository' }`.
 
@@ -541,10 +541,10 @@ queue of `readLine` answers.
 ### The mirror file
 
 ```ts
-type MirrorFile = PullFile & { livediagramSync: Omit<PullSync, 'pulledAt'> }; // no exportedAt, no pulledAt
+type MirrorFile = PullFile & { liveplannerSync: Omit<PullSync, 'pulledAt'> }; // no exportedAt, no pulledAt
 ```
 
-`mirrorFileText(file)` (byte exact): the envelope `{ kind, schemaVersion, document, livediagramSync }` with no
+`mirrorFileText(file)` (byte exact): the envelope `{ kind, schemaVersion, document, liveplannerSync }` with no
 `exportedAt` (RL30) and every object's keys sorted at every depth (`canonicalJson`'s order, RL31), printed with
 two-space indentation as `JSON.stringify(value, null, 2)` prints, except that each array at
 `document.tabs[i].elements` prints one element per line: its `canonicalJson`, indented to the array's depth plus
@@ -569,9 +569,9 @@ two, a comma after every element but the last; an empty array prints `[]`. LF li
       }
     ]
   },
-  "kind": "livediagram.document",
-  "livediagramSync": {
-    "host": "https://livediagram.app",
+  "kind": "liveplanner.document",
+  "liveplannerSync": {
+    "host": "https://liveplanner.app",
     "tabs": {
       "0b34…": {
         "hash": "…",
@@ -592,7 +592,7 @@ two, a comma after every element but the last; an empty array prints `[]`. LF li
   `parsePullFile` reads it once `pulledAt` is optional; `push <mirror file>` works unchanged and, when it lands,
   rewrites a file without `pulledAt` with `mirrorFileText`, so the mirror stays in its canonical, byte-stable form
   (RL30, RL31) and git sees only the revisions and hashes that moved; a pull file keeps `pullFileText`.
-- `push` writes no `pulledAt` into a file that had none: `pushFile` spreads the parsed `livediagramSync` back, so
+- `push` writes no `pulledAt` into a file that had none: `pushFile` spreads the parsed `liveplannerSync` back, so
   an absent key stays absent.
 - Every command that takes a pull file's path (CLI70) takes a mirror file's path alike.
 
@@ -601,7 +601,7 @@ two, a comma after every element but the last; an empty array prints `[]`. LF li
 `outlineFileText(document, tabs, host)`, byte exact, LF endings:
 
 ````markdown
-> Generated by `livediagram sync`; do not edit. Edit this document in livediagram: <host>/document/<id>
+> Generated by `liveplanner sync`; do not edit. Edit this document in liveplanner: <host>/document/<id>
 
 # <markdownText(document name)>
 
@@ -621,7 +621,7 @@ passed, so the outline is whole. `rev` is the tab's recorded revision; `tabIds` 
 `indexFileText(link, documents, level, host)`, byte exact, LF endings, one trailing `\n`:
 
 ```markdown
-> Generated by `livediagram sync` from `<path of livediagram.toml relative to dir>`; do not edit. Edit the diagrams in livediagram: <host>
+> Generated by `liveplanner sync` from `<path of liveplanner.toml relative to dir>`; do not edit. Edit the diagrams in liveplanner: <host>
 
 # Diagrams
 
@@ -662,7 +662,7 @@ backtick (RL32).
 | write, new    | `+ <path>  "<name>" · <n> tabs · rev <r>[,<r>…]`                                                                                   |
 | write, behind | `~ <path>  "<name>" · <tab names changed, comma-separated> · rev <a>→<b>[, …]`                                                     |
 | remove        | `- <path>  "<name>" · in the Trash` or `· outside the link`                                                                        |
-| relocate      | `» <path> → <expected path>` (with `--relocate`); else `» <path> would move to <expected>: livediagram sync --relocate`            |
+| relocate      | `» <path> → <expected path>` (with `--relocate`); else `» <path> would move to <expected>: liveplanner sync --relocate`            |
 | unreadable    | `? <path>: no document this account can open; left as it is`                                                                       |
 | lower         | `- <path>  "<name>" · level <level> keeps no mirror files`                                                                         |
 | local-new     | as in the actions table                                                                                                            |
@@ -686,9 +686,9 @@ No api change, no D1 table, no migration. Local files:
 
 | File                                                 | Class   | Notes                                                                                                                              |
 | ---------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `<root>/livediagram.toml`                            | config  | Committed; written only by `link init`                                                                                             |
+| `<root>/liveplanner.toml`                            | config  | Committed; written only by `link init`                                                                                             |
 | `<root>/<dir>/INDEX.md`                              | derived | Committed; rewritten when its bytes differ                                                                                         |
-| `<root>/<dir>/<folder path>/<slug>.livediagram.json` | content | Committed; the snapshot; the person's local changes are proposals                                                                  |
+| `<root>/<dir>/<folder path>/<slug>.liveplanner.json` | content | Committed; the snapshot; the person's local changes are proposals                                                                  |
 | `<root>/<dir>/<folder path>/<slug>.md`               | derived | Committed; rendered from the mirror file                                                                                           |
 | `<state dir>/state.json`                             | state   | `{ version: 1, linkPath, documents: { <documentId>: { name, tabs: { <tabId>: { rev, syncedAt } } } } }` (`RecordedDocument`, RL44) |
 | `<state dir>/lock`                                   | state   | `{ pid, hostname, startedAt, command }`; present only while a pass runs                                                            |
@@ -696,8 +696,8 @@ No api change, no D1 table, no migration. Local files:
 | `<state dir>/bases/`, `<state dir>/pending/`         | content | Reserved for base snapshots and pending proposals; written by the second slice, never in this one                                  |
 
 - **State dir** (`linkStateDir`): `git -C <root> rev-parse --absolute-git-dir` (each worktree answers its own);
-  success gives `<git dir>/livediagram/<link id>/`; a missing `git`, a non-zero exit or no work tree gives
-  `<cacheDir>/links/<link id>/` (`cacheDir` honours `XDG_CACHE_HOME`, CLI5; the spec's `~/.cache/livediagram`
+  success gives `<git dir>/liveplanner/<link id>/`; a missing `git`, a non-zero exit or no work tree gives
+  `<cacheDir>/links/<link id>/` (`cacheDir` honours `XDG_CACHE_HOME`, CLI5; the spec's `~/.cache/liveplanner`
   when unset). Directories 0700, files 0600 (reports hold names and paths) (RL8).
 - Every write is a temporary file in the same directory then a rename (`CliFiles.write`). A missing, unreadable or
   wrong-version `state.json` starts empty and is rewritten. At `files` it decides nothing (states come from the
@@ -705,18 +705,18 @@ No api change, no D1 table, no migration. Local files:
 - **Snapshot and restore.** A fresh clone has the committed files and an empty state: at `files` the first sync
   reads the recorded revisions from the mirror files themselves; at `index` and `none` every document is `new`
   once, and its rewrite of `INDEX.md` is byte-equal, so nothing is lost but `syncedAt`.
-- **Migration.** A pull file moved into `dir` by hand is `tracked` (it has `livediagramSync`); its `pulledAt` and
+- **Migration.** A pull file moved into `dir` by hand is `tracked` (it has `liveplannerSync`); its `pulledAt` and
   `exportedAt` go at its next write.
 
 ## Errors and edge cases
 
 - **E1** No link at or above: exit 3 `no_link`.
 - **E2** A link file inside the mirror directory of another link: each link scans its own `dir` and skips
-  subdirectories holding a `livediagram.toml` (RL4).
+  subdirectories holding a `liveplanner.toml` (RL4).
 - **E3** Two links covering one document: each keeps its own file, its own state dir and its own lock (spec).
 - **E4** A mirror file reformatted by a formatter: hashes alike (`canonicalJson`), stays `in-step`, not rewritten.
 - **E5** A mirror file edited into invalid JSON: `invalid`, refused, exit 1; the document's other files untouched.
-- **E5a** A mirror file whose `livediagramSync.host` is not a URL: `invalid`, refused with `livediagramSync.host is
+- **E5a** A mirror file whose `liveplannerSync.host` is not a URL: `invalid`, refused with `liveplannerSync.host is
 not a URL`; `sync`, `link status` and `sync --watch` go on with every other file (never a crash, never exit 7).
 - **E6** A mirror file with git's conflict markers: `conflicted`, refused naming `git checkout --ours|--theirs`,
   exit 1; the rest of the pass proceeds.
@@ -735,7 +735,7 @@ for tab "<name>"`, exit 7 (as `pull`).
 - **E14** A tab changed between the overview read and the tab read: the tab read's `ETag` revision is recorded, so
   the file says exactly what it holds.
 - **E15** `diverged` on one tab and `ahead` on another of the same document: one `refuse` for the document;
-  `livediagram push <path>` then lands the `ahead` tab and names the other `! stale tab` (CLI blueprint "Pull and
+  `liveplanner push <path>` then lands the `ahead` tab and names the other `! stale tab` (CLI blueprint "Pull and
   push"); the stale tab waits for the merge (second slice).
 - **E16** A relocation target held by another document's file: `-<id8>`, then the whole id (CLI27, CLI85).
 - **E16a** A relocation target holding a file this mirror did not write (a hand-written `docs/architecture.md`, any
@@ -794,7 +794,7 @@ for tab "<name>"`, exit 7 (as `pull`).
   line has its control characters (line breaks, terminal escapes) printed as spaces, so it cannot forge another
   line or drive the terminal.
 - **Host.** A link's requests go to the profile's host only after the host check; a self-host link never contacts
-  livediagram.app (CLI blueprint I5).
+  liveplanner.app (CLI blueprint I5).
 - **Access.** Each sync reads with the syncing person's credential: `unreadable` documents are never written,
   overwritten or removed, so one teammate's sync never erases what another may read.
 - **Debug lines** carry ids and states only, never names, paths or content (spec).
@@ -841,7 +841,7 @@ for tab "<name>"`, exit 7 (as `pull`).
 
 ## Observability
 
-Printed to stderr only under `LIVEDIAGRAM_DEBUG=1`, as `[sync] …` and `[link] …` (`debugLog(io, 'sync')`,
+Printed to stderr only under `LIVEPLANNER_DEBUG=1`, as `[sync] …` and `[link] …` (`debugLog(io, 'sync')`,
 `debugLog(io, 'link')`, RL33). Ids only.
 
 | Fingerprint                                                                                                                                     | Where                     |
@@ -929,13 +929,13 @@ absent.
 | Exit codes per action; highest wins                                                                                        | `sync.test.ts`                                                                         |
 | Telemetry `Cli·Used·LinkInit`, `LinkStatus`, `LinkLs`, `Sync`, `SyncWatch`                                                 | `apps/cli/src/telemetry.test.ts`; `apps/telemetry` `metric-series.test.ts`             |
 | Debug fingerprints carry ids only                                                                                          | `sync.test.ts` (debug output scanned for names and paths)                              |
-| A self-host link never contacts livediagram.app                                                                            | `sync.test.ts` (every request's origin)                                                |
+| A self-host link never contacts liveplanner.app                                                                            | `sync.test.ts` (every request's origin)                                                |
 
 ## Constants and configuration
 
 | Constant                  | Value              | Provenance                                   | Safe range      |
 | ------------------------- | ------------------ | -------------------------------------------- | --------------- |
-| `LINK_FILE_NAME`          | `livediagram.toml` | Spec                                         | fixed           |
+| `LINK_FILE_NAME`          | `liveplanner.toml` | Spec                                         | fixed           |
 | `MIRROR_DEFAULT_LEVEL`    | `index`            | Spec                                         | fixed by spec   |
 | `MIRROR_DEFAULT_DIR`      | `diagrams`         | Spec                                         | fixed by spec   |
 | `INDEX_FILE_NAME`         | `INDEX.md`         | Spec                                         | fixed           |
@@ -953,20 +953,20 @@ absent.
 | `SYNC_MERGE_ATTEMPTS`     | 3                  | Spec; second slice                           | 1 to 5          |
 | `SYNC_HOOK_BUDGET_MS`     | 5000               | Spec; second slice                           | 2000 to 15000   |
 
-Environment: none new. `LIVEDIAGRAM_DEBUG`, `XDG_CACHE_HOME` and the profile variables as the CLI reads them.
+Environment: none new. `LIVEPLANNER_DEBUG`, `XDG_CACHE_HOME` and the profile variables as the CLI reads them.
 
 ## Assets and external resources
 
 | Asset             | Source                        | Licence                | Path                                                                                              |
 | ----------------- | ----------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------- |
-| `smol-toml` 1.9.0 | npm (latest, confirmed)       | BSD-3-Clause           | bundled into `apps/cli/dist/livediagram.mjs`; its notice in `THIRD_PARTY_LICENSES` by `build.mjs` |
+| `smol-toml` 1.9.0 | npm (latest, confirmed)       | BSD-3-Clause           | bundled into `apps/cli/dist/liveplanner.mjs`; its notice in `THIRD_PARTY_LICENSES` by `build.mjs` |
 | Golden fixtures   | written by the tests' authors | MIT (the repository's) | `apps/cli/src/link/__fixtures__/`                                                                 |
 
 ## Not in this slice
 
 Each is the second build (`plans/0047-repository-sync.md`) and is blueprinted when that plan's phase 1 runs.
 
-- **Merging** (`@livediagram/tab-merge`, the merge table, fields, live fields, lost local values, the CAS loop,
+- **Merging** (`@liveplanner/tab-merge`, the merge table, fields, live fields, lost local values, the CAS loop,
   `SYNC_MERGE_ATTEMPTS`): `ahead` and `diverged` are refused in this slice.
 - **Base snapshots** in `<state dir>/bases/` (`SYNC_BASES_KEPT`) and the `git log` fallback.
 - **Pending proposals** in `<state dir>/pending/` and their send.

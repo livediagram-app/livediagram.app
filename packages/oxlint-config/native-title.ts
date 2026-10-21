@@ -6,5 +6,5 @@ export const NATIVE_TITLE = {
   selector:
     "JSXOpeningElement[name.name=/^(?!(iframe|abbr)$)[a-z]/] > JSXAttribute[name.name='title']",
   message:
-    'Native title is not a hint. Use Tooltip (a name) or HoverCard (a title and description) from @livediagram/ui.',
+    'Native title is not a hint. Use Tooltip (a name) or HoverCard (a title and description) from @liveplanner/ui.',
 };

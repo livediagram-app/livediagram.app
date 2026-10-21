@@ -3,7 +3,7 @@
 // and two hills) in one of a few palettes, taken in turn, so a picture-led layout reads as one at a
 // glance instead of a grey box. Only the tile draws them: placing the layout lands the ordinary
 // picture placeholder, ready for the author's own. Pure, our own SVG, no outside images.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 
 // Sky top, sky bottom, sun, far hill, near hill.
 const PALETTES: readonly (readonly [string, string, string, string, string])[] = [

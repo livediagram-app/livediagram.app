@@ -2,7 +2,7 @@
 // a cycle and a funnel. Same contract as page-layouts.ts: the page's content box in, uncoloured
 // elements out, a tall page stacking and a wide one setting side by side. Each figure ends in the
 // source line its numbers owe.
-import { createPinnedArrow, type Element, type ShapeElement } from '@livediagram/document';
+import { createPinnedArrow, type Element, type ShapeElement } from '@liveplanner/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc, SOURCE_H, sourceLine } from './page-layout-parts';
 

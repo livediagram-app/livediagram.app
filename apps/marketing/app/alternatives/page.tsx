@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { PageHero } from '@/components/PageHero';
 import { TryItCard } from '@/components/TryItCard';
 import { ALTERNATIVES, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
-import { JsonLd, pageMetadata, SITE_URL } from '@livediagram/ui';
+import { JsonLd, pageMetadata, SITE_URL } from '@liveplanner/ui';
 
 // Hub page for the comparison set (see docs/specs/019-marketing/comparison-pages.md): a
 // crawlable parent that links to every /alternatives/<slug> page.
@@ -17,9 +17,9 @@ const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format
 );
 
 export const metadata = pageMetadata({
-  title: 'How livediagram compares · alternatives',
+  title: 'How liveplanner compares · alternatives',
   description:
-    'Honest, side-by-side comparisons of livediagram with Miro, FigJam, Lucidchart, draw.io, Google Slides and more, including where each is the better pick.',
+    'Honest, side-by-side comparisons of liveplanner with Miro, FigJam, Lucidchart, draw.io, Google Slides and more, including where each is the better pick.',
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });
@@ -35,15 +35,15 @@ export const metadata = pageMetadata({
 const ITEM_LIST_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: 'How livediagram compares',
-  description: `Side-by-side comparisons of livediagram against ${COMPETITORS}.`,
+  name: 'How liveplanner compares',
+  description: `Side-by-side comparisons of liveplanner against ${COMPETITORS}.`,
   itemListOrder: 'https://schema.org/ItemListOrderAscending',
   numberOfItems: ALTERNATIVES.length,
   itemListElement: ALTERNATIVES.map((alt, i) => ({
     '@type': 'ListItem',
     position: i + 1,
     url: `${SITE_URL}/alternatives/${alt.slug}`,
-    name: `livediagram vs ${alt.name}`,
+    name: `liveplanner vs ${alt.name}`,
   })),
 };
 
@@ -57,8 +57,8 @@ export default function AlternativesIndexPage() {
       <main className="pb-20 sm:pb-24">
         <PageHero
           eyebrow="Product Comparison"
-          title="How livediagram compares"
-          lede="Thinking about another tool? Here is an honest, side-by-side look at how livediagram compares, including where each one is the better pick."
+          title="How liveplanner compares"
+          lede="Thinking about another tool? Here is an honest, side-by-side look at how liveplanner compares, including where each one is the better pick."
         />
         <div className="mx-auto mt-14 grid max-w-6xl gap-5 px-6 sm:grid-cols-2 lg:grid-cols-3">
           {ALTERNATIVES.map((alt) => (

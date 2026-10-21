@@ -1,7 +1,7 @@
 // /api/migrate — guest -> authed (and legacy guest -> signed-guest)
 // ownership migration.
 
-import { isClerkIdShape } from '@livediagram/api-schema';
+import { isClerkIdShape } from '@liveplanner/api-schema';
 import { guestSignatureEnforced, isLegacyGuestEra } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { getParticipant, migrateOwnerId } from '../db';

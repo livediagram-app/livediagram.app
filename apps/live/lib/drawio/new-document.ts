@@ -3,7 +3,7 @@
 // import image pipeline in one pass, and its report is the shared one. The foundation's new-document
 // target (importDocuments) makes the document.
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import type { ImportDocumentSource } from '@/lib/board-scene-import';
 import { browserImageSession, type CreateImageSession } from '@/lib/board-scene-browser';
 import { attachImportImages, type ImportImageRequest } from '@/lib/import-images';

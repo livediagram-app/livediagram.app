@@ -4,8 +4,8 @@
 // routes the room's `sheets` and `sheet-presence` ops to the chunk once it attaches (dropped before).
 import { act, render, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { SheetPresenceOp, SheetsRoomOp } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/document';
+import type { SheetPresenceOp, SheetsRoomOp } from '@liveplanner/api-schema';
+import type { Element } from '@liveplanner/document';
 import {
   SheetsBridgeContext,
   useSheetsBridge,

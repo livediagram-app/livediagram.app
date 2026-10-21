@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { isStickerId } from '@livediagram/icons';
+import { isStickerId } from '@liveplanner/icons';
 import {
   getLineArtIconCatalog,
   ICON_CATEGORIES,

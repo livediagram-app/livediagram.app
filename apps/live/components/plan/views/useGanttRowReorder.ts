@@ -5,7 +5,7 @@
 // a target place; letting go writes the chart's whole order once. Escape or a cancelled pointer drops the drag.
 // Alt+Arrow on a row's name moves it one place. The order maths is ganttReorder (packages/items).
 import { useEffect, useRef, useState } from 'react';
-import { ganttReorder } from '@livediagram/items';
+import { ganttReorder } from '@liveplanner/items';
 import { followWindowDrag } from '@/lib/window-drag';
 
 type GanttRowDrag = {

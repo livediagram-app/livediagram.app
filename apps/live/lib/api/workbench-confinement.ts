@@ -9,7 +9,7 @@ import {
   readErrorCode,
   workbenchRouteVerdict,
   type WorkbenchConfinementSession,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 type WorkbenchConfinement = WorkbenchConfinementSession;
 

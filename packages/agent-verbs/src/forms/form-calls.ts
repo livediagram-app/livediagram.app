@@ -3,15 +3,15 @@
 // (its tabs, boards and sheets named without their bodies) and the Form tab's own body, builds the whole change on a
 // draft, and writes only once every change has been checked: card types first, then the form (a new Form tab by a
 // changeset, an existing form through its route), then the tabs its responses go to.
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@liveplanner/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
   type ChangesetResponse,
   type FormLinkResponse,
   type ItemTypesRequest,
-} from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+} from '@liveplanner/api-schema';
+import type { Tab } from '@liveplanner/document';
 import {
   FORM_VERSION,
   STARTER_IDS,
@@ -25,12 +25,12 @@ import {
   starterBaseType,
   type FormDefinition,
   type StarterId,
-} from '@livediagram/forms';
-import { ITEM_TYPE_CATALOGUE_VERSION, newItemTypeId } from '@livediagram/items';
+} from '@liveplanner/forms';
+import { ITEM_TYPE_CATALOGUE_VERSION, newItemTypeId } from '@liveplanner/items';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { changeBoard } from '../plan/change-board';
 import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from '../plan/plan-state';
-import { columnIndex, columnLetters } from '@livediagram/sheets';
+import { columnIndex, columnLetters } from '@liveplanner/sheets';
 import { changeSheet } from '../sheets/change-sheet';
 import { readSheet } from '../sheets/read-sheet';
 import type { SheetChange } from '../sheets/sheet-change-build';

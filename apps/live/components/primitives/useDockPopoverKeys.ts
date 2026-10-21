@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useLayoutEffect, type RefObject } from 'react';
-import { focusablesOf, openedFromKeyboard } from '@livediagram/ui';
+import { focusablesOf, openedFromKeyboard } from '@liveplanner/ui';
 
 // The button a shown dock popover hangs from: one popover is open at a time, and its button says so.
 const OPEN_TRIGGER =

@@ -15,7 +15,7 @@ import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import { TimelineFilterPopover } from './TimelineFilterPopover';
 import type { TimelineControls as Controls } from './useTimelineControls';
 import { SOLID_BRAND_DARK_CONTROL } from '../brand-classes';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 // The shared shape: same height, radius, border and type scale as the
 // header's other buttons.

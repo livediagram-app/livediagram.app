@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { pagesOf, readDashboard, type EditorMode } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import { pagesOf, readDashboard, type EditorMode } from '@liveplanner/document';
+import type { TemplateKind } from '@liveplanner/templates';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';

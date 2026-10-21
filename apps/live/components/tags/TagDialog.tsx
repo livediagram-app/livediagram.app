@@ -5,8 +5,8 @@
 // opening starts from its own values.
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput } from '@livediagram/ui';
-import { TAG_NAME_MAX, nextTagColour, normaliseTagName, type Tag } from '@livediagram/api-schema';
+import { Button, CloseIcon, TextInput } from '@liveplanner/ui';
+import { TAG_NAME_MAX, nextTagColour, normaliseTagName, type Tag } from '@liveplanner/api-schema';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { ColourPicker } from '@/components/colour/ColourPicker';

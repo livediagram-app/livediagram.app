@@ -8,7 +8,7 @@ const NEW_URL = '/help/policies/privacy-policy/';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'The livediagram privacy policy now lives under Policies.',
+  description: 'The liveplanner privacy policy now lives under Policies.',
   robots: { index: false, follow: true },
   alternates: { canonical: NEW_URL },
 };

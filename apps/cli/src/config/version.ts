@@ -2,8 +2,8 @@
 
 export const CLI_VERSION = '0.3.0';
 
-// The name npm publishes the CLI under (blueprint CLI1); its command is `livediagram`.
-export const NPM_PACKAGE = '@livediagram/cli';
+// The name npm publishes the CLI under (blueprint CLI1); its command is `liveplanner`.
+export const NPM_PACKAGE = '@liveplanner/cli';
 
 export const UPGRADE_HINT = `npm install -g ${NPM_PACKAGE}@latest, or npx ${NPM_PACKAGE}@latest`;
 

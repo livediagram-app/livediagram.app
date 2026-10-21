@@ -5,8 +5,8 @@
 // documents. A document with two tags shows under both: that is the grouping.
 
 import { useEffect, useId, type ReactNode } from 'react';
-import { Button, EmptyState } from '@livediagram/ui';
-import type { Tag } from '@livediagram/api-schema';
+import { Button, EmptyState } from '@liveplanner/ui';
+import type { Tag } from '@liveplanner/api-schema';
 import { PlusIcon, TagIcon } from '@/components/primitives/explorer-icons';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';

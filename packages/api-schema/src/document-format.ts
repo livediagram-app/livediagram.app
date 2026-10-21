@@ -5,7 +5,7 @@
 export const DOCUMENT_FORMAT = 2;
 
 // Every api response carries the server's number in this header.
-export const DOCUMENT_FORMAT_HEADER = 'X-Livediagram-Format';
+export const DOCUMENT_FORMAT_HEADER = 'X-Liveplanner-Format';
 
 /** A safe positive integer (a number, or the digits of one), else null. */
 export function parseDocumentFormat(value: unknown): number | null {

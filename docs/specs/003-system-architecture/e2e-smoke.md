@@ -84,7 +84,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
 - **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
-  own type check (`typescriptConfig()` in `@livediagram/next-config`, shared by the five Next
+  own type check (`typescriptConfig()` in `@liveplanner/next-config`, shared by the five Next
   apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
@@ -124,7 +124,7 @@ The suite runs against the **real production build**, the live app's
 `output: 'export'` static bundle plus the real api worker on local D1,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/live/out` holds and never rebuilds it, so locally run
-`pnpm --filter @livediagram/live build` first; an old `out/` fails audits for code that has since changed.
+`pnpm --filter @liveplanner/live build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
@@ -167,8 +167,8 @@ key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3002 + api :8787) runs
-`pnpm --filter @livediagram/live test:e2e` against that stack with no
+developer with `pnpm dev` already running (live :3102 + api :8887) runs
+`pnpm --filter @liveplanner/live test:e2e` against that stack with no
 extra boot.
 
 ## Signed-in specs (Clerk stub)
@@ -182,9 +182,9 @@ publishable key for a host that cannot resolve. Each spec installs a fake `windo
 downloading clerk-js, so a chosen user (name, email, pictures) sits behind the real hooks with no
 Clerk account, secret or network.
 
-`pnpm --filter @livediagram/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
+`pnpm --filter @liveplanner/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
 `clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
-(live `:3015`, api `:8788`, marketing `:3016`), so a guest stack already up on `:3002` is never
+(live `:3115`, api `:8888`, marketing `:3116`), so a guest stack already up on `:3102` is never
 reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
 boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
 it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
@@ -197,7 +197,7 @@ account's synced settings takes a fresh id (`freshUserId`), since the stack's D1
 Every stack enforces guest signatures (above), so every spec runs as production does once armed.
 The specs in `apps/live/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
 Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
-the canvas, and no api response is `401`. `pnpm --filter @livediagram/live test:e2e:armed` sets
+the canvas, and no api response is `401`. `pnpm --filter @liveplanner/live test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
 (live `:3017`, api `:8789`, marketing `:3018`). It
 reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
@@ -218,7 +218,7 @@ model fetches of the photo tests). A test that takes `pageErrors` ends with
 **`expectNoPageErrors(pageErrors)`**, which fails naming what leaked. A Trusted Types violation is one of them:
 the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-platform/trusted-types.md)).
 
-The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
+The same `test` sets the editor's debug flag (`liveplanner:debug` = `*`) on its browser
 context before any page loads, so the production build the suite drives writes its trace lines
 ([Console logging](console-logging.md)) and a spec may wait for one (`[drive-mirror] pass-end`).
 A spec that opens its own context with `browser.newContext()` sets it there with

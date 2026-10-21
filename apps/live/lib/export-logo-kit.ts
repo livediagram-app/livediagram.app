@@ -2,7 +2,7 @@
 // PNGs at the common icon sizes and a favicon.ico. The plain paper is see-through. One raster at
 // the artboard's full size is drawn and every smaller PNG is stepped down from it (halving, then
 // one last high-quality scale), rather than drawing the page ten times.
-import type { LaidOutPage, Tab } from '@livediagram/document';
+import type { LaidOutPage, Tab } from '@liveplanner/document';
 import { sanitizeFilename } from './export-pages';
 import { encodeIco } from './ico-writer';
 import { exportTabAsSvg, renderTabToCanvas, type ImageExportOpts } from './export-tab';

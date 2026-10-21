@@ -13,7 +13,7 @@ import {
   type TimingBucket,
   type TimingScaleKey,
   type WebVital,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 /** Fewer timings than this and a card says so rather than quoting a percentile. */
 export const TIMING_MIN_SAMPLES = 20;

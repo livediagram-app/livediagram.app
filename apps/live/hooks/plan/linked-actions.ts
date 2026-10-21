@@ -6,8 +6,8 @@ import {
   type Element,
   type ElementAction,
   type Tab,
-} from '@livediagram/document';
-import { collectingBoard, type LinkedRecordChange, type PlanBoardSetup } from '@livediagram/items';
+} from '@liveplanner/document';
+import { collectingBoard, type LinkedRecordChange, type PlanBoardSetup } from '@liveplanner/items';
 
 export type PlacedAction = { tabId: string; elementId: string; action: ElementAction };
 export type CollectingBoard = { tabId: string; elementId: string; setup: PlanBoardSetup };

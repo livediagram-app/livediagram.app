@@ -12,7 +12,7 @@
 // second copy of this would drift on the first behaviour fix.
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDownIcon, HoverCard, useClickOutside } from '@livediagram/ui';
+import { ChevronDownIcon, HoverCard, useClickOutside } from '@liveplanner/ui';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // preventDefault on mousedown keeps focus + the live selection in the

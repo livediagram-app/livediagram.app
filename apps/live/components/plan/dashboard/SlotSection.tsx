@@ -5,9 +5,9 @@
 // (the slot drawn small, a side to add on), then **Change Chart** or **Change Source** for a chart or figure from a
 // Sheet. Open Tab, Duplicate, Clear and Remove are the cog's toolbar above its sections (SlotToolbar.tsx).
 import { useState } from 'react';
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideLayoutGrid, lucidePencil } from '@livediagram/icons/lucide';
-import type { DashboardSlot } from '@livediagram/document';
+import { lucideGlyph } from '@liveplanner/ui';
+import { lucideLayoutGrid, lucidePencil } from '@liveplanner/icons/lucide';
+import type { DashboardSlot } from '@liveplanner/document';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { SettingsActionTile, SettingsBody } from '../settings-panel-parts';
 import { useDashboard } from './dashboard-context';

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { useEscape, Glyph } from '@livediagram/ui';
-import type { AccessLevel } from '@livediagram/api-schema';
+import { useEscape, Glyph } from '@liveplanner/ui';
+import type { AccessLevel } from '@liveplanner/api-schema';
 
 // One folder group in the tab bar (docs/specs/006-document/tab-folders.md). The folder renders as a
 // compact chip (glyph + name + count) plus, when the ACTIVE tab lives in

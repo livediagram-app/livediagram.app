@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
 import { compileQuery, type QueryFile } from './query';
 
 const file = (over: Partial<QueryFile> = {}): QueryFile => ({
   parents: ['root'],
   trashed: false,
-  mimeType: 'application/vnd.livediagram+json',
-  appProperties: { ldOrigin: 'livediagram.app' },
+  mimeType: 'application/vnd.liveplanner+json',
+  appProperties: { ldOrigin: 'liveplanner.app' },
   ...over,
 });
 
@@ -25,7 +25,7 @@ describe('compileQuery', () => {
 
   it('matches every supported clause, joined by and', () => {
     const q = compileQuery(
-      "appProperties has { key='ldOrigin' and value='livediagram.app' } and trashed = false and 'root' in parents",
+      "appProperties has { key='ldOrigin' and value='liveplanner.app' } and trashed = false and 'root' in parents",
     );
     expect(q(file())).toBe(true);
     expect(q(file({ trashed: true }))).toBe(false);

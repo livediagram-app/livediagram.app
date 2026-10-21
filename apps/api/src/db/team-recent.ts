@@ -3,7 +3,7 @@
 // Welcome back and the /new page's Jump back in hold team documents too. Never one in the Trash, never
 // an empty one (nothing drawn, nothing to come back to), and never a team they were only invited to.
 
-import type { TeamRecentDocument } from '@livediagram/api-schema';
+import type { TeamRecentDocument } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { DOCUMENT_SUMMARY_COLS, rowToSummary, type SummaryRow } from './documents';
 import { firstTabCountSql } from './tabs';

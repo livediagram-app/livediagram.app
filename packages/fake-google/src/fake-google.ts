@@ -107,7 +107,7 @@ export class FakeGoogle {
     return this.mintAccess(grant);
   }
 
-  // The user removes livediagram at myaccount.google.com: every token dies.
+  // The user removes liveplanner at myaccount.google.com: every token dies.
   revokeGrant(user: string): void {
     for (const g of this.grants) if (g.user === user) g.revoked = true;
   }
@@ -199,7 +199,7 @@ export class FakeGoogle {
     return copy.id;
   }
 
-  // A folder made in Drive's UI: livediagram cannot see it under drive.file.
+  // A folder made in Drive's UI: liveplanner cannot see it under drive.file.
   userCreateFolder(user: string, name: string, parent = 'root'): string {
     return this.store.create({
       user,
@@ -210,7 +210,7 @@ export class FakeGoogle {
     }).id;
   }
 
-  // A file someone else owns (made by their livediagram), shared with `user`.
+  // A file someone else owns (made by their liveplanner), shared with `user`.
   otherUserFile(input: {
     owner: string;
     name: string;

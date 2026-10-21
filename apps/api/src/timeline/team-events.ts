@@ -5,7 +5,7 @@
 // actor: "who is in this with me" is the question these answer, and it
 // is a question every member has.
 
-import type { TimelineScopeRef } from '@livediagram/api-schema';
+import type { TimelineScopeRef } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { adminsForTeam, audienceForTeam, mergeScopes, userScope } from './audience';
 import { dedupeKeyOnce } from '../db/timeline';

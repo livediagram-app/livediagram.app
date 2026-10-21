@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { RoomOp } from '@liveplanner/api-schema';
 import { usePlanPresence } from './usePlanPresence';
 
 // docs/specs/026-plan/plan-mode.md "Collaboration": a late joiner sees cards already held. A holder says it

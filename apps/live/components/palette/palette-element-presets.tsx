@@ -1,5 +1,5 @@
-import { Glyph } from '@livediagram/ui';
-import { badgePresetFace } from '@livediagram/document';
+import { Glyph } from '@liveplanner/ui';
+import { badgePresetFace } from '@liveplanner/document';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import type { PaletteTileDef } from './palette-tile-defs';
 

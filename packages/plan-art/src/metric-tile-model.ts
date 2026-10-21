@@ -11,8 +11,8 @@ import {
   type ItemTypeDef,
   type MetricKind,
   type PlanBoardSetup,
-} from '@livediagram/items';
-import { PRIORITY_COLOURS } from '@livediagram/document';
+} from '@liveplanner/items';
+import { PRIORITY_COLOURS } from '@liveplanner/document';
 import { OVERDUE_RED, PHASE_COLOURS } from './phase-colours';
 import {
   STALE_DAYS,

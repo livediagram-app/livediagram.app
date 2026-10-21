@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createPath, type PathAnchor, type PathElement } from '@livediagram/document';
+import { createPath, type PathAnchor, type PathElement } from '@liveplanner/document';
 import { usePathEditGesture } from './usePathEditGesture';
 import { PATH_ADD_CURSOR } from '@/lib/path-edit';
 

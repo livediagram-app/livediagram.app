@@ -1,4 +1,4 @@
-import { CommunityPostTileSkeleton } from '@livediagram/ui';
+import { CommunityPostTileSkeleton } from '@liveplanner/ui';
 import type { GalleryPost } from '@/lib/gallery-post';
 import { useState } from 'react';
 import { PostCard } from './PostCard';

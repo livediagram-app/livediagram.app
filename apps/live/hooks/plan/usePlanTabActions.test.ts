@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { dashboardOf, withSlotContent } from './usePlanTabActions';
 import { dashboardElement, dashboardViewElement } from './slot-elements';
 import { dashboardItemOf } from './dashboard-drop';

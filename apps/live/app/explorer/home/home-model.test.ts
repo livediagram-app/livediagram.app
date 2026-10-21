@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HomeGroup, HomeJumpBackInItem } from '@livediagram/api-schema';
+import type { HomeGroup, HomeJumpBackInItem } from '@liveplanner/api-schema';
 import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
 import {
   dayHeading,

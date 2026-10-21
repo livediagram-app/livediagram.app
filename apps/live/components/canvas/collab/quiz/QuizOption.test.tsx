@@ -6,7 +6,7 @@ import {
   QUIZ_OPTION_HEIGHT,
   quizOptionCentres,
   quizOptionGrowth,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { QuizOption } from './QuizOption';
 
 // docs/specs/012-collaboration/quiz.md "Answers": an answer shows its whole text, growing away from the disc.

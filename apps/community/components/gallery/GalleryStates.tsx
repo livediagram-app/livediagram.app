@@ -1,4 +1,4 @@
-import { Button, ButtonContent, EmptyState, SearchIcon, buttonClassName } from '@livediagram/ui';
+import { Button, ButtonContent, EmptyState, SearchIcon, buttonClassName } from '@liveplanner/ui';
 import { SHARE_YOUR_OWN_HREF } from '@/lib/links';
 import { signInHref } from '@/lib/session';
 import { MineIcon, PeopleIcon } from '../shared/icons';

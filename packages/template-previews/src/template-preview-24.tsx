@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { formTemplateStarter, isFormTemplateKind, type TemplateKind } from '@livediagram/templates';
+import { formTemplateStarter, isFormTemplateKind, type TemplateKind } from '@liveplanner/templates';
 import { FORM_STARTER_VIEWBOX, FormStarterArt } from './form-starter-picture';
 
 // Group 24: the form templates (docs/specs/030-forms/forms.md "Starting a form"): each its starter's picture, as Start

@@ -4,7 +4,7 @@
 // console stays clean. Warnings and errors are not trace lines: they use console.warn / .error.
 
 /** The browser's debug flag: `*`, or a comma-separated list of fingerprint scopes. */
-export const DEBUG_STORAGE_KEY = 'livediagram:debug';
+export const DEBUG_STORAGE_KEY = 'liveplanner:debug';
 
 type FlagStore = Pick<Storage, 'getItem'> | null;
 

@@ -9,7 +9,7 @@ import {
   newTabId,
   type CustomFieldDef,
   type ItemTypeTab,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 // The fields a tab can hold: never the title (it heads the panel) or votes (they live on the card).
 const NOT_TABBABLE = new Set(['title', 'votes']);

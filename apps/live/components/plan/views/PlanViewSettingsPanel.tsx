@@ -5,14 +5,14 @@
 // Field, Priority by Status), Swimlanes and Row Order (a Gantt chart). The same changes as its element menu's View
 // flyout (planViewSettingsModel), so either does.
 import { useState, type ReactNode } from 'react';
-import type { PlanViewRef } from '@livediagram/document';
-import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
+import type { PlanViewRef } from '@liveplanner/document';
+import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalendar,
   lucideCircleDot,
   lucideGroup,
   lucideLayers,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { CardTypeOptions, InfoNote, SwimlaneOptions } from '@/components/palette/plan-menu-parts';
 import { OptionRows } from '../OptionRows';

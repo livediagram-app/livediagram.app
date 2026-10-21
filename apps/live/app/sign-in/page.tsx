@@ -2,7 +2,7 @@
 
 // Custom sign-in page. Ported from Manager Toolkit's
 // apps/dashboard/app/sign-in/page.tsx — same email-code + Google OAuth
-// flow, livediagram branding, livediagram routes.
+// flow, liveplanner branding, liveplanner routes.
 //
 // Per docs/specs/014-identity/auth-and-guest-access.md, this page is never required to use the editor — the
 // editor stays open to guests forever. Sign-in only unlocks per-account
@@ -40,7 +40,7 @@ import {
   resolvePostAuthDestination,
   ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
-import { Button } from '@livediagram/ui';
+import { Button } from '@liveplanner/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 
 function SignInContent() {
@@ -233,7 +233,7 @@ function SignInContent() {
       notice={notice}
       footer={
         <>
-          New to livediagram?{' '}
+          New to liveplanner?{' '}
           <Link
             href={authHrefWithReturn('/get-started/', searchParams.get('redirect_url'))}
             className="font-medium text-brand-700 hover:underline dark:text-brand-400"

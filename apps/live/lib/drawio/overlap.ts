@@ -1,7 +1,7 @@
 // Whether a draw.io vertex overlaps another (spec "Opacity over paper", D41): a translucent shape
 // over or under something else keeps its opacity, because seeing through it matters there.
 
-import { rectsIntersect } from '@livediagram/document';
+import { rectsIntersect } from '@liveplanner/document';
 import { absoluteRect, type DrawioGraph, type Rect } from './cells';
 
 /** A memoised test over the page's visible vertices, ancestors and descendants left out. */

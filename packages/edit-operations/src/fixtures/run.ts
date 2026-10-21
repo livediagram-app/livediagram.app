@@ -1,7 +1,7 @@
 // Runs line-form operations on the checkout flow (or a given tab) with deterministic ids, and reads
 // what came out; shared by the operation suites. A line that does not parse answers its errors.
 
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 import { applyEditOperations } from '../apply';
 import { parseEditOperations } from '../parse';
 import type { ApplyOptions, ApplyOutcome } from '../types';

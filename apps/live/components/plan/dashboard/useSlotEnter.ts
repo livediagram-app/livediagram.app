@@ -6,7 +6,7 @@
 // still; never under reduced motion. Driven from a layout effect with the Web Animations API, so it runs on the
 // slot's first frame and costs nothing after.
 import { useLayoutEffect, type RefObject } from 'react';
-import { MOTION_MS, cascadeDelayMs } from '@livediagram/tailwind-config/motion';
+import { MOTION_MS, cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 
 const SLOT_ENTER_KEYFRAMES: Keyframe[] = [

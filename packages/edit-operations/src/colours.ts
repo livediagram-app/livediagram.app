@@ -9,7 +9,7 @@ import {
   type Element,
   type QuickSwatchSlot,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 

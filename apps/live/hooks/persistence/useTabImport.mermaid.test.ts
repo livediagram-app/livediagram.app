@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { MERMAID_UNSUPPORTED_ERROR, type Tab } from '@livediagram/document';
+import { MERMAID_UNSUPPORTED_ERROR, type Tab } from '@liveplanner/document';
 import { useTabImport } from './useTabImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

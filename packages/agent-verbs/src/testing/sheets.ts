@@ -13,7 +13,7 @@ import {
   type AgentValue,
   type SheetJson,
   type SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 
 // A seeded random, so row and column ids are the same every run.
 export function seeded(seed = 7): () => number {

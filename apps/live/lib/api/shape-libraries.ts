@@ -6,7 +6,7 @@ import {
   type ShapeLibrary,
   type ShapeLibraryItem,
   type ShapeLibrarySource,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import { API_BASE, ApiError, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 

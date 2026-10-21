@@ -2,7 +2,7 @@
 // among the templates of every mode but the tab's own. A template's mode is the mode its tab opens in
 // (templateEditorMode), so each template is in exactly one mode and never shows twice; the same search as the mode's own
 // (templateMatchesQuery), so the same words find the same templates wherever they are typed. Pure.
-import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
+import { EDITOR_MODES, type EditorMode } from '@liveplanner/document';
 import {
   TEMPLATES,
   isBlankTemplate,
@@ -11,7 +11,7 @@ import {
   templateMatchesQuery,
   type TemplateDescriptor,
   type TemplateKind,
-} from '@livediagram/templates';
+} from '@liveplanner/templates';
 
 // The most cards a mode shows before its Show All: a word matching dozens of one mode's templates never buries the rest.
 export const OTHER_MODE_CARDS_MAX = 6;

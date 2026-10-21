@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard, TidyUpIcon } from '@livediagram/ui';
+import { HoverCard, TidyUpIcon } from '@liveplanner/ui';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';

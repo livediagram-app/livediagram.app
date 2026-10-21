@@ -3,51 +3,51 @@ import { helpMetadata } from '@/lib/seo';
 import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
 
 export const metadata = helpMetadata({
-  title: 'The livediagram CLI',
+  title: 'The liveplanner CLI',
   description:
-    'Install the livediagram CLI from npm, sign in by browser, device code or API token, then read, build, edit and export documents from a terminal or agent.',
+    'Install the liveplanner CLI from npm, sign in by browser, device code or API token, then read, build, edit and export documents from a terminal or agent.',
   path: '/help/developers/cli/',
 });
 
 <ArticleLayout
-  title="The livediagram CLI"
+  title="The liveplanner CLI"
   description="Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting."
   categoryTitle="Developers"
   categorySlug="developers"
 >
 
-`livediagram` is a command line for the livediagram API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+`liveplanner` is a command line for the liveplanner API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
 
 It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
 
 ## Install
 
-The CLI is the npm package `@livediagram/cli` and needs **Node 22 or later**. Run it without installing:
+The CLI is the npm package `@liveplanner/cli` and needs **Node 22 or later**. Run it without installing:
 
 ```bash
-npx @livediagram/cli --help
+npx @liveplanner/cli --help
 ```
 
-or install it, which gives you the `livediagram` command:
+or install it, which gives you the `liveplanner` command:
 
 ```bash
-npm install -g @livediagram/cli
-livediagram --version
+npm install -g @liveplanner/cli
+liveplanner --version
 ```
 
-The examples below use the installed `livediagram`; with `npx`, put `npx @livediagram/cli` in its place.
+The examples below use the installed `liveplanner`; with `npx`, put `npx @liveplanner/cli` in its place.
 
 ## Sign In
 
-You need a livediagram account: the CLI acts as you, through an API token, and never as a guest. There are three ways to give it one. Whichever you use, the CLI checks the token with the API before keeping it.
+You need a liveplanner account: the CLI acts as you, through an API token, and never as a guest. There are three ways to give it one. Whichever you use, the CLI checks the token with the API before keeping it.
 
 ### In the Browser
 
 ```bash
-livediagram auth login
+liveplanner auth login
 ```
 
-The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect livediagram CLI**. Leave **Read-only access** off to let the CLI change documents, or switch it on so it can find and view documents but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
+The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect liveplanner CLI**. Leave **Read-only access** off to let the CLI change documents, or switch it on so it can find and view documents but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
 
 <Figure
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
@@ -61,10 +61,10 @@ The terminal waits up to ten minutes for you. If the browser cannot reach it (on
 ### On a Machine Without a Browser
 
 ```bash
-livediagram auth login --device
+liveplanner auth login --device
 ```
 
-The terminal prints a page address, `https://livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livediagram CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+The terminal prints a page address, `https://liveplanner.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect liveplanner CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
 
 <Figure caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
   <CliDeviceSignIn />
@@ -77,87 +77,87 @@ A code lasts **ten minutes**. If the page says it couldn't find the code, check 
 For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, under **Account**, then **API Tokens**, and either set it for the commands you run:
 
 ```bash
-export LIVEDIAGRAM_TOKEN=lvd_your_token_here
+export LIVEPLANNER_TOKEN=lvd_your_token_here
 ```
 
 or store it for this machine, reading it from stdin:
 
 ```bash
-printf %s "$TOKEN" | livediagram auth login --with-token
+printf %s "$TOKEN" | liveplanner auth login --with-token
 ```
 
-`LIVEDIAGRAM_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
+`LIVEPLANNER_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
 
 ## Check or Sign Out
 
 ```bash
-livediagram auth status    # host, account, token name, role, expiry, and where it came from
-livediagram auth logout    # revoke the stored token and forget it
+liveplanner auth status    # host, account, token name, role, expiry, and where it came from
+liveplanner auth logout    # revoke the stored token and forget it
 ```
 
-`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with livediagram, so it stops working everywhere at once. It will not revoke a token from `LIVEDIAGRAM_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **API Tokens**.
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with liveplanner, so it stops working everywhere at once. It will not revoke a token from `LIVEPLANNER_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **API Tokens**.
 
-The browser and device sign-ins create an ordinary API token named **livediagram CLI**. It appears in **API Tokens** beside any others (with a **Read-only** badge if you chose that), lasts six months, and counts towards your ten. Signing in again on the same machine replaces it and revokes the old one.
+The browser and device sign-ins create an ordinary API token named **liveplanner CLI**. It appears in **API Tokens** beside any others (with a **Read-only** badge if you chose that), lasts six months, and counts towards your ten. Signing in again on the same machine replaces it and revokes the old one.
 
 ## Where Your Token Is Kept
 
-A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livediagram/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
+A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/liveplanner/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
 
 ## Find and Read Documents
 
 Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
 
 ```bash
-livediagram document ls auth                  # documents whose name contains "auth"
-livediagram tab ls "Auth flow"                # the document's tabs
-livediagram tab view "Auth flow"              # the first tab, as an outline
-livediagram tab view "Auth flow" --tab Flow --view graph
-livediagram tab lint "Auth flow"              # what is wrong with how it is drawn
-livediagram tab render "Auth flow" --png auth.png
+liveplanner document ls auth                  # documents whose name contains "auth"
+liveplanner tab ls "Auth flow"                # the document's tabs
+liveplanner tab view "Auth flow"              # the first tab, as an outline
+liveplanner tab view "Auth flow" --tab Flow --view graph
+liveplanner tab lint "Auth flow"              # what is wrong with how it is drawn
+liveplanner tab render "Auth flow" --png auth.png
 ```
 
-`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **livediagram link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **liveplanner link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
 
 `tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
-A few commands read livediagram's catalogues rather than your documents, which helps before writing anything:
+A few commands read liveplanner's catalogues rather than your documents, which helps before writing anything:
 
 ```bash
-livediagram template ls                       # the templates a document or tab can start from
-livediagram template view kanban              # one template, as the outline of the tab it builds
-livediagram icon search "message queue"       # icons by name, best match first, for iconId=
-livediagram schema sticky                     # the element kinds, or one kind's fields and values
+liveplanner template ls                       # the templates a document or tab can start from
+liveplanner template view kanban              # one template, as the outline of the tab it builds
+liveplanner icon search "message queue"       # icons by name, best match first, for iconId=
+liveplanner schema sticky                     # the element kinds, or one kind's fields and values
 ```
 
 ## Change a Diagram
 
 ```bash
-livediagram document create "Shop" -f arch.json            # from a graph, Mermaid or elements file
-livediagram document create "Retro" --template start-stop-continue
-livediagram element set "Auth flow" n3 label="Sign in" shape=stadium
-livediagram edit "Auth flow" -f ops.txt                     # many edit operations at once
-livediagram changeset revert "Auth flow" cs_8k2m4q7d1x
-livediagram tab add "Auth flow" Details -f detail.mmd       # a new tab, empty, from a file or --template
-livediagram tab rm "Auth flow" Scratch                      # delete one tab; the others stay
+liveplanner document create "Shop" -f arch.json            # from a graph, Mermaid or elements file
+liveplanner document create "Retro" --template start-stop-continue
+liveplanner element set "Auth flow" n3 label="Sign in" shape=stadium
+liveplanner edit "Auth flow" -f ops.txt                     # many edit operations at once
+liveplanner changeset revert "Auth flow" cs_8k2m4q7d1x
+liveplanner tab add "Auth flow" Details -f detail.mmd       # a new tab, empty, from a file or --template
+liveplanner tab rm "Auth flow" Scratch                      # delete one tab; the others stay
 ```
 
-Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livediagram guide edit` explains how edit operations read.
+Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how edit operations read.
 
 `document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 
 ## Comments, Items and Waiting
 
 ```bash
-livediagram comment ls "Shop"
-livediagram comment add "Shop" api "Should this be idempotent?"
-livediagram item ls "Shop"                       # Plan boards and their items, by number such as #12
-livediagram item add "Shop" "Fix login" --status "In Progress" --type Bug
-livediagram board add "Shop" --columns "Ideas,Doing,Shipped"
-livediagram sheet get "Shop" Costs A1:D20          # a sheet's cells by A1, formulas worked out
-livediagram sheet set "Shop" Costs B2 1200 =B2*12
-livediagram type ls "Shop"                       # card types and their fields
-livediagram wait "Shop" --for comment --timeout 600
-livediagram watch "Shop"                         # stream changes until you stop it
+liveplanner comment ls "Shop"
+liveplanner comment add "Shop" api "Should this be idempotent?"
+liveplanner item ls "Shop"                       # Plan boards and their items, by number such as #12
+liveplanner item add "Shop" "Fix login" --status "In Progress" --type Bug
+liveplanner board add "Shop" --columns "Ideas,Doing,Shipped"
+liveplanner sheet get "Shop" Costs A1:D20          # a sheet's cells by A1, formulas worked out
+liveplanner sheet set "Shop" Costs B2 1200 =B2*12
+liveplanner type ls "Shop"                       # card types and their fields
+liveplanner wait "Shop" --for comment --timeout 600
+liveplanner watch "Shop"                         # stream changes until you stop it
 ```
 
 `wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
@@ -167,10 +167,10 @@ livediagram watch "Shop"                         # stream changes until you stop
 [Pages](/help/canvas/pages-mode/) tabs hold pages (infographics, slides and logos) and articles, which have their own commands:
 
 ```bash
-livediagram page ls "Pitch deck"                                  # each page, its refs, articles and layouts
-livediagram page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
-livediagram article get "Project brief" > brief.md                # an article as Markdown
-livediagram article set "Project brief" brief.md                  # write it back, or a new one
+liveplanner page ls "Pitch deck"                                  # each page, its refs, articles and layouts
+liveplanner page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
+liveplanner article get "Project brief" > brief.md                # an article as Markdown
+liveplanner article set "Project brief" brief.md                  # write it back, or a new one
 ```
 
 `page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
@@ -180,11 +180,11 @@ livediagram article set "Project brief" brief.md                  # write it bac
 A [form](/help/canvas/plan-mode/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:
 
 ```bash
-livediagram form add --starter rsvp --name "Summer Party"   # a new document with a Form tab
-livediagram form get "Summer Party"                         # its questions, where responses go, its link
-livediagram form change "Summer Party" changes.json         # up to 50 changes, all or nothing
-livediagram form share "Summer Party" publish               # or close, or delete-link
-livediagram form try "Summer Party" answers.json            # one test response, as the builder's Preview sends
+liveplanner form add --starter rsvp --name "Summer Party"   # a new document with a Form tab
+liveplanner form get "Summer Party"                         # its questions, where responses go, its link
+liveplanner form change "Summer Party" changes.json         # up to 50 changes, all or nothing
+liveplanner form share "Summer Party" publish               # or close, or delete-link
+liveplanner form try "Summer Party" answers.json            # one test response, as the builder's Preview sends
 ```
 
 A test response makes a card (or sheet row) titled **Preview:**, so you can see each answer land where you expect, then delete it.
@@ -192,29 +192,29 @@ A test response makes a card (or sheet row) titled **Preview:**, so you can see 
 ## Files, Exports and Pictures
 
 ```bash
-livediagram pull "Shop" --to docs --svg            # docs/shop.livediagram.json, plus an SVG per tab
-livediagram push docs/shop.livediagram.json        # send back each tab whose elements changed
-livediagram export --all --to backup --format json,svg,md
-livediagram graph lint flow.mmd                    # check a graph or Mermaid file before writing it
-livediagram graph render flow.mmd --png flow.png
+liveplanner pull "Shop" --to docs --svg            # docs/shop.liveplanner.json, plus an SVG per tab
+liveplanner push docs/shop.liveplanner.json        # send back each tab whose elements changed
+liveplanner export --all --to backup --format json,svg,md
+liveplanner graph lint flow.mmd                    # check a graph or Mermaid file before writing it
+liveplanner graph render flow.mmd --png flow.png
 ```
 
-To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+To keep a repository's diagrams in step with liveplanner, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on liveplanner since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
 ## Help, Guides and the Agent Skill
 
 ```bash
-livediagram --help                 # the resources and four starting commands
-livediagram tab --help             # a resource's verbs
-livediagram tab view --help        # usage, flags and examples
-livediagram guide                  # how-tos: build, edit, views, comments, collaborate, workbench
-livediagram skill install --to ~/.claude/skills
-livediagram skill print > SKILL.md
+liveplanner --help                 # the resources and four starting commands
+liveplanner tab --help             # a resource's verbs
+liveplanner tab view --help        # usage, flags and examples
+liveplanner guide                  # how-tos: build, edit, views, comments, collaborate, workbench
+liveplanner skill install --to ~/.claude/skills
+liveplanner skill print > SKILL.md
 ```
 
-Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livediagram api GET /documents` calls any API path with your sign-in, as an escape hatch.
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `liveplanner api GET /documents` calls any API path with your sign-in, as an escape hatch.
 
 ## Output and Exit Codes
 
@@ -231,11 +231,11 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `6`       | Rate limited                                               |
 | `7`       | Network or server failure                                  |
 
-Every error names what was wrong and suggests one command that fixes it. Set `LIVEDIAGRAM_DEBUG=1` to see what the CLI is doing, on stderr.
+Every error names what was wrong and suggests one command that fixes it. Set `LIVEPLANNER_DEBUG=1` to see what the CLI is doing, on stderr.
 
 ## Self-Hosted Instances
 
-The CLI talks to `https://livediagram.app` unless you point it elsewhere. For one command, add `--host https://diagrams.example.com`; for a shell, set `LIVEDIAGRAM_HOST`. To keep several, name them as profiles in `~/.config/livediagram/config.toml` and choose one with `--profile` or `LIVEDIAGRAM_PROFILE`:
+The CLI talks to `https://liveplanner.app` unless you point it elsewhere. For one command, add `--host https://diagrams.example.com`; for a shell, set `LIVEPLANNER_HOST`. To keep several, name them as profiles in `~/.config/liveplanner/config.toml` and choose one with `--profile` or `LIVEPLANNER_PROFILE`:
 
 ```toml
 default_profile = "work"
@@ -244,7 +244,7 @@ default_profile = "work"
 host = "https://diagrams.example.com"
 ```
 
-Each profile keeps its own sign-in, and a self-hosted profile never contacts livediagram.app. `LIVEDIAGRAM_TOKEN` goes to whichever host is active, so set `LIVEDIAGRAM_HOST` beside it. A [self-hosted](/help/self-hosting/self-hosting-overview/) instance without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+Each profile keeps its own sign-in, and a self-hosted profile never contacts liveplanner.app. `LIVEPLANNER_TOKEN` goes to whichever host is active, so set `LIVEPLANNER_HOST` beside it. A [self-hosted](/help/self-hosting/self-hosting-overview/) instance without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
 
 ## Errors and Rate Limits
 
@@ -252,14 +252,14 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 ## Usage Counts
 
-The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
 ## Keep It Safe
 
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
-  token when it only needs to read, keep `LIVEDIAGRAM_TOKEN` out of source control and logs, and
-  revoke a token from **API Tokens** (or with `livediagram auth logout`) the moment you no longer
+  token when it only needs to read, keep `LIVEPLANNER_TOKEN` out of source control and logs, and
+  revoke a token from **API Tokens** (or with `liveplanner auth logout`) the moment you no longer
   need it or think it may have leaked.
 </Note>
 

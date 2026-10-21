@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Item } from '@livediagram/items';
+import type { Item } from '@liveplanner/items';
 import type { ItemUndoStep } from './item-undo-journal';
 
 // docs/specs/026-plan/item-types.md "An item type": an undo or redo puts back a change already made, so it is sent

@@ -5,7 +5,7 @@
 // (ANIMATION_PREVIEW_FRAME) and plays it on hover.
 
 import type { CSSProperties } from 'react';
-import type { AnimationSetId, PathElement } from '@livediagram/document';
+import type { AnimationSetId, PathElement } from '@liveplanner/document';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { planTextAnimation, renderUnits } from '@/components/canvas/animated-words';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';

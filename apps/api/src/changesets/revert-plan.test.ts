@@ -5,7 +5,7 @@ import {
   invertElementOps,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { planRevert } from './revert-plan';
 
 // docs/specs/024-agents/agent-changesets.md "Revert": the inverse as a new changeset, leaving any

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CommunityCopyCount, CommunityPostTile } from '@livediagram/ui';
+import { CommunityCopyCount, CommunityPostTile } from '@liveplanner/ui';
 import { postImageUrl } from '@/lib/api';
 import { isMinePost, type GalleryPost } from '@/lib/gallery-post';
 import { editDocumentHref, postHref } from '@/lib/links';

@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/next-config",
+  "name": "@liveplanner/next-config",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "devDependencies": {
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
     "vitest": "^5.0.3"
   },
   "peerDependencies": {

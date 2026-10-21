@@ -12,7 +12,7 @@ import {
   type PageBackground,
   type PageOrientation,
   type PageSizeId,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { kit, type Kit } from './page-layout-kit';
 
 /** An infographic page of a template: `page-n`, already an infographic page so the first page's

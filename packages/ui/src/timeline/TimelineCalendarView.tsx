@@ -9,7 +9,7 @@
 // it.
 
 import { useMemo, useRef, useState } from 'react';
-import { WEEKDAY_SHORT } from '@livediagram/items';
+import { WEEKDAY_SHORT } from '@liveplanner/items';
 import { Tooltip } from '../Tooltip';
 import { dateKey } from './useTimelineGrouping';
 import { buildMonthCells, formatMonth, monthKeyOf, shiftMonth } from './monthCells';
@@ -25,7 +25,7 @@ import type {
   TimelineRendererContext,
   TimelineRendererRegistry,
 } from './types';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 export function TimelineCalendarView({
   events,

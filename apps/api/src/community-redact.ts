@@ -12,7 +12,7 @@
 // The placeholders are per card, so a count, an average or a "3 people voted" reads the same, and
 // nothing ties one card's "p1" to another's.
 
-import type { Element, ElementAction } from '@livediagram/document';
+import type { Element, ElementAction } from '@liveplanner/document';
 
 const neutralIds = (ids: readonly unknown[], prefix: string) =>
   ids.map((_, i) => `${prefix}${i + 1}`);

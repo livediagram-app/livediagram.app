@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EditorView } from 'prosemirror-view';
-import type { LaidOutPage } from '@livediagram/document';
+import type { LaidOutPage } from '@liveplanner/document';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
 import { caretCanvasRect } from './article-editor-handle';
 

@@ -4,7 +4,7 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { ChangesetFingerprints, MergeEntry } from '../db/changesets';
 
 // The merge on save (docs/specs/024-agents/agent-changesets.md "The write path" step 8): every

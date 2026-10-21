@@ -5,8 +5,8 @@
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import type { Element } from '@livediagram/document';
+import { cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import type { Element } from '@liveplanner/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';

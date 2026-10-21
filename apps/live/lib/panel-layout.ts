@@ -86,8 +86,8 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   'slide-deck': 'bottom-right',
 };
 
-export const STORAGE_KEY = 'livediagram:panel-layout:v1';
-export const PANEL_LAYOUT_CHANGED_EVENT = 'livediagram:panel-layout-changed';
+export const STORAGE_KEY = 'liveplanner:panel-layout:v1';
+export const PANEL_LAYOUT_CHANGED_EVENT = 'liveplanner:panel-layout-changed';
 
 function emptyCorners(): Record<PanelCorner, PanelId[]> {
   return { 'top-left': [], 'top-right': [], 'bottom-left': [], 'bottom-right': [] };

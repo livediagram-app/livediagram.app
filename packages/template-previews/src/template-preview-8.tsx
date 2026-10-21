@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@liveplanner/templates';
 import { pv } from './motion';
 import { FILL_BOX, Pop, popGroup } from './story-parts';
 

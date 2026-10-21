@@ -246,7 +246,7 @@ describe('ssoCallbackUrl / ssoCallbackDestination', () => {
   it('carries a safe return path onto the callback and reads it back intact', () => {
     const url = ssoCallbackUrl(params(`redirect_url=${encodeURIComponent(consent)}`));
     expect(url).toBe(`/sso-callback?redirect_url=${encodeURIComponent(consent)}`);
-    const back = new URL(url, 'https://livediagram.app').searchParams;
+    const back = new URL(url, 'https://liveplanner.app').searchParams;
     expect(ssoCallbackDestination(back)).toBe(consent);
   });
 

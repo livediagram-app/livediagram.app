@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { Item } from '@livediagram/items';
+import type { Item } from '@liveplanner/items';
 import { ItemDescription, descriptionPatch, descriptionRuns } from './ItemDescription';
 
 // docs/specs/026-plan/plan-board.md "Working on a board": the description reads until clicked.

@@ -17,7 +17,7 @@ import {
   type ListedDocument,
   type StatusRow,
   type VerbContext,
-} from '@livediagram/agent-verbs';
+} from '@liveplanner/agent-verbs';
 import type { ConfigFile } from '../config/config-file';
 import type { Profile } from '../config/profiles';
 import { debugLog } from '../debug';
@@ -50,7 +50,7 @@ function profileFor(config: ConfigFile, host: string): string | null {
 }
 
 // The nearest link, or with --all every one below; a link naming another host than the profile's is refused before
-// any request, so a self-host link never reaches livediagram.app (RL5).
+// any request, so a self-host link never reaches liveplanner.app (RL5).
 export async function linksFor(
   io: CliIo,
   all: boolean,
@@ -67,8 +67,8 @@ export async function linksFor(
       code: 'host_mismatch',
       message: `${link.path} links ${link.host}; this profile is ${profile.host}`,
       hint: name
-        ? `livediagram --profile ${name} ${command}`
-        : `livediagram --host ${link.host} ${command}`,
+        ? `liveplanner --profile ${name} ${command}`
+        : `liveplanner --host ${link.host} ${command}`,
     });
   }
   return links;
@@ -92,7 +92,7 @@ function resolveFolder(choices: readonly FolderChoice[], ref: string): FolderCho
       code: 'not_found',
       message: `no folder matches "${ref}"${nearest.length ? '; the nearest:' : ''}`,
       lines: folderLines(choices, nearest),
-      hint: 'livediagram link init, in a terminal, to pick one',
+      hint: 'liveplanner link init, in a terminal, to pick one',
     });
   }
   throw new CliError({
@@ -100,7 +100,7 @@ function resolveFolder(choices: readonly FolderChoice[], ref: string): FolderCho
     code: 'ambiguous',
     message: `"${ref}" matches ${matches.length} folders`,
     lines: folderLines(choices, matches),
-    hint: `livediagram link init --folder ${refs.get(matches[0]!.id)}`,
+    hint: `liveplanner link init --folder ${refs.get(matches[0]!.id)}`,
   });
 }
 
@@ -126,7 +126,7 @@ export async function linkInit(
         exit: EXIT.usage,
         code: 'usage',
         message: `${doc} is a share link; a link file holds document ids`,
-        hint: 'livediagram document ls',
+        hint: 'liveplanner document ls',
       });
     documents.push((await resolveDocument(ctx.api, doc, ctx.host, ctx.log)).id);
   }
@@ -153,7 +153,7 @@ export async function linkInit(
   log(`remote ${remote}`);
   if (remote === 'yes')
     ctx.notice(
-      'this repository has a git remote: its mirror files and INDEX.md are as public as the repository; the ids in livediagram.toml grant nothing',
+      'this repository has a git remote: its mirror files and INDEX.md are as public as the repository; the ids in liveplanner.toml grant nothing',
     );
   return { path };
 }

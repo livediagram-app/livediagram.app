@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, presetSetup, projectBoard } from '@livediagram/items';
+import { ITEM_TYPES, presetSetup, projectBoard } from '@liveplanner/items';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { planPalette } from './plan-palette';
 

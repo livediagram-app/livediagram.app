@@ -39,7 +39,7 @@ import {
   type EntityField,
   type LegendItem,
   type PieSlice,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   AvatarModeIcon,
   EraserIcon,

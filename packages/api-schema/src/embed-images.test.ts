@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
 // The embedder both workers inline tab images with (docs/specs/015-api/mcp-server.md §5, docs/specs/006-document/document-snapshots.md).

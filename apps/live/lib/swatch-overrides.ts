@@ -7,7 +7,7 @@ import {
   type QuickSwatch,
   type QuickSwatchRole,
   type QuickSwatchSlot,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 export type SwatchOverrideRow = Partial<Record<QuickSwatchSlot, string>>;
 export type SwatchOverrides = Partial<Record<QuickSwatchRole, SwatchOverrideRow>>;

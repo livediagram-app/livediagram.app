@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
-import { presetSetup, type PlanBoardSetup } from '@livediagram/items';
+import type { Element, Tab } from '@liveplanner/document';
+import type { RoomOp } from '@liveplanner/api-schema';
+import { presetSetup, type PlanBoardSetup } from '@liveplanner/items';
 import { moveColumn, renameColumn } from '@/components/plan/board-setup-edits';
 import { EL_OP_BROADCAST_LIMIT, tabBroadcastOps } from './tab-broadcast-ops';
 import { applyRoomOpToTabs } from './room-op-apply';

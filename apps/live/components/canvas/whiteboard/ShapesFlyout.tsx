@@ -9,7 +9,7 @@
 // the flyout; the slots are taken as it opens, so they never change under the pointer.
 
 import { Fragment, useEffect, useId, useRef, useState, type FragmentInstance } from 'react';
-import { NoMatches, Tooltip } from '@livediagram/ui';
+import { NoMatches, Tooltip } from '@liveplanner/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import type { WhiteboardShapeEntry, WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';

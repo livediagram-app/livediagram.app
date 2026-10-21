@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { IconSlot } from '@livediagram/ui';
+import { IconSlot } from '@liveplanner/ui';
 
 // Full-height, edge-flush header action button: the icon stacked over a small
 // label, a left divider, hugging the top + bottom of the bar so the right-edge

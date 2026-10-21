@@ -6,7 +6,7 @@ import {
   type BoxedElement,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';

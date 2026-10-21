@@ -11,7 +11,7 @@ import {
   type ShapeMarker,
   type Tab,
   type TextSizePreset,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
   applyRotationToEl,

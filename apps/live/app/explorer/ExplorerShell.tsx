@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Brand, ProductNav } from '@livediagram/ui';
+import { Brand, ProductNav } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
@@ -295,7 +295,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           github={surface.appLinks}
           appearance={surface.appearance}
         />
-        {/* A workspace frame's Open in livediagram: this view in a full tab. */}
+        {/* A workspace frame's Open in liveplanner: this view in a full tab. */}
         {surface.appHeader ? null : (
           <WorkbenchOpenLink
             href={explorerPathFor(selected)}

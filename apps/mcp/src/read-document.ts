@@ -6,13 +6,13 @@ import {
   type DocumentResponse,
   type TabResponse,
   type TabViewName,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { ApiError, apiJson, apiText } from './api';
 import type { Env } from './env';
 import { tabPreview } from './image-result';
-import { laidOutPagesOf, type LaidOutPage, type Tab } from '@livediagram/document';
-import { resolvePage } from '@livediagram/edit-operations';
-import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
+import { laidOutPagesOf, type LaidOutPage, type Tab } from '@liveplanner/document';
+import { resolvePage } from '@liveplanner/edit-operations';
+import { READ_DOCUMENT_DEFAULT_BUDGET } from '@liveplanner/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 type ReadDocumentArgs = {

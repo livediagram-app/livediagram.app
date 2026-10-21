@@ -2,7 +2,7 @@
 // typographic pieces a cover is made of (a tracked capitals line, a headline fitted over a number of
 // lines, an accent rule, a hairline, a double frame) and a labelled field. Every piece is theme
 // painted: an accent rule is a banner with no words, a hairline and a frame are strokes only.
-import { LABEL_FONT_PX, type Element, type TextElement } from '@livediagram/document';
+import { LABEL_FONT_PX, type Element, type TextElement } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 
 // Tracking on a capitals line, in em.

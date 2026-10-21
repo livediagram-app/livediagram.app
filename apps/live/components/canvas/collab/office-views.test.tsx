@@ -6,7 +6,7 @@ import {
   OFFICE_TONES,
   ROOM_DOOR_WIDTH,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { RoomView } from './RoomView';
 

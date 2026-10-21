@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { elementFingerprint, type Element, type ElementOp, type Tab } from '@livediagram/document';
+import { elementFingerprint, type Element, type ElementOp, type Tab } from '@liveplanner/document';
 import type { ChangesetFingerprints, MergeEntry } from '../db/changesets';
 import { mergeChangesetsIntoSave } from './merge-on-save';
 

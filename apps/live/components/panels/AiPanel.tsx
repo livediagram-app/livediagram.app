@@ -4,12 +4,12 @@ import { useMemo } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { AskIcon, BlinkCursor, CleanIcon, PlugIcon, SendIcon, Spinner } from './ai-panel-icons';
-import type { Element } from '@livediagram/document';
-import { AI_MAX_PROMPT_CHARS } from '@livediagram/api-schema';
+import type { Element } from '@liveplanner/document';
+import { AI_MAX_PROMPT_CHARS } from '@liveplanner/api-schema';
 import type { AiMode } from '@/lib/api-client';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAiPanelSession } from './useAiPanelSession';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@liveplanner/ui';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 

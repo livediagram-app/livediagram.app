@@ -5,9 +5,9 @@
 // finds the reader's open cards straight from the item store through the `items_assignee` expression index,
 // using the table only to drop cards a board marks Done and to pick a board to open each one on.
 
-import { planBoardRowsFromElements, type Element } from '@livediagram/document';
-import type { ActivityCard } from '@livediagram/api-schema';
-import { itemPersonId } from '@livediagram/items';
+import { planBoardRowsFromElements, type Element } from '@liveplanner/document';
+import type { ActivityCard } from '@liveplanner/api-schema';
+import { itemPersonId } from '@liveplanner/items';
 import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 

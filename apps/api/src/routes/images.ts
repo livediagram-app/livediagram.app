@@ -1,7 +1,7 @@
 // /api/images — per-owner gallery + dedup'd upload + auth-gated byte
 // read (docs/specs/009-elements/images.md).
 
-import { sha256Hex } from '@livediagram/api-schema';
+import { sha256Hex } from '@liveplanner/api-schema';
 import {
   deleteImage,
   documentServesImage,

@@ -3,7 +3,7 @@
 // moved with the arrow keys, each press one step.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardLayout, DashboardRow } from '@livediagram/document';
+import type { DashboardLayout, DashboardRow } from '@liveplanner/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardRowView, ROW_KEY_STEP_BIG_PX, ROW_KEY_STEP_PX } from './DashboardRowView';
 

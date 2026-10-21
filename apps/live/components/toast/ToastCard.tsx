@@ -10,8 +10,8 @@ import {
   lucideCircleCheck,
   lucideInfo,
   lucideTriangleAlert,
-} from '@livediagram/icons/lucide';
-import { CloseIcon, lucideGlyph } from '@livediagram/ui';
+} from '@liveplanner/icons/lucide';
+import { CloseIcon, lucideGlyph } from '@liveplanner/ui';
 import type { ToastTone } from './toast-queue';
 
 /** The toast's card look, shared with the notices that are not in the stack (the new-version prompt). */

@@ -3,7 +3,7 @@
 // A logo page's Mirror popover (docs/specs/007-editor/logo-pages.md "Mirror").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_MIRROR, type MirrorSettings } from '@livediagram/document';
+import { DEFAULT_MIRROR, type MirrorSettings } from '@liveplanner/document';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { LogoMirrorSettings } from './LogoMirrorPopover';
 

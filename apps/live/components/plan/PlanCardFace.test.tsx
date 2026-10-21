@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Item, ItemFields } from '@livediagram/items';
+import type { Item, ItemFields } from '@liveplanner/items';
 import { PlanCardFace } from './PlanCardFace';
 import { dueState, keyTextOn } from './plan-card-parts';
-import { contrastRatio } from '@livediagram/document';
-import { ITEM_TYPES, PLAN_TYPE_COLOURS } from '@livediagram/items';
+import { contrastRatio } from '@liveplanner/document';
+import { ITEM_TYPES, PLAN_TYPE_COLOURS } from '@liveplanner/items';
 import { planPalette } from './plan-palette';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 

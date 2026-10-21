@@ -3,11 +3,11 @@
 // elected tab's status to the others and their requests (an api write, a
 // flush, Sync now, an adoption) back to it.
 
-import type { DriveAccessToken, DriveItemKind } from '@livediagram/api-schema';
+import type { DriveAccessToken, DriveItemKind } from '@liveplanner/api-schema';
 import type { DriveMirrorStatus } from './engine';
 
-const LOCK_NAME = 'livediagram:drive-mirror';
-const CHANNEL_NAME = 'livediagram:drive-mirror';
+const LOCK_NAME = 'liveplanner:drive-mirror';
+const CHANNEL_NAME = 'liveplanner:drive-mirror';
 
 export type DriveTabMessage =
   | { type: 'status'; status: DriveMirrorStatus }

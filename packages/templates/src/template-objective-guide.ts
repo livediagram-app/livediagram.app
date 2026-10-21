@@ -14,7 +14,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { MUTED, checklistHeight, chip } from './template-planner-parts';
 import { FORMULA, FORMULA_ORDER, formulaRuns, type FormulaPart } from './template-objective-card';
 

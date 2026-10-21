@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/vitest-config",
+  "name": "@liveplanner/vitest-config",
   "version": "0.0.0",
   "private": true,
   "type": "module",

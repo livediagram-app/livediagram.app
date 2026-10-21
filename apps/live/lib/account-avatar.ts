@@ -2,7 +2,7 @@
 // signed-in person, how it is requested from Clerk, and the initial it falls back to. Pure, so the
 // Clerk bridge, every avatar surface and the tests share one answer.
 
-import { isProfilePictureUrl } from '@livediagram/api-schema';
+import { isProfilePictureUrl } from '@liveplanner/api-schema';
 
 /** The slice of Clerk's `UserResource` the resolver reads; the real user satisfies it as is. */
 export type ClerkPictureSource = {

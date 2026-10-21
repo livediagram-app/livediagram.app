@@ -2,7 +2,7 @@
 // page", `WorkbenchPhase`, and "The workspace frame"), as a pure transition function. The hooks run the effects
 // (redeem, hello, revoke, post `ended`); this decides what each answer means. `ended`, `unbound`, `refused` and
 // `failed` are terminal (WB12): a workbench reconnects by framing a fresh URL.
-import type { WorkbenchScope, WorkbenchSessionResponse } from '@livediagram/api-schema';
+import type { WorkbenchScope, WorkbenchSessionResponse } from '@liveplanner/api-schema';
 
 export type WorkbenchRefusalCause = 'no-ticket' | 'ticket' | 'mismatch';
 // Why a mounted page stopped editing; `refused` is never a mounted page's.

@@ -8,8 +8,8 @@ import {
   CHANGESET_SEEN_HEADER,
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
-} from '@livediagram/api-schema';
-import { isValidTab, migrateIncomingTab, preferNewerQaAll, type Tab } from '@livediagram/document';
+} from '@liveplanner/api-schema';
+import { isValidTab, migrateIncomingTab, preferNewerQaAll, type Tab } from '@liveplanner/document';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import {
@@ -65,7 +65,7 @@ export async function handleTabPut(
   const read = await readBody(ctx);
   if (read instanceof Response) return read;
   const received = migrateIncomingTab(read) as Tab;
-  // Structural schema gate (shared with the app, @livediagram/document): discriminant, required
+  // Structural schema gate (shared with the app, @liveplanner/document): discriminant, required
   // fields, endpoints, array bounds + unique ids.
   if (!isValidTab(received)) return badRequest('invalid tab');
   // Byte cap on the single tab (the body cap bounds the whole request; this bounds one tab's

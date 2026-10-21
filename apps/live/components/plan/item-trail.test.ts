@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Item } from '@livediagram/items';
+import type { Item } from '@liveplanner/items';
 import { ITEM_TRAIL_MAX, liveTrail, stepTrail, visibleTrail } from './item-trail';
 
 // docs/specs/026-plan/plan-board.md "Open an item": the Breadcrumb's trail (a project's Linked as Parent: card-links.test.ts in packages/items).

@@ -5,8 +5,8 @@
 // opens the column's settings (PlanColumnPopover). The cog shows on hover and focus, and always on a
 // touch screen. A column just added from another column's settings opens its own, its name selected.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PlanBoardSetup, ProjectedColumn } from '@livediagram/items';
-import { CountBadge, SettingsIcon } from '@livediagram/ui';
+import type { PlanBoardSetup, ProjectedColumn } from '@liveplanner/items';
+import { CountBadge, SettingsIcon } from '@liveplanner/ui';
 import { PlanColumnPopover } from './PlanColumnPopover';
 import {
   subscribeColumnSettingsRequest,
@@ -14,7 +14,7 @@ import {
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
 import { COLUMN_ATTR } from './column-move-flip';
-import { plural } from '@livediagram/document';
+import { plural } from '@liveplanner/document';
 
 export function PlanColumnHeader({
   col,

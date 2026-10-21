@@ -6,7 +6,7 @@
 // mode included; any tool can be picked after. Plan also leaves Eraser and Format out
 // (docs/specs/026-plan/plan-mode.md): either falls back to Hand if it is ever the tool there.
 import { useEffect, useRef } from 'react';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@liveplanner/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@/lib/responsive';
 

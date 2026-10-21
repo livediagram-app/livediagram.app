@@ -7,7 +7,7 @@
 // because `record` swallows its own failures, a bad diff can't take a
 // save down with it.
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { DocumentDTO, Env } from '../types';
 import {
   recordActionAssigned,

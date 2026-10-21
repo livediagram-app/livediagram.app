@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordTabSave } from '../timeline';
 import { makeTestRouteContext } from './test-route-context';

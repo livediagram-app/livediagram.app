@@ -5,8 +5,8 @@
 // as a feed: no box, a quiet header with the count and Resolve, the comments at a comfortable size, and the composer
 // beside your own avatar. Anyone who may comment writes, resolves and reopens; editors delete any comment, others
 // their own.
-import { itemThread } from '@livediagram/document';
-import type { Item } from '@livediagram/items';
+import { itemThread } from '@liveplanner/document';
+import type { Item } from '@liveplanner/items';
 import type { ItemCommentAction } from '@/lib/api/items';
 import {
   CommentComposer,

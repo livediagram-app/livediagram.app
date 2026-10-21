@@ -1,13 +1,13 @@
 'use client';
 
 import { createContext, useContext, useSyncExternalStore } from 'react';
-import { CHANGESET_REVEAL_MS } from '@livediagram/api-schema';
+import { CHANGESET_REVEAL_MS } from '@liveplanner/api-schema';
 import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   elementBounds,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 import type { ChangesetReveal, RevealStore } from '@/lib/changeset-reveals';
 

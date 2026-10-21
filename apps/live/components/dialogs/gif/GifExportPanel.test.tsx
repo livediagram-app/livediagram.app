@@ -3,7 +3,7 @@
 // The GIF panel (docs/specs/020-import-export/animated-gif-export.md "The options", "Errors", "Telemetry").
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Tab } from '@livediagram/document';
+import { pagesOf, layOutPages, type Tab } from '@liveplanner/document';
 import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
 import { GifExportError } from '@/lib/gif-export/gif-export-error';
 import type { PageSnapshot } from '@/lib/gif-export/page-snapshot';

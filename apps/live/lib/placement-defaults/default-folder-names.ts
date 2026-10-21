@@ -9,7 +9,7 @@ import type {
   RememberedFolder,
 } from './default-destination';
 
-export const DEFAULT_FOLDER_NAMES_PREFIX = 'livediagram:v2:default-folder-names:';
+export const DEFAULT_FOLDER_NAMES_PREFIX = 'liveplanner:v2:default-folder-names:';
 
 type Store = Pick<Storage, 'getItem' | 'setItem'>;
 type Memory = Record<string, RememberedFolder>;

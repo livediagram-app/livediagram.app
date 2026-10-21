@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@liveplanner/api-schema/testing';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveplanner/vitest-config/sent-request';
 
 // The post page (docs/specs/025-community/community.md "Post"): it loads the post named in the address, says when
 // it is gone or failed, offers Make a Copy, Open Document, the heart and Report, and its report dialog sends a
@@ -89,9 +89,9 @@ describe('the post page', () => {
     expect(screen.getByText('copy')).toBeTruthy();
     // More Like This loads by its own request, after the post.
     expect(await screen.findByText('Related One')).toBeTruthy();
-    expect(document.title).toBe('Payments Platform | livediagram Community');
+    expect(document.title).toBe('Payments Platform | liveplanner Community');
     expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'http://localhost:3000/community/post/?id=post1',
+      'http://localhost:3100/community/post/?id=post1',
     );
     expect(h.telemetry.openedPost).toHaveBeenCalledTimes(1);
 

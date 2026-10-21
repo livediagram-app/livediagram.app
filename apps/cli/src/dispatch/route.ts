@@ -9,7 +9,7 @@ import {
   verbById,
   verbsOf,
   type Verb,
-} from '@livediagram/agent-verbs';
+} from '@liveplanner/agent-verbs';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { didYouMean } from './did-you-mean';
@@ -40,7 +40,7 @@ export function route(words: readonly string[]): Routed {
       code: 'usage',
       message: `unknown command "${first}"`,
       ...(near ? { lines: [`did you mean: ${near}`] } : {}),
-      hint: 'livediagram --help',
+      hint: 'liveplanner --help',
     });
   }
   if (second === undefined) return { kind: 'resource', resource };
@@ -55,6 +55,6 @@ export function route(words: readonly string[]): Routed {
     code: 'usage',
     message: `unknown verb "${second}" for "${resource}"`,
     ...(near ? { lines: [`did you mean: ${near}`] } : {}),
-    hint: `livediagram ${resource} --help`,
+    hint: `liveplanner ${resource} --help`,
   });
 }

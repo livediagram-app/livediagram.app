@@ -13,7 +13,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 export { buildVenn } from './template-builders-venn';
 
 export { buildJourney } from './template-builders-journey';

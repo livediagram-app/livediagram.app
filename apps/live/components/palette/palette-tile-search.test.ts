@@ -1,8 +1,8 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // the split between this mode's tiles and the others', and the ranking.
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES } from '@livediagram/items';
-import type { Element } from '@livediagram/document';
+import { ITEM_TYPES } from '@liveplanner/items';
+import type { Element } from '@liveplanner/document';
 import {
   elementSignature,
   elementTileSections,

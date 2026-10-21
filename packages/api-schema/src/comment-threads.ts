@@ -2,7 +2,7 @@
 // blueprint "REST"): one thread per element, with the element's ref and label, so an agent can read the
 // conversation without reading the tab.
 
-import type { CommentMention } from '@livediagram/document';
+import type { CommentMention } from '@liveplanner/document';
 
 export const COMMENT_TEXT_MAX = 2000;
 

@@ -1,6 +1,6 @@
 # Third-party notices
 
-livediagram is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork and small libraries from the projects below, whose licences require these notices.
+liveplanner is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork and small libraries from the projects below, whose licences require these notices.
 
 ## Lucide
 
@@ -138,7 +138,7 @@ Graphics licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
 ## svg-path-bbox
 
 - Source: <https://github.com/mondeja/svg-path-bbox>
-- Used for: measuring glyph geometry (ink insets and centring), bundled with `@livediagram/icons`.
+- Used for: measuring glyph geometry (ink insets and centring), bundled with `@liveplanner/icons`.
 
 ```text
 BSD 3-Clause License

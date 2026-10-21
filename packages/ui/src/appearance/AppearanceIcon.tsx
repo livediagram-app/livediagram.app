@@ -1,5 +1,5 @@
 import type { AppearanceSetting } from './appearance-store';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 // The glyph for the CURRENT setting: sun, moon, or a monitor for System (the device
 // deciding). Deliberately not a half-sun / half-moon for System, which reads as

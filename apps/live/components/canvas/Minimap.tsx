@@ -21,7 +21,7 @@ import {
   type Element,
   type LaidOutPage,
   type Point,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { pageExportFrame } from '@/lib/export-page';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';

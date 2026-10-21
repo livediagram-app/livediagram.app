@@ -2,7 +2,7 @@
 //
 // Emits `Participant`/`Returned` with type `Anonymous` (guest) or
 // `Authenticated` (signed in) at most once per browser per UTC day,
-// gated by the `livediagram:v2:last-active-day` key. It is the
+// gated by the `liveplanner:v2:last-active-day` key. It is the
 // counterpart to `Participant`/`Created` (the once-per-browser
 // new-visitor signal): together they answer "how many people showed up
 // today, and how many of them had been here before". Querying
@@ -24,7 +24,7 @@
 
 import { getLastActiveDay, setLastActiveDay } from './local-identity';
 import { track } from './telemetry';
-import { utcDay } from '@livediagram/api-schema';
+import { utcDay } from '@liveplanner/api-schema';
 
 export function trackDailyReturn(authenticated: boolean): void {
   if (typeof window === 'undefined') return;

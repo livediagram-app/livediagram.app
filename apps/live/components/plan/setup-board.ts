@@ -5,7 +5,7 @@ import {
   type CardSize,
   type PlanBoardSetup,
   type SwimlaneBy,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { addColumnAfter } from './board-setup-edits';
 import { addStatusColumn, matchStatus, type StatusPick } from './column-status-picks';
 

@@ -1,13 +1,13 @@
 'use client';
 
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState } from '@liveplanner/ui';
 import {
   metricKey,
   type TelemetryCount,
   type TelemetryDaily,
   type TelemetrySummary,
   type TelemetryWindowKey,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { useCategoryColor } from './useCategoryColor';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES, isNonThemePick } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';

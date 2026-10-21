@@ -16,7 +16,7 @@ import {
   type ShapeElement,
   type TableCellStyle,
   type TextRun,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   matrixAxes,
   CONTENT,

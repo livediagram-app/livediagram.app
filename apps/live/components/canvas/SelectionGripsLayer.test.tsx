@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ArrowElement } from '@livediagram/document';
+import type { ArrowElement } from '@liveplanner/document';
 import { SelectionChromeLayer } from './element-parts';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import {

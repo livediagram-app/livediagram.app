@@ -1,7 +1,7 @@
 // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheets are made into sheets beside the tabs,
 // on their tab, tinted for its canvas, and the mark dropped; anything else is left as it is.
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@livediagram/document';
+import { createShape, type Element, type ShapeElement } from '@liveplanner/document';
 import { hasTemplateSheets, materialiseTemplateSheets } from './template-sheets';
 import { buildPlanTemplate } from './template-builders-plan';
 

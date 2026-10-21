@@ -14,7 +14,7 @@ import {
   type WorkbenchScope,
   type WorkbenchTicketResponse,
   type WorkbenchWorkspaceTicketResponse,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   generatePairingCode,
   generateWorkbenchTicket,

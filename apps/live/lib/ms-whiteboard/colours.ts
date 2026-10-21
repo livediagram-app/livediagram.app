@@ -1,7 +1,7 @@
 // Colour normalisation (docs/specs/020-import-export/whiteboard-import.md "Colours"): Whiteboard
 // colours are absolute, a scene's are light-reference. On a dark board the author's near-white ink
 // is the board's ink, and a stroke in the board's own colour was never visible.
-import { hexOklch } from '@livediagram/document';
+import { hexOklch } from '@liveplanner/document';
 import type { SceneAppearance, SceneColour } from '@/lib/board-scene/scene';
 
 // Real backgrounds: #1f1f1f is L 0.24, #e1e1e1 0.91, white 1.

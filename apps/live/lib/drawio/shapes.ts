@@ -3,7 +3,7 @@
 // stencil lookups, and the container kinds; everything else is unmatched and
 // becomes a labelled box.
 
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@liveplanner/document';
 import type { DrawioCell, DrawioGraph } from './cells';
 import { readColour, readFill } from './colour';
 import { shapeName, type DrawioStyle } from './style';
@@ -69,7 +69,7 @@ const SHAPES: Record<string, Row> = {
   'mxgraph.android.phone2': exact('phone'),
   'mxgraph.ios7.misc.iphone': exact('phone'),
   'mxgraph.mockup.containers.browserWindow': exact('browser'),
-  // Approximated: a draw.io shape livediagram draws differently.
+  // Approximated: a draw.io shape liveplanner draws differently.
   doubleEllipse: near('circle'),
   orEllipse: near('circle'),
   sumEllipse: near('circle'),

@@ -3,7 +3,7 @@
 // last render instead (tabsRef), it wrote an older copy back over a change queued in the same event: a drag's
 // landed result (Shift-chaining arrows: the released arrow snapped back to its stub as the next one was added)
 // or a peer's op not yet rendered. Pure.
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 
 export function activeElementsCommit(
   activeId: string,

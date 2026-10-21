@@ -3,8 +3,8 @@
 // nothing in it runs. The exporter loads with the first thumbnail, never with the editor; each item
 // is drawn once per session.
 
-import type { Tab } from '@livediagram/document';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { Tab } from '@liveplanner/document';
+import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 
 const drawn = new Map<string, Promise<string>>();
 

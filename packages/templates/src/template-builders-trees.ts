@@ -11,7 +11,7 @@ import {
   personCardText,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { BOTTOM_EXITS, rake, sideRake } from './template-rake';
 
 export { buildFlowchart } from './template-builders-flowchart';

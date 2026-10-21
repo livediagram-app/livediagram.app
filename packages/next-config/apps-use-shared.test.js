@@ -23,9 +23,9 @@ describe.each(APPS)('apps/%s/next.config.ts', (app) => {
 
   it('spreads the shared config', () => {
     expect(source).toMatch(
-      /import \{[^}]*\blivediagramNextConfig\b[^}]*\} from '@livediagram\/next-config'/,
+      /import \{[^}]*\bliveplannerNextConfig\b[^}]*\} from '@liveplanner\/next-config'/,
     );
-    expect(source).toMatch(/\.\.\.livediagramNextConfig\(/);
+    expect(source).toMatch(/\.\.\.liveplannerNextConfig\(/);
   });
 
   it.each(SHARED_KEYS)('sets no %s of its own', (key) => {

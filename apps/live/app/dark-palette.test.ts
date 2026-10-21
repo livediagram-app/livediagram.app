@@ -13,9 +13,9 @@ import {
   type Node,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@livediagram/source-ast';
+import { parseSourceFiles } from '@liveplanner/source-ast';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from '@livediagram/document';
+import { contrastRatio } from '@liveplanner/document';
 
 // The dark palette (docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)) is a set of
 // token overrides plus two class rules. None of it fails a build when it drifts: a new button painted

@@ -1,7 +1,7 @@
 // An agent's validation and format rules (docs/specs/029-sheets/data-validation.md "Agents",
 // conditional-formatting.md "Agents"): rules named in words and A1 ranges, built by the engine's own rule commands
 // (setValidationRule, removeValidation, the frule change), and the rules read back in the same words.
-import { withArticle } from '@livediagram/items';
+import { withArticle } from '@liveplanner/items';
 import {
   CONDITION_OPS,
   compileFormula,
@@ -27,7 +27,7 @@ import {
   type SheetLayout,
   type SheetWrite,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import type { SheetRefusal } from './sheet-state';
 
 export type AgentValidation =

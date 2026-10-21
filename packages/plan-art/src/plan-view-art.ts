@@ -8,7 +8,7 @@ import {
   type PlanPalette,
   type PlanViewRef,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   PRIORITY_LABELS,
   STATUS_PHASES,
@@ -31,12 +31,12 @@ import {
   type MetricKind,
   type PlanViewId,
   type StatusPhase,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { BOARD_WIDGET_INFO } from './board-widget-info';
 import { metricModel } from './metric-tile-model';
 import { PHASE_COLOURS } from './phase-colours';
-import { PRIORITY_COLOURS } from '@livediagram/document';
-import { mixHex } from '@livediagram/document';
+import { PRIORITY_COLOURS } from '@liveplanner/document';
+import { mixHex } from '@liveplanner/document';
 import {
   ART_PAD,
   box,

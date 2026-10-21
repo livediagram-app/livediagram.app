@@ -24,7 +24,7 @@ type BrandProps = {
   // Used by the editor header to tint the logo with the active tab's theme
   // accent; when unset, the brand palette and brand-600 / sky-400 show.
   accentColor?: string;
-  // Extra classes for the wordmark span ("live" + "diagram"). The editor
+  // Extra classes for the wordmark span ("live" + "planner"). The editor
   // passes `hidden sm:inline` here so the wordmark drops off the mobile
   // header (the logo mark stays for orientation). Marketing surfaces leave
   // this unset so the wordmark always shows.
@@ -120,9 +120,9 @@ export function Brand({
         >
           live
         </span>
-        diagram
+        planner
         <span ref={shimmer} aria-hidden="true" className={SHIMMER_CLASS} style={SHIMMER_STYLE}>
-          <span>live</span>diagram
+          <span>live</span>planner
         </span>
       </span>
     </>
@@ -134,7 +134,7 @@ export function Brand({
       // mark alone has no text. The name is the wordmark's own text, so a visible one still matches it.
       <a
         href={href}
-        aria-label="livediagram"
+        aria-label="liveplanner"
         className={classes}
         onClick={scrollTopIfHere}
         {...spinHandlers}

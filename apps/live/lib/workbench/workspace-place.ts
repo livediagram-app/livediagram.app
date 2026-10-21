@@ -107,14 +107,14 @@ export function isNewDocumentHref(href: string, origin: string): boolean {
   return sameOrigin(url, origin) && url.pathname.replace(/\/+$/, '') === '/new';
 }
 
-// The same place in a full tab: Open in livediagram.
+// The same place in a full tab: Open in liveplanner.
 export function appHrefOfPlace(place: WorkspacePlace): string {
   if (place.kind === 'explorer') return explorerPathFor(place.node);
   const path = `/document/${encodeURIComponent(place.documentId)}`;
   return place.shareCode ? `${path}?s=${encodeURIComponent(place.shareCode)}` : path;
 }
 
-// The place's name for `livediagram:place`: the Explorer view's kind, or `document`.
+// The place's name for `liveplanner:place`: the Explorer view's kind, or `document`.
 export function placeView(place: WorkspacePlace): string {
   return place.kind === 'document' ? 'document' : place.node.kind;
 }

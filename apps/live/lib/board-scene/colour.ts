@@ -11,7 +11,7 @@ import {
   penColourHex,
   penColourHueDistance,
   type PenColourName,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { SceneColour } from './scene';
 
 // The nearest stock colour is the whiteboard's one definition (penColourAtHue, the snap's too:

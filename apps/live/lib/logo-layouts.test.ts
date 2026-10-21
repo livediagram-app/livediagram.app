@@ -5,14 +5,14 @@ import {
   newLogoPage,
   pageMargin,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   layoutCatalogueFor,
   LOGO_LAYOUT_CATEGORIES,
   LOGO_LAYOUTS,
   pageLayoutById,
-} from '@livediagram/templates';
-import { buildPageLayout } from '@livediagram/templates';
+} from '@liveplanner/templates';
+import { buildPageLayout } from '@liveplanner/templates';
 
 // docs/specs/007-editor/logo-pages.md "Logo layouts": a logo page's own catalogue, each a mark
 // fitting the artboard's safe area, its name in wordmark type.

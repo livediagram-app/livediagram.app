@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS } from '@liveplanner/api-schema';
 import { validateEditOperations } from './parse-json';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 

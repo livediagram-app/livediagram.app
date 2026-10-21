@@ -1,4 +1,4 @@
-import type { CustomTheme } from '@livediagram/api-schema';
+import type { CustomTheme } from '@liveplanner/api-schema';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   clearCustomThemeRegistry,

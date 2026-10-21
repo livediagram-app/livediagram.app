@@ -1,12 +1,12 @@
-import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
+import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@liveplanner/api-schema';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { Env } from '../types';
 
 // Clerk JWT verifier — ports the MT pattern (apps/api/src/auth/clerk.ts
 // in /Users/thomasmcclean/Code/managers-toolkit-frontend) into
-// livediagram's vanilla-fetch Worker. MT's version uses Hono's
+// liveplanner's vanilla-fetch Worker. MT's version uses Hono's
 // Context; we just take an Env binding + the Request directly because
-// livediagram doesn't have Hono.
+// liveplanner doesn't have Hono.
 //
 // One JWKS instance per URL is cached at module scope. jose's
 // createRemoteJWKSet handles its own HTTP-level key refresh on

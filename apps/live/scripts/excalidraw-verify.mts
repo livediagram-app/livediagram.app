@@ -5,12 +5,12 @@
 // is given and prints only aggregates (counts per kind, notes, validity, timing), never text,
 // names, ids or coordinates, so its output is safe to share.
 //
-//   pnpm --filter @livediagram/live exec tsx scripts/excalidraw-verify.mts <file.json> [...]
+//   pnpm --filter @liveplanner/live exec tsx scripts/excalidraw-verify.mts <file.json> [...]
 //
 // Exits non-zero when a file is refused, a landing is rejected, or any landed element is invalid.
 
 import { readFileSync } from 'node:fs';
-import { isValidElement, type Element } from '@livediagram/document';
+import { isValidElement, type Element } from '@liveplanner/document';
 import { landBoardScene, type BoardSceneProfile } from '../lib/board-scene/land';
 import { sceneFromExcalidrawText } from '../lib/excalidraw-read';
 

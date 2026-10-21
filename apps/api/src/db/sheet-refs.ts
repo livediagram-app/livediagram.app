@@ -3,7 +3,7 @@
 // made's `copyOf`. As a row goes or comes, the triggers of migration 0079 settle its sheet: unreferenced from then
 // (`unreferenced_since`), deleted at once when the editor deleted it with its element, referenced again; an
 // unreferenced sheet otherwise waits to expire (sheet-sweep.ts).
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { Env } from '../types';
 
 // A sheet id is unique only in its document (a copied document keeps them), so a reference counts only through a

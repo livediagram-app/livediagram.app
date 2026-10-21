@@ -5,8 +5,8 @@
 // that is not well formed is dropped before anything reads it. Only the envelope is checked: what an element or a
 // patch holds is the stored-element migrations' to settle (room-op-migrate.ts), and a kind this build does not
 // apply passes, as it always has, to be ignored.
-import { isRecord } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import { isRecord } from '@liveplanner/document';
+import type { RoomOp } from '@liveplanner/api-schema';
 
 const isText = (v: unknown): v is string => typeof v === 'string';
 const isOptionalList = (v: unknown) => v === undefined || Array.isArray(v);

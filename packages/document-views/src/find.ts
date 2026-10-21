@@ -1,7 +1,7 @@
 // The find view (docs/specs/024-agents/blueprints/document-views.md "find", VW35): elements whose text
 // holds the query, each under its container chain. Substring only, so no pattern reaches a regex engine.
-import { FIND_FIELDS, type FindField, type FindView, type ViewDoor } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/document';
+import { FIND_FIELDS, type FindField, type FindView, type ViewDoor } from '@liveplanner/api-schema';
+import type { Element } from '@liveplanner/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { ownLineText, type ViewEdge } from './edges';

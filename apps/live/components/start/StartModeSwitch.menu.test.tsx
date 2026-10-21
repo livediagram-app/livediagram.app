@@ -14,7 +14,7 @@ import {
   editorModeLabel,
   type EditorMode,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { StartModeSwitch } from './StartModeSwitch';

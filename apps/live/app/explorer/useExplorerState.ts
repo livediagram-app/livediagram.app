@@ -59,7 +59,7 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 //
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
 // owner id resolves to the Clerk userId when signed in, otherwise to
-// the `livediagram:v2:self-id` localStorage UUID.
+// the `liveplanner:v2:self-id` localStorage UUID.
 
 export function useExplorerState() {
   // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).

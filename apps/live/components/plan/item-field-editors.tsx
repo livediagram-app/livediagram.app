@@ -12,7 +12,7 @@ import {
   Select,
   TextInput,
   TextArea,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
@@ -23,7 +23,7 @@ import {
   isItemPerson,
   type ItemFieldValue,
   type ItemPerson,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 // One undo step per pause in typing (blueprint DEFAULTS D8).
 const ITEM_EDIT_DEBOUNCE_MS = 400;

@@ -6,7 +6,7 @@ import {
   iou,
   type Box,
   type DetectDropReason,
-} from '@livediagram/sticky-vision';
+} from '@liveplanner/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';

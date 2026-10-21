@@ -1,6 +1,6 @@
 // The form tools' input and output shapes (docs/specs/030-forms/forms.md "Agents", docs/specs/015-api/mcp-server.md
 // §4.9e): read_form, add_form, change_form and share_form. Everything is named as the builder names it; the limits
-// come from @livediagram/forms, so the tools and the builder agree.
+// come from @liveplanner/forms, so the tools and the builder agree.
 import { z } from 'zod';
 import {
   FORM_DESCRIPTION_MAX,
@@ -22,11 +22,11 @@ import {
   STARTER_IDS,
   type QuestionType,
   type StarterId,
-} from '@livediagram/forms';
-import { PAGE_MOTIONS } from '@livediagram/page-background';
+} from '@liveplanner/forms';
+import { PAGE_MOTIONS } from '@liveplanner/page-background';
 import { FORM_CHANGES_MAX } from '../forms/form-calls';
 
-const url = z.string().describe('Link that opens the document in the livediagram editor.');
+const url = z.string().describe('Link that opens the document in the liveplanner editor.');
 const documentId = z.string().describe('The document (from find_documents).');
 const tab = z
   .string()

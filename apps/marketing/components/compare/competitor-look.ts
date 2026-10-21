@@ -7,8 +7,8 @@ import {
   lucideShapes,
   lucideStickyNote,
   lucideWorkflow,
-} from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+} from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 
 // How each competitor is drawn on the comparison pages (docs/specs/019-marketing/comparison-pages.md): a generic
 // glyph of what the tool IS (a sticky note for a workshop whiteboard, a tree for a mind-mapper), never its logo,
@@ -21,7 +21,7 @@ type CompetitorLook = {
   // The card's header wash and the glyph's colour.
   panel: string;
   glyph: string;
-  // Three short chips: what livediagram offers that this comparison turns on.
+  // Three short chips: what liveplanner offers that this comparison turns on.
   highlights: [string, string, string];
 };
 

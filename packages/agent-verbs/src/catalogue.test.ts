@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEditOperations } from '@livediagram/edit-operations';
+import { parseEditOperations } from '@liveplanner/edit-operations';
 import {
   COMMAND_ALIASES,
   countedVerbs,
@@ -10,7 +10,7 @@ import {
   verbById,
   verbsOf,
 } from './catalogue';
-import { estimateTokens } from '@livediagram/document-views';
+import { estimateTokens } from '@liveplanner/document-views';
 import { GUIDE_TOPIC_MAX_TOKENS, GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 import {
   renderSkill,
@@ -37,12 +37,12 @@ import {
   watch,
 } from './verbs/local';
 
-// The command a `livediagram …` line names: a top-level verb, or a resource (or alias) and a verb.
+// The command a `liveplanner …` line names: a top-level verb, or a resource (or alias) and a verb.
 function routes(line: string): boolean {
   const words = line.split(/\s+/);
   // Global flags may come first; --host and --profile take a value.
   const [first, second] = words
-    .slice(words.indexOf('livediagram') + 1)
+    .slice(words.indexOf('liveplanner') + 1)
     .filter((w, i, all) => !w.startsWith('-') && !['--host', '--profile'].includes(all[i - 1]!));
   if (TOP_LEVEL.some((t) => t === first) || first! in COMMAND_ALIASES) return true;
   const resource = RESOURCE_ALIASES[first!] ?? first!;
@@ -51,7 +51,7 @@ function routes(line: string): boolean {
 
 // Commands as written to be run: on their own line, in backticks, in parentheses, or after a pipe.
 const commandsIn = (text: string) =>
-  [...text.matchAll(/(?:^\s*|[`(|]\s*)(livediagram [a-z]+(?: [a-z]+)?)/gm)].map((m) => m[1]!);
+  [...text.matchAll(/(?:^\s*|[`(|]\s*)(liveplanner [a-z]+(?: [a-z]+)?)/gm)].map((m) => m[1]!);
 describe('the catalogue', () => {
   it('gives every verb a unique id, a resource or a top-level place, and a CLI projection', () => {
     expect(new Set(VERBS.map((v) => v.id)).size).toBe(VERBS.length);
@@ -161,12 +161,12 @@ describe('the guides and the skill', () => {
 
   it('teach reading a selection reference from a workbench', () => {
     const text = GUIDE_TOPICS.workbench.text;
-    expect(text).toContain('[livediagram] "Home screen" › tab "Wireframe"');
+    expect(text).toContain('[liveplanner] "Home screen" › tab "Wireframe"');
     for (const command of [
-      'livediagram tab view',
-      'livediagram tab render',
-      'livediagram presence set',
-      'livediagram presence clear',
+      'liveplanner tab view',
+      'liveplanner tab render',
+      'liveplanner presence set',
+      'liveplanner presence clear',
     ])
       expect(text, command).toContain(command);
     // The tail of a long selection reads the live selection (document-views "show selected").
@@ -174,10 +174,10 @@ describe('the guides and the skill', () => {
     expect(text).toContain('--view show --ref selected');
   });
 
-  it('send an agent to the workbench guide when a message carries [livediagram]', () => {
-    expect(SKILL_DESCRIPTION).toContain('[livediagram]');
+  it('send an agent to the workbench guide when a message carries [liveplanner]', () => {
+    expect(SKILL_DESCRIPTION).toContain('[liveplanner]');
     expect(renderSkill()).toContain(
-      'A message carrying a `[livediagram]` line is a selection reference from a workbench: read `livediagram guide workbench` first.',
+      'A message carrying a `[liveplanner]` line is a selection reference from a workbench: read `liveplanner guide workbench` first.',
     );
   });
 

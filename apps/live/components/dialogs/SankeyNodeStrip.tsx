@@ -12,7 +12,7 @@ import {
   type ChartPaletteId,
   type SankeyFlow,
   type SankeyNodeStyle,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { flowNodeColors } from '@/lib/sankey-flow-levels';
 
 export function SankeyNodeStrip({

@@ -17,7 +17,7 @@ import {
 } from '@/components/primitives/explorer-icons';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { EmptyState, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { EmptyState, SOLID_BRAND_DARK_CONTROL } from '@liveplanner/ui';
 import type { SelectedNode } from './views';
 
 type EmptyKind = 'recent' | 'shared' | 'favourites' | 'offline' | 'folder' | 'default';

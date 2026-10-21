@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { headlineCase } from '@livediagram/api-schema';
-import { EVENT_STORMING_NOTES } from '@livediagram/document';
+import { headlineCase } from '@liveplanner/api-schema';
+import { EVENT_STORMING_NOTES } from '@liveplanner/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { CARD_TILE_GLYPH_PX } from './palette-plan-tiles';
 import {

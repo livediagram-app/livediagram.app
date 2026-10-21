@@ -5,31 +5,31 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Connecting AI Tools',
   description:
-    'Step-by-step setup for connecting livediagram to Claude, Claude Desktop, Claude Code, Cursor, ChatGPT or any MCP client, by signing in or with an API token.',
+    'Step-by-step setup for connecting liveplanner to Claude, Claude Desktop, Claude Code, Cursor, ChatGPT or any MCP client, by signing in or with an API token.',
   path: '/help/account-and-data/connect-ai-mcp/ai-clients/',
 });
 
-<ArticleLayout title="Connecting AI Tools" description="Add livediagram to Claude, Claude Code, Cursor, ChatGPT or another MCP client, step by step." categoryTitle="Account and Data" categorySlug="account-and-data" parentArticle={{ title: "Connect an AI Tool (MCP)", slug: "connect-ai-mcp" }} subArticles={getSubArticles("connect-ai-mcp").filter((a) => a.slug !== "ai-clients")}>
+<ArticleLayout title="Connecting AI Tools" description="Add liveplanner to Claude, Claude Code, Cursor, ChatGPT or another MCP client, step by step." categoryTitle="Account and Data" categorySlug="account-and-data" parentArticle={{ title: "Connect an AI Tool (MCP)", slug: "connect-ai-mcp" }} subArticles={getSubArticles("connect-ai-mcp").filter((a) => a.slug !== "ai-clients")}>
 
-Every AI tool connects to livediagram the same way: you give it one address, and the first time it uses it, you approve the connection on a livediagram page. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
+Every AI tool connects to liveplanner the same way: you give it one address, and the first time it uses it, you approve the connection on a liveplanner page. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
 
-You need a livediagram account: connecting an AI tool is a signed-in-only feature.
+You need a liveplanner account: connecting an AI tool is a signed-in-only feature.
 
 ## The Address
 
-livediagram's MCP server lives at:
+liveplanner's MCP server lives at:
 
 ```text
-https://mcp.livediagram.app/mcp
+https://mcp.liveplanner.app/mcp
 ```
 
 It is a remote MCP server over HTTP (what some tools call "Streamable HTTP"), so there is nothing to install or run on your computer. Wherever a tool asks for a connector, a remote MCP server or a server URL, this is the address to give it.
 
 ## Approving the Connection
 
-The first time your tool connects, it opens a livediagram page in your browser:
+The first time your tool connects, it opens a liveplanner page in your browser:
 
-<Step n={1}>Sign in to livediagram, if you aren't already.</Step>
+<Step n={1}>Sign in to liveplanner, if you aren't already.</Step>
 <Step n={2}>
   Check the page. It is titled **Connect** followed by your tool's name, and it says which site the
   access will be sent to. Only continue if you recognise that site.
@@ -46,48 +46,48 @@ Approving creates an [API token](/help/account-and-data/api-tokens/) named after
 
 ## Claude
 
-In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Give it a name such as "livediagram", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the livediagram page that opens.
+In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Give it a name such as "liveplanner", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the liveplanner page that opens.
 
 On a Team or Enterprise plan, an owner of your Claude organisation may need to add the connector before members can connect it. Exact menu names in Claude can change between versions; look for custom connectors in its settings.
 
 ## Claude Desktop
 
-Claude Desktop uses the same connectors as Claude on the web: a connector you add there appears in the desktop app when you are signed in to the same Claude account, and you can add one from the app's own **Settings**, **Connectors** in the same way. Approve the connection when the livediagram page opens in your browser.
+Claude Desktop uses the same connectors as Claude on the web: a connector you add there appears in the desktop app when you are signed in to the same Claude account, and you can add one from the app's own **Settings**, **Connectors** in the same way. Approve the connection when the liveplanner page opens in your browser.
 
 ## Claude Code
 
 Add the server from your terminal:
 
 ```bash
-claude mcp add --transport http livediagram https://mcp.livediagram.app/mcp
+claude mcp add --transport http liveplanner https://mcp.liveplanner.app/mcp
 ```
 
-Then, in a Claude Code session, run `/mcp`, choose `livediagram`, and authenticate: your browser opens the livediagram approval page. Add `--scope user` to the `claude mcp add` command to make livediagram available in every project rather than only the current one.
+Then, in a Claude Code session, run `/mcp`, choose `liveplanner`, and authenticate: your browser opens the liveplanner approval page. Add `--scope user` to the `claude mcp add` command to make liveplanner available in every project rather than only the current one.
 
 If you'd rather use an API token than sign in through the browser, pass it as a header instead:
 
 ```bash
-claude mcp add --transport http livediagram https://mcp.livediagram.app/mcp \
+claude mcp add --transport http liveplanner https://mcp.liveplanner.app/mcp \
   --header "Authorization: Bearer lvd_..."
 ```
 
-For coding agents working in a repository, the [livediagram CLI](/help/developers/cli/) is an alternative to the MCP server: both use the same API and the same kind of token.
+For coding agents working in a repository, the [liveplanner CLI](/help/developers/cli/) is an alternative to the MCP server: both use the same API and the same kind of token.
 
 ## Cursor
 
-Add livediagram to Cursor's MCP configuration: `~/.cursor/mcp.json` for every project, or `.cursor/mcp.json` inside one project.
+Add liveplanner to Cursor's MCP configuration: `~/.cursor/mcp.json` for every project, or `.cursor/mcp.json` inside one project.
 
 ```json
 {
   "mcpServers": {
-    "livediagram": {
-      "url": "https://mcp.livediagram.app/mcp"
+    "liveplanner": {
+      "url": "https://mcp.liveplanner.app/mcp"
     }
   }
 }
 ```
 
-Cursor then lists livediagram in its MCP settings and offers to sign in to it, which opens the livediagram approval page. To use an API token instead, add a `headers` entry beside `url`:
+Cursor then lists liveplanner in its MCP settings and offers to sign in to it, which opens the liveplanner approval page. To use an API token instead, add a `headers` entry beside `url`:
 
 ```json
 "headers": { "Authorization": "Bearer lvd_..." }
@@ -95,11 +95,11 @@ Cursor then lists livediagram in its MCP settings and offers to sign in to it, w
 
 ## ChatGPT
 
-Where your ChatGPT plan lets you add custom connectors (it is part of ChatGPT's developer mode, and the wording varies by plan and version), create a new connector, paste the address above as its MCP server URL, and choose OAuth for authentication. Approve the connection when the livediagram page opens.
+Where your ChatGPT plan lets you add custom connectors (it is part of ChatGPT's developer mode, and the wording varies by plan and version), create a new connector, paste the address above as its MCP server URL, and choose OAuth for authentication. Approve the connection when the liveplanner page opens.
 
 ## Any Other MCP Client
 
-Any tool that supports remote MCP servers can connect. Add a remote server (HTTP) with the address above. If the tool supports signing in to servers (OAuth), it finds livediagram's sign-in by itself: there is no client id or secret to enter. If it doesn't, use an API token, below.
+Any tool that supports remote MCP servers can connect. Add a remote server (HTTP) with the address above. If the tool supports signing in to servers (OAuth), it finds liveplanner's sign-in by itself: there is no client id or secret to enter. If it doesn't, use an API token, below.
 
 ## Using an API Token Instead
 
@@ -120,9 +120,9 @@ Authorization: Bearer lvd_...
 
 A token you create in Settings always has full read and write access, so there is no read-only option on this path: approve the connection in the browser instead when you want **Read-only access**. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
 
-## Self-Hosted livediagram
+## Self-Hosted liveplanner
 
-On your own deployment, use your own MCP host in place of `mcp.livediagram.app`, still ending in `/mcp`: for example `https://mcp.example.com/mcp`. The approval page and the tokens come from your own deployment. The MCP server is optional and needs accounts (sign-in) configured, so if your administrator hasn't set it up there is nothing to connect to; see [Configuration and Optional Auth](/help/self-hosting/configuration/).
+On your own deployment, use your own MCP host in place of `mcp.liveplanner.app`, still ending in `/mcp`: for example `https://mcp.example.com/mcp`. The approval page and the tokens come from your own deployment. The MCP server is optional and needs accounts (sign-in) configured, so if your administrator hasn't set it up there is nothing to connect to; see [Configuration and Optional Auth](/help/self-hosting/configuration/).
 
 ## If It Doesn't Connect
 

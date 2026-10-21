@@ -3,8 +3,8 @@
 // Card, and the dropdown a column with set values offers in the active cell.
 import { act, fireEvent, screen } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
-import type { CardTable } from '@livediagram/sheets';
+import { ITEM_TYPES, type Item } from '@liveplanner/items';
+import type { CardTable } from '@liveplanner/sheets';
 import {
   makeSheet,
   renderSheet,

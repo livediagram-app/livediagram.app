@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/tailwind-config",
+  "name": "@liveplanner/tailwind-config",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -23,14 +23,14 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "@livediagram/source-ast": "workspace:*"
+    "@liveplanner/source-ast": "workspace:*"
   }
 }

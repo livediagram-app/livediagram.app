@@ -1,6 +1,6 @@
 'use client';
 
-import { BrowserRepairPanel } from '@livediagram/ui';
+import { BrowserRepairPanel } from '@liveplanner/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { buildLoadDiagnostics } from '@/lib/load-diagnostics';
 import { track } from '@/lib/telemetry';

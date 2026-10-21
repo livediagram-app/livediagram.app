@@ -1,7 +1,7 @@
 // The Boards and Cards tiles' glyphs (docs/specs/026-plan/plan-mode.md "The palette"): a board drawn
 // as a picture of its kind, and a card drawn with its item type's colour stripe and glyph, at the tile size.
-import { Glyph } from '@livediagram/ui';
-import { planGlyphPath, type BoardWidgetKind, type CardSize } from '@livediagram/items';
+import { Glyph } from '@liveplanner/ui';
+import { planGlyphPath, type BoardWidgetKind, type CardSize } from '@liveplanner/items';
 import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/026-plan/

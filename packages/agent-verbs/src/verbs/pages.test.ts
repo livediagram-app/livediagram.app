@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PagesAnswer } from '@livediagram/api-schema';
+import type { PagesAnswer } from '@liveplanner/api-schema';
 import { VerbRefusal } from '../define';
 import { changePages, pagesTabOf, readArticle, writeArticle } from '../pages/pages-calls';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';

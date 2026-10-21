@@ -6,8 +6,8 @@ import {
   HoverCard,
   oppositeAppearanceSetting,
   quickAppearanceToggleName,
-} from '@livediagram/ui';
-import type { AppearanceSetting } from '@livediagram/ui';
+} from '@liveplanner/ui';
+import type { AppearanceSetting } from '@liveplanner/ui';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
 

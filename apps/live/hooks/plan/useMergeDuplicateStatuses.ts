@@ -8,7 +8,7 @@
 // only split the cards again. It runs whenever the document's duplicates change, so an undo that brings one back,
 // or a board that arrives with one, is merged too.
 import { useEffect, useMemo } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import {
   duplicateStatuses,
   mergeBoardStatuses,
@@ -17,7 +17,7 @@ import {
   statusColumnsOfSetups,
   type Item,
   type ItemWrite,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import { debugLog } from '@/lib/debug-log';
 import { documentBoardSetups } from './usePlanStatusNames';
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it, vi } from 'vitest';
-import { MAX_TAB_BYTES } from '@livediagram/api-schema';
+import { MAX_TAB_BYTES } from '@liveplanner/api-schema';
 import { importDrawioLibrary } from './library';
 import { importShapeLibraries } from './library-store';
 import { PIXEL_PNG } from './library-test-support';

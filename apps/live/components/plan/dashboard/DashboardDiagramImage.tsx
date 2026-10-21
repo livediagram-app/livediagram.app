@@ -5,7 +5,7 @@
 // scales to fit the slot, never runs anything, and costs the page one element however big the diagram. Re-encoded
 // only when the drawing changes (useTabSvg defers a burst of edits).
 import { useMemo } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { useTabSvg } from '@/components/split/useTabSvg';
 
 export function DashboardDiagramImage({ tab }: { tab: Tab }) {

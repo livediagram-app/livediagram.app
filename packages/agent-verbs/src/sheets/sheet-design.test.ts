@@ -10,7 +10,7 @@ import {
   posRangeOf,
   type Sheet,
   type SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { buildDesign, darkCanvas, type SheetDesignInput } from './sheet-design';
 import { buildSheetChange } from './sheet-change-build';
 

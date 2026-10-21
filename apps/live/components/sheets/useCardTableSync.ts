@@ -5,7 +5,7 @@
 // person's edits make a row a draft, which its Save writes to the card (or makes a new card) and its Cancel puts
 // back; a deleted linked row's card goes to the Trash at once.
 import { useEffect, useRef } from 'react';
-import { newItemId } from '@livediagram/items';
+import { newItemId } from '@liveplanner/items';
 import {
   CARD_CONTROLS_COL_PX,
   cellKey,
@@ -16,7 +16,7 @@ import {
   type LayoutChange,
   type Sheet,
   type SheetWrite,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
 import { debugLog } from '@/lib/debug-log';
 import { pullChanges, pushPlan, rowSave } from './card-table-sync';

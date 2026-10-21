@@ -212,12 +212,12 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 ## Template starts
 
 ([Spec](../sheet-store.md#template-starts).) `PlanSheetRef.start` (validated by `isPlanSheetRef`:
-`PLAN_SHEET_START_PATTERN`, kebab-case) names a template start. `@livediagram/sheets` `template-starts.ts`:
+`PLAN_SHEET_START_PATTERN`, kebab-case) names a template start. `@liveplanner/sheets` `template-starts.ts`:
 `TEMPLATE_STARTS` (`budget-planner`, `timesheet`, `contact-list`, `task-tracker`), `isTemplateStart`,
 `templateStart(id, now)` (title and `SheetStarter`, dates from `now`) and `templateSheetWithCharts({ id, tabId, start, now, dark,
 rand })` (an `emptySheet`, `setupWrite` with the Header look, the header frozen and the default size, applied with
-`applySheetWrite`, as `{ sheet: { id, tabId, title, layout, cells }, charts }`, each chart with its first read). `@livediagram/templates`: `hasTemplateSheets(tabs)`
-(engine-free, in the index) and, at the `@livediagram/templates/template-sheets` subpath so only a caller making sheets
+`applySheetWrite`, as `{ sheet: { id, tabId, title, layout, cells }, charts }`, each chart with its first read). `@liveplanner/templates`: `hasTemplateSheets(tabs)`
+(engine-free, in the index) and, at the `@liveplanner/templates/template-sheets` subpath so only a caller making sheets
 bundles the engine, `materialiseTemplateSheets(tabs, now, rand)` (`{ tabs, sheets: SheetCreateRequest[] }`, tinted dark
 when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from each Sheet made). Callers:
 
@@ -319,7 +319,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
   change past a cap sends nothing; a refusal stops the rest and returns the lines applied, a change whose later
   part was refused as `partly <line>: <n> of its <m> cells landed before the refusal`); `add-sheet.ts` `addSheet`
   (the first cells checked by `capsRefusal` before the create, then create blank, fill by writes, then one changeset
-  adding a `createShape('plan-sheet')` element at `placeBeside` from `@livediagram/items`, D31 as boards; a fill
+  adding a `createShape('plan-sheet')` element at `placeBeside` from `@liveplanner/items`, D31 as boards; a fill
   that fails, or a placing changeset the api refuses, deletes the sheet (`DELETE .../sheets/:id`, log
   `[sheets] add_sheet failed; unplaced sheet deleted`); a placing request that never answered keeps it);
   `sheet-refusals.ts` `SHEET_REFUSAL_WORDS`, one line per `SHEET_ERRORS` code, read by `apiRefusalOf`.

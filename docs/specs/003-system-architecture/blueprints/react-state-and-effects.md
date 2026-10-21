@@ -69,7 +69,7 @@ ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`),
 
 ### The React Compiler's reach
 
-`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livediagram/next-config` when an app
+`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@liveplanner/next-config` when an app
 passes `reactCompiler: true`, which only `apps/live/next.config.ts` does
 ([Next.js blueprint](../../016-platform/blueprints/nextjs.md)).
 
@@ -145,7 +145,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 | Constant                 | Value                                       | Provenance                       | Safe range        |
 | ------------------------ | ------------------------------------------- | -------------------------------- | ----------------- |
-| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@livediagram/next-config` `env` | A four-digit year |
+| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@liveplanner/next-config` `env` | A four-digit year |
 
 ## Defaults ledger
 

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { elementKindLabel, type Element } from '@livediagram/document';
+import { elementKindLabel, type Element } from '@liveplanner/document';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@liveplanner/ui';
 import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the

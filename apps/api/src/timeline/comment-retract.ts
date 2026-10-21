@@ -3,8 +3,8 @@
 // the events go only from the document the tab or card left: a tab still linked into another
 // document keeps that document's events, because each event is pinned to its document.
 
-import { itemThread, type Element } from '@livediagram/document';
-import type { Item } from '@livediagram/items';
+import { itemThread, type Element } from '@liveplanner/document';
+import type { Item } from '@liveplanner/items';
 import type { Env } from '../types';
 import { retractComments } from './document-events';
 import { removedComments } from './tab-diff';

@@ -3,7 +3,7 @@
 // marker drawn from the export's own glyph, and an arrow whose start has its own end references its own marker there.
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ER_GLYPHS, type ArrowElement } from '@livediagram/document';
+import { ER_GLYPHS, type ArrowElement } from '@liveplanner/document';
 
 const relationship: ArrowElement = {
   id: 'rel',

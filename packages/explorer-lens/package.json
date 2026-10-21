@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/explorer-lens",
+  "name": "@liveplanner/explorer-lens",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,12 +17,12 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/document": "workspace:*"
+    "@liveplanner/api-schema": "workspace:*",
+    "@liveplanner/document": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

@@ -6,7 +6,7 @@ import {
   WHITEBOARD_DEFAULT_PATTERN,
   type BackgroundPattern,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { articleTemplateOverrides } from './article-template';
 import { workingBackwardsOverrides } from './template-working-backwards';
 import { blankPageTemplateOverrides } from './blank-page-templates';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FONTS, type Element, type Tab } from '@livediagram/document';
+import { FONTS, type Element, type Tab } from '@liveplanner/document';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
 import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';

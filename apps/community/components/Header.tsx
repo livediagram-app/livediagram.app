@@ -1,4 +1,4 @@
-import { SiteHeader } from '@livediagram/ui';
+import { SiteHeader } from '@liveplanner/ui';
 
 // The Community app's header: the shared SiteHeader (packages/ui, also marketing's, help's and the
 // dashboard's) keyed to Community in the apps menu, with the default CTA pair tagged for the landing

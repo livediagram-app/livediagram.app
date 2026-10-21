@@ -4,16 +4,16 @@ import {
   type ElementDelta,
   type Tab,
   type TabLedger,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   AGENT_PRESENCE_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
   type RoomOp,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
-import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@livediagram/api-schema';
+import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@liveplanner/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its

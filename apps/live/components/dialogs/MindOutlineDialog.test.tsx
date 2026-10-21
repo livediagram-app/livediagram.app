@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
-import { createShape, type MindOutlineSummary, type ShapeElement } from '@livediagram/document';
+import { createShape, type MindOutlineSummary, type ShapeElement } from '@liveplanner/document';
 import type { ComponentProps } from 'react';
 import { MindOutlineDialog } from './MindOutlineDialog';
 

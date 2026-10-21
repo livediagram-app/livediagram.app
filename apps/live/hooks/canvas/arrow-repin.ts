@@ -1,4 +1,4 @@
-import type { ArrowElement, Endpoint } from '@livediagram/document';
+import type { ArrowElement, Endpoint } from '@liveplanner/document';
 
 /**
  * An arrow with one end moved by hand. Its `to` end leaves an import's exact end behind, so it fans

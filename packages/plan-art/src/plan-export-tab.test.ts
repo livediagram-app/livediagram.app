@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { planImageOf } from './plan-export-tab';
 import { NOW, shape } from './test-fixtures';
 

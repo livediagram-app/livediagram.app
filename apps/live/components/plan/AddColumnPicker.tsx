@@ -6,8 +6,8 @@
 // adding the highlighted one; with none highlighted, Enter (or Add Column) adds the typed name, which uses the
 // existing status of that name rather than a near-duplicate, and says so. Without any, it is the plain field.
 import { useId, useState } from 'react';
-import { Button, PlusIcon, TextInput } from '@livediagram/ui';
-import type { MissingStatus, PlanBoardSetup } from '@livediagram/items';
+import { Button, PlusIcon, TextInput } from '@liveplanner/ui';
+import type { MissingStatus, PlanBoardSetup } from '@liveplanner/items';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 import { matchStatus, statusKey, type StatusPick } from './column-status-picks';
 import { ExistingStatusList, HEADING, optionId } from './ExistingStatusList';

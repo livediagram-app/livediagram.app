@@ -2,7 +2,7 @@
 // pipeline"): the tab as the operations have left it so far, and what they touched, created,
 // resolved and removed. Operations write on this copy; the input tab is never mutated (I1).
 
-import type { EditRejection, EditWarning } from '@livediagram/api-schema';
+import type { EditRejection, EditWarning } from '@liveplanner/api-schema';
 import {
   computeRefs,
   isSlugId,
@@ -17,7 +17,7 @@ import {
   type ElementId,
   type RefTable,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { lockedIds } from './locks';
 import type { Naming } from './element-text';
 import type { Fit } from './labels';

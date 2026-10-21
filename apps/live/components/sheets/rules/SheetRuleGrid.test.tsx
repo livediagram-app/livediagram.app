@@ -4,7 +4,7 @@
 // pick and tick, what typing is refused or offered, format rules drawn, Paint Format, and each share role.
 import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { FormatRule, ValidationRule } from '@livediagram/sheets';
+import type { FormatRule, ValidationRule } from '@liveplanner/sheets';
 import { cellPoint, installGridDom, mountGrid, type MountOptions } from '../sheet-grid-test-utils';
 
 let restore: () => void;

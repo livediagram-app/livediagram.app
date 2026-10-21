@@ -1,8 +1,8 @@
 # Brand mark
 
-The livediagram logo is the **Living Prism**: an isometric glass cube whose translucent faces fold over one another,
+The liveplanner logo is the **Living Prism**: an isometric glass cube whose translucent faces fold over one another,
 with a faint diagram (two nodes joined through a centre node) inside and a live signal pulse running along its front
-edge. It reads as "a workspace with a diagram living in it". The **wordmark** beside it reads `livediagram`, with
+edge. It reads as "a workspace with a diagram living in it". The **wordmark** beside it reads `liveplanner`, with
 `live` in the accent and `diagram` in ink.
 
 ## The mark
@@ -28,7 +28,7 @@ The detail in `full` is under a pixel wide at header size, so `compact` drops it
 The mark has a light and a dark palette. Dark is brighter in its mid stops and darker at its deepest stop, so the cube
 holds its edges on a dark surface. The mark follows the page's scheme wherever it is drawn live. Favicons follow the
 browser's `prefers-color-scheme`. Static rasters (PNG icons, the Apple icon, social cards) are drawn on white and use
-the light palette. The one exception is the email mark (`apps/marketing/public/email/livediagram-mark-64.png`), a
+the light palette. The one exception is the email mark (`apps/marketing/public/email/liveplanner-mark-64.png`), a
 transparent light-palette PNG so it sits cleanly on the tinted page behind each email ([Transactional email](../014-identity/transactional-email.md)).
 
 ## Theme accent
@@ -46,7 +46,7 @@ same depth as the blue one.
 
 ## Mono
 
-On a solid brand tile (marketing's comparison badges, the "Why pick livediagram" card) the mark draws in one colour, the
+On a solid brand tile (marketing's comparison badges, the "Why pick liveplanner" card) the mark draws in one colour, the
 tile's text colour, with each face at its own opacity so the fold still shows.
 
 ## Wordmark
@@ -94,5 +94,5 @@ rather than reloading. A modified click (new tab or window) keeps the browser's 
 ## One source
 
 Every copy of the mark (the React component, the favicons, the logo files in `marketing/media/logo/`, the PNG icons, the
-email mark, the Apple icon and the social card) is drawn from one geometry and palette module in `@livediagram/ui`. Static files are
+email mark, the Apple icon and the social card) is drawn from one geometry and palette module in `@liveplanner/ui`. Static files are
 regenerated from it and a test fails if one drifts.

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { SessionButtonConfig } from '@livediagram/document';
+import type { SessionButtonConfig } from '@liveplanner/document';
 import { SessionElementSettings } from './SessionElementSettings';
 
 // A session button's settings read its stored config as the press reads it (docs/specs/012-collaboration/

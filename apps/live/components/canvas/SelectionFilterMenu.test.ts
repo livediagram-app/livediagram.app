@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { buildFilterGroups } from './SelectionFilterMenu';
 
 // Minimal element stubs — buildFilterGroups only reads `id`, `type`, `shape`.

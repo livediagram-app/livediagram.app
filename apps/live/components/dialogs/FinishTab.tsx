@@ -4,7 +4,7 @@
 // tiles, applied live to the tab and every element on it (each follows the tab again), and a preview of the sample in
 // the chosen finish.
 
-import { DEFAULT_FINISH, FINISHES, type Finish } from '@livediagram/document';
+import { DEFAULT_FINISH, FINISHES, type Finish } from '@liveplanner/document';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { TabStylePreview } from './TabStylePreview';
 

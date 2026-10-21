@@ -20,7 +20,7 @@ import {
   type Element,
   type Tab,
   detachChip,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
 

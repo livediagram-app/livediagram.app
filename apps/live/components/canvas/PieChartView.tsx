@@ -15,7 +15,7 @@ import {
   pieMarks,
   pieValueLabels,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ChartValues } from '@/components/primitives/ChartValues';
 import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';

@@ -9,7 +9,7 @@
 // press in here never closes it. Escape (taken before the dialog's own) and a press outside close it; opening
 // focuses its first control and closing hands focus back to the anchor.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Portal, useClickOutside } from '@livediagram/ui';
+import { Portal, useClickOutside } from '@liveplanner/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import { usePopoverLayer } from './popover-stack';
 

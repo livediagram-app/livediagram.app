@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@liveplanner/api-schema/testing';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@livediagram/vitest-config/sent-request';
-import type { CommunityPost } from '@livediagram/api-schema';
-import { resetCommunityEnabledForTests } from '@livediagram/ui';
+import { sentUrl } from '@liveplanner/vitest-config/sent-request';
+import type { CommunityPost } from '@liveplanner/api-schema';
+import { resetCommunityEnabledForTests } from '@liveplanner/ui';
 import { CommunityShowcase } from './CommunityShowcase';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page").

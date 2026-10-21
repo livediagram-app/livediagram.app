@@ -3,7 +3,7 @@
 // card's hover) the theme's stroke, its ink the theme's text; planPalette then derives the rest as a coloured Plan
 // board's, keeping the ink readable on the paper. A theme with no colours of its own (Default) leaves the panel the
 // app's light or dark look.
-import type { PlanOwnColours, Tab, ThemeDefinition } from '@livediagram/document';
+import type { PlanOwnColours, Tab, ThemeDefinition } from '@liveplanner/document';
 
 export function startPanelColours(
   tab: Pick<Tab, 'backgroundColor'>,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES, ES_BOARD_LAYER_ID } from '@livediagram/document';
+import { EDITOR_MODES, ES_BOARD_LAYER_ID } from '@liveplanner/document';
 import {
   PLACEMENT_DEFAULT_KEYS,
   SPECIFIC_TAB_KINDS,

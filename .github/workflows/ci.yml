@@ -97,7 +97,7 @@ jobs:
       # against a v5 runner with every check green.
       # The editor's suite is the one exception: it runs in the Editor unit tests jobs below.
       - name: Coverage thresholds
-        run: pnpm turbo run test:coverage --concurrency=2 --filter=!@livediagram/live
+        run: pnpm turbo run test:coverage --concurrency=2 --filter=!@liveplanner/live
 
       # Every workspace's lcov above, reported on Codecov; see the upload in Editor unit tests.
       - name: Upload coverage
@@ -145,7 +145,7 @@ jobs:
 
       - name: Test
         run: >-
-          pnpm --filter @livediagram/live exec vitest run --coverage
+          pnpm --filter @liveplanner/live exec vitest run --coverage
           --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       # OIDC, so no Codecov secret; a pull request from a fork uploads tokenless instead. A Codecov

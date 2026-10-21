@@ -14,8 +14,8 @@ import {
   lucideSlidersHorizontal,
   lucideSquareDashed,
   lucideUndo2,
-} from '@livediagram/icons/lucide';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+} from '@liveplanner/icons/lucide';
+import { Glyph, lucideGlyph } from '@liveplanner/ui';
 
 export function RectGlyph() {
   return (

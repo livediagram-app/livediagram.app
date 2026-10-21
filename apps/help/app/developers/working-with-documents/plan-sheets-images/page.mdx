@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Plan Items, Sheets and Images',
   description:
-    'livediagram API examples for Plan items and card types, Sheet cells, image uploads, pages and articles, SVG renders, copies and themes.',
+    'liveplanner API examples for Plan items and card types, Sheet cells, image uploads, pages and articles, SVG renders, copies and themes.',
   path: '/help/developers/working-with-documents/plan-sheets-images/',
 });
 
 <ArticleLayout title="Plan Items, Sheets and Images" description="Worked examples for the rest of a document: Plan cards, Sheets, images, pages, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "plan-sheets-images")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the cards on its Plan boards, the cells of its Sheets, the images it shows, its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://livediagram.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the cards on its Plan boards, the cells of its Sheets, the images it shows, its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://liveplanner.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the document open straight away, credited to you.
 
@@ -20,7 +20,7 @@ Every write here reaches anyone with the document open straight away, credited t
 A card on a [Plan board](/help/canvas/plan-mode/boards/) is an **item**, kept in the document's item store rather than on a tab, so one card can show on several boards. A board files its cards by **status**: each column has one, such as `in-progress~k3f2`. Read the boards, their statuses and the card types first:
 
 ```bash
-curl https://livediagram.app/api/documents/$DOC/plan \
+curl https://liveplanner.app/api/documents/$DOC/plan \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -58,7 +58,7 @@ curl https://livediagram.app/api/documents/$DOC/plan \
 `POST /documents/$DOC/items` makes one card: a `type`, its `fields` (a `title` at least, up to 500 characters) and an optional `place`, the status to file it under and the card to sit after or before:
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/items \
+curl -X POST https://liveplanner.app/api/documents/$DOC/items \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "type": "task",
@@ -75,17 +75,17 @@ The fields every card understands are `title`, `description`, `status`, `assigne
 
 ```bash
 # Change one card: set some fields, clear others, optionally change its type
-curl -X POST https://livediagram.app/api/documents/$DOC/items/$ITEM \
+curl -X POST https://liveplanner.app/api/documents/$DOC/items/$ITEM \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "set": { "priority": "urgent" }, "clear": ["due"] }'
 
 # Move it to another column, after another card, and assign it in the same write
-curl -X POST https://livediagram.app/api/documents/$DOC/items/$ITEM/move \
+curl -X POST https://liveplanner.app/api/documents/$DOC/items/$ITEM/move \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "doing~c3d4", "after": "'"$OTHER"'", "set": { "assignee": { "id": "u1", "name": "Sam", "color": "#2563eb" } } }'
 
 # Change up to 200 cards at once: each is checked first, so one refusal changes nothing
-curl -X POST https://livediagram.app/api/documents/$DOC/items/patches \
+curl -X POST https://liveplanner.app/api/documents/$DOC/items/patches \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "items": [ { "id": "'"$A"'", "set": { "flagged": true } }, { "id": "'"$B"'", "clear": ["labels"] } ] }'
 ```
@@ -101,7 +101,7 @@ Refusals are `400` with a code such as `title_required`, `field_value_invalid`, 
 A document's [card types](/help/canvas/plan-mode/card-types/) are stored whole. To change them, send the full catalogue back with the revision you read (`itemTypesRev` from `/plan`):
 
 ```bash
-curl -X PUT https://livediagram.app/api/documents/$DOC/item-types \
+curl -X PUT https://liveplanner.app/api/documents/$DOC/item-types \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "expectedRev": 3,
@@ -145,7 +145,7 @@ The [CLI](/help/developers/cli/) (`item add`, `item set`, `item move`, `type ls`
 Change cells with a **write**. Each cell change names its row and column ids and an input: `{ "n": 1200 }` for a number, `{ "s": "Hosting" }` for text, `{ "b": true }` for a checkbox value, or `null` to clear it. An `f` patch formats it (`"b": true` for bold, `"nf": "currency"`, `"bg"` and `"fc"` for colours):
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/sheets/$SHEET/writes \
+curl -X POST https://liveplanner.app/api/documents/$DOC/sheets/$SHEET/writes \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "write": {
@@ -163,18 +163,18 @@ It answers with the write as it landed, the sheet's new `rev` and the stored sta
 
 <Tip>
   Formulas are stored with their references by row and column id, which is awkward to write by hand.
-  To write formulas, or anything by A1, use `livediagram sheet set "Budget" Costs B2 1200 =B2*12` or
+  To write formulas, or anything by A1, use `liveplanner sheet set "Budget" Costs B2 1200 =B2*12` or
   the MCP server's `change_sheet`, which work out the ids for you.
 </Tip>
 
-A Sheet shows on a tab in Plan through a Sheet element, as a board does; any other tab refuses either (`tab_not_plan` from `add_sheet` and `add_board`, `invalid_value` from a changeset), so start one with `add_tab` and the `blank-spreadsheet` or `kanban` template. `livediagram sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
+A Sheet shows on a tab in Plan through a Sheet element, as a board does; any other tab refuses either (`tab_not_plan` from `add_sheet` and `add_board`, `invalid_value` from a changeset), so start one with `add_tab` and the `blank-spreadsheet` or `kanban` template. `liveplanner sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
 
 ## Images
 
 Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB, with its pixel size in two headers:
 
 ```bash
-curl -X POST https://livediagram.app/api/images \
+curl -X POST https://liveplanner.app/api/images \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: image/png" \
   -H "X-Image-Width: 1200" -H "X-Image-Height: 800" \
@@ -200,7 +200,7 @@ curl -X POST https://livediagram.app/api/images \
 Uploading the same bytes again answers the image you already have, with `"deduped": true`. Then put it on a tab with a changeset that adds a whole image element:
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
+curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/changesets \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "operations": [ { "op": "add", "element": { "type": "image", "imageId": "'"$IMAGE"'", "x": 0, "y": 0, "width": 600, "height": 400, "naturalWidth": 1200, "naturalHeight": 800, "alt": "Architecture overview" } } ] }'
 ```
@@ -213,7 +213,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
 
 ```bash
 # Add two slides and rename the first page
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/pages \
+curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/pages \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "pages": [
     { "op": "add", "kind": "slide", "name": "Roadmap" },
@@ -222,7 +222,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/pages \
   ] }'
 
 # Write an article: the editor flows it onto pages
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/pages \
+curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/pages \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "article": { "markdown": "# Release notes\n\nWhat changed this month.", "size": "a4" } }'
 ```
@@ -232,7 +232,7 @@ A page change is `add` (a `kind` of `infographic`, `slide` or `logo`, with an op
 ## A Tab as a Picture
 
 ```bash
-curl https://livediagram.app/api/documents/$DOC/tabs/$TAB/render.svg \
+curl https://liveplanner.app/api/documents/$DOC/tabs/$TAB/render.svg \
   -H "Authorization: Bearer $TOKEN" -o overview.svg
 ```
 
@@ -241,7 +241,7 @@ The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, 
 ## Copy a Document
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/copy \
+curl -X POST https://liveplanner.app/api/documents/$DOC/copy \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "name": "Service map (2027 draft)" }'
 ```
@@ -254,14 +254,14 @@ Your [shape libraries](/help/explorer/shape-libraries/) and [custom themes](/hel
 
 ```bash
 # A shape library: each item is a reusable shape, its elements placed from its top-left corner
-curl -X POST https://livediagram.app/api/shape-libraries \
+curl -X POST https://liveplanner.app/api/shape-libraries \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "'"$(uuidgen)"'", "name": "Network kit", "source": "drawio",
         "items": [ { "id": "'"$(uuidgen)"'", "title": "Router", "width": 120, "height": 60,
           "elements": [ { "id": "r1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 120, "height": 60, "label": "Router" } ] } ] }'
 
 # A custom theme
-curl -X POST https://livediagram.app/api/custom-themes \
+curl -X POST https://liveplanner.app/api/custom-themes \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "custom:'"$(uuidgen)"'", "name": "Night shift",
         "definition": { "backgroundColor": "#0f172a", "backgroundPattern": "grid", "patternColor": "#1e293b",

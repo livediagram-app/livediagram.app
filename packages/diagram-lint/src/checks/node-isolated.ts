@@ -2,7 +2,7 @@
 // connected boxes, at least half of all boxes (LN11). An unlabelled shape is decoration (a key's sample, the card
 // behind a block of text), never a node left out.
 
-import type { BoxedElement, ElementId } from '@livediagram/document';
+import type { BoxedElement, ElementId } from '@liveplanner/document';
 import { LINT_GRAPH_MIN_CONNECTED, LINT_GRAPH_MIN_SHARE, LINT_RING_SPREAD } from '../constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';

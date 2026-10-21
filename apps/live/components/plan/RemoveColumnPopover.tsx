@@ -6,8 +6,8 @@
 // so the choice reaches every board that shows it, and the popover says so. Cancel keeps the state; Delete Status
 // does the move, then removes the state's column from every board.
 import { useId, useState, type ReactNode } from 'react';
-import type { PlanColumn } from '@livediagram/items';
-import { Button, Select, TrashIcon } from '@livediagram/ui';
+import type { PlanColumn } from '@liveplanner/items';
+import { Button, Select, TrashIcon } from '@liveplanner/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 

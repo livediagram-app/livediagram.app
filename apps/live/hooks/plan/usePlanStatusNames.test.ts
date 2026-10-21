@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type Tab } from '@livediagram/document';
-import { presetSetup } from '@livediagram/items';
+import { createShape, type Element, type Tab } from '@liveplanner/document';
+import { presetSetup } from '@liveplanner/items';
 import { renderHook } from '@testing-library/react';
 import {
   STATUS_SIGNATURE_CACHE_MAX,
@@ -144,7 +144,7 @@ describe('document-wide statuses', () => {
 describe('statusBoardsOfSetups', () => {
   it('names each board with columns by its title, in board order, skipping All Cards and Archive', async () => {
     const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
-    const { presetSetup } = await import('@livediagram/items');
+    const { presetSetup } = await import('@liveplanner/items');
     const kanban = { ...presetSetup('kanban'), title: 'Team Board' };
     const out = statusBoardsOfSetups([
       kanban,
@@ -161,7 +161,7 @@ describe('statusBoardsOfSetups', () => {
   // docs/specs/026-plan/plan-board.md "The column picker": a status's swatch is its first board's column colour.
   it('gives a status named like an object key no colour of its own', async () => {
     const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
-    const { presetSetup } = await import('@livediagram/items');
+    const { presetSetup } = await import('@liveplanner/items');
     const kanban = presetSetup('kanban');
     const out = statusBoardsOfSetups([
       { ...kanban, columns: [{ id: 'x', status: 'constructor', name: 'Constructor' }] },
@@ -172,7 +172,7 @@ describe('statusBoardsOfSetups', () => {
   it('round-trips the colours through the signature as a Map', async () => {
     const { usePlanStatuses } = await import('./usePlanStatusNames');
     const { renderHook } = await import('@testing-library/react');
-    const { presetSetup } = await import('@livediagram/items');
+    const { presetSetup } = await import('@liveplanner/items');
     const kanban = presetSetup('kanban');
     const [first, ...rest] = kanban.columns;
     const tab = {
@@ -197,7 +197,7 @@ describe('statusBoardsOfSetups', () => {
 
   it('carries the colours its columns have, and only those', async () => {
     const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
-    const { presetSetup } = await import('@livediagram/items');
+    const { presetSetup } = await import('@liveplanner/items');
     const kanban = presetSetup('kanban');
     const [first, ...rest] = kanban.columns;
     const out = statusBoardsOfSetups([

@@ -3,7 +3,7 @@
 // contract as page-layouts.ts: the page's content box in, uncoloured elements out. Built first for
 // Square, Portrait post (4:5) and Story (9:16) pages, a tall page stacking one big message down the
 // page and a wide one setting it beside its picture, chart or tiles.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { Kit, LayoutBox } from './page-layout-kit';
 import { iconDisc, iconRow } from './page-layout-parts';
 import {

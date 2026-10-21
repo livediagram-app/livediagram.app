@@ -1,4 +1,4 @@
-import { capBandBaselineY } from '@livediagram/icons';
+import { capBandBaselineY } from '@liveplanner/icons';
 import { describe, expect, it } from 'vitest';
 import { createComponent, createShape, renderElementsToSvg, type Tab } from './index';
 

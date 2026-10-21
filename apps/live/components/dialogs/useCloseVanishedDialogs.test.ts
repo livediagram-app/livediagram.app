@@ -3,7 +3,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@liveplanner/document';
 import { useCloseVanishedDialogs, type DialogFor } from './useCloseVanishedDialogs';
 
 const el = (id: string) => ({ ...createShape('square', 0, 0), id }) as Element;

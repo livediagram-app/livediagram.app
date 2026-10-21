@@ -12,8 +12,8 @@ import {
   isParticipantPlaceable,
   participantWritesOn,
   type Element,
-} from '@livediagram/document';
-import type { AccessLevel } from '@livediagram/api-schema';
+} from '@liveplanner/document';
+import type { AccessLevel } from '@liveplanner/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;

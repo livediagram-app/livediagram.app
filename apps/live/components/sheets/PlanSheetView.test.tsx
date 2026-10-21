@@ -5,8 +5,8 @@
 // once, a filled one asking first), and maximising without losing anything.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { emptyLayout, type SheetJson } from '@livediagram/sheets';
-import type { Element, ShapeElement } from '@livediagram/document';
+import { emptyLayout, type SheetJson } from '@liveplanner/sheets';
+import type { Element, ShapeElement } from '@liveplanner/document';
 import * as api from '@/lib/api/sheets';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';

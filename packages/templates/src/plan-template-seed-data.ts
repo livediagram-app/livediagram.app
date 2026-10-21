@@ -5,7 +5,7 @@
 // the example team below; `ref` names a card another card links to (a Story's project, a Candidate's role).
 // plan-template-seeds.ts resolves this into the creates the item store takes.
 
-import type { Priority } from '@livediagram/items';
+import type { Priority } from '@liveplanner/items';
 import type { PlanTemplateKind } from './plan-template-catalogue';
 
 // The example team every template's cards are shared out among (assignees, swimlane rows, voters).

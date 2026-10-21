@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_IMAGE_BYTES } from '@livediagram/api-schema';
+import { MAX_IMAGE_BYTES } from '@liveplanner/api-schema';
 import { fallbackOutputType, planImageEncoding } from './policy';
 
 const MB = 1024 * 1024;

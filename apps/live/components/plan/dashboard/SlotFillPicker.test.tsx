@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import type { ShapeElement, Tab } from '@livediagram/document';
+import type { ShapeElement, Tab } from '@liveplanner/document';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { dashboardTabTiles } from '@/components/palette/palette-dashboard-tiles';
 import { slotFillSections, slotItemOfTile, tooBigLine } from './SlotFillPicker';

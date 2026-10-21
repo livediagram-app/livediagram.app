@@ -4,10 +4,10 @@
 // section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column.
 // A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
 import { Fragment, useCallback, useRef } from 'react';
-import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
-import { lucideClipboardList } from '@livediagram/icons/lucide';
-import type { DestinationProblem } from '@livediagram/forms';
-import { placeQuestion } from '@livediagram/forms';
+import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
+import { lucideClipboardList } from '@liveplanner/icons/lucide';
+import type { DestinationProblem } from '@liveplanner/forms';
+import { placeQuestion } from '@liveplanner/forms';
 import { FormAddBar } from './FormAddBar';
 import { FormConnectCard } from './FormConnectCard';
 import { FormHeaderCard, SectionHeader } from './FormHeaderCard';

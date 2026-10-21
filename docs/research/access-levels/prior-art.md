@@ -2,7 +2,7 @@
 
 Research for the access-levels design ([draft spec](../../specs/013-workspace/share-roles.md), on the
 `docs/agent-cli` branch). It surveys how collaborative, whiteboarding and facilitation products name and
-bound their access levels, and what that means for livediagram's proposed four: **Viewer**, **Participant**,
+bound their access levels, and what that means for liveplanner's proposed four: **Viewer**, **Participant**,
 **Editor**, with **ownership** held apart.
 
 ## Method and confidence
@@ -226,7 +226,7 @@ bound their access levels, and what that means for livediagram's proposed four: 
 - **Token granularity:** coarse read and write (Miro, Mural, Excalidraw), per-resource (Google `drive.file`), or
   capability sets with comments apart (Notion, Figma).
 
-## How it applies to livediagram
+## How it applies to liveplanner
 
 ### What exists today
 
@@ -252,10 +252,10 @@ bound their access levels, and what that means for livediagram's proposed four: 
 ### What the prior art implies
 
 - **Viewer, Participant, Editor** maps cleanly onto the market's view, comment, edit, and the four-level framing with
-  **ownership apart** is exactly pattern 2. livediagram is not inventing a model, only naming its middle tier for
+  **ownership apart** is exactly pattern 2. liveplanner is not inventing a model, only naming its middle tier for
   what it is used for.
 - **"Participant" over "Commenter"** fits a facilitation product: Miro, Mentimeter and the retro tools all treat
-  answering as the audience's baseline, and livediagram's polls and Q&A are already open to view links for that
+  answering as the audience's baseline, and liveplanner's polls and Q&A are already open to view links for that
   reason. Commenting and answering are both "saying something without changing the drawing", as the draft puts it.
 - **Facilitating stays a session role**, held by an Editor through the baton, as Lucid and Miro do. It should not
   become a fifth access level.
@@ -265,11 +265,11 @@ bound their access levels, and what that means for livediagram's proposed four: 
 - **Tokens should take the same vocabulary**, narrowed from the user, never widened (Figma, Excalidraw). A
   Participant token has a precedent in Notion's comment capabilities and gives an agent a safe way to comment or
   answer without editing.
-- **Guests stay first-class.** Unlike Notion and Google, livediagram's acquisition strategy is no sign-in wall
+- **Guests stay first-class.** Unlike Notion and Google, liveplanner's acquisition strategy is no sign-in wall
   ([Auth and guest access](../../specs/014-identity/auth-and-guest-access.md)); Miro, Lucid and FigJam prove
   anonymous participation works at scale. Who someone is (guest, signed in, member) remains a separate axis from
   what their pass allows.
-- **Links remain the only per-person-free grant.** Every surveyed product also offers per-person invites; livediagram
+- **Links remain the only per-person-free grant.** Every surveyed product also offers per-person invites; liveplanner
   offers links and teams only. That is a scope choice, not a gap the levels must fill now.
 
 ## Recommendations

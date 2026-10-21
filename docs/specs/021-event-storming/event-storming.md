@@ -20,7 +20,7 @@ lives in `plans/0003-event-storming.md`.
 
 ## Why a template, not a new surface
 
-livediagram's "diagram types" are template kinds
+liveplanner's "diagram types" are template kinds
 (`packages/templates/src/templates.ts`): a `TemplateKind`, a catalogue
 entry, a pure element builder, a preview tile, and per-kind canvas
 overrides. Event storming fits that mould exactly — it is ordinary
@@ -75,7 +75,7 @@ semantic colour:
 | `hotspot`         | `#fca5a5` | a conflict, question, or risk       |
 
 - **Single source of truth:** `EVENT_STORMING_NOTES` in
-  `@livediagram/document` (`src/event-storming.ts`) — kind, label, blurb,
+  `@liveplanner/document` (`src/event-storming.ts`) — kind, label, blurb,
   fill. The palette tiles derive from it (a `map`, not hand-copies) and
   the template builder reads its orange from it, so the surfaces cannot
   drift (pinned by `event-storming.test.ts` + `palette-tile-defs.test.tsx`).
@@ -141,7 +141,7 @@ semantic colour:
   wall of them reads as one hand: capitals stay legible from across the
   room, hold an even block of colour on the paper, and stop a board looking
   like eight people's sentence-case handwriting. The rule is
-  PRESENTATION-only (`eventStormingLabelText` in `@livediagram/document`, a
+  PRESENTATION-only (`eventStormingLabelText` in `@liveplanner/document`, a
   CSS `text-transform` on the canvas): the typed label is stored exactly as
   written, so search, the JSON export and the day a note stops being a note
   all keep the author's casing. It applies wherever a note PAINTS — display
@@ -193,7 +193,7 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   is distraction-free capture, and it earned its place only by driving
   the layers it has now lost.
 - **Identity is a FIRST-CLASS field**: `Tab.kind = 'event-storming'`
-  (`TabKind` in `@livediagram/document`). It used to be inferred from layer
+  (`TabKind` in `@liveplanner/document`). It used to be inferred from layer
   ids, and that broke twice — first as a checklist (all three stage
   layers, so deleting one stripped the board), then as a single layer a
   facilitator can delete from the Layers panel — each time taking the
@@ -883,7 +883,7 @@ low-threshold capture surface can least afford.
 - **Detection and reconciliation are ours; only the reading is the model's.**
   Finding the stickies — where each one is, what colour its paper is and so
   which KIND it is, which silhouette, which row, in what order — happens in the
-  BROWSER, with classical computer vision (`@livediagram/sticky-vision`). It is
+  BROWSER, with classical computer vision (`@liveplanner/sticky-vision`). It is
   deterministic, free, offline, and testable against images we draw ourselves.
   The model is asked exactly one thing: read the handwriting on this crop, or
   say you cannot. Matching against the board and placing the additions stay
@@ -1346,7 +1346,7 @@ Decisions from the operator:
   no box has (a small one only among boxes of its own size), drop a box with no note in it that the model calls background.
   The kinds stay the colour's. The detector itself carries no ML dependency;
   the model is optional, runs locally, and is loaded only for the photo
-  import. It lives in `@livediagram/sticky-model`: the package's browser-safe
+  import. It lives in `@liveplanner/sticky-model`: the package's browser-safe
   half (`src/index.ts`: the network's framing in `stride.ts`, the
   flat-image test in `flatness.ts`, output decoding in `decode.ts` and the
   cues the hybrid reads in `cues.ts`) is what the editor imports, while the
@@ -1548,12 +1548,12 @@ hundred small notes.
   ordinary draft bar in the editor — **Add** or **Discard** — because a draft is
   derived from the tab's elements; nothing new to learn, nothing lands
   without the author.
-- **The photograph never goes to livediagram.** The agent holds it; only the
+- **The photograph never goes to liveplanner.** The agent holds it; only the
   notes it read cross the wire, as they would if the author typed them.
 - **Discoverable, never required.** The help centre's photo-import article
   and the MCP prompt list mention it; the editor does not nag. No tier, no
   flag: whoever has an agent can use it, whoever does not loses nothing.
-- **A CLI is the same tool without an agent**: `livediagram import-wall
+- **A CLI is the same tool without an agent**: `liveplanner import-wall
 <photo>` with the author's own key (a flash-class vision model) or a local
   one, tiled for small notes, writing the same draft through the API.
 

@@ -6,7 +6,7 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = helpMetadata({
   title: 'Self-Hosting',
-  description: 'livediagram is open source and MIT-licensed. Run your own instance on Cloudflare.',
+  description: 'liveplanner is open source and MIT-licensed. Run your own instance on Cloudflare.',
   path: '/help/self-hosting/',
 });
 

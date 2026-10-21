@@ -4,8 +4,8 @@
 // sections, heading, cover and where its responses go cannot change, so nobody fills in a form that shifts under them
 // and every answer keeps its meaning. Edit Form stops it taking responses (its link kept) and unlocks it; Accepting
 // Responses opens it again once nothing stops it.
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideLock } from '@livediagram/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
+import { lucideLock } from '@liveplanner/icons/lucide';
 
 const LockGlyph = lucideGlyph(lucideLock, 15);
 

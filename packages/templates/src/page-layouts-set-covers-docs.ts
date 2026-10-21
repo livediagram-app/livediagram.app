@@ -2,7 +2,7 @@
 // cover, a proposal cover, a case study cover and a contents page. Same contract as
 // page-layouts.ts: the page's content box in, uncoloured elements out, a tall page stacking and a
 // wide one setting side by side.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import {
   field,

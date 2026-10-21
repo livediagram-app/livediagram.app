@@ -3,7 +3,7 @@
 // store throws DocumentTrashedError for a trashed local record. Callers ask
 // isDocumentTrashedError and never care which store said it.
 
-import { DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
+import { DOCUMENT_TRASHED_ERROR } from '@liveplanner/api-schema';
 import { ApiError } from './api/core';
 
 export class DocumentTrashedError extends Error {

@@ -1,4 +1,4 @@
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   glyphWidth,
@@ -8,7 +8,7 @@ import {
   MAX_TABLE_COLS,
   MAX_TABLE_ROWS,
   type TableElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   buildTabFromMarkdown,
   cleanInline,

@@ -23,7 +23,7 @@ import {
   type PickerSource,
   type SessionButtonConfig,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

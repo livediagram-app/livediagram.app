@@ -8,8 +8,8 @@ import {
   lucideGlyph,
   SOLID_BRAND_DARK_CONTROL,
   withArticle,
-} from '@livediagram/ui';
-import { lucideFootprints } from '@livediagram/icons/lucide';
+} from '@liveplanner/ui';
+import { lucideFootprints } from '@liveplanner/icons/lucide';
 import { PlayIcon } from '@/components/primitives/PlayIcon';
 import type { ElementTourOffer as Offer } from '@/lib/element-tour-offer';
 import { ELEMENT_TOUR_NAMES } from '@/lib/element-tours';

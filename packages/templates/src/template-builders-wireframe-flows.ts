@@ -8,7 +8,7 @@ import {
   type Element,
   type Page,
   type WireframeDeviceId,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { buildPageLayout } from './page-layout-build';
 import type { WireframeLayoutId } from './wireframe-layouts';
 

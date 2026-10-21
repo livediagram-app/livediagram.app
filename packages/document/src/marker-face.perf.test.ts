@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
 import { MARKER_FACE_MAX_PARTS } from './marker-face';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';

@@ -13,13 +13,13 @@ import {
 
 type Call = { command: string; args: readonly string[]; input: string };
 const details = {
-  host: 'https://livediagram.app',
+  host: 'https://liveplanner.app',
   tokenId: 't1',
   accountName: 'Ada',
   role: 'full',
   expiresAt: null,
 };
-const FILE = '/home/agent/.config/livediagram/credentials.json';
+const FILE = '/home/agent/.config/liveplanner/credentials.json';
 
 // A system with a keychain the suite plays: entries by account, answers scripted per command.
 function system(
@@ -75,7 +75,7 @@ describe('the keychain on macOS', () => {
     expect(calls[0]).toEqual({
       command: 'security',
       args: ['-i'],
-      input: `add-generic-password -U -s livediagram -a "work \\"q\\"" -w "${TOKEN}"\n`,
+      input: `add-generic-password -U -s liveplanner -a "work \\"q\\"" -w "${TOKEN}"\n`,
     });
     expect(kept.get('work "q"')).toBe(TOKEN);
     expect(await storedCredential(io, 'work "q"')).toEqual({ ...details, keychain: true });
@@ -97,9 +97,9 @@ describe('the keychain on Linux', () => {
       args: [
         'store',
         '--label',
-        'livediagram CLI (default)',
+        'liveplanner CLI (default)',
         'service',
-        'livediagram',
+        'liveplanner',
         'account',
         'default',
       ],
@@ -189,7 +189,7 @@ describe('stores across systems and logins', () => {
     io.readStdin = async () => NEW;
     const route = (_request: Request, url: URL) =>
       url.pathname === '/api/capabilities'
-        ? Response.json({ apiBase: 'https://livediagram.app/api', authEnabled: true })
+        ? Response.json({ apiBase: 'https://liveplanner.app/api', authEnabled: true })
         : url.pathname === '/api/tokens/current'
           ? Response.json({
               accountId: 'u1',

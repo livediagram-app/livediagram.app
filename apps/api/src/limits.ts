@@ -2,7 +2,7 @@
 // worker against hostile or accidental oversized payloads (important ahead of
 // opening the API to external token callers). One place so the caps stay
 // consistent and tunable. Structural validity of tabs/elements lives in
-// @livediagram/document (isValidTab); these are the SIZE bounds a structurally
+// @liveplanner/document (isValidTab); these are the SIZE bounds a structurally
 // valid payload must also respect.
 
 // Outer bound on any request body, gated on Content-Length before dispatch so
@@ -19,16 +19,16 @@ export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 // unreachable (and return the generic payload_too_large instead of the image
 // route's file_too_large + limitBytes envelope).
 //
-// Defined in @livediagram/api-schema, not here: the editor pre-validates a
+// Defined in @liveplanner/api-schema, not here: the editor pre-validates a
 // picked file against the same number, and two copies drift into a client
 // that accepts what the server rejects.
-export { MAX_IMAGE_BYTES } from '@livediagram/api-schema';
+export { MAX_IMAGE_BYTES } from '@liveplanner/api-schema';
 
 // A single tab's data (the element + comment tree), held to D1's row cap less headroom
-// (docs/specs/015-api/api.md "Tab size"). Defined in @livediagram/api-schema, so the editor checks
+// (docs/specs/015-api/api.md "Tab size"). Defined in @liveplanner/api-schema, so the editor checks
 // the same number before it sends. The body cap above bounds one request; this bounds one tab.
-export { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
-import { MAX_TAB_BYTES as MAX_TAB_BYTES_CAP } from '@livediagram/api-schema';
+export { MAX_TAB_BYTES, tabDataBytes } from '@liveplanner/api-schema';
+import { MAX_TAB_BYTES as MAX_TAB_BYTES_CAP } from '@liveplanner/api-schema';
 
 /**
  * A tab write refused for size at the storage layer (db/tabs.ts): every route that stores a tab

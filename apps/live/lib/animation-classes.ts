@@ -9,7 +9,7 @@ import {
   type AnimationSetId,
   type BodyAnimationSet,
   type BoxedElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 export const ANIMATION_CLASS_PREFIX: Readonly<Record<AnimationSetId, string>> = {
   shape: 'lvd-anim-',

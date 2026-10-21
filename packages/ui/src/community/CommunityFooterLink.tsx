@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
+import { COMMUNITY_HOME_PATH } from '@liveplanner/api-schema';
 import { useNearViewport } from '../useNearViewport';
 import { useCommunityEnabled } from './useCommunityEnabled';
 

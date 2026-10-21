@@ -6,9 +6,9 @@ import {
   type LaidOutPage,
   type PageKind,
   type WireframeDeviceId,
-} from '@livediagram/document';
-import { lucideLayoutGrid } from '@livediagram/icons/lucide';
-import { lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
+} from '@liveplanner/document';
+import { lucideLayoutGrid } from '@liveplanner/icons/lucide';
+import { lucideGlyph, PlusIcon, Tooltip } from '@liveplanner/ui';
 import { addAnotherLabel } from '@/lib/add-page-labels';
 import { AddPagePopover } from './AddPagePopover';
 

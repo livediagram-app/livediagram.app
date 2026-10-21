@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { readActivity } from './collab-index';
 import { upsertTab } from './tabs';

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER, type HomeResponse } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER, type HomeResponse } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import { getDocument } from '../db';

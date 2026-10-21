@@ -11,7 +11,7 @@
 // The once-ever guard is NOT here: it's the synced `tourSeen` user
 // preference (docs/specs/007-editor/user-preferences.md), so answering the offer once covers every device
 // the user signs in from.
-export const TOUR_PENDING_KEY = 'livediagram:v2:tour-pending';
+export const TOUR_PENDING_KEY = 'liveplanner:v2:tour-pending';
 
 export function markTourPending() {
   try {
@@ -44,7 +44,7 @@ export function clearTourPending() {
 // row relaunches the tour when unchecked-then-closed. A window event keeps
 // the dialog decoupled from TourHost (no shared state to thread through
 // the editor context for a one-shot signal).
-export const TOUR_RELAUNCH_EVENT = 'livediagram:tour-relaunch';
+export const TOUR_RELAUNCH_EVENT = 'liveplanner:tour-relaunch';
 
 export function requestTourRelaunch() {
   if (typeof window === 'undefined') return;

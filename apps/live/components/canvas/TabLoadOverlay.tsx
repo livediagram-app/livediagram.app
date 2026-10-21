@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 // Blocking overlay shown over the canvas while the ACTIVE tab's content
 // is still being fetched (docs/specs/006-document/per-tab-storage.md lazy per-tab load), or after that

@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommunityOwnPost } from '@livediagram/api-schema';
+import type { CommunityOwnPost } from '@liveplanner/api-schema';
 
 // The Share dialog's Community wiring (docs/specs/025-community/community.md "Publishing", "Turning the Community
 // off"): the section only where a post can exist, the password lock only while listed, the publish dialog in place
@@ -14,8 +14,8 @@ const h = vi.hoisted(() => ({
   useCommunityPost: vi.fn(),
 }));
 
-vi.mock('@livediagram/ui', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@livediagram/ui')>()),
+vi.mock('@liveplanner/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveplanner/ui')>()),
   useCommunityEnabled: () => h.enabled,
 }));
 vi.mock('@/hooks/persistence/useCommunityPost', () => ({

@@ -6,8 +6,8 @@
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
 // arrows move through every swatch, Enter or Space picks.
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
-import { Tooltip } from '@livediagram/ui';
-import { isHexColour } from '@livediagram/document';
+import { Tooltip } from '@liveplanner/ui';
+import { isHexColour } from '@liveplanner/document';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { YOUR_COLOURS_MAX } from '@/lib/document-colours';

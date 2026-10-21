@@ -1,5 +1,5 @@
-import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livediagram/document';
-import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@liveplanner/document';
+import type { RoomOp, RoomOutgoing } from '@liveplanner/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 

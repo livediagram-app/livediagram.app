@@ -7,8 +7,8 @@ import {
   type PlanTemplateKind,
   isFormTemplateKind,
   formTemplateStarter,
-} from '@livediagram/templates';
-import { SHEET_TEMPLATES, TEMPLATE_START_SHEETS } from '@livediagram/sheets';
+} from '@liveplanner/templates';
+import { SHEET_TEMPLATES, TEMPLATE_START_SHEETS } from '@liveplanner/sheets';
 import {
   INSPIRATION_TEMPLATES,
   itemsIn,

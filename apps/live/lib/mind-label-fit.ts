@@ -13,7 +13,7 @@ import {
   type Element,
   type ElementId,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { MeasureTextBlock } from '@/lib/text-hug';
 
 // The px a mind node's label is laid out at: its size preset's fixed px. Auto ('scale') draws

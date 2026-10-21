@@ -12,7 +12,7 @@ import {
   type WorkbenchPairingRequestCreated,
   type WorkbenchPairingRequestView,
   type WorkbenchPairingStatusResponse,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { generatePairingCode } from '../auth/workbench-session';
 import {
   answerPairingRequest,

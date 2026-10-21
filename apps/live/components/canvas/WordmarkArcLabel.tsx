@@ -10,7 +10,7 @@ import {
   resolvedFontWeight,
   wordmarkDisplayText,
   type TextElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useId } from 'react';
 import type { LabelTextStyle } from './label-style';
 

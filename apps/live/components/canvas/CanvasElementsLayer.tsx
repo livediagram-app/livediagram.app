@@ -23,7 +23,7 @@ import {
   createElementGridTracker,
   type ElementIndex,
   stackedElementIds,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
@@ -50,7 +50,7 @@ import {
   SheetChartsContext,
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
-import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@livediagram/document';
+import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@liveplanner/document';
 import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.

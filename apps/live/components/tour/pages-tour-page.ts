@@ -1,6 +1,6 @@
 // Which page the Pages tour runs on (docs/specs/007-editor/pages-tour.md "Where it appears"), read from the
 // drawn pages as the tour is offered.
-import type { PageKind } from '@livediagram/document';
+import type { PageKind } from '@liveplanner/document';
 import { pageCog } from './page-tour-dom';
 import { isOnScreen } from './tour-dom';
 

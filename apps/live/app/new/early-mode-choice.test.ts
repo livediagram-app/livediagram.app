@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { runInlineScript } from '@livediagram/vitest-config/inline-script';
+import { runInlineScript } from '@liveplanner/vitest-config/inline-script';
 import {
   EARLY_MODE_ATTRIBUTE,
   EARLY_MODE_SCRIPT,

@@ -13,8 +13,8 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/components/panels/DocumentThumbnail', () => ({
   DocumentThumbnail: (p: { documentId: string }) => <span data-testid={`thumb-${p.documentId}`} />,
 }));
-vi.mock('@livediagram/ui', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@livediagram/ui')>()),
+vi.mock('@liveplanner/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveplanner/ui')>()),
   useMediaQuery: () => wide.value,
 }));
 

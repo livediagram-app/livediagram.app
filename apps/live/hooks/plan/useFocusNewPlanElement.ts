@@ -4,7 +4,7 @@
 // into view, as its header's Focus does (docs/specs/026-plan/plan-board.md "Focus"). Their own add is the one it
 // selects; a peer's add, an undo, a tab switch or the first load are not focused.
 import { useEffect, useRef } from 'react';
-import { isBoxed, type Element } from '@livediagram/document';
+import { isBoxed, type Element } from '@liveplanner/document';
 
 const FOCUSED_KINDS: ReadonlySet<string> = new Set(['plan-board', 'plan-view', 'plan-sheet']);
 

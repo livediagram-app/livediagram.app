@@ -1,6 +1,6 @@
 // /api/events — anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md).
 
-import { isServerEmittedEvent, isValidTelemetryEvent } from '@livediagram/api-schema';
+import { isServerEmittedEvent, isValidTelemetryEvent } from '@liveplanner/api-schema';
 import { insertTelemetryEvents } from '../db';
 import { isLocalhostPair } from '../origin-check';
 import { noContent, notFound } from '../responses';

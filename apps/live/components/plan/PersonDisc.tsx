@@ -1,9 +1,9 @@
 // A person's initials on their colour (an assignee, a swimlane, a presence tag), painted through the
 // identity fill so dark mode deepens the colour under the white text (docs/specs/004-interface-design/
 // color-scheme.md "Dark palette rules"), and optically centred.
-import { GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
-import { initialsOf } from '@livediagram/document';
-import type { ItemPerson } from '@livediagram/items';
+import { GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
+import { initialsOf } from '@liveplanner/document';
+import type { ItemPerson } from '@liveplanner/items';
 
 export function PersonDisc({ person, label }: { person: ItemPerson; label?: string }) {
   return (

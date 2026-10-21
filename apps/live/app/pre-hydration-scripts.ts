@@ -2,7 +2,7 @@ import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferen
 
 // The editor-only snippet the root layout inlines into a `<script>` that runs
 // BEFORE first paint (the appearance one is shared by every app and lives in
-// @livediagram/ui). It lives here, as a string in a plain module, so the layout
+// @liveplanner/ui). It lives here, as a string in a plain module, so the layout
 // stays readable and a test can reach the source.
 //
 // Deliberately NOT `'use client'`, and neither is anything it imports: the
@@ -27,5 +27,5 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 // without blocking render; this snippet, inlined right after the link, switches it to every medium
 // once it has loaded. Text paints in the fallback face until then, exactly as `display=swap`
 // already paints it while a face downloads, and useFontEpoch re-measures as the faces land.
-export const WEBFONTS_STYLESHEET_ID = 'livediagram-webfonts';
+export const WEBFONTS_STYLESHEET_ID = 'liveplanner-webfonts';
 export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;

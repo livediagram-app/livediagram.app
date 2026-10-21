@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { TRASH_RETENTION_MS } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS } from '@liveplanner/api-schema';
 import {
   __setOfflineBackend,
   isOfflineId,

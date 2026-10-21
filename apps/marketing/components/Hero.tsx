@@ -4,7 +4,7 @@ import { HeroSearch } from './HeroSearch';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
 // what the visitor is making and takes them straight to a starting point, so it grows with the product
-// instead of naming one mode. A band in the brand mark's colours (@livediagram/ui hero-band.css, shared with the help centre): the promise
+// instead of naming one mode. A band in the brand mark's colours (@liveplanner/ui hero-band.css, shared with the help centre): the promise
 // badge, the question, the template search, then a fan along its foot:
 // templates dealt every few seconds, or a returning visitor's own documents (HeroFanMine).
 const BADGE =

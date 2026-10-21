@@ -8,8 +8,8 @@
 // the sidebar's More group and from Settings › Account.
 import { useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { Button, EmptyState, TrashIcon } from '@livediagram/ui';
-import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
+import { Button, EmptyState, TrashIcon } from '@liveplanner/ui';
+import { TRASH_RETENTION_DAYS } from '@liveplanner/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { InfoNote } from '@/components/primitives/InfoNote';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';

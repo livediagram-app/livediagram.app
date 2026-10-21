@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { Verb } from '@livediagram/agent-verbs';
+import type { Verb } from '@liveplanner/agent-verbs';
 import { fieldsOf, flagOf } from './fields';
 import { GLOBAL_FLAGS } from './globals';
 import { route } from './route';

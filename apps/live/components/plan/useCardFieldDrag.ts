@@ -7,7 +7,7 @@
 // the editor re-renders only when the landing place changes. Escape cancels a drag.
 import { useEffect, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { cardSlotFits, type CardField, type CardSize, type CardSlot } from '@livediagram/items';
+import { cardSlotFits, type CardField, type CardSize, type CardSlot } from '@liveplanner/items';
 
 // How far a press travels before it is a drag (a shorter press is a click).
 export const DRAG_START_PX = 4;

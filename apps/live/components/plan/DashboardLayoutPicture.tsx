@@ -2,7 +2,7 @@
 
 // A Dashboard layout drawn small (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): its rows and slots to scale, as
 // Start Planning's Dashboards offer them (start/StartPlanning.tsx).
-import { DASHBOARD_SPANS } from '@livediagram/document';
+import { DASHBOARD_SPANS } from '@liveplanner/document';
 import type { PlanPalette } from './plan-palette';
 
 const W = 120;

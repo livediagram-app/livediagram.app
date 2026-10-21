@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@liveplanner/ui';
 // The hand-drawn marks the hero's Draw window is made of (components/hero-draw-board.tsx), in the
 // look Draw mode gives them (docs/specs/023-draw-mode/draw-mode.md): marker strokes that wobble and
 // overshoot their corners, stickies on the editor's pad colours with the paper-peel shadow, the
@@ -6,8 +6,8 @@ import { trustedHtml } from '@livediagram/ui';
 // wobble is the same on every render (and in the static HTML).
 
 import type { ReactNode } from 'react';
-import { stickerArt, type StickerDef } from '@livediagram/icons';
-import { seededRandom } from '@livediagram/document';
+import { stickerArt, type StickerDef } from '@liveplanner/icons';
+import { seededRandom } from '@liveplanner/document';
 import { at } from '@/components/art-tokens';
 
 // Draw mode's hand face, the self-hosted Caveat subset (app/hero-scenes/draw.css).

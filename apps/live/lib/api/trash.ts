@@ -3,7 +3,7 @@
 // Trash in IndexedDB, behind one set of calls. Restore and purge dispatch on
 // the offline index like every other document call (lib/api-client.ts).
 
-import type { LiveDoc, DocumentResponse, TrashedDocument } from '@livediagram/api-schema';
+import type { LiveDoc, DocumentResponse, TrashedDocument } from '@liveplanner/api-schema';
 import { isOfflineId } from '../offline/offline-store';
 import {
   offlineListTrash,

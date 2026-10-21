@@ -2,7 +2,7 @@
 // palette"): a screen's parts, each one shape placed as its part (packages/document
 // shape-variants.ts WIREFRAME_PARTS). The category also lists the Badge, the Card and the
 // Checklist (palette-layouts.ts); Text and the Sticky Note stay in Write.
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 const G = 18;

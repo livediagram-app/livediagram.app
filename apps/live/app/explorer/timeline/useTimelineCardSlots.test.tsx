@@ -9,7 +9,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import type { TimelineEvent } from '@livediagram/ui';
+import type { TimelineEvent } from '@liveplanner/ui';
 import { ExplorerProvider } from '../ExplorerContext';
 import type { ExplorerStateValue } from '../useExplorerState';
 import { useTimelineCardSlots } from './useTimelineCardSlots';

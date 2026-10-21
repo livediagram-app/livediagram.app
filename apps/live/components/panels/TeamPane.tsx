@@ -2,7 +2,7 @@
 
 import { PencilIcon, PlusIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useCallback, useEffect, useState, type ComponentProps } from 'react';
-import { Button, CircleXIcon } from '@livediagram/ui';
+import { Button, CircleXIcon } from '@liveplanner/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';

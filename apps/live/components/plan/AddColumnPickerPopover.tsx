@@ -13,7 +13,7 @@ import {
   useEscape,
   type HintLayout,
   type HintPlacement,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { AddColumnPicker } from './AddColumnPicker';
 
 // The picker's width, its gap from the button, and the arrow's size.

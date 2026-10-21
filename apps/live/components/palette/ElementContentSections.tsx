@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   BoldIcon,

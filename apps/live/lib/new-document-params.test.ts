@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { templateCreateHref } from '@livediagram/templates';
+import { templateCreateHref } from '@liveplanner/templates';
 import {
   choosePlacementAgainUrl,
   placementParamsFromSearch,

@@ -6,7 +6,7 @@ import {
   type Element,
   type ElementId,
   type Layer,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 /** Ids a cleanup must not move: each element's own lock plus its layer's. O(n). */
 export function lockedElementIds(elements: Element[], layers?: Layer[]): Set<ElementId> {

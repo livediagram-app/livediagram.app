@@ -13,7 +13,7 @@
 // Pure: () -> Element[], placed on the exploration's pages (logoDesignPages) whatever centre is
 // passed.
 
-import { createShape, createText, type Element, type Page } from '@livediagram/document';
+import { createShape, createText, type Element, type Page } from '@liveplanner/document';
 import { heading, type Kit } from './page-layout-kit';
 import { pageKits, templateLogoPage, templatePage } from './template-page-kit';
 

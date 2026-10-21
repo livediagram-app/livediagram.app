@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { shapeAt, strokeAt } from './__fixtures__/build';
 import { freehandRuns, isBareStroke } from './freehand-runs';
 

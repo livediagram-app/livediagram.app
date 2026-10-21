@@ -5,7 +5,7 @@
 // Down** (stacked on a phone, where no grip carries a slot), **Duplicate**, **Clear Slot** and **Remove Slot**. Clearing or removing a slot that showed a tab or held a Sheet asks first, under the
 // toolbar, what goes with it (the tab, the Sheet's cells).
 import { useState, type ReactNode } from 'react';
-import { Button, Tooltip, lucideGlyph } from '@livediagram/ui';
+import { Button, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideArrowDown,
   lucideArrowUp,
@@ -13,13 +13,13 @@ import {
   lucideEraser,
   lucideExternalLink,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 import {
   dashboardReadingNeighbour,
   moveDashboardSlot,
   type DashboardLayout,
   type DashboardSlot,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useDashboard } from './dashboard-context';
 import { swapSlotsWithMotion } from './slot-swap-motion';
 

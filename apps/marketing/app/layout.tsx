@@ -17,7 +17,7 @@ import {
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
 
@@ -27,7 +27,7 @@ import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
 // against the production origin; without it Next logs a warning
 // and falls back to localhost in dev (which would otherwise leak
 // into preview builds).
-// The shared words for what livediagram is (packages/ui site.ts).
+// The shared words for what liveplanner is (packages/ui site.ts).
 const TITLE = SITE_TITLE;
 const DESCRIPTION = SITE_DESCRIPTION;
 
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   },
   // Favicon set: the SVG mark (app/icon.svg), a raster PNG fallback and the
   // opaque iOS tile from app/apple-icon.tsx. Shared with telemetry + the
-  // editor; see BRAND_ICONS in @livediagram/ui for why each entry is there.
+  // editor; see BRAND_ICONS in @liveplanner/ui for why each entry is there.
   icons: BRAND_ICONS,
   other: DARK_READER_LOCK,
 };
@@ -90,14 +90,14 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 const OG_IMAGE = `${SITE_URL}/opengraph-image`;
 // The brand mark, served from public/ at the origin root. Used as the
 // Organization logo so a brand SERP / Knowledge Graph can show it.
-const LOGO_URL = `${SITE_URL}/livediagram-icon-512.png`;
+const LOGO_URL = `${SITE_URL}/liveplanner-icon-512.png`;
 
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@graph': [
     // Organization anchors the brand entity: name + logo + the same
     // GitHub sameAs the app node carries, so Google can resolve
-    // "livediagram" to one thing across the site, the repo, and social
+    // "liveplanner" to one thing across the site, the repo, and social
     // mentions. publisher/url on the other nodes point back at this @id.
     {
       '@type': 'Organization',
@@ -129,7 +129,7 @@ const JSON_LD = {
       image: OG_IMAGE,
       // Links the brand entity to the open-source codebase Google
       // already indexes. Connecting the two helps the Knowledge
-      // Graph recognise "livediagram" as a single thing across the
+      // Graph recognise "liveplanner" as a single thing across the
       // public marketing site, the GitHub repo, and the social
       // mentions that cite either.
       sameAs: [REPO_URL],

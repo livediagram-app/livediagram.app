@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { communityCategoryLabel, type CommunityPost } from '@livediagram/api-schema';
+import { communityCategoryLabel, type CommunityPost } from '@liveplanner/api-schema';
 import { CommunityAuthorBadge } from './CommunityAuthorBadge';
 import { communitySharedAgo } from './shared-ago';
 import { COMMUNITY_DOT_GRID } from './surfaces';

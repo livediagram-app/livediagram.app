@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-import { freehandGeometry, penStrokeSvg } from '@livediagram/document';
+import { freehandGeometry, penStrokeSvg } from '@liveplanner/document';
 import { FREEHAND_SVG_CLASS } from '@/components/canvas/boxed-element-overlays';
 import type { LiveStroke } from '@/lib/live-stroke';
 

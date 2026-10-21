@@ -5,7 +5,7 @@
 // for an editor, as icon-left rows beside
 // the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
-import { DuplicateIcon, PlanCardsIcon, TrashIcon } from '@livediagram/ui';
+import { DuplicateIcon, PlanCardsIcon, TrashIcon } from '@liveplanner/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';

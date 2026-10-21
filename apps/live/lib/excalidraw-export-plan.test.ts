@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type BoxedElement, type Tab, type TabPlanData } from '@livediagram/document';
-import { ITEM_TYPES, presetSetup, type Item } from '@livediagram/items';
+import { createShape, type BoxedElement, type Tab, type TabPlanData } from '@liveplanner/document';
+import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import { tabToExcalidrawText } from './excalidraw-export';
 
 // Plan boards and cards in the Excalidraw export (docs/specs/020-import-export/excalidraw-import-export.md).

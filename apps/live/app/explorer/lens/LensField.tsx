@@ -17,8 +17,8 @@ import {
   suggestTokens,
   type LensSubject,
   type LensSuggestion,
-} from '@livediagram/explorer-lens';
-import { CloseIcon, HoverCard, SearchIcon } from '@livediagram/ui';
+} from '@liveplanner/explorer-lens';
+import { CloseIcon, HoverCard, SearchIcon } from '@liveplanner/ui';
 import type { ExplorerLens } from './useExplorerLens';
 import { composeField, removePill, settleField, splitField, writeDraft } from './field-model';
 import { requestBarFocus, takeBarFocus } from './lens-focus-handoff';

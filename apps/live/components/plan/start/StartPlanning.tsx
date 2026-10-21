@@ -5,8 +5,8 @@
 // of what it makes over its name, line and (a board's) card types; a search across all of them, and across every other
 // mode's templates (otherModeMatches). Choosing a card acts at once. In the tab's own light or dark look (planPalette).
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { DASHBOARD_PRESETS } from '@livediagram/document';
-import { lucideGlyph } from '@livediagram/ui';
+import { DASHBOARD_PRESETS } from '@liveplanner/document';
+import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideChartPie,
   lucideClipboardList,
@@ -15,10 +15,10 @@ import {
   lucideLightbulb,
   lucideSquareKanban,
   lucideStar,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
-import type { PlanTemplateKind, TemplateKind } from '@livediagram/templates';
-import type { EditorMode, Tab } from '@livediagram/document';
+import type { PlanTemplateKind, TemplateKind } from '@liveplanner/templates';
+import type { EditorMode, Tab } from '@liveplanner/document';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { otherModeMatches } from '@/components/start/other-mode-matches';
 import { TemplatePicture, templateCard } from '@/components/start/template-card';
@@ -29,9 +29,9 @@ import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { VisualisationPreview } from '../dashboard/slot-previews';
-import { FormStarterPicture } from '@livediagram/template-previews';
-import type { StarterId } from '@livediagram/forms';
-import type { PlanVisualisation } from '@livediagram/items';
+import { FormStarterPicture } from '@liveplanner/template-previews';
+import type { StarterId } from '@liveplanner/forms';
+import type { PlanVisualisation } from '@liveplanner/items';
 import {
   KIND_NAMES,
   START_CATEGORIES,

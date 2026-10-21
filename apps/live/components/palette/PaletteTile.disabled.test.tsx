@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, cardTypesTakenOnTab } from '@livediagram/items';
+import { ITEM_TYPES, cardTypesTakenOnTab } from '@liveplanner/items';
 import { setCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { PaletteTile, type PaletteTileActions } from './PaletteTileGrid';
 import { planCardTile } from './palette-plan-tiles';

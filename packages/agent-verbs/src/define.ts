@@ -3,7 +3,7 @@
 // MCP project it.
 
 import type { z } from 'zod';
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@liveplanner/api-client';
 import type { ReadCopies } from './copies';
 
 export type VerbBehaviour = 'read' | 'write' | 'destructive';
@@ -14,7 +14,7 @@ export type VerbContext = {
   host: string;
   // A share link's code, sent with every request of the command once a pasted link resolved.
   useShareCode: (code: string) => void;
-  // A debug line; the CLI prints it under LIVEDIAGRAM_DEBUG=1.
+  // A debug line; the CLI prints it under LIVEPLANNER_DEBUG=1.
   log: (line: string) => void;
   // A line for the person or agent running the command, beside the output (stderr in the CLI).
   notice: (line: string) => void;

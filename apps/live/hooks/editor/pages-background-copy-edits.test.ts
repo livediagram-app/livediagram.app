@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, pageKindOf, pagesSharing, type Page, type Tab } from '@livediagram/document';
+import { pagesOf, pageKindOf, pagesSharing, type Page, type Tab } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 import { appliedToAllMessage } from './pages-background-copy-edits';
 import { pageEdits } from './page-edits';

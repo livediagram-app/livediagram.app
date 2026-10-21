@@ -145,13 +145,13 @@ describe('split view rules', () => {
     expect(readStoredPair('doc')).toEqual({ leftId: 'a', rightId: 'b' });
     writeStoredPair('doc', null);
     expect(readStoredPair('doc')).toBeNull();
-    window.localStorage.setItem('livediagram:v2:split-view-pair:doc', '{broken');
+    window.localStorage.setItem('liveplanner:v2:split-view-pair:doc', '{broken');
     expect(readStoredPair('doc')).toBeNull();
 
     expect(readStoredFraction()).toBe(SPLIT_DEFAULT_FRACTION);
     writeStoredFraction(0.37);
     expect(readStoredFraction()).toBe(0.37);
-    window.localStorage.setItem('livediagram:v2:split-view-fraction', 'nonsense');
+    window.localStorage.setItem('liveplanner:v2:split-view-fraction', 'nonsense');
     expect(readStoredFraction()).toBe(SPLIT_DEFAULT_FRACTION);
   });
 });

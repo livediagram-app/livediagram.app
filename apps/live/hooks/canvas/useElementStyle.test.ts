@@ -8,7 +8,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useElementStyle } from './useElementStyle';
 
 // useElementStyle builds plain handler closures from its deps (no internal

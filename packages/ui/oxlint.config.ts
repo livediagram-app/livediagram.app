@@ -1,3 +1,3 @@
-import config from '@livediagram/oxlint-config';
+import config from '@liveplanner/oxlint-config';
 
 export default config;

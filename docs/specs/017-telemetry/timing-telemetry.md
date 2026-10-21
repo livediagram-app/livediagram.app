@@ -34,7 +34,7 @@ timing can identify a person or a device.
 
 - **`Timing` is a closed vocabulary.** The ingest accepts `Timing` only with `Measured`, and only a
   `type` that is a known metric followed by one of that metric's own buckets (`isTimingType` in
-  `@livediagram/api-schema`), the same way `Cta` accepts only its own sources. Anything else is dropped.
+  `@liveplanner/api-schema`), the same way `Cta` accepts only its own sources. Anything else is dropped.
 - **One definition.** The metrics, their scales and their buckets live in
   `packages/api-schema/src/timing-telemetry.ts`, shared by every emitter, the ingest validator and the
   dashboard, so a bucket the dashboard does not know cannot be sent.
@@ -92,7 +92,7 @@ product. Every timing is also skipped when it ends in failure; failures are alre
   load, `<App>` being the app that served it (`pageViewApp`: `Marketing`, `Live`, `Help`, `Dashboard`,
   `Community`). INP is only recorded when the person interacted with the page. LCP, INP and CLS describe
   a full page load, so an in-app navigation records none of them.
-- The reporter is a lazily loaded client chunk (`WebVitalsBoot` in `@livediagram/ui`), so the library
+- The reporter is a lazily loaded client chunk (`WebVitalsBoot` in `@liveplanner/ui`), so the library
   (about 3 KB gzipped) never sits on a page's critical path; its observers are buffered, so it still sees
   the paints and shifts that happened before it loaded.
 - INP and CLS finalise when the page is hidden, which is the moment the emitter flushes. So the emitter

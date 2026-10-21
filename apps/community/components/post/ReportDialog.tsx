@@ -6,7 +6,7 @@ import {
   COMMUNITY_REPORT_REASONS,
   communityReportReasonType,
   type CommunityReportReason,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   Button,
   CommunityHelpLink,
@@ -14,7 +14,7 @@ import {
   DialogCloseButton,
   DialogHeader,
   TextArea,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { CommunityApiError, reportPost } from '@/lib/api';
 import { communityTelemetry } from '@/lib/telemetry';
 

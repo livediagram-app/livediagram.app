@@ -17,7 +17,7 @@ import {
   isSeatingShape,
   type DrinkKind,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   fenceReachFor,
   fenceSegments,
@@ -131,20 +131,20 @@ export function useAvatarWalk({
   // Portal (docs/specs/009-elements/portal-element.md): the character walked onto a portal element. Fired once on
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
-  onWalkIntoPortal?: (element: import('@livediagram/document').ShapeElement) => void;
+  onWalkIntoPortal?: (element: import('@liveplanner/document').ShapeElement) => void;
   // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair, a desk or a sofa.
   // Fired once on ARRIVAL, like the portal above, with where the feet were when they got there (a
   // sofa seats you on the cushion nearest that point).
   onWalkIntoChair?: (
-    element: import('@livediagram/document').ShapeElement,
+    element: import('@liveplanner/document').ShapeElement,
     feet: AvatarPoint,
   ) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): the character walked onto a pad. Same arrival
   // hook as the portal and the chair, so a pad costs no third mechanism.
-  onWalkIntoReactionPad?: (element: import('@livediagram/document').ShapeElement) => void;
+  onWalkIntoReactionPad?: (element: import('@liveplanner/document').ShapeElement) => void;
   // The office's machines (docs/specs/009-elements/office.md "Using it"): the character walked onto a water
   // cooler or a coffee machine. Fired once on ARRIVAL, like the portal and the chair.
-  onWalkIntoDrink?: (element: import('@livediagram/document').ShapeElement) => void;
+  onWalkIntoDrink?: (element: import('@liveplanner/document').ShapeElement) => void;
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until

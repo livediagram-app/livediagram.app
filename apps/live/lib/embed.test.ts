@@ -3,8 +3,8 @@ import { buildEmbedSnippet, embedUrlFor } from './embed';
 
 describe('embedUrlFor', () => {
   it('builds the query-form embed URL on the given origin', () => {
-    expect(embedUrlFor('https://livediagram.app', 'abc123')).toBe(
-      'https://livediagram.app/embed?s=abc123',
+    expect(embedUrlFor('https://liveplanner.app', 'abc123')).toBe(
+      'https://liveplanner.app/embed?s=abc123',
     );
   });
 
@@ -15,16 +15,16 @@ describe('embedUrlFor', () => {
   });
 
   it('URL-encodes the share code', () => {
-    expect(embedUrlFor('https://livediagram.app', 'a/b?c')).toBe(
-      'https://livediagram.app/embed?s=a%2Fb%3Fc',
+    expect(embedUrlFor('https://liveplanner.app', 'a/b?c')).toBe(
+      'https://liveplanner.app/embed?s=a%2Fb%3Fc',
     );
   });
 });
 
 describe('buildEmbedSnippet', () => {
   it('emits an iframe pointing at the embed URL with the default size', () => {
-    const snippet = buildEmbedSnippet('https://livediagram.app', 'abc123');
-    expect(snippet).toContain('src="https://livediagram.app/embed?s=abc123"');
+    const snippet = buildEmbedSnippet('https://liveplanner.app', 'abc123');
+    expect(snippet).toContain('src="https://liveplanner.app/embed?s=abc123"');
     expect(snippet).toContain('width="800"');
     expect(snippet).toContain('height="500"');
     expect(snippet).toContain('allowfullscreen');

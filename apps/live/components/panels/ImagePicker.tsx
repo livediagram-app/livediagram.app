@@ -1,6 +1,6 @@
 'use client';
 
-import { CountBadge, DialogCloseButton } from '@livediagram/ui';
+import { CountBadge, DialogCloseButton } from '@liveplanner/ui';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';

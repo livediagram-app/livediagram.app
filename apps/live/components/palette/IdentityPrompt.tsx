@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, useEscape } from '@livediagram/ui';
+import { Button, CloseIcon, useEscape } from '@liveplanner/ui';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';

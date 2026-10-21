@@ -1,7 +1,7 @@
 // Which forms send their responses to a tab (docs/specs/030-forms/forms.md "Publishing and the form link"), so
 // deleting that board or sheet can say first that it pauses them. Pure, and cheap: the tab bar asks for every tab
 // on every render, so a form's destination is read where it is stored, never by parsing the form.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 
 /** The Form tabs whose responses go to `tabId` (a board, or a sheet: a form sending to a sheet feeds no board, as its
  *  sheet wins over a board it kept), each with its heading. The board's Form strip and Delete's warning both read it. */

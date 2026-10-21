@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_TEMPLATE_KINDS, templateTabs } from '@livediagram/templates';
-import type { Element } from '@livediagram/document';
+import { PLAN_TEMPLATE_KINDS, templateTabs } from '@liveplanner/templates';
+import type { Element } from '@liveplanner/document';
 import { fitsSlot } from './slot-fit';
 import type { DashboardItem } from './dashboard-drop';
 

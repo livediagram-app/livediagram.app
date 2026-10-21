@@ -7,7 +7,7 @@ import { createListeners } from '@/lib/listeners';
 export const STATS = ['Sum', 'Average', 'Count', 'Min', 'Max'] as const;
 export type Stat = (typeof STATS)[number];
 const DEFAULT_PICK: readonly Stat[] = ['Sum', 'Average', 'Count'];
-const PICK_KEY = 'livediagram:sheet-status-stats';
+const PICK_KEY = 'liveplanner:sheet-status-stats';
 
 let pick: readonly Stat[] | null = null;
 const listeners = createListeners();

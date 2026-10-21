@@ -76,7 +76,7 @@ transform moves text after the snap, so the snap follows the layout, not the tra
 
 ## The primitives
 
-One implementation per shape, shared from `@livediagram/ui`, so the rule is written once:
+One implementation per shape, shared from `@liveplanner/ui`, so the rule is written once:
 
 - **Glyph disc**: a circle holding a letter, initials, a numeral or an icon, at a named size.
 - **Chip**: a pill or badge holding an optional leading icon and a label, with the caps variant's

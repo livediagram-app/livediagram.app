@@ -4,8 +4,8 @@
 // glyph in a soft brand disc, a Title Case heading, one line. The same shape
 // the refreshed Collaborate cards use for theirs.
 
-import { lucideCircleCheck, lucideSparkles } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideCircleCheck, lucideSparkles } from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 import { emptyCopy, type CollaborateKind, type CollaborateSide } from './collaborate-model';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 18);

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
-import type { TelemetryWindowKey } from '@livediagram/api-schema';
-import { Tooltip, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
+import type { TelemetryWindowKey } from '@liveplanner/api-schema';
+import { Tooltip, Glyph, useMenu, useMenuButton } from '@liveplanner/ui';
 import { WINDOW_META } from './windows';
 
 // Three dots — the "more / switch view" affordance in the sticky bar.

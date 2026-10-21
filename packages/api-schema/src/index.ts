@@ -1,4 +1,4 @@
-// Wire-format type definitions for the livediagram API — the single
+// Wire-format type definitions for the liveplanner API — the single
 // source of truth for what travels between the `api` Cloudflare
 // Worker and the `live` Next.js editor.
 //
@@ -15,9 +15,9 @@
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
-import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
+import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
-import type { ItemTypeCatalogue } from '@livediagram/items';
+import type { ItemTypeCatalogue } from '@liveplanner/items';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -492,7 +492,7 @@ export type ParticipantPresence = {
   // publishing that is exactly what §6 forbids.
   //
   // So this is a separate, per-browser random the client mints and keeps
-  // (`livediagram:v2:collab-key`), relayed VERBATIM: unlike `id` and `role`
+  // (`liveplanner:v2:collab-key`), relayed VERBATIM: unlike `id` and `role`
   // it is claimed, not verified. That is deliberate and costs nothing — it is
   // not a credential and grants nothing, and any edit-role peer could already
   // write any participant id straight into the document. Optional, so an
@@ -684,7 +684,7 @@ export * from './ref-errors';
 export * from './recent-diagrams';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
-// presented, for `livediagram auth status`. `role` is `full` or `read-only`.
+// presented, for `liveplanner auth status`. `role` is `full` or `read-only`.
 export type CurrentTokenResponse = {
   accountId: string;
   accountName: string | null;

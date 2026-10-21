@@ -10,7 +10,7 @@
 //
 // Coordinates are local to the scene's top-left corner (`ox`, `oy`).
 
-import { createFreehand, createShape, type Element } from '@livediagram/document';
+import { createFreehand, createShape, type Element } from '@liveplanner/document';
 import { SCAFFOLD } from './template-retro-kit';
 
 type Pt = [number, number];

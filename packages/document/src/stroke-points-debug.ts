@@ -1,7 +1,7 @@
 // The debug decoder for packed stroke points (docs/specs/006-document/stroke-points.md "Reading
 // and writing"): stored JSON holds each stroke's points as an opaque base64 block, so a developer
 // reads one here as plain `{ nx, ny, p }` points, or a whole tab or document file at once with
-// `pnpm --filter @livediagram/document stroke-points <file.json>`.
+// `pnpm --filter @liveplanner/document stroke-points <file.json>`.
 import {
   STROKE_POINTS_VERSION,
   parseStrokePoints,

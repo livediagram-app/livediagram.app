@@ -1,6 +1,6 @@
 # Open source + distribution
 
-livediagram is **open source software** with one official hosted deployment alongside the self-host path. There is no paid tier and no plan to introduce one.
+liveplanner is **open source software** with one official hosted deployment alongside the self-host path. There is no paid tier and no plan to introduce one.
 
 ## License
 
@@ -10,10 +10,10 @@ The third-party work the apps ship is credited on the generated `/licences` page
 
 ## Distribution model
 
-There are two ways people use livediagram:
+There are two ways people use liveplanner:
 
 1. **Self-hosted.** Clone the repo, deploy it, run it on their own Cloudflare account (or anywhere the apps are runnable). Gets every feature in the OSS codebase. No subscription, no license check, no SaaS dependency required (Clerk is optional, see [04](../014-identity/auth-and-guest-access.md)).
-2. **Hosted by livediagram.** The official deployment at [livediagram.app](https://livediagram.app). Free for everyone, no tiers.
+2. **Hosted by liveplanner.** The official deployment at [liveplanner.app](https://liveplanner.app). Free for everyone, no tiers.
 
 Both paths get the same feature set. The hosted version is a convenience (and a place for the project to live publicly); it is not a commercial product.
 
@@ -26,6 +26,6 @@ Both paths get the same feature set. The hosted version is a convenience (and a 
 
 ## What this means for contributors
 
-- External contributors can use, modify, and ship livediagram however they want.
+- External contributors can use, modify, and ship liveplanner however they want.
 - Contributions back to the project are welcome under the same MIT license.
-- This spec does not yet cover trademark, the "livediagram" name, or hosted-service branding (to be decided).
+- This spec does not yet cover trademark, the "liveplanner" name, or hosted-service branding (to be decided).

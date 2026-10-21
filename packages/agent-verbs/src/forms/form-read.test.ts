@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { FormLinkResponse } from '@livediagram/api-schema';
+import type { FormLinkResponse } from '@liveplanner/api-schema';
 import { bugForm, formWorld } from '../testing/forms';
 import { readFormOf } from './form-read';
 

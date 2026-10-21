@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livediagram/document';
-import { PAGE_LAYOUTS } from '@livediagram/templates';
+import type { Element, ShapeElement } from '@liveplanner/document';
+import { PAGE_LAYOUTS } from '@liveplanner/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the People and Ideas set.
 const TALL = { x: 0, y: 0, width: 683, height: 1000 };

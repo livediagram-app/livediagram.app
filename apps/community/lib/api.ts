@@ -10,7 +10,7 @@ import {
   type CommunityPostResponse,
   type CommunityReportInput,
   readErrorCode,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { getCommunityKey } from './community-key';
 import { API_BASE } from './config';
 

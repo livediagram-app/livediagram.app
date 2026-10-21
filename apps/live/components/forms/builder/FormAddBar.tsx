@@ -9,16 +9,16 @@ import {
   QUESTION_TYPE_TELEMETRY,
   newFormPartId,
   type QuestionType,
-} from '@livediagram/forms';
-import { ChevronDownIcon, PlusIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideSeparatorHorizontal } from '@livediagram/icons/lucide';
+} from '@liveplanner/forms';
+import { ChevronDownIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
+import { lucideSeparatorHorizontal } from '@liveplanner/icons/lucide';
 import {
   addQuestion,
   addSection,
   canAddQuestion,
   canAddSection,
   questionById,
-} from '@livediagram/forms';
+} from '@liveplanner/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { track } from '@/lib/telemetry';
 import { QuestionTypeList } from './QuestionTypeMenu';

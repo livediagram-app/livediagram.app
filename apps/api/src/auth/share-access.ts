@@ -6,7 +6,7 @@
 // between three copies. Kept apart from document-access.ts so the room route
 // can reuse the rules while its tests stub the whole-request gates.
 
-import { sha256Hex, type ShareLink } from '@livediagram/api-schema';
+import { sha256Hex, type ShareLink } from '@liveplanner/api-schema';
 import { getDocumentSharePassword, getShareLink, upgradeDocumentSharePassword } from '../db';
 import type { Env } from '../types';
 import { hashSharePassword, verifySharePassword } from './share-password-hash';

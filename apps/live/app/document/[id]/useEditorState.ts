@@ -73,7 +73,7 @@ import {
   type ShapeElement,
   type EditorMode,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useSnapColours } from '@/hooks/canvas/useSnapColours';
@@ -91,7 +91,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@liveplanner/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';

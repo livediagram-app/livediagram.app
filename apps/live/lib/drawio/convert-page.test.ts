@@ -8,7 +8,7 @@ import {
   PADDING_PX,
   isValidElement,
   labelFontPx,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { LABEL_LINE_HEIGHT, labelTextWidth } from './text-size';
 import { ReportTally } from './notes';
 import { readGraph } from './cells';

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Glyph, Tooltip, atLeastInset } from '@livediagram/ui';
+import { Glyph, Tooltip, atLeastInset } from '@liveplanner/ui';
 import { BAND_BLEND, BAND_TINT, TOOLBAR_CARD, TOOLBAR_CONTROL_REST } from './toolbar-surface';
 
 // A phone held sideways (docs/specs/007-editor/live-app.md "A phone held sideways"): the header and

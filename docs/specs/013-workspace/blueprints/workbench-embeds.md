@@ -33,7 +33,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `workspaceFramePath(place)`, `workspacePlaceOf(pathname, search)`    | The workspace frame's addresses, both ways                               |
 | `assignAppLocation(href)`, `setAppNavigationInterceptor(fn)`         | The app's one way to leave a page, which a workspace frame takes over    |
 | `WORKBENCH_ENDED_CLOSE` 4006                                         | The room's close code for a session whose pairing or token ended         |
-| `selectionReference(input)`                                          | The selection reference text, in `@livediagram/document-views`           |
+| `selectionReference(input)`                                          | The selection reference text, in `@liveplanner/document-views`           |
 | `EditorSurface = 'app' \| 'embed' \| 'workbench'`                    | The editor's surface, replacing the `embed` boolean                      |
 | `POST /api/workbench/tickets`, `/sessions`, `/pairing-requests`, ... | The routes, below                                                        |
 
@@ -71,7 +71,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/api/src/types.ts`, `apps/api/wrangler.toml`                                                                                                                            | `WORKBENCH_TICKET_RATE_LIMITER` (namespace `1010`, 30 per 60 s), production and `[env.staging]`                                                                                                                           |
 | `apps/api/src/openapi/manifest.ts`, `document.ts`, `schemas.generated.ts`                                                                                                    | Eleven operations under segment `workbench`, tag `Workbench`; the 428 and 401 bodies                                                                                                                                      |
 | `packages/document-views/src/selection-reference.ts` (new, + test), `index.ts`                                                                                               | `selectionReference(input)`                                                                                                                                                                                               |
-| `apps/live/app/embed/workbench/page.tsx`                                                                                                                                     | The static route; metadata title `Workbench \| livediagram`, `robots: { index: false }`; renders `WorkbenchPage`                                                                                                          |
+| `apps/live/app/embed/workbench/page.tsx`                                                                                                                                     | The static route; metadata title `Workbench \| liveplanner`, `robots: { index: false }`; renders `WorkbenchPage`                                                                                                          |
 | `apps/live/app/embed/workbench/WorkbenchPage.tsx`                                                                                                                            | Runs the page machine; renders a status or, once bound, `WorkbenchAuthBridge` around `EditorPage surface="workbench"`                                                                                                     |
 | `apps/live/app/embed/workbench/workbench-machine.ts` (new, + test)                                                                                                           | The page's states and transitions, pure                                                                                                                                                                                   |
 | `apps/live/app/embed/workbench/workbench-fragment.ts` (new, + test)                                                                                                          | `takeTicketFromAddress(location, history)`: reads `#ticket=`, clears the fragment                                                                                                                                         |
@@ -101,8 +101,8 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/live/app/document/[id]/useTabRevisions.ts` (new, + test)                                                                                                               | The last known `rev` per tab: loads, saves, changesets                                                                                                                                                                    |
 | `apps/live/lib/api/tabs.ts`, `apps/live/app/document/[id]/useAutosave.ts`                                                                                                    | `apiSaveTab` returns the saved `rev`; the autosave notes it in `useTabRevisions`                                                                                                                                          |
 | `apps/live/app/document/[id]/useWorkbenchMessages.ts` (new, + test)                                                                                                          | `ready`, `tab`, `selection` (settled), `reveal`, `theme`                                                                                                                                                                  |
-| `apps/live/app/document/[id]/EditorView.tsx`                                                                                                                                 | Header, Explorer, banners, Open in livediagram, read-only line                                                                                                                                                            |
-| `apps/live/components/chrome/WorkbenchChrome.tsx` (new, + test)                                                                                                              | `WorkbenchOpenLink` (the **Open in livediagram** link in the tab bar) and `WorkbenchReconnectLine`                                                                                                                        |
+| `apps/live/app/document/[id]/EditorView.tsx`                                                                                                                                 | Header, Explorer, banners, Open in liveplanner, read-only line                                                                                                                                                            |
+| `apps/live/components/chrome/WorkbenchChrome.tsx` (new, + test)                                                                                                              | `WorkbenchOpenLink` (the **Open in liveplanner** link in the tab bar) and `WorkbenchReconnectLine`                                                                                                                        |
 | `apps/live/components/chrome/TabBar.tsx`, `ChromeControls.tsx` (+ `TabBar.workbench.test.tsx`)                                                                               | `workbenchLink`: the link at the bar's right end, and no Appearance control in a workbench                                                                                                                                |
 | `apps/live/components/canvas/useCanvasChromePanels.tsx`, `CanvasChrome.tsx`, `Canvas.types.ts`, `EditorCanvasHost.tsx`                                                       | `explorerHidden`: no menu button, so no Explorer; the AI panel is absent because `aiCapable` reads false                                                                                                                  |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`, `SettingsDialog.tsx`                                                                                          | `visibleCategories(aiCapable, { workbench })`: the workbench hides `ai`, `documents`, `account` (with `notifications`, nested under it), `tokens` and the Appearance choice; the dialog reads no placement defaults there |
@@ -122,7 +122,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/cli/src/io.ts`                                                                                                                                                         | `CliIo.stdoutIsTTY`, shared with the repository link's picker: whether a person reads stdout (WB25)                                                                                                                       |
 | `apps/cli/src/output/failure-of.ts`                                                                                                                                          | `isNetworkFailure`, shared by `failureOf`, the telemetry and the pairing wait                                                                                                                                             |
 | `apps/cli/src/commands/workbench-open.test.ts`                                                                                                                               | `workbench open` as the CLI exits                                                                                                                                                                                         |
-| `packages/agent-verbs/src/guides/index.ts`, `skill.ts`                                                                                                                       | Topic `workbench`; `GUIDE_TOPIC_MAX_TOKENS`, `SKILL_FRONTMATTER_MAX_TOKENS`, `SKILL_BODY_MAX_TOKENS`; the skill's `[livediagram]` line                                                                                    |
+| `packages/agent-verbs/src/guides/index.ts`, `skill.ts`                                                                                                                       | Topic `workbench`; `GUIDE_TOPIC_MAX_TOKENS`, `SKILL_FRONTMATTER_MAX_TOKENS`, `SKILL_BODY_MAX_TOKENS`; the skill's `[liveplanner]` line                                                                                    |
 | `docs/specs/015-api/cli.md`                                                                                                                                                  | The two command rows, the guide topic and the skill's pointer                                                                                                                                                             |
 | `apps/telemetry/app/cli-commands.ts`                                                                                                                                         | Rows `WorkbenchOpen`, `WorkbenchPair`                                                                                                                                                                                     |
 | `apps/telemetry/app/catalogue/collaboration.ts`, `connections.ts`, `event-explanations.ts`                                                                                   | `WORKBENCH_SESSIONS` (`Session·Opened·Workbench`), `WORKBENCHES_PAIRED` (`Token·Linked·Workbench`) in API Token Activity                                                                                                  |
@@ -138,7 +138,7 @@ The workspace scope adds or changes, by file:
 | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/api/migrations/0099_workbench_workspace.sql`                                                                                                       | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable `document_id` on tickets and sessions (rebuilt); `workbench_session_rooms` |
 | `packages/api-schema/src/workbench.ts`                                                                                                                   | `WorkbenchScope`, `WORKBENCH_SCOPES`, `pairingCoversScope`; the scoped wire types; `workbenchRouteVerdict` by scope (`WORKSPACE_ROUTES`)                   |
-| `packages/api-schema/src/workbench-messages.ts`                                                                                                          | `livediagram:place`, `livediagram:open`; the workspace `ready`                                                                                             |
+| `packages/api-schema/src/workbench-messages.ts`                                                                                                          | `liveplanner:place`, `liveplanner:open`; the workspace `ready`                                                                                             |
 | `apps/api/src/db/workbench.ts`                                                                                                                           | Scope and folder on every row; requests per scope; approval widens a pairing; `noteWorkbenchSessionRoom`                                                   |
 | `apps/api/src/auth/workbench-session.ts`, `workbench-confinement.ts`                                                                                     | `WorkbenchContext.scope`, `folderId`; ambient headers and the view-level share-link list by scope                                                          |
 | `apps/api/src/routes/workbench-ticket-route.ts`, `workbench-session-routes.ts`, `workbench-pairing-routes.ts`                                            | The scoped mint, redemption, requests and pairings                                                                                                         |
@@ -153,7 +153,7 @@ The workspace scope adds or changes, by file:
 | `apps/live/app/embed/workbench/explorer/page.tsx` (new)                                                                                                  | The static workspace frame page; renders `WorkbenchPage`                                                                                                   |
 | `apps/live/app/embed/workbench/WorkbenchPage.tsx`, `workbench-machine.ts`, `workbench-fragment.ts`, `useWorkbenchHandshake.ts`, `useWorkbenchRenewal.ts` | The address's scope; the scope check at redemption and renewal; the workspace frame once mounted                                                           |
 | `apps/live/app/embed/workbench/WorkspaceFrame.tsx` (new, + test)                                                                                         | The mounted workspace frame: the place from the address, the Explorer or the editor, Back, `place`, `open`                                                 |
-| `apps/live/app/embed/workbench/useWorkspaceNavigation.ts` (new, + test)                                                                                  | The interceptor, the link capture, New document in place, `livediagram:open`                                                                               |
+| `apps/live/app/embed/workbench/useWorkspaceNavigation.ts` (new, + test)                                                                                  | The interceptor, the link capture, New document in place, `liveplanner:open`                                                                               |
 | `apps/live/app/embed/workbench/create-in-place.ts` (new, + test)                                                                                         | `createDocumentInPlace(ownerId, { folderId, teamId, templateKind })`                                                                                       |
 | `apps/live/lib/new-document-content.ts` (new)                                                                                                            | `newDocumentContent`: a new document's tabs, card types and example cards, extracted from `/new` so the frame makes the same document                      |
 | `apps/live/hooks/persistence/useTeams.ts`, `apps/live/app/explorer/sidebar/sidebar-structure.ts`, `apps/live/components/panels/TeamPane.tsx`             | `invites: false`, `administration: false`: no invites read, no Invites or New Team rows, no team administration in the frame                               |
@@ -190,14 +190,14 @@ The workspace scope adds or changes, by file:
 | Confinement         | `WORKBENCH_ROUTES`, `workbenchRouteVerdict`, `403 workbench_confined` | What a session may reach                                                   |
 | Workbench page      | `/embed/workbench`, `WorkbenchPage`, `WorkbenchPhase`                 | The frameable page that binds and hosts the editor                         |
 | Binding             | `hello` / `hello-ack`                                                 | Proof that the parent is the minting origin                                |
-| Renewal             | `livediagram:renew` / `livediagram:ticket`                            | A fresh ticket redeemed before the session expires                         |
-| Workbench message   | `WorkbenchMessage`, `type` `livediagram:*`, `v: 1`                    | One `postMessage` between the page and its workbench                       |
+| Renewal             | `liveplanner:renew` / `liveplanner:ticket`                            | A fresh ticket redeemed before the session expires                         |
+| Workbench message   | `WorkbenchMessage`, `type` `liveplanner:*`, `v: 1`                    | One `postMessage` between the page and its workbench                       |
 | Selection reference | `selectionReference()`, `SelectionReference { text, count }`          | The text a workbench attaches to the person's message                      |
 | Editor surface      | `EditorSurface` `'app' \| 'embed' \| 'workbench'`                     | Where the editor runs; `workbench` is a distinct surface                   |
 | Ended               | `WorkbenchEndReason` `expired`, `revoked`, `trashed`, `refused`       | Why a page stopped editing                                                 |
 | Scope               | `WorkbenchScope` `document`, `workspace`; `scope` on rows and wire    | What a ticket, session or pairing reaches: one document, or the workspace  |
 | Workspace frame     | `/embed/workbench/explorer[...]`, `WorkspaceFrame`                    | The Explorer inside a workbench, under a workspace session                 |
-| Place               | `WorkspacePlace`, `livediagram:place`                                 | Where a workspace frame is: an Explorer view, or a document                |
+| Place               | `WorkspacePlace`, `liveplanner:place`                                 | Where a workspace frame is: an Explorer view, or a document                |
 | Frame address       | `workspaceFramePath(place)`                                           | A place's path inside the frame, walked by the frame's own history         |
 | Explorer surface    | `ExplorerSurface` `'app' \| 'workbench'`                              | Where the Explorer runs; `workbench` drops the app's surroundings          |
 
@@ -223,7 +223,7 @@ Don't allow).
   neither read a request's page view nor answer it.
 - **I7** Secrets (ticket, session) are stored as SHA-256 hex only; logs carry the session id's first 8 characters
   and the token id, never a secret, a code or an origin path.
-- **I8** The workbench page mounts no editor and sends no `livediagram:*` message other than `hello` (and `ended`
+- **I8** The workbench page mounts no editor and sends no `liveplanner:*` message other than `hello` (and `ended`
   `refused`, to the session's origin) before a valid `hello-ack`.
 - **I9** The editor in a workbench never runs the guest migration, never writes the participant record, and never
   writes preferences to the api.
@@ -414,7 +414,7 @@ window.parent` and `parseWorkbenchMessage` gives `hello-ack`. None: `unbound`, `
 4. `mounted`: `WorkbenchAuthBridge` renders with the session; `setWorkbenchConfinement(session)`; the editor mounts
    with `surface="workbench"`; `track('Session', 'Opened', 'Workbench')` once.
 5. Renewal (`useWorkbenchRenewal`): at `expiresAt - WORKBENCH_RENEW_LEAD_MS` post `renew`, then every
-   `WORKBENCH_RENEW_RETRY_MS` until a ticket lands or the session expires. A `livediagram:ticket` is redeemed; a 201
+   `WORKBENCH_RENEW_RETRY_MS` until a ticket lands or the session expires. A `liveplanner:ticket` is redeemed; a 201
    whose `documentId` and `origin` equal the bound ones swaps the session (provider, confinement, context), deletes
    the old one, logs `[workbench] renewed`; anything else is logged `[workbench] renew-failed { reason }` and the
    retry continues. A `ticket` outside the renew window is redeemed alike (WB14).
@@ -473,7 +473,7 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | `LoadErrorCard`, `NotFound`                                                                                                                 | `editor-page.tsx`                                            | `embed` forms (no recovery card; create-new in a new tab) |
 
 Preferences: `fetchUserPreferences` runs; `writeUserPreferences` keeps the local write and the event and skips
-`apiPutPreferences` under confinement. Appearance: `livediagram:theme` calls `setAppearanceOverride(scheme)`; before
+`apiPutPreferences` under confinement. Appearance: `liveplanner:theme` calls `setAppearanceOverride(scheme)`; before
 one arrives the override is `null` and the system scheme applies (the stored setting in the frame's partitioned
 storage is ignored while `workbenchMode`, WB15).
 
@@ -501,16 +501,16 @@ Input `{ documentId, documentName, tab, tabIds, rev, selectedIds }`, `rev` from 
 the editor knows for the tab: its load, its own saves' answers, relayed changesets). Built on `buildViewModel(tab,
 { rev, tabIds })`, so refs, kind words and labels are the outline's own.
 
-1. Header: `[livediagram] ${jsonString(documentName)} › tab ${jsonString(tab.name)} (doc ${documentId}, tab
+1. Header: `[liveplanner] ${jsonString(documentName)} › tab ${jsonString(tab.name)} (doc ${documentId}, tab
 ${tabRefOf(tab.id)}, rev ${rev})`. The document is named by its full id (WB19).
 2. Selected elements, in the tab's element order (WB20), ids not on the tab dropped. None: the second line is
    `whole tab` and there is no third (WB21).
 3. Second line: `selected: ` and the first `WORKBENCH_SELECTION_MAX_REFS` items joined by `, `. Item, as the outline's
    `nodeLine` prints an element: the kind word (`kindOf(el)`), the ref (`refs.refOf(id)`) and the label (`jsonString(label, LABEL_CUT_CHARS)` from
    `textField(el, 'label')`, omitted when null), joined by a space in that order (`button 146b "Play"`). More:
-   ` … and ${n} more: livediagram tab view ${documentId} --tab ${tabRef} --view show --ref selected` appended to
+   ` … and ${n} more: liveplanner tab view ${documentId} --tab ${tabRef} --view show --ref selected` appended to
    the same line (WB22).
-4. Third line: `read: livediagram tab view ${documentId} --tab ${tabRef} --view show --ref ${firstRef}`.
+4. Third line: `read: liveplanner tab view ${documentId} --tab ${tabRef} --view show --ref ${firstRef}`.
 
 Lines joined by `\n`, no trailing newline. `count` is the number of selected elements on the tab.
 
@@ -523,7 +523,7 @@ Lines joined by `\n`, no trailing newline. `count` is the number of selected ele
    `resolveTab` when `--tab` is given.
 3. `POST /api/workbench/tickets`. 201: text prints `url`; `--json` prints `{ url, documentId, tabId, expiresAt }`.
    `428 pairing_required`: exit 4 (WB23), thrown as `VerbRefusal { status: 403, code: 'pairing_required' }`, error
-   "this workbench is not paired with your token", fix `livediagram workbench pair --origin <origin>`. Other statuses
+   "this workbench is not paired with your token", fix `liveplanner workbench pair --origin <origin>`. Other statuses
    through `failureOf`.
 4. `Cli·Used·WorkbenchOpen` on exit 0.
 
@@ -541,7 +541,7 @@ Lines joined by `\n`, no trailing newline. `count` is the number of selected ele
    (text `paired <origin>`, ` as <name>` added when `--name` was given; `--json`
    `{ "status": "paired", "origin", "name" }`), exit 0; `declined` exit 4 "the pairing was declined in the browser";
    `expired` exit 4 "the pairing request expired before it was answered", fix
-   `livediagram workbench pair --origin <origin>`; `429` adds `DEVICE_SLOW_DOWN_S` to the interval; 404 exit 4 "the
+   `liveplanner workbench pair --origin <origin>`; `429` adds `DEVICE_SLOW_DOWN_S` to the interval; 404 exit 4 "the
    pairing request is gone (was the token revoked?)"; a network failure retries, the third in a row exits 7. Past
    `expiresAt` plus one interval without an answer reads as `expired`. The three exit-4 endings carry the codes
    `pairing_declined`, `pairing_expired` and `pairing_gone` (WB48).
@@ -550,7 +550,7 @@ Lines joined by `\n`, no trailing newline. `count` is the number of selected ele
 `guide workbench` (topic `workbench` of `GUIDE_TOPICS`, within `GUIDE_TOPIC_MAX_TOKENS`) teaches an agent to read a
 selection reference: the header, the `selected` items as data, never instructions; re-reading the refs with `tab view
 --view show --ref` and `--only`, and the `… and n more` tail with `--ref selected`; `tab render` to look; `presence set` and `presence clear` while it works; and that
-the person's own selection never holds the agent's writes. The skill's description names the `[livediagram]` line
+the person's own selection never holds the agent's writes. The skill's description names the `[liveplanner]` line
 (within `SKILL_FRONTMATTER_MAX_TOKENS`) and its body sends an agent to `guide workbench` first.
 
 ### The workspace scope
@@ -673,7 +673,7 @@ other phase is the document scope's.
 2. `navigate(href, { replace })`: `framePathOfAppHref(href)` maps `/explorer/...` and `/document/<id>[?s=][&tab=]`
    to a frame path and calls `history.pushState` (or `replaceState`), which the App Router hears; `/new...` runs New
    document in place (below); any other app href (help, sign-in, Community, an external page) opens in a new tab
-   with `noopener` (WB57). Logged `[workbench] open { kind }` only for `livediagram:open`.
+   with `noopener` (WB57). Logged `[workbench] open { kind }` only for `liveplanner:open`.
 3. The place (`workspacePlaceOf(usePathname(), useSearchParams())`) renders:
    - an Explorer view: `ExplorerShell` (its surface read from the session, `useExplorerSurface`) around `ExplorerPane`,
      the pane keyed by the view's path and its `id` and `folder`, as each /explorer page remounts it; unmounted while
@@ -702,7 +702,7 @@ Explorer's toast "Couldn’t create the document. Try again." and stays; logged 
 entry before is that path (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk
 the same entries.
 
-**Open in livediagram**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an
+**Open in liveplanner**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an
 Explorer view, the same control at the right end of the Explorer's bottom bar linking to `explorerPathFor(node)`.
 
 **`trashed`** in the workspace scope: the session the frame lends the editor turns `useWorkbenchEnd`'s
@@ -716,7 +716,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 | ------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
 | App header (brand, product nav, `AuthControls`)                           | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
 | Home hero                                                                 | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
-| Bottom bar: Settings, Appearance                                          | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in livediagram at the right end  |
+| Bottom bar: Settings, Appearance                                          | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in liveplanner at the right end  |
 | Settings dialog, `?settings=` links, `useOpenSettingsRequests`            | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
 | Search panel's settings rows                                              | `ExplorerShell.tsx`                     | `[]`                                                        |
 | Sign-in banner, `LocalMovePrompt`                                         | `ExplorerShell.tsx`                     | Not rendered                                                |
@@ -730,10 +730,10 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 - `workbench open --workspace [--folder <f>] --origin <origin> [--json]`: `<doc>` and `--workspace` exclude each
   other, one is required (exit 2 "name a document, or --workspace"); `--tab` with `--workspace` exits 2. `--folder`
   without `--workspace` exits 2. `<f>` resolves as `link init --folder` does (`resolveFolder` over `folderChoices`,
-  moved to `@livediagram/agent-verbs` so `link init`, `folder` and `workbench` share it): its full id, an id prefix
+  moved to `@liveplanner/agent-verbs` so `link init`, `folder` and `workbench` share it): its full id, an id prefix
   or its name ignoring case; none 3, several 3 with the candidates. `POST /api/workbench/tickets { scope:
 'workspace', folderId?, origin }`. 201: text `url`; `--json` `{ url, scope, folderId, expiresAt }`. 428: exit 4,
-  fix `livediagram workbench pair --origin <origin> --workspace`. 404: exit 3.
+  fix `liveplanner workbench pair --origin <origin> --workspace`. 404: exit 3.
 - `workbench pair --origin <origin> [--name <name>] [--workspace]`: the request carries `scope: 'workspace'`; the
   printed results add ` (whole workspace)` in text and `scope` in `--json`; the expired fix carries `--workspace`.
 
@@ -748,7 +748,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
   `tabName`, `role` the editor's `sessionRole`, the folder fields null). Logged `[workbench] place { view }`.
 - The editor in a workspace frame sends `place` where the document scope sends `ready`, and `tab`, `selection` and
   `reveal` as in the document scope; on an Explorer view they do nothing.
-- `open` (`livediagram:open`, accepted while mounted): `{ view: 'home' }` → Home, `{ folderId }` → that folder,
+- `open` (`liveplanner:open`, accepted while mounted): `{ view: 'home' }` → Home, `{ folderId }` → that folder,
   `{ documentId, tabId? }` → that document (from the current place). Pushed like any move; an unreachable id shows
   the Explorer's or the editor's own not-found. Logged `[workbench] open { kind: 'home' | 'folder' | 'document' }`.
 
@@ -882,10 +882,10 @@ roles teach `consumeWsTicket` to read it.
 Every message is `{ type, v: 1, ... }`; strings are bounded as stated; anything else is invalid.
 
 ```ts
-type HelloMessage = { type: 'livediagram:hello'; v: 1 };
-type HelloAckMessage = { type: 'livediagram:hello-ack'; v: 1; name: string }; // 1..40 after trim
+type HelloMessage = { type: 'liveplanner:hello'; v: 1 };
+type HelloAckMessage = { type: 'liveplanner:hello-ack'; v: 1; name: string }; // 1..40 after trim
 type ReadyMessage = {
-  type: 'livediagram:ready';
+  type: 'liveplanner:ready';
   v: 1;
   documentId: string;
   documentName: string;
@@ -893,9 +893,9 @@ type ReadyMessage = {
   tabName: string;
   role: WorkbenchRole;
 };
-type TabMessage = { type: 'livediagram:tab'; v: 1; tabId: string; tabName: string };
+type TabMessage = { type: 'liveplanner:tab'; v: 1; tabId: string; tabName: string };
 type SelectionMessage = {
-  type: 'livediagram:selection';
+  type: 'liveplanner:selection';
   v: 1;
   documentId: string;
   documentName: string;
@@ -904,12 +904,12 @@ type SelectionMessage = {
   count: number; // 0 when nothing is selected
   reference: string; // selectionReference().text, always present (WB28)
 };
-type RenewMessage = { type: 'livediagram:renew'; v: 1 };
-type TicketMessage = { type: 'livediagram:ticket'; v: 1; ticket: string }; // 22 base64url
-type RevealMessage = { type: 'livediagram:reveal'; v: 1; refs: string[] }; // 1..20, each 1..64
-type ThemeMessage = { type: 'livediagram:theme'; v: 1; colourScheme: 'light' | 'dark' };
+type RenewMessage = { type: 'liveplanner:renew'; v: 1 };
+type TicketMessage = { type: 'liveplanner:ticket'; v: 1; ticket: string }; // 22 base64url
+type RevealMessage = { type: 'liveplanner:reveal'; v: 1; refs: string[] }; // 1..20, each 1..64
+type ThemeMessage = { type: 'liveplanner:theme'; v: 1; colourScheme: 'light' | 'dark' };
 type EndedMessage = {
-  type: 'livediagram:ended';
+  type: 'liveplanner:ended';
   v: 1;
   reason: 'expired' | 'revoked' | 'trashed' | 'refused';
 };
@@ -919,13 +919,13 @@ The workspace scope's messages:
 
 ```ts
 type WorkspaceReadyMessage = {
-  type: 'livediagram:ready';
+  type: 'liveplanner:ready';
   v: 1;
   scope: 'workspace';
   role: WorkbenchRole;
 };
 type PlaceMessage = {
-  type: 'livediagram:place';
+  type: 'liveplanner:place';
   v: 1;
   view: string; // a SelectedNode kind, or 'document'
   folderId: string | null;
@@ -938,7 +938,7 @@ type PlaceMessage = {
   role: WorkbenchRole;
 };
 type OpenMessage = {
-  type: 'livediagram:open';
+  type: 'liveplanner:open';
   v: 1;
   to: { view: 'home' } | { folderId: string } | { documentId: string; tabId?: string }; // ids 1..64
 };
@@ -957,8 +957,8 @@ event.source === window.parent`; anything else is dropped silently (not a workbe
 | `workbench.pair` | `origin`, `name?`                    | pending line, then `{ status: 'paired', origin, name }` | 0, 1, 4, 6, 7       |
 
 Resource `{ name: 'workbench', summary: 'Workbenches: open a document in a developer tool, pair one' }`. Help text
-of each within the CLI budgets; examples `livediagram workbench open "Home screen" --origin https://127.0.0.1:5175
---json` and `livediagram workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor"`.
+of each within the CLI budgets; examples `liveplanner workbench open "Home screen" --origin https://127.0.0.1:5175
+--json` and `liveplanner workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor"`.
 
 ### Room
 
@@ -1161,7 +1161,7 @@ CREATE TABLE workbench_session_rooms (
 - **E44** The started folder is deleted before the frame loads: the Explorer's folder not-found, as a stale link.
 - **E45** A view workspace session tries New document: `403 workbench_read_only`, the Explorer's create-failed toast;
   the Explorer offers no create while `role` is `view` (its own read-only state, `prefs`-free).
-- **E46** `livediagram:open` with an id the person cannot reach: the Explorer's or the editor's not-found; logged.
+- **E46** `liveplanner:open` with an id the person cannot reach: the Explorer's or the editor's not-found; logged.
 - **E47** Unpair or revoke while a workspace frame has a document open: the room closes with 4006 (the session's
   rooms are recorded), the frame ends `revoked`.
 
@@ -1228,9 +1228,9 @@ CREATE TABLE workbench_session_rooms (
 | `ended` (trashed)                 | `DocumentTrashedCard` with `restorable={false}`                                                                                                |
 | `failed`                          | `LoadErrorCard embed`                                                                                                                          |
 
-The status screens use `EmbedShell` (no header, no Explorer). **Open in livediagram** (`WorkbenchOpenLink`): the last
+The status screens use `EmbedShell` (no header, no Explorer). **Open in liveplanner** (`WorkbenchOpenLink`): the last
 control at the right end of the tab bar, after Search and Settings, styled as they are: the external-link glyph and
-the words "Open in livediagram" (the glyph alone on a phone, as its neighbours), linking to `/document/<id>` with
+the words "Open in liveplanner" (the glyph alone on a phone, as its neighbours), linking to `/document/<id>` with
 `target="_blank" rel="noopener noreferrer"`, shown while `mounted` and `ended` (WB34). In a workbench the tab bar
 offers no Appearance control (WB15). The Reconnect line is `WorkbenchReconnectLine`.
 
@@ -1249,8 +1249,8 @@ Built on `OauthShell`, like the device page; states and copy:
 | Failed                      | as Pending                          | `role="alert"` "Something went wrong. Please try again."                                                                                                                                                                                                                                                                                                                                                                    |
 | Allowed                     | "Workbench allowed"                 | "Return to <name or ‘your workbench’>; it carries on by itself."                                                                                                                                                                                                                                                                                                                                                            |
 | Declined                    | "Workbench not allowed"             | "Nothing was paired. Your terminal will stop waiting."                                                                                                                                                                                                                                                                                                                                                                      |
-| Expired                     | "This request has expired"          | "Run livediagram workbench pair again to ask anew." (command in monospace)                                                                                                                                                                                                                                                                                                                                                  |
-| Already answered            | "This request was already answered" | "Run livediagram workbench pair again if you need to ask anew."                                                                                                                                                                                                                                                                                                                                                             |
+| Expired                     | "This request has expired"          | "Run liveplanner workbench pair again to ask anew." (command in monospace)                                                                                                                                                                                                                                                                                                                                                  |
+| Already answered            | "This request was already answered" | "Run liveplanner workbench pair again if you need to ask anew."                                                                                                                                                                                                                                                                                                                                                             |
 
 ### The workspace frame
 
@@ -1259,7 +1259,7 @@ Built on `OauthShell`, like the device page; states and copy:
 | `reading`, `redeeming`, `binding`   | "Opening your workspace…" (WB65)                                                                                                        |
 | `refused` (any)                     | Heading "Open your workspace from your workbench", body "This link works once, for a minute. Open it again from your workbench." (WB65) |
 | Back                                | The arrow-left glyph and "Back" (the glyph alone on a phone), accessible name "Back to <view title>"                                    |
-| Open in livediagram (Explorer view) | As the editor's; accessible name "Open in livediagram (opens in a new tab)"                                                             |
+| Open in liveplanner (Explorer view) | As the editor's; accessible name "Open in liveplanner (opens in a new tab)"                                                             |
 | Create failed                       | Toast "Couldn’t create the document. Try again."                                                                                        |
 | Trashed                             | Toast "That document is in the Trash."                                                                                                  |
 
@@ -1287,7 +1287,7 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
 
 - Status screens: the copy in a `role="status"` region; `refused` and `unbound` headings are `h1`.
 - The Reconnect line: `role="status"`, `aria-live="polite"`, visible text, never colour alone.
-- **Open in livediagram**: accessible name "Open in livediagram (opens in a new tab)"; at least 24 by 24 px; the
+- **Open in liveplanner**: accessible name "Open in liveplanner (opens in a new tab)"; at least 24 by 24 px; the
   editor's focus ring.
 - The pairing page: focus moves to the heading on each state change; **Allow** and **Don't allow** are native
   buttons; the origin and the token name are text, readable by a screen reader in full; it is drawn by `OauthShell`,
@@ -1398,7 +1398,7 @@ and the two CLI rows.
 | CLI open: URL and JSON, 428 exit 4 with the fix, share URL exit 2, origin exit 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `packages/agent-verbs/src/verbs/workbench.test.ts`, `apps/cli/src/commands/workbench-open.test.ts`                      |
 | CLI pair: URL first on stdout, no browser when piped, approved 0, declined 4, expired 4, 429 slow down, 404, network retries                                                                                                                                                                                                                                                                                                                                                                                                                                             | `apps/cli/src/commands/workbench-pair.test.ts` (fake io)                                                                |
 | CLI help budgets for the new resource and verbs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/cli/src/help/help.test.ts`                                                                                        |
-| Guide `workbench` and the skill's `[livediagram]` pointer; every topic, the frontmatter and the body within budget                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `packages/agent-verbs/src/catalogue.test.ts`                                                                            |
+| Guide `workbench` and the skill's `[liveplanner]` pointer; every topic, the frontmatter and the body within budget                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `packages/agent-verbs/src/catalogue.test.ts`                                                                            |
 | Telemetry catalogue rows and CLI command rows                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `apps/telemetry` catalogue suites, `metric-series.test`                                                                 |
 | End to end, dark, a fake workbench page on `http://127.0.0.1:<port>` framing the live app on `http://localhost:<port>`: unpaired mint 428; the pair page (signed in through the test bridge) Allow; mint; the frame binds, the editor mounts without header or Explorer; drawing saves; a selection arrives as one settled message with the reference; `reveal` outlines; `theme` switches; renewal swaps the session; Unpair turns the frame read-only with the Reconnect line; a page on another origin framing the same URL mounts nothing and shows the unbound copy | `apps/live/e2e/workbench-embed.spec.ts` (project `workbench`, `colorScheme: 'dark'`, `E2E_WORKBENCH=1`)                 |
 

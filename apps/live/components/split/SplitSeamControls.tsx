@@ -1,6 +1,6 @@
 'use client';
 
-import { CloseIcon, FitViewIcon, Tooltip } from '@livediagram/ui';
+import { CloseIcon, FitViewIcon, Tooltip } from '@liveplanner/ui';
 
 // The split's own buttons (docs/specs/007-editor/split-view.md "The seam"): Fit Both Sides, which fits
 // both sides at once, and Close Side by Side. They sit on the seam, stacked just above the resize

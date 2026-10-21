@@ -9,7 +9,7 @@ import {
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { SearchControlButton } from './SearchControlButton';
 
 // One of the menus inside the search box (Category, Tags, Sort; docs/specs/025-community/community.md "Gallery"):

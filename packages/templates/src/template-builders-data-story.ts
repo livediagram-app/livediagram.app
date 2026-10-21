@@ -14,7 +14,7 @@
 //
 // Pure: () -> Element[], placed on the story's page (dataStoryPages) whatever centre is passed.
 
-import type { Element, Page } from '@livediagram/document';
+import type { Element, Page } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';

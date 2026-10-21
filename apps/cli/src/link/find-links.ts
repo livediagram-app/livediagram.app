@@ -1,5 +1,5 @@
 // Finding the link (docs/specs/027-repositories/blueprints/repository-link.md "Finding the link"): the nearest
-// livediagram.toml at or above the working directory, or with --all every one below it, walked depth first in
+// liveplanner.toml at or above the working directory, or with --all every one below it, walked depth first in
 // byte order of names, skipping `.git`, `node_modules` and dot-directories, never following a symbolic link (RL4).
 
 import { posix } from 'node:path';
@@ -15,7 +15,7 @@ const noLink = (cwd: string, where: 'above' | 'below') =>
     exit: EXIT.notFound,
     code: 'no_link',
     message: `no ${LINK_FILE_NAME} in ${cwd} or ${where}`,
-    hint: 'livediagram link init --folder <folder>',
+    hint: 'liveplanner link init --folder <folder>',
   });
 
 const isInside = (root: string, path: string) => path === root || path.startsWith(`${root}/`);

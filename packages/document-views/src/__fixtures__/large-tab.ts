@@ -1,6 +1,6 @@
 // Ten copies of the checkout tab side by side: 300 elements (docs/specs/024-agents/blueprints/
 // document-views.md "Testing"). Each copy's ids are hashed, so refs read like real UUID prefixes.
-import type { Element, Endpoint, Tab } from '@livediagram/document';
+import type { Element, Endpoint, Tab } from '@liveplanner/document';
 import { checkoutElements, CHECKOUT_TAB_ID } from './checkout-tab';
 
 const LARGE_COPIES = 10;

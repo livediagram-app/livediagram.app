@@ -4,7 +4,7 @@
 // api answers with the write as it landed, which is applied here so the next change reads what is stored. A refused
 // change stops the rest and says which went through. A change is checked against the store's caps whole before any
 // part is sent (writesCapsProblem), and one whose later part is still refused says how much of it landed.
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@liveplanner/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
@@ -13,7 +13,7 @@ import {
   type SheetWriteResponse,
   type TabRecord,
   type TabResponse,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { tabPath } from '../verbs/shared';
 import { sheetChartElements, type SheetChartOut } from './sheet-charts';
 import { chartsCleared, chartsFollowing, type SheetChartEl } from './sheet-chart-follow';
@@ -30,7 +30,7 @@ import {
   type SheetLayout,
   type SheetWrite,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { SHEET_REFUSAL_WORDS } from './sheet-refusals';
 import { buildSheetChange, type SheetChange, type SheetChangeContext } from './sheet-change-build';

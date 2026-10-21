@@ -17,10 +17,10 @@ import {
   uniqueSheetTitle,
   type Sheet,
   type Workbook,
-} from '@livediagram/sheets';
-import { cardSourceOf } from '@livediagram/items';
-import { templateChartElements } from '@livediagram/templates/template-sheets';
-import { chartsInSheet, type ShapeElement } from '@livediagram/document';
+} from '@liveplanner/sheets';
+import { cardSourceOf } from '@liveplanner/items';
+import { templateChartElements } from '@liveplanner/templates/template-sheets';
+import { chartsInSheet, type ShapeElement } from '@liveplanner/document';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import {
   registerSheetSource,

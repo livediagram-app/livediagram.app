@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { CommunityOwnPost, CommunityPostInput } from '@livediagram/api-schema';
+import type { CommunityOwnPost, CommunityPostInput } from '@liveplanner/api-schema';
 import {
   apiGetCommunityPost,
   apiPublishCommunityPost,

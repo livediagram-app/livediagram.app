@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidElement, type Element, type ShapeElement } from '@livediagram/document';
+import { isValidElement, type Element, type ShapeElement } from '@liveplanner/document';
 import { createLandContext, LANDING_RULES } from './context';
 import { landArrow } from './land-connectors';
 import type { SceneConnector } from './scene';

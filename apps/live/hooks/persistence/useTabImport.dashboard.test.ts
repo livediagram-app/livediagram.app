@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { TAB_SCHEMA_VERSION, type Element, type Tab } from '@livediagram/document';
+import { TAB_SCHEMA_VERSION, type Element, type Tab } from '@liveplanner/document';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { NOT_A_DASHBOARD, remintTabElements, useTabImport } from './useTabImport';
 
@@ -38,7 +38,7 @@ const layoutOf = (elementId: string) => ({
 
 const fileOf = (tab: Partial<Tab>) =>
   JSON.stringify({
-    kind: 'livediagram.tab',
+    kind: 'liveplanner.tab',
     schemaVersion: TAB_SCHEMA_VERSION,
     exportedAt: 0,
     tab: { id: 'src', name: 'Overview', elements: [], ...tab },

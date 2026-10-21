@@ -2,13 +2,13 @@
 
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { Button } from '@livediagram/ui';
-import type { TeamInviteLink } from '@livediagram/api-schema';
+import { Button } from '@liveplanner/ui';
+import type { TeamInviteLink } from '@liveplanner/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { LinkIcon } from '@/components/panels/team-pane-parts';
 import { track } from '@/lib/telemetry';
-import { useCopiedFlash } from '@livediagram/ui';
+import { useCopiedFlash } from '@liveplanner/ui';
 import { useRelativeNow } from '@/lib/relative-time';
 
 // "Invite by Link" (docs/specs/013-workspace/teams.md): the admin actively turns on a shareable

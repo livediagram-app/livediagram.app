@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/plan-tabs.md "Dashboard on a phone": Move Up and Move Down glide the two cards past each other.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
 import { swapSlotsWithMotion } from './slot-swap-motion';
 
 function slotAt(id: string, top: number) {

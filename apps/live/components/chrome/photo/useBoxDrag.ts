@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@liveplanner/sticky-vision';
 import { moveBox, resizeBox, type Corner } from '@/lib/photo-boxes';
 import { useLatest } from '@/hooks/ui/useLatest';
 

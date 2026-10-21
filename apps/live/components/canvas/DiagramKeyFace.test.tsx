@@ -5,7 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type KeyRow, type ShapeElement, type WebRows } from '@livediagram/document';
+import { createShape, type KeyRow, type ShapeElement, type WebRows } from '@liveplanner/document';
 import { DiagramKeyFace } from './DiagramKeyFace';
 
 afterEach(cleanup);

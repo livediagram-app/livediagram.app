@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetRequest } from '@livediagram/api-schema';
-import type { ShapeElement } from '@livediagram/document';
+import type { ChangesetRequest } from '@liveplanner/api-schema';
+import type { ShapeElement } from '@liveplanner/document';
 import { run } from '../main';
 import { mirrorFileText } from '../link/mirror-file';
 import { parsePullFile, type PullFile } from '../sync/pull-file';
@@ -10,7 +10,7 @@ import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io'
 // E18 to E20), on a fake host whose tabs move on with each write.
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
-const HOST = 'https://livediagram.app';
+const HOST = 'https://liveplanner.app';
 const square = (id: string, label: string, x = 0): ShapeElement => ({
   id,
   type: 'shape',
@@ -119,14 +119,14 @@ function host(
 }
 
 async function cli(argv: string[], route: Route, io?: FakeIo) {
-  const used = io ?? fakeIo({ env: { LIVEDIAGRAM_TOKEN: TOKEN }, routes: [route] });
+  const used = io ?? fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes: [route] });
   // The fake io keeps every stream since it was made; a call reads only what it printed.
   const [outBefore, errBefore] = [used.out().length, used.err().length];
   const code = await run(argv, used);
   return { code, io: used, out: used.out().slice(outBefore), err: used.err().slice(errBefore) };
 }
 
-const pulledFile = (io: FakeIo, path = '/work/shop-checkout.livediagram.json'): PullFile => {
+const pulledFile = (io: FakeIo, path = '/work/shop-checkout.liveplanner.json'): PullFile => {
   const parsed = parsePullFile(io.fileMap.get(path)!.data);
   if (!parsed.ok) throw new Error(parsed.message);
   return parsed.file;
@@ -143,13 +143,13 @@ describe('pull', () => {
     const h = host();
     const { code, out, io } = await cli(['pull', DOC], h.route);
     expect(code).toBe(0);
-    expect(out).toBe('/work/shop-checkout.livediagram.json\n');
+    expect(out).toBe('/work/shop-checkout.liveplanner.json\n');
     const file = pulledFile(io);
     expect(file.document.tabs.map((t) => [t.id, t.folder])).toEqual([
       ['main', 'Core'],
       ['flow', undefined],
     ]);
-    expect(file.livediagramSync).toMatchObject({
+    expect(file.liveplannerSync).toMatchObject({
       host: HOST,
       pulledAt: NOW,
       tabs: { main: { rev: 3 }, flow: { rev: 7 } },
@@ -160,7 +160,7 @@ describe('pull', () => {
   it('adds a drawing per tab with --svg, telling apart tabs of one name', async () => {
     const { out, io } = await cli(['pull', DOC, '--to', 'out/', '--svg'], host().route);
     expect(out.trim().split('\n')).toEqual([
-      'out/shop-checkout.livediagram.json',
+      'out/shop-checkout.liveplanner.json',
       'out/shop-checkout.main.svg',
       'out/shop-checkout.main-flow.svg',
     ]);
@@ -171,19 +171,19 @@ describe('pull', () => {
     const h = host();
     const first = await cli(['pull', DOC], h.route);
     const again = await cli(['pull', DOC], h.route, first.io);
-    expect(again.out).toContain('/work/shop-checkout.livediagram.json');
+    expect(again.out).toContain('/work/shop-checkout.liveplanner.json');
     const other = {
       ...pulledFile(first.io),
       document: { ...pulledFile(first.io).document, id: 'other-doc' },
     };
-    first.io.fileMap.set('/work/shop-checkout.livediagram.json', {
+    first.io.fileMap.set('/work/shop-checkout.liveplanner.json', {
       data: JSON.stringify(other),
       mode: 0o644,
     });
     const stepped = await cli(['pull', DOC], h.route, first.io);
-    expect(stepped.out).toBe('/work/shop-checkout-aaaa1111.livediagram.json\n');
+    expect(stepped.out).toBe('/work/shop-checkout-aaaa1111.liveplanner.json\n');
     // The file it stepped aside to is its own from then on: pulled again, and guarded as the plain one is.
-    const own = '/work/shop-checkout-aaaa1111.livediagram.json';
+    const own = '/work/shop-checkout-aaaa1111.liveplanner.json';
     expect((await cli(['pull', DOC], h.route, first.io)).out).toBe(`${own}\n`);
     edit(first.io, own, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
     expect((await cli(['pull', DOC], h.route, first.io)).err).toContain(
@@ -198,14 +198,14 @@ describe('pull', () => {
   it('refuses to overwrite changes not yet pushed, unless --force drops them', async () => {
     const h = host();
     const first = await cli(['pull', DOC], h.route);
-    const path = '/work/shop-checkout.livediagram.json';
+    const path = '/work/shop-checkout.liveplanner.json';
     edit(first.io, path, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
     const edited = first.io.fileMap.get(path)!.data;
     const refused = await cli(['pull', DOC], h.route, first.io);
     expect(refused.code).toBe(1);
     expect(refused.err).toContain(`error: ${path} changed here and is not pushed; not overwritten`);
     expect(refused.err).toContain(
-      `hint: send it: livediagram push ${path}, or drop it: livediagram pull "${DOC}" --force`,
+      `hint: send it: liveplanner push ${path}, or drop it: liveplanner pull "${DOC}" --force`,
     );
     expect(first.io.fileMap.get(path)!.data).toBe(edited);
     const forced = await cli(['pull', DOC, '--force'], h.route, first.io);
@@ -232,8 +232,8 @@ describe('pull', () => {
   it('refuses a host that stores a newer document format', async () => {
     const { code, err } = await cli(['pull', DOC], host({ format: 99 }).route);
     expect(code).toBe(1);
-    expect(err).toContain('stores documents in format 99; this livediagram reads format 2');
-    expect(err).toContain('npm install -g @livediagram/cli@latest, or npx @livediagram/cli@latest');
+    expect(err).toContain('stores documents in format 99; this liveplanner reads format 2');
+    expect(err).toContain('npm install -g @liveplanner/cli@latest, or npx @liveplanner/cli@latest');
   });
 });
 
@@ -241,7 +241,7 @@ describe('push', () => {
   async function pulled(options: Parameters<typeof host>[0] = {}) {
     const h = host(options);
     const { io } = await cli(['pull', DOC], h.route);
-    return { h, io, path: '/work/shop-checkout.livediagram.json' };
+    return { h, io, path: '/work/shop-checkout.liveplanner.json' };
   }
 
   it('says so when nothing changed', async () => {
@@ -285,7 +285,7 @@ describe('push', () => {
         }),
       },
     ]);
-    expect(pulledFile(io, path).livediagramSync.tabs.main!.rev).toBe(4);
+    expect(pulledFile(io, path).liveplannerSync.tabs.main!.rev).toBe(4);
     expect((await cli(['push', path], h.route, io)).out).toBe('nothing to push\n');
   });
 
@@ -313,7 +313,7 @@ describe('push', () => {
     const { h, io, path } = await pulled();
     edit(io, path, (f) => f.document.tabs.push({ id: 'fresh', name: 'Fresh', elements: [] }));
     expect((await cli(['push', path], h.route, io)).code).toBe(0);
-    expect(pulledFile(io, path).livediagramSync.tabs.fresh).toMatchObject({ rev: 1 });
+    expect(pulledFile(io, path).liveplannerSync.tabs.fresh).toMatchObject({ rev: 1 });
     expect((await cli(['push', path], h.route, io)).out).toBe('nothing to push\n');
   });
 
@@ -329,7 +329,7 @@ describe('push', () => {
       'tab "Main"\n~ replaced main\n! stale tab "Main": changed on the host since the pull\n',
     );
     const file = pulledFile(io, path);
-    expect([file.livediagramSync.tabs.main!.rev, file.livediagramSync.tabs.flow!.rev]).toEqual([
+    expect([file.liveplannerSync.tabs.main!.rev, file.liveplannerSync.tabs.flow!.rev]).toEqual([
       4, 7,
     ]);
   });
@@ -339,7 +339,7 @@ describe('push', () => {
     edit(io, path, (f) => (f.document.tabs[0]!.elements = []));
     const { code, out } = await cli(['push', path, '--wait-held', '5'], h.route, io);
     expect([code, out]).toEqual([0, 'tab "Main"\nnothing changed\n']);
-    expect(pulledFile(io, path).livediagramSync.tabs.main!.rev).toBe(3);
+    expect(pulledFile(io, path).liveplannerSync.tabs.main!.rev).toBe(3);
     expect((await cli(['push', path], h.route, io)).out).toBe('nothing to push\n');
   });
 
@@ -364,11 +364,11 @@ describe('push', () => {
 
   it('refuses another host’s file, a missing file, and a file that is not a pull file', async () => {
     const { h, io, path } = await pulled();
-    edit(io, path, (f) => (f.livediagramSync.host = 'https://other.example'));
+    edit(io, path, (f) => (f.liveplannerSync.host = 'https://other.example'));
     const other = await cli(['push', path], h.route, io);
     expect(other.code).toBe(2);
     expect(other.err).toContain('was pulled from https://other.example');
-    expect((await cli(['push', '/work/none.livediagram.json'], h.route, io)).code).toBe(2);
+    expect((await cli(['push', '/work/none.liveplanner.json'], h.route, io)).code).toBe(2);
     io.fileMap.set('/work/bad.json', { data: '{', mode: 0o644 });
     const bad = await cli(['push', '/work/bad.json'], h.route, io);
     expect(bad.code).toBe(1);
@@ -380,18 +380,18 @@ describe('a mirror file', () => {
   it('pushes like a pull file, its pulledAt staying absent, and reads offline', async () => {
     const h = host();
     const { io } = await cli(['pull', DOC], h.route);
-    const { exportedAt: _e, livediagramSync, ...rest } = pulledFile(io);
-    const { pulledAt: _p, ...sync } = livediagramSync;
-    const path = '/work/diagrams/shop-checkout.livediagram.json';
-    const mirror = { ...rest, livediagramSync: sync };
+    const { exportedAt: _e, liveplannerSync, ...rest } = pulledFile(io);
+    const { pulledAt: _p, ...sync } = liveplannerSync;
+    const path = '/work/diagrams/shop-checkout.liveplanner.json';
+    const mirror = { ...rest, liveplannerSync: sync };
     mirror.document.tabs[0]!.elements.push(square('api', 'API', 200));
     io.fileMap.set(path, { data: mirrorFileText(mirror), mode: 0o644 });
     const pushed = await cli(['push', path], h.route, io);
     expect(pushed.code).toBe(0);
     expect(h.requests.map((r) => r.tabId)).toEqual(['main']);
     const after = pulledFile(io, path);
-    expect(after.livediagramSync.tabs.main!.rev).toBe(4);
-    expect('pulledAt' in after.livediagramSync).toBe(false);
+    expect(after.liveplannerSync.tabs.main!.rev).toBe(4);
+    expect('pulledAt' in after.liveplannerSync).toBe(false);
     // Rewritten in the mirror's canonical form, byte for byte what a sync would write (RL30, RL31).
     expect(io.fileMap.get(path)!.data).toBe(mirrorFileText(after));
     const view = await cli(['document', 'view', path], h.route, io);

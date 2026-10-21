@@ -4,8 +4,8 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import { apiListDocumentsWithTeamRecent } from '@/lib/api-client';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { Glyph, TeamIcon } from '@livediagram/ui';
-import type { DocumentSummary } from '@livediagram/api-schema';
+import { Glyph, TeamIcon } from '@liveplanner/ui';
+import type { DocumentSummary } from '@liveplanner/api-schema';
 
 // teamName: the team whose library holds it, for its team mark; null for your own.
 type RecentItem = { id: string; name: string; savedAt: number | null; teamName: string | null };

@@ -6,7 +6,7 @@
 // and the Idea box can't drift apart.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@livediagram/document';
+import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@liveplanner/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from './collab-chrome';
 

@@ -6,7 +6,7 @@ import { PairWorkbench } from './PairWorkbench';
 // The pairing page (docs/specs/013-workspace/workbench-embeds.md "Pairing"): a static route; the code arrives
 // client-side as `?code=`. Never framed: the live worker keeps `X-Frame-Options: DENY` here.
 export const metadata: Metadata = {
-  title: 'Allow a workbench | livediagram',
+  title: 'Allow a workbench | liveplanner',
   robots: { index: false },
 };
 

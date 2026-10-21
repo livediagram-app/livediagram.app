@@ -1,5 +1,5 @@
 // Logo emblems (docs/specs/007-editor/logo-pages.md "Logo layouts"): the name inside or round a shape.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 import { iconDisc } from './page-layout-parts';
 import { ICON, INITIALS, NAME, TAGLINE, arched, icon, stacked, word } from './logo-layout-kit';

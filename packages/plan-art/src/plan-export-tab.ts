@@ -8,7 +8,7 @@ import {
   type Element,
   type SheetAnchor,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { planTabKindOf } from './plan-export-formats';
 import { dashboardExportTab, type DashboardExportInput } from './dashboard-export';
 
@@ -44,7 +44,7 @@ type SheetEl = Element & {
 type PlanImageInput = Omit<DashboardExportInput, 'tab'> & {
   // Whether a Sheet shows its row and column headers (its layout, from the sheet store); shown when unknown.
   sheetHeads?: (sheetId: string) => boolean;
-  // The grid a Sheet's cells fill, in px (@livediagram/sheets' sheetContentSize); null or unknown keeps its size.
+  // The grid a Sheet's cells fill, in px (@liveplanner/sheets' sheetContentSize); null or unknown keeps its size.
   sheetContent?: (sheetId: string) => { width: number; height: number } | null;
 };
 

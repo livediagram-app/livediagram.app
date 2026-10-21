@@ -161,7 +161,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
               fontWeight: 500,
             }}
           >
-            livediagram.app
+            liveplanner.app
           </div>
           <div>{opts?.footer ?? 'No sign-up. Open the link, start drawing.'}</div>
         </div>

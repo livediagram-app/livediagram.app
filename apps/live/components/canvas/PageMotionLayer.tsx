@@ -9,7 +9,7 @@
 // repaint per frame) and soft edges are radial gradients rather than blur filters. Reduced motion
 // stops every part where it rests, a still frame that is itself a finished background.
 import type { CSSProperties, ReactNode } from 'react';
-import type { PageMotion } from '@livediagram/document';
+import type { PageMotion } from '@liveplanner/document';
 import { motionPaint } from '@/lib/page-motion';
 import {
   motionParts,

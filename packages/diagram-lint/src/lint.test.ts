@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeRefs, type Element } from '@livediagram/document';
+import { computeRefs, type Element } from '@liveplanner/document';
 import { arrow, box, frame, lint, quiet, tabOf } from './fixtures/build';
 import { graphEdgeIds, lintGraph, lintTab } from './lint';
 

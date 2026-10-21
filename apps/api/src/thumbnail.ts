@@ -12,7 +12,7 @@
 // render, and every write path (editor, collaborators, MCP, API token)
 // invalidates the snapshot uniformly because they all bump saved_at.
 
-import { embedTabImages } from '@livediagram/api-schema';
+import { embedTabImages } from '@liveplanner/api-schema';
 import {
   drawnCount,
   elementsOnPage,
@@ -25,15 +25,15 @@ import {
   resolveFontStack,
   tabKindOf,
   type Tab,
-} from '@livediagram/document';
-import { readForm } from '@livediagram/forms';
-import { formArt } from '@livediagram/plan-art';
-import { cardSourceOf, typesOf } from '@livediagram/items';
-import { renderModelsForTab, sheetFramesOf } from '@livediagram/sheets';
+} from '@liveplanner/document';
+import { readForm } from '@liveplanner/forms';
+import { formArt } from '@liveplanner/plan-art';
+import { cardSourceOf, typesOf } from '@liveplanner/items';
+import { renderModelsForTab, sheetFramesOf } from '@liveplanner/sheets';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@liveplanner/icons/resolve';
 import {
   getDocumentItemTypes,
   getTab,
@@ -333,7 +333,7 @@ async function renderTabBodyToSvg(
 
 // Read each image element's bytes from R2 and return them keyed by imageId
 // as base64 data URLs, ready for the renderer to inline. The shared embedder
-// (@livediagram/api-schema embedTabImages) reads ids in document order until
+// (@liveplanner/api-schema embedTabImages) reads ids in document order until
 // IMAGE_EMBED_BUDGET_BYTES is spent, after which (or on a missing object) the
 // element keeps its placeholder. R2 is the same store the authenticated image
 // endpoint reads (key = imageId), so a shared document's images embed without

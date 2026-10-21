@@ -1,7 +1,7 @@
 // The band across a form's top (docs/specs/030-forms/forms.md "The form card"): its cover, a slide background in
 // colour painted as a slide's is (pageSheetStyle, and PageMotionLayer for a moving one), or a thin band of the form
 // colour without one. Pure drawing, shared by the builder, Preview and the form page.
-import type { FormCover } from '@livediagram/forms';
+import type { FormCover } from '@liveplanner/forms';
 import { pageSheetStyle } from '@/lib/page-paint';
 import dynamic from 'next/dynamic';
 

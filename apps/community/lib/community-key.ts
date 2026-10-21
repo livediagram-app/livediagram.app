@@ -1,8 +1,8 @@
-import { COMMUNITY_KEY_STORAGE, isCommunityKey } from '@livediagram/api-schema';
+import { COMMUNITY_KEY_STORAGE, isCommunityKey } from '@liveplanner/api-schema';
 
 // The per-browser community key (docs/specs/025-community/community.md "Likes"; blueprint §5): a
 // random UUID that keys one like and one report per browser per post. Deliberately NOT the guest owner
-// id (`livediagram:v2:self-id`): a public page must never put an owner credential on the wire, so this
+// id (`liveplanner:v2:self-id`): a public page must never put an owner credential on the wire, so this
 // module never reads that key.
 //
 // Read from localStorage, minted with crypto.randomUUID when missing or malformed. When storage is

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { addFlowchartLane, createFlowchartStart, type ShapeElement } from '@livediagram/document';
+import { addFlowchartLane, createFlowchartStart, type ShapeElement } from '@liveplanner/document';
 import type { FlowchartActions } from '@/hooks/canvas/useFlowchartSetters';
 import { flowchartStepToolbarFor } from './flowchart-step-toolbar';
 

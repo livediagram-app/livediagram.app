@@ -1,6 +1,6 @@
 # Save Locations
 
-A new document is stored in one of a small set of **save locations**: on the server (livediagram) or in this browser
+A new document is stored in one of a small set of **save locations**: on the server (liveplanner) or in this browser
 only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible). Google Drive is not
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
@@ -15,7 +15,7 @@ anything on the canvas. A document in This Browser still says what it is on the 
 
 | Location         | What it means                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livediagram**  | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
+| **liveplanner**  | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
@@ -23,8 +23,8 @@ anything on the canvas. A document in This Browser still says what it is on the 
 | Who                               | Default          |
 | --------------------------------- | ---------------- |
 | A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **livediagram**  |
-| Anyone on a guest-only deployment | **livediagram**  |
+| A signed-in person                | **liveplanner**  |
+| Anyone on a guest-only deployment | **liveplanner**  |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
@@ -33,19 +33,19 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
   `resolveSaveLocation` in `useNewDocumentLocation` (`apps/live/app/new/useNewDocumentLocation.ts`): a mode chosen
   in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
-  livediagram whoever is creating.
+  liveplanner whoever is creating.
 - Before Clerk has answered, `signedIn` is the `__client_uat` hint
   ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers)).
   A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
   a document in This Browser; a guest never waits.
-- There is no per-person override: no setting chooses the store. Where a document is **filed** on livediagram is the
+- There is no per-person override: no setting chooses the store. Where a document is **filed** on liveplanner is the
   person's to set, in Settings > Documents > Default Folders ([Default folders](../013-workspace/default-folders.md)).
   A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
   is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
 
 ## The folder browser
 
-Where a document goes within livediagram is chosen with the shared `PlacementBrowser`, in the Explorer's Move dialog
+Where a document goes within liveplanner is chosen with the shared `PlacementBrowser`, in the Explorer's Move dialog
 ([Folders](../013-workspace/folders.md)) and the default folder picker ([Default folders](../013-workspace/default-folders.md)).
 Both render it in its **`list` layout**: stacked
 rows, icon beside label, the kind caption ("Top level", "Folder", "Open
@@ -114,7 +114,7 @@ per-row delay, so nothing waits on a beat it will never see.
 
 A save location is one id in a small module, `apps/live/lib/save-locations.ts`:
 
-- `SaveLocationId` is the closed union of location ids (`'livediagram' |
+- `SaveLocationId` is the closed union of location ids (`'liveplanner' |
 'browser'` today).
 - `defaultSaveLocationFor` decides which one a new document gets.
 - `isOfflineLocation(id)` says whether an id resolves to the browser-only store.
@@ -129,10 +129,10 @@ SaveLocationId`.
 ## Google Drive is a mirror, not a location
 
 A signed-in user can mirror the documents in My Documents to their own Google
-Drive. The document still lives in livediagram (the default location): Drive
+Drive. The document still lives in liveplanner (the default location): Drive
 holds a copy that is kept in sync both ways while a tab is open, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with
-**livediagram** is mirrored like any other. Documents in This Browser have no
+**liveplanner** is mirrored like any other. Documents in This Browser have no
 server copy and are not mirrored. The mirror itself (connection, folder tree,
 rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
 here.
@@ -140,12 +140,12 @@ here.
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 `Document` / `Created` carries a `type` naming the store,
-`Cloud` for livediagram and `Offline` for This Browser. A future location adds
+`Cloud` for liveplanner and `Offline` for This Browser. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-The Offline Mode article says a guest's new documents start in this browser and a signed-in person's on livediagram,
+The Offline Mode article says a guest's new documents start in this browser and a signed-in person's on liveplanner,
 and how to move one either way. No article of its own: each location's article (offline today) is where the substance
 is.
 

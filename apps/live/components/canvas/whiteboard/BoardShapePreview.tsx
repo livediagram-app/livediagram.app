@@ -9,7 +9,7 @@ import {
   nearestBorderStroke,
   type RecognisedShape,
   type ShapeKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 
 // A whiteboard shape while it is drawn: the outline the committed shape will

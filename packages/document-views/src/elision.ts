@@ -1,6 +1,6 @@
 // The one closing line naming what a view left out and how to see it, in the reading door's syntax
 // (docs/specs/024-agents/blueprints/document-views.md "Elision line", VW39, VW54).
-import type { Elision, ViewDoor } from '@livediagram/api-schema';
+import type { Elision, ViewDoor } from '@liveplanner/api-schema';
 import { ELISION_CONTAINERS_NAMED } from './constants';
 import { ELLIPSIS, plural } from './text';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTable, createText, type Element } from '@livediagram/document';
+import { createTable, createText, type Element } from '@liveplanner/document';
 import { shapeAt } from './__fixtures__/build';
 import { contentSummaryOf } from './content-summary';
 

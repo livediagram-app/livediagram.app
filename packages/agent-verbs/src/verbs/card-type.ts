@@ -9,7 +9,7 @@ import { listedTypes } from '../plan/plan-listing';
 import { readPlanState } from '../plan/plan-state';
 import { columns, documentOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or liveplanner URL');
 
 const typeOut = z.object({
   id: z.string(),
@@ -43,7 +43,7 @@ export const typeLs = defineVerb({
   quiet: ({ types }) => types.map((t) => t.id),
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram type ls "Sprint 14"', 'livediagram type ls 3f9c --json'],
+    examples: ['liveplanner type ls "Sprint 14"', 'liveplanner type ls 3f9c --json'],
     prints: 'one type a line: id, name, fields',
   },
 });
@@ -84,7 +84,7 @@ export const typeApply = defineVerb({
         status: 400,
         code: result.refusal.code,
         message: result.refusal.message,
-        hint: 'list the card types with: livediagram type ls <doc>',
+        hint: 'list the card types with: liveplanner type ls <doc>',
       });
     return { applied: result.applied, trashed: result.trashed };
   },
@@ -97,8 +97,8 @@ export const typeApply = defineVerb({
     positionals: ['doc'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livediagram type apply "Sprint 14" -f types.json',
-      'echo \'[{"op":"delete","type":"Bug"}]\' | livediagram type apply 3f9c -f -',
+      'liveplanner type apply "Sprint 14" -f types.json',
+      'echo \'[{"op":"delete","type":"Bug"}]\' | liveplanner type apply 3f9c -f -',
     ],
     prints: 'one line per change, with the ids it made',
   },

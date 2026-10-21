@@ -1,5 +1,5 @@
 // Help-centre breadcrumb bar. The trail itself — home-icon root, chevron
-// separators, truncating labels — is BreadcrumbTrail in @livediagram/ui, shared
+// separators, truncating labels — is BreadcrumbTrail in @liveplanner/ui, shared
 // with the marketing site so the two surfaces read consistently. This file owns
 // what is specific to the help centre: a bar that sticks under the shared site
 // header, next/link routing, and the BreadcrumbList structured data for the
@@ -7,7 +7,7 @@
 // BreadcrumbJsonLd uses too, rooted here at the help home).
 
 import Link from 'next/link';
-import { breadcrumbJsonLd, BreadcrumbTrail, JsonLd, type BreadcrumbItem } from '@livediagram/ui';
+import { breadcrumbJsonLd, BreadcrumbTrail, JsonLd, type BreadcrumbItem } from '@liveplanner/ui';
 import { HELP_URL } from '@/lib/site';
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {

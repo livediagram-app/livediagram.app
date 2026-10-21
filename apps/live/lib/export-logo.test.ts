@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage } from '@livediagram/document';
+import { layOutPages, newLogoPage } from '@liveplanner/document';
 import { pageExportFrame } from './export-page';
 import {
   LOGO_ICO_SIZES,

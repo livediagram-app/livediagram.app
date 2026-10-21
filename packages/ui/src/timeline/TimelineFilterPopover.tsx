@@ -19,7 +19,7 @@ import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import type { TimelineActorFilter } from './useTimelineControls';
 import type { TimelineMode } from './types';
 import { SOLID_BRAND_DARK_CONTROL } from '../brand-classes';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 const WIDTH = 272;
 const GAP = 8;

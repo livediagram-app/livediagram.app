@@ -6,7 +6,7 @@
 // The card, band and glyphs are the "Card" scaffold; everything written on it
 // rides "Details". Pure: pushes into `out`.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@liveplanner/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { PERSONA_FACTS, PERSONA_QUOTE, PERSONA_STATS, PERSONA_TAGS } from './template-persona-data';
 

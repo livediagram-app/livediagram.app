@@ -12,9 +12,9 @@
 // nothing from February; the team's own scope carries the whole history
 // and is readable by any joined member.
 
-import { CompactEmptyState, Timeline, TimelineControls, lucideGlyph } from '@livediagram/ui';
-import { lucideHistory } from '@livediagram/icons/lucide';
-import type { TimelineScopeRef } from '@livediagram/api-schema';
+import { CompactEmptyState, Timeline, TimelineControls, lucideGlyph } from '@liveplanner/ui';
+import { lucideHistory } from '@liveplanner/icons/lucide';
+import type { TimelineScopeRef } from '@liveplanner/api-schema';
 import { track } from '@/lib/telemetry';
 import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
 import { useTimelineFeed } from '@/app/explorer/useTimelineFeed';

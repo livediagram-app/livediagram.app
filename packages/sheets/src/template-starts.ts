@@ -1,7 +1,7 @@
 // Template starts (docs/specs/029-sheets/sheet-store.md "Template starts"; the templates in
 // docs/specs/026-plan/plan-templates.md "Spreadsheet templates"): the sheets a Plan template's Sheet is made from,
 // each one of the sheet templates (sheet-templates/, sheet.md "Sheet templates"). `templateSheetWithCharts` builds one whole,
-// with the charts that sit over it; @livediagram/templates' materialiseTemplateSheets turns a tab's marked Sheet
+// with the charts that sit over it; @liveplanner/templates' materialiseTemplateSheets turns a tab's marked Sheet
 // elements into them, and the editor makes one only when a path missed it.
 import { emptyLayout, emptySheet, NOBODY } from './sheet';
 import { sheetToJson } from './sheet-json';

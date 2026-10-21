@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS } from '@livediagram/items';
+import { DAY_MS } from '@liveplanner/items';
 import {
   expiryFrom,
   lifetimeElapsed,

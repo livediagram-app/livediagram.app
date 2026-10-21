@@ -1,4 +1,4 @@
-// Building the livediagram element for a classified draw.io vertex
+// Building the liveplanner element for a classified draw.io vertex
 // (docs/specs/020-import-export/blueprints/drawio-import.md steps 9-14):
 // shapes, text, notes, lines, images, icons, frames and labelled boxes.
 // Containers with a meaning (lanes, entities, tables) live in containers.ts.
@@ -18,7 +18,7 @@ import {
   type StickyElement,
   type TextElement,
   type TextSize,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import type { DrawioCell, Rect } from './cells';
 import { requestDataUrlImage } from './images';
@@ -256,7 +256,7 @@ function captionWidth(lines: string[], textSize: TextSize | undefined, scale: nu
 }
 
 // An icon or actor carries its label OUTSIDE its figure in draw.io (below by
-// default); livediagram keeps the caption inside the element's box, beside the
+// default); liveplanner keeps the caption inside the element's box, beside the
 // figure. So the box grows by the caption towards its side (blueprint step 14):
 // by a line per line above or below, widening about its centre to hold the
 // longest line unwrapped, or by the line's width beside it.

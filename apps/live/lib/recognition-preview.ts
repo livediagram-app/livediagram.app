@@ -6,7 +6,7 @@ import {
   recogniseShape,
   type PenStroke,
   type RecognisedShape,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 type Point = { x: number; y: number };
 

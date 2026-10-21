@@ -59,7 +59,7 @@ pen's pressure at each point when it reported one. It replaces the former `point
   result in a bounded cache keyed by the block. A stroke that is never drawn is never decoded.
 - **Every edit produces a new block.** Moving or resizing a stroke changes only its box; erasing
   part of it, drawing it, or importing it encodes fresh blocks.
-- **One codec** in `@livediagram/document` serves the editor, the api worker, the MCP server
+- **One codec** in `@liveplanner/document` serves the editor, the api worker, the MCP server
   and the imports, so there is one reader and one writer of the format.
 - **Developers read a block** with the debug decoder: a function that expands a block into
   readable `{ nx, ny, p }` points, and a script that prints a tab or document file with every

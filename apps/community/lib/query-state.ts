@@ -11,7 +11,7 @@ import {
   setCommunitySearchSort,
   parseCommunityListQuery,
   type CommunityListQuery,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 // The gallery's filters as they live in the URL (docs/specs/025-community/community.md "Gallery"): `q`
 // carries every filter as words (`#tag`, `category:`, `sort:`, `is:mine`), and older `tag`, `category` and `sort`

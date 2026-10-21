@@ -15,7 +15,7 @@
 // plain-text length === DOM textContent length and offsets are a string walk.
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
-import { normalizeRuns, type TextRun, runsPlainText } from '@livediagram/document';
+import { normalizeRuns, type TextRun, runsPlainText } from '@liveplanner/document';
 import {
   dataAttrsForRun,
   domSelectionToOffsets,

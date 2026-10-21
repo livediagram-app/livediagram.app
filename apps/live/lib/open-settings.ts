@@ -7,7 +7,7 @@
 // (lib/tour-pending.ts). Mail cannot raise it, so it links at the
 // `?settings=<category>` deep link instead. The host side is
 // hooks/ui/useOpenSettingsRequests.ts.
-export const OPEN_SETTINGS_EVENT = 'livediagram:open-settings';
+export const OPEN_SETTINGS_EVENT = 'liveplanner:open-settings';
 
 export function requestOpenSettings(categoryId: string) {
   if (typeof window === 'undefined') return;

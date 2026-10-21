@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { emptyImportImageReport } from '@/lib/import-images';
 import type { ImportedPage } from './import';
 import { DRAWIO_RULES, drawioOutcome, drawioSceneReport } from './report';

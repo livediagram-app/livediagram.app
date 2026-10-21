@@ -15,7 +15,7 @@ import {
   createText,
   type Anchor,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { rake } from './template-rake';
 

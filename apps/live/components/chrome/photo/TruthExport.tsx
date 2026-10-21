@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useSyncExternalStore } from 'react';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@liveplanner/sticky-vision';
 import { downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
 
 // "Save as truth": the corrected review, handed back as a label file

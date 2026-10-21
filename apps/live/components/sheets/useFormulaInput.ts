@@ -13,7 +13,7 @@ import {
   normaliseRange,
   single,
   type Dir,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import {
   acceptFunction,
   cycleAbsolute,

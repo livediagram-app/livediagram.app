@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import {
   defaultSpot,

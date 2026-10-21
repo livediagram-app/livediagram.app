@@ -4,8 +4,8 @@
 // who it is, whether it is being used, and how much of its six months is
 // left, drawn as a bar so the tokens that need rotating stand out from a
 // glance down the list, then the workbenches it is paired with.
-import type { ApiToken, WorkbenchPairing } from '@livediagram/api-schema';
-import { Tooltip } from '@livediagram/ui';
+import type { ApiToken, WorkbenchPairing } from '@liveplanner/api-schema';
+import { Tooltip } from '@liveplanner/ui';
 import { KeyIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { SettingsTokenPairings } from './SettingsTokenPairings';
 import {

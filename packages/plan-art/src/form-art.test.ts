@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formLook } from '@livediagram/document';
-import { QUESTION_TYPES, blankQuestion, type FormDefinition } from '@livediagram/forms';
+import { formLook } from '@liveplanner/document';
+import { QUESTION_TYPES, blankQuestion, type FormDefinition } from '@liveplanner/forms';
 import { FORM_ART_HEIGHT_MAX, FORM_ART_WIDTH, formArt } from './form-art';
 
 // read_form's picture (docs/specs/030-forms/forms.md "Agents", blueprint §15): the form as respondents see it.

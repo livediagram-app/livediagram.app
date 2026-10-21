@@ -2,7 +2,7 @@
 // "Collaboration"): per article, its block ops in frames the room will carry, or that it is gone.
 // Shared by the editor's broadcast and the api's relay of an agent's write
 // (docs/specs/024-agents/pages-for-agents.md "The route"), so both send the same frames.
-import { articlesOf, diffArticleFlow, type ArticleOp, type Tab } from '@livediagram/document';
+import { articlesOf, diffArticleFlow, type ArticleOp, type Tab } from '@liveplanner/document';
 import type { RoomOp } from './room-messages';
 
 // The most characters of block ops one `article` frame carries: well inside the room's 256K cap on a

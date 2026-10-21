@@ -27,7 +27,7 @@ import {
   SideBySideIcon,
   useControlMenu,
   Portal,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and

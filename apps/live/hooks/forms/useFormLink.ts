@@ -4,7 +4,7 @@
 // about responses"): read when the tab opens (which marks its responses seen for this reader), polled while it stays
 // open so the count moves as responses arrive, and changed by Publish, the Accepting Responses switch and Delete Link.
 import { useCallback, useEffect, useState } from 'react';
-import type { FormLinkResponse } from '@livediagram/api-schema';
+import type { FormLinkResponse } from '@liveplanner/api-schema';
 import {
   apiDeleteFormLink,
   apiFormLink,

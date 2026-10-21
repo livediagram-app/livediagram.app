@@ -5,9 +5,9 @@
 // Plan Cards; Create Sheet writes the start, the look, the freeze and the sizes as one change. Start Blank and Import
 // CSV end setup without a style.
 import { useEffect, useMemo, useState } from 'react';
-import { Button, CheckIcon, ChevronLeftIcon } from '@livediagram/ui';
-import { chartTypeOf } from '@livediagram/document';
-import { cardSourceOf, findCards, type BoardStatusTypes } from '@livediagram/items';
+import { Button, CheckIcon, ChevronLeftIcon } from '@liveplanner/ui';
+import { chartTypeOf } from '@liveplanner/document';
+import { cardSourceOf, findCards, type BoardStatusTypes } from '@liveplanner/items';
 import {
   cardsStarter,
   designWrite,
@@ -18,7 +18,7 @@ import {
   TEMPLATE_LOOK,
   type SheetCellSize,
   type SheetLook,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { usePlan } from '@/components/plan/PlanContext';
 import { forgetSetupStart, setupStartOf } from '@/lib/sheet-seeds';
 import { useCardSearch } from '@/components/plan/CardSearchControls';

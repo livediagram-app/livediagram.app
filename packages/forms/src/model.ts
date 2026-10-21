@@ -1,5 +1,5 @@
 // A form (docs/specs/030-forms/forms.md): what a Form tab holds, stored on the tab as `tab.form`.
-import type { ColourBackground } from '@livediagram/page-background';
+import type { ColourBackground } from '@liveplanner/page-background';
 
 export const QUESTION_TYPES = [
   'short',

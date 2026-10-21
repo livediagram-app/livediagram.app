@@ -2,9 +2,9 @@
 // blueprint "One sync pass" step 7): its envelope fields, then every tab's plain read with its ETag revision, in
 // `orderIndex` order, each kept as a read copy (CLI24, RL15) and hashed as written.
 
-import { readPlainTab, type VerbContext } from '@livediagram/agent-verbs';
-import type { DocumentResponse } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+import { readPlainTab, type VerbContext } from '@liveplanner/agent-verbs';
+import type { DocumentResponse } from '@liveplanner/api-schema';
+import type { Tab } from '@liveplanner/document';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { tabHashes, type PulledTab } from '../sync/pull-file';

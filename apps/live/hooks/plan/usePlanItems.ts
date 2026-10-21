@@ -3,14 +3,14 @@
 import { subscribeOfflineIds } from '@/lib/offline/offline-store';
 import { debugLog } from '@/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ItemsRoomOp } from '@livediagram/api-schema';
+import type { ItemsRoomOp } from '@liveplanner/api-schema';
 import {
   applyItemComment,
   createComment,
   keepOwnCommentAuthors,
   type CommentMention,
   type ItemCommentChange,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   EMPTY_ITEM_STORE,
   ITEM_TITLE_MAX,
@@ -27,7 +27,7 @@ import {
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import {
   fetchItems,
   writeItem,

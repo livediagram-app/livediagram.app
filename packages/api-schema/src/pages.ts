@@ -1,6 +1,6 @@
 // The wire shapes of an agent's Pages edits (docs/specs/024-agents/pages-for-agents.md):
 // the page changes and the article write `POST /api/documents/:id/tabs/:tabId/pages` takes,
-// and what it answers. Shared by the api route, the engine (@livediagram/edit-operations), the
+// and what it answers. Shared by the api route, the engine (@liveplanner/edit-operations), the
 // verbs (CLI and MCP) and the views.
 import type {
   ArticleLookId,
@@ -10,7 +10,7 @@ import type {
   PageSizeId,
   WireframeDeviceId,
   WireframeFrameLook,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 // A wireframe page's device fields (docs/specs/007-editor/wireframe-pages.md): all on add; on set
 // its frame look and system bars alone, its device being its own for good.

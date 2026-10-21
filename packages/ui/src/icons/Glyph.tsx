@@ -1,4 +1,4 @@
-import { glyphStrokePx, inkInsets, primsBounds } from '@livediagram/icons';
+import { glyphStrokePx, inkInsets, primsBounds } from '@liveplanner/icons';
 import type { CSSProperties, SVGProps } from 'react';
 
 import { childPrims } from './glyph-ink';
@@ -9,7 +9,7 @@ import { childPrims } from './glyph-ink';
 // converted to viewBox units here, so every glyph reads the same weight
 // whatever its grid. Colour always comes from the parent's text colour.
 //
-// Distinct from @livediagram/icons, which is the CANVAS icon catalogue as SVG
+// Distinct from @liveplanner/icons, which is the CANVAS icon catalogue as SVG
 // markup strings; these are React components for app chrome.
 
 export type IconProps = Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'strokeWidth'> & {

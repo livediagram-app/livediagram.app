@@ -15,10 +15,10 @@ import { registerLegacyAlias } from './legacy-tool-names';
 import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ZodRawShape } from 'zod';
-import type { McpToolVerb } from '@livediagram/agent-verbs/mcp';
+import type { McpToolVerb } from '@liveplanner/agent-verbs/mcp';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import { pascalToken } from '@livediagram/api-schema';
-import { apiRefusalOf } from '@livediagram/agent-verbs';
+import { pascalToken } from '@liveplanner/api-schema';
+import { apiRefusalOf } from '@liveplanner/agent-verbs';
 import { errorResult, ToolInputError } from './tool-helpers';
 import { postTelemetry } from './api';
 import type { Env } from './env';
@@ -31,7 +31,7 @@ import { runInTool } from './tool-scope';
 export type ToolBehaviour = McpToolVerb['behaviour'];
 
 // `openWorldHint: false` throughout: every tool acts on the caller's own
-// livediagram library through our api, a closed and known domain rather than
+// liveplanner library through our api, a closed and known domain rather than
 // an open-ended external world like a web search.
 //
 // `destructiveHint` is omitted on `read` on purpose. MCP ignores it when

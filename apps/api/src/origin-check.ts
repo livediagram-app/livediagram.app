@@ -3,8 +3,8 @@
 // header is present and isn't the api worker's own origin so casual
 // drive-by cross-site posters can't inflate the public usage chart,
 // but local dev legitimately serves two different ports (the live
-// editor on :3002 / the telemetry dashboard on :3003 posting to the
-// api worker on :8787), and those should be allowed through. This
+// editor on :3102 / the telemetry dashboard on :3103 posting to the
+// api worker on :8887), and those should be allowed through. This
 // helper widens the filter to treat any localhost-to-localhost pair
 // as same-origin enough for dev. Production never sees a localhost
 // origin, so the widening is dev-only in practice.
@@ -13,10 +13,10 @@
 // from the route handler: matches the precedent set by image-strip,
 // image-sniff, tab-row, folder-row, share-link-row.
 
-import { isLoopbackHostname } from '@livediagram/api-schema';
+import { isLoopbackHostname } from '@liveplanner/api-schema';
 
 // IPv4 + IPv6 + textual loopback hostnames the browser may emit; the one
-// definition lives in @livediagram/api-schema so the mcp agrees.
+// definition lives in @liveplanner/api-schema so the mcp agrees.
 const isLoopback = isLoopbackHostname;
 
 // True iff BOTH `origin` and `target` parse as URLs whose hostname

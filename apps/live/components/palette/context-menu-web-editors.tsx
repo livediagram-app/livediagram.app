@@ -19,7 +19,7 @@ import {
   type ShapeElement,
   type StatItem,
   type WebRows,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';

@@ -6,9 +6,9 @@
 // counter, shared by the composer and the panel's message popover.
 
 import { forwardRef, useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
-import { AVATAR_SAY_MAX_CHARS, AVATAR_SAY_MAX_WORDS, countWords } from '@livediagram/api-schema';
-import { lucideSend } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { AVATAR_SAY_MAX_CHARS, AVATAR_SAY_MAX_WORDS, countWords } from '@liveplanner/api-schema';
+import { lucideSend } from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 import { nextDraft, SPEECH_COUNTER_FROM_WORDS } from '@/lib/avatar-speech';
 
 export const SendIcon = lucideGlyph(lucideSend, 14);

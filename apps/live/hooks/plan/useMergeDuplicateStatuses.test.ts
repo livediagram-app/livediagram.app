@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import { presetSetup, statusColumn, type Item } from '@livediagram/items';
+import type { Tab } from '@liveplanner/document';
+import { presetSetup, statusColumn, type Item } from '@liveplanner/items';
 import { useMergeDuplicateStatuses } from './useMergeDuplicateStatuses';
 
 // docs/specs/026-plan/plan-board.md "One name, one state": two states of one name merge into the first.

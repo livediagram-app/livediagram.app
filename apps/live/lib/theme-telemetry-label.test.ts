@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { THEMES } from '@livediagram/document';
-import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
+import { THEMES } from '@liveplanner/document';
+import { TELEMETRY_TYPE_PATTERN } from '@liveplanner/api-schema';
 import { themeTelemetryLabel } from './custom-theme-registry';
 
 // docs/specs/017-telemetry/telemetry.md's rule is categorical: a telemetry `type` is a preset token, never

@@ -1,6 +1,6 @@
 'use client';
 
-import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@livediagram/ui';
+import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@liveplanner/ui';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 

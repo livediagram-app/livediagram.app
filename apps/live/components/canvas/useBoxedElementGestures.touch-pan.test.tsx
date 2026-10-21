@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createSticky } from '@livediagram/document';
+import { createSticky } from '@liveplanner/document';
 import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
 import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
 import { useBoxedElementGestures } from './useBoxedElementGestures';

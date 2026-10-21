@@ -4,7 +4,7 @@
 // that can become stock colours, and the snap itself, as one commit (one undo step).
 
 import { useMemo } from 'react';
-import { snapTabColours, snappableCustomColours, type Element } from '@livediagram/document';
+import { snapTabColours, snappableCustomColours, type Element } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 

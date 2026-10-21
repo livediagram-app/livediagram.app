@@ -1,7 +1,7 @@
 # Migration readiness: Google Drive mirror, Miro import, Whiteboard import
 
 Research to de-risk three features that let a user bring 100+ boards from other
-tools into livediagram and keep them mirrored in their own Google Drive. No
+tools into liveplanner and keep them mirrored in their own Google Drive. No
 product code. The decisions below turned the proposals into specs:
 [Board import](../specs/020-import-export/board-import.md),
 [Miro import](../specs/020-import-export/miro-import.md) and
@@ -25,7 +25,7 @@ Taken by the operator on 2026-09-27, after the first version of this report.
 | Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
 | Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
 | Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md)                      |
-| Drive bin          | Maps to the livediagram **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
+| Drive bin          | Maps to the liveplanner **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
 | Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | [Board import](../specs/020-import-export/board-import.md)                     |
 
 ## Headlines
@@ -56,7 +56,7 @@ Taken by the operator on 2026-09-27, after the first version of this report.
    tables, kanban, mockups, emoji or user story maps, nor connector waypoints.
 7. **Miro's clipboard carries the full board, pen strokes included,** behind a
    trivial obfuscation (third-party reverse engineering). Miro's terms forbid
-   reverse engineering, so livediagram does not use it (decided).
+   reverse engineering, so liveplanner does not use it (decided).
 8. **Microsoft Graph converts a `.whiteboard` file to HTML or PDF**
    (`GET /drive/items/{id}/content?format=html`), and Microsoft ships a
    PowerShell cmdlet that does it. This only reaches work or school boards stored in
@@ -98,8 +98,8 @@ and a demo-free submission.
 | The app must call `files.get` to check permissions before editing and set `X-Goog-Drive-Resource-Keys` when `resourceKeys` is present.                                                                     | Verified                                                       | [G14]               |
 | Opening a file via "Open with" grants the app `drive.file` access to that file.                                                                                                                            | Verified (scope wording "files ... that you open with an app") | [G1]                |
 | "Default MIME types / extensions" declare files the app is uniquely built to open; docs ask for "standard media types only".                                                                               | Verified                                                       | [G13]               |
-| A made-up type such as `application/vnd.livediagram+json` is accepted as a default MIME type.                                                                                                              | Unverified                                                     | needs E-A5          |
-| **Double-click** on a `.livediagram` file opens livediagram. The docs only describe the right-click "Open with" menu and say the most recently installed app is used "until the user chooses another app". | Unverified                                                     | needs E-A5          |
+| A made-up type such as `application/vnd.liveplanner+json` is accepted as a default MIME type.                                                                                                              | Unverified                                                     | needs E-A5          |
+| **Double-click** on a `.liveplanner` file opens liveplanner. The docs only describe the right-click "Open with" menu and say the most recently installed app is used "until the user chooses another app". | Unverified                                                     | needs E-A5          |
 | Marketplace listing: no listing fee; a **public** listing is reviewed by Google ("several days") and requires completed OAuth verification and brand-clean name, icon and screenshots.                     | Verified                                                       | [G15], [G16], [G17] |
 | Marketplace review rule for Drive apps: store files in a user-picked or app-specific folder, never dump them in My Drive root.                                                                             | Verified                                                       | [G16]               |
 
@@ -117,7 +117,7 @@ Double-click behaviour must be tested before the spec promises it.
 | A popup opened without transient user activation is blocked by browser popup blockers, so silent background renewal fails.                                                          | Verified by the GIS requirement above; browser behaviour itself not re-tested here   | [G18]        |
 | "User authorization does not require the use of cookies", so third-party-cookie blocking does not break the token or code model.                                                    | Verified                                                                             | [G21]        |
 | On iOS, GIS requires `redirect` mode for the **Sign In With Google** button because of ITP. For OAuth code flow, `ux_mode: 'redirect'` is available and avoids popups entirely.     | Verified (sign-in button); Unverified that iOS Safari breaks the authorisation popup | [G22], [G20] |
-| A page setting `Cross-Origin-Opener-Policy: same-origin` can break the popup handshake. livediagram sets no COOP header today (repo search).                                        | Verified (GIS note + repo grep)                                                      | [G22]        |
+| A page setting `Cross-Origin-Opener-Policy: same-origin` can break the popup handshake. liveplanner sets no COOP header today (repo search).                                        | Verified (GIS note + repo grep)                                                      | [G22]        |
 
 **Implication:** the Worker broker is necessary for "sync while a tab is open"
 without a click every hour. Self-hosters without a client secret fall back to
@@ -178,14 +178,14 @@ subset omits these).
 | Claim                                                                                                                                                                                                                      | Status                                                                                                           | Source       |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------ |
 | Google APIs support CORS for bearer-token calls from the browser.                                                                                                                                                          | Verified                                                                                                         | [G18]; E-1   |
-| `upload/drive/v3/files` (multipart and resumable) and `drive/v3/changes` answer preflights for origin `https://livediagram.app` with methods incl. PATCH and headers `authorization, content-type, x-upload-content-type`. | Verified                                                                                                         | E-1          |
+| `upload/drive/v3/files` (multipart and resumable) and `drive/v3/changes` answer preflights for origin `https://liveplanner.app` with methods incl. PATCH and headers `authorization, content-type, x-upload-content-type`. | Verified                                                                                                         | E-1          |
 | Multipart upload carries metadata plus content in one request, for files **up to 5 MB**; resumable is for larger files.                                                                                                    | Verified                                                                                                         | [G34]        |
 | The resumable session URI (`Location`) is readable cross-origin.                                                                                                                                                           | Unverified (the 401 response exposes only `X-GUploader-UploadID` among custom headers; a real session is needed) | E-1, E-A4    |
 | `contentHints.thumbnail.image` is URL-safe base64 in the metadata; **PNG, GIF or JPG**, min width 220 px, max 2 MB, recommended 1600 px; used only when Drive cannot make its own; invalidated on each content change.     | Verified                                                                                                         | [G35], [G29] |
 | `thumbnailLink` is not intended for direct web use because of CORS.                                                                                                                                                        | Verified                                                                                                         | [G29]        |
 
 **Implication:** each mirror write is one multipart `files.update` for the
-`.livediagram` JSON (with a PNG thumbnail in `contentHints`) and one for the
+`.liveplanner` JSON (with a PNG thumbnail in `contentHints`) and one for the
 `.svg` preview, both from the browser. Documents whose JSON exceeds 5 MB need
 resumable upload (verify E-A4 first).
 
@@ -193,7 +193,7 @@ resumable upload (verify E-A4 first).
 
 - **Thumbnail:** rasterise the existing SVG snapshot to PNG in the browser for
   `contentHints`; SVG is not accepted there.
-- **Trash:** livediagram has no diagram Trash yet; it is being specified
+- **Trash:** liveplanner has no diagram Trash yet; it is being specified
   separately (see [Decisions](#decisions)). A Drive bin maps to it; a restore in
   Drive restores the document; a Drive permanent delete (`removed: true`)
   empties the document from Trash.
@@ -202,7 +202,7 @@ resumable upload (verify E-A4 first).
 - **Quota budget:** polling `changes.list` every 5 minutes plus a write per
   autosave does not fit 10M users under the free daily threshold. The
   [proposed sync cadence](#proposed-sync-cadence) does.
-- **Self-hosters:** files created by livediagram.app's Google project are not
+- **Self-hosters:** files created by liveplanner.app's Google project are not
   visible to a self-hoster's project (`drive.file` is per app). Unverified but
   follows from the scope's per-app grant; E-A6.
 
@@ -271,7 +271,7 @@ logic. Units assume `files.update` costs 50 (edit) and `changes.list` 100
 | ------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DRIVE_POLLER`                             | one tab per browser   | The Web Locks API elects one tab to poll and write; other tabs of the same browser do neither.                                                                                      |
 | `DRIVE_CATCH_UP`                           | on arrival            | The poller runs `changes.list` from the stored page token once when it takes the lock, and re-uploads any document whose `saved_at` is newer than its mirrored revision.            |
-| `DRIVE_POLL_INTERVAL_MS`                   | 20 minutes            | Poll only while a livediagram tab is visible; never while hidden.                                                                                                                   |
+| `DRIVE_POLL_INTERVAL_MS`                   | 20 minutes            | Poll only while a liveplanner tab is visible; never while hidden.                                                                                                                   |
 | `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 minutes             | On window focus or `visibilitychange` to visible, poll if the last poll is older than this.                                                                                         |
 | `DRIVE_CHANGES_PAGE_SIZE`                  | 1,000                 | The maximum, so a catch-up is usually one call.                                                                                                                                     |
 | `DRIVE_WRITE_IDLE_MS`                      | 60 seconds            | Mirror a document once it has had no edits for this long.                                                                                                                           |
@@ -361,7 +361,7 @@ From the OpenAPI spec [M10] (last commit 2026-04-22) and the Web SDK
 | Doc format (Miro doc)                     | Yes                | structured content                                                                                                                                              | Verified                                |
 | Mind map nodes                            | Experimental       | `/v2-experimental/boards/{id}/mindmap_nodes`: text nodes, `isRoot`, `direction`                                                                                 | Verified                                |
 | Code widget                               | Experimental       | code, language, title                                                                                                                                           | Verified                                |
-| Groups                                    | Yes                | `/groups` endpoints (livediagram has no groups, so dropped)                                                                                                     | Verified                                |
+| Groups                                    | Yes                | `/groups` endpoints (liveplanner has no groups, so dropped)                                                                                                     | Verified                                |
 | Tags                                      | Yes                | `/tags`                                                                                                                                                         | Verified                                |
 | **Pen / freehand strokes**                | **No**             | Web SDK lists "Stroke" as unsupported; third party reports REST returns `paint` items with no geometry                                                          | Verified (SDK); Unverified (REST shape) |
 | Link previews (`preview`)                 | Partly             | listed in the `type` filter; third party reports `isSupported:false` and no data                                                                                | Unverified                              |
@@ -458,15 +458,15 @@ Optional, only if there are too many boards to do by hand: the third-party
 [PanoramicData.MicrosoftWhiteboardExport](https://github.com/panoramicdata/PanoramicData.MicrosoftWhiteboardExport)
 (MIT) bulk-exports every board. It drives a signed-in browser and reads the
 app's token, so read its code before running it; it is an archive aid, not
-something livediagram depends on.
+something liveplanner depends on.
 
 ## Experiments run
 
 - **E-1 Drive CORS preflights** (2026-09-27): `curl -X OPTIONS` with
-  `Origin: https://livediagram.app` against
+  `Origin: https://liveplanner.app` against
   `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
   `...uploadType=resumable` and `https://www.googleapis.com/drive/v3/changes`:
-  all `200`, `access-control-allow-origin: https://livediagram.app`, methods
+  all `200`, `access-control-allow-origin: https://liveplanner.app`, methods
   `DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT`, headers
   `authorization,content-type,x-upload-content-type`, max-age 3600. An
   unauthenticated resumable POST returned `401` with ACAO set and
@@ -501,7 +501,7 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
 | E-A2 | Refresh-token broker round trip on a Worker (code flow, AES-GCM at rest, refresh, revoke)                                                     | same                                  |
 | E-A3 | Does `getStartPageToken` advance on changes to files the app cannot see? (cheap 5-unit poll gate)                                             | same                                  |
 | E-A4 | Resumable upload from the browser: is `Location` exposed on the `200` session response?                                                       | same                                  |
-| E-A5 | Custom MIME type and `.livediagram` extension in Drive UI integration; single-click, double-click, "Open with" behaviour                      | same, public HTTPS Open URL (staging) |
+| E-A5 | Custom MIME type and `.liveplanner` extension in Drive UI integration; single-click, double-click, "Open with" behaviour                      | same, public HTTPS Open URL (staging) |
 | E-A6 | A second Cloud project (self-host) cannot see files created by the first                                                                      | two projects                          |
 | E-B1 | Miro image URL (`redirect=false`, `format=original`): host and CORS headers of the 60-second URL                                              | Miro developer team app               |
 | E-B2 | Token scope across teams; REST shape of pen strokes and link previews on a real board                                                         | same                                  |

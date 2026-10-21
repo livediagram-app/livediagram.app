@@ -1,6 +1,6 @@
 'use client';
 
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibraryItem } from '@liveplanner/api-schema';
 import { LibraryItemThumbnail } from '@/components/primitives/LibraryItemThumbnail';
 import { LIBRARY_SHAPE_DND_MIME } from '@/lib/shape-library-dnd';
 

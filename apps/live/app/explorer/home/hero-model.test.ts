@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
 import { HERO_SHEETS, heroGreeting, heroPills, heroSheets } from './hero-model';
 
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"): the greeting by hour, the pills' words and

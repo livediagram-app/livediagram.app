@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isDefaultMindConnectorLook, layoutMindTree, type Element } from '@livediagram/document';
+import { isDefaultMindConnectorLook, layoutMindTree, type Element } from '@liveplanner/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the hierarchy starters redesigned together

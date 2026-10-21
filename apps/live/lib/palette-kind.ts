@@ -3,7 +3,7 @@
 // an infographic page, Slide, Article, Wireframe and Logo for theirs. In Article the strip holds the
 // article's formatting (its page toolbar, docked: lib/article/article-dock.ts) in place of the
 // category bar. Always the kind of the page someone is on: it is never shown or chosen.
-import type { PageKind } from '@livediagram/document';
+import type { PageKind } from '@liveplanner/document';
 import { useCurrentPageKind } from './current-page-kind';
 
 export type PaletteKind = 'design' | 'slide' | 'article' | 'wireframe' | 'logo';

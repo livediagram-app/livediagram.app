@@ -10,7 +10,7 @@ import {
   type Element,
   type Layer,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { debugLog } from './debug-log';
 
 type Point = { x: number; y: number };

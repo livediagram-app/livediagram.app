@@ -3,13 +3,13 @@
 // mxGraphModel snippet, usually compressed) or `{ data, w, h, title }` (an image). Each item
 // converts through the same mapping as a page, its elements moved to start at (0, 0). Never throws.
 
-import { parseInert } from '@livediagram/ui/trusted-types';
+import { parseInert } from '@liveplanner/ui/trusted-types';
 import {
   contentBounds,
   duplicateElements,
   type Element,
   type ImageElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';

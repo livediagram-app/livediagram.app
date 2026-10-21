@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardSlot, Tab } from '@livediagram/document';
+import type { DashboardSlot, Tab } from '@liveplanner/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';
 

@@ -5,7 +5,7 @@
 // and the form itself are the page's four states; the form's own flow is FormFill.
 import { useEffect, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
-import type { PublicFormResponse } from '@livediagram/api-schema';
+import type { PublicFormResponse } from '@liveplanner/api-schema';
 import { formCodeFromPath } from '@/lib/form-path';
 import { loadPublicForm, sendFormResponse } from '@/lib/api/forms-public';
 import { FormCoverBand } from '../FormCoverBand';
@@ -13,7 +13,7 @@ import { formLookProps } from '../form-look';
 import { FORM_ACCENT, FormFill } from './FormFill';
 import type { SubmitOutcome } from './useFormFill';
 import { FormFooter } from './FormFooter';
-import { MadeWithLivediagram } from './MadeWithLivediagram';
+import { MadeWithLiveplanner } from './MadeWithLiveplanner';
 
 // The tab's canvas style behind the form, fetched only for a form that has one (most keep a plain backdrop).
 const FormCanvasLayer = dynamic(() => import('./FormCanvasLayer').then((m) => m.FormCanvasLayer), {
@@ -53,7 +53,7 @@ export function FormRespondPage() {
         : page.data.heading
       : null;
   useEffect(() => {
-    if (heading) document.title = `${heading} | livediagram`;
+    if (heading) document.title = `${heading} | liveplanner`;
   }, [heading]);
 
   // The form's look (its tab's theme, finish and font) dresses the whole page, the backdrop included.
@@ -111,7 +111,7 @@ export function FormRespondPage() {
         {page.kind === 'ready' && page.data.state === 'open' ? (
           <FormFill
             form={page.data.form}
-            draftKey={`livediagram:form:${page.code}`}
+            draftKey={`liveplanner:form:${page.code}`}
             footer={<FormFooter code={page.code} />}
             submit={async (state): Promise<SubmitOutcome> => {
               const r = await sendFormResponse(page.code, state);
@@ -190,7 +190,7 @@ function Notice({
         </button>
       ) : null}
       <p className="mt-8">
-        <MadeWithLivediagram />
+        <MadeWithLiveplanner />
       </p>
     </div>
   );

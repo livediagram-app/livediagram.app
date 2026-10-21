@@ -3,7 +3,7 @@
 // content is sniffed, never the file name: an mxfile, a bare mxGraphModel,
 // an SVG carrying one in `content`, or a PNG carrying one in a text chunk.
 
-import { parseInert } from '@livediagram/ui/trusted-types';
+import { parseInert } from '@liveplanner/ui/trusted-types';
 import { BudgetExceeded, type ByteBudget } from '@/lib/inflate';
 import { base64Bytes, decompressDiagram } from './inflate';
 import { extractPngDiagram, isPng } from './png';

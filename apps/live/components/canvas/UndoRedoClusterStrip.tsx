@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard, RedoIcon, UndoIcon } from '@livediagram/ui';
+import { HoverCard, RedoIcon, UndoIcon } from '@liveplanner/ui';
 import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
 
 // The Undo / Redo strip in the bottom-right cluster: the leftmost item,

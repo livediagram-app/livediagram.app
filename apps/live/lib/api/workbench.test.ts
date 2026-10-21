@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
-import type { WorkbenchSessionResponse } from '@livediagram/api-schema';
+import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import type { WorkbenchSessionResponse } from '@liveplanner/api-schema';
 import { registerTokenProvider, setTokenProvider } from './core';
 import {
   apiAnswerPairingRequest,
@@ -150,7 +150,7 @@ describe('the pairing calls', () => {
     const request = {
       origin: 'https://127.0.0.1:5175',
       name: 'Acme Editor',
-      tokenName: 'livediagram CLI',
+      tokenName: 'liveplanner CLI',
       expiresAt: 5,
       status: 'pending',
     };

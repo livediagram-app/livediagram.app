@@ -5,7 +5,7 @@ import {
   type LaserTrail,
   type PresenceCoalescer,
 } from './presence-coalescer';
-import type { AvatarPresence } from '@livediagram/api-schema';
+import type { AvatarPresence } from '@liveplanner/api-schema';
 
 // The coalescer is the one part of the room that treats a packet as a sample
 // rather than an event: many arrive per frame and exactly one state commit

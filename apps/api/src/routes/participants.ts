@@ -5,8 +5,8 @@ import {
   isProfilePictureUrl,
   MAX_COLOR_LEN,
   MAX_PARTICIPANT_NAME_LEN,
-} from '@livediagram/api-schema';
-import { isSafeColourValue } from '@livediagram/document';
+} from '@liveplanner/api-schema';
+import { isSafeColourValue } from '@liveplanner/document';
 import { getParticipant, setParticipantPicture, upsertParticipant } from '../db';
 import { badRequest, forbidden, json, notFound, signInRequired } from '../responses';
 import type { ParticipantDTO } from '../types';
@@ -64,7 +64,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     )
       return badRequest('missing name/color');
     // A colour is painted into every peer's CSS (a card's stripe, a cursor): one that could load
-    // something from outside is no colour (@livediagram/document unsafe-colours.ts).
+    // something from outside is no colour (@liveplanner/document unsafe-colours.ts).
     if (!isSafeColourValue(body.color)) return badRequest('invalid color');
     // Cap the presence identity: it's broadcast to every peer in the room.
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {

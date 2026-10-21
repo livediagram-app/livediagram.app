@@ -3,8 +3,8 @@
 // retry the rest a concurrent write moved on. A failure after some items landed (a refusal while building a retry,
 // or still busy after the last attempt) carries them (`items`, `rev`, as a success's answer), so the caller keeps
 // them rather than taking the whole request as unwritten, and never sends a landed tally again.
-import type { ItemsResponse } from '@livediagram/api-schema';
-import { ITEM_WRITE_RETRIES, type Item } from '@livediagram/items';
+import type { ItemsResponse } from '@liveplanner/api-schema';
+import { ITEM_WRITE_RETRIES, type Item } from '@liveplanner/items';
 import { readItems, updateItemsAtRev } from '../db';
 import { json } from '../responses';
 import type { RouteContext } from './context';

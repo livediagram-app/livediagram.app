@@ -1,4 +1,4 @@
-import type { CtaSurface } from '@livediagram/api-schema';
+import type { CtaSurface } from '@liveplanner/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
 import { BuildWithAiLink } from './BuildWithAiLink';

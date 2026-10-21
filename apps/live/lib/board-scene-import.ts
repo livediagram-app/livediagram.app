@@ -4,7 +4,7 @@
 // "new-document"): each board its own document, named and dated as the board. Needs no editor
 // state, so the editor's Import dialog and the Explorer page share it.
 
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 import { landBoardScene, type LandedBoardScene } from '@/lib/board-scene/land';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import { mergeNotes, type BoardSceneReport } from '@/lib/board-scene/report';
@@ -27,7 +27,7 @@ import {
   importMarksUse,
   tabDataBytes,
   type CreationIntent,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { track } from '@/lib/telemetry';
 import { ApiError, apiCreateDocument } from '@/lib/api-client';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';

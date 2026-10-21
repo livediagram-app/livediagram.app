@@ -2,7 +2,7 @@
 // "A page's own paper"): the page's surface, and the tab theme's map for each surface. Undefined off Pages
 // mode or where no page has a fill, so the canvas keeps its one-map fast path.
 import { useMemo } from 'react';
-import { elementPageSurfaces, type Element, type LaidOutPage } from '@livediagram/document';
+import { elementPageSurfaces, type Element, type LaidOutPage } from '@liveplanner/document';
 import type { PageView } from '@/lib/stock-colour-projector';
 import { themeViewMap } from '@/lib/themes';
 

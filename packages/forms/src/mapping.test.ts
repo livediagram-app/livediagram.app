@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CustomFieldDef, ItemTypeDef } from '@livediagram/items';
+import type { CustomFieldDef, ItemTypeDef } from '@liveplanner/items';
 import {
   MAPPABLE_KINDS,
   NEW_FIELD_KIND,

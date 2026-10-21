@@ -3,10 +3,10 @@
 // record shape and every operation on it live in ./offline-store.ts.
 
 import { upgradeStores } from './legacy-offline-store';
-import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livediagram/ui';
+import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@liveplanner/ui';
 import type { OfflineDocumentRecord } from './offline-store';
 
-const DB_NAME = 'livediagram-offline';
+const DB_NAME = 'liveplanner-offline';
 // Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
 // ./legacy-offline-store moves every record across.
 const DB_VERSION = 2;

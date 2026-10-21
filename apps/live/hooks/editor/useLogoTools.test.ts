@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage, type Element } from '@livediagram/document';
+import { layOutPages, newLogoPage, type Element } from '@liveplanner/document';
 import { mirrorCopies } from './useLogoTools';
 
 // docs/specs/007-editor/logo-pages.md "Mirror": Mirror Copy reflects fresh copies.

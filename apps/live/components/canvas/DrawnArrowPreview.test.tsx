@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { arrowheadShapeOf, arrowheadSizeOf, type ArrowElement } from '@livediagram/document';
+import { arrowheadShapeOf, arrowheadSizeOf, type ArrowElement } from '@liveplanner/document';
 import { arrowheadMarkerId } from './arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 

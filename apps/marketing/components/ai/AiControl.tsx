@@ -1,5 +1,5 @@
-import { lucideEye, lucideKey, lucideShieldCheck, lucideCpu } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideEye, lucideKey, lucideShieldCheck, lucideCpu } from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 
 // In your control (docs/specs/019-marketing/build-with-ai.md "The page" 6): the trust facts, each one true of the
 // shipped MCP server (docs/specs/015-api/mcp-server.md §3, §4.11).
@@ -22,7 +22,7 @@ const FACTS = [
   {
     icon: lucideGlyph(lucideCpu, 18),
     title: 'Your AI does the thinking',
-    body: 'livediagram runs no AI model of its own here. It checks, lays out and saves what your tool asks for.',
+    body: 'liveplanner runs no AI model of its own here. It checks, lays out and saves what your tool asks for.',
   },
 ];
 

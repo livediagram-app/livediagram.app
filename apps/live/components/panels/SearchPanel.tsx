@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livediagram/ui';
-import type { Tab } from '@livediagram/document';
+import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@liveplanner/ui';
+import type { Tab } from '@liveplanner/document';
 import {
   buildSearchResults,
   type CommandSearchItem,

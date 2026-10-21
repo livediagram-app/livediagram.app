@@ -18,7 +18,7 @@ import {
   StrikethroughIcon,
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
-import type { RunBoolKey } from '@livediagram/document';
+import type { RunBoolKey } from '@liveplanner/document';
 import {
   TOOLBAR_CONTROL_REST,
   TOOLBAR_DIVIDER as TOOLBAR_DIVIDER_CLASS,

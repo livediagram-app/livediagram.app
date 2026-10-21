@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetRequest } from '@livediagram/api-schema';
-import { parseEditOperations } from '@livediagram/edit-operations';
+import type { ChangesetRequest } from '@liveplanner/api-schema';
+import { parseEditOperations } from '@liveplanner/edit-operations';
 import { argvToOperationLine } from '../argv-line';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
@@ -14,7 +14,7 @@ const written = {
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver: 1 },
   results: [],
-  text: '- n1  square "A"\nrev 5→6 · cs_1 · lint clean · revert: livediagram changeset revert d cs_1',
+  text: '- n1  square "A"\nrev 5→6 · cs_1 · lint clean · revert: liveplanner changeset revert d cs_1',
   warnings: [],
   lint: null,
 };
@@ -153,7 +153,7 @@ describe('tab diff', () => {
       status: 404,
       message: 'no copy of rev 4; tab diff compares against a revision this CLI has read',
       lines: ['read copies: rev 2'],
-      hint: 'livediagram tab view "Auth flow" --tab "Overview"',
+      hint: 'liveplanner tab view "Auth flow" --tab "Overview"',
     });
     const none = await tabDiff.run!(contextOf(api), { doc: 'Auth flow', since: 4 }).catch(
       (e: unknown) => e,

@@ -2,8 +2,8 @@
 
 // The current card's part of the item panel header (docs/specs/026-plan/plan-board.md "The header reads part by
 // part"): its Card Type picker as a bordered pill, and its number as a quiet tag that copies "#12".
-import type { ItemTypeDef } from '@livediagram/items';
-import { ChevronDownIcon, Tooltip, useCopiedFlash } from '@livediagram/ui';
+import type { ItemTypeDef } from '@liveplanner/items';
+import { ChevronDownIcon, Tooltip, useCopiedFlash } from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 

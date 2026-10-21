@@ -6,7 +6,7 @@
 // styles the Plan forms share.
 import type { ReactNode } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@livediagram/ui';
+import { DialogCloseButton } from '@liveplanner/ui';
 
 type ShellProps = {
   label: string;

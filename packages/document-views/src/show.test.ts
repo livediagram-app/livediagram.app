@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTable, ELEMENT_FIELD_NAMES, type Element } from '@livediagram/document';
+import { createTable, ELEMENT_FIELD_NAMES, type Element } from '@liveplanner/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';

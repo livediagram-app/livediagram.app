@@ -5,7 +5,7 @@
 // watering can. Each is a few marker strokes from the sketch kit, anchored and seeded so it is
 // the same drawing wherever it lands. Pure.
 
-import type { FreehandElement } from '@livediagram/document';
+import type { FreehandElement } from '@liveplanner/document';
 import { arcPts } from './template-sketch-figures';
 import {
   BOLD,

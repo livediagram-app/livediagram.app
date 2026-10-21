@@ -3,7 +3,7 @@
 // The Custom Number Format popover (docs/specs/029-sheets/sheet.md "Formatting"): a Format Code field, a live Preview
 // of the active cell's value in it, the codes people use most, then Cancel and Apply (one change, one undo step).
 import { useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, TextInput } from '@liveplanner/ui';
 import {
   FORMAT_CODE_MAX,
   cellKey,
@@ -12,7 +12,7 @@ import {
   isArray,
   isError,
   scalarOf,
-} from '@livediagram/sheets';
+} from '@liveplanner/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { useSheetController } from '../sheet-controller';

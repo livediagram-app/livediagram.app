@@ -4,7 +4,7 @@
 // on a filled page for.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createText, layOutPages, newSlidePage, type Element } from '@livediagram/document';
+import { createText, layOutPages, newSlidePage, type Element } from '@liveplanner/document';
 import { usePageView } from './usePageView';
 
 const plain = layOutPages([newSlidePage('s', 'slide')]);

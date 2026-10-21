@@ -15,7 +15,7 @@ import {
   keptAnimation,
   type AnimationSetId,
   type AnimationSpeed,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   NOOP,
   SpeedAndRepeatRows,

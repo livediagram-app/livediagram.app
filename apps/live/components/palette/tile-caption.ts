@@ -1,4 +1,4 @@
-import { headlineCase } from '@livediagram/api-schema';
+import { headlineCase } from '@liveplanner/api-schema';
 
 // The short name a palette tile shows, derived from its action label.
 //

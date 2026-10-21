@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button } from '@livediagram/ui';
+import { Button } from '@liveplanner/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 

@@ -6,7 +6,7 @@
 // is the rendered font size. Colours are light-reference: what the line looks like on a light
 // board. 'ink' names the board's own adaptive ink.
 
-import type { TextSizing } from '@livediagram/document';
+import type { TextSizing } from '@liveplanner/document';
 
 export type SceneAppearance = 'light' | 'dark';
 

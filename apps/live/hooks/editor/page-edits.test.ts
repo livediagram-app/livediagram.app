@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Element, type Tab } from '@livediagram/document';
+import { pagesOf, layOutPages, type Element, type Tab } from '@liveplanner/document';
 import { pageEdits } from './page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

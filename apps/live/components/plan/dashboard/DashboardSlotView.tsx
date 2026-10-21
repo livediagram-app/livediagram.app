@@ -5,10 +5,10 @@
 // empty, an invitation to drag something from the palette into it. Its settings sit in one cog: the cog of what it
 // shows, holding the slot's Slot section too, or the slot's own Slot Settings cog (SlotCog), on hover or focus.
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
-import { CompactEmptyState, Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideGripVertical, lucideLayoutGrid } from '@livediagram/icons/lucide';
-import { dashboardNeighbour, moveDashboardSlot } from '@livediagram/document';
-import { DASHBOARD_SPANS, type DashboardLayout, type DashboardSlot } from '@livediagram/document';
+import { CompactEmptyState, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideGripVertical, lucideLayoutGrid } from '@liveplanner/icons/lucide';
+import { dashboardNeighbour, moveDashboardSlot } from '@liveplanner/document';
+import { DASHBOARD_SPANS, type DashboardLayout, type DashboardSlot } from '@liveplanner/document';
 import { DASHBOARD_GAP_PX } from '@/hooks/plan/slot-fit';
 import { useDashboard } from './dashboard-context';
 import { SLOT_SECTION, SlotSettings, type SlotSettingsValue } from './slot-menu';
@@ -21,7 +21,7 @@ import { SheetChartSource } from './SheetChartSource';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
 import { useSlotEnter } from './useSlotEnter';
 import { isCondensed } from './condense';
-import { isDashboardStyledType } from '@livediagram/document';
+import { isDashboardStyledType } from '@liveplanner/document';
 import { useCardStyle } from './useCardStyle';
 import { CardStyleSections } from './CardStyleSections';
 import { cardFrameStyle, cardInkClass, cardInkStyle } from './card-look';

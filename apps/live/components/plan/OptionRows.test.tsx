@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MenuTreeContext } from '@livediagram/ui';
+import { MenuTreeContext } from '@liveplanner/ui';
 import { OptionRows } from './OptionRows';
 
 // docs/specs/026-plan/plan-board.md "Option lists": one bordered box, a row per choice.

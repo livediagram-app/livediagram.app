@@ -7,7 +7,7 @@
 // localhost (a developer would not see their own changes for `maxAgeSeconds`) and where the runtime has no
 // Cache API (tests). Only a 200 is kept.
 
-import { isLoopbackHostname } from '@livediagram/api-schema';
+import { isLoopbackHostname } from '@liveplanner/api-schema';
 
 export async function edgeCached(
   url: URL,

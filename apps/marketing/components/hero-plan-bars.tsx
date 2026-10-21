@@ -14,8 +14,8 @@ import {
   lucidePlus,
   lucideSettings,
   lucideTableCellsMerge,
-} from '@livediagram/icons/lucide';
-import { ChevronDownIcon, Glyph, lucideGlyph, SearchIcon } from '@livediagram/ui';
+} from '@liveplanner/icons/lucide';
+import { ChevronDownIcon, Glyph, lucideGlyph, SearchIcon } from '@liveplanner/ui';
 
 // Which tab a Plan scene is (hero-scene-data.ts): its bar follows.
 export type PlanTab = 'board' | 'sheet' | 'form';

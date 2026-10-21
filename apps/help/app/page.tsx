@@ -6,7 +6,7 @@ import {
   CONTACT_FORM_URL,
   GlyphDisc,
   REPO_URL,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { SearchInput } from '@/components/SearchInput';
 import { CategoryCard, guideCount } from '@/components/CategoryCard';
 import { CategoryArt } from '@/components/category-art';
@@ -24,12 +24,12 @@ import { HOME_SECTIONS, POPULAR_TOPICS, START_HERE, STILL_STUCK } from '@/lib/ho
 import { helpMetadata } from '@/lib/seo';
 import { ArrowRightIcon, ExternalLinkIcon, MessageIcon } from '@/lib/chrome-icons';
 
-// The one page that spells out the " | livediagram" suffix: the root layout's title template only reaches child
+// The one page that spells out the " | liveplanner" suffix: the root layout's title template only reaches child
 // segments, not this root index.
 export const metadata: Metadata = helpMetadata({
-  title: 'Help | livediagram',
+  title: 'Help | liveplanner',
   description:
-    'Guides, tutorials, and answers for livediagram. Browse feature documentation, getting-started guides, and troubleshooting.',
+    'Guides, tutorials, and answers for liveplanner. Browse feature documentation, getting-started guides, and troubleshooting.',
   path: '/help/',
 });
 
@@ -79,7 +79,7 @@ export default function HelpHome() {
       <HelpHero
         home
         title="How can we help?"
-        lede="Guides and answers for every part of livediagram, from your first diagram onwards."
+        lede="Guides and answers for every part of liveplanner, from your first diagram onwards."
       >
         <div className="mx-auto mt-5 flex flex-wrap justify-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">
@@ -129,7 +129,7 @@ export default function HelpHome() {
                 id="start-here"
                 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50"
               >
-                New to livediagram?
+                New to liveplanner?
               </h2>
               <ol className="mt-4 space-y-1">
                 {steps.map((a, i) => (

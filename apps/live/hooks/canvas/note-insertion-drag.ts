@@ -1,4 +1,4 @@
-import { ES_LANES, isBoxed, type Element, type ElementId } from '@livediagram/document';
+import { ES_LANES, isBoxed, type Element, type ElementId } from '@liveplanner/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
   canInsertBetweenOn,

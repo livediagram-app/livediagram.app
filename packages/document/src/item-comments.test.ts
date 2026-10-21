@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_COMMENTS_MAX, type Item, type ItemPerson } from '@livediagram/items';
+import { ITEM_COMMENTS_MAX, type Item, type ItemPerson } from '@liveplanner/items';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { Comment, CommentThread } from './comments';
 import {

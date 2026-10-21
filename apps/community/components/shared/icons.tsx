@@ -10,14 +10,14 @@ import {
   lucideTriangleAlert,
   lucideUser,
   lucideUsers,
-} from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+} from '@liveplanner/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
 
 // The Community app's own chrome glyphs, all through lucideGlyph (docs/specs/004-interface-design/
 // iconography.md).
 
 // The heart is shared with the landing page.
-export { HeartIcon } from '@livediagram/ui';
+export { HeartIcon } from '@liveplanner/ui';
 export const HashIcon = lucideGlyph(lucideHash, 15);
 export const SortIcon = lucideGlyph(lucideArrowUpDown, 15);
 export const CategoryIcon = lucideGlyph(lucideLayoutGrid, 15);

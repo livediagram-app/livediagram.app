@@ -1,4 +1,4 @@
-import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@livediagram/icons/lucide';
+import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@liveplanner/icons/lucide';
 
 import { Brand } from './Brand';
 import { CommunityFooterLink } from './community/CommunityFooterLink';
@@ -45,7 +45,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
     title: 'Resources',
     links: [
       { href: '/help/', label: 'Help Centre', icon: lucideGlyph(lucideBookOpen, ICON_SIZE) },
-      { href: '/help/about/what-is-livediagram/', label: 'About' },
+      { href: '/help/about/what-is-liveplanner/', label: 'About' },
       { href: '/status', label: 'Status' },
       { href: '/telemetry', label: 'Telemetry' },
     ],
@@ -120,9 +120,9 @@ export function SiteFooter() {
       <div className="border-t border-slate-100 dark:border-slate-800">
         <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-6 py-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400 sm:items-center sm:justify-between">
           <p>
-            {/* The build's year, inlined at build (@livediagram/next-config), never the clock: the prerender and
+            {/* The build's year, inlined at build (@liveplanner/next-config), never the clock: the prerender and
                 the browser render the same text whatever the date. */}
-            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}livediagram. MIT licensed.`}</span>
+            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}liveplanner. MIT licensed.`}</span>
           </p>
           <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
             <span className="inline-flex items-center gap-1.5">

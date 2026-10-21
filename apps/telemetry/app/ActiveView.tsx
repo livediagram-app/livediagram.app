@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import dynamic from 'next/dynamic';
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { DashboardView } from './DashboardView';
 import type { SectionFocus } from './SectionedView';
 import type { SectionKey, ViewKey } from './view-keys';

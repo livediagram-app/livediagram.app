@@ -5,23 +5,23 @@ import {
   driveFileName,
   isDriveFileId,
   isDriveLeaseHolder,
-  isLivediagramId,
+  isLiveplannerId,
   stripDriveName,
 } from './drive';
 
 describe('driveFileName', () => {
-  it('appends the .livediagram extension', () => {
+  it('appends the .liveplanner extension', () => {
     expect(driveFileName('Roadmap')).toBe(`Roadmap${DRIVE_FILE_EXTENSION}`);
   });
 });
 
 describe('stripDriveName', () => {
-  it('drops the .livediagram extension', () => {
-    expect(stripDriveName('Roadmap.livediagram')).toBe('Roadmap');
+  it('drops the .liveplanner extension', () => {
+    expect(stripDriveName('Roadmap.liveplanner')).toBe('Roadmap');
   });
 
   it('drops the extension case-insensitively and trims', () => {
-    expect(stripDriveName('  Plan.LIVEDIAGRAM ')).toBe('Plan');
+    expect(stripDriveName('  Plan.LIVEPLANNER ')).toBe('Plan');
   });
 
   it('keeps a name without the extension', () => {
@@ -29,12 +29,12 @@ describe('stripDriveName', () => {
   });
 
   it('answers null for a name that is empty once stripped', () => {
-    expect(stripDriveName('.livediagram')).toBeNull();
+    expect(stripDriveName('.liveplanner')).toBeNull();
     expect(stripDriveName('   ')).toBeNull();
   });
 
   it('truncates to the given maximum', () => {
-    expect(stripDriveName('abcdef.livediagram', 3)).toBe('abc');
+    expect(stripDriveName('abcdef.liveplanner', 3)).toBe('abc');
   });
 });
 
@@ -46,10 +46,10 @@ describe('id validators', () => {
     expect(isDriveFileId('x'.repeat(201))).toBe(false);
   });
 
-  it('accepts livediagram ids (uuid and short ids)', () => {
-    expect(isLivediagramId('0f5ca4af-9a8a-4a60-be5e-1179e5555880')).toBe(true);
-    expect(isLivediagramId('abc_123')).toBe(true);
-    expect(isLivediagramId('../etc')).toBe(false);
+  it('accepts liveplanner ids (uuid and short ids)', () => {
+    expect(isLiveplannerId('0f5ca4af-9a8a-4a60-be5e-1179e5555880')).toBe(true);
+    expect(isLiveplannerId('abc_123')).toBe(true);
+    expect(isLiveplannerId('../etc')).toBe(false);
   });
 
   it('accepts a lease holder of 1..64 url-safe characters', () => {
@@ -62,25 +62,25 @@ describe('id validators', () => {
 
 describe('driveRootName (docs/specs/022-drive-mirror/drive-mirror.md, "The root folder\'s name")', () => {
   it.each([
-    ['livediagram.app', 'livediagram'],
-    ['www.livediagram.app', 'livediagram'],
-    ['WWW.LiveDiagram.App', 'livediagram'],
-    ['staging.livediagram.app', 'livediagram (staging)'],
-    ['Staging.LIVEDIAGRAM.app', 'livediagram (staging)'],
-    ['localhost', 'livediagram (staging)'],
-    ['localhost:3000', 'livediagram (staging)'],
-    ['LOCALHOST:3002', 'livediagram (staging)'],
-    ['127.0.0.1', 'livediagram (staging)'],
-    ['127.0.0.1:3771', 'livediagram (staging)'],
-    ['[::1]', 'livediagram (staging)'],
-    ['[::1]:3000', 'livediagram (staging)'],
-    ['::1', 'livediagram (staging)'],
-    ['documents.example.org', 'livediagram (self-hosted)'],
-    ['documents.example.org:8443', 'livediagram (self-hosted)'],
-    ['192.168.1.20:3000', 'livediagram (self-hosted)'],
-    ['[2001:db8::1]:3000', 'livediagram (self-hosted)'],
-    ['livediagram.app.evil.example', 'livediagram (self-hosted)'],
-    ['staging.livediagram.app.example', 'livediagram (self-hosted)'],
+    ['liveplanner.app', 'liveplanner'],
+    ['www.liveplanner.app', 'liveplanner'],
+    ['WWW.LivePlanner.App', 'liveplanner'],
+    ['staging.liveplanner.app', 'liveplanner (staging)'],
+    ['Staging.LIVEPLANNER.app', 'liveplanner (staging)'],
+    ['localhost', 'liveplanner (staging)'],
+    ['localhost:3100', 'liveplanner (staging)'],
+    ['LOCALHOST:3002', 'liveplanner (staging)'],
+    ['127.0.0.1', 'liveplanner (staging)'],
+    ['127.0.0.1:3771', 'liveplanner (staging)'],
+    ['[::1]', 'liveplanner (staging)'],
+    ['[::1]:3100', 'liveplanner (staging)'],
+    ['::1', 'liveplanner (staging)'],
+    ['documents.example.org', 'liveplanner (self-hosted)'],
+    ['documents.example.org:8443', 'liveplanner (self-hosted)'],
+    ['192.168.1.20:3000', 'liveplanner (self-hosted)'],
+    ['[2001:db8::1]:3000', 'liveplanner (self-hosted)'],
+    ['liveplanner.app.evil.example', 'liveplanner (self-hosted)'],
+    ['staging.liveplanner.app.example', 'liveplanner (self-hosted)'],
   ])('%s → %s', (host, name) => {
     expect(driveRootName(host)).toBe(name);
   });

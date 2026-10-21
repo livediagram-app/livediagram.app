@@ -6,7 +6,7 @@ import {
   FLOATING_CONTROL_HOVER_CLASS,
   FLOATING_CONTROL_SIZE,
 } from '@/components/chrome/floating-controls';
-import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@liveplanner/ui';
 
 // Edge-menu UI primitives for TableView: the compact "⋯" trigger that
 // opens a column / row menu from the table's top / left edge, and the

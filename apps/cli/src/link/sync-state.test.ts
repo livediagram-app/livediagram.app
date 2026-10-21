@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { OverviewView } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+import type { OverviewView } from '@liveplanner/api-schema';
+import type { Tab } from '@liveplanner/document';
 import { tabHashes } from '../sync/pull-file';
 import type { MirrorFile } from './mirror-file';
 import type { TabHashes } from './mirror-scan';
@@ -16,17 +16,17 @@ const tab = (id: string, label: string): Tab => ({
 });
 
 async function tracked(tabs: Tab[] = [tab('t1', 'A'), tab('t2', 'B')]) {
-  const recorded: MirrorFile['livediagramSync']['tabs'] = {};
+  const recorded: MirrorFile['liveplannerSync']['tabs'] = {};
   const hashes: TabHashes = {};
   for (const [i, t] of tabs.entries()) {
     hashes[t.id] = await tabHashes(t);
     recorded[t.id] = { rev: i + 1, ...hashes[t.id]! };
   }
   const file: MirrorFile = {
-    kind: 'livediagram.document',
+    kind: 'liveplanner.document',
     schemaVersion: 1,
     document: { id: 'd1', name: 'Home', presentation: null, tabs },
-    livediagramSync: { host: 'https://livediagram.app', tabs: recorded },
+    liveplannerSync: { host: 'https://liveplanner.app', tabs: recorded },
   };
   return { file, hashes };
 }
@@ -116,7 +116,7 @@ describe('syncStateOf', () => {
     );
   });
 
-  it('reads a tab added or removed in livediagram as a remote change', async () => {
+  it('reads a tab added or removed in liveplanner as a remote change', async () => {
     const clean = await tracked();
     const added = readable([
       ['t1', 1],

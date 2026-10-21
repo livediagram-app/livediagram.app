@@ -30,7 +30,7 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
   heading, a 12px line, centred, with 16px of padding.
 - **Small** (`size="small"`): inside a popover, a menu, a dropdown list or a palette tab. A 28px brand badge, a 12px
   semibold heading, an 11px line, centred, with 12px of padding.
-- **Page** (`EmptyState` in `@livediagram/ui`): a page-sized list (the Explorer's views, the Trash, the Card Finder's
+- **Page** (`EmptyState` in `@liveplanner/ui`): a page-sized list (the Explorer's views, the Trash, the Card Finder's
   list), with the floating badge and its rings. Same copy rules.
 - **In place of one item.** Where a list's items are cards or rows on a known surface (Home's Jump back in), the empty state takes the size and place of one item, so an empty list looks like a list with one thing
   in it rather than a large centred message.
@@ -53,8 +53,8 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
 
 ## Building it
 
-- `CompactEmptyState` (`@livediagram/ui`) draws the regular and small sizes; `EmptyState` the page size.
-- `NoMatches` (`@livediagram/ui`) is the no-results state of a search or a filter: it takes the things' plural
+- `CompactEmptyState` (`@liveplanner/ui`) draws the regular and small sizes; `EmptyState` the page size.
+- `NoMatches` (`@liveplanner/ui`) is the no-results state of a search or a filter: it takes the things' plural
   noun, the words, how many filters, an optional line and an optional clear, and writes the heading with
   `noMatchTitle`. Every search or filter that can come back empty uses it, so the copy cannot drift.
 - `apps/live/empty-states.test.ts` fails the build on a "No <things> yet" or "No <things> found" written as bare JSX

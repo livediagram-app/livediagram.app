@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { canvasSurface, tabWindowNames, type Tab } from '@livediagram/document';
+import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, type renderTabToSvg } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';

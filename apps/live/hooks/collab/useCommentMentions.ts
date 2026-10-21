@@ -7,7 +7,7 @@
 // open the document). A personal document or a guest has none.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { assignHandles, type CommentMention } from '@livediagram/document';
+import { assignHandles, type CommentMention } from '@liveplanner/document';
 import { apiGetTeam, apiNotifyMention, type TeamListItem } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { teamMemberRows } from './team-member-rows';

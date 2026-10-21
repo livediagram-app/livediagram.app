@@ -1,8 +1,8 @@
-import { CLIENT_HEADER, CLIENT_KINDS, type ClientKind } from '@livediagram/api-schema';
+import { CLIENT_HEADER, CLIENT_KINDS, type ClientKind } from '@liveplanner/api-schema';
 
 // Which surface sent a changeset or a revert, for the Agent telemetry type
 // (docs/specs/024-agents/agent-changesets.md "Observability and telemetry", CS25): the MCP server,
-// the CLI and the editor say so in X-Livediagram-Client; anything else is a plain API caller.
+// the CLI and the editor say so in X-Liveplanner-Client; anything else is a plain API caller.
 export type FrontDoor = 'Mcp' | 'Cli' | 'Editor' | 'Api';
 
 const DOORS: Record<ClientKind, FrontDoor> = { mcp: 'Mcp', cli: 'Cli', editor: 'Editor' };

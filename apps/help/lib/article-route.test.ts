@@ -22,7 +22,7 @@ describe('parentRouteHref', () => {
     expect(parentRouteHref('/developers/working-with-documents/edit-operations/')).toBe(
       '/developers/working-with-documents/',
     );
-    expect(parentRouteHref('/about/what-is-livediagram/')).toBe('/about/');
+    expect(parentRouteHref('/about/what-is-liveplanner/')).toBe('/about/');
     expect(parentRouteHref('/canvas/')).toBe('/');
     expect(parentRouteHref('/')).toBe('/');
   });

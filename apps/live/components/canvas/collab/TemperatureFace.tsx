@@ -13,7 +13,7 @@ import {
   responseStats,
   responseTally,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,

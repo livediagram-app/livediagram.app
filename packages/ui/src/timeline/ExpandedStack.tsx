@@ -12,7 +12,7 @@
 // feed renders <StackedCard> unconditionally and mounts this after it
 // only while the run is open.
 
-import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
+import { cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
 import { TimelineCard } from './TimelineCard';
 import type { TimelineStack } from './stacking';
 import { pickRenderer } from './renderers';

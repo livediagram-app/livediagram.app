@@ -4,7 +4,7 @@ import {
   TEXT_BOX_LINE_HEIGHT_REM,
   TEXT_BOX_MAX_LINES,
   TEXTS_URL_PREFIX,
-} from '@livediagram/licences';
+} from '@liveplanner/licences';
 import { useEffect, useRef, useState } from 'react';
 
 type LicenceTextRef = { label: string; hash: string; lines: number };

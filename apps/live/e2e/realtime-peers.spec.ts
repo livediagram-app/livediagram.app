@@ -27,13 +27,13 @@ async function openAs(
   await ctx.addInitScript(
     ({ o, sig }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-        localStorage.setItem('livediagram:v2:name-confirmed', '1');
+        localStorage.setItem('liveplanner:v2:self-id', o);
+        if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
+        localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       }
       // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
       localStorage.setItem(
-        'livediagram:user-preferences:v1',
+        'liveplanner:user-preferences:v1',
         JSON.stringify({ workshopTourSeen: true }),
       );
     },

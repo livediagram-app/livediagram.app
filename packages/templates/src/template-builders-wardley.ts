@@ -20,7 +20,7 @@ import {
   createText,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { anchorToward } from './template-rake';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {

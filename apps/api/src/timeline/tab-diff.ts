@@ -22,7 +22,7 @@ import {
   type Comment,
   type Element,
   type ElementAction,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 type ThreadView = { comments?: Comment[]; resolved?: boolean };
 

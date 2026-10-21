@@ -2,7 +2,7 @@
 // poster, survey results, a progress report, a roadmap, an agenda, questions and answers, and a
 // profile. Same contract as page-layouts.ts: the page's content box in, uncoloured elements out, a
 // tall page stacking and a wide one setting side by side.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 function sectionDivider(k: Kit): Element[] {
@@ -37,7 +37,7 @@ function poster(k: Kit): Element[] {
       'One line that makes people stop and look twice.',
       { textSize: 'lg' },
     ),
-    k.text(x, H - u * 6, w, u * 6, 'livediagram.app · 2026', { textBold: true }),
+    k.text(x, H - u * 6, w, u * 6, 'liveplanner.app · 2026', { textBold: true }),
   ];
   if (k.wide) {
     const imgW = W * 0.55;

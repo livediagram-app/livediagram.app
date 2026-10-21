@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
 import { useHeroPresence } from './useHeroPresence';
 
 // docs/specs/013-workspace/explorer-home.md "The hero": it comes and goes with Home, folding away over the `long`

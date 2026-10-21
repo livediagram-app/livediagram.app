@@ -6,9 +6,9 @@ import {
   parseAgentPresenceRequest,
   type AgentPresenceResult,
   type ShareRole,
-} from '@livediagram/api-schema';
-import { resolveRef } from '@livediagram/document';
-import { buildViewModel } from '@livediagram/document-views';
+} from '@liveplanner/api-schema';
+import { resolveRef } from '@liveplanner/document';
+import { buildViewModel } from '@liveplanner/document-views';
 import { frontDoorOf } from '../changesets/front-door';
 import { getDocument, getParticipant, getTab } from '../db';
 import { personTagFor } from '../person-tag';

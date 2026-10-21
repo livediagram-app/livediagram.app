@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { frontDoorOf } from './front-door';
 
 const req = (client?: string) =>
-  new Request('https://api.test/', client ? { headers: { 'X-Livediagram-Client': client } } : {});
+  new Request('https://api.test/', client ? { headers: { 'X-Liveplanner-Client': client } } : {});
 
 describe('frontDoorOf', () => {
   it('names the MCP server, the CLI and the editor by their header', () => {

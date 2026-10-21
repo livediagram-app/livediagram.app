@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element } from '@livediagram/document';
+import type { ArrowElement, Element } from '@liveplanner/document';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 
 // The apply side of docs/specs/008-canvas/arrow-collision-avoidance.md: pure elements map, so the whole creation

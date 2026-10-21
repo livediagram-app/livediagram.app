@@ -1,7 +1,7 @@
 // The repository link's constants (docs/specs/027-repositories/blueprints/repository-link.md "Constants and
 // configuration"). `WAIT_SETTLE_MS` is `wait --for change`'s, reused by `sync --watch` (commands/wait.ts).
 
-export const LINK_FILE_NAME = 'livediagram.toml';
+export const LINK_FILE_NAME = 'liveplanner.toml';
 export const MIRROR_DEFAULT_LEVEL = 'index';
 export const MIRROR_DEFAULT_DIR = 'diagrams';
 export const INDEX_FILE_NAME = 'INDEX.md';

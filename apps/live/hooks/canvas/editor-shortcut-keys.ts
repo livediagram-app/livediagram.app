@@ -80,7 +80,7 @@ export type EditorKeyboardShortcutsDeps = {
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
-  addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
   onAddImage: (() => void) | null;
   // F enters the one-shot pencil (freehand) draw mode, mirroring the
   // palette's Pencil button. Distinct from the element-add shortcuts

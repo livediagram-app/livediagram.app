@@ -20,7 +20,7 @@ import {
   type PieAnim,
   type ProgressAnim,
   type RatingAnim,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { MenuToggleRow } from './context-menu-input-rows';
 
 // The "None" tile glyph — a dashed empty circle, sized to match a marker glyph.
@@ -40,8 +40,8 @@ import {
 } from '@/components/palette/animation-previews-existing';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { SpeedTiles, withNone } from '@/components/palette/context-menu-tiles';
-import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
-import { lucideChartColumn, lucideChartPie, lucideStar } from '@livediagram/icons/lucide';
+import { Glyph, lucideGlyph, Prims } from '@liveplanner/ui';
+import { lucideChartColumn, lucideChartPie, lucideStar } from '@liveplanner/icons/lucide';
 
 // Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
 // integer scale.

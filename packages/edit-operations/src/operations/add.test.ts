@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
@@ -106,7 +106,7 @@ describe('add with an element', () => {
     expect(rejection).toEqual({
       code: 'invalid_result',
       details: ['bad y: a finite number'],
-      hint: 'see the format: livediagram schema sticky',
+      hint: 'see the format: liveplanner schema sticky',
     });
   });
 });

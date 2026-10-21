@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { NAME_MAX_LENGTH } from '@liveplanner/document';
 import { refocusAfterField } from './refocus-after-field';
 
 // Inline rename input shared by the document title (EditorHeader), tabs

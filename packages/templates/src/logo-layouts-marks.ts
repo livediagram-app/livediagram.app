@@ -1,6 +1,6 @@
 // Logo marks (docs/specs/007-editor/logo-pages.md "Logo layouts"): a symbol alone, no name, to
 // build a mark from (several are shapes to Combine into one).
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 import { iconDisc } from './page-layout-parts';
 import { ICON, NAME, icon, word } from './logo-layout-kit';

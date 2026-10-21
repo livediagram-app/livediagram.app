@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PAGE_MOTIONS } from '@livediagram/document';
+import { PAGE_MOTIONS } from '@liveplanner/document';
 import { blurredDisc, paintMotionFrame, rgba, type MotionFrameCache } from './page-motion-canvas';
 
 // A slide's animated background painted still for the PNG and PDF export (docs/specs/007-editor/

@@ -3,8 +3,8 @@
 // at `files` and from the overview at `index`; a gone one none; any other (refused, unreadable, transient, or not
 // acted on by a narrowed pass) keeps its previous section (RL16).
 
-import type { Tab } from '@livediagram/document';
-import { headerFactsOf, headerLine } from '@livediagram/document-views';
+import type { Tab } from '@liveplanner/document';
+import { headerFactsOf, headerLine } from '@liveplanner/document-views';
 import type { Coverage } from './coverage';
 import type { IndexEntry, IndexTab } from './index-file';
 import type { MirrorLevel } from './link-file';

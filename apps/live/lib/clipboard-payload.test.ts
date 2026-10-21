@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, ShapeElement } from '@livediagram/document';
+import type { Element, FreehandElement, ShapeElement } from '@liveplanner/document';
 
 import {
   articlePasteIsCanvas,

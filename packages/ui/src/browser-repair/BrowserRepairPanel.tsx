@@ -136,7 +136,7 @@ export function BrowserRepairPanel({
           className="rounded-lg border border-slate-200 bg-white p-3 text-left text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         >
           <p className="font-medium text-slate-900 dark:text-slate-50">
-            This clears livediagram&rsquo;s saved settings and caches in this browser.
+            This clears liveplanner&rsquo;s saved settings and caches in this browser.
           </p>
           <p className="mt-1 text-slate-600 dark:text-slate-300">
             Your documents, your guest identity, Offline Mode documents and your sign-in are kept.

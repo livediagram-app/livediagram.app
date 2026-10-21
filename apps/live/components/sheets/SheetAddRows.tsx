@@ -3,7 +3,7 @@
 // Below the last row (docs/specs/029-sheets/sheet.md "The grid"): **Add 100 Rows**, with a field to change the
 // number, growing the grid up to its limit. Only for someone who may edit, and gone at the limit.
 import { useState } from 'react';
-import { SHEET_ROWS_MAX } from '@livediagram/sheets';
+import { SHEET_ROWS_MAX } from '@liveplanner/sheets';
 import { useSheetController } from './sheet-controller';
 
 export const ADD_ROWS_PX = 44;

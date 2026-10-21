@@ -9,7 +9,7 @@ import {
   isDefaultTabName,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   FORM_VERSION,
   buildStarter,
@@ -18,7 +18,7 @@ import {
   starterBaseType,
   type FormDefinition,
   type FormStarter,
-} from '@livediagram/forms';
+} from '@liveplanner/forms';
 import {
   boardAddTypes,
   boardTakesType,
@@ -30,7 +30,7 @@ import {
   type ItemTypeDef,
   type PlanBoardSetup,
   type PlanColumn,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 
 type FormStartPlan = {
   form: FormDefinition;

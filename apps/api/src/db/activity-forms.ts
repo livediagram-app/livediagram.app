@@ -1,7 +1,7 @@
 // The Inbox's Form Responses (docs/specs/030-forms/forms.md "Hearing about responses", docs/specs/013-workspace/
 // inbox.md): each live form, in a document the reader owns or reaches through a team, with responses the reader has
 // not seen. Unseen is counted by response number (form_reads), so the read touches no card.
-import type { ActivityFormResponses } from '@livediagram/api-schema';
+import type { ActivityFormResponses } from '@liveplanner/api-schema';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 
 // From the reader's documents to their form links (the link's document index), then each link's read row.

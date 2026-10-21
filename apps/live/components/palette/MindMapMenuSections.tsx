@@ -12,13 +12,13 @@ import {
   MIND_SPACING_LABEL,
   type MindFlow,
   type MindSpacing,
-} from '@livediagram/document';
-import { lucideGlyph } from '@livediagram/ui';
+} from '@liveplanner/document';
+import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideBetweenHorizontalStart,
   lucideListTree,
   lucideNetwork,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

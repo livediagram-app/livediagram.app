@@ -232,12 +232,12 @@ Kept on the editor route:
 
 The new route owns:
 
-- The participant-identity bootstrap (same `livediagram:v2:self-id`
+- The participant-identity bootstrap (same `liveplanner:v2:self-id`
   localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
 - `templatePickerMode = 'welcome'` (only).
 - The mode choice (as the mode's blank template) locally until the user commits.
 - The "name confirmed" persistence (same
-  `livediagram:v2:name-confirmed` localStorage key).
+  `liveplanner:v2:name-confirmed` localStorage key).
 - On commit: mint a UUID, POST `/api/documents` with the
   templated tab(s) inline, navigate to `/document/<id>`.
 - On Skip: mint a UUID, POST an empty-tab document, navigate to
@@ -345,15 +345,15 @@ answered. It does not ask where the document goes or what it is called:
   Blank Diagram.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
   - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-    says: This Browser for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
+    says: This Browser for a guest (with sign-in enabled), liveplanner for everyone else. Decided at commit by
     `resolveSaveLocation`, the same as the bypass links: a guest never waits, a browser that looks signed in waits
     for identity, so a signed-in person is never handed a document in This Browser.
-  - **Filed** (livediagram) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
+  - **Filed** (liveplanner) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
     otherwise the create carries no placement and the server files it in the person's
     [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Documents.
   - **Named** after its template ("Untitled Diagram", `untitledNameForTemplate`); it is renamed in the editor.
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
-    livediagram and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
+    liveplanner and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
   - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
     have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Document
     or Take Offline), so asking up front only slowed the first document down.
@@ -401,7 +401,7 @@ updates live."; a **Participant** is pointed at a sticky, text or an image. It s
 (its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Pages and Plan show none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
-this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:empty-card-dismissed` in localStorage,
+this browser (a per-browser list of the last 200 closed keys, `liveplanner:v2:empty-card-dismissed` in localStorage,
 shared with the starts' own close). It takes presses only on itself: the canvas around it still pans. It hides while
 a draw tool is armed. The card: a small picture of what the tab's mode makes, in the brand's
 tints on a soft panel (`EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), then its one line, in full. **On a

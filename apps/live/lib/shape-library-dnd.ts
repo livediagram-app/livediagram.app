@@ -1,7 +1,7 @@
 // The drag payload of a shape library tile (docs/specs/013-workspace/blueprints/shape-libraries.md
 // "Behaviour and state" 6): which library and which item, resolved by the canvas on drop.
 
-export const LIBRARY_SHAPE_DND_MIME = 'application/x-livediagram-library-shape';
+export const LIBRARY_SHAPE_DND_MIME = 'application/x-liveplanner-library-shape';
 
 export type LibraryShapeRef = { libraryId: string; itemId: string };
 

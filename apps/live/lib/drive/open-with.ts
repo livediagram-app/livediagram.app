@@ -4,16 +4,16 @@
 // **Import a copy** or, for a copy of a mirrored file, **Import as new
 // document**, or say the file cannot be opened.
 
-import { parseDocumentEnvelope } from '@livediagram/document';
+import { parseDocumentEnvelope } from '@liveplanner/document';
 import {
   DRIVE_FILE_EXTENSION,
   DRIVE_FILE_MIME,
   DRIVE_PROP_DOCUMENT_ID,
   DRIVE_PROP_ORIGIN,
   isDriveFileId,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { DriveApiError, type DriveClient } from './drive-client';
-import type { LivediagramPort } from './livediagram-port';
+import type { LiveplannerPort } from './liveplanner-port';
 import { driveLog, driveWarn } from './log';
 import { importAsNewDocument, type CopyPort } from './open-with-copy';
 
@@ -47,7 +47,7 @@ export type OpenWithImportReason = 'no-access' | 'foreign' | 'no-id' | 'copy';
 export type OpenWithOutcome =
   | { kind: 'open'; documentId: string }
   | { kind: 'import'; reason: OpenWithImportReason; name: string }
-  | { kind: 'error'; reason: 'unreadable' | 'not-livediagram' };
+  | { kind: 'error'; reason: 'unreadable' | 'not-liveplanner' };
 
 // The telemetry type of an outcome (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
 export function openWithTelemetryType(
@@ -59,7 +59,7 @@ export function openWithTelemetryType(
 export async function resolveOpenWith(
   deps: {
     drive: DriveClient;
-    port: Pick<LivediagramPort, 'canOpenDocument' | 'listItems'>;
+    port: Pick<LiveplannerPort, 'canOpenDocument' | 'listItems'>;
     host: string;
   },
   state: OpenWithState,
@@ -77,8 +77,8 @@ export async function resolveOpenWith(
     file.mimeType === DRIVE_FILE_MIME ||
     file.name.toLowerCase().endsWith(DRIVE_FILE_EXTENSION) ||
     !!documentId;
-  if (!ours) return { kind: 'error', reason: 'not-livediagram' };
-  const name = file.name.replace(/\.livediagram$/i, '') || 'Document';
+  if (!ours) return { kind: 'error', reason: 'not-liveplanner' };
+  const name = file.name.replace(/\.liveplanner$/i, '') || 'Document';
   if (!documentId) return { kind: 'import', reason: 'no-id', name };
   if (file.appProperties[DRIVE_PROP_ORIGIN] !== deps.host)
     return { kind: 'import', reason: 'foreign', name };

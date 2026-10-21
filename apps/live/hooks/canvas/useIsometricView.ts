@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, type Ref } from 'react';
-import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/document';
+import { isBoxed, unionBoxedBounds, type Element } from '@liveplanner/document';
 import { isoPivot, isoTransform } from '@/lib/isometric';
 import { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';

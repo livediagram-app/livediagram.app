@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from './env';
-import { pkceChallenge } from '@livediagram/api-schema';
+import { pkceChallenge } from '@liveplanner/api-schema';
 import { isAllowedRedirectUri, registerOauthRoutes } from './oauth';
 
 function mockKV(): KVNamespace {
@@ -438,8 +438,8 @@ describe('full authorize -> complete -> token flow', () => {
 describe('isAllowedRedirectUri', () => {
   it('accepts https anywhere and http only on loopback', () => {
     expect(isAllowedRedirectUri('https://claude.ai/cb')).toBe(true);
-    expect(isAllowedRedirectUri('http://localhost:3000/cb')).toBe(true);
-    expect(isAllowedRedirectUri('http://127.0.0.1:3000/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://localhost:3100/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://127.0.0.1:3100/cb')).toBe(true);
     expect(isAllowedRedirectUri('http://example.com/cb')).toBe(false);
     expect(isAllowedRedirectUri('javascript://localhost/%0Aalert(1)//')).toBe(false);
     expect(isAllowedRedirectUri('not a url')).toBe(false);
@@ -452,7 +452,7 @@ describe('isAllowedRedirectUri', () => {
 });
 
 describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", CLI35, CLI77)', () => {
-  const authorize = (redirect: string, client = 'livediagram-cli') =>
+  const authorize = (redirect: string, client = 'liveplanner-cli') =>
     app.request(
       `/oauth/authorize?client_id=${client}&redirect_uri=${encodeURIComponent(redirect)}&code_challenge=${'c'.repeat(43)}&code_challenge_method=S256&response_type=code`,
       {},
@@ -466,8 +466,8 @@ describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", C
       const session = new URL(res.headers.get('Location')!).searchParams.get('session')!;
       const looked = await app.request(`/oauth/session/${session}`, {}, env);
       expect(await looked.json()).toMatchObject({
-        clientName: 'livediagram CLI',
-        clientId: 'livediagram-cli',
+        clientName: 'liveplanner CLI',
+        clientId: 'liveplanner-cli',
       });
     }
   });

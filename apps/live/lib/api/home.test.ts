@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HomeResponse } from '@livediagram/api-schema';
+import type { HomeResponse } from '@liveplanner/api-schema';
 import { apiReadHome } from './home';
 
 // Explorer Home's reads (docs/specs/013-workspace/blueprints/explorer-home.md "Client"): null

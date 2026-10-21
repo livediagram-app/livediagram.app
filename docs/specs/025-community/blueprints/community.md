@@ -15,7 +15,7 @@ Derived from [Community](../community.md). Implementation detail only; design de
 | report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS` (`{ id, label, type }[]`), `community_reports`    |
 | hidden         | `CommunityPostState = 'listed' \| 'hidden'`, column `hidden_by = 'reports'`                           |
 | community link | `share_links.purpose = 'community'` (`SharePurpose = 'share' \| 'community'`)                         |
-| community key  | header `X-Community-Key`, localStorage `livediagram:v2:community-key`                                 |
+| community key  | header `X-Community-Key`, localStorage `liveplanner:v2:community-key`                                 |
 | sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`, `COMMUNITY_SORTS` (`{ id, label, type }[]`)           |
 | Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
 
@@ -331,7 +331,7 @@ Community app (`apps/community`):
   `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid. Waiting
   past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `GalleryError` with a reload.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
-  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog` shell from `@livediagram/ui`, a phone sheet below `sm`), `RelatedPosts`.
+  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog` shell from `@liveplanner/ui`, a phone sheet below `sm`), `RelatedPosts`.
   Links come from `apps/community/lib/links.ts`: Open Document `openDocumentHref` (`/document/shared?s=<code>`), Make
   a Copy `makeCopyHref` (`/document/shared?s=<code>&copy=1`). Once the post loads, `PostView` sets `document.title`
   and a `link rel="canonical"` to the post's own address (`apps/community/app/post/page.tsx` carries none).
@@ -538,4 +538,4 @@ See [DEFAULTS.md](DEFAULTS.md), rows C1 to C17.
 
 - App icon: `apps/community/app/icon.svg`, hand-authored in this repo (MIT).
 - Glyphs: `apps/community/components/shared/icons.tsx` draws Lucide-derived primitives (`lucide*`) from the shared
-  `@livediagram/icons` catalogue, under Lucide's ISC licence, credited on the generated `/licences` page.
+  `@liveplanner/icons` catalogue, under Lucide's ISC licence, credited on the generated `/licences` page.

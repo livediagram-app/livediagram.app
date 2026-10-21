@@ -8,7 +8,7 @@ import {
 } from './addressing';
 import { DOC_A, DOC_B, DOC_C, fakeApi, library } from './testing/fake-api';
 
-const HOST = 'https://livediagram.app';
+const HOST = 'https://liveplanner.app';
 
 async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<AddressFailure> {
   try {
@@ -23,7 +23,7 @@ async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<A
 describe('parseDocumentUrl', () => {
   it('reads a document link and a share link, on the host or its www twin', () => {
     expect(parseDocumentUrl(`${HOST}/document/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
-    expect(parseDocumentUrl(`https://www.livediagram.app/document/${DOC_A}?tab=x`, HOST)).toEqual({
+    expect(parseDocumentUrl(`https://www.liveplanner.app/document/${DOC_A}?tab=x`, HOST)).toEqual({
       id: DOC_A,
     });
     expect(parseDocumentUrl(`${HOST}/document/shared?s=abc123`, HOST)).toEqual({
@@ -146,7 +146,7 @@ describe('resolveTab', () => {
     expect(await failureOf(() => resolveTab(tabs, 'Nope', 'Auth'))).toMatchObject({
       kind: 'not-found',
       message: 'no tab matches "Nope"',
-      hint: 'livediagram tab ls Auth',
+      hint: 'liveplanner tab ls Auth',
       candidates: [
         { ref: 'tab-o', name: 'Overview', detail: 'tab 1' },
         { ref: 'tab-tw', name: 'Details', detail: 'tab 2' },

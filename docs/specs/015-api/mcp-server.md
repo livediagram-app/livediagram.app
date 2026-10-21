@@ -1,6 +1,6 @@
 # MCP server
 
-**Status: live.** Merged and deployed at `mcp.livediagram.app`; connect flow
+**Status: live.** Merged and deployed at `mcp.liveplanner.app`; connect flow
 verified end-to-end from Claude. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: [Public API and API tokens](public-api-and-tokens.md) deferred "OAuth /
 third-party app authorization" — this spec adds exactly that, scoped to one
@@ -9,7 +9,7 @@ mints. No new authorization model; an OAuth front door onto the existing token.
 
 ## 1. Goal
 
-Let a person connect livediagram to whatever AI tool they already drive (Claude
+Let a person connect liveplanner to whatever AI tool they already drive (Claude
 desktop/web, Claude Code, any MCP client) and, from inside that tool:
 
 1. **Find and view** the documents they already have — search by name, get back a
@@ -40,7 +40,7 @@ the MCP is **signed-in only** and **absent end-to-end** on a no-auth self-host.
 ## 2. Architecture
 
 A **new standalone Cloudflare Worker**, `apps/mcp` (worker name
-`livediagram-mcp`), mirroring how Manager Toolkit ships its MCP as its own
+`liveplanner-mcp`), mirroring how Manager Toolkit ships its MCP as its own
 worker. Not folded into `apps/api`: it has a distinct dependency surface (the MCP
 SDK, OAuth/KV, a WASM rasteriser) and a distinct public origin, and `apps/api`
 stays a pure REST/WS surface.
@@ -61,7 +61,7 @@ stays a pure REST/WS surface.
   `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
-- **Routing + deploy.** Served at **`mcp.livediagram.app`** (its own hostname,
+- **Routing + deploy.** Served at **`mcp.liveplanner.app`** (its own hostname,
   like the api). Add the service to the deploy workflow alongside marketing /
   live / telemetry / api (it depends on api existing, so it deploys in the same
   wave as api or just after). The `router` worker is unchanged — `mcp.` is a
@@ -94,7 +94,7 @@ This implements the OAuth flow Manager Toolkit uses:
    local clients; the scheme is checked on its own, so a loopback host never
    admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
    §3.1.2; one rule shared with the api's Drive redirect, `oauthRedirectUrl` in
-   `@livediagram/api-schema`), stored in KV with a TTL.
+   `@liveplanner/api-schema`), stored in KV with a TTL.
    Rate-limited per IP. Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
@@ -168,10 +168,10 @@ the MCP simply don't deploy `apps/mcp`; nothing else references it.
 **The CLI signs in here too** ([CLI](cli.md#authentication)). This server is the
 one authorisation server for both front doors, so it also offers what a
 command-line client needs: a loopback redirect matched on scheme, host and path
-with any port (RFC 8252 §7.3), a pre-registered public client `livediagram-cli`
+with any port (RFC 8252 §7.3), a pre-registered public client `liveplanner-cli`
 whose name the consent screen can trust, and the device authorisation grant
 (RFC 8628) with a `/oauth/device` page in `apps/live` for machines without a
-browser. A token minted for the CLI is named "livediagram CLI".
+browser. A token minted for the CLI is named "liveplanner CLI".
 
 ## 4. Tools
 
@@ -208,7 +208,7 @@ merges, and ranks newest-saved first. The team sweep is best-effort: a teams
 failure degrades to personal-only results, never an error. Input: optional
 `query` (name match), `limit`. Returns a compact list:
 `{ id, name, updatedAt, library, url }` where `library` is `personal` or the
-team's name and `url` is the `livediagram.app` deep link to open it. **No image
+team's name and `url` is the `liveplanner.app` deep link to open it. **No image
 here** — kept lightweight so the model can scan many results cheaply, then
 `read_document` the one it wants.
 
@@ -234,7 +234,7 @@ Create a new document from elements the model produced. Input: `name`, `tabs:
 document in one call — an overview plus a detail tab per subsystem), the
 optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
 of `elements` — the server materialises the hand-tuned scaffold from
-`@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
+`@liveplanner/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_document`'s
 `ops` mode. The MCP:
@@ -349,7 +349,7 @@ of every template, so a tab read back as JSON writes again unchanged.
 
 Browse the template library — the same hand-tuned catalogue the editor's
 template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
-`@livediagram/templates` package so the worker and the editor can't drift.
+`@liveplanner/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
 `kind` and pass it as `template` on `create_document` / `add_tab` (a template of several tabs, such as the
@@ -369,7 +369,7 @@ sailboat. Valid kinds: ...`. The CLI's and api's template bodies refuse with the
 
 Finds icons by what they show, best match first, across the line-art set and the Technology set (brand, cloud and
 database marks): `{ query, limit? }` (20 by default, at most 50) answers `{ icons: [{ id, label, set }], more }`. An
-id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@livediagram/icons`'s
+id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@liveplanner/icons`'s
 `searchIcons`, the api's `/icons` route and the CLI's `icon search` use the same ranking), so the search makes no
 api call. Read-only.
 
@@ -392,7 +392,7 @@ through the editor (upload, paste or drop) and the assistant places them from th
 
 ### 4.6 Schema resource (not a tool)
 
-A static, cacheable MCP **resource** — e.g. `livediagram://schema/elements` —
+A static, cacheable MCP **resource** — e.g. `liveplanner://schema/elements` —
 returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
 required fields, the pinned-arrow anchor convention (`from.e → to.w` etc.), and
@@ -769,7 +769,7 @@ is checked against the tab shape by the tool rather than repeating that shape (t
 schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
 
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
-`livediagram changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
+`liveplanner changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
 coordinates; when the content does not start at 0,0, a closing line gives the offset (`x, y = @x + ox, @y + oy`),
 so a position read from a result is not sent back off by it.
 
@@ -850,7 +850,7 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
 The spreadsheets Sheet elements show ([Sheet store](../029-sheets/sheet-store.md#agents)). A sheet is named by its
 title (case aside) or id, cells by A1, rows by number and columns by letter, never the ids of rows and columns; the
 server (`apps/mcp/src/sheet-tools.ts` over `packages/agent-verbs/src/sheets/`) resolves them and refuses an unknown
-sheet with the sheets there are. Values are worked out by the editor's engine (`@livediagram/sheets`), with the
+sheet with the sheets there are. Values are worked out by the editor's engine (`@liveplanner/sheets`), with the
 document's Plan cards when a formula reads them.
 
 - **`list_sheets`** (read): the document's sheets (or one tab's), each with its title, tab, the rows and columns in
@@ -915,8 +915,8 @@ A Form tab's form ([Forms](../030-forms/forms.md#agents)): its questions, sectio
 form link. Everything is named as the builder names it (a question by id or prompt, a section by id, title or place,
 a board, card type, column, sheet and card field by name); the server (`apps/mcp/src/form-tools.ts` over
 `packages/agent-verbs/src/forms/`) resolves them and refuses an unknown name with the ones there are. The form is
-built with the editor's own edits (`@livediagram/forms`) and started as Start Planning starts one
-(`@livediagram/templates` `planFormStart`).
+built with the editor's own edits (`@liveplanner/forms`) and started as Start Planning starts one
+(`@liveplanner/templates` `planFormStart`).
 
 - **`read_form`** (read): the form in words (sections, questions with their settings, each answer's destination by
   field name, section rules by prompt), where responses go, the settings, state, response count, the form link (an
@@ -993,7 +993,7 @@ The MCP worker reads three bindings and two out-of-band values. Bindings
 
 | Name                  | Where                          | Absent means                                                                                                                                                                     |
 | --------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
+| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://liveplanner.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
 | `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))          |
 
 `INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
@@ -1083,10 +1083,10 @@ The hosted server is listed in the official **MCP Registry**
 them) ingest from, so one listing reaches several catalogues.
 
 - **Descriptor.** `server.json` at the repo root, under the registry's
-  `2025-12-11` schema. Name `io.github.livediagram-app/livediagram`: the
+  `2025-12-11` schema. Name `io.github.liveplanner-app/liveplanner`: the
   `io.github.<org>` namespace is proven by the repo's own GitHub OIDC token, so
   publishing needs no DNS record and no secret. One `remotes` entry,
-  `streamable-http` at `https://mcp.livediagram.app/mcp`, with no `headers`:
+  `streamable-http` at `https://mcp.liveplanner.app/mcp`, with no `headers`:
   OAuth (§3) is discovered from the server's metadata, not configured by the
   client. The icon is the 512px mark in `marketing/media/icons`.
 - **Publishing.** `.github/workflows/mcp-registry.yml` runs `mcp-publisher
@@ -1188,7 +1188,7 @@ The output literals that named the container changed with it: `renamed`, `delete
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
-  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@livediagram/icons/resolve`).
+  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveplanner/icons/resolve`).
 - Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
   reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
   once laid out"), so an agent asked for one page sees at once that it ran over.
@@ -1212,7 +1212,7 @@ Worker (no DOM, no React).
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
 - **A Plan tab as the editor exports it.** A Board, Sheet or Dashboard tab previews as the editor's image export draws
-  it ([Plan tabs](../026-plan/plan-tabs.md) "Export", `@livediagram/plan-art` `planImageOf`): a Board tab its board
+  it ([Plan tabs](../026-plan/plan-tabs.md) "Export", `@liveplanner/plan-art` `planImageOf`): a Board tab its board
   alone, a Dashboard its page laid out row by row, each metric, chart and card drawn from the document's cards
   (`resolvePlanArt`), each tab slot that tab's board or Sheet. A Dashboard's preview reads the document's other tabs
   (up to `PLAN_PREVIEW_TABS_MAX`, 20) and its plan's column names; any read that fails draws as the editor draws it
@@ -1246,7 +1246,7 @@ Worker (no DOM, no React).
   `GET /api/images/:id`) and inlines them as base64 data URIs through the
   renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
   must be inline. A tab with no images does no extra work. The fetch-and-inline core is
-  `embedTabImages` in `@livediagram/api-schema`, shared with the api worker's
+  `embedTabImages` in `@liveplanner/api-schema`, shared with the api worker's
   snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source
   (R2) and a total byte budget.
 - **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
@@ -1278,7 +1278,7 @@ Worker (no DOM, no React).
   plain boxes / label-only.
 - **Icon elements render their real glyph.** The renderer takes an injected
   `resolveIconArt(iconId)` (like `resolveImageHref`); the MCP worker supplies
-  `resolveIconExportArt` from `@livediagram/icons/resolve` (a static import of
+  `resolveIconExportArt` from `@liveplanner/icons/resolve` (a static import of
   the catalogue data — fine in a Worker), so line-art icons draw stroke-tinted
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the
@@ -1287,7 +1287,7 @@ Worker (no DOM, no React).
 ## 6. Rollout
 
 1. **`apps/mcp` skeleton** — worker, Hono, MCP SDK, service binding to api,
-   `/health`, deploy wiring + `mcp.livediagram.app` host. `.env.example`.
+   `/health`, deploy wiring + `mcp.liveplanner.app` host. `.env.example`.
 2. **Shared SVG renderer** — extract `packages/document/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.

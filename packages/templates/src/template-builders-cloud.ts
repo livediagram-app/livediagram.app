@@ -4,7 +4,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createPinnedArrow, createShape, type Anchor, type Element } from '@livediagram/document';
+import { createPinnedArrow, createShape, type Anchor, type Element } from '@liveplanner/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 
 // Plateful's production stack on AWS, drawn the way AWS's own reference

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { contrastRatio, pagesOf, type Element, type Tab } from '@livediagram/document';
+import { contrastRatio, pagesOf, type Element, type Tab } from '@liveplanner/document';
 import { applyOverlay, clearLocalPreview, localPreview } from '@/lib/drag-preview';
 import { pageEdits } from './page-edits';
 

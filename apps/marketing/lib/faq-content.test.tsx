@@ -3,14 +3,14 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { THEMES } from '@livediagram/document';
+import { THEMES } from '@liveplanner/document';
 import {
   LOGO_LAYOUTS,
   PAGE_LAYOUTS,
   SLIDE_LAYOUTS,
   TEMPLATE_CATEGORIES,
   TEMPLATES,
-} from '@livediagram/templates';
+} from '@liveplanner/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 

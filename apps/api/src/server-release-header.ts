@@ -6,7 +6,7 @@ import {
   DOCUMENT_FORMAT,
   DOCUMENT_FORMAT_HEADER,
   parseBuildId,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 export function withServerRelease(
   response: Response,

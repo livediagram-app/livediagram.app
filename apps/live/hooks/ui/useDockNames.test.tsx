@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 const wide = vi.hoisted(() => ({ value: true }));
-vi.mock('@livediagram/ui', () => ({ useMediaQuery: () => wide.value }));
+vi.mock('@liveplanner/ui', () => ({ useMediaQuery: () => wide.value }));
 
 import { DockNamesProvider, useDockNames } from './useDockNames';
 

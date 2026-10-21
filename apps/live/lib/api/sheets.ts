@@ -9,8 +9,8 @@ import type {
   SheetsResponse,
   SheetWriteRequest,
   SheetWriteResponse,
-} from '@livediagram/api-schema';
-import type { SheetJson, SheetPerson } from '@livediagram/sheets';
+} from '@liveplanner/api-schema';
+import type { SheetJson, SheetPerson } from '@liveplanner/sheets';
 import { isOfflineId } from '../offline/offline-store';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 

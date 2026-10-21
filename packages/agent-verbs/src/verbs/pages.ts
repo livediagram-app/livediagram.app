@@ -3,8 +3,8 @@
 // over the calls the MCP's change_pages and write_article share. Pages are named by id, place or name; articles
 // by id or title.
 import { z } from 'zod';
-import { PAGE_CHANGES_MAX, type PageChange } from '@livediagram/api-schema';
-import { ARTICLE_LOOK_IDS, type ArticleLookId, type PageSizeId } from '@livediagram/document';
+import { PAGE_CHANGES_MAX, type PageChange } from '@liveplanner/api-schema';
+import { ARTICLE_LOOK_IDS, type ArticleLookId, type PageSizeId } from '@liveplanner/document';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import {
   changePages,
@@ -17,13 +17,13 @@ import {
 import { resolveTab } from '../addressing';
 import { documentOf, tabPath } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or liveplanner URL');
 const tabFlag = z
   .string()
   .optional()
   .describe('A tab name or id prefix; the first tab in Pages mode when omitted');
-const LS_HINT = 'list the pages with: livediagram page ls <doc>';
-const CHANGES_HINT = 'see the changes with: livediagram help page set';
+const LS_HINT = 'list the pages with: liveplanner page ls <doc>';
+const CHANGES_HINT = 'see the changes with: liveplanner help page set';
 
 const refusal = (r: PagesRefused) =>
   new VerbRefusal({
@@ -94,7 +94,7 @@ export const pageLs = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram page ls "Pitch deck"', 'livediagram page ls 3f9c --tab Slides'],
+    examples: ['liveplanner page ls "Pitch deck"', 'liveplanner page ls 3f9c --tab Slides'],
     prints: 'the pages view as the api serves it',
   },
 });
@@ -144,8 +144,8 @@ export const pageSet = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram page set "Pitch deck" --add slide --layout slide-title',
-      'livediagram page set 3f9c --changes changes.json',
+      'liveplanner page set "Pitch deck" --add slide --layout slide-title',
+      'liveplanner page set 3f9c --changes changes.json',
     ],
     prints: 'what changed, then each page: place, kind, size, rectangle, name',
   },
@@ -252,8 +252,8 @@ export const articleGet = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram article get "Project brief" > brief.md',
-      'livediagram article get 3f9c --article Notes',
+      'liveplanner article get "Project brief" > brief.md',
+      'liveplanner article get 3f9c --article Notes',
     ],
     prints: 'the article as Markdown',
   },
@@ -314,8 +314,8 @@ export const articleSet = defineVerb({
   cli: {
     positionals: ['doc', 'file'],
     examples: [
-      'livediagram article set "Project brief" brief.md',
-      'cat notes.md | livediagram article set 3f9c - --article Notes --append',
+      'liveplanner article set "Project brief" brief.md',
+      'cat notes.md | liveplanner article set 3f9c - --article Notes --append',
     ],
     prints: 'what was written',
   },

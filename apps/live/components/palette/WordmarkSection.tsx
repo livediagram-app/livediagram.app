@@ -12,8 +12,8 @@ import {
   type FontWeight,
   type TextCase,
   type TextElement,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@liveplanner/document';
+import { Glyph } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { PreviewSliderRow, SliderRowAction } from '@/components/primitives/PreviewSliderRow';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';

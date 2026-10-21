@@ -1,7 +1,7 @@
 // Slide openers (docs/specs/007-editor/pages-mode.md "Slide layouts", Openers): the slides a
 // talk starts on, besides the Title Slide, the Section Header and the Agenda. Pure builders on the
 // slide kit, in units of the slide's height, so a 16:9 and a 4:3 slide both fit.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import type { Kit } from './page-layout-kit';
 import {
   bullets,

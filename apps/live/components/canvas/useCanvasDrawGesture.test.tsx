@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from './useCanvasDrawGesture';

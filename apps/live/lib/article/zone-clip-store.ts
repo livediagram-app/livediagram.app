@@ -5,7 +5,7 @@
 // re-renders only when its own clip changes (docs/specs/008-canvas/canvas-performance.md): a rect
 // keeps its identity while its values do.
 import { useSyncExternalStore } from 'react';
-import type { PageRect } from '@livediagram/document';
+import type { PageRect } from '@liveplanner/document';
 import { createListeners } from '@/lib/listeners';
 
 let clips: ReadonlyMap<string, PageRect> = new Map();

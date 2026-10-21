@@ -6,7 +6,7 @@
 // the editor drew it. The label is drawn here in its region rather than by
 // the generic centred label, which would print it over the whole box.
 
-import { capBandBaselineY } from '@livediagram/icons';
+import { capBandBaselineY } from '@liveplanner/icons';
 import { BORDER_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { labelFontPx } from './label-font';
 import type { BoxedElement, ImageElement } from './index';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planPalette } from '@livediagram/document';
+import { planPalette } from '@liveplanner/document';
 import { cardArt, slotMessageArt } from './dashboard-card-art';
 import { NOW } from './test-fixtures';
 

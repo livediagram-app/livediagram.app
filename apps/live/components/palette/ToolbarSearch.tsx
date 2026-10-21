@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { editorModeLabel, type EditorMode, type Element } from '@livediagram/document';
-import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livediagram/ui';
+import { editorModeLabel, type EditorMode, type Element } from '@liveplanner/document';
+import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@liveplanner/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { SearchInput } from '@/components/primitives/SearchInput';

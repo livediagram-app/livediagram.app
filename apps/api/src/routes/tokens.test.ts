@@ -226,7 +226,7 @@ describe('POST /api/tokens — the name the caller asks for', () => {
 describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service")', () => {
   const live = {
     id: 'tok_1',
-    name: 'livediagram CLI',
+    name: 'liveplanner CLI',
     expiresAt: 99,
     createdAt: 1,
     lastUsedAt: null,
@@ -248,7 +248,7 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
       accountId: 'user_1',
       accountName: 'Webber',
       tokenId: 'tok_1',
-      tokenName: 'livediagram CLI',
+      tokenName: 'liveplanner CLI',
       role: 'read-only',
       expiresAt: 99,
     });

@@ -18,7 +18,7 @@ import {
 } from './local-storage-safe';
 import { randomPick } from './random';
 
-// The costume vocabulary itself lives in @livediagram/api-schema, because the
+// The costume vocabulary itself lives in @liveplanner/api-schema, because the
 // presence packet carries it to peers and both ends must agree on the tokens
 // (see that package's avatar.ts). Re-exported here so the ~10 editor modules
 // that already import from this file keep their import path.
@@ -28,14 +28,14 @@ export type {
   AvatarGender,
   AvatarHair,
   AvatarSize,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import type {
   AvatarClothing,
   AvatarConfig,
   AvatarGender,
   AvatarHair,
   AvatarSize,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 // The fallback character: what a missing / unreadable FIELD falls back to.
 // Whole-config absence is different — a first-time visitor gets a RANDOM
@@ -142,7 +142,7 @@ export function randomAvatarConfig(): AvatarConfig {
   };
 }
 
-const STORAGE_KEY = 'livediagram:v2:avatar-config';
+const STORAGE_KEY = 'liveplanner:v2:avatar-config';
 
 // Parse a stored (or received) config, field by field, so one unrecognised
 // value — a stale option id from a later release, a hand-edited key — costs

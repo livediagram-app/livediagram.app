@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useRef, type KeyboardEvent } from 'react';
-import { COMMUNITY_CATEGORIES, type CommunityCategory } from '@livediagram/api-schema';
+import { COMMUNITY_CATEGORIES, type CommunityCategory } from '@liveplanner/api-schema';
 
 // The publish dialog's category chips (docs/specs/025-community/community.md "Categories"): exactly
 // one, from the closed set, in display order. Compact single-line chips that wrap, with the chosen

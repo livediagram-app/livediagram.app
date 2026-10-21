@@ -30,7 +30,7 @@ export function resetTrustedTypesForTests(): void {
 }
 
 /**
- * Markup one of livediagram's own builders produced (each escapes what it places), as `TrustedHTML` for
+ * Markup one of liveplanner's own builders produced (each escapes what it places), as `TrustedHTML` for
  * `dangerouslySetInnerHTML`. Only those builders' output may come through here; it is not a sanitiser.
  */
 export function trustedHtml(markup: string): TrustedHTML | string {

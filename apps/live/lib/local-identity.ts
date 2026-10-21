@@ -11,7 +11,7 @@
 // so they can be called from module bodies or non-effect code paths
 // without crashing the static export build.
 //
-// Namespace prefix: `livediagram:v2:`. The `v2` tag survives a
+// Namespace prefix: `liveplanner:v2:`. The `v2` tag survives a
 // future schema break — if the shape of a stored value changes
 // incompatibly we'll bump to `v3:` and drop the old keys at read
 // time so a returning guest doesn't end up with mixed-version state.
@@ -23,7 +23,7 @@ import {
 } from './local-storage-safe';
 import { track } from './telemetry';
 
-const NS = 'livediagram:v2:';
+const NS = 'liveplanner:v2:';
 
 const KEYS = {
   // Per-browser guest participant id (`crypto.randomUUID()`),

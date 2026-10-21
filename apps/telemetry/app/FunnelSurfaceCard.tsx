@@ -1,4 +1,4 @@
-import { Tooltip, Glyph } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@liveplanner/ui';
 import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
 import { useCategoryColor } from './useCategoryColor';

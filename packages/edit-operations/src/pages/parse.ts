@@ -10,7 +10,7 @@ import {
   type PagesRequest,
   type PageBackgroundInput,
   type PageChange,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import {
   isRecord,
   ARTICLE_LOOK_IDS,
@@ -22,7 +22,7 @@ import {
   PAGE_SIZE_IDS,
   WIREFRAME_DEVICE_IDS,
   WIREFRAME_FRAME_LOOKS,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 
 const PAGE_KINDS = ['infographic', 'article', 'slide', 'logo', 'wireframe'] as const;
 const WIREFRAME_KEYS = ['device', 'frameLook', 'systemBars'];

@@ -3,7 +3,7 @@
 // number chooses, other text narrows, Enter alone, end of input or Ctrl-C cancels. Never redrawn, so a screen reader
 // reads each list once. Where stdin or stdout is not a terminal, the folders as runnable commands instead (RL39).
 
-import type { FolderChoice } from '@livediagram/agent-verbs';
+import type { FolderChoice } from '@liveplanner/agent-verbs';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -15,12 +15,12 @@ export const noFoldersError = (host: string) =>
     exit: EXIT.notFound,
     code: 'no_folders',
     message: `there are no folders in ${host} to link`,
-    hint: 'create a folder in livediagram, or link documents: livediagram link init --doc <doc>',
+    hint: 'create a folder in liveplanner, or link documents: liveplanner link init --doc <doc>',
   });
 
 export function folderNeededError(choices: readonly FolderChoice[], level?: string): CliError {
   const command = (id: string) =>
-    `livediagram link init --folder ${id}${level ? ` --level ${level}` : ''}`;
+    `liveplanner link init --folder ${id}${level ? ` --level ${level}` : ''}`;
   const shown = choices.slice(0, PICKER_PAGE);
   const more = choices.length - shown.length;
   return new CliError({
@@ -30,7 +30,7 @@ export function folderNeededError(choices: readonly FolderChoice[], level?: stri
     lines: [
       ...shown.map((c) => `${command(c.id)}  # ${c.path} (${c.library})`),
       ...(more > 0
-        ? [`… ${more} more: livediagram link init --folder <name> takes a folder's name too`]
+        ? [`… ${more} more: liveplanner link init --folder <name> takes a folder's name too`]
         : []),
     ],
     hint: command(shown[0]!.id),

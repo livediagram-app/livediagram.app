@@ -10,7 +10,7 @@
 // is slow or failing, the shell is served exactly as built: the page still works, it just names no post until its
 // script runs.
 
-import type { CommunityPostResponse, CommunitySitemapResponse } from '@livediagram/api-schema';
+import type { CommunityPostResponse, CommunitySitemapResponse } from '@liveplanner/api-schema';
 import {
   API_TIMEOUT_MS,
   escapeHtml,
@@ -43,7 +43,7 @@ export interface Env {
 }
 
 // The origin the api binding is addressed through; a service binding ignores the host, only the path matters.
-const API_ORIGIN = 'https://livediagram.app';
+const API_ORIGIN = 'https://liveplanner.app';
 
 type ApiResult<T> = { status: 'ok'; body: T } | { status: 'missing' } | { status: 'unavailable' };
 

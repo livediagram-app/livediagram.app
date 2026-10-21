@@ -1,7 +1,7 @@
 // How the engine names elements in result lines and refusals (docs/specs/024-agents/blueprints/
 // edit-operations.md "Result lines", EO43): by ref, as views print them, with the kind word.
 
-import { kindWordOf, type Element, type ElementId, type Endpoint } from '@livediagram/document';
+import { kindWordOf, type Element, type ElementId, type Endpoint } from '@liveplanner/document';
 import { LABEL_CUT_CHARS } from './vocabulary';
 
 // The kind word views print: an event-storming note's notation, a shape's kind, else the type.

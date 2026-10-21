@@ -1,7 +1,7 @@
 // The first line of every tab view (docs/specs/024-agents/blueprints/document-views.md "The outline
 // grammar", VW8, VW9, VW11).
-import type { Element } from '@livediagram/document';
-import type { ViewHeader, ViewName } from '@livediagram/api-schema';
+import type { Element } from '@liveplanner/document';
+import type { ViewHeader, ViewName } from '@liveplanner/api-schema';
 import { threadOf } from './fields';
 import { jsonString, plural } from './text';
 

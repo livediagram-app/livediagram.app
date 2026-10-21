@@ -8,7 +8,7 @@ import {
   type Item,
   type ItemTypeDef,
   type ItemWrite,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import type { ImportedPlanItems } from '@/lib/import-tab';
 import { waitUntil } from '@/lib/wait-until';
 import { useLatest } from '@/hooks/ui/useLatest';

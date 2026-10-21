@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
+import type { ShapeElement, Tab, TabLedger } from '@liveplanner/document';
 import type { Env } from './types';
 import {
   broadcastShareOp,

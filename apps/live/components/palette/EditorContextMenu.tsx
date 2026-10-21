@@ -28,7 +28,7 @@ import {
   supportsRotation,
   isSheetAnchoredChart,
   takesAttachments,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';

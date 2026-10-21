@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { COMMUNITY_KEY_STORAGE, isCommunityKey } from '@livediagram/api-schema';
+import { COMMUNITY_KEY_STORAGE, isCommunityKey } from '@liveplanner/api-schema';
 import { getCommunityKey, resetCommunityKeyForTests } from './community-key';
 
 // The community key (blueprint §5, §6 "Storage blocked", §13): read or minted, kept in localStorage,
@@ -79,7 +79,7 @@ describe('getCommunityKey', () => {
 
   it('never reads the guest owner id', () => {
     const storage = memoryStorage();
-    storage.setItem('livediagram:v2:self-id', '11111111-1111-4111-8111-111111111111');
+    storage.setItem('liveplanner:v2:self-id', '11111111-1111-4111-8111-111111111111');
     const getItem = vi.spyOn(storage, 'getItem');
     withWindow(storage);
     expect(getCommunityKey()).not.toBe('11111111-1111-4111-8111-111111111111');

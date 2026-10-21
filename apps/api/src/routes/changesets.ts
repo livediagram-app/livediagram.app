@@ -11,7 +11,7 @@ import {
   type ChangesetConflict,
   type ChangesetSummary,
   type ResultLine,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getDocument, getParticipant, listChangesets } from '../db';
 import type { ChangesetRecord } from '../db';

@@ -10,7 +10,7 @@ import {
   type ImageElement,
   type ShapeElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { PAGE_LAYOUTS } from './page-layouts';
 import { SLIDE_LAYOUTS } from './slide-layouts';
 import { LOGO_LAYOUTS } from './logo-layouts';

@@ -3,7 +3,7 @@
 // newest EMPTY_CARD_DISMISSED_MAX tab ids, so the list stays small however many tabs are closed over time.
 import { createListeners } from '@/lib/listeners';
 
-export const EMPTY_CARD_DISMISSED_KEY = 'livediagram:v2:empty-card-dismissed';
+export const EMPTY_CARD_DISMISSED_KEY = 'liveplanner:v2:empty-card-dismissed';
 export const EMPTY_CARD_DISMISSED_MAX = 200;
 
 function read(): string[] {

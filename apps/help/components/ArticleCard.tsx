@@ -3,7 +3,7 @@ import { articleHref, type Article } from '@/lib/articles';
 import { FEATURE_ICONS } from '@/lib/featureIcons';
 import { SUPPORT_ARTICLE_ICONS, SUPPORT_ARTICLE_FALLBACK } from '@/lib/articleIcons';
 import { ArrowRightIcon } from '@/lib/chrome-icons';
-import { GlyphDisc } from '@livediagram/ui';
+import { GlyphDisc } from '@liveplanner/ui';
 
 export function ArticleCard({ article, number }: { article: Article; number?: number }) {
   // A numbered card (e.g. Getting Started) leads with its step badge; every

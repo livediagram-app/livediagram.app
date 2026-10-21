@@ -5,13 +5,13 @@
 // system bars, in ink for the screen's background (a hover in the page's panel previews one). In
 // the canvas world above the elements, taking no presses. Nothing when no page is a wireframe.
 import { memo, useMemo } from 'react';
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@liveplanner/ui';
 import {
   pageIsDark,
   wireframeFrameSvg,
   type LaidOutPage,
   type WireframeFrameTheme,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 
 export function WireframeDeviceOverlays({

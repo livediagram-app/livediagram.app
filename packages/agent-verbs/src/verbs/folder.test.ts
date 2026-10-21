@@ -41,7 +41,7 @@ describe('folder ls', () => {
 
   it('says how to make one when there are none', () => {
     expect(folderLs.text!({ folders: [] })).toEqual([
-      'no folders yet: livediagram folder create <name>',
+      'no folders yet: liveplanner folder create <name>',
     ]);
   });
 });

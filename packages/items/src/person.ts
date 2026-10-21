@@ -5,7 +5,7 @@
 
 import { sha256 } from './sha256';
 
-const PREFIX = 'livediagram-item-person:';
+const PREFIX = 'liveplanner-item-person:';
 
 export async function itemPersonId(ownerId: string): Promise<string> {
   const bytes = new TextEncoder().encode(PREFIX + ownerId);

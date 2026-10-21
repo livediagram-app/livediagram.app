@@ -13,7 +13,7 @@
 //   page-load to another document, or open an external URL in a new tab.
 
 import { useState } from 'react';
-import { type Element, type ElementLink, type Tab } from '@livediagram/document';
+import { type Element, type ElementLink, type Tab } from '@liveplanner/document';
 import { apiUnfurl } from '@/lib/api-client';
 import { isSafeFollowUrl } from '@/lib/url-safety';
 import { track } from '@/lib/telemetry';

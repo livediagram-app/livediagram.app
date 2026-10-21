@@ -3,7 +3,7 @@
 // The Form strip's context (components/forms/form-board-context.ts): the forms whose responses go to the open tab, read
 // off the document's Form tabs, with the api details and tab opening the strip needs. Recomputed only when they change.
 import { useMemo, useState } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@liveplanner/document';
 import type { FormBoardValue } from '@/components/forms/form-board-context';
 import { formsFeeding } from './forms-feeding';
 

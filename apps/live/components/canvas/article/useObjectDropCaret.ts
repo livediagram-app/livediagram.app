@@ -6,7 +6,7 @@
 // same centre). Read from the object's own box on screen each frame, so it follows the drag
 // whatever draws it.
 import { useEffect, useRef, useState } from 'react';
-import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@livediagram/document';
+import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@liveplanner/document';
 import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { screenToCanvasBySheet, type DropCaret } from './useZoneDrag';

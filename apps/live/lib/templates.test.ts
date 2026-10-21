@@ -13,8 +13,8 @@ import {
   templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
-} from '@livediagram/templates';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
+} from '@liveplanner/templates';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@liveplanner/document';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome

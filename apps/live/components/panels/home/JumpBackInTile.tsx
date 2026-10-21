@@ -7,7 +7,7 @@
 // the See More tile, the same size as a thumbnail. A document's tile carries its ⋯ menu (JumpBackInMenu) when the
 // Explorer has it.
 
-import { ChevronRightIcon, Tooltip } from '@livediagram/ui';
+import { ChevronRightIcon, Tooltip } from '@liveplanner/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { ThisBrowserPill, THIS_BROWSER_LABEL } from '@/components/primitives/ThisBrowserPill';
 import { track } from '@/lib/telemetry';

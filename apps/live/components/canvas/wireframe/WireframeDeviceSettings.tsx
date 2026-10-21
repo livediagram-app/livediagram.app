@@ -12,7 +12,7 @@ import {
   type PageOrientation,
   type WireframeDevicePatch,
   type WireframeFrameTheme,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DeviceMiniature } from './DeviceMiniature';

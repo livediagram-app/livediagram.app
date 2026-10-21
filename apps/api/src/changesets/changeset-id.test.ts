@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_ID_PATTERN } from '@livediagram/api-schema';
+import { CHANGESET_ID_PATTERN } from '@liveplanner/api-schema';
 import { mintChangesetId } from './changeset-id';
 
 describe('mintChangesetId', () => {

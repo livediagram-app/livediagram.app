@@ -1,7 +1,7 @@
 // The slash menu's entries (docs/specs/007-editor/article-pages.md "The slash menu"), in groups,
 // and the filter: entries whose name matches what is typed come first (a name starting with it
 // before one containing it), then entries matched by a keyword.
-import type { ArticleListKind, ArticleParagraphStyle } from '@livediagram/document';
+import type { ArticleListKind, ArticleParagraphStyle } from '@liveplanner/document';
 
 export type SlashAction =
   | { kind: 'style'; style: ArticleParagraphStyle | 'code' }

@@ -7,7 +7,7 @@
 //
 // The key still SAYS ui-mode: it is stored data, not vocabulary. Renaming it would
 // silently reset the preference for everyone who has ever set it.
-export const APPEARANCE_STORAGE_KEY = 'livediagram:v2:ui-mode';
+export const APPEARANCE_STORAGE_KEY = 'liveplanner:v2:ui-mode';
 
 // The OS-level dark preference, read by the store at runtime and by the pre-paint
 // script. Shared so the two cannot disagree about what System means.

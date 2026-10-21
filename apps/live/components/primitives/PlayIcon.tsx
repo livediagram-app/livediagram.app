@@ -1,4 +1,4 @@
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 // A filled play triangle: the slide deck's Play and the element tour offer's (docs/specs/007-editor/element-tours.md).
 export function PlayIcon({ size = 12 }: { size?: number }) {

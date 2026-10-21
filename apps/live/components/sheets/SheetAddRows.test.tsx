@@ -3,7 +3,7 @@
 // under the row limit, Enter adds, and it is gone at the limit or for someone who may only look.
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { SHEET_ROWS_MAX } from '@livediagram/sheets';
+import { SHEET_ROWS_MAX } from '@liveplanner/sheets';
 import { planPalette } from '@/components/plan/plan-palette';
 import { SheetControllerProvider, type SheetController } from './sheet-controller';
 import { SheetAddRows } from './SheetAddRows';

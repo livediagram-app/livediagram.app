@@ -14,7 +14,7 @@
 // Anything unmapped falls to `other`, so an event type from a newer
 // worker gets a chip rather than becoming unfilterable.
 
-import type { KnownTimelineEventType } from '@livediagram/api-schema';
+import type { KnownTimelineEventType } from '@liveplanner/api-schema';
 
 export type TimelineCategory =
   | 'comments'

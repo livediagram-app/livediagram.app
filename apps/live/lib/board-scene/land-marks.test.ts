@@ -10,7 +10,7 @@ import {
   pathAnchors,
   penColourHex,
   type PathElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { createLandContext, LANDING_RULES } from './context';
 import { landInk, landLine, landPath } from './land-marks';
 import type { SceneInk, ScenePolyline } from './scene';

@@ -28,7 +28,7 @@ Alternate:
 
 For social posts and short "about" fields.
 
-> livediagram is a multiplayer diagram canvas in the browser. Open a link and
+> liveplanner is a multiplayer diagram canvas in the browser. Open a link and
 > start drawing with your team: live cursors, comments, shapes, arrows,
 > mindmaps, and undo and redo. No sign-in wall. MIT-licensed, free, and
 > self-hostable. [230]
@@ -39,7 +39,7 @@ For social posts and short "about" fields.
 
 For directory cards and "short pitch" fields.
 
-> livediagram is a real-time, multiplayer diagram and mindmap editor that works
+> liveplanner is a real-time, multiplayer diagram and mindmap editor that works
 > without signing in. Open a link and start drawing with your team: live
 > cursors, comments, 17 templates, and undo that never touches anyone else's
 > work. MIT-licensed, free forever, and self-hostable on Cloudflare. [49 words]
@@ -50,7 +50,7 @@ For directory cards and "short pitch" fields.
 
 For Product Hunt, app store short descriptions, README intros.
 
-> livediagram is a collaborative diagram and mindmap editor in the browser. The
+> liveplanner is a collaborative diagram and mindmap editor in the browser. The
 > canvas never sits behind a sign-in wall, so getting started is as simple as
 > opening a link and drawing. Teams work on the same canvas in real time: live
 > cursors, selection rings, comment threads, and a laser pointer.
@@ -69,7 +69,7 @@ For Product Hunt, app store short descriptions, README intros.
 
 For longer listing bodies and "about this project" sections.
 
-> livediagram is a collaborative diagram and mindmap editor that runs entirely
+> liveplanner is a collaborative diagram and mindmap editor that runs entirely
 > in the browser. Its defining choice: the canvas always works without signing
 > in. A visitor can open a link and build a real diagram before being asked to
 > create anything. Friction-free starting is the whole point.
@@ -93,7 +93,7 @@ For longer listing bodies and "about this project" sections.
 > links and revoke them whenever you like. Export any tab to Markdown, PDF, PNG,
 > or JSON.
 >
-> livediagram is MIT-licensed, free for everyone with no paid tier and no plan
+> liveplanner is MIT-licensed, free for everyone with no paid tier and no plan
 > for one, and self-hostable end to end on Cloudflare. [254 words]
 
 ---
@@ -103,9 +103,9 @@ For longer listing bodies and "about this project" sections.
 For directories with a generous body field, a landing-page "about" block, or a
 detailed GitHub / Product Hunt write-up.
 
-> ### livediagram: diagram together, no sign-in required
+> ### liveplanner: diagram together, no sign-in required
 >
-> livediagram is a collaborative diagram and mindmap editor that lives in the
+> liveplanner is a collaborative diagram and mindmap editor that lives in the
 > browser. It is built around one stubborn principle: the canvas always works
 > without signing in. A visitor can open a link and build a real diagram before
 > being asked to create an account. There is no sign-in wall in front of the
@@ -150,8 +150,8 @@ detailed GitHub / Product Hunt write-up.
 >
 > #### Free, open, and yours
 >
-> livediagram is MIT-licensed and publicly viewable. The hosted version at
-> livediagram.app is free for everyone, with no paid tier and no plan to
+> liveplanner is MIT-licensed and publicly viewable. The hosted version at
+> liveplanner.app is free for everyone, with no paid tier and no plan to
 > introduce one. If you ship it, every user gets it. You can self-host the
 > entire stack on your own Cloudflare account; the open-source core never calls
 > home and never gates features behind a license check.

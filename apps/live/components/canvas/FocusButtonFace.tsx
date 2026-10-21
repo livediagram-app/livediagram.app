@@ -11,7 +11,7 @@
 
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 
 // A target: the reticle you put over the thing you want looked at. Not an eye
 // (that is the reveal's, docs/specs/009-elements/reveal-zone.md) and not an arrow (that is the portal's):

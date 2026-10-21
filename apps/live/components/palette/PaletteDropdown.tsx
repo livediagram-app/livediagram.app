@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronDownIcon, HoverCard, Portal } from '@livediagram/ui';
+import { ChevronDownIcon, HoverCard, Portal } from '@liveplanner/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 // openOnHover: a mouse resting this long on the trigger opens the menu (passing over it does not), and the menu

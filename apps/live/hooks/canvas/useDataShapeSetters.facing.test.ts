@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 import { useDataShapeSetters } from './useDataShapeSetters';
 

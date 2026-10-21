@@ -4,8 +4,8 @@
 // Current: a pulsing accent dot and an expanded, accent-lit row with the time
 // left large and a bar draining as it runs.
 
-import { plural } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import { plural } from '@liveplanner/document';
+import { Glyph } from '@liveplanner/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { CheckGlyph, QA_ACCENT, QA_ACCENT_INK, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';

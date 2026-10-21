@@ -1,4 +1,4 @@
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 import { announce } from '@/lib/announcer';
 import { track } from '@/lib/telemetry';
 

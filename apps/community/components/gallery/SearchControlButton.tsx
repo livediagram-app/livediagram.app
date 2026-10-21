@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { ChevronDownIcon, CountBadge } from '@livediagram/ui';
+import { ChevronDownIcon, CountBadge } from '@liveplanner/ui';
 
 // One of the controls inside the search box (My Shares, Category, Tags, Sort; docs/specs/025-community/
 // community.md "Gallery"): an icon and a label, the label dropped below the lg breakpoint so they fit beside

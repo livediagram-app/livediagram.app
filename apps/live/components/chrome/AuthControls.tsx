@@ -30,7 +30,7 @@ import {
   useMenu,
   useMenuButton,
   PictureDisc,
-} from '@livediagram/ui';
+} from '@liveplanner/ui';
 import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';

@@ -7,7 +7,7 @@ import {
   type Element,
   type ShapeElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { quickStyleView } from './quick-style';
 import {
   QUICK_CORNERS,

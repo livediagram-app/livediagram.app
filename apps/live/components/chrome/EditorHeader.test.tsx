@@ -198,7 +198,7 @@ describe('EditorHeader Present button', () => {
 
   it('links the logo to the Explorer home, not the homepage', () => {
     renderHeader();
-    expect(screen.getByRole('link', { name: 'livediagram' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'liveplanner' }).getAttribute('href')).toBe(
       '/explorer/home',
     );
   });

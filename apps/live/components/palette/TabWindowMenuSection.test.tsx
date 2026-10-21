@@ -3,7 +3,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livediagram/document';
+import type { ShapeElement, Tab } from '@liveplanner/document';
 
 const editor = vi.hoisted(() => ({
   value: {} as Record<string, unknown>,

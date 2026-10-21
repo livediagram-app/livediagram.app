@@ -150,7 +150,7 @@ export const COMMUNITY_SEARCH_TERM_MAX = 40;
 // The header and storage key the Community app's per-browser key travels under (spec "Likes"). Deliberately not
 // the guest owner id: a like must never put an owner credential on the wire.
 export const COMMUNITY_KEY_HEADER = 'X-Community-Key';
-export const COMMUNITY_KEY_STORAGE = 'livediagram:v2:community-key';
+export const COMMUNITY_KEY_STORAGE = 'liveplanner:v2:community-key';
 const COMMUNITY_KEY_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 

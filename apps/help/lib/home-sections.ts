@@ -36,14 +36,14 @@ export const HOME_SECTIONS: HomeSection[] = [
     id: 'account',
     eyebrow: 'Your Account',
     heading: 'Your account and your data',
-    lede: 'Who you are to livediagram, where your work lives, and the promises that cover it.',
+    lede: 'Who you are to liveplanner, where your work lives, and the promises that cover it.',
     categories: ['account-and-data', 'privacy-and-security', 'supported-devices', 'policies'],
   },
   {
     id: 'build',
     eyebrow: 'Build and Run',
     heading: 'Developers and self-hosting',
-    lede: 'Drive livediagram from your own code, or run your own copy of it.',
+    lede: 'Drive liveplanner from your own code, or run your own copy of it.',
     categories: ['developers', 'self-hosting'],
   },
 ];

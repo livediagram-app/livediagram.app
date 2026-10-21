@@ -25,10 +25,10 @@ import {
   SHEET_CHANGE_KINDS,
   pascalToken,
   placementDefaultTelemetryType,
-} from '@livediagram/api-schema';
-import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
-import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
-import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
+} from '@liveplanner/api-schema';
+import { countedVerbs, SYNC_WATCH_TYPE } from '@liveplanner/agent-verbs';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
+import { MCP_TOOL_VERBS } from '@liveplanner/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 type ComputedValues = {

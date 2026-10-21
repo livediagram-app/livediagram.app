@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, projectBoard, type Item, type PlanBoardSetup } from '@livediagram/items';
+import { presetSetup, projectBoard, type Item, type PlanBoardSetup } from '@liveplanner/items';
 import {
   boardItems,
   boardPeople,

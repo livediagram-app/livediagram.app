@@ -1,4 +1,4 @@
-import { Button, LockIcon } from '@livediagram/ui';
+import { Button, LockIcon } from '@liveplanner/ui';
 import { useRef, useState } from 'react';
 import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
 

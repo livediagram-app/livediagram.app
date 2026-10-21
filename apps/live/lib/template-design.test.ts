@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Element } from '@livediagram/document';
-import { templateCanvasOverrides } from '@livediagram/templates';
+import { layOutPages, type Element } from '@liveplanner/document';
+import { templateCanvasOverrides } from '@liveplanner/templates';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the design starters redesigned together

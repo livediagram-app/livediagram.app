@@ -14,7 +14,7 @@ import {
   type ElementLink,
   type GraphEdge,
   type GraphNode,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';
 import { DrawioRefused } from './refusals';
 import { readLabel } from './label';

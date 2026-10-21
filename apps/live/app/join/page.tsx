@@ -8,7 +8,7 @@ import { TeamInviteJoin } from '@/components/panels/TeamInviteJoin';
 // inherited from the root layout (docs/specs/007-editor/live-app.md keeps the live app out of the
 // index). The token is read client-side, so this stays a thin shell.
 export const metadata: Metadata = {
-  title: 'Join a team | livediagram',
+  title: 'Join a team | liveplanner',
 };
 
 export default function JoinPage() {

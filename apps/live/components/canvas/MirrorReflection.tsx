@@ -13,7 +13,7 @@ import {
   type MirroredPage,
   type SymmetryMap,
   type Rect,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { PathDraftLayer, type PathDraftView } from './path/PathDraftLayer';
 
 /** The box around some points. */

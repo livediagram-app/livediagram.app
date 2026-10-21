@@ -8,7 +8,7 @@ const lc = (over: Partial<LineContext> = {}): LineContext => ({
   pathOf: (rel) => `docs/diagrams/${rel}`,
   level: 'files',
   relocate: false,
-  linkHost: 'https://livediagram.app',
+  linkHost: 'https://liveplanner.app',
   ...over,
 });
 const doc = { documentId: 'd1', name: 'Home screen' };
@@ -22,10 +22,10 @@ describe('actionLine', () => {
     ];
     expect(
       actionLine(
-        { kind: 'write', ...doc, reason: 'new', path: 'home.livediagram.json', tabs },
+        { kind: 'write', ...doc, reason: 'new', path: 'home.liveplanner.json', tabs },
         lc(),
       ),
-    ).toBe('+ docs/diagrams/home.livediagram.json  "Home screen" · 3 tabs · rev 4,2,1');
+    ).toBe('+ docs/diagrams/home.liveplanner.json  "Home screen" · 3 tabs · rev 4,2,1');
     expect(
       actionLine({ kind: 'write', ...doc, reason: 'new', path: null, tabs: [tabs[0]!] }, lc()),
     ).toBe('+ "Home screen" · 1 tab · rev 4');
@@ -34,107 +34,107 @@ describe('actionLine', () => {
     );
     expect(
       actionLine(
-        { kind: 'write', ...doc, reason: 'behind', path: 'home.livediagram.json', tabs },
+        { kind: 'write', ...doc, reason: 'behind', path: 'home.liveplanner.json', tabs },
         lc(),
       ),
-    ).toBe('~ docs/diagrams/home.livediagram.json  "Home screen" · Flow, Added · rev 3→4, 1');
+    ).toBe('~ docs/diagrams/home.liveplanner.json  "Home screen" · Flow, Added · rev 3→4, 1');
     expect(
       actionLine(
         {
           kind: 'write',
           ...doc,
           reason: 'behind',
-          path: 'home.livediagram.json',
+          path: 'home.liveplanner.json',
           tabs: [tabs[1]!],
         },
         lc(),
       ),
-    ).toBe('~ docs/diagrams/home.livediagram.json  "Home screen"');
+    ).toBe('~ docs/diagrams/home.liveplanner.json  "Home screen"');
   });
 
   it('words removals, lowered files and relocations', () => {
     expect(
-      actionLine({ kind: 'remove', ...doc, path: 'h.livediagram.json', reason: 'trashed' }, lc()),
-    ).toBe('- docs/diagrams/h.livediagram.json  "Home screen" · in the Trash');
+      actionLine({ kind: 'remove', ...doc, path: 'h.liveplanner.json', reason: 'trashed' }, lc()),
+    ).toBe('- docs/diagrams/h.liveplanner.json  "Home screen" · in the Trash');
     expect(actionLine({ kind: 'remove', ...doc, path: null, reason: 'outside' }, lc())).toBe(
       '- "Home screen" · outside the link',
     );
     expect(
-      actionLine({ kind: 'lower', ...doc, path: 'h.livediagram.json' }, lc({ level: 'index' })),
-    ).toBe('- docs/diagrams/h.livediagram.json  "Home screen" · level index keeps no mirror files');
+      actionLine({ kind: 'lower', ...doc, path: 'h.liveplanner.json' }, lc({ level: 'index' })),
+    ).toBe('- docs/diagrams/h.liveplanner.json  "Home screen" · level index keeps no mirror files');
     const move = {
       kind: 'relocate' as const,
       ...doc,
-      path: 'h.livediagram.json',
-      to: 'home.livediagram.json',
+      path: 'h.liveplanner.json',
+      to: 'home.liveplanner.json',
     };
     expect(actionLine(move, lc())).toBe(
-      '» docs/diagrams/h.livediagram.json would move to docs/diagrams/home.livediagram.json: livediagram sync --relocate',
+      '» docs/diagrams/h.liveplanner.json would move to docs/diagrams/home.liveplanner.json: liveplanner sync --relocate',
     );
     expect(actionLine(move, lc({ relocate: true }))).toBe(
-      '» docs/diagrams/h.livediagram.json → docs/diagrams/home.livediagram.json',
+      '» docs/diagrams/h.liveplanner.json → docs/diagrams/home.liveplanner.json',
     );
   });
 
   it('words reports, transient failures, and nothing for a document in step', () => {
     expect(
       actionLine(
-        { kind: 'report', reason: 'unreadable', documentId: 'd1', path: 'h.livediagram.json' },
+        { kind: 'report', reason: 'unreadable', documentId: 'd1', path: 'h.liveplanner.json' },
         lc(),
       ),
-    ).toBe('? docs/diagrams/h.livediagram.json: no document this account can open; left as it is');
+    ).toBe('? docs/diagrams/h.liveplanner.json: no document this account can open; left as it is');
     expect(
       actionLine({ kind: 'report', reason: 'unreadable', documentId: 'd1', path: null }, lc()),
     ).toBe('? d1: no document this account can open; left as it is');
     expect(
       actionLine(
-        { kind: 'report', reason: 'local-new', documentId: null, path: 'n.livediagram.json' },
+        { kind: 'report', reason: 'local-new', documentId: null, path: 'n.liveplanner.json' },
         lc(),
       ),
     ).toBe(
-      '? docs/diagrams/n.livediagram.json: a document written by hand; this version of livediagram does not create it',
+      '? docs/diagrams/n.liveplanner.json: a document written by hand; this version of liveplanner does not create it',
     );
     expect(
       actionLine(
         {
           kind: 'transient',
           ...doc,
-          failure: 'https://livediagram.app is rate limiting this token',
+          failure: 'https://liveplanner.app is rate limiting this token',
           exit: 6,
           reason: '429',
         },
         lc(),
       ),
-    ).toBe('! "Home screen": https://livediagram.app is rate limiting this token; files kept');
+    ).toBe('! "Home screen": https://liveplanner.app is rate limiting this token; files kept');
     expect(actionLine({ kind: 'none', ...doc, path: null }, lc())).toBeNull();
   });
 
   it('words every refusal', () => {
     const refuse = (reason: string, detail: string | null = null) =>
       actionLine(
-        { kind: 'refuse', documentId: 'd1', path: 'h.livediagram.json', reason, detail } as never,
+        { kind: 'refuse', documentId: 'd1', path: 'h.liveplanner.json', reason, detail } as never,
         lc(),
       );
-    const p = 'docs/diagrams/h.livediagram.json';
-    expect(refuse('ahead')).toBe(`! ${p}: changed here; send it: livediagram push ${p}`);
+    const p = 'docs/diagrams/h.liveplanner.json';
+    expect(refuse('ahead')).toBe(`! ${p}: changed here; send it: liveplanner push ${p}`);
     expect(refuse('diverged')).toBe(
-      `! ${p}: changed here and in livediagram; send it: livediagram push ${p}`,
+      `! ${p}: changed here and in liveplanner; send it: liveplanner push ${p}`,
     );
     expect(refuse('gone-changed')).toBe(
-      `! ${p}: gone from the link, but changed here and not sent; kept. Send it: livediagram push ${p}, or delete it`,
+      `! ${p}: gone from the link, but changed here and not sent; kept. Send it: liveplanner push ${p}, or delete it`,
     );
     expect(refuse('lowered-changed', 'none')).toBe(
-      `! ${p}: level none keeps no mirror files, but this one changed here and is not sent; kept. Send it: livediagram push ${p}, or delete it`,
+      `! ${p}: level none keeps no mirror files, but this one changed here and is not sent; kept. Send it: liveplanner push ${p}, or delete it`,
     );
     expect(refuse('conflicted')).toBe(
-      `! ${p}: holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livediagram sync`,
+      `! ${p}: holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then liveplanner sync`,
     );
     expect(refuse('invalid', 'not JSON')).toBe(`! ${p}: not JSON`);
     expect(refuse('foreign-host', 'https://self.example')).toBe(
-      `! ${p}: synced from https://self.example, not this link's https://livediagram.app`,
+      `! ${p}: synced from https://self.example, not this link's https://liveplanner.app`,
     );
-    expect(refuse('duplicate', 'other.livediagram.json')).toBe(
-      `! ${p}: names the same document as docs/diagrams/other.livediagram.json`,
+    expect(refuse('duplicate', 'other.liveplanner.json')).toBe(
+      `! ${p}: names the same document as docs/diagrams/other.liveplanner.json`,
     );
   });
 });
@@ -159,14 +159,14 @@ describe('a held document', () => {
       kind: 'held' as const,
       documentId: 'd1',
       name: 'Home screen',
-      path: 'h.livediagram.json',
+      path: 'h.liveplanner.json',
     };
-    const p = 'docs/diagrams/h.livediagram.json';
+    const p = 'docs/diagrams/h.liveplanner.json';
     expect(actionLine({ ...held, broken: 'conflicted', message: null }, lc())).toBe(
-      `! "Home screen": not written while ${p} holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livediagram sync`,
+      `! "Home screen": not written while ${p} holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then liveplanner sync`,
     );
     expect(actionLine({ ...held, broken: 'invalid', message: 'not JSON' }, lc())).toBe(
-      `! "Home screen": not written while ${p} is invalid (not JSON); fix or delete it, then livediagram sync`,
+      `! "Home screen": not written while ${p} is invalid (not JSON); fix or delete it, then liveplanner sync`,
     );
   });
 });

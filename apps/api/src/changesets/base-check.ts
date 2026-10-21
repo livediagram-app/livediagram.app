@@ -1,5 +1,5 @@
-import { elementFingerprint, type Element, type Tab } from '@livediagram/document';
-import type { ChangesetBase, ChangesetConflict } from '@livediagram/api-schema';
+import { elementFingerprint, type Element, type Tab } from '@liveplanner/document';
+import type { ChangesetBase, ChangesetConflict } from '@liveplanner/api-schema';
 
 // The base check (docs/specs/024-agents/agent-changesets.md "Conflicts"): what the agent read
 // against the tab as stored now. Pure. Only targets are checked: elements an operation merely

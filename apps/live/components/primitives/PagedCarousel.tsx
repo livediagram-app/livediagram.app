@@ -6,8 +6,8 @@
 // theme list, so the two page the same way.
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideChevronLeft, lucideChevronRight } from '@livediagram/icons/lucide';
+import { lucideGlyph } from '@liveplanner/ui';
+import { lucideChevronLeft, lucideChevronRight } from '@liveplanner/icons/lucide';
 
 const PrevIcon = lucideGlyph(lucideChevronLeft, 16);
 const NextIcon = lucideGlyph(lucideChevronRight, 16);

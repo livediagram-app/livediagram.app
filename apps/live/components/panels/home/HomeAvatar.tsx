@@ -2,8 +2,8 @@
 // the person's colour, with their picture over it once it loads, and no presence ring (Home says
 // what people did, not whether they are here). Decorative: every entry names its people in words.
 
-import type { HomePerson } from '@livediagram/api-schema';
-import { PictureDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import type { HomePerson } from '@liveplanner/api-schema';
+import { PictureDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import { initialsOf } from '@/lib/identity';
 import { personName } from '@/app/explorer/home/home-copy';
 import { PAGE_RING } from './home-styles';

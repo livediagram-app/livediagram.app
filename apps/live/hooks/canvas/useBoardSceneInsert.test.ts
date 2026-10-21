@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@liveplanner/document';
 import type { ImportImageSession } from '@/lib/import-images';
 import type { BoardScene, SceneItem } from '@/lib/board-scene/scene';
 import { boardScene, inkStroke, sceneText } from '@/lib/board-scene/test-scenes';

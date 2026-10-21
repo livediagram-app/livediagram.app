@@ -2,8 +2,8 @@
 
 // Asked before a merge that would drop values (docs/specs/029-sheets/sheet.md "Merge"): the toolbar's Merge menu and
 // the cell menu ask the same thing, naming the range.
-import { Button } from '@livediagram/ui';
-import { formatRange, type GridRange } from '@livediagram/sheets';
+import { Button } from '@liveplanner/ui';
+import { formatRange, type GridRange } from '@liveplanner/sheets';
 
 export function SheetMergeConfirm({
   range,

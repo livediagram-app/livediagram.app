@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HomeDocument, HomeGroup, HomePerson, HomeVerb } from '@livediagram/api-schema';
+import type { HomeDocument, HomeGroup, HomePerson, HomeVerb } from '@liveplanner/api-schema';
 import {
   actionDetail,
   actionPhrase,

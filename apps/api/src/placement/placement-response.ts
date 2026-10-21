@@ -1,7 +1,7 @@
 // The response for a refused placement (docs/specs/013-workspace/folders.md "Placement on create"):
 // the shared `{ error }` envelope, with the status each refusal carries.
 
-import { INTENT_INVALID, type PlacementRejection } from '@livediagram/api-schema';
+import { INTENT_INVALID, type PlacementRejection } from '@liveplanner/api-schema';
 import { json } from '../responses';
 
 const PLACEMENT_REJECTION_STATUS: Record<PlacementRejection, number> = {

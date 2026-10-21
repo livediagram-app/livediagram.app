@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, type Element, type Tab } from '@livediagram/document';
+import { createPinnedArrow, createShape, type Element, type Tab } from '@liveplanner/document';
 import { cleanupElements } from '@/lib/tab-cleanup';
 import { useCleanupPreview } from './useCleanupPreview';
 import { loadTidyEngine } from '@/lib/tidy-engine';

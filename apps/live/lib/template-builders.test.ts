@@ -5,11 +5,11 @@ import {
   laneCentre,
   layOutPages,
   type Element,
-} from '@livediagram/document';
-import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
-import { primsBounds } from '@livediagram/icons';
-import { ICON_CATALOG_1 } from '@livediagram/icons/icon-catalog-1';
-import { ICON_CATALOG_2 } from '@livediagram/icons/icon-catalog-2';
+} from '@liveplanner/document';
+import { templateCanvasOverrides, type TemplateKind } from '@liveplanner/templates';
+import { primsBounds } from '@liveplanner/icons';
+import { ICON_CATALOG_1 } from '@liveplanner/icons/icon-catalog-1';
+import { ICON_CATALOG_2 } from '@liveplanner/icons/icon-catalog-2';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from './tech-icons';
 

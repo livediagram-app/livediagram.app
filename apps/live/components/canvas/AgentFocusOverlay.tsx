@@ -6,7 +6,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   elementBounds,
   type Element,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 
 // The focus rings of the agents present on the tab (docs/specs/024-agents/blueprints/agent-presence.md

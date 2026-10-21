@@ -17,13 +17,13 @@ import {
   SHEET_COLS_MAX,
   SHEET_LOOKS,
   SHEET_ROWS_MAX,
-} from '@livediagram/sheets';
-import { CHART_PALETTES, CHART_TYPES, type ChartPaletteId } from '@livediagram/document';
+} from '@liveplanner/sheets';
+import { CHART_PALETTES, CHART_TYPES, type ChartPaletteId } from '@liveplanner/document';
 import { BORDER_COLOUR_DEFAULT } from '../sheets/sheet-shape-change';
 import { DESIGN_ACCENT_DEFAULT } from '../sheets/sheet-design';
 import { SHEET_CHART_SIZE } from '../sheets/sheet-charts';
 
-const url = z.string().describe('Link that opens the document in the livediagram editor.');
+const url = z.string().describe('Link that opens the document in the liveplanner editor.');
 const documentId = z.string().describe('The document (from find_documents).');
 const sheetArg = z
   .string()

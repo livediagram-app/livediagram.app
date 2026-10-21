@@ -5,7 +5,7 @@
 // between them. On a phone ("On a phone") a board that scrolls on its own (maximised, filling its tab or in a Dashboard
 // slot) gives each column the body's width less PHONE_COLUMN_PEEK_PX, whatever its width, so one column reads at a time
 // and the next peeks in at the edge. Pure.
-import { PLAN_COLUMN_MIN_PX, type PlanColumn } from '@livediagram/items';
+import { PLAN_COLUMN_MIN_PX, type PlanColumn } from '@liveplanner/items';
 
 // How many column slots a maximised board shows across its body before it scrolls (blueprint DEFAULTS).
 export const MAXIMISED_BOARD_SLOTS = 5;

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { REPO_URL } from '@livediagram/ui';
+import { REPO_URL } from '@liveplanner/ui';
 import { PROMISES } from '@/lib/promises';
 import { PromisePrism } from './PromisePrism';
 import { StartDrawingCta } from './StartDrawingCta';

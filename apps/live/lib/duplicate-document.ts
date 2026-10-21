@@ -23,8 +23,8 @@
 // the helper deliberately doesn't touch state outside the api
 // round-trip so it can stand alone.
 
-import type { CreationIntent, DocumentPlacement, RecordedIntent } from '@livediagram/api-schema';
-import { remapTabLinks, type Tab } from '@livediagram/document';
+import type { CreationIntent, DocumentPlacement, RecordedIntent } from '@liveplanner/api-schema';
+import { remapTabLinks, type Tab } from '@liveplanner/document';
 import { apiCreateDocument, apiLoadDocument, apiLoadTab, apiSaveDocumentMeta } from './api-client';
 import { ApiError } from './api/core';
 import {
@@ -34,7 +34,7 @@ import {
   offlinePutRecord,
 } from './offline/offline-store';
 import { fetchItems } from './api/items';
-import { storeAsCreates } from '@livediagram/items';
+import { storeAsCreates } from '@liveplanner/items';
 import { fetchAllSheets, sheetAsCreate } from './api/sheets';
 
 // The refusals that mean "not beside the source for this person", where the copy is filed at the
@@ -82,7 +82,7 @@ export async function duplicateDocument(
     const newTabId = tabIdMap.get(tab.id) ?? crypto.randomUUID();
     // Tab / element links follow the copy's tabs; document and url links
     // leave the document and survive unchanged (shared with the api's copy
-    // route via @livediagram/document).
+    // route via @liveplanner/document).
     const elements = remapTabLinks(tab.elements, tabIdMap);
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }

@@ -18,7 +18,7 @@ describe('Brand', () => {
     const wordmark = container.querySelector('[data-logotype]')!.cloneNode(true) as HTMLElement;
     // The gleam overlay repeats the letters but is hidden from assistive tech.
     wordmark.querySelector('[aria-hidden="true"]')?.remove();
-    expect(wordmark.textContent).toBe('livediagram');
+    expect(wordmark.textContent).toBe('liveplanner');
   });
 
   it('accents "live", brand-700 in light and sky-400 in dark, with "diagram" in ink', () => {
@@ -40,7 +40,7 @@ describe('Brand', () => {
     const { container } = render(<Brand href="/" />);
     expect(container.querySelector('a')?.getAttribute('href')).toBe('/');
     // Named on the link, so it keeps a name where a caller hides the wordmark (the editor header on a phone).
-    expect(container.querySelector('a')?.getAttribute('aria-label')).toBe('livediagram');
+    expect(container.querySelector('a')?.getAttribute('aria-label')).toBe('liveplanner');
   });
 });
 

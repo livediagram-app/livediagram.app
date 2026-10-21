@@ -6,8 +6,8 @@
 // Responses, and Delete Link, which asks first. On a document in This Browser it offers Sync Document first (the document
 // Share dialog's prompt), then carries straight on to publishing as the document stops being offline.
 import { useId, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
-import type { DestinationProblem, PublishProblem } from '@livediagram/forms';
+import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
+import type { DestinationProblem, PublishProblem } from '@liveplanner/forms';
 import { SyncDocumentPrompt } from '@/components/dialogs/SyncDocumentPrompt';
 // The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -51,7 +51,7 @@ export function ShareFormDialog({
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
   const suspended = !live && link.link?.suspendedAt;
   const canPublish = link.link?.canPublish !== false;
-  // A document in This Browser syncs first; the publish view follows once it is on livediagram.
+  // A document in This Browser syncs first; the publish view follows once it is on liveplanner.
   const syncFirst = link.status === 'offline' && !!onSyncToCloud;
   return (
     <Dialog open={open} onClose={onClose} titleId={titleId} size="md" phoneSheet>
@@ -71,13 +71,13 @@ export function ShareFormDialog({
             return onSyncToCloud();
           }}
           ready={syncReady}
-          message="It is saved only in this browser, so this form can’t be published yet. Sync it to livediagram to publish it: the form link and its responses need it on our servers. You can take it offline again any time."
+          message="It is saved only in this browser, so this form can’t be published yet. Sync it to liveplanner to publish it: the form link and its responses need it on our servers. You can take it offline again any time."
         />
       ) : (
         <div className="flex flex-col gap-4 px-6 pb-6 pt-4">
           {link.status === 'offline' ? (
             <p className="text-[14px] text-slate-600 dark:text-slate-300">
-              Forms are published from documents saved to livediagram. This one is kept on this
+              Forms are published from documents saved to liveplanner. This one is kept on this
               device only.
             </p>
           ) : live && url ? (

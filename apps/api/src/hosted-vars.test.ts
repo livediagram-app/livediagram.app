@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { parsePositiveCap } from './routes/images';
 
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
-// the vars livediagram.app's deploys add, and a fork's do not. Two promises
+// the vars liveplanner.app's deploys add, and a fork's do not. Two promises
 // hang on it: a fork deploying the repo as documented is telemetry-off and
 // uncapped, and the hosted deployment's image caps survive every deploy.
 
@@ -190,7 +190,7 @@ describe('hosted-vars script', () => {
   });
 });
 
-// The Drive mirror's Google identity is per environment: livediagram.app runs one
+// The Drive mirror's Google identity is per environment: liveplanner.app runs one
 // Google Cloud project for production and one for staging
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment").
 describe('hosted profile per environment', () => {

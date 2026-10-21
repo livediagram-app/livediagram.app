@@ -4,8 +4,8 @@
 // keyboard, and for a key a closer handler already claimed.
 
 import { useEffect } from 'react';
-import { isInMenuSurface } from '@livediagram/ui';
-import type { Reaction } from '@livediagram/document';
+import { isInMenuSurface } from '@liveplanner/ui';
+import type { Reaction } from '@liveplanner/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import type { AvatarReactionKind } from '@/lib/avatar-reactions';

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@liveplanner/document';
 import { editorModeShortcut } from './editor-mode-shortcut';
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): next mode, announced politely,

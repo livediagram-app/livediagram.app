@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import { bytesToBase64 } from '@livediagram/api-schema';
+import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import { bytesToBase64 } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { driveMode, googleOAuthBase } from './config';
 

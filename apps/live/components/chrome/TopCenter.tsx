@@ -4,7 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from 'react';
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { SOLID_BRAND_DARK } from '@liveplanner/ui';
 
 // Shared top-centre overlay region (docs/specs/008-canvas/canvas-and-palette.md). Every floating status pill
 // that belongs at the top middle of the canvas — the owner / role badge,

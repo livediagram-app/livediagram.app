@@ -6,7 +6,7 @@
 // wears "Most wanted" and every row carries a heat bar against it, and the
 // note being discussed lifts into a lit card with a breathing live dot.
 
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge } from '@liveplanner/ui';
 import { useEffect, useState } from 'react';
 import {
   QA_MAX_NOTES,
@@ -14,7 +14,7 @@ import {
   qaVoterId,
   type QaNote,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { CollabPanel } from '../collab-chrome';
 import {
   ElementEllipsisMenu,

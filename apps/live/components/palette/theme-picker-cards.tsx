@@ -1,8 +1,8 @@
 // Card primitives for the flat theme list (ThemeBrowser): a selectable ThemeCard (swatch + label), a custom
 // theme's card with its edit / delete actions, and the "New Theme" card.
 
-import type { CustomTheme } from '@livediagram/api-schema';
-import { CopyIcon, PencilIcon, PlusIcon, TrashIcon } from '@livediagram/ui';
+import type { CustomTheme } from '@liveplanner/api-schema';
+import { CopyIcon, PencilIcon, PlusIcon, TrashIcon } from '@liveplanner/ui';
 import { type ThemeDefinition } from '@/lib/themes';
 import { themeDescription } from '@/lib/themes-taxonomy';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';

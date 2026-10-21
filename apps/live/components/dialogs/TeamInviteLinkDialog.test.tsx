@@ -5,7 +5,7 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TeamInviteLink } from '@livediagram/api-schema';
+import type { TeamInviteLink } from '@liveplanner/api-schema';
 import { TeamInviteLinkDialog } from './TeamInviteLinkDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

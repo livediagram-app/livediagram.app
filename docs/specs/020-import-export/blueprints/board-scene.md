@@ -350,7 +350,7 @@ templateChosen: true }`. `createDocument` defaults to `apiCreateDocument` (cloud
   dates add the degraded rule `UNREADABLE_DATES_RULE`. Afterwards `onDocumentsCreated`.
 - `createBrowserImportImageSession` takes an optional `offline` that overrides the document-id check.
 - `boardDocumentDates`: ISO `createdAt` / `modifiedAt` parsed with `Date.parse`, then the api's own
-  rule (`documentDates`, `@livediagram/api-schema`): both when both hold; `createdAt` alone when only
+  rule (`documentDates`, `@liveplanner/api-schema`): both when both hold; `createdAt` alone when only
   it does (`unreadable` when a modified date was given); none, `unreadable` when any date was given.
 - `boardDocumentName`: the trimmed title, else `UNTITLED_BOARD_NAME` ("Whiteboard") and the created
   date as `en-GB` `{ day: 'numeric', month: 'short', year: 'numeric' }` ("Whiteboard, 14 Aug 2020"),
@@ -395,7 +395,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 - Defaults are not written at the source: `streamline` only when above 0 (`freehandPenStroke` reads
   absent as 0), `opacity` only under 1 (`commonFields`), a medium border and a solid line omitted.
 - New-document target (`lib/board-scene-import.ts`): a cloud board whose tab serialises to more
-  than `MAX_TAB_BYTES` (`@livediagram/api-schema`, the worker's own cap, [Tab size](../../015-api/api.md#tab-size))
+  than `MAX_TAB_BYTES` (`@liveplanner/api-schema`, the worker's own cap, [Tab size](../../015-api/api.md#tab-size))
   fails before any request, and an `ApiError` with status 413 from the create fails the same way: the
   failure `BOARD_TOO_BIG` "This board is too big for one document", logged
   `console.warn('[board-scene] board too big', { board, bytes, cap })` (the tab's stored bytes, `tabDataBytes`, and `MAX_TAB_BYTES`).

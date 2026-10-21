@@ -1,4 +1,4 @@
-import { NON_MARKETING_SEGMENTS } from '@livediagram/api-schema';
+import { NON_MARKETING_SEGMENTS } from '@liveplanner/api-schema';
 
 // Only the marketing pages opt in to cross-document view transitions (docs/specs/019-marketing/marketing-site.md).
 // Leaving for another app (the editor, the help centre, the dashboard), the browser would still start one,

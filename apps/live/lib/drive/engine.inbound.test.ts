@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { FakeGoogle } from '@livediagram/fake-google';
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import { FakeGoogle } from '@liveplanner/fake-google';
+import { DRIVE_FILE_MIME } from '@liveplanner/api-schema';
 import { DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
 import { fileOf, makeEngine, OWNER, world } from './test-support';
 
 // Every row of the spec's Inbound table: the person changes things in
 // Drive's own UI (the fake Google's `user*` calls), the next pass applies
-// them to livediagram (docs/specs/022-drive-mirror/drive-mirror.md,
-// "Inbound: Drive to livediagram").
+// them to liveplanner (docs/specs/022-drive-mirror/drive-mirror.md,
+// "Inbound: Drive to liveplanner").
 
 async function mirrored(options: ConstructorParameters<typeof FakeGoogle>[0] = {}) {
   const w = world();
@@ -26,7 +26,7 @@ async function mirrored(options: ConstructorParameters<typeof FakeGoogle>[0] = {
 describe('inbound rows', () => {
   it('File renamed: document renamed, the extension dropped', async () => {
     const w = await mirrored();
-    w.google.userRename(w.file().id, 'Roadmap.livediagram');
+    w.google.userRename(w.file().id, 'Roadmap.liveplanner');
     await w.engine.syncNow();
     expect(w.ld.document('d1')!.name).toBe('Roadmap');
     expect(w.events).toContain('Applied:Rename');
@@ -34,10 +34,10 @@ describe('inbound rows', () => {
 
   it('File renamed to nothing: the old name stays, and Drive gets it back', async () => {
     const w = await mirrored();
-    w.google.userRename(w.file().id, '.livediagram');
+    w.google.userRename(w.file().id, '.liveplanner');
     await w.engine.syncNow();
     expect(w.ld.document('d1')!.name).toBe('Plan');
-    expect(w.file().name).toBe('Plan.livediagram');
+    expect(w.file().name).toBe('Plan.liveplanner');
   });
 
   it('File moved to another mirrored folder: document moved', async () => {
@@ -55,7 +55,7 @@ describe('inbound rows', () => {
     expect(w.ld.document('d1')!.folderId).toBeNull();
   });
 
-  it('File moved into a folder livediagram cannot see: the root, a notice, and the file stays put', async () => {
+  it('File moved into a folder liveplanner cannot see: the root, a notice, and the file stays put', async () => {
     const w = await mirrored();
     const hidden = w.google.userCreateFolder(OWNER, 'Secret', w.ld.connection!.rootFolderId!);
     w.google.userMove(w.file().id, hidden);
@@ -73,7 +73,7 @@ describe('inbound rows', () => {
     expect(w.file().parents).toEqual([hidden]);
   });
 
-  it('File moved outside the livediagram tree entirely: the same notice', async () => {
+  it('File moved outside the liveplanner tree entirely: the same notice', async () => {
     const w = await mirrored();
     w.google.userMove(w.file().id, 'root');
     await w.engine.syncNow();
@@ -81,7 +81,7 @@ describe('inbound rows', () => {
     expect(w.ld.item('document', 'd1')!.notice).toBe('unseen_folder');
   });
 
-  it('the notice clears when the document is moved again in livediagram, and the file follows', async () => {
+  it('the notice clears when the document is moved again in liveplanner, and the file follows', async () => {
     const w = await mirrored();
     const hidden = w.google.userCreateFolder(OWNER, 'Secret');
     w.google.userMove(w.file().id, hidden);
@@ -115,14 +115,14 @@ describe('inbound rows', () => {
     expect(w.events).toContain('Applied:Purge');
   });
 
-  it('File contents edited in Drive: rewritten from livediagram', async () => {
+  it('File contents edited in Drive: rewritten from liveplanner', async () => {
     const w = await mirrored();
     w.google.userEditContent(w.file().id, '{"hacked":true}');
     await w.engine.syncNow();
     // Rewritten at the write cadence, like any other content write.
     w.clock.tick(DRIVE_WRITE_MIN_INTERVAL_MS);
     await w.engine.syncNow();
-    expect(w.file().content).toContain('livediagram.document');
+    expect(w.file().content).toContain('liveplanner.document');
     expect(w.ld.document('d1')!.name).toBe('Plan');
   });
 
@@ -176,43 +176,43 @@ describe('echo suppression', () => {
 describe('conflicts', () => {
   it('both sides renamed: the later change wins', async () => {
     const w = await mirrored();
-    // Drive first, livediagram later: livediagram wins and Drive follows.
-    w.google.userRename(w.file().id, 'Drive name.livediagram');
+    // Drive first, liveplanner later: liveplanner wins and Drive follows.
+    w.google.userRename(w.file().id, 'Drive name.liveplanner');
     w.clock.tick(1000);
     await w.ld.port().renameDocument('d1', 'Local name');
     await w.engine.syncNow();
     expect(w.ld.document('d1')!.name).toBe('Local name');
-    expect(w.file().name).toBe('Local name.livediagram');
+    expect(w.file().name).toBe('Local name.liveplanner');
   });
 
   it('both sides renamed, Drive later: Drive wins', async () => {
     const w = await mirrored();
     await w.ld.port().renameDocument('d1', 'Local name');
     w.clock.tick(1000);
-    w.google.userRename(w.file().id, 'Drive name.livediagram');
+    w.google.userRename(w.file().id, 'Drive name.liveplanner');
     await w.engine.syncNow();
     expect(w.ld.document('d1')!.name).toBe('Drive name');
-    expect(w.file().name).toBe('Drive name.livediagram');
+    expect(w.file().name).toBe('Drive name.liveplanner');
   });
 
   it('a rename made in Drive while away is applied before any outbound write', async () => {
     const w = await mirrored();
     w.engine.stop();
-    w.google.userRename(w.file().id, 'Renamed while away.livediagram');
+    w.google.userRename(w.file().id, 'Renamed while away.liveplanner');
     w.clock.tick(3_600_000);
     const next = makeEngine(w);
     await next.engine.start();
     expect(w.ld.document('d1')!.name).toBe('Renamed while away');
-    expect(w.file().name).toBe('Renamed while away.livediagram');
+    expect(w.file().name).toBe('Renamed while away.liveplanner');
   });
 });
 
 describe('Open with files and foreign files', () => {
-  it('ignores a livediagram file from another deployment in the change log', async () => {
+  it('ignores a liveplanner file from another deployment in the change log', async () => {
     const w = await mirrored();
     const foreign = w.google.otherUserFile({
       owner: 'someone',
-      name: 'Theirs.livediagram',
+      name: 'Theirs.liveplanner',
       mimeType: DRIVE_FILE_MIME,
       content: '{}',
       appProperties: { ldDocumentId: 'x', ldOrigin: 'other.host' },

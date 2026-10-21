@@ -1,6 +1,6 @@
 // What a Dashboard card reads as, in words (docs/specs/026-plan/plan-tabs.md "Cards"): shared by the live cards in the
 // editor and their still pictures in an image export. Pure.
-import type { DashboardLink, SheetMetricKind, FormMetricKind } from '@livediagram/document';
+import type { DashboardLink, SheetMetricKind, FormMetricKind } from '@liveplanner/document';
 
 // What a Key Date's count reads, and whether it has passed.
 export function keyDateCount(days: number): { figure: string; unit: string; past: boolean } {

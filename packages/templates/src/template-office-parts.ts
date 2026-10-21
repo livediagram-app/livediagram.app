@@ -10,7 +10,7 @@ import {
   type Element,
   type RoomDoor,
   type ShapeKind,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { CANVAS_TONES } from './template-inks';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).

@@ -3,11 +3,11 @@
 // the editor and makes a switch one tab edit.
 //
 // - The mode is the tab's own (`Tab.opensIn`), Diagram when absent. Nothing is remembered per
-//   person: the `livediagram:v2:editor-mode:<tab>` keys an earlier editor wrote are left in
+//   person: the `liveplanner:v2:editor-mode:<tab>` keys an earlier editor wrote are left in
 //   place and never read.
 // - Event-storming boards are always Diagram and offer no switch.
 // - A view-role visitor, and everyone on a locked tab, follows the tab's mode and gets no switch.
-import { editorModeSwitchable, opensInOf, type EditorMode, type Tab } from '@livediagram/document';
+import { editorModeSwitchable, opensInOf, type EditorMode, type Tab } from '@liveplanner/document';
 
 export type EditorModeTab = Pick<Tab, 'id' | 'kind' | 'opensIn' | 'layers' | 'locked'>;
 

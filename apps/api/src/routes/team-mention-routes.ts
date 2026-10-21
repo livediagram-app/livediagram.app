@@ -12,11 +12,11 @@
 // reworded request cannot email anyone again. A canvas comment reaches D1 only with the next tab save,
 // so its request carries the text and mentions.
 
-import { isOpenTeamMember } from '@livediagram/api-schema';
+import { isOpenTeamMember } from '@liveplanner/api-schema';
 import { legacyDocumentIdOf } from '../legacy-request-forms';
-import type { TeamMember } from '@livediagram/api-schema';
-import { MENTIONS_MAX, itemThread, type Comment } from '@livediagram/document';
-import { ITEM_ID_PATTERN } from '@livediagram/items';
+import type { TeamMember } from '@liveplanner/api-schema';
+import { MENTIONS_MAX, itemThread, type Comment } from '@liveplanner/document';
+import { ITEM_ID_PATTERN } from '@liveplanner/items';
 import { getDocumentMeta, getParticipant, listTeamMembers, readItem } from '../db';
 import { NOTIFY_EMAIL_DEDUPE_MS, notifyMentioned } from '../email/notifications';
 import { badRequest, forbidden, json, notFound } from '../responses';

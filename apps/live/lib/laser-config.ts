@@ -16,7 +16,7 @@ import {
   penColourLabel,
   type Appearance,
   type StandardColourName,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   readLocalStorageSafe,
   pickOption,
@@ -150,7 +150,7 @@ export function parseLaserConfig(raw: unknown): LaserConfig {
 
 // --- Storage ----------------------------------------------------------------
 
-const STORAGE_KEY = 'livediagram:v2:laser-config';
+const STORAGE_KEY = 'liveplanner:v2:laser-config';
 
 export function loadLaserConfig(): LaserConfig {
   return parseLaserConfig(readLocalStorageSafe(STORAGE_KEY));

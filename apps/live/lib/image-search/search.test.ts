@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@livediagram/vitest-config/sent-request';
+import { sentUrl } from '@liveplanner/vitest-config/sent-request';
 import { OpenverseSearchError } from './openverse';
 import { searchOpenverse } from './search';
 

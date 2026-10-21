@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { SearchIcon, useClickOutside } from '@livediagram/ui';
-import { articleHref } from '@livediagram/help-registry/hrefs';
+import { SearchIcon, useClickOutside } from '@liveplanner/ui';
+import { articleHref } from '@liveplanner/help-registry/hrefs';
 import type { Article } from '@/lib/articles';
 import { reportHelpSearch, SEARCH_SETTLE_MS } from '@/lib/search-telemetry';
 

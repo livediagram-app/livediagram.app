@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { TimelineEvent, TimelineStack } from '@livediagram/ui';
+import type { TimelineEvent, TimelineStack } from '@liveplanner/ui';
 import { useTimelineStackSlots } from './useTimelineStackSlots';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

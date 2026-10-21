@@ -2,7 +2,7 @@
 // pure builders on the shared kit (page-layout-kit.ts), laid out in proportions of the page's
 // content box so each fits every size and orientation, in the tab's theme. A KPI dashboard and a
 // trend story here; a market share breakdown and a stat mosaic in page-layouts-set-data-2.ts.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@liveplanner/document';
 import { heading, kit, type Kit } from './page-layout-kit';
 import { CROSS_ROSE, SOURCE_H, sourceLine, TICK_GREEN } from './page-layout-parts';
 import type { PageLayout } from './page-layouts';

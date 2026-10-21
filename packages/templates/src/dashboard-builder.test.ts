@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab } from '@livediagram/document';
+import { isValidTab } from '@liveplanner/document';
 import { buildDashboardTab } from './dashboard-builder';
 
 // A Dashboard tab made whole (docs/specs/026-plan/plan-agents.md "Making a dashboard").

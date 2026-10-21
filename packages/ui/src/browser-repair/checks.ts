@@ -6,7 +6,7 @@
 export const INDEXED_DB_PROBE_TIMEOUT_MS = 4_000;
 
 /** The database the probe opens: its own throwaway one, so it never upgrades or blocks the offline store. */
-const PROBE_DB = 'livediagram-probe';
+const PROBE_DB = 'liveplanner-probe';
 
 export type IndexedDbCheck = 'ok' | 'unavailable' | 'error' | 'blocked' | 'timeout';
 
@@ -23,7 +23,7 @@ export type BrowserChecks = {
 function storageWritable(get: () => Storage): boolean {
   try {
     const s = get();
-    const k = 'livediagram-probe';
+    const k = 'liveplanner-probe';
     s.setItem(k, '1');
     s.removeItem(k);
     return true;

@@ -146,7 +146,7 @@ The sidebar's **Trash** row takes a document or a folder dragged onto it, the wa
 
 ## Page titles follow the rows
 
-A view is named by its row, everywhere it is named: the page heading, the document title (`<label> | livediagram`),
+A view is named by its row, everywhere it is named: the page heading, the document title (`<label> | liveplanner`),
 the breadcrumb and the help centre's copy. Routes stay as they are.
 
 | Row             | Route                       | Page title      |

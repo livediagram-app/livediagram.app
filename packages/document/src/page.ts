@@ -12,7 +12,7 @@ import {
   parsePagePattern,
   type PageColourFill,
   type PagePattern,
-} from '@livediagram/page-background';
+} from '@liveplanner/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
 import {
   DEFAULT_WIREFRAME_DEVICE,
@@ -182,7 +182,7 @@ function isPageSizeId(v: unknown): v is PageSizeId {
 
 // What a page is painted with (docs/specs/007-editor/pages-mode.md "Backgrounds"): a fill
 // (absent is the paper: a colour, a gradient or a picture, "Image backgrounds") and a pattern over it. The colours,
-// patterns and motions live in @livediagram/page-background, which a form's cover shares; re-exported here.
+// patterns and motions live in @liveplanner/page-background, which a form's cover shares; re-exported here.
 export {
   PAGE_MOTIONS,
   PAGE_MOTION_SPEED_MAX,
@@ -192,7 +192,7 @@ export {
   type PageColourFill,
   type PageMotion,
   type PagePattern,
-} from '@livediagram/page-background';
+} from '@liveplanner/page-background';
 export type PageFill = PageColourFill | PageImageFill;
 export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 

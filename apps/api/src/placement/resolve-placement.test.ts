@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { judgeFolder, judgeTeam, parsePlacement, resolvePlacement } from './resolve-placement';
-import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import type { PlacementLookups } from './placement-types';
 import { judgeDefaultFolder } from './default-folder';
 

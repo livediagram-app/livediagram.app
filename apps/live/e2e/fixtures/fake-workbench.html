@@ -27,7 +27,7 @@
     </style>
   </head>
   <body>
-    <iframe id="frame" title="livediagram"></iframe>
+    <iframe id="frame" title="liveplanner"></iframe>
     <p id="refused" role="alert" hidden></p>
     <script>
       const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
@@ -64,11 +64,11 @@
         if (event.source !== frame.contentWindow) return;
         const message = event.data;
         window.received.push(message);
-        if (message.type === 'livediagram:hello' && !silent) {
-          window.post({ type: 'livediagram:hello-ack', v: 1, name: 'Fake Workbench' });
+        if (message.type === 'liveplanner:hello' && !silent) {
+          window.post({ type: 'liveplanner:hello-ack', v: 1, name: 'Fake Workbench' });
         }
-        if (message.type === 'livediagram:renew' && window.nextTicket) {
-          window.post({ type: 'livediagram:ticket', v: 1, ticket: window.nextTicket });
+        if (message.type === 'liveplanner:renew' && window.nextTicket) {
+          window.post({ type: 'liveplanner:ticket', v: 1, ticket: window.nextTicket });
           window.nextTicket = null;
         }
       });

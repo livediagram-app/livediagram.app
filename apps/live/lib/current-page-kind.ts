@@ -3,7 +3,7 @@
 // the palette, whose kind defaults to the page's (palette-kind.ts).
 // One per browser tab; null off Pages mode or before any page is known.
 import { useSyncExternalStore } from 'react';
-import type { PageKind } from '@livediagram/document';
+import type { PageKind } from '@liveplanner/document';
 
 let current: PageKind | null = null;
 // The page's id too: what Select All selects in Pages mode (select-all-ids.ts).

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { siteTrack } from '@livediagram/telemetry-client';
+import { siteTrack } from '@liveplanner/telemetry-client';
 
 // The lazy Web Vitals mount (docs/specs/017-telemetry/timing-telemetry.md): the reporter is its own
 // chunk, loaded without server rendering, and the public sites hand it the shared siteTrack.

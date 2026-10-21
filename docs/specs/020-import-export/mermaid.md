@@ -11,7 +11,7 @@ standard people already have.
 ## Scope: flowcharts, state diagrams, ER diagrams
 
 We support the diagram types that are **node/edge graphs at heart**, because
-they map onto livediagram's model losslessly: `graphToElements`
+they map onto liveplanner's model losslessly: `graphToElements`
 (packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
@@ -296,7 +296,7 @@ card, since they only affect image output — so the main grid is just the six
 format cards, nothing format-specific bleeding onto it.
 
 Naming: the JSON export/import card is titled **"JSON"** (was "File" /
-"livediagram file"); the underlying format key stays `file`.
+"liveplanner file"); the underlying format key stays `file`.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
@@ -306,9 +306,9 @@ existing import/export type lists, replacing the removed `Text` type.
 ## Removed: the `.lvd` text DSL (the removed text-DSL spec)
 
 The text DSL is deleted — `packages/document/src/text-dsl/`, its
-`@livediagram/document/text-dsl` subpath export, `export-tab-text`'s DSL branch,
+`@liveplanner/document/text-dsl` subpath export, `export-tab-text`'s DSL branch,
 the Text cards in both dialogs, and the removed text-DSL spec. It was a bespoke format nobody
-outside livediagram speaks; Mermaid does the same job (human-editable,
+outside liveplanner speaks; Mermaid does the same job (human-editable,
 connection-preserving, round-trip) with a format the world already uses.
 
 ## Markdown ([Markdown import](markdown-import.md)) — reassessed

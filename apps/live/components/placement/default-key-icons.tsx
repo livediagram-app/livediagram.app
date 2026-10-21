@@ -4,15 +4,15 @@ import {
   type PlacementDefaultKey,
   type SpecificTabKind,
   type TemplateFamily,
-} from '@livediagram/api-schema';
-import type { EditorMode } from '@livediagram/document';
-import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@livediagram/ui';
+} from '@liveplanner/api-schema';
+import type { EditorMode } from '@liveplanner/document';
+import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@liveplanner/ui';
 import {
   lucideFolderCheck,
   lucideHistory,
   lucideSquareKanban,
   lucideStickyNote,
-} from '@livediagram/icons/lucide';
+} from '@liveplanner/icons/lucide';
 
 // Each default key's icon (docs/specs/013-workspace/default-folders.md "Entry names", blueprint D110):
 // a mode keeps the icon its mode switch shows; the kind and the families each draw what they are.

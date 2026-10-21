@@ -1,12 +1,12 @@
 // How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md).
 //
 // A LEAF module holding only the vocabulary — no `LivePoll`, which is a wire
-// DTO and stays in @livediagram/api-schema beside the tally helpers.
+// DTO and stays in @liveplanner/api-schema beside the tally helpers.
 //
 // It lives HERE, one package lower, because the style is no longer only a
 // wire value: a Session button (docs/specs/012-collaboration/session-button.md) stores its poll's style on the
 // element, so `SessionButtonConfig` — a `Tab` field — needs the union too,
-// and @livediagram/document cannot import from @livediagram/api-schema (the
+// and @liveplanner/document cannot import from @liveplanner/api-schema (the
 // dependency runs the other way). api-schema re-exports `PollStyle` from
 // here, so there is one list and both sides read it.
 
@@ -23,7 +23,7 @@ export type PollStyle = (typeof POLL_STYLES)[number];
 
 // How many answers a poll that carries its own list may hold (docs/specs/012-collaboration/live-poll.md).
 //
-// HERE rather than beside the other poll caps in @livediagram/api-schema, for
+// HERE rather than beside the other poll caps in @liveplanner/api-schema, for
 // exactly the reason `PollStyle` moved down: a Session button (docs/specs/012-collaboration/session-button.md) stores
 // a draft poll on the element, so `SessionButtonConfig` — a `Tab` field — needs
 // the cap too, and api-schema depends on document, never the reverse.

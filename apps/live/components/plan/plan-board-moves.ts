@@ -8,7 +8,7 @@ import {
   type ItemMove,
   type LaneHead,
   type PlanBoardSetup,
-} from '@livediagram/items';
+} from '@liveplanner/items';
 import type { PlanDropSlot } from '@/hooks/plan/usePlanCardDrag';
 
 // The fields a row stands for, set on a card dropped into it.
@@ -25,7 +25,7 @@ export function cellStatus(
 }
 
 // What a drop into a row sets on the card (or on a new card, `item` absent): the shared rule in
-// @livediagram/items. A status row moves the card by its status, which the move itself carries.
+// @liveplanner/items. A status row moves the card by its status, which the move itself carries.
 export function laneMove(
   lane: LaneHead | undefined,
   item?: Pick<Item, 'fields'>,

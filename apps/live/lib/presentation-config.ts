@@ -8,7 +8,7 @@
 import { readLocalStorageSafe } from './local-storage-safe';
 import type { UserPreferences } from './user-preferences';
 
-const KEY = 'livediagram:v2:presentation-config';
+const KEY = 'liveplanner:v2:presentation-config';
 
 /** How one slide gives way to the next. */
 export type SlideTransition = 'slide' | 'fade' | 'none';

@@ -1,6 +1,6 @@
 'use client';
 
-import { detachChip, type ShapeElement } from '@livediagram/document';
+import { detachChip, type ShapeElement } from '@liveplanner/document';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import type { ElementStyleOps } from '@/lib/element-style-ops';

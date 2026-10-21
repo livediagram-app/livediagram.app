@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import type { LensChip, LensDimension, LensIssue } from '@livediagram/explorer-lens';
-import { CheckIcon, ChevronDownIcon, Portal } from '@livediagram/ui';
+import type { LensChip, LensDimension, LensIssue } from '@liveplanner/explorer-lens';
+import { CheckIcon, ChevronDownIcon, Portal } from '@liveplanner/ui';
 import { SparkleIcon } from '@/components/primitives/explorer-icons';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { LensIssues } from './LensStates';

@@ -76,14 +76,14 @@ describe('an unknown name', () => {
       code: 'unknown_kind',
       message: 'no element kind "rect"; the nearest:',
       lines: ['rectangle-ish'],
-      hint: 'livediagram schema',
+      hint: 'liveplanner schema',
     });
     expect(await schemaView.run!(ctx, { kind: 'zzz' }).catch((e: unknown) => e)).toMatchObject({
       lines: ['square', 'circle'],
     });
     expect(await templateView.run!(ctx, { kind: 'kanbn' }).catch((e: unknown) => e)).toMatchObject({
       lines: ['kanban'],
-      hint: 'livediagram template ls',
+      hint: 'liveplanner template ls',
     });
     expect(await templateView.run!(ctx, { kind: 'x' }).catch((e: unknown) => e)).toMatchObject({
       code: 'not_found',

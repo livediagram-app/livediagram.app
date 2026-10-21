@@ -16,7 +16,7 @@ import {
   newUserCode,
   normaliseUserCode,
   objectOrEmpty,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 import type { Context, Hono } from 'hono';
 import type { Env } from './env';
 import { BUILT_IN_CLIENTS } from './oauth-clients';

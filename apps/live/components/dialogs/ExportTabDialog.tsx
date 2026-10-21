@@ -1,7 +1,7 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
@@ -17,7 +17,7 @@ import {
   tabToJsonText,
   tabToMarkdownText,
   type TabPlanData,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -40,7 +40,7 @@ import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useTabWindowExport } from './useTabWindowExport';
 import { usePlanImageExport } from './usePlanImageExport';
-import type { ExportFormatKey } from '@livediagram/plan-art';
+import type { ExportFormatKey } from '@liveplanner/plan-art';
 
 // The animated GIF's panel and its capture, loaded only when the GIF card opens
 // (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
@@ -145,7 +145,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'file',
     title: 'JSON',
-    description: 'A livediagram file. Copy it or save a .json to import back with full fidelity.',
+    description: 'A liveplanner file. Copy it or save a .json to import back with full fidelity.',
   },
   {
     kind: 'mermaid',
@@ -212,9 +212,9 @@ const TEXT_PANELS: Record<
 > = {
   file: {
     blurb:
-      "This tab as a livediagram JSON export. Edit it here to copy a variant; your edits don't change the tab.",
+      "This tab as a liveplanner JSON export. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .json',
-    ext: 'livediagram-tab.json',
+    ext: 'liveplanner-tab.json',
     mime: 'application/json',
     getText: tabToJsonText,
   },

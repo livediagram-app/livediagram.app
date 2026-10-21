@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TIMELINE_EVENT_TYPES } from '@livediagram/api-schema';
+import { TIMELINE_EVENT_TYPES } from '@liveplanner/api-schema';
 import { eventTone, toneColor, toneSoftColor } from './eventTone';
 
 // Colour is the fastest thing a reader takes from this feed, so the

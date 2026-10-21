@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createSticky, createText, type BoxedElement } from '@livediagram/document';
+import { createShape, createSticky, createText, type BoxedElement } from '@liveplanner/document';
 import { drawsShapeSvgOverlay } from './ShapeContentRouter';
 import { wrapperShapeAnimation } from './useBoxedElementAnimation';
 

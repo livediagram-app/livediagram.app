@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { CommunityAuthor, CommunityCategory, CommunityPost } from '@livediagram/api-schema';
-import { CommunityCopyCount, CommunityLikeCount, CommunityPostTile } from '@livediagram/ui';
+import type { CommunityAuthor, CommunityCategory, CommunityPost } from '@liveplanner/api-schema';
+import { CommunityCopyCount, CommunityLikeCount, CommunityPostTile } from '@liveplanner/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 
 // How the post's card will look in the Community gallery (docs/specs/025-community/community.md

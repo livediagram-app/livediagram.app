@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab } from '@livediagram/document';
+import { isValidTab } from '@liveplanner/document';
 import { CHECKOUT_DOCUMENT, checkoutDocumentTabs } from './__fixtures__/checkout-document';
 import { FIXED_EPOCH } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';

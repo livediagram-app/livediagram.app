@@ -236,12 +236,12 @@ async function seedLegacyGuest() {
       'pnpm',
       [
         '--filter',
-        '@livediagram/api',
+        '@liveplanner/api',
         'exec',
         'wrangler',
         'd1',
         'execute',
-        'livediagram',
+        'liveplanner',
         '--local',
         '--command',
         sql,
@@ -376,7 +376,7 @@ function filesUnder(dir, out = []) {
   return out;
 }
 function simulateDeploy(from) {
-  const next = mkdtempSync(path.join(tmpdir(), 'livediagram-e2e-deploy-'));
+  const next = mkdtempSync(path.join(tmpdir(), 'liveplanner-e2e-deploy-'));
   const n = deployDirs.push(next);
   cpSync(from, next, { recursive: true });
   const renames = new Map();
@@ -616,7 +616,7 @@ function startMarketingServer() {
 // --- Boot ---------------------------------------------------------------
 async function main() {
   if (!existsSync(OUT_DIR)) {
-    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/live build\` first`);
+    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @liveplanner/live build\` first`);
     process.exit(1);
   }
   if (LIVE_ONLY) {
@@ -628,14 +628,14 @@ async function main() {
   }
   console.log('[e2e] applying local D1 migrations…');
   await waitForExit(
-    run('pnpm', ['--filter', '@livediagram/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
+    run('pnpm', ['--filter', '@liveplanner/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
   );
   console.log('[e2e] starting api worker…');
   run(
     'pnpm',
     [
       '--filter',
-      '@livediagram/api',
+      '@liveplanner/api',
       'exec',
       'wrangler',
       'dev',

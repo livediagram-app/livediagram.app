@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_CTA_SOURCES, type TelemetryCount } from '@livediagram/api-schema';
+import { ALL_CTA_SOURCES, type TelemetryCount } from '@liveplanner/api-schema';
 import { bestSlot, ctaSourceLabel, formatRate, landingFunnel, rate } from './cta-funnel';
 
 const row = (category: string, action: string, type: string | null, count: number) =>

@@ -1,13 +1,13 @@
 # Google Drive mirror
 
 A signed-in user can **mirror My Documents to their own Google Drive**.
-Every document becomes a `.livediagram` file in a folder tree that matches their
-livediagram folders, kept in step both ways while a livediagram tab is open.
-Double-clicking such a file in Drive opens it in livediagram.
+Every document becomes a `.liveplanner` file in a folder tree that matches their
+liveplanner folders, kept in step both ways while a liveplanner tab is open.
+Double-clicking such a file in Drive opens it in liveplanner.
 
 The mirror is a **copy**, never the document's home
 ([Save Locations](../006-document/save-locations.md#google-drive-is-a-mirror-not-a-location)).
-livediagram's database stays the source of truth, so realtime collaboration
+liveplanner's database stays the source of truth, so realtime collaboration
 and share links are untouched by it.
 
 Evidence for every Google claim below (scopes, tokens, quotas, fields) is in
@@ -22,7 +22,7 @@ this spec does not restate it.
 - **My Documents only.** Team libraries are not mirrored (whose Drive would
   hold a team's copy is unresolved). Documents shared with the user, and Offline
   Mode documents, are not mirrored either.
-- **Everyone, free.** Hosted livediagram.app offers it to every signed-in user.
+- **Everyone, free.** Hosted liveplanner.app offers it to every signed-in user.
   Self-hosters enable it with their own Google project (see
   [Self-hosting](#self-hosting)); without one, the feature is absent, not broken.
 
@@ -33,10 +33,10 @@ this spec does not restate it.
    Google's API. The server only brokers tokens and stores a few small rows.
 2. **Only while a tab is open.** There is no server polling. A tab syncs while
    open and catches up on arrival; nothing happens while nobody is here.
-3. **Content flows one way, structure flows both ways.** livediagram writes the
+3. **Content flows one way, structure flows both ways.** liveplanner writes the
    file's contents; Drive never writes them back. Names, folders and the bin
    travel both ways.
-4. **Narrow access.** livediagram asks only for `drive.file` (files it creates
+4. **Narrow access.** liveplanner asks only for `drive.file` (files it creates
    or the user opens with it) and `drive.install` ("Open with"). It never sees
    the rest of the user's Drive.
 
@@ -80,7 +80,7 @@ this spec does not restate it.
     **Reconnect**, or "Syncing paused in this browser. Resume to continue."
     with **Resume**;
   - "Can't reach Google Drive. Trying again automatically.";
-  - a folder notice, "<name>: Moved to a Drive folder livediagram can't
+  - a folder notice, "<name>: Moved to a Drive folder liveplanner can't
     see." (with "and n more" for several; the next shows once one is
     resolved) with **Show folder**.
     The why (rate limits, reconnecting, the rhythm and its per-document limit,
@@ -99,7 +99,7 @@ this spec does not restate it.
   same browser is the one running it.
 - **Below the card:** not connected, "My Documents, copied to your
   Google Drive in matching folders. Renames, moves and deletions sync both
-  ways. livediagram only sees files it created."; connected, "Your documents
+  ways. liveplanner only sees files it created."; connected, "Your documents
   are synced to “<root folder name>” in Google Drive." (the root's actual
   name, as the user may have renamed it; "Your documents are synced to Google
   Drive." while unknown).
@@ -151,12 +151,12 @@ this spec does not restate it.
 
   | Host                                                                                                           | Root folder name            |
   | -------------------------------------------------------------------------------------------------------------- | --------------------------- |
-  | `livediagram.app`, `www.livediagram.app`                                                                       | `livediagram`               |
-  | `staging.livediagram.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livediagram (staging)`     |
-  | any other host (a self-hosted deployment)                                                                      | `livediagram (self-hosted)` |
+  | `liveplanner.app`, `www.liveplanner.app`                                                                       | `liveplanner`               |
+  | `staging.liveplanner.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `liveplanner (staging)`     |
+  | any other host (a self-hosted deployment)                                                                      | `liveplanner (self-hosted)` |
 
   Hosts compare case-insensitively. The name is given only when the root is
-  **created**; a root the user renamed keeps its name, and livediagram never
+  **created**; a root the user renamed keeps its name, and liveplanner never
   renames an existing root back.
 
 - The root folder may be **moved anywhere** in Drive and
@@ -209,7 +209,7 @@ this spec does not restate it.
     account meanwhile, and answers with the connection showing the switch.
   - The page Google returns to (`/drive/connected`) then asks, in a dialog
     titled **Switch Google Account?**: "This Google account is not the one
-    livediagram syncs with. Switching moves Cloud Sync to the new account and
+    liveplanner syncs with. Switching moves Cloud Sync to the new account and
     starts a fresh copy of My Documents in its Drive. The files already in the
     other account's Drive stay there untouched." Buttons **Keep Current
     Account** and **Switch Account**.
@@ -240,16 +240,16 @@ this spec does not restate it.
 
 ## The file
 
-- **Name:** the document name plus `.livediagram`. Names that Drive would
+- **Name:** the document name plus `.liveplanner`. Names that Drive would
   alter are stored as Drive holds them, and the next inbound rename is
-  compared against that stored form, never against the livediagram name.
-- **MIME type:** `application/vnd.livediagram+json`, registered as the app's
+  compared against that stored form, never against the liveplanner name.
+- **MIME type:** `application/vnd.liveplanner+json`, registered as the app's
   default type for "Open with".
 - **Contents:** a whole-document envelope, the sibling of the per-tab export's
-  `livediagram.tab` envelope (`packages/document/src/export-tab-text.ts`):
-  `{ kind: 'livediagram.document', schemaVersion, exportedAt, document }`, where
+  `liveplanner.tab` envelope (`packages/document/src/export-tab-text.ts`):
+  `{ kind: 'liveplanner.document', schemaVersion, exportedAt, document }`, where
   `diagram` holds the id, name and every tab with its folders and slide
-  deck. Images stay references to livediagram's image store; the file does
+  deck. Images stay references to liveplanner's image store; the file does
   not embed image bytes.
 - **Thumbnail:** a PNG of the first tab, rasterised in the browser from the
   existing SVG snapshot, sent as `contentHints.thumbnail` (PNG, at least 220 px
@@ -265,13 +265,13 @@ this spec does not restate it.
 - The root folder is the **root of My Documents**: documents without a folder sit
   directly in it.
 - Every folder in My Documents is a Drive folder at the same place in the tree.
-- **Folders created in Drive** by the user are invisible to livediagram under
+- **Folders created in Drive** by the user are invisible to liveplanner under
   `drive.file` until the user shows them to it; see
-  [Folders livediagram cannot see](#folders-livediagram-cannot-see).
+  [Folders liveplanner cannot see](#folders-liveplanner-cannot-see).
 
-## Outbound: livediagram to Drive
+## Outbound: liveplanner to Drive
 
-| In livediagram                   | In Drive                                                                                                                                                                                        |
+| In liveplanner                   | In Drive                                                                                                                                                                                        |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Document created                 | File created in its folder                                                                                                                                                                      |
 | Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                                               |
@@ -285,20 +285,20 @@ this spec does not restate it.
 | Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                                                |
 | Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md#deleting-a-folder)), then the empty Drive folder goes to the bin |
 
-## Inbound: Drive to livediagram
+## Inbound: Drive to liveplanner
 
 The browser reads `changes.list` from the stored page token and applies each
 change whose file it recognises (by `appProperties.ldDocumentId` or a recorded
 folder id):
 
-| In Drive                                             | In livediagram                                                                                         |
+| In Drive                                             | In liveplanner                                                                                         |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| File copied (Drive's "Make a copy")                  | Nothing: livediagram never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
-| File renamed                                         | Document renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)            |
+| File copied (Drive's "Make a copy")                  | Nothing: liveplanner never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
+| File renamed                                         | Document renamed (the `.liveplanner` extension is dropped; an empty name keeps the old one)            |
 | File moved to another mirrored folder                | Document moved to that folder                                                                          |
 | File moved to the root folder                        | Document moved to the root of My Documents                                                             |
-| File moved to a folder livediagram cannot see        | Document moved to the root of My Documents, with a notice (see below)                                  |
-| File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                |
+| File moved to a folder liveplanner cannot see        | Document moved to the root of My Documents, with a notice (see below)                                  |
+| File moved outside the `liveplanner` tree entirely   | Same as a folder liveplanner cannot see                                                                |
 | File moved to the bin                                | Document moved to Trash ([Trash](../013-workspace/trash.md))                                           |
 | File restored from the bin                           | Document restored from Trash                                                                           |
 | File permanently deleted (`removed`, or bin emptied) | Document purged from Trash                                                                             |
@@ -307,49 +307,49 @@ folder id):
 | File contents edited                                 | Ignored; the next outbound write replaces them                                                         |
 
 - **Our own writes are not echoes.** For each mirrored item the api stores the
-  last state livediagram wrote (`name`, `parents`, `trashed`, `md5Checksum`,
+  last state liveplanner wrote (`name`, `parents`, `trashed`, `md5Checksum`,
   `headRevisionId`). A change is foreign only when one of them differs; Drive's
   `version` is not used, since it moves for invisible reasons.
 - **Order.** On arrival, inbound changes are applied before any outbound
   write, so a rename made in Drive while away is not overwritten by a stale
   local name.
 - **Both sides changed the same attribute** since the last sync: the later
-  change wins, by Drive's change `time` against the livediagram change's time
+  change wins, by Drive's change `time` against the liveplanner change's time
   (a document's `savedAt`, a folder's `updatedAt`). "Changed since the last
   sync" is judged against the item row: Drive's side against the stored Drive
-  state, livediagram's side against `ld_name` and the stored parent. A change
-  whose value livediagram already holds is recorded, not applied.
-- **A folder deleted in livediagram stays deleted.** Drive may still report the create livediagram
+  state, liveplanner's side against `ld_name` and the stored parent. A change
+  whose value liveplanner already holds is recorded, not applied.
+- **A folder deleted in liveplanner stays deleted.** Drive may still report the create liveplanner
   made for it, when the delete came before the next pass read that create back; a folder this
   browser saw mirrored and then deleted is never brought back by such a change, and its Drive
   folder goes to the bin. A folder restored from the bin in Drive later is still restored.
 - **Restoring from the bin places the document where its file sits** in Drive,
   so restoring a binned folder brings back its documents inside it.
 - **A permanent delete only purges from the Trash.** `removed` also means
-  "livediagram lost access", so a live document whose file is removed is not
+  "liveplanner lost access", so a live document whose file is removed is not
   deleted; its file is re-created on the next write.
 - **A file whose contents were edited in Drive** (a new `md5Checksum`) is
-  rewritten from livediagram on the next outbound pass, so the canonical copy
+  rewritten from liveplanner on the next outbound pass, so the canonical copy
   comes back without waiting for the next edit.
 - Inbound changes go through the ordinary api routes (rename, move, delete,
   restore), so authorisation and realtime rooms behave exactly
-  as if the user had done it in livediagram.
+  as if the user had done it in liveplanner.
 
 ## Copies made in Drive
 
 **Verified** against real Google (the staging client, scopes `drive.file` and
 `drive.install`): a copy the user makes in Drive's own UI ("Make a copy") is
-**invisible to livediagram**. It is not a file livediagram created, so
+**invisible to liveplanner**. It is not a file liveplanner created, so
 `files.list` does not show it and it never reaches `changes.list`. Drive-UI
 copies are therefore **not mirrored** automatically: nothing happens in
-livediagram when one is made. The way in is **Open with > livediagram** on the
-copy (below), or **Duplicate** inside livediagram.
+liveplanner when one is made. The way in is **Open with > liveplanner** on the
+copy (below), or **Duplicate** inside liveplanner.
 
-- **Open with on a copy.** Opening the copy with livediagram grants access to
+- **Open with on a copy.** Opening the copy with liveplanner grants access to
   that one file, and it carries the **original's** `ldDocumentId` and
   `ldOrigin`. It is a different Drive file: recognised because the mirror
   records another file for that `ldDocumentId` (and `ldOrigin` is this
-  host). It is never taken for the original: livediagram never opens the
+  host). It is never taken for the original: liveplanner never opens the
   original from it and never re-tags or adopts it as the original. It offers
   **Import as new document**, which makes a new document in My Documents from
   the **copy's contents**.
@@ -358,53 +358,53 @@ copy (below), or **Duplicate** inside livediagram.
   new document's id and recorded (one someone else owns is imported and left
   as it is), so it mirrors the new document like any mirrored
   file and no second file is made for it. The new document lands in the
-  livediagram folder the copy's Drive folder mirrors; at the root of My Documents when the copy
-  sits in the root, and at that root with [the notice](#folders-livediagram-cannot-see)
-  when it sits in a folder livediagram cannot see.
-- **Afterwards.** Once opened, the copy can reach livediagram's change feed.
+  liveplanner folder the copy's Drive folder mirrors; at the root of My Documents when the copy
+  sits in the root, and at that root with [the notice](#folders-liveplanner-cannot-see)
+  when it sits in a folder liveplanner cannot see.
+- **Afterwards.** Once opened, the copy can reach liveplanner's change feed.
   An inbound change for a file that carries a mirrored document's id under
   another file id is ignored (logged as `inbound-foreign-copy`), never
   applied, re-tagged or adopted. The same holds when the mirror is re-met after
   a reconnect: two files claiming one document are both left alone, and the next
   write makes a fresh file for it.
-- **Traceable.** A file livediagram is shown but does not take as its own
+- **Traceable.** A file liveplanner is shown but does not take as its own
   (no `ldOrigin` of this deployment) is logged quietly
   (`[drive-mirror] inbound-not-ours`, with whether it carried any
   `appProperties` at all).
 
-## Folders livediagram cannot see
+## Folders liveplanner cannot see
 
 Under `drive.file`, a folder the user creates in Drive is invisible to
-livediagram: moving a document's file into it shows up only as "moved to an
+liveplanner: moving a document's file into it shows up only as "moved to an
 unknown folder". The user's goal is to shape the tree from either side with
 the same result, so the mirror handles this openly, never silently:
 
 - The document moves to the **root of My Documents**, and a notice in the Cloud Sync row (and on
-  the document's Explorer row) says so: "Moved in Drive to a folder livediagram
+  the document's Explorer row) says so: "Moved in Drive to a folder liveplanner
   can't see." The notice is kept on the item row, so every device shows it; it
   clears when the document is moved again from either side, or when the folder
   is adopted. Until then the file stays where the user put it in Drive. A folder moved into one is placed at
   the top level with the same notice in the Cloud Sync row.
-- **Adopting a folder:** the notice offers **Show this folder to livediagram**,
+- **Adopting a folder:** the notice offers **Show this folder to liveplanner**,
   which opens the Google Picker with folder selection. Picking the folder
-  grants livediagram access to it; livediagram then creates a matching
+  grants liveplanner access to it; liveplanner then creates a matching
   folder in My Documents, places it under its nearest mirrored ancestor (or at
   the root when that is unknown too), and moves the document into it. From then
   on that folder syncs both ways like any other. Widening access to all of
   Drive (a restricted scope with a yearly paid security assessment) is
   deliberately not the answer.
 - Whether picking a folder also grants access to files inside it that
-  livediagram did not create is untested; adoption relies only on access to
+  liveplanner did not create is untested; adoption relies only on access to
   the folder itself.
-- Folders created **in livediagram** always appear in Drive, so building the
-  tree from livediagram needs no adoption.
+- Folders created **in liveplanner** always appear in Drive, so building the
+  tree from liveplanner needs no adoption.
 
 ## Cadence
 
 Named constants in one cadence module of the mirror code, with the values and budget from
 [Migration readiness, proposed sync cadence](../../research/migration-readiness.md#proposed-sync-cadence):
 
-- **Any livediagram page may run it** (the Explorer, the editor, the wizard),
+- **Any liveplanner page may run it** (the Explorer, the editor, the wizard),
   never an embed and never the Drive routes themselves; it starts once the
   signed-in session has settled.
 - **One tab syncs per browser**, elected with the Web Locks API; across
@@ -414,7 +414,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
   tab hides, so a device that walks away hands over at once.
 - **Arrival:** one `changes.list` catch-up, then re-upload of every document
   saved since its last mirrored revision.
-- **A visible tab is never left unsynced.** While any livediagram tab of the
+- **A visible tab is never left unsynced.** While any liveplanner tab of the
   browser is visible, Drive is checked every **2 minutes** and when the user
   returns to a tab (at most once every 30 seconds), whichever tab is the one
   that syncs: a visible tab that does not sync asks the one that does, over
@@ -434,7 +434,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
   skips a real change: the start token names the position after the latest
   change, so an equal token means nothing new since the stored one; it only
   saves cost. The arrival catch-up and every requested check use the same gate.
-- **Diagnostic:** with `localStorage['livediagram:v2:drive-diagnostics'] = '1'`
+- **Diagnostic:** with `localStorage['liveplanner:v2:drive-diagnostics'] = '1'`
   every check logs `drive: start-token moved=<bool> listed=<n>`, which is how
   the unverified point below (research E-A3) is settled against real Drive.
 - **Writes:** a document is mirrored after 60 seconds without edits, at most
@@ -494,14 +494,14 @@ What decides it:
 - **Nothing** before it is known whether Drive is connected, once it is not, or
   on a row whose document has a folder notice (that marker instead).
 - Changes made in Drive while the user was away show after the catch-up check;
-  until then the mark says what livediagram last uploaded.
+  until then the mark says what liveplanner last uploaded.
 
 ## Open with
 
 - The live app serves `/drive/open`, the Drive UI integration's Open URL.
   Google passes `state={"ids":[...],"action":"open",...}`.
 - The browser reads the file's `appProperties`:
-  - **The user can open the document** in livediagram, and the file is the one
+  - **The user can open the document** in liveplanner, and the file is the one
     the mirror records for it (or the mirror records none): go to it.
   - **A copy of a mirrored document** (the mirror records a different file for
     that `ldDocumentId`): offer **Import as new document**
@@ -511,12 +511,12 @@ What decides it:
     file's contents.
   - **The file is from another deployment** (`ldOrigin` differs) or has no
     `ldDocumentId`: offer **Import a copy** only.
-  - **Not a livediagram file**, or unreadable: a clear error page.
+  - **Not a liveplanner file**, or unreadable: a clear error page.
 - A signed-out visitor is asked to sign in first, then continues.
 - A signed-in user with no usable Drive access (never connected, or the grant
   was dropped) is offered **Allow access**, which runs the connect flow and
   comes back to the same file.
-- Opening with "Open with" grants livediagram access to that one file, which is
+- Opening with "Open with" grants liveplanner access to that one file, which is
   what makes the import possible under `drive.file`.
 - **Double-click** opening is the goal; Google documents only the "Open with"
   menu, so the help article promises "Open with" until a real test confirms
@@ -560,12 +560,12 @@ D1, owned by the api worker:
 - Deleting a document, folder or account deletes its rows in the same batch as
   the rest of the removal.
 - `refresh_token_enc` is empty for a browser-only connection (client id only).
-- `drive_items` also keeps `ld_name` (the livediagram name the Drive name
+- `drive_items` also keeps `ld_name` (the liveplanner name the Drive name
   mirrors, since Drive may store a name differently), and `notice` with
-  `notice_parent_id` for the [unseen-folder notice](#folders-livediagram-cannot-see).
+  `notice_parent_id` for the [unseen-folder notice](#folders-liveplanner-cannot-see).
 - **Finishing a removal in Drive.** Because a purge or a folder deletion takes
   the row with it, each browser remembers the rows it last saw. A row that
-  disappears while its document or folder is gone from livediagram is finished
+  disappears while its document or folder is gone from liveplanner is finished
   in Drive by the next pass in any browser that saw it: a binned file is
   deleted for good, anything else goes to the bin (a document taken offline,
   a deleted folder once its contents have moved up). A file nobody saw go is
@@ -575,7 +575,7 @@ D1, owned by the api worker:
 
 - **Offline or Google unreachable:** the sync pauses and resumes on the next
   arrival or focus; the Cloud Sync row shows **Last synced** honestly.
-- **A mirrored file or folder deleted outside livediagram's knowledge**
+- **A mirrored file or folder deleted outside liveplanner's knowledge**
   (`404` on write): the item is re-created in its expected place.
 - **Document JSON over 5 MB:** uploaded with a resumable upload instead of
   multipart.
@@ -588,7 +588,7 @@ D1, owned by the api worker:
   failure is traceable from either side. The console lines are trace lines
   ([Console logging](../003-system-architecture/console-logging.md)): shown in
   development, and in production only with the debug flag set
-  (`localStorage['livediagram:debug'] = 'drive-mirror'`); its warnings always.
+  (`localStorage['liveplanner:debug'] = 'drive-mirror'`); its warnings always.
 
 ## Self-hosting
 
@@ -610,7 +610,7 @@ D1, owned by the api worker:
 
 ## Hosted deployment: one Google project per environment
 
-livediagram.app runs **two Google Cloud projects**, one for production and one
+liveplanner.app runs **two Google Cloud projects**, one for production and one
 for staging, so each environment has its own OAuth client id, client secret,
 Picker key and Drive UI integration:
 
@@ -634,23 +634,23 @@ What the operator configured (changed only by the operator):
 
 | Setting                                                  | Production                                               | Staging                                                                             |
 | -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| JavaScript origins                                       | `https://livediagram.app`, `https://www.livediagram.app` | `https://staging.livediagram.app`, `http://localhost:3000`, `http://localhost:3002` |
+| JavaScript origins                                       | `https://liveplanner.app`, `https://www.liveplanner.app` | `https://staging.liveplanner.app`, `http://localhost:3100`, `http://localhost:3102` |
 | Redirect URIs                                            | each origin + `/drive/connected`                         | each origin + `/drive/connected`                                                    |
-| Drive UI Open URL                                        | `https://livediagram.app/drive/open`                     | `https://staging.livediagram.app/drive/open`                                        |
-| Default MIME type                                        | `application/vnd.livediagram+json`                       | the same                                                                            |
-| Default extension                                        | `livediagram`                                            | the same                                                                            |
+| Drive UI Open URL                                        | `https://liveplanner.app/drive/open`                     | `https://staging.liveplanner.app/drive/open`                                        |
+| Default MIME type                                        | `application/vnd.liveplanner+json`                       | the same                                                                            |
+| Default extension                                        | `liveplanner`                                            | the same                                                                            |
 | Scopes                                                   | `drive.file`, `drive.install`                            | the same                                                                            |
 | Automatic consent                                        | off                                                      | off                                                                                 |
 | Creating files, importing, multiple files, shared drives | off                                                      | off                                                                                 |
 | Mobile browser support                                   | on                                                       | on                                                                                  |
 
-`livediagram.app` answers with a permanent redirect to `www.livediagram.app`,
+`liveplanner.app` answers with a permanent redirect to `www.liveplanner.app`,
 keeping path and query, before the app runs. So the app, and with it the
 consent flow, always runs on `www`: it sends
-`https://www.livediagram.app/drive/connected` as the redirect URI (registered,
+`https://www.liveplanner.app/drive/connected` as the redirect URI (registered,
 and accepted by the api's redirect check, which takes any `https` origin at
 `/drive/connected`), and Drive's Open URL on the apex arrives at
-`https://www.livediagram.app/drive/open` with its `state` intact.
+`https://www.liveplanner.app/drive/open` with its `state` intact.
 
 ## Costs
 
@@ -669,7 +669,7 @@ users, by the research assumptions (200,000 active connected users a day):
 | 2 minutes, gated on `getStartPageToken` (chosen) | about 95%               | **yes**         |
 
 The gated figure holds only if the start token moves just for changes
-livediagram can see (research E-A3, **unverified**). If it also moves for the
+liveplanner can see (research E-A3, **unverified**). If it also moves for the
 rest of the user's Drive, a busy Drive makes most checks list anyway and the
 cost drifts back towards the plain 2-minute figure. The diagnostic under
 [Cadence](#cadence) settles it; until then 95% is the planning figure, and
@@ -686,7 +686,7 @@ nothing measurable at 10,000.
 
 ## Privacy
 
-The privacy policy states what livediagram does with Google user data under
+The privacy policy states what liveplanner does with Google user data under
 Google's Limited Use rules: it writes and reads only the files it created or
 the user opened with it, stores only an encrypted refresh token and file ids,
 and never uses Drive data for anything but the mirror.

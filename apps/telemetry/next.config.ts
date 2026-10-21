@@ -1,14 +1,14 @@
 import type { NextConfig } from 'next';
-import { livediagramNextConfig } from '@livediagram/next-config';
+import { liveplannerNextConfig } from '@liveplanner/next-config';
 
 // Static export fronted by Cloudflare Static Assets, served under `/telemetry` by the router worker (which strips
 // the prefix before forwarding, exactly like `/live`). See docs/specs/017-telemetry/telemetry.md +
-// docs/specs/016-platform/router-app.md. The shared settings live in @livediagram/next-config
+// docs/specs/016-platform/router-app.md. The shared settings live in @liveplanner/next-config
 // (docs/specs/016-platform/nextjs.md).
 const nextConfig: NextConfig = {
-  ...livediagramNextConfig(),
+  ...liveplannerNextConfig(),
   basePath: '/telemetry',
-  transpilePackages: ['@livediagram/ui', '@livediagram/api-schema'],
+  transpilePackages: ['@liveplanner/ui', '@liveplanner/api-schema'],
 };
 
 export default nextConfig;

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { badgePresetFace, BADGE_PRESET_VARIANTS } from '@livediagram/document';
+import { badgePresetFace, BADGE_PRESET_VARIANTS } from '@liveplanner/document';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { PaletteTintProvider } from './PaletteIconButton';
 import { BADGE_PRESET_TILES } from './palette-element-presets';

@@ -4,7 +4,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/document';
+import { createShape, createSticky, createText, type Element } from '@liveplanner/document';
 import { heading } from './template-session-parts';
 import { officePlan, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
 

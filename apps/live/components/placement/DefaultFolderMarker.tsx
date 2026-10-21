@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@liveplanner/ui';
 import { useFolderDefaultKeys } from '@/hooks/persistence/usePlacementDefaults';
 import { defaultFolderDescription } from '@/lib/placement-defaults/default-key-entries';
 import { DefaultKeyIcon } from './default-key-icons';

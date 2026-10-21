@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { explorerPlaceFields, useWorkspacePlaceMessages } from './useWorkspacePlaceMessages';
 
-// `livediagram:place` (docs/specs/013-workspace/blueprints/workbench-embeds.md "Workspace messages", WB63): sent
+// `liveplanner:place` (docs/specs/013-workspace/blueprints/workbench-embeds.md "Workspace messages", WB63): sent
 // whenever a field of the place changes, never twice with the same fields.
 describe('useWorkspacePlaceMessages', () => {
   it('sends a place once per change of its fields', () => {
@@ -24,8 +24,8 @@ describe('useWorkspacePlaceMessages', () => {
     result.current(folder(1));
 
     expect(vi.mocked(port.send).mock.calls.map((c) => c[0])).toEqual([
-      { type: 'livediagram:place', v: 1, ...folder(0) },
-      { type: 'livediagram:place', v: 1, ...folder(1) },
+      { type: 'liveplanner:place', v: 1, ...folder(0) },
+      { type: 'liveplanner:place', v: 1, ...folder(1) },
     ]);
     expect(folder(0)).toMatchObject({
       documentId: null,

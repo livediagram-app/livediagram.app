@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement, Tab } from '@livediagram/document';
+import type { ShapeElement, Tab } from '@liveplanner/document';
 import { newSlotChart, sheetChartLabel, sheetChartsOf, slotChartFrom } from './sheet-chart-choice';
 import { budgetSheet, SHEET_ID } from './sheet-chart-test-sheet';
 

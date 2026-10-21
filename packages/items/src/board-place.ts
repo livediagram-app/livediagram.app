@@ -56,7 +56,7 @@ interface Box {
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
 // Right of everything on the tab, tops aligned; the origin on an empty tab. Shared by every element an agent adds
-// beside a tab's content (a board here, a Sheet in @livediagram/agent-verbs).
+// beside a tab's content (a board here, a Sheet in @liveplanner/agent-verbs).
 export function placeBeside(elements: readonly unknown[]): { x: number; y: number } {
   let right: number | null = null;
   let top: number | null = null;

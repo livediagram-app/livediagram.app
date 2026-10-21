@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createPath } from '@livediagram/document';
+import { createPath } from '@liveplanner/document';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/023-draw-mode/path-tool.md "Editing": a double-tap (two presses the ledger pairs) opens

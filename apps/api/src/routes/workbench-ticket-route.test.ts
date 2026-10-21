@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { WORKBENCH_PAIRING_TTL_MS, WORKBENCH_TICKET_TTL_MS } from '@livediagram/api-schema';
+import { WORKBENCH_PAIRING_TTL_MS, WORKBENCH_TICKET_TTL_MS } from '@liveplanner/api-schema';
 import type { SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { WorkbenchContext } from './context';

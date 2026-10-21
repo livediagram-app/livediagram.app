@@ -29,7 +29,7 @@ import {
   type Element,
   type LaidOutPage,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { besideSideInsets, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
 
 // The most a wireframe page's fit zooms in (a watch's face fills the screen at about this).
@@ -43,7 +43,7 @@ import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import type { ArticlesView } from './useArticles';
 import { pageEdits, type PageEdits } from './page-edits';
-import type { PageLayoutId } from '@livediagram/templates';
+import type { PageLayoutId } from '@liveplanner/templates';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 import type { View } from '@/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';

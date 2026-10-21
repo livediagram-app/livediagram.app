@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Tab } from '@livediagram/document';
-import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Tab } from '@liveplanner/document';
+import { resetAppearanceForTests, setAppearance } from '@liveplanner/ui';
 import { resolveTabBackdrop } from './themes';
 import { MODE_PATTERNS, resolveViewBackdrop } from './view-backdrop';
 

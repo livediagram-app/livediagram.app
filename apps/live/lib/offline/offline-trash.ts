@@ -4,7 +4,7 @@
 // everything else. The 30-day rule is the api's, applied whenever the app
 // lists documents instead of by a cron.
 
-import { isTrashExpired, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
+import { isTrashExpired, trashPurgeDueAt, type TrashedDocument } from '@liveplanner/api-schema';
 import {
   offlineBackend,
   offlineDeleteDocument,

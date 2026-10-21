@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { draftNotesOf } from '@livediagram/document';
+import { draftNotesOf } from '@liveplanner/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
 import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';

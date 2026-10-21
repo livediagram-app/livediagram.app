@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, templateFamilyOf } from '@livediagram/templates';
+import { TEMPLATES, templateFamilyOf } from '@liveplanner/templates';
 
 // The template family a template belongs to (docs/specs/013-workspace/default-folders.md "Creation
 // intent"): the one map that routes a new retrospective or Kanban board to its default folder.

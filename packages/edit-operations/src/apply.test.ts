@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS } from '@liveplanner/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
   applyElementOps,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { applyEditOperations } from './apply';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
@@ -219,7 +219,7 @@ describe('applyEditOperations', () => {
       expect(refused(run([set('n3', { width: -5 })]))).toEqual({
         code: 'invalid_result',
         details: ['n3 width: a finite number, 0 or more'],
-        hint: 'see the format: livediagram schema square',
+        hint: 'see the format: liveplanner schema square',
       });
     });
 

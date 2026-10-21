@@ -16,7 +16,7 @@ import {
   progressLabelInks,
   type ProgressLabelInks,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import { animSpeedVars } from '@/lib/icons';
 
 // The speed + iteration custom properties the `lvd-prog-*` keyframes read.

@@ -11,7 +11,7 @@ import {
   setDimensionValues,
   type LensContext,
   type LensDimension,
-} from '@livediagram/explorer-lens';
+} from '@liveplanner/explorer-lens';
 
 /** The field's two parts: the pills as one string of tokens, and the draft with its caret. */
 type FieldParts = { tokens: string; draft: string; draftCaret: number };

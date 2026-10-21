@@ -399,7 +399,7 @@ existing validator). The api, the MCP tools and every import path validate throu
 - **Wire.** Anchor changes ride the drag's element updates like any other element edit; nothing
   new on the realtime protocol.
 - **OpenAPI.** `Anchor` enum grows to 16 and the pinned endpoint loses `manual`, regenerated with
-  `pnpm --filter @livediagram/api gen:openapi`.
+  `pnpm --filter @liveplanner/api gen:openapi`.
 
 ## Errors and edge cases
 

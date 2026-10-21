@@ -1,4 +1,4 @@
-// Barrel for the livediagram HTTP/WS client. The implementation is split
+// Barrel for the liveplanner HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + documents / tabs / share /
 // folders / self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
@@ -6,7 +6,7 @@
 
 // Wire-format types re-exported under the names the live app has
 // historically imported from here. The canonical definitions live in
-// `@livediagram/api-schema`; see that package's index.ts for the shapes
+// `@liveplanner/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
 export type {
   Folder,
@@ -19,7 +19,7 @@ export type {
   TeamMember,
   TeamMemberStatus,
   TeamRole,
-} from '@livediagram/api-schema';
+} from '@liveplanner/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
 // token / share-password session state). The internal helpers

@@ -13,7 +13,7 @@ import {
   type Element,
   type FreehandElement,
   type PenColour,
-} from '@livediagram/document';
+} from '@liveplanner/document';
 import {
   PEN_NAMES,
   WHITEBOARD_PEN_WIDTHS,

@@ -40,5 +40,5 @@ node apps/live/lib/drawio/__fixtures__/generate.ts
 The route goldens need draw.io desktop's CLI (an extracted AppImage) and `xvfb-run`:
 
 ```bash
-pnpm --filter @livediagram/live exec tsx scripts/drawio-route-goldens.mts --drawio <path>/squashfs-root/drawio
+pnpm --filter @liveplanner/live exec tsx scripts/drawio-route-goldens.mts --drawio <path>/squashfs-root/drawio
 ```

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { CapabilitiesResponse } from '@livediagram/api-schema';
+import type { CapabilitiesResponse } from '@liveplanner/api-schema';
 
 // Whether the Community is switched on (docs/specs/025-community/community.md "Turning the Community off"), from the
 // api's capabilities. Every app asks through this one hook, so the apps menu, the footer, the landing section, the

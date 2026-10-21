@@ -1,8 +1,8 @@
 // Why a published form takes no responses now (docs/specs/030-forms/forms.md "Hearing about responses", "Not Taking
 // Responses"), for the status bar's red warning: the first that applies, with what it says and where it sends the
 // Editor to fix it.
-import type { DestinationProblem } from '@livediagram/forms';
-import type { FormLinkResponse } from '@livediagram/api-schema';
+import type { DestinationProblem } from '@liveplanner/forms';
+import type { FormLinkResponse } from '@liveplanner/api-schema';
 
 export type FormNotTakingReason =
   'suspended' | 'paused' | 'switched_off' | 'closes_at' | 'limit' | 'full';
