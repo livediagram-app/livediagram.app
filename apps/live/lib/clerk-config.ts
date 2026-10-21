@@ -21,8 +21,8 @@ export const clerkPublishableKey = clerkPublishableKeyOrNull(
 
 export const clerkEnabled = clerkPublishableKey !== null;
 
-// Test builds only: the opt-in Google Drive e2e
-// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing") signs in without
+// Test builds only: the opt-in workbench e2e
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") signs in without
 // Clerk, through E2EAuthBridge and a JWT the test mints against its own JWKS.
 // A compile-time constant like the rest of this file, so a real build (which
 // never sets it) drops the branch and the bridge entirely.

@@ -48,9 +48,8 @@ Prose follows the context:
 ## What keeps its name
 
 - **liveplanner** stays the product and brand name.
-- A document mirrored to Google Drive is a `.liveplanner` file of MIME type
-  `application/vnd.liveplanner+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
-  both name the app that opens the file, not what is inside it.
+- A whole document as a file is a `.liveplanner` file of MIME type
+  `application/vnd.liveplanner+json`: both name the app that opens the file, not what is inside it.
 
 <!-- legacy-names -->
 

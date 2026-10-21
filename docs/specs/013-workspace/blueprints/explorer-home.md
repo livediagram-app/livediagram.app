@@ -209,7 +209,7 @@ user-scope backfill is the Timeline's own business.
 - Header `X-Document-Open`, value `1`; any other value or absence is not an open. Allowed by CORS.
 - Sent by `apiLoadTab(owner, documentId, tabId, shareCode, { open: true })`, which `seedFetchedDocument` passes for
   the editor's eager first-tab read when not embedded. The marker joins the in-flight dedupe key. Every other
-  caller (lazy tab loads, room resync, duplicate, Take Offline, the Drive mirror, the MCP server) sends none (`D66`).
+  caller (lazy tab loads, room resync, duplicate, Take Offline, the MCP server) sends none (`D66`).
 
 ### `POST /api/documents` `markUsed`
 

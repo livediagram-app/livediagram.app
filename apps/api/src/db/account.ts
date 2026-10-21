@@ -12,7 +12,6 @@ import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
-import { disconnectDrive } from '../drive/disconnect';
 import { uniqueLibraryName } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 
@@ -129,10 +128,6 @@ export async function deleteAccount(
   // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
   // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
   await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
-  // at Google and drop the connection and every mirror row. The Drive files are
-  // the user's and stay.
-  await disconnectDrive(env, ownerId);
   // shared_with rows POINTING AT this owner's documents die with the
   // documents (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's documents are keyed on their owner_id and

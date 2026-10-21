@@ -147,16 +147,6 @@ export const TELEMETRY_CATEGORIES = [
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
   // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages', fired before the mode applies.
   'Editor',
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
-  // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
-  // 'Broker' | 'Browser'), 'Changed'·'NeedsReconnect' (Google stopped
-  // accepting the grant), 'Changed'·'AccountSwitched' | 'AccountKept' (the
-  // answer to a consent from another Google account), 'Created'·'FirstMirror' (every document mirrored once),
-  // 'Applied' typed by the inbound change ('Rename' | 'Move' | 'Trash' |
-  // 'Restore' | 'Purge' | 'UnknownFolder'), and 'Opened' typed by the Open
-  // with outcome ('Opened' | 'ImportOffered' | 'Error'). Never a file or
-  // document name, never an id.
-  'Drive',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
   // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |
   // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
@@ -262,8 +252,7 @@ export const TELEMETRY_ACTIONS = [
   // Trash (docs/specs/013-workspace/trash.md): a deleted document was brought
   // back from the Trash.
   'Restored',
-  // Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): a change made in Google
-  // Drive was applied to liveplanner. Only ever paired with the 'Drive' category.
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset applied.
   'Applied',
   // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset refused because an
   // element it targets changed since the agent read it, or because a person holds one.

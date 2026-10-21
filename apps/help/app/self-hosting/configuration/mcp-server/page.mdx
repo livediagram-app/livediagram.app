@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The MCP Server on a Self-Hosted Instance',
+  description:
+    'Self-host the MCP server for AI tools: the mcp Worker, its KV namespace, its hostname and the variables that point the pieces at each other.',
+  path: '/help/self-hosting/configuration/mcp-server/',
+});
+
+<ArticleLayout title="The MCP Server on a Self-Hosted Instance" description="Turn on the MCP server for AI tools on your own deployment." categoryTitle="Self-Hosting" categorySlug="self-hosting" parentArticle={{ title: "Configuration and Optional Auth", slug: "configuration" }} subArticles={getSubArticles("configuration").filter((a) => a.slug !== "mcp-server")}>
+
+The [MCP server](/help/account-and-data/connect-ai-mcp/) lets AI tools such as Claude work on people's documents. It needs more than one variable to switch on. It is off until you set it up, it needs [sign-in](/help/self-hosting/configuration/) to be configured, and leaving it off changes nothing else about the editor.
+
+## The MCP Server
+
+The MCP server is its own Cloudflare Worker, `apps/mcp`. It carries no AI model and makes no model calls: the connected tool does the thinking, and the server forwards its requests to your api Worker. It needs sign-in, because the page where someone approves a tool is a signed-in page, and every connection becomes an ordinary [API token](/help/account-and-data/api-tokens/) that people can see and revoke.
+
+<Step n={1}>
+  Create the KV namespace the Worker keeps its OAuth state in, and put its id in the `OAUTH_KV`
+  binding in `apps/mcp/wrangler.toml`. The command is below.
+</Step>
+<Step n={2}>
+  Give the Worker a hostname of its own, such as `mcp.diagrams.example.com`: in the Cloudflare
+  dashboard, open the `liveplanner-mcp` Worker and add a custom domain under **Domains & Routes**.
+  The deploy token only uploads Workers, so hostnames are attached by hand, as for every other
+  Worker.
+</Step>
+<Step n={3}>
+  Point the pieces at each other with the three variables in the table below. Each ships with
+  liveplanner.app's value, so a fork changes all three.
+</Step>
+<Step n={4}>
+  Deploy the mcp Worker after the api Worker, since it reaches the api over a service binding. The
+  bundled workflow already deploys them in that order.
+</Step>
+
+```bash
+pnpm --filter @liveplanner/mcp exec wrangler kv namespace create OAUTH_KV
+```
+
+| Variable                 | Where                                   | Set it to                                                                       |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL`       | mcp Worker, `[vars]` in `wrangler.toml` | Your editor's origin, where the approval page lives                             |
+| `NEXT_PUBLIC_MCP_ORIGIN` | live build                              | Your MCP origin: the approval page sends the new token only there               |
+| `OAUTH_ISSUER`           | api Worker, `[vars]` in `wrangler.toml` | Your MCP origin (`https` only), where the [CLI](/help/developers/cli/) signs in |
+
+People then add a connector in their AI tool pointing at `https://<your MCP host>/mcp`.
+
+If you do not run the MCP server, remove `OAUTH_ISSUER` from the api Worker's `wrangler.toml` too. The CLI then offers no browser or device sign-in on your instance, and people sign it in with an API token instead.
+
+If telemetry is on, also set the same `INTERNAL_EVENTS_KEY` secret on both the api and mcp Workers, so the MCP server's anonymous usage counts are not throttled as one busy visitor. Without telemetry, skip it.
+
+## Deploying With GitHub Actions
+
+The bundled deploy workflow builds every app, then deploys the Workers. Two things in it matter here:
+
+- **It always deploys the mcp Worker.** If you are not running the MCP server, remove that job from `.github/workflows/deploy-reusable.yml`, or create the KV namespace first so the deploy succeeds.
+- **It does not read most `NEXT_PUBLIC_*` values from repository secrets.** These are baked into the live build, so they must be in the build step's environment:
+  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the live app falls back to `https://mcp.liveplanner.app`, which is not yours, so set it to your MCP origin.
+
+The `wrangler.toml` values and Worker secrets are read at runtime, so they do not need the workflow at all: edit the file, or run `wrangler secret put`.
+
+<Tip>
+  The repository's `docs/operations/self-hosting.md`, and the `.env.example` file in `apps/api`,
+  `apps/live` and `apps/mcp`, list every variable this feature reads, for local development as well
+  as production.
+</Tip>
+
+</ArticleLayout>

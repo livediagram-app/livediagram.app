@@ -227,7 +227,6 @@ packages/
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
-  fake-google/  # in-memory Google Drive + OAuth, for tests only
   source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
   oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config

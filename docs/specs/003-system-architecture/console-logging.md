@@ -1,7 +1,7 @@
 # Console logging
 
 How the editor (`apps/live`) writes to the browser console. Every decision point logs a line with
-a recognisable fingerprint (`[drive-mirror] pass-end`, `[board-scene] landed`), so a behaviour is
+a recognisable fingerprint (`[room] malformed op dropped`, `[board-scene] landed`), so a behaviour is
 traceable from the console. A production console stays clean all the same: the people using the
 app are not reading it, and a page that writes a dozen lines on every load hides the one warning
 that matters.
@@ -14,7 +14,7 @@ that matters.
   - always in development and in tests (any build but production);
   - in a production build only when the **debug flag** is set for the browser:
     `localStorage['liveplanner:debug']` holding `*` (everything) or a comma-separated list of
-    fingerprint scopes (`drive-mirror,board-scene`; the scope is the text in the message's leading
+    fingerprint scopes (`room,board-scene`; the scope is the text in the message's leading
     brackets, or the word before its first colon). The flag is read once per page load: set it in
     the console, then reload.
 - **Warnings** (`console.warn`): something went wrong but the app carried on. Always shown.
@@ -37,6 +37,6 @@ as the `ready` and `cues` answers arrive.
 ## End-to-end tests
 
 The end-to-end suite runs the production build, so its fixture sets the debug flag (`*`) on every
-page of every browser context it creates. Specs that wait for a trace line (the Drive mirror's
-`[drive-mirror] pass-end`, the photo reader's `[photo-…]`) see it exactly as before, while a real
+page of every browser context it creates. Specs that wait for a trace line (the arrow rebind's
+`[arrow-rebind] trigger`, the photo reader's `[photo-…]`) see it exactly as before, while a real
 production page never writes it.

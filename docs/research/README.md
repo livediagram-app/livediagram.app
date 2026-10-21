@@ -8,7 +8,7 @@ Research holds dated measurements and experiment reports. They record what was m
 
 How boards from Google Drive, Miro and Microsoft Whiteboard can come into liveplanner: verified platform facts, costs and the decisions taken. The resulting specs live in docs/specs/020-import-export/.
 
-- ./migration-readiness.md - when designing the Google Drive mirror or a Miro or Whiteboard import: sourced findings, cost model, Drive sync cadences
+- ./migration-readiness.md - when designing a Miro or Whiteboard import: sourced findings, cost model
 
 ## Vision
 

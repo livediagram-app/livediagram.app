@@ -289,8 +289,8 @@ export async function upsertDocumentMeta(
   // never rewritten by a later metadata upsert (rename / autosave / move).
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
-  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy,
-  // a sync or a Drive import brings (docs/specs/026-plan/item-types.md); after that only
+  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy
+  // or a sync brings (docs/specs/026-plan/item-types.md); after that only
   // setDocumentItemTypes writes it.
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
   // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a

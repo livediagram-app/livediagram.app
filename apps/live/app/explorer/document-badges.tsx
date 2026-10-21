@@ -89,13 +89,6 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
 // listed document is the widest audience there is. An offline document has
 // none: its This Browser pill says it
 // (docs/specs/006-document/offline-mode.md#this-browser-pill).
-// Whether a row's document is one the Google Drive mirror copies
-// (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
-// own, in My Documents, saved in the cloud. Team documents, documents
-// shared with the user and offline documents are not mirrored.
-export function isMirrorable(liveDoc: PaneDocument): boolean {
-  return !liveDoc.team && !liveDoc.shared && liveDoc.ownerId !== OFFLINE_OWNER_ID;
-}
 
 export function VisibilityBadge({
   document: liveDoc,

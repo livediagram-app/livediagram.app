@@ -67,11 +67,6 @@ import {
 } from '@/lib/logo-guide-prefs';
 import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
-import {
-  CLOUD_SYNC_PROVIDERS,
-  CLOUD_SYNC_SECTION,
-  type CloudSyncProviderId,
-} from '@/lib/cloud-sync/providers';
 
 // One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
 // Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
@@ -155,8 +150,6 @@ type SettingsRowContext = {
   authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
-  // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
-  cloudProviders?: readonly CloudSyncProviderId[];
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
   workbench?: boolean;
 };
@@ -309,14 +302,6 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
-// One Cloud Sync provider (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"): its
-// connection, status and actions. Not a preference: it reads the provider's
-// own state, so it carries no read/write pair.
-export type SettingsCloudSyncRowSpec = RowBase & {
-  kind: 'cloudSync';
-  provider: CloudSyncProviderId;
-};
-
 // One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
 // documents of that key go, with Change and Clear. Not a preference: it reads and writes
 // `/api/placement-defaults` through the page's store, so it carries no read/write pair.
@@ -340,7 +325,6 @@ export type SettingsRowSpec =
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
-  | SettingsCloudSyncRowSpec
   | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
@@ -1619,18 +1603,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'Deleted documents wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
-      // One row per provider, from the Cloud Sync catalogue.
-      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
-        kind: 'cloudSync',
-        key: `cloudSync-${p.id}`,
-        provider: p.id,
-        section: CLOUD_SYNC_SECTION,
-        label: p.label,
-        keywords: p.keywords,
-        description: p.description,
-        helpArticle: p.helpArticle,
-        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
-      })),
       {
         kind: 'deleteAccount',
         key: 'deleteAccount',
@@ -1762,7 +1734,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
+// A section's target id: "Your Data" → "your-data". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');

@@ -151,7 +151,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Free, open, and yours to keep',
         paragraphs: [
           'A retirement like this is a reminder of what it means to rely on someone else’s product. liveplanner is MIT-licensed and its whole codebase is public. The hosted version is free with no paid tier, and if you would rather not depend on it, you can deploy the same code to your own Cloudflare account.',
-          'You can also keep a document entirely in your browser with Offline Mode, or, once signed in, mirror your documents to your own Google Drive.',
+          'You can also keep a document entirely in your browser with Offline Mode.',
         ],
       },
     ],
@@ -596,7 +596,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Sharing that fits the web',
         paragraphs: [
           'A liveplanner document is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as an iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
-          'When you do need a file, any tab exports as PNG, SVG, PDF or a portable JSON file, the explorer shows thumbnail previews so you can find the right document at a glance, and signed-in users can mirror their documents to their own Google Drive.',
+          'When you do need a file, any tab exports as PNG, SVG, PDF or a portable JSON file, and the explorer shows thumbnail previews so you can find the right document at a glance.',
         ],
       },
       {

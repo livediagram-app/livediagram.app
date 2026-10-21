@@ -110,7 +110,7 @@ export async function readItems(env: Env, documentId: string, ids: string[]): Pr
 
 // Every card write raises the store's rev and marks the document saved (`saved_at`), as a tab write does: a card is
 // part of the document, so the Explorer's "Updated" line, its snapshot (docs/specs/006-document/document-snapshots.md:
-// a board draws its cards) and the Drive mirror all follow it. Both in the documents statement the write runs anyway.
+// a board draws its cards) both follow it. Both in the documents statement the write runs anyway.
 const SAVED = 'saved_at = MAX(saved_at, ?)';
 
 function bumpRev(env: Env, documentId: string, nextKey?: number): D1PreparedStatement {

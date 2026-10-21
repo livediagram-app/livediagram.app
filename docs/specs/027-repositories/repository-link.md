@@ -7,8 +7,7 @@
 
 A **repository link** binds a directory in a code repository to documents in liveplanner, so the people and agents
 working in that repository find, read and change its diagrams without leaving it. liveplanner is the **single source
-of truth**: what a repository holds of a document is a **snapshot** of it at a known revision, never its home, as
-the [Google Drive mirror](../022-drive-mirror/drive-mirror.md) is a copy and never a location.
+of truth**: what a repository holds of a document is a **snapshot** of it at a known revision, never its home.
 
 ## Why
 

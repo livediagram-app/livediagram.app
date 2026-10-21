@@ -68,13 +68,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Draw·Selected',
   'Draw·Toggled',
   'Document·Undone',
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
-  'Drive·Applied',
-  'Drive·Changed',
-  'Drive·Created',
-  'Drive·Linked',
-  'Drive·Opened',
-  'Drive·Unlinked',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
   'Editor·Changed',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.

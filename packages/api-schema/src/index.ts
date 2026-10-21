@@ -14,7 +14,6 @@
 
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
-import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@liveplanner/items';
@@ -602,9 +601,6 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
-  // gets Google access tokens. Optional so an older worker parses as 'off'.
-  driveMode?: DriveMode;
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
@@ -644,7 +640,6 @@ export * from './activity';
 export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
-export * from './drive';
 export * from './profile-picture';
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.

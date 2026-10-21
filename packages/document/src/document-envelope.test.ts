@@ -6,7 +6,7 @@ import {
   type EnvelopeTab,
 } from './document-envelope';
 
-// The `.liveplanner` file's contents (docs/specs/022-drive-mirror/drive-mirror.md, "The file").
+// The `.liveplanner` file's contents.
 
 const tab: EnvelopeTab = { id: 't1', name: 'Tab 1', elements: [], folder: 'Ideas' };
 

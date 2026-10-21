@@ -15,8 +15,7 @@ document **lives**, and which **views** compute lists of documents from wherever
   root folders: there is no Unsorted bucket and no Generated bucket. What an AI made is found with the **Made by AI**
   filter ([Explorer filters](explorer-filters.md)), wherever it is filed.
 - **Spaces are root folders.** My Documents and each team are root-level folder rows in one tree, with their folders
-  beneath them. My Documents maps one to one onto the [Google Drive mirror](../022-drive-mirror/drive-mirror.md)'s root
-  folder.
+  beneath them.
 
 The sidebar holds navigation only. It carries no greeting, no search field, no New button and no pins:
 

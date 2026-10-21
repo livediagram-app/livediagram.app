@@ -201,7 +201,6 @@ import {
 import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
-import { useDriveFollow } from './useDriveFollow';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useIdeaPosts } from '@/hooks/collab/useIdeaPosts';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
@@ -849,16 +848,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     documentId,
     viaShareLink: sessionShareCode !== null,
-  });
-  // A change made in Google Drive reaches the open editor (docs/specs/022-drive-mirror/drive-mirror.md,
-  // "Other views follow"). Only the owner's own session mirrors, never a share link.
-  useDriveFollow({
-    ownerId: selfParticipant.id === 'self' ? null : selfParticipant.id,
-    documentId,
-    enabled: sessionShareCode === null && appChrome,
-    refreshDocumentList,
-    setDocumentName,
-    setDocumentTrashed: documentTrashed.setDocumentTrashed,
   });
   // Sharing / session / owner / share-link state + the room refs all now
   // live in useEditorRealtime, destructured above. Embeds honour the share

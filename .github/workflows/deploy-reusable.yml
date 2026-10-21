@@ -61,11 +61,6 @@ on:
         required: false
       INTERNAL_EVENTS_KEY:
         required: false
-      # The Google Picker's browser key for the Drive mirror
-      # (docs/specs/022-drive-mirror/drive-mirror.md): one per Google Cloud
-      # project, so one per environment, like the Clerk pair above.
-      NEXT_PUBLIC_GOOGLE_API_KEY:
-        required: false
 
 # The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
 # liveplanner.app's own deploys add the vars in apps/api/hosted-vars.json
@@ -124,10 +119,6 @@ jobs:
       # ingests. On in staging too, against staging's own D1 — that is how you
       # verify a new event lands before production sees it. Skipped on a fork,
       # whose frontends then emit nothing unless its own build env opts in.
-      #
-      # Per environment where the profile says so: the Drive mirror's Google
-      # client id is staging's on staging and production's on production
-      # (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment").
       - name: Apply hosted profile to the build
         if: env.HOSTED == 'true'
         working-directory: apps/api
@@ -159,26 +150,9 @@ jobs:
           # mcp-staging.liveplanner.app so a staging OAuth flow stays inside
           # staging (docs/specs/016-platform/staging-environment.md).
           NEXT_PUBLIC_MCP_ORIGIN: ${{ inputs.mcp_origin }}
-          # This environment's key, handed over by the caller as the
-          # NEXT_PUBLIC_GOOGLE_API_KEY secret (staging passes its _STAGING twin).
-          # The Google Picker's browser API key for the Drive mirror's "Show this
-          # folder to liveplanner" (docs/specs/022-drive-mirror/drive-mirror.md). Publishable
-          # (restrict it by HTTP referrer in the Cloud Console); unset leaves the
-          # mirror working and the folder adoption button hidden.
-          NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
           # The live build id, matched by the api's BUILD_ID (docs/specs/016-platform/stale-builds.md).
           NEXT_PUBLIC_BUILD_ID: ${{ steps.build-id.outputs.id }}
         run: pnpm build
-
-      # The live build must carry this environment's Google client id and no
-      # other environment's, so it always agrees with the api worker the same
-      # profile entry configures (the api side is checked after its deploy).
-      - name: Verify the live build's hosted Google client id
-        if: env.HOSTED == 'true'
-        working-directory: apps/api
-        env:
-          WRANGLER_ENV: ${{ inputs.wrangler_env }}
-        run: node scripts/hosted-vars.mjs verify-build ../live/out ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       - name: Upload marketing build
         uses: actions/upload-artifact@v7
